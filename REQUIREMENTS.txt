@@ -1,1 +1,5 @@
 aerosandbox
+autograd
+numba
+pyvista
+scipy

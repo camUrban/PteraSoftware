@@ -2,6 +2,12 @@
   <dictionary name="camer">
     <words>
       <w>aerosandbox</w>
+      <w>autograd</w>
+      <w>matplotlib</w>
+      <w>naca</w>
+      <w>numba</w>
+      <w>pyvista</w>
+      <w>scipy</w>
     </words>
   </dictionary>
 </component>

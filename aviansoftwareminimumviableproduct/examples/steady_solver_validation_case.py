@@ -1,5 +1,4 @@
-import aerosandbox_legacy_v0 as asl
-
+from aviansoftwareminimumviableproduct import *
 
 steady_solver_validation_airplane = asl.Airplane(
     name="Steady Solver Validation Airplane",
@@ -62,12 +61,11 @@ steady_solver_validation_airplane = asl.Airplane(
     ]
 )
 
-steady_solver_validation_problem = asl.vlm3(
+steady_solver_validation_problem = SteadyVortexLatticeMethod1(
     airplane=steady_solver_validation_airplane,
-    op_point=asl.OperatingPoint(
+    operating_point=asl.OperatingPoint(
         velocity=10
     )
 )
 
 steady_solver_validation_problem.run()
-steady_solver_validation_problem.draw()

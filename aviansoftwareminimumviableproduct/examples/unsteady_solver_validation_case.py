@@ -1,6 +1,4 @@
 from aviansoftwareminimumviableproduct import *
-import numpy as np
-import aerosandbox_legacy_v0 as asl
 
 unsteady_solver_validation_airplane = asl.Airplane(
     name="Unsteady Solver Validation Airplane",
@@ -17,7 +15,7 @@ unsteady_solver_validation_airplane = asl.Airplane(
                     airfoil=asl.Airfoil(name="naca2412")
                 ),
                 asl.WingXSec(
-                    xyz_le=[0, 4, 0],
+                    xyz_le=[0, 5, 0],
                     chord=1,
                     airfoil=asl.Airfoil(name="naca2412")
                 )

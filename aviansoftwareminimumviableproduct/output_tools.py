@@ -1,12 +1,25 @@
-from aviansoftwareminimumviableproduct import mesh_tools
+# ToDo: Properly document this module.
+"""
+
+"""
 import numpy as np
 import pyvista as pv
+import matplotlib.pyplot as plt
+
+import aviansoftwareminimumviableproduct as asmvp
 
 
 # Adapted from:         vlm3.make_panels() in AeroSandbox
 # Author:               Peter Sharpe
 # Date of Retrieval:    03/28/2020
+# ToDo: Properly document this method.
 def draw(aerodynamics_problem, points_type=None):
+    """
+
+    :param aerodynamics_problem:
+    :param points_type:
+    :return:
+    """
     if aerodynamics_problem.verbose:
         print("Drawing...")
 
@@ -30,8 +43,18 @@ def draw(aerodynamics_problem, points_type=None):
     faces = np.reshape(faces, (-1), order='C')
     wing_surfaces = pv.PolyData(vertices, faces)
 
-    plotter.add_mesh(wing_surfaces, color='white', show_edges=True,
+    if not hasattr(aerodynamics_problem, 'delta_cp'):
+        aerodynamics_problem.calculate_delta_cp()
+
+    delta_cp_min = -1.5
+    delta_cp_max = 1.5
+
+    scalars = np.minimum(np.maximum(aerodynamics_problem.delta_cp, delta_cp_min), delta_cp_max)
+    color_map = plt.cm.get_cmap('viridis')
+    plotter.add_mesh(wing_surfaces, scalars=scalars, cmap=color_map, color='tan', show_edges=True,
                      smooth_shading=True)
+    plotter.add_scalar_bar(title="Pressure Coefficient Differential", n_labels=5, shadow=True,
+                           font_family='arial')
 
     # Points
     if points_type is not None:
@@ -47,15 +70,20 @@ def draw(aerodynamics_problem, points_type=None):
         print("Drawing finished!")
 
 
-# ToDo: Properly comment and cite the code in the following method
+# ToDo: Properly cite and document this method.
 def make_gif(aerodynamics_problem):
+    """
+
+    :param aerodynamics_problem:
+    :return:
+    """
     plotter = pv.Plotter()
 
     for i in range(len(aerodynamics_problem.time_steps)):
         aerodynamics_problem.current_time = aerodynamics_problem.time_steps[i]
         aerodynamics_problem.current_sweep_angle = aerodynamics_problem.sweep_angles[i]
         if aerodynamics_problem.current_time == 0:
-            mesh_tools.make_panels(aerodynamics_problem)
+            asmvp.mesh_tools.make_panels(aerodynamics_problem)
 
             vertices = np.vstack((
                 aerodynamics_problem.front_left_vertices,

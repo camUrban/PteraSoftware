@@ -1,12 +1,28 @@
-from aviansoftwareminimumviableproduct import *
-from aviansoftwareminimumviableproduct import mesh_tools
-from aviansoftwareminimumviableproduct import output_tools
+# ToDo: Properly document this module.
+"""
+
+"""
 import numpy as np
 
+import aviansoftwareminimumviableproduct as asmvp
 
-class UnsteadyVortexLatticeMethod1(UnsteadyAerodynamicsProblem):
 
+# ToDo: Properly document this class.
+class UnsteadyVortexLatticeMethod(asmvp.aerodynamics_problems.UnsteadyAerodynamicsProblem):
+    """
+
+    """
+
+    # ToDo: Properly document this method.
     def __init__(self, airplane, operating_point, movement, simulation_duration, simulation_time_step):
+        """
+
+        :param airplane:
+        :param operating_point:
+        :param movement:
+        :param simulation_duration:
+        :param simulation_time_step:
+        """
         super().__init__(airplane, operating_point, movement, simulation_duration, simulation_time_step)
         self.verbose = True
         self.front_left_vertices = None
@@ -38,8 +54,12 @@ class UnsteadyVortexLatticeMethod1(UnsteadyAerodynamicsProblem):
         self.initial_back_left_vertices = None
         self.initial_back_right_vertices = None
 
+    # ToDo: Properly document this method.
     def run(self):
+        """
 
+        :return:
+        """
         self.time_steps = np.arange(0, self.simulation_duration + self.simulation_time_step, self.simulation_time_step)
         self.sweep_angles = np.arcsin(np.sin(self.movement.sweeping_amplitude / 2) * np.sin(
             2 * np.pi * self.time_steps / self.movement.movement_period))
@@ -48,13 +68,13 @@ class UnsteadyVortexLatticeMethod1(UnsteadyAerodynamicsProblem):
             self.current_time = self.time_steps[i]
             self.current_sweep_angle = self.sweep_angles[i]
             if self.current_time == 0:
-                mesh_tools.make_panels(self)
+                asmvp.mesh_tools.make_panels(self)
 
                 self.initial_front_left_vertices = self.front_left_vertices
                 self.initial_front_right_vertices = self.front_right_vertices
                 self.initial_back_left_vertices = self.back_left_vertices
                 self.initial_back_right_vertices = self.back_right_vertices
-                output_tools.draw(self)
+                asmvp.output_tools.draw(self)
             else:
-                mesh_tools.move_panels(self)
-                output_tools.draw(self)
+                asmvp.mesh_tools.move_panels(self)
+                asmvp.output_tools.draw(self)

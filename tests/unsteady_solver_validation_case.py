@@ -1,4 +1,11 @@
-from aviansoftwareminimumviableproduct import *
+# ToDo: Properly document this module.
+"""
+
+"""
+import aerosandbox_legacy_v0 as asl
+import numpy as np
+
+import aviansoftwareminimumviableproduct as asmvp
 
 unsteady_solver_validation_airplane = asl.Airplane(
     name="Unsteady Solver Validation Airplane",
@@ -28,12 +35,12 @@ unsteady_solver_validation_operating_point = asl.OperatingPoint(
     velocity=10
 )
 
-unsteady_solver_validation_movement = Movement(
+unsteady_solver_validation_movement = asmvp.movement.Movement(
     movement_period=0.5,
     sweeping_amplitude=np.pi / 4
 )
 
-unsteady_solver_validation_problem = UnsteadyVortexLatticeMethod1(
+unsteady_solver_validation_problem = asmvp.unsteady_vortex_lattice_method.UnsteadyVortexLatticeMethod(
     unsteady_solver_validation_airplane,
     operating_point=unsteady_solver_validation_operating_point,
     movement=unsteady_solver_validation_movement,

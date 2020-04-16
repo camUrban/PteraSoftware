@@ -1,4 +1,10 @@
-from aviansoftwareminimumviableproduct import *
+# ToDo: Properly document this module.
+"""
+
+"""
+import aerosandbox_legacy_v0 as asl
+
+import aviansoftwareminimumviableproduct as asmvp
 
 steady_solver_validation_airplane = asl.Airplane(
     name="Steady Solver Validation Airplane",
@@ -61,7 +67,7 @@ steady_solver_validation_airplane = asl.Airplane(
     ]
 )
 
-steady_solver_validation_problem = SteadyVortexLatticeMethod1(
+steady_solver_validation_problem = asmvp.steady_vortex_lattice_method.SteadyVortexLatticeMethod(
     airplane=steady_solver_validation_airplane,
     operating_point=asl.OperatingPoint(
         velocity=10

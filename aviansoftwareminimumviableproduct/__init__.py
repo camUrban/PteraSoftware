@@ -1,6 +1,11 @@
-from .Movement import *
-from .SteadyVortexLatticeMethod1 import *
-from .UnsteadyVortexLatticeMethod1 import *
-from .mesh_tools import *
-from .output_tools import *
-from .problemclasses import *
+# ToDo: Properly document this module.
+"""
+
+"""
+from aviansoftwareminimumviableproduct import aerodynamics_problems
+from aviansoftwareminimumviableproduct import geometry
+from aviansoftwareminimumviableproduct import mesh_tools
+from aviansoftwareminimumviableproduct import movement
+from aviansoftwareminimumviableproduct import output_tools
+from aviansoftwareminimumviableproduct import steady_vortex_lattice_method
+from aviansoftwareminimumviableproduct import unsteady_vortex_lattice_method

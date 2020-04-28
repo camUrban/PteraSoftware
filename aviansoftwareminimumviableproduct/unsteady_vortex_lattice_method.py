@@ -1,14 +1,23 @@
 # ToDo: Properly document this module.
+"""This module contains useful aerodynamics functions.
+
+This module contains the following classes:
+    None
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
 """
 
-"""
 import numpy as np
 
 import aviansoftwareminimumviableproduct as asmvp
 
 
 # ToDo: Properly document this class.
-class UnsteadyVortexLatticeMethod(asmvp.aerodynamics_problems.UnsteadyAerodynamicsProblem):
+class UnsteadyVortexLatticeMethod(asmvp.problems.UnsteadyProblem):
     """
 
     """
@@ -68,13 +77,13 @@ class UnsteadyVortexLatticeMethod(asmvp.aerodynamics_problems.UnsteadyAerodynami
             self.current_time = self.time_steps[i]
             self.current_sweep_angle = self.sweep_angles[i]
             if self.current_time == 0:
-                asmvp.mesh_tools.make_panels(self)
+                asmvp.meshing.make_panels(self)
 
                 self.initial_front_left_vertices = self.front_left_vertices
                 self.initial_front_right_vertices = self.front_right_vertices
                 self.initial_back_left_vertices = self.back_left_vertices
                 self.initial_back_right_vertices = self.back_right_vertices
-                asmvp.output_tools.draw(self)
+                asmvp.output.draw(self)
             else:
-                asmvp.mesh_tools.move_panels(self)
-                asmvp.output_tools.draw(self)
+                asmvp.meshing.move_panels(self)
+                asmvp.output.draw(self)

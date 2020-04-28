@@ -1,6 +1,14 @@
 # ToDo: Properly document this module.
-"""
+"""This module contains useful aerodynamics functions.
 
+This module contains the following classes:
+    None
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
 """
 
 

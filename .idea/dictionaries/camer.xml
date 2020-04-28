@@ -3,14 +3,62 @@
     <words>
       <w>aero</w>
       <w>aerosandbox</w>
+      <w>afsmo</w>
+      <w>albatros</w>
+      <w>ames</w>
       <w>arctan</w>
       <w>asmvp</w>
       <w>autograd</w>
+      <w>aviatik</w>
+      <w>avistar</w>
+      <w>bacxxx</w>
+      <w>bambino</w>
+      <w>bergey</w>
+      <w>bleriot</w>
       <w>camberline</w>
+      <w>cambre</w>
       <w>chordwise</w>
+      <w>coanda</w>
+      <w>cosspace</w>
+      <w>curtiss</w>
+      <w>davissm</w>
+      <w>dbln</w>
+      <w>dfvlr</w>
+      <w>dicke</w>
+      <w>dormoy</w>
+      <w>dornier</w>
+      <w>downsampled</w>
+      <w>drela</w>
+      <w>dsma</w>
+      <w>fage</w>
+      <w>fauvel</w>
+      <w>firebee</w>
       <w>freestream</w>
+      <w>friedrichshafen</w>
+      <w>genese</w>
+      <w>giii</w>
+      <w>hacklinger</w>
+      <w>hansa</w>
+      <w>hobiesmo</w>
+      <w>hollom</w>
+      <w>horstmann</w>
+      <w>hsnlf</w>
       <w>hstack</w>
+      <w>iiic</w>
+      <w>joukowski</w>
+      <w>karman</w>
+      <w>katz</w>
+      <w>klappe</w>
+      <w>koller</w>
+      <w>lachassgne</w>
+      <w>liii</w>
+      <w>lissaman</w>
+      <w>marsden</w>
+      <w>marske</w>
       <w>matplotlib</w>
+      <w>midspan</w>
+      <w>miley</w>
+      <w>monge</w>
       <w>naca</w>
       <w>ndarray</w>
       <w>ndarrays</w>
@@ -19,14 +67,42 @@
       <w>nondimensional</w>
       <w>nondimensionalized</w>
       <w>numba</w>
+      <w>onera</w>
+      <w>pchip</w>
+      <w>pfalz</w>
+      <w>plotkin</w>
+      <w>prandtl</w>
       <w>proj</w>
+      <w>propfan</w>
       <w>pyvista</w>
+      <w>quast</w>
+      <w>raymer</w>
+      <w>repanel</w>
+      <w>repaneled</w>
+      <w>repaneling</w>
+      <w>rhode</w>
+      <w>roncz</w>
+      <w>royer</w>
       <w>scipy</w>
+      <w>semispan</w>
+      <w>sokolov</w>
       <w>spanwise</w>
+      <w>staaken</w>
+      <w>supercritical</w>
+      <w>tsagi</w>
+      <w>uiuc</w>
+      <w>uncambered</w>
+      <w>usnps</w>
+      <w>vertol</w>
       <w>viridis</w>
       <w>vortices</w>
+      <w>weisstein</w>
+      <w>wetted</w>
+      <w>whitcomb</w>
+      <w>wortmann</w>
       <w>xsec</w>
       <w>xsecs</w>
+      <w>ycoord</w>
     </words>
   </dictionary>
 </component>

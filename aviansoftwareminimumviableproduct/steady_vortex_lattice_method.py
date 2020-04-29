@@ -1,8 +1,7 @@
-# ToDo: Properly document this module.
-"""This module contains useful aerodynamics functions.
+"""This module contains the class definition of this package's steady vortex lattice solver.
 
 This module contains the following classes:
-    None
+    SteadyVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady vortex lattice method.
 
 This module contains the following exceptions:
     None
@@ -15,90 +14,79 @@ import numpy as np
 import aviansoftwareminimumviableproduct as asmvp
 
 
-# ToDo: Properly document this class.
-class SteadyVortexLatticeMethod(asmvp.problems.SteadyProblem):
+class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
+    """This is an aerodynamics solver that uses a steady vortex lattice method.
+
+    Citation:
+        Adapted from:         aerodynamics.vlm3.py in AeroSandbox
+        Author:               Peter Sharpe
+        Date of Retrieval:    04/28/2020
+
+    This class contains the following public methods:
+        run: Run the solver on the steady problem.
+        set_up_geometry: Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+        set_up_operating_point: Find the normal freestream speed at every collocation point without vortices.
+        calculate_vortex_strengths: Solve for each panel's vortex strength.
+        solution_velocity_from_vortices: Find the velocity at a given point due to the freestream and the vortices.
+        calculate_velocity_influences: Find the velocity at a given point due to the vorticity of every vortex if their
+                                       strengths were all set to 1.0 meters squared per second.
+        calculate_delta_cp: Find the change in the pressure coefficient between the upper and lower surfaces of a panel.
+        calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
-    """
-
-    # ToDo: Properly document this method.
     def __init__(self, airplane, operating_point):
+        """This is the initialization method.
+
+        :param airplane: Airplane
+            This is the problem's airplane object to be analyzed.
+        :param operating_point: OperatingPoint
+            This is the problem's operating point object to be analyzed.
         """
 
-        :param airplane:
-        :param operating_point:
-        """
-
+        # Call the parent class initialization method.
         super().__init__(airplane, operating_point)
-        self.verbose = True
 
-        self.front_left_vertices = None
-        self.front_right_vertices = None
-        self.back_left_vertices = None
-        self.back_right_vertices = None
-
-        self.front_left_vortex_vertices = None
-        self.front_right_vortex_vertices = None
-        self.back_left_vortex_vertices = None
-        self.back_right_vortex_vertices = None
-
-        self.front_vortex_legs = None
-        self.right_vortex_legs = None
-        self.back_vortex_legs = None
-        self.left_vortex_legs = None
-
-        self.front_vortex_leg_centers = None
-        self.back_vortex_leg_centers = None
-        self.left_vortex_leg_centers = None
-        self.right_vortex_leg_centers = None
-
-        self.areas = None
-        self.is_trailing_edge = None
-        self.is_leading_edge = None
-        self.collocation_points = None
-        self.normal_directions = None
-        self.n_panels = None
-
-        self.initial_front_left_vertices = None
-        self.initial_front_right_vertices = None
-        self.initial_back_left_vertices = None
-        self.initial_back_right_vertices = None
-
+        # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.velocity_influences_at_collocations = None
         self.aerodynamic_influence_coefficients = None
-
         self.vortex_strengths = None
 
-        self.steady_freestream_velocity = None
-        self.rotation_freestream_velocities = None
-        self.freestream_velocity = None
-        self.freestream_influences = None
-
-        self.panel_centers = None
-
-    # ToDo: Properly document this method.
     def run(self):
+        """Run the solver on the steady problem.
+
+        :return: None
         """
 
-        :return:
-        """
+        # Mesh the problem's geometry.
         asmvp.meshing.mesh_problem(self)
-        self.setup_geometry()
-        self.setup_operating_point()
+
+        # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+        self.set_up_geometry()
+
+        # Find the normal freestream speed at every collocation point without vortices.
+        self.set_up_operating_point()
+
+        # Solve for each panel's vortex strength.
         self.calculate_vortex_strengths()
+
+        # Find the the forces and moments calculated from the near field.
         self.calculate_near_field_forces_and_moments()
+
+        # Find the change in the pressure coefficient between the upper and lower surfaces of a panel.
         self.calculate_delta_cp()
-        # asmvp.output_tools.draw(self, "collocation_points")
 
     # ToDo: Properly cite and document this method.
-    def setup_geometry(self):
+    def set_up_geometry(self):
         """
 
         :return:
         """
-        # Calculate AIC matrix
-        if self.verbose:
-            print("Calculating the collocation influence matrices...")
 
         airplane_num_panels = 0
         for wing in self.airplane.wings:
@@ -167,7 +155,7 @@ class SteadyVortexLatticeMethod(asmvp.problems.SteadyProblem):
     # ToDo: Properly cite and document this method.
     # ToDo: Check this method.
     # ToDo: Make this method actually compute the rotational velocity.
-    def setup_operating_point(self):
+    def set_up_operating_point(self):
         """
 
         :return:
@@ -191,7 +179,8 @@ class SteadyVortexLatticeMethod(asmvp.problems.SteadyProblem):
             reshaped_normal_directions = np.reshape(wing.normal_directions, (-1, 3))
             self.normal_directions = np.vstack((self.normal_directions, reshaped_normal_directions))
 
-        self.freestream_influences = np.swapaxes(np.dot(self.freestream_velocity, np.swapaxes(self.normal_directions, 0, 1)), 0, 1)
+        self.freestream_influences = np.swapaxes(np.dot(self.freestream_velocity, np.swapaxes(self.normal_directions, 0,
+                                                                                              1)), 0, 1)
 
         if self.verbose:
             print("Freestream influence vector calculated!")
@@ -315,8 +304,6 @@ class SteadyVortexLatticeMethod(asmvp.problems.SteadyProblem):
 
         :return:
         """
-        if self.verbose:
-            print("Calculating forces on panels...")
 
         density = self.operating_point.density
         self.total_force_on_airplane_in_geometry_axes = np.array([0, 0, 0])
@@ -422,22 +409,3 @@ class SteadyVortexLatticeMethod(asmvp.problems.SteadyProblem):
             print("Cn: ", self.airplane_coefficient_of_yawing_moment)
 
             print("Finished calculating forces!")
-
-    # ToDo: Properly cite and document this method.
-    def get_velocity_at_point(self, point):
-        """
-
-        :param point:
-        :return:
-        """
-        # Input: a Nx3 numpy array of points that you would like to know the velocities at.
-        # Output: a Nx3 numpy array of the velocities at those points.
-        point = np.reshape(point, (-1, 3))
-
-        Vi = self.get_induced_velocity_at_point(point)
-
-        freestream = self.operating_point.compute_freestream_velocity_geometry_axes()
-
-        V = Vi + freestream
-
-        return V

@@ -6,7 +6,7 @@ This module contains the following classes:
     Wing: This is a class used to contain the wings of an airplane.
     WingCrossSection: This class is used to contain the cross sections of the wings of an airplane.
     Airfoil: This class is used to contain the airfoil of a cross section of a wing of an airplane.
-    Panel: This class is for the panels of a meshed wing.
+    Panel: This class is used to contain the panels of a meshed wing.
 
 This module contains the following exceptions:
     None
@@ -857,17 +857,43 @@ class Airfoil:
         return flapped_airfoil
 
 
-# ToDo: Document and cite this class.
 class Panel:
+    """This class is used to contain the panels of a meshed wing.
+
+    This class contains the following public methods:
+        calculate_vortex_vertex_locations: This method calculates the locations of the vortex vertices.
+        calculate_collocation_point_location: This method calculates the location of the collocation point.
+        calculate_vortex_leg_vectors: This method calculates the vectors that connect the vortex vertices.
+        calculate_vortex_leg_center_locations: This method calculates the locations of the center of the vortex legs.
+        calculate_panel_area_and_normal: This method calculates the panel's area and the panel's normal unit vector at
+                                         its collocation point.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
-    """
-    # ToDo: Document this method.
     def __init__(self, front_left_panel_vertex, front_right_panel_vertex, back_left_panel_vertex,
                  back_right_panel_vertex, is_leading_edge, is_trailing_edge):
+        """ This is the initialization method.
+
+        :param front_left_panel_vertex: 1D numpy array with three elements
+            This is an array containing the x, y, and z coordinates of the panel's front left vertex.
+        :param front_right_panel_vertex: 1D numpy array with three elements
+            This is an array containing the x, y, and z coordinates of the panel's front right vertex.
+        :param back_left_panel_vertex: 1D numpy array with three elements
+            This is an array containing the x, y, and z coordinates of the panel's back left vertex.
+        :param back_right_panel_vertex: 1D numpy array with three elements
+            This is an array containing the x, y, and z coordinates of the panel's back right vertex.
+        :param is_leading_edge: bool
+            This is true if the panel is the leading edge panel on a wing, and false otherwise.
+        :param is_trailing_edge: bool
+            This is true if the panel is the trailing edge panel on a wing, and false otherwise.
         """
 
-        """
+        # Initialize the attributes.
         self.front_left_panel_vertex = front_left_panel_vertex
         self.front_right_panel_vertex = front_right_panel_vertex
         self.back_left_panel_vertex = back_left_panel_vertex
@@ -875,51 +901,60 @@ class Panel:
         self.is_leading_edge = is_leading_edge
         self.is_trailing_edge = is_trailing_edge
 
+        # Initialize variables to hold the vortex vertex locations and then populate them.
         self.front_left_vortex_vertex = None
         self.front_right_vortex_vertex = None
         self.back_left_vortex_vertex = None
         self.back_right_vortex_vertex = None
         self.calculate_vortex_vertex_locations()
 
+        # Initialize a variable to hold the collocation point location and then populate it.
         self.collocation_point = None
         self.calculate_collocation_point_location()
 
+        # Initialize variables to hold the vortex leg vectors and then populate them.
         self.front_vortex_leg = None
         self.left_vortex_leg = None
         self.back_vortex_leg = None
         self.right_vortex_leg = None
         self.calculate_vortex_leg_vectors()
 
+        # Initialize variables to hold the center position of the vortex legs and then populate them.
         self.front_vortex_leg_center = None
         self.left_vortex_leg_center = None
         self.back_vortex_leg_center = None
         self.right_vortex_leg_center = None
         self.calculate_vortex_leg_center_locations()
 
+        # Initialize variables to hold the panel area and the panel normal vector at the collocation point. Then
+        # populate them.
         self.panel_area = None
         self.panel_normal_direction_at_collocation_point = None
         self.calculate_panel_area_and_normal()
 
+        # Initialize variables to hold attributes of the panel that will be defined after the solver finds a solution.
         self.vortex_strength = None
-
         self.force_on_front_vortex_in_geometry_axes = None
         self.force_on_back_vortex_in_geometry_axes = None
         self.force_on_left_vortex_in_geometry_axes = None
         self.force_on_right_vortex_in_geometry_axes = None
         self.total_force_on_panel_in_geometry_axes = None
-
         self.total_moment_on_panel_in_geometry_axes = None
-
         self.normal_force_on_panel = None
         self.pressure_on_panel = None
         self.panel_delta_pressure_coefficient = None
 
-    # ToDo: Document this method.
     def calculate_vortex_vertex_locations(self):
+        """This method calculates the locations of the vortex vertices.
+
+        The panel's ring vortex is a quadrangle whose front vortex leg is at the panel's quarter chord. The left and
+        right vortex legs run along the panel's left and right legs. They extend backwards and meet the back vortex leg
+        at one quarter chord back from the panel's back leg.
+
+        :return: None
         """
 
-        :return:
-        """
+        # Use vector math to calculate the locations of the vortex vertices. Then populate the class attributes.
         self.front_left_vortex_vertex = self.front_left_panel_vertex + 0.25 * (self.back_left_panel_vertex
                                                                                - self.front_right_panel_vertex)
         self.front_right_vortex_vertex = self.front_right_panel_vertex + 0.25 * (self.back_right_panel_vertex
@@ -929,43 +964,51 @@ class Panel:
         self.back_right_vortex_vertex = self.front_right_vortex_vertex + (self.back_right_panel_vertex
                                                                           - self.front_right_panel_vertex)
 
-    # ToDo: Document this method.
     def calculate_collocation_point_location(self):
+        """This method calculates the location of the collocation point.
+
+        The collocation point is at the panel's three quarter chord point. This is also directly in the middle of the
+        panel's quad vortex.
+
+        :return: None
         """
 
-        :return:
-        """
+        # Use vector math to calculate the location of the collocation point. Then populate the class attribute.
         self.collocation_point = self.front_left_vortex_vertex + 0.5 * (self.back_right_vortex_vertex
                                                                         - self.front_left_vortex_vertex)
 
-    # ToDo: Document this method.
     def calculate_vortex_leg_vectors(self):
+        """This method calculates the vectors that connect the vortex vertices.
+
+        This method sets the direction of the vortex legs so that a positive vorticity assigned to each leg creates a
+        vortex ring with a vorticity in the positive z direction, as dictated by the right hand rule.
+
+        :return: None
         """
 
-        :return:
-        """
         self.front_vortex_leg = (self.front_left_vortex_vertex - self.front_right_vortex_vertex)
         self.left_vortex_leg = (self.back_left_vortex_vertex - self.front_left_vortex_vertex)
         self.back_vortex_leg = (self.back_right_vortex_vertex - self.back_left_vortex_vertex)
         self.right_vortex_leg = (self.front_right_vortex_vertex - self.back_right_vortex_vertex)
 
-    # ToDo: Document this method.
     def calculate_vortex_leg_center_locations(self):
+        """This method calculates the locations of the center of the vortex legs.
+
+        :return: None
         """
 
-        :return:
-        """
+        # Use vector math to calculate the location of the center of each vortex leg. Then populate the attributes.
         self.front_vortex_leg_center = (self.front_right_vortex_vertex + 0.5 * self.front_vortex_leg)
         self.left_vortex_leg_center = (self.front_left_vortex_vertex + 0.5 * self.left_vortex_leg)
         self.back_vortex_leg_center = (self.back_left_vortex_vertex + 0.5 * self.back_vortex_leg)
         self.right_vortex_leg_center = (self.back_right_vortex_vertex + 0.5 * self.right_vortex_leg)
 
-    # ToDo: Document this method.
     def calculate_panel_area_and_normal(self):
+        """This method calculates the panel's area and the panel's normal unit vector at its collocation point.
+
+        :return: None
         """
 
-        :return:
-        """
         # Calculate vortex ring normals and areas via diagonals.
         vortex_ring_first_diagonal = self.front_right_vortex_vertex - self.back_left_vortex_vertex
         vortex_ring_second_diagonal = self.front_left_vortex_vertex - self.back_right_vortex_vertex
@@ -983,59 +1026,100 @@ class Panel:
         self.panel_area = panel_cross_product_magnitude / 2
 
 
-# ToDo: Document and cite this class.
-def cosspace(minimum=0, maximum=1, n_points=50):
+def cosspace(minimum=0.0, maximum=1.0, n_points=50):
+    """This function is used to create a numpy array containing a specified number of values between a specified minimum
+    and maximum value that are spaced via a cosine function.
+
+    Citation:
+        Adapted from:         geometry.cosspace in AeroSandbox
+        Author:               Peter Sharpe
+        Date of Retrieval:    04/28/2020
+
+    :param minimum: float, optional
+        This is the minimum value of the range of numbers you would like spaced. The default is 0.0.
+    :param maximum: float, optional
+        This is the maximum value of the range of numbers you would like spaced. The default is 1.0.
+    :param n_points: int, optional
+        This is the number of points to space. The default is 50.
+    :return cosine_spaced_points: 1D numpy array
+        This is a 1D numpy array of the points, ranging from the minimum to the maximum value (inclusive), spaced via a
+        cosine function.
     """
 
-    :param minimum:
-    :param maximum:
-    :param n_points:
-    :return:
-    """
+    # Find the mean and the amplitude of the cosine function.
     mean = (maximum + minimum) / 2
     amp = (maximum - minimum) / 2
 
-    return mean + amp * np.cos(np.linspace(np.pi, 0, n_points))
+    # Space the points by applying cosine to the linspace function. Then return the points.
+    cosine_spaced_points = mean + amp * np.cos(np.linspace(np.pi, 0, n_points))
+    return cosine_spaced_points
 
 
-# ToDo: Document and cite this function.
 def reflect_over_xz_plane(input_vector):
+    """This function is used to flip a the y coordinate of a coordinate vector.
+
+    Citation:
+        Adapted from:         geometry.reflect_over_xz_plane in AeroSandbox
+        Author:               Peter Sharpe
+        Date of Retrieval:    04/28/2020
+
+    :param input_vector: numpy array
+        This can either be a 1D numpy array of three items, a M x 3 2D numpy array, or a M x N x 3 3D numpy array. N and
+        represent arbitrary numbers of rows or columns.
+    :return output vector: numpy array
+        This is a numpy array with each vertex's y variable flipped.
     """
-    Takes in a vector or an array and flips the y-coordinates.
-    :param input_vector:
-    :return:
-    """
+
+    # Initialize the output vector.
     output_vector = input_vector
+
+    # Find the shape of the input vector.
     shape = np.shape(output_vector)
-    if len(shape) == 1 and shape[0] == 3:  # Vector of 3 items
+
+    # Characterize the input vector.
+    if len(shape) == 1 and shape[0] == 3:
+        # The input vector is a 1D numpy array of 3 items. Flip the vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
-    elif len(shape) == 2 and shape[1] == 3:  # 2D Nx3 vector
+    elif len(shape) == 2 and shape[1] == 3:
+        # The input vector is a 2D numpy array of shape M x 3. Where M is some arbitrary number of rows. Flip each
+        # vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     elif len(shape) == 3 and shape[2] == 3:  # 3D MxNx3 vector
+        # The input vector is a 3D numpy array of shape M x N x 3. Where M is some arbitrary number of rows, and N is
+        # some arbitrary number of columns. Flip each vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     else:
+        # The input vector is an unacceptable shape. Throw an error.
         raise Exception("Invalid input for reflect_over_XZ_plane!")
 
+    # Return the output vector.
     return output_vector
 
 
-# ToDo: Document and cite this function.
 def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
+    """This function is used to find the rotation matrix for a given axis and angle.
+
+    Citation:
+        Adapted from:         geometry.angle_axis_rotation_matrix in AeroSandbox
+        Author:               Peter Sharpe
+        Date of Retrieval:    04/28/2020
+
+    For more information on the math behind this method, see:
+    https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+
+    :param angle: float or 1D numpy array of 3 angles
+        This is the angle. Provide it in radians.
+    :param axis: 1D numpy array of 3 elements.
+        This is the axis.
+    :param axis_already_normalized: bool, optional
+        Set this as True if the axis given is already normalized, which will skip internal normalization and speed up
+        the method. If not, set as False. The default is False.
+    :return rotation matrix: numpy array
+        This is the rotation matrix. If the given angle is a scalar, this will be a 3 x 3 numpy array. If the given
+        angle is a vector, this will be a 3 x 3 x N numpy array.
     """
-    Gives the rotation matrix from an angle and an axis.
-    An implementation of https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-    Inputs:
-      * angle: can be one angle or a vector (1d ndarray) of angles. Given in radians.
-      * axis: a 1d numpy array of length 3 (p,y,z). Represents the angle.
-      * axis_already_normalized: boolean, skips normalization for speed if you flag this true.
-    Outputs:
-      * If angle is a scalar, returns a 3x3 rotation matrix.
-      * If angle is a vector, returns a 3x3xN rotation matrix.
-    :param angle:
-    :param axis:
-    :param axis_already_normalized:
-    :return:
-    """
+
+    # Normalize the axis is it is not already normalized.
     if not axis_already_normalized:
         axis = axis / np.linalg.norm(axis)
 
@@ -1046,14 +1130,20 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
          [axis[2], 0, -axis[0]],
          [-axis[1], axis[0], 0]]
     )
-    # The cross product matrix of the rotation axis vector
+
+    # Find the cross product matrix of the rotation axis vector.
     outer_axis = axis @ np.transpose(axis)
 
-    angle = np.array(angle)  # make sure angle is a ndarray
-    if len(angle.shape) == 0:  # is a scalar
-        rot_matrix = cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
-        return rot_matrix
-    else:  # angle is assumed to be a 1d ndarray
-        rot_matrix = cos_theta * np.expand_dims(np.eye(3), 2) + sin_theta * np.expand_dims(cpm, 2) + (
+    # Make sure angle is a numpy array.
+    angle = np.array(angle)
+
+    # Check if the angle is a scalar.
+    if len(angle.shape) == 0:
+        rotation_matrix = cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
+    else:
+        # Otherwise, the angle is assumed to be a 1D numpy array.
+        rotation_matrix = cos_theta * np.expand_dims(np.eye(3), 2) + sin_theta * np.expand_dims(cpm, 2) + (
                 1 - cos_theta) * np.expand_dims(outer_axis, 2)
-        return rot_matrix
+
+    # Return the rotation matrix.
+    return rotation_matrix

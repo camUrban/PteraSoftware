@@ -67,7 +67,7 @@ steady_solver_validation_airplane = asl.Airplane(
     ]
 )
 
-steady_solver_validation_problem = asmvp.steady_vortex_lattice_method.SteadyVortexLatticeMethod(
+steady_solver_validation_problem = asmvp.steady_vortex_lattice_method.SteadyVortexLatticeMethodSolver(
     airplane=steady_solver_validation_airplane,
     operating_point=asl.OperatingPoint(
         velocity=10

@@ -1,7 +1,9 @@
-"""This module contains useful aerodynamics functions.
+"""This module contains useful aerodynamics functions, and the vortex class definitions.
 
 This module contains the following classes:
-    None
+    LineVortex: This class is used to contain line vortices.
+    HorseshoeVortex: This class is used to contain horseshoe vortices.
+    RingVortex: This class is used to contain ring vortices.
 
 This module contains the following exceptions:
     None
@@ -18,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 
 
-def induced_velocity_from_line_vortex(point, vortex_origin, vortex_termination, vortex_strength):
+def calculate_velocity_induced_from_line_vortex(point, vortex_origin, vortex_termination, vortex_strength):
     """This function calculates the velocity induced at a specified point by a line vortex of a specified strength,
     and at a specified location. It uses methodology described on pp. 251-255 of the second edition of "Low-Speed
     Aerodynamics" by Joseph Katz and Allen Plotkin.
@@ -79,7 +81,7 @@ def induced_velocity_from_line_vortex(point, vortex_origin, vortex_termination, 
     return velocity_induced_by_vortex
 
 
-def induced_velocity_from_horseshoe_vortex(point, finite_leg_origin, finite_leg_termination, vortex_strength):
+def calculate_velocity_induced_from_horseshoe_vortex(point, finite_leg_origin, finite_leg_termination, vortex_strength):
     """This function calculates the velocity induced at a specified point by a horseshoe vortex of a specified strength,
     and at a specified location. It uses methodology described on pp. 131-132 of "Flight Vehicle Aerodynamics" by Mark
     Drela.
@@ -162,21 +164,21 @@ def induced_velocity_from_horseshoe_vortex(point, finite_leg_origin, finite_leg_
     return velocity_induced_by_vortex
 
 
-def induced_velocity_from_ring_vortex(point, front_left_vortex_point, front_right_vortex_point, back_left_vortex_point,
-                                      back_right_vortex_point, vortex_strength):
+def calculate_velocity_induced_from_ring_vortex(point, front_left_vortex_vertex, front_right_vortex_vertex,
+                                                back_left_vortex_vertex, back_right_vortex_vertex, vortex_strength):
     """This function calculates the velocity induced at a specified point by a ring vortex of a specified strength,
     and at a specified location. It uses methodology described on pp. 255-256 of the second edition of "Low-Speed
     Aerodynamics" by Joseph Katz and Allen Plotkin.
 
     :param point: This parameter is the point where the induced velocity is to be calculated. It's a (3,) numpy array.
                   It's units are meters.
-    :param front_left_vortex_point: This parameter is the ring vortex's front left point. It's a (3,) numpy array. It's
+    :param front_left_vortex_vertex: This parameter is the ring vortex's front left point. It's a (3,) numpy array. It's
                                     units are meters.
-    :param front_right_vortex_point: This parameter is the ring vortex's front right point. It's a (3,) numpy array.
+    :param front_right_vortex_vertex: This parameter is the ring vortex's front right point. It's a (3,) numpy array.
                                      It's units are meters.
-    :param back_left_vortex_point: This parameter is the ring vortex's back left point. It's a (3,) numpy array. It's
+    :param back_left_vortex_vertex: This parameter is the ring vortex's back left point. It's a (3,) numpy array. It's
                                    units are meters.
-    :param back_right_vortex_point: This parameter is the ring vortex's back right point. It's a (3,) numpy array. It's
+    :param back_right_vortex_vertex: This parameter is the ring vortex's back right point. It's a (3,) numpy array. It's
                                     units are meters.
     :param vortex_strength: This is the magnitude of the vorticity. It's sign is given by the using the right hand rule
                             clockwise around the ring vortex when viewed from above. It's units are meters squared per
@@ -187,22 +189,18 @@ def induced_velocity_from_ring_vortex(point, front_left_vortex_point, front_righ
 
     # Calculate the velocity induced by each leg of the ring vortex. These function calls will return zero if there is a
     # singularity detected on that leg.
-    velocity_induced_by_upper_leg = induced_velocity_from_line_vortex(point=point,
-                                                                      vortex_origin=front_right_vortex_point,
-                                                                      vortex_termination=front_left_vortex_point,
-                                                                      vortex_strength=vortex_strength)
-    velocity_induced_by_left_leg = induced_velocity_from_line_vortex(point=point,
-                                                                     vortex_origin=front_left_vortex_point,
-                                                                     vortex_termination=back_left_vortex_point,
-                                                                     vortex_strength=vortex_strength)
-    velocity_induced_by_lower_leg = induced_velocity_from_line_vortex(point=point,
-                                                                      vortex_origin=back_left_vortex_point,
-                                                                      vortex_termination=back_right_vortex_point,
-                                                                      vortex_strength=vortex_strength)
-    velocity_induced_by_right_leg = induced_velocity_from_line_vortex(point=point,
-                                                                      vortex_origin=back_right_vortex_point,
-                                                                      vortex_termination=front_right_vortex_point,
-                                                                      vortex_strength=vortex_strength)
+    velocity_induced_by_upper_leg = calculate_velocity_induced_from_line_vortex(
+        point=point, vortex_origin=front_right_vortex_vertex, vortex_termination=front_left_vortex_vertex,
+        vortex_strength=vortex_strength)
+    velocity_induced_by_left_leg = calculate_velocity_induced_from_line_vortex(
+        point=point, vortex_origin=front_left_vortex_vertex, vortex_termination=back_left_vortex_vertex,
+        vortex_strength=vortex_strength)
+    velocity_induced_by_lower_leg = calculate_velocity_induced_from_line_vortex(
+        point=point, vortex_origin=back_left_vortex_vertex, vortex_termination=back_right_vortex_vertex,
+        vortex_strength=vortex_strength)
+    velocity_induced_by_right_leg = calculate_velocity_induced_from_line_vortex(
+        point=point, vortex_origin=back_right_vortex_vertex, vortex_termination=front_right_vortex_vertex,
+        vortex_strength=vortex_strength)
 
     # Sum the velocities induced by each leg to get the velocity induced by the entire ring.
     velocity_induced_by_vortex = (velocity_induced_by_upper_leg
@@ -212,3 +210,212 @@ def induced_velocity_from_ring_vortex(point, front_left_vortex_point, front_righ
 
     # Return the velocity induced by the vortex.
     return velocity_induced_by_vortex
+
+
+class LineVortex:
+    """This class is used to contain line vortices.
+
+    This class contains the following public methods:
+        calculate_normalized_velocity_induced: This method calculates the velocity induced at a point by this vortex
+                                               with a unit vortex strength.
+        calculate_velocity_induced: This method calculates the velocity induced at a point by this vortex with its given
+                                    vortex strength.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def __init__(self, origin, termination, strength):
+        """This is the initialization method.
+
+        :param origin: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the origin of the line vortex.
+        :param termination: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the termination of the line vortex.
+        :param strength: float
+            This is the strength of the vortex in square meters per second.
+        """
+
+        self.origin = origin
+        self.termination = termination
+        self.strength = strength
+
+        self.leg_vector = self.termination - self.origin
+        self.leg_center = self.origin + 0.5 * self.leg_vector
+
+    def calculate_normalized_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
+
+        :param point: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return normalized_velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        normalized_velocity_induced = calculate_velocity_induced_from_line_vortex(point=point,
+                                                                                  vortex_origin=self.origin,
+                                                                                  vortex_termination=self.termination,
+                                                                                  vortex_strength=1)
+        return normalized_velocity_induced
+
+    def calculate_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
+
+        :param point:
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        velocity_induced = calculate_velocity_induced_from_line_vortex(point=point, vortex_origin=self.origin,
+                                                                       vortex_termination=self.termination,
+                                                                       vortex_strength=self.strength)
+        return velocity_induced
+
+
+class HorseshoeVortex:
+    """This class is used to contain horseshoe vortices.
+
+    This class contains the following public methods:
+        calculate_normalized_velocity_induced: This method calculates the velocity induced at a point by this vortex
+                                               with a unit vortex strength.
+        calculate_velocity_induced: This method calculates the velocity induced at a point by this vortex with its given
+                                    vortex strength.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def __init__(self, finite_leg_origin, finite_leg_termination, strength):
+        """This is the initialization method.
+
+        :param finite_leg_origin: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the origin of the vortex's finite leg.
+        :param finite_leg_termination: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the termination of the vortex's finite leg.
+        :param strength: float
+            This is the strength of the vortex in square meters per second.
+        """
+
+        self.finite_leg_origin = finite_leg_origin
+        self.finite_leg_termination = finite_leg_termination
+        self.strength = strength
+
+        self.finite_leg = LineVortex(origin=self.finite_leg_origin, termination=self.finite_leg_termination,
+                                     strength=self.strength)
+
+    def calculate_normalized_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
+
+        :param point: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return normalized_velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        normalized_velocity_induced = calculate_velocity_induced_from_horseshoe_vortex(
+            point=point, finite_leg_origin=self.finite_leg_origin, finite_leg_termination=self.finite_leg_termination,
+            vortex_strength=1)
+        return normalized_velocity_induced
+
+    def calculate_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
+
+        :param point: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        velocity_induced = calculate_velocity_induced_from_horseshoe_vortex(
+            point=point, finite_leg_origin=self.finite_leg_origin, finite_leg_termination=self.finite_leg_termination,
+            vortex_strength=self.strength)
+        return velocity_induced
+
+
+class RingVortex:
+    """This class is used to contain ring vortices.
+
+    This class contains the following public methods:
+        calculate_normalized_velocity_induced: This method calculates the velocity induced at a point by this vortex
+                                               with a unit vortex strength.
+        calculate_velocity_induced: This method calculates the velocity induced at a point by this vortex with its given
+                                    vortex strength.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def __init__(self, front_left_vertex, front_right_vertex, back_left_vertex,
+                 back_right_vertex, strength):
+        """This is the initialization method.
+
+        :param front_left_vertex: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the vortex's front left point.
+        :param front_right_vertex: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the vortex's front right point.
+        :param back_left_vertex: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the vortex's back left point.
+        :param back_right_vertex: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the vortex's back right point.
+        :param strength: float
+            This is the strength of the vortex in square meters per second.
+        """
+
+        self.front_left_vertex = front_left_vertex
+        self.front_right_vertex = front_right_vertex
+        self.back_left_vertex = back_left_vertex
+        self.back_right_vertex = back_right_vertex
+        self.strength = strength
+
+        self.front_leg = LineVortex(origin=self.front_right_vertex, termination=self.front_left_vertex,
+                                    strength=self.strength)
+        self.left_leg = LineVortex(origin=self.front_left_vertex, termination=self.back_left_vertex,
+                                   strength=self.strength)
+        self.back_leg = LineVortex(origin=self.back_left_vertex, termination=self.back_right_vertex,
+                                   strength=self.strength)
+        self.right_leg = LineVortex(origin=self.back_right_vertex, termination=self.front_right_vertex,
+                                    strength=self.strength)
+
+    def calculate_normalized_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
+
+        :param point: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return normalized_velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        normalized_velocity_induced = calculate_velocity_induced_from_ring_vortex(
+            point=point, front_left_vortex_vertex=self.front_left_vertex,
+            front_right_vortex_vertex=self.front_right_vertex,
+            back_left_vortex_vertex=self.back_left_vertex,
+            back_right_vortex_vertex=self.back_right_vertex,
+            vortex_strength=1)
+        return normalized_velocity_induced
+
+    def calculate_velocity_induced(self, point):
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
+
+        :param point: 1D numpy array
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return velocity_induced: 1D numpy array
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        velocity_induced = calculate_velocity_induced_from_ring_vortex(
+            point=point, front_left_vortex_vertex=self.front_left_vertex,
+            front_right_vortex_vertex=self.front_right_vertex,
+            back_left_vortex_vertex=self.back_left_vertex,
+            back_right_vortex_vertex=self.back_right_vertex,
+            vortex_strength=self.strength)
+        return velocity_induced

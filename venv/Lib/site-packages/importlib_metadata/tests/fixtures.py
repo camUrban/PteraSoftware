@@ -5,17 +5,8 @@ import sys
 import shutil
 import tempfile
 import textwrap
-import contextlib
 
-try:
-    from contextlib import ExitStack
-except ImportError:
-    from contextlib2 import ExitStack
-
-try:
-    import pathlib
-except ImportError:
-    import pathlib2 as pathlib
+from .._compat import pathlib, contextlib
 
 
 __metaclass__ = type
@@ -58,7 +49,7 @@ def install_finder(finder):
 
 class Fixtures:
     def setUp(self):
-        self.fixtures = ExitStack()
+        self.fixtures = contextlib.ExitStack()
         self.addCleanup(self.fixtures.close)
 
 

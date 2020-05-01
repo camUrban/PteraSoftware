@@ -1,7 +1,4 @@
 matplotlib
-aerosandbox
-autograd
-numba
 numpy
 pyvista
 scipy

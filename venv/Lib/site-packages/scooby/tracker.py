@@ -2,7 +2,8 @@ from scooby.report import Report
 from scooby.knowledge import get_standard_lib_modules
 
 TRACKING_SUPPORTED = False
-SUPPORT_MESSAGE = "Tracking is not supported for this version of Python. Try using a modern version of Python."
+SUPPORT_MESSAGE = ("Tracking is not supported for this version of Python. "
+                   "Try using a modern version of Python.")
 try:
     import builtins
     CLASSIC_IMPORT = builtins.__import__
@@ -26,7 +27,7 @@ STDLIB_PKGS = get_standard_lib_modules()
 
 def _criterion(name):
     if (len(name) > 0 and name not in STDLIB_PKGS and not name.startswith("_")
-        and name not in MODULES_TO_IGNORE):
+            and name not in MODULES_TO_IGNORE):
         return True
     return False
 
@@ -34,7 +35,8 @@ def _criterion(name):
 if TRACKING_SUPPORTED:
     def scooby_import(name, globals=None, locals=None, fromlist=(), level=0):
         """A custom override of the import method to track package names"""
-        m = CLASSIC_IMPORT(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
+        m = CLASSIC_IMPORT(name, globals=globals, locals=locals,
+                           fromlist=fromlist, level=level)
         name = name.split(".")[0]
         if level == 0 and _criterion(name):
             TRACKED_IMPORTS.append(name)
@@ -58,7 +60,6 @@ def untrack_imports():
     TRACKED_IMPORTS.clear()
     TRACKED_IMPORTS.append("scooby")
     return
-
 
 
 class TrackedReport(Report):

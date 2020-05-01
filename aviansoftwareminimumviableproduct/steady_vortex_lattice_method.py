@@ -11,6 +11,7 @@ This module contains the following functions:
 """
 
 import numpy as np
+
 import aviansoftwareminimumviableproduct as asmvp
 
 
@@ -63,9 +64,6 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
         :return: None
         """
 
-        # Mesh the problem's geometry.
-        asmvp.meshing.mesh_problem(self)
-
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
         self.set_up_geometry()
 
@@ -83,9 +81,9 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
 
     # ToDo: Properly cite and document this method.
     def set_up_geometry(self):
-        """
+        """Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
 
-        :return:
+        :return: None
         """
 
         airplane_num_panels = 0
@@ -117,15 +115,15 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
                         front_right_vortex_vertex = reshaped_front_right_vortex_vertices[vortex_num]
                         back_left_vortex_vertex = reshaped_back_left_vortex_vertices[vortex_num]
                         back_right_vortex_vertex = reshaped_back_right_vortex_vertices[vortex_num]
-                        velocity_induced_by_ring_vortex = (asmvp.aerodynamics.induced_velocity_from_ring_vortex
+                        velocity_induced_by_ring_vortex = (asmvp.aerodynamics.calculate_velocity_induced_from_ring_vortex
                                                            (point=collocation_point,
-                                                            front_left_vortex_point=front_left_vortex_vertex,
-                                                            front_right_vortex_point=front_right_vortex_vertex,
-                                                            back_left_vortex_point=back_left_vortex_vertex,
-                                                            back_right_vortex_point=back_right_vortex_vertex,
+                                                            front_left_vortex_vertex=front_left_vortex_vertex,
+                                                            front_right_vortex_vertex=front_right_vortex_vertex,
+                                                            back_left_vortex_vertex=back_left_vortex_vertex,
+                                                            back_right_vortex_vertex=back_right_vortex_vertex,
                                                             vortex_strength=1))
                         if reshaped_is_trailing_edge[vortex_num]:
-                            velocity_induced_by_horseshoe_vortex = (asmvp.aerodynamics.induced_velocity_from_horseshoe_vortex
+                            velocity_induced_by_horseshoe_vortex = (asmvp.aerodynamics.calculate_velocity_induced_from_horseshoe_vortex
                                                                     (point=collocation_point,
                                                                      finite_leg_origin=back_right_vortex_vertex,
                                                                      finite_leg_termination=back_left_vortex_vertex,
@@ -149,9 +147,6 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
 
         self.aerodynamic_influence_coefficients = this_wings_collocation_points_aerodynamics_influence_coefficients
 
-        if self.verbose:
-            print("Collocation influence matrix calculated!")
-
     # ToDo: Properly cite and document this method.
     # ToDo: Check this method.
     # ToDo: Make this method actually compute the rotational velocity.
@@ -161,12 +156,9 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
         :return:
         """
 
-        if self.verbose:
-            print("Calculating the freestream influence vector...")
-
         # This calculates and updates the direction the wind is going to, in geometry axes coordinates.
         self.steady_freestream_velocity = np.expand_dims(
-            self.operating_point.compute_freestream_velocity_geometry_axes(),
+            self.operating_point.calculate_freestream_velocity_geometry_axes(),
             0)
 
         # This represents the freestream velocity at each panel collocation point. It is size N x 3 where N is the
@@ -182,9 +174,6 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
         self.freestream_influences = np.swapaxes(np.dot(self.freestream_velocity, np.swapaxes(self.normal_directions, 0,
                                                                                               1)), 0, 1)
 
-        if self.verbose:
-            print("Freestream influence vector calculated!")
-
     # ToDo: Properly cite and document this method.
     def calculate_vortex_strengths(self):
         """
@@ -194,8 +183,7 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
         # # Calculate Vortex Strengths
         # ----------------------------
         # Governing Equation: AIC @ Gamma + freestream_influence = 0
-        if self.verbose:
-            print("Calculating vortex strengths...")
+
         self.vortex_strengths = np.linalg.solve(self.aerodynamic_influence_coefficients, -self.freestream_influences)
 
         vortex_strengths_to_be_sliced = self.vortex_strengths
@@ -224,15 +212,15 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
                     back_left_vortex_vertex = wing.back_left_vortex_vertices[chordwise_panel_num, spanwise_panel_num]
                     back_right_vortex_vertex = wing.back_right_vortex_vertices[chordwise_panel_num, spanwise_panel_num]
                     vortex_strength = wing.vortex_strengths[chordwise_panel_num, spanwise_panel_num]
-                    velocity_induced_by_ring_vortex = (asmvp.aerodynamics.induced_velocity_from_ring_vortex
+                    velocity_induced_by_ring_vortex = (asmvp.aerodynamics.calculate_velocity_induced_from_ring_vortex
                                                        (point=point,
-                                                        front_left_vortex_point=front_left_vortex_vertex,
-                                                        front_right_vortex_point=front_right_vortex_vertex,
-                                                        back_left_vortex_point=back_left_vortex_vertex,
-                                                        back_right_vortex_point=back_right_vortex_vertex,
+                                                        front_left_vortex_vertex=front_left_vortex_vertex,
+                                                        front_right_vortex_vertex=front_right_vortex_vertex,
+                                                        back_left_vortex_vertex=back_left_vortex_vertex,
+                                                        back_right_vortex_vertex=back_right_vortex_vertex,
                                                         vortex_strength=vortex_strength))
                     if wing.is_trailing_edge[chordwise_panel_num, spanwise_panel_num]:
-                        velocity_induced_by_horseshoe_vortex = (asmvp.aerodynamics.induced_velocity_from_horseshoe_vortex
+                        velocity_induced_by_horseshoe_vortex = (asmvp.aerodynamics.calculate_velocity_induced_from_horseshoe_vortex
                                                                 (point=point,
                                                                  finite_leg_origin=back_right_vortex_vertex,
                                                                  finite_leg_termination=back_left_vortex_vertex,
@@ -292,7 +280,7 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
                     normal_direction = wing.normal_directions[chordwise_panel_num, spanwise_panel_num]
                     normal_force_on_panel = np.dot(total_force_on_panel, normal_direction)
                     pressure_on_panel = normal_force_on_panel / area
-                    panel_delta_pressure_coefficient = pressure_on_panel / self.operating_point.dynamic_pressure()
+                    panel_delta_pressure_coefficient = pressure_on_panel / self.operating_point.calculate_dynamic_pressure()
 
                     wing.normal_force_on_panels[chordwise_panel_num, spanwise_panel_num] = normal_force_on_panel
                     wing.pressure_on_panels[chordwise_panel_num, spanwise_panel_num] = pressure_on_panel
@@ -372,14 +360,14 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
                                                                       [chordwise_panel_num, spanwise_panel_num])
 
         self.total_force_on_airplane_in_wind_axes = (np.transpose(
-            self.operating_point.compute_rotation_matrix_wind_to_geometry())
+            self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
                                                      @ self.total_force_on_airplane_in_geometry_axes)
         self.total_moment_on_airplane_in_wing_axes = (np.transpose(
-            self.operating_point.compute_rotation_matrix_wind_to_geometry())
+            self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
                                                      @ self.total_moment_on_airplane_in_geometry_axes)
 
         # Calculate nondimensional forces
-        q = self.operating_point.dynamic_pressure()
+        q = self.operating_point.calculate_dynamic_pressure()
         s_ref = self.airplane.s_ref
         b_ref = self.airplane.b_ref
         c_ref = self.airplane.c_ref
@@ -397,15 +385,14 @@ class SteadyVortexLatticeMethodSolver(asmvp.problems.SteadyProblem):
         else:
             self.airplane_coefficient_of_lift_over_coefficient_of_induced_drag = (self.airplane_coefficient_of_lift / self.airplane_coefficient_of_induced_drag)
 
-        if self.verbose:
-            print("\nForces\n-----")
-            print("airplane_coefficient_of_lift: ", self.airplane_coefficient_of_lift)
-            print("airplane_coefficient_of_induced_drag: ", self.airplane_coefficient_of_induced_drag)
-            print("airplane_coefficient_of_side_force: ", self.airplane_coefficient_of_side_force)
-            print("CL/CDi: ", self.airplane_coefficient_of_lift_over_coefficient_of_induced_drag)
-            print("\nMoments\n-----")
-            print("Cl: ", self.airplane_coefficient_of_rolling_moment)
-            print("Cm: ", self.airplane_coefficient_of_pitching_moment)
-            print("Cn: ", self.airplane_coefficient_of_yawing_moment)
+        print("\nForces\n-----")
+        print("airplane_coefficient_of_lift: ", self.airplane_coefficient_of_lift)
+        print("airplane_coefficient_of_induced_drag: ", self.airplane_coefficient_of_induced_drag)
+        print("airplane_coefficient_of_side_force: ", self.airplane_coefficient_of_side_force)
+        print("CL/CDi: ", self.airplane_coefficient_of_lift_over_coefficient_of_induced_drag)
+        print("\nMoments\n-----")
+        print("Cl: ", self.airplane_coefficient_of_rolling_moment)
+        print("Cm: ", self.airplane_coefficient_of_pitching_moment)
+        print("Cn: ", self.airplane_coefficient_of_yawing_moment)
 
-            print("Finished calculating forces!")
+        print("Finished calculating forces!")

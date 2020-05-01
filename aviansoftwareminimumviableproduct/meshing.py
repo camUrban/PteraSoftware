@@ -7,11 +7,8 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    mesh_problem: This function takes in an object of the AerodynamicsProblem class, and calls mesh_airplane on its
-                  airplane object.
-    mesh_airplane: This function takes in an object of the Airplane class and calls mesh_wing on each of its wings.
-    mesh_wing: This function takes in an object of the Wing class and creates a quadrilateral mesh of its geometry, and
-               then populates the objects variables with the mesh data.
+    mesh_wing: This function takes in an object of the Wing class and creates a quadrilateral mesh of its geometry,
+               and then populates the object's panels with the mesh data.
     move_panels: This function takes in a problem of the UnsteadyAerodynamicsProblem class, and modifies it's panel
                  locations as it time steps through the simulation.
 """
@@ -20,47 +17,17 @@ import aviansoftwareminimumviableproduct as asmvp
 import numpy as np
 
 
-def mesh_problem(aerodynamics_problem):
-    """This function takes in an object of the AerodynamicsProblem class, and calls mesh_airplane on its airplane
-    object.
-
-    :param aerodynamics_problem: AerodynamicsProblem
-        This is the problem whose geometry is to be meshed.
-    :return: None
-    """
-
-    # Initialize a variable to hold the problem's airplane object.
-    airplane = aerodynamics_problem.airplane
-
-    # Mesh the airplane.
-    mesh_airplane(airplane)
-
-
-def mesh_airplane(airplane):
-    """This function takes in an object of the Airplane class and calls mesh_wing on each of its wings.
-
-    :param airplane: Airplane.
-        The airplane whose geometry is to be meshed.
-    :return: None
-    """
-
-    # Iterate through the wings in the airplane object and mesh each wing.
-    for wing_num in range(len(airplane.wings)):
-        wing = airplane.wings[wing_num]
-        mesh_wing(wing)
-
-
 def mesh_wing(wing):
-    """This function takes in an object of the Wing class and creates a quadrilateral mesh of its geometry, and then
-    populates the objects variables with the mesh data.
+    """This function takes in an object of the Wing class and creates a quadrilateral mesh of its geometry,
+    and then populates the object's panels with the mesh data.
 
     Citation:
         Adapted from:         vlm3.make_panels in AeroSandbox
         Author:               Peter Sharpe
-        Date of Retrieval:    03/28/2020
+        Date of Retrieval:    05/01/2020
 
     :param wing: Wing
-        The wing object to be meshed.
+        This is the wing to be meshed.
     :return: None
     """
 
@@ -68,30 +35,12 @@ def mesh_wing(wing):
     num_chordwise_panels = wing.chordwise_panels
     num_chordwise_coordinates = num_chordwise_panels + 1
 
-    # Initialize variables that will hold geometry information. These are empty numpy arrays of shape M x 0 x 3, where M
-    # is the number of chordwise panels.
-    collocation_points = np.empty((num_chordwise_panels, 0, 3))
-    normal_directions = np.empty((num_chordwise_panels, 0, 3))
-    front_left_vortex_vertices = np.empty((num_chordwise_panels, 0, 3))
-    front_right_vortex_vertices = np.empty((num_chordwise_panels, 0, 3))
-    back_left_vortex_vertices = np.empty((num_chordwise_panels, 0, 3))
-    back_right_vortex_vertices = np.empty((num_chordwise_panels, 0, 3))
-    front_left_vertices = np.empty((num_chordwise_panels, 0, 3))
-    front_right_vertices = np.empty((num_chordwise_panels, 0, 3))
-    back_left_vertices = np.empty((num_chordwise_panels, 0, 3))
-    back_right_vertices = np.empty((num_chordwise_panels, 0, 3))
-
-    # Initialize the areas variable which will hold the area of each panel. It is an empty ndarray of shape M x 0, where
-    # M is the number of chordwise panels.
-    areas = np.empty((num_chordwise_panels, 0))
-
-    # Initialize the is_trailing_edge and is_leading_edge identifier variables. They are empty ndarrays of shape M x 0,
-    # where M is the number of chordwise panels.
-    is_trailing_edge = np.empty((num_chordwise_panels, 0), dtype=bool)
-    is_leading_edge = np.empty((num_chordwise_panels, 0), dtype=bool)
-
     # Initialize the list of cross sections to None.
     cross_section = None
+
+    # Initialize an empty numpy array that will hold the panels of this wing. It currently has 0 columns and M rows,
+    # where M is the number of the wing's chordwise panels.
+    panels = np.empty((num_chordwise_panels, 0), dtype=object)
 
     # Get the chordwise coordinates.
     if wing.chordwise_spacing == 'uniform':
@@ -277,8 +226,9 @@ def mesh_wing(wing):
         outer_cross_section_mcl = (cross_section_xyz_le[section_num + 1, :] + outer_cross_section_mcl_local_back
                                    + outer_cross_section_mcl_local_up)
 
-        # Define number of spanwise points.
-        num_spanwise_coordinates = cross_section.spanwise_panels + 1
+        # Define number of spanwise points and panels.
+        num_spanwise_panels = cross_section.spanwise_panels
+        num_spanwise_coordinates = num_spanwise_panels + 1
 
         # Get the spanwise coordinates.
         if cross_section.spanwise_spacing == 'uniform':
@@ -347,86 +297,23 @@ def mesh_wing(wing):
             np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool)
         ))
 
-        # Calculate the vortex vertices positions by performing vector math on the panel vertex locations.
-        front_inner_vortex_vertices_to_add = front_inner_vertices + 0.25 * (back_inner_vertices -
-                                                                            front_inner_vertices)
-        front_outer_vortex_vertices_to_add = front_outer_vertices + 0.25 * (back_outer_vertices -
-                                                                            front_outer_vertices)
-        back_inner_vortex_vertices_to_add = front_inner_vortex_vertices_to_add + (back_inner_vertices -
-                                                                                  front_inner_vertices)
-        back_outer_vortex_vertices_to_add = front_outer_vortex_vertices_to_add + (back_outer_vertices -
-                                                                                  front_outer_vertices)
-        collocation_points_to_add = front_inner_vortex_vertices_to_add + 0.5 * (back_outer_vortex_vertices_to_add -
-                                                                                front_inner_vortex_vertices_to_add)
+        # Initialize an empty numpy array to hold this sections. The matrix is size M x N, where M and N are the number
+        # of chordwise and spanwise panels.
+        section_panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
-        # Calculate vortex ring normals and areas via diagonals.
-        vortex_ring_first_diagonal = front_outer_vortex_vertices_to_add - back_inner_vortex_vertices_to_add
-        vortex_ring_second_diagonal = front_inner_vortex_vertices_to_add - back_outer_vortex_vertices_to_add
-        vortex_ring_cross_product = np.cross(vortex_ring_first_diagonal, vortex_ring_second_diagonal)
-        vortex_ring_cross_product_magnitude = np.linalg.norm(vortex_ring_cross_product, axis=2)
-        normal_directions_to_add = vortex_ring_cross_product / np.expand_dims(vortex_ring_cross_product_magnitude,
-                                                                              axis=2)
+        # Loop through the empty section panels matrix and create a new panel object in each slot.
+        for chordwise_position in range(num_chordwise_panels):
+            for spanwise_position in range(num_spanwise_panels):
+                section_panels[chordwise_position, spanwise_position] = asmvp.geometry.Panel(
+                    front_left_vertex=front_inner_vertices[chordwise_position, spanwise_position],
+                    front_right_vertex=front_outer_vertices[chordwise_position, spanwise_position],
+                    back_left_vertex=back_inner_vertices[chordwise_position, spanwise_position],
+                    back_right_vertex=back_outer_vertices[chordwise_position, spanwise_position],
+                    is_trailing_edge=section_is_trailing_edge[chordwise_position, spanwise_position],
+                    is_leading_edge=section_is_leading_edge[chordwise_position, spanwise_position])
 
-        # Calculate panel normals and areas via diagonals.
-        panel_first_diagonal = front_outer_vertices - back_inner_vertices
-        panel_second_diagonal = front_inner_vertices - back_outer_vertices
-        panel_cross_product = np.cross(panel_first_diagonal, panel_second_diagonal)
-        panel_cross_product_magnitude = np.linalg.norm(panel_cross_product, axis=2)
-        areas_to_add = panel_cross_product_magnitude / 2
-
-        # Append to the lists of mesh data. The data for each new section is stacked vertically.
-        front_left_vertices = np.hstack((
-            front_left_vertices,
-            front_inner_vertices
-        ))
-        front_right_vertices = np.hstack((
-            front_right_vertices,
-            front_outer_vertices
-        ))
-        back_left_vertices = np.hstack((
-            back_left_vertices,
-            back_inner_vertices
-        ))
-        back_right_vertices = np.hstack((
-            back_right_vertices,
-            back_outer_vertices
-        ))
-        areas = np.hstack((
-            areas,
-            areas_to_add
-        ))
-        is_trailing_edge = np.hstack((
-            is_trailing_edge,
-            section_is_trailing_edge
-        ))
-        is_leading_edge = np.hstack((
-            is_leading_edge,
-            section_is_leading_edge
-        ))
-        normal_directions = np.hstack((
-            normal_directions,
-            normal_directions_to_add
-        ))
-        front_left_vortex_vertices = np.hstack((
-            front_left_vortex_vertices,
-            front_inner_vortex_vertices_to_add
-        ))
-        front_right_vortex_vertices = np.hstack((
-            front_right_vortex_vertices,
-            front_outer_vortex_vertices_to_add
-        ))
-        back_left_vortex_vertices = np.hstack((
-            back_left_vortex_vertices,
-            back_inner_vortex_vertices_to_add
-        ))
-        back_right_vortex_vertices = np.hstack((
-            back_right_vortex_vertices,
-            back_outer_vortex_vertices_to_add
-        ))
-        collocation_points = np.hstack((
-            collocation_points,
-            collocation_points_to_add
-        ))
+        # This section's panel matrix is stack horizontally, to the right of the wing's panel matrix.
+        panels = np.hstack((panels, section_panels))
 
         # Handle symmetry.
         if wing.symmetric:
@@ -556,135 +443,40 @@ def mesh_wing(wing):
                 np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool)
             ))
 
-            # Calculate the vortex vertices positions by performing vector math on the panel vertex locations.
-            front_inner_vortex_vertices_to_add = front_inner_vertices + 0.25 * (back_inner_vertices -
-                                                                                front_inner_vertices)
-            front_outer_vortex_vertices_to_add = front_outer_vertices + 0.25 * (back_outer_vertices -
-                                                                                front_outer_vertices)
-            back_inner_vortex_vertices_to_add = front_inner_vortex_vertices_to_add + (back_inner_vertices -
-                                                                                      front_inner_vertices)
-            back_outer_vortex_vertices_to_add = front_outer_vortex_vertices_to_add + (back_outer_vertices -
-                                                                                      front_outer_vertices)
-            collocation_points_to_add = front_inner_vortex_vertices_to_add + 0.5 * (
-                    back_outer_vortex_vertices_to_add -
-                    front_inner_vortex_vertices_to_add)
+            # Initialize an empty numpy array to hold this sections. The matrix is size M x N, where M and N are the
+            # number of chordwise and spanwise panels.
+            section_panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
-            # Calculate vortex ring normals and areas via diagonals.
-            vortex_ring_first_diagonal = front_outer_vortex_vertices_to_add - back_inner_vortex_vertices_to_add
-            vortex_ring_second_diagonal = front_inner_vortex_vertices_to_add - back_outer_vortex_vertices_to_add
-            vortex_ring_cross_product = np.cross(vortex_ring_first_diagonal, vortex_ring_second_diagonal)
-            vortex_ring_cross_product_magnitude = np.linalg.norm(vortex_ring_cross_product, axis=2)
-            normal_directions_to_add = vortex_ring_cross_product / np.expand_dims(vortex_ring_cross_product_magnitude,
-                                                                                  axis=2)
+            # Loop through the empty section panels matrix and create a new panel object in each slot.
+            for chordwise_position in range(num_chordwise_panels):
+                for spanwise_position in range(num_spanwise_panels):
+                    # Reflect the vertices to create the reflected wing for the symmetric case.
+                    front_inner_vertices_reflected = asmvp.geometry.reflect_over_xz_plane(front_inner_vertices[
+                                                                                              chordwise_position,
+                                                                                              spanwise_position])
+                    front_outer_vertices_reflected = asmvp.geometry.reflect_over_xz_plane(front_outer_vertices[
+                                                                                              chordwise_position,
+                                                                                              spanwise_position])
+                    back_inner_vertices_reflected = asmvp.geometry.reflect_over_xz_plane(back_inner_vertices[
+                                                                                              chordwise_position,
+                                                                                              spanwise_position])
+                    back_outer_vertices_reflected = asmvp.geometry.reflect_over_xz_plane(back_outer_vertices[
+                                                                                              chordwise_position,
+                                                                                              spanwise_position])
 
-            # Calculate panel normals and areas via diagonals.
-            panel_first_diagonal = front_outer_vertices - back_inner_vertices
-            panel_second_diagonal = front_inner_vertices - back_outer_vertices
-            panel_cross_product = np.cross(panel_first_diagonal, panel_second_diagonal)
-            panel_cross_product_magnitude = np.linalg.norm(panel_cross_product, axis=2)
-            areas_to_add = panel_cross_product_magnitude / 2
+                    section_panels[chordwise_position, spanwise_position] = asmvp.geometry.Panel(
+                        front_left_vertex=front_outer_vertices_reflected[chordwise_position, spanwise_position],
+                        front_right_vertex=front_inner_vertices_reflected[chordwise_position, spanwise_position],
+                        back_left_vertex=back_outer_vertices_reflected[chordwise_position, spanwise_position],
+                        back_right_vertex=back_inner_vertices_reflected[chordwise_position, spanwise_position],
+                        is_trailing_edge=section_is_trailing_edge[chordwise_position, spanwise_position],
+                        is_leading_edge=section_is_leading_edge[chordwise_position, spanwise_position])
 
-            # Append to the lists of mesh data. The data for each new section is stacked horizontally.
-            front_left_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(front_outer_vertices),
-                front_left_vertices
-            ))
-            front_right_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(front_inner_vertices),
-                front_right_vertices
-            ))
-            back_left_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(back_outer_vertices),
-                back_left_vertices
-            ))
-            back_right_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(back_inner_vertices),
-                back_right_vertices
-            ))
-            areas = np.hstack((
-                areas_to_add,
-                areas
-            ))
-            is_trailing_edge = np.hstack((
-                section_is_trailing_edge,
-                is_trailing_edge
-            ))
-            is_leading_edge = np.hstack((
-                section_is_leading_edge,
-                is_leading_edge
-            ))
-            normal_directions = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(normal_directions_to_add),
-                normal_directions
-            ))
-            front_left_vortex_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(front_outer_vortex_vertices_to_add),
-                front_left_vortex_vertices
-            ))
-            front_right_vortex_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(front_inner_vortex_vertices_to_add),
-                front_right_vortex_vertices
-            ))
-            back_left_vortex_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(back_outer_vortex_vertices_to_add),
-                back_left_vortex_vertices
-            ))
-            back_right_vortex_vertices = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(back_inner_vortex_vertices_to_add),
-                back_right_vortex_vertices
-            ))
-            collocation_points = np.hstack((
-                asmvp.geometry.reflect_over_xz_plane(collocation_points_to_add),
-                collocation_points
-            ))
+            # This section's panel matrix is stack horizontally, to the left of the wing's panel matrix.
+            panels = np.hstack((section_panels, panels))
 
-    # Update the panel and vortex vertex location variables in the aerodynamics_problem object.
-    wing.front_left_vertices = front_left_vertices
-    wing.front_right_vertices = front_right_vertices
-    wing.back_left_vertices = back_left_vertices
-    wing.back_right_vertices = back_right_vertices
-    wing.front_left_vortex_vertices = front_left_vortex_vertices
-    wing.front_right_vortex_vertices = front_right_vortex_vertices
-    wing.back_left_vortex_vertices = back_left_vortex_vertices
-    wing.back_right_vortex_vertices = back_right_vortex_vertices
-
-    # Calculate the legs of each vortex ring. Update these variables in the aerodynamics_problem object.
-    wing.front_vortex_legs = (front_left_vortex_vertices - front_right_vortex_vertices)
-    wing.left_vortex_legs = (back_left_vortex_vertices - front_left_vortex_vertices)
-    wing.back_vortex_legs = (back_right_vortex_vertices - back_left_vortex_vertices)
-    wing.right_vortex_legs = (front_right_vortex_vertices - back_right_vortex_vertices)
-
-    # Calculate the center of each leg in each vortex ring. Update these variables in the aerodynamics_problem object.
-    wing.front_vortex_leg_centers = (front_right_vortex_vertices + 0.5
-                                     * wing.front_vortex_legs)
-    wing.left_vortex_leg_centers = (front_left_vortex_vertices + 0.5
-                                    * wing.left_vortex_legs)
-    wing.back_vortex_leg_centers = (back_left_vortex_vertices + 0.5
-                                    * wing.back_vortex_legs)
-    wing.right_vortex_leg_centers = (back_right_vortex_vertices + 0.5
-                                     * wing.right_vortex_legs)
-
-    # Update the following miscellaneous variables in the aerodynamics_problem object.
-    wing.areas = areas
-    wing.is_trailing_edge = is_trailing_edge
-    wing.is_leading_edge = is_leading_edge
-    wing.collocation_points = collocation_points
-    wing.normal_directions = normal_directions
-    wing.num_panels = len(np.reshape(wing.collocation_points, (-1, 3))[:, 0])
-    wing.num_chordwise_panels = num_chordwise_panels
-    wing.num_spanwise_panels = int(wing.num_panels / wing.num_chordwise_panels)
-    wing.panel_centers = front_left_vortex_vertices + 0.5 * (back_right_vertices - front_left_vertices)
-
-    # Initialize variables that will be filled in after the solution is found.
-    wing.forces_on_front_vortices_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.forces_on_back_vortices_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.forces_on_left_vortices_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.forces_on_right_vortices_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.total_force_on_panel_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.total_moment_on_panel_in_geometry_axes = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.normal_force_on_panels = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.pressure_on_panels = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
-    wing.panels_delta_pressure_coefficient = np.zeros((wing.num_chordwise_panels, wing.num_spanwise_panels, 3))
+    # Populate the wing's panels attribute.
+    wing.panels = panels
 
 
 def move_panels(unsteady_aerodynamics_problem):

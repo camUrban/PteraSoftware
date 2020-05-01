@@ -8,14 +8,11 @@ This module contains the following exceptions:
 
 This module contains the following functions:
     draw: Draw the solution to the aerodynamics problem.
-    make_gif: Make a gif of the geometry of an unsteady aerodynamics problem moving.
 """
 
 import numpy as np
 import pyvista as pv
 import matplotlib.pyplot as plt
-
-import aviansoftwareminimumviableproduct as asmvp
 
 
 def draw(aerodynamics_problem, points_type=None):
@@ -78,104 +75,3 @@ def draw(aerodynamics_problem, points_type=None):
     # Set the background color and camera positions.
     plotter.set_background(color="black")
     plotter.show(cpos=(-1, -1, 1), full_screen=True)
-
-
-def make_gif(unsteady_aerodynamics_problem):
-    """Make a gif of the geometry of an unsteady aerodynamics problem moving.
-
-    Citation:
-        Adapted From: https://docs.pyvista.org/examples/02-plot/gif.html
-        Author: The PyVista Developers
-        Date of Retrieval: 04/28/2020
-
-    :param unsteady_aerodynamics_problem: UnsteadyAerodynamicsProblem
-        This is the unsteady aerodynamics problem to analyze.
-    :return: None
-    """
-
-    # Initialize the plotter.
-    plotter = pv.Plotter()
-
-    # Iterate through the problem's time steps.
-    for i in range(len(unsteady_aerodynamics_problem.time_steps)):
-        # Store the current time step and sweep angle.
-        unsteady_aerodynamics_problem.current_time = unsteady_aerodynamics_problem.time_steps[i]
-        unsteady_aerodynamics_problem.current_sweep_angle = unsteady_aerodynamics_problem.sweep_angles[i]
-
-        # Check if this is the first time step.
-        if unsteady_aerodynamics_problem.current_time == 0:
-            # Mesh the problem.
-            asmvp.meshing.mesh_problem(unsteady_aerodynamics_problem)
-
-            # Make the airplane geometry.
-            vertices = np.vstack((
-                unsteady_aerodynamics_problem.front_left_vertices,
-                unsteady_aerodynamics_problem.front_right_vertices,
-                unsteady_aerodynamics_problem.back_right_vertices,
-                unsteady_aerodynamics_problem.back_left_vertices
-            ))
-            faces = np.transpose(np.vstack((
-                4 * np.ones(unsteady_aerodynamics_problem.n_panels),
-                np.arange(unsteady_aerodynamics_problem.n_panels),
-                np.arange(unsteady_aerodynamics_problem.n_panels) + unsteady_aerodynamics_problem.n_panels,
-                np.arange(unsteady_aerodynamics_problem.n_panels) + 2 * unsteady_aerodynamics_problem.n_panels,
-                np.arange(unsteady_aerodynamics_problem.n_panels) + 3 * unsteady_aerodynamics_problem.n_panels,
-            )))
-            faces = np.reshape(faces, (-1), order='C')
-            wing_surfaces = pv.PolyData(vertices, faces)
-
-            # Create the plotter's mesh.
-            plotter.add_mesh(wing_surfaces, color='white', show_edges=True,
-                             smooth_shading=False)
-
-            # Print a message that prompts the user to create an animation.
-            print("Press \"q\" to close window and create an animation")
-
-            # Show the plotter and write to a new file, "flapping.gif".
-            plotter.show(auto_close=False)
-            plotter.open_gif("flapping.gif")
-
-            # Update the initial panel vertices.
-            unsteady_aerodynamics_problem.initial_front_left_vertices = (unsteady_aerodynamics_problem.
-                                                                         front_left_vertices)
-            unsteady_aerodynamics_problem.initial_front_right_vertices = (unsteady_aerodynamics_problem.
-                                                                          front_right_vertices)
-            unsteady_aerodynamics_problem.initial_back_left_vertices = (unsteady_aerodynamics_problem.
-                                                                        back_left_vertices)
-            unsteady_aerodynamics_problem.initial_back_right_vertices = (unsteady_aerodynamics_problem.
-                                                                         back_right_vertices)
-
-            # Write the frame and then clear the frame.
-            plotter.write_frame()
-            plotter.clear()
-        else:
-            # Move the panels.
-            unsteady_aerodynamics_problem.move_panels()
-
-            # Make the airplane geometry.
-            vertices = np.vstack((
-                unsteady_aerodynamics_problem.front_left_vertices,
-                unsteady_aerodynamics_problem.front_right_vertices,
-                unsteady_aerodynamics_problem.back_right_vertices,
-                unsteady_aerodynamics_problem.back_left_vertices
-            ))
-            faces = np.transpose(np.vstack((
-                4 * np.ones(unsteady_aerodynamics_problem.n_panels),
-                np.arange(unsteady_aerodynamics_problem.n_panels),
-                np.arange(unsteady_aerodynamics_problem.n_panels) + unsteady_aerodynamics_problem.n_panels,
-                np.arange(unsteady_aerodynamics_problem.n_panels) + 2 * unsteady_aerodynamics_problem.n_panels,
-                np.arange(unsteady_aerodynamics_problem.n_panels) + 3 * unsteady_aerodynamics_problem.n_panels,
-            )))
-            faces = np.reshape(faces, (-1), order='C')
-            wing_surfaces = pv.PolyData(vertices, faces)
-
-            # Create the plotter's mesh.
-            plotter.add_mesh(wing_surfaces, color='white', show_edges=True,
-                             smooth_shading=False)
-
-            # Write the frame and then clear the frame.
-            plotter.write_frame()
-            plotter.clear()
-
-    # Close movie and delete the object.
-    plotter.close()

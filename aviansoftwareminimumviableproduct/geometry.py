@@ -504,9 +504,8 @@ class Airfoil:
                     # Populate the coordinates attribute and return.
                     self.coordinates = coordinates
                     return
-                else:
-                    # If the airfoil is a NACA airfoil but not a NACA 4-series, print an error message.
-                    print("Unfortunately, only 4-series NACA airfoils can be generated at this time.")
+                # If the airfoil is a NACA airfoil but not a NACA 4-series, print an error message.
+                print("Unfortunately, only 4-series NACA airfoils can be generated at this time.")
 
         # Try to read from the airfoil directory.
         try:

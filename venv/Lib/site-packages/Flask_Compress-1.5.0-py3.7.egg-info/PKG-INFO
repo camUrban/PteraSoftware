@@ -1,0 +1,107 @@
+Metadata-Version: 2.1
+Name: Flask-Compress
+Version: 1.5.0
+Summary: Compress responses in your Flask app with gzip or brotli.
+Home-page: https://github.com/colour-science/flask-compress
+Author: Thomas Mansencal
+Author-email: thomas.mansencal@gmail.com
+License: MIT
+Description: # Flask-Compress
+        
+        [![Version](https://img.shields.io/pypi/v/flask-compress.svg)](https://pypi.python.org/pypi/Flask-Compress)
+        [![Build Status](https://travis-ci.org/libwilliam/flask-compress.png)](https://travis-ci.org/libwilliam/flask-compress)
+        [![Coverage](https://coveralls.io/repos/libwilliam/flask-compress/badge.svg)](https://coveralls.io/github/libwilliam/flask-compress)
+        [![License](https://img.shields.io/pypi/l/flask-compress.svg)](https://github.com/libwilliam/flask-compress/blob/master/LICENSE.txt)
+        
+        Flask-Compress allows you to easily compress your [Flask](http://flask.pocoo.org/) application's responses with gzip.
+        
+        The preferred solution is to have a server (like [Nginx](http://wiki.nginx.org/Main)) automatically compress the static files for you. If you don't have that option Flask-Compress will solve the problem for you.
+        
+        
+        ## How it works
+        
+        Flask-Compress both adds the various headers required for a compressed response and gzips the response data. This makes serving gzip compressed static files extremely easy.
+        
+        Internally, every time a request is made the extension will check if it matches one of the compressible MIME types and will automatically attach the appropriate headers.
+        
+        
+        ## Installation
+        
+        If you use pip then installation is simply:
+        
+        ```shell
+        $ pip install flask-compress
+        ```
+        
+        or, if you want the latest github version:
+        
+        ```shell
+        $ pip install git+git://github.com/colour-science/flask-compress.git
+        ```
+        
+        You can also install Flask-Compress via Easy Install:
+        
+        ```shell
+        $ easy_install flask-compress
+        ```
+        
+        
+        ## Using Flask-Compress
+        
+        Flask-Compress is incredibly simple to use. In order to start gzip'ing your Flask application's assets, the first thing to do is let Flask-Compress know about your [`flask.Flask`](http://flask.pocoo.org/docs/latest/api/#flask.Flask) application object.
+        
+        ```python
+        from flask import Flask
+        from flask_compress import Compress
+        
+        app = Flask(__name__)
+        Compress(app)
+        ```
+        
+        In many cases, however, one cannot expect a Flask instance to be ready at import time, and a common pattern is to return a Flask instance from within a function only after other configuration details have been taken care of. In these cases, Flask-Compress provides a simple function, `flask_compress.Compress.init_app`, which takes your application as an argument.
+        
+        ```python
+        from flask import Flask
+        from flask_compress import Compress
+        
+        compress = Compress()
+        
+        def start_app():
+            app = Flask(__name__)
+            compress.init_app(app)
+            return app
+        ```
+        
+        In terms of automatically compressing your assets using gzip, passing your [`flask.Flask`](http://flask.pocoo.org/docs/latest/api/#flask.Flask) object to the `flask_compress.Compress` object is all that needs to be done.
+        
+        
+        ## Options
+        
+        Within your Flask application's settings you can provide the following settings to control the behavior of Flask-Compress. None of the settings are required.
+        
+        | Option | Description | Default |
+        | ------ | ----------- | ------- |
+        | `COMPRESS_MIMETYPES` | Set the list of mimetypes to compress here. | `[`<br>`'text/html',`<br>`'text/css',`<br>`'text/xml',`<br>`'application/json',`<br>`'application/javascript'`<br>`]` |
+        | `COMPRESS_LEVEL` | Specifies the gzip compression level. | `6` |
+        | `COMPRESS_MIN_SIZE` | Specifies the minimum file size threshold for compressing files. | `500` |
+        | `COMPRESS_CACHE_KEY` | Specifies the cache key method for lookup/storage of response data. | `None` |
+        | `COMPRESS_CACHE_BACKEND` | Specified the backend for storing the cached response data. | `None` |
+        | `COMPRESS_REGISTER` | Specifies if compression should be automatically registered. | `True` |
+        | `COMPRESS_ALGORITHM` | Compression algorithm used: `gzip` or `br`. | `gzip` |
+        
+Platform: any
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown

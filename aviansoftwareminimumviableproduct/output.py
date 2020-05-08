@@ -7,7 +7,7 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    draw: Draw the solution to the aerodynamics problem.
+    draw: Draw the geometry of an airplane object.
 """
 
 import numpy as np
@@ -15,63 +15,73 @@ import pyvista as pv
 import matplotlib.pyplot as plt
 
 
-def draw(aerodynamics_problem, points_type=None):
-    """Draw the solution to the aerodynamics problem.
+def draw(airplane, show_delta_pressures):
+    """Draw the geometry of an airplane object.
 
     Citation:
         Adapted from:         vlm3.draw in AeroSandbox
         Author:               Peter Sharpe
         Date of Retrieval:    03/28/2020
 
-    :param aerodynamics_problem: AerodynamicsProblem
-        Aerodynamics problem object whose solution will be plotted.
-    :param points_type: str
-        The name of the object whose points will be plotted.
+    :param airplane: Airplane
+        This is the airplane object whose geometry is to be plotted.
+    :param show_delta_pressures: bool
+        Set this variable to true to show the change in pressure across the panels.
     :return: None
     """
 
     # Initialize the plotter.
     plotter = pv.Plotter()
 
-    # Make the airplane geometry.
-    vertices = np.vstack((
-        aerodynamics_problem.front_left_vertices,
-        aerodynamics_problem.front_right_vertices,
-        aerodynamics_problem.back_right_vertices,
-        aerodynamics_problem.back_left_vertices
-    ))
-    faces = np.transpose(np.vstack((
-        4 * np.ones(aerodynamics_problem.n_panels),
-        np.arange(aerodynamics_problem.n_panels),
-        np.arange(aerodynamics_problem.n_panels) + aerodynamics_problem.n_panels,
-        np.arange(aerodynamics_problem.n_panels) + 2 * aerodynamics_problem.n_panels,
-        np.arange(aerodynamics_problem.n_panels) + 3 * aerodynamics_problem.n_panels,
-    )))
-    faces = np.reshape(faces, (-1), order="C")
-    wing_surfaces = pv.PolyData(vertices, faces)
+    # Set the color map.
+    color_map = plt.cm.get_cmap('plasma')
 
-    # If the delta coefficients of pressure have not been added, calculate the delta coefficients of pressure.
-    if not hasattr(aerodynamics_problem, "delta_cp"):
-        aerodynamics_problem.calculate_delta_cp()
+    # Initialize empty ndarrays to hold the vertices, faces, and scalars.
+    panel_vertices = np.empty((0, 3))
+    panel_faces = np.empty(0)
+    scalars = np.empty(0)
 
-    # Define the minimum and maximum delta coefficients of pressure to scale the panel colors.
-    delta_cp_min = -1.5
-    delta_cp_max = 1.5
+    # Increment through the airplane's wings.
+    for wing in airplane.wings:
+        # Increment through the panel's chordwise and spanwise positions.
+        for chordwise_position in range(wing.num_chordwise_panels):
+            for spanwise_position in range(wing.num_spanwise_panels):
+                # Calculate the panel number, starting from zero.
+                panel_num = (chordwise_position * wing.num_spanwise_panels) + spanwise_position
 
-    # Create the scalars, color map, mesh, and scalar bar.
-    scalars = np.minimum(np.maximum(aerodynamics_problem.delta_cp, delta_cp_min), delta_cp_max)
-    color_map = plt.cm.get_cmap("viridis")
-    plotter.add_mesh(wing_surfaces, scalars=scalars, cmap=color_map, color='tan', show_edges=True,
-                     smooth_shading=True)
-    plotter.add_scalar_bar(title="Pressure Coefficient Differential", n_labels=5, shadow=True,
-                           font_family="arial")
+                # Pull the panel object out of the wing's list of panels.
+                panel = wing.panels[chordwise_position, spanwise_position]
 
-    # Check if the points_type has been set.
-    if points_type is not None:
-        # If so, add points to the plotter.
-        points = getattr(aerodynamics_problem, points_type)
-        plotter.add_points(points)
+                # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
+                # details.
+                panel_vertices_to_add = np.vstack((
+                    panel.front_left_vertex,
+                    panel.front_right_vertex,
+                    panel.back_right_vertex,
+                    panel.back_left_vertex
+                ))
+                panel_face_to_add = np.array([4,
+                                              (panel_num * 4),
+                                              (panel_num * 4) + 1,
+                                              (panel_num * 4) + 2,
+                                              (panel_num * 4) + 3])
+                scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 5), -5)
 
-    # Set the background color and camera positions.
+                # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
+                # scalars.
+                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                scalars = np.hstack((scalars, scalar_to_add))
+
+    # Initialize the panel surfaces and add the meshes to the plotter.
+    panel_surface = pv.PolyData(panel_vertices, panel_faces)
+    if show_delta_pressures:
+        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
+                         smooth_shading=True)
+    else:
+        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, color='white',
+                         smooth_shading=True)
+
+    # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
-    plotter.show(cpos=(-1, -1, 1), full_screen=True)
+    plotter.show(cpos=(-1, -1, 1), full_screen=False)

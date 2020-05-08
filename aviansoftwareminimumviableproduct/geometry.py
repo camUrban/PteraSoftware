@@ -6,21 +6,23 @@ This module contains the following classes:
     Wing: This is a class used to contain the wings of an airplane.
     WingCrossSection: This class is used to contain the cross sections of the wings of an airplane.
     Airfoil: This class is used to contain the airfoil of a cross section of a wing of an airplane.
-    Panel: This class is used to contain the panels of a meshed wing.
+    Panel: This class is used to contain the panels of a wing.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a numpy array containing a specified number of values between a specified
+    cosspace: This function is used to create a ndarray containing a specified number of values between a specified
               minimum and maximum value that are spaced via a cosine function.
     reflect_over_xz_plane: This function is used to flip a the y coordinate of a coordinate vector.
     angle_axis_rotation_matrix: This function is used to find the rotation matrix for a given axis and angle.
+    centroid_of_quadrilateral: This function is used to find the centroid of a quadrilateral.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
-import pyvista as pv
 import scipy.interpolate as sp_interp
+import scipy.ndimage as sp_ndi
 import aviansoftwareminimumviableproduct as asmvp
 
 
@@ -35,9 +37,6 @@ class Airplane:
     This class contains the following public methods:
         set_reference_dimensions_from_wing: This method sets the reference dimensions of the airplane from measurements
                                             obtained from the main wing.
-        set_paneling_everywhere: This method sets the chordwise and spanwise paneling everywhere to a specified value.
-        draw: This method draws the airplane in a new window.
-        is_symmetric: This method checks if the airplane is symmetric about the xz plane.
 
     This class contains the following class attributes:
         None
@@ -74,7 +73,7 @@ class Airplane:
 
         # Initialize the name and the moment reference point.
         self.name = name
-        self.xyz_ref = np.array([x_ref, y_ref, z_ref])
+        self.xyz_ref = np.array([float(x_ref), float(y_ref), float(z_ref)])
 
         # If wings was passed as None, set wings to an empty list.
         if wings is None:
@@ -88,11 +87,16 @@ class Airplane:
 
         # If any of the passed reference dimensions are not None, set that reference dimension to be what was passed.
         if s_ref is not None:
-            self.s_ref = s_ref
+            self.s_ref = float(s_ref)
         if c_ref is not None:
-            self.c_ref = c_ref
+            self.c_ref = float(c_ref)
         if b_ref is not None:
-            self.b_ref = b_ref
+            self.b_ref = float(b_ref)
+
+        # Calculate the number of panels in the entire airplane.
+        self.num_panels = 0
+        for wing in self.wings:
+            self.num_panels += wing.num_panels
 
         # Check that everything was set right.
         assert self.xyz_ref is not None
@@ -113,118 +117,9 @@ class Airplane:
 
         # Set the objects reference dimension attributes to be the reference dimension attributes of the main wing.
         # These attributes are calculated via methods in the Wing class.
-        self.s_ref = main_wing.wetted_area()
-        self.b_ref = main_wing.span()
-        self.c_ref = main_wing.wetted_area() / main_wing.span()
-
-    def set_paneling_everywhere(self, num_chordwise_panels, num_spanwise_panels):
-        """This method sets the chordwise and spanwise paneling everywhere to a specified value.
-
-        This is a quick way for the user to change the fidelity of the problem solution.
-
-        :param num_chordwise_panels: int
-            This parameter is the number of chordwise panels for all of the airplane's wings.
-        :param num_spanwise_panels: int
-            This parameter is the number of spanwise panels for all of the airplane's wings.
-        :return: None
-        """
-
-        # Iterate through all the airplane's wings.
-        for wing in self.wings:
-            # Modify each wing's number of chordwise panels.
-            wing.num_chordwise_panels = num_chordwise_panels
-            # Iterate through each wing's cross sections.
-            for cross_section in wing.cross_sections:
-                cross_section.num_spanwise_panels = num_spanwise_panels
-
-    def draw(self):
-        """This method draws the airplane in a new window.
-
-        This method uses the PyVista toolkit for visualization.
-
-        :return: None
-        """
-
-        # Initialize variables in PyVista's PolyData format.
-        vertices = np.empty((0, 3))
-        faces = np.empty(0)
-
-        # Iterate through the airplane's wings.
-        for wing in self.wings:
-            # Initialize variables for each wing in PyVista's PolyData format.
-            wing_vertices = np.empty((0, 3))
-            wing_quad_faces = np.empty((0, 5))
-            # Iterate through the wing's cross sections, excluding the last cross section.
-            for i in range(len(wing.cross_sections) - 1):
-                is_second_to_last_section = i == len(wing.cross_sections) - 2
-
-                # Define variables that are the current cross section's leading edge and trailing edge coordinates.
-                le_start = wing.cross_sections[i].xyz_le + wing.xyz_le
-                te_start = wing.cross_sections[i].xyz_te() + wing.xyz_le
-
-                # Vertically stack this wing's vertices (that have been collected from previous cross sections) with
-                # this cross section's leading edge and trailing edge coordinates.
-                wing_vertices = np.vstack((wing_vertices, le_start, te_start))
-
-                # Vertically stack this wing's face indices (that have been collected from previous cross sections) with
-                # this cross section's face indices.
-                wing_quad_faces = np.vstack((
-                    wing_quad_faces,
-                    np.expand_dims(np.array([4, 2 * i + 0, 2 * i + 1, 2 * i + 3, 2 * i + 2]), axis=0)
-                ))
-
-                # If the current cross section is the second to last cross section, then define the last cross section's
-                # leading and trailing edge coordinates to be the last vertices, and stack them below the rest of the
-                # wing's vertices.
-                if is_second_to_last_section:
-                    le_end = wing.xsecs[i + 1].xyz_le + wing.xyz_le
-                    te_end = wing.xsecs[i + 1].xyz_te() + wing.xyz_le
-                    wing_vertices = np.vstack((wing_vertices, le_end, te_end))
-
-            # Initialize a variable to hold the number of rows in the vertices numpy array. This is equivalent to the
-            # number of wings already iterated through.
-            vertices_starting_index = len(vertices)
-            # Make a copy of the wing_quad_faces numpy array.
-            wing_quad_faces_reformatted = np.ndarray.copy(wing_quad_faces)
-
-            # Modify our copy of the wing_quad_faces numpy array. For all the rows, and for all columns except the
-            # first, add the number of wings already iterated through to the value in the wing_quad_faces_reformatted.
-            wing_quad_faces_reformatted[:, 1:] = wing_quad_faces[:, 1:] + vertices_starting_index
-            # In "C-like" order, read unravel the wing_quad_faces_reformatted numpy array into a 1D numpy array. This is
-            # the format PyVista's PolyData object takes in faces.
-            wing_quad_faces_reformatted = np.reshape(wing_quad_faces_reformatted, (-1), order='C')
-
-            # Stack this wing's vertices with the vertices collected from other wings.
-            vertices = np.vstack((vertices, wing_vertices))
-            # Stack this wing's faces with the faces collected from other wings.
-            faces = np.hstack((faces, wing_quad_faces_reformatted))
-
-            # If the wing is symmetric, repeat this process to create vertices and faces of the wing reflected over the
-            # xy plane.
-            if wing.symmetric:
-                vertices_starting_index = len(vertices)
-                wing_vertices = reflect_over_xz_plane(wing_vertices)
-                wing_quad_faces_reformatted = np.ndarray.copy(wing_quad_faces)
-                wing_quad_faces_reformatted[:, 1:] = wing_quad_faces[:, 1:] + vertices_starting_index
-                wing_quad_faces_reformatted = np.reshape(wing_quad_faces_reformatted, (-1), order='C')
-                vertices = np.vstack((vertices, wing_vertices))
-                faces = np.hstack((faces, wing_quad_faces_reformatted))
-
-        # Initialize the PyVista plotter.
-        plotter = pv.Plotter()
-
-        # Add the wing surfaces to the plotter object.
-        wing_surfaces = pv.PolyData(vertices, faces)
-        plotter.add_mesh(wing_surfaces, color='#7EFC8F', show_edges=True, smooth_shading=True)
-
-        # Add the moment reference point to the plotter object.
-        xyz_ref = pv.PolyData(self.xyz_ref)
-        plotter.add_points(xyz_ref, color='#50C7C7', point_size=10)
-
-        # Format and show the visualization.
-        plotter.show_grid(color='#444444')
-        plotter.set_background(color="black")
-        plotter.show(cpos=(-1, -1, 1), full_screen=False)
+        self.s_ref = float(main_wing.wetted_area())
+        self.b_ref = float(main_wing.span())
+        self.c_ref = float(main_wing.wetted_area() / main_wing.span())
 
 
 class Wing:
@@ -277,7 +172,7 @@ class Wing:
 
         # Initialize the name and the position of the wing's leading edge.
         self.name = name
-        self.xyz_le = np.array([x_le, y_le, z_le])
+        self.xyz_le = np.array([float(x_le), float(y_le), float(z_le)])
 
         # If cross_sections is set to None, set it to an empty list.
         if cross_sections is None:
@@ -286,12 +181,24 @@ class Wing:
         # Initialize the other attributes.
         self.cross_sections = cross_sections
         self.symmetric = symmetric
-        self.chordwise_panels = num_chordwise_panels
+        self.num_chordwise_panels = num_chordwise_panels
         self.chordwise_spacing = chordwise_spacing
 
         # Initialize the the panels attribute. Then mesh the wing, which will populate this attribute.
         self.panels = None
         asmvp.meshing.mesh_wing(self)
+
+        # Find the number of spanwise panels on the wing by adding each cross section's number of spanwise panels.
+        # Exclude the last cross section's number of spanwise panels as this is irrelevant. If the wing is symmetric,
+        # multiple the summation by two.
+        self.num_spanwise_panels = 0
+        for cross_section in self.cross_sections[:-1]:
+            self.num_spanwise_panels += cross_section.num_spanwise_panels
+        if self.symmetric:
+            self.num_spanwise_panels *= 2
+
+        # Calculate the number of panels on this wing.
+        self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
     # ToDo: Rewrite this method to calculate wetted area by summing the panel areas.
     def wetted_area(self):
@@ -369,7 +276,7 @@ class WingCrossSection:
 
     def __init__(self, x_le=0.0, y_le=0.0, z_le=0.0, chord=0.0, twist=0.0, airfoil=None,
                  control_surface_type="symmetric", control_surface_hinge_point=0.75,
-                 control_surface_deflection=0, spanwise_panels=8, spanwise_spacing="cosine"):
+                 control_surface_deflection=0, num_spanwise_panels=8, spanwise_spacing="cosine"):
         """This is the initialization method.
 
         :param x_le: float, optional
@@ -396,7 +303,7 @@ class WingCrossSection:
             default value is 0.75.
         :param control_surface_deflection: float, optional
             This is the Control deflection in degrees. Deflection downwards is positive. The default value is 0.0.
-        :param spanwise_panels: int, optional
+        :param num_spanwise_panels: int, optional
             This is the number of spanwise panels to be used between this cross section and the next one. The default
             value is 8.
         :param spanwise_spacing: str, optional
@@ -404,33 +311,33 @@ class WingCrossSection:
         """
 
         # Initialize all the class attributes.
-        self.x_le = x_le
-        self.y_le = y_le
-        self.z_le = z_le
-        self.chord = chord
-        self.twist = twist
+        self.x_le = float(x_le)
+        self.y_le = float(y_le)
+        self.z_le = float(z_le)
+        self.chord = float(chord)
+        self.twist = float(twist)
         self.airfoil = airfoil
         self.control_surface_type = control_surface_type
-        self.control_surface_hinge_point = control_surface_hinge_point
-        self.control_surface_deflection = control_surface_deflection
-        self.spanwise_panels = spanwise_panels
+        self.control_surface_hinge_point = float(control_surface_hinge_point)
+        self.control_surface_deflection = float(control_surface_deflection)
+        self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
         self.xyz_le = np.array([x_le, y_le, z_le])
 
     def xyz_te(self):
         """This method calculates the coordinates of the trailing edge of the cross section.
 
-        :return xyz_te: numpy array
-            This is a 1D numpy array that contains the coordinates of the cross section's trailing edge.
+        :return xyz_te: ndarray
+            This is a 1D ndarray that contains the coordinates of the cross section's trailing edge.
         """
 
         # Find the rotation matrix given the cross section's twist.
         rot = angle_axis_rotation_matrix(self.twist * np.pi / 180, np.array([0, 1, 0]))
 
         # Use the rotation matrix and the leading edge coordinates to calculate the trailing edge coordinates.
-        xyz_te = self.xyz_le + rot @ np.array([self.chord, 0, 0])
+        xyz_te = self.xyz_le + rot @ np.array([self.chord, 0.0, 0.0])
 
-        # Return the 1D numpy array that contains the trailing edge's coordinates.
+        # Return the 1D ndarray that contains the trailing edge's coordinates.
         return xyz_te
 
 
@@ -472,8 +379,8 @@ class Airfoil:
         :param name: str, optional
             This is the name of the airfoil. It should correspond to the name in the airfoils directory unless you are
             passing in your own coordinates. The default is "Untitled Airfoil".
-        :param coordinates: numpy array, optional
-            This is a N x 2 numpy array of the airfoil's coordinates, where N is the number of coordinates. Treat this
+        :param coordinates: ndarray, optional
+            This is a N x 2 ndarray of the airfoil's coordinates, where N is the number of coordinates. Treat this
             as an immutable, don't edit directly after initialization. If you wish to load coordinates from the airfoil
             directory, leave this as None. The default is None. Make sure that any airfoil coordinates used range in x
             from 0 to 1.
@@ -614,14 +521,14 @@ class Airfoil:
             # Trim the text at the return characters.
             trimmed_text = raw_text[raw_text.find('\n'):]
 
-            # Input the coordinates into a 1D numpy array.
+            # Input the coordinates into a 1D ndarray.
             coordinates1D = np.fromstring(trimmed_text, sep='\n')
 
-            # Check to make sure the number of elements in the numpy array is even.
+            # Check to make sure the number of elements in the ndarray is even.
             assert len(
                 coordinates1D) % 2 == 0, 'File was found in airfoil database, but it could not be read correctly!'
 
-            # Reshape the 1D coordinates numpy array into a N x 2 numpy array, where N is the number of rows.
+            # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the number of rows.
             coordinates = np.reshape(coordinates1D, (-1, 2))
 
             # Populate the coordinates attribute and return.
@@ -685,8 +592,8 @@ class Airfoil:
         The order of the returned matrix is from leading edge to trailing edge. This matrix includes the leading edge
         point so be careful about duplicates if using this method in conjunction with self.upper_coordinates.
 
-        :return lower_coordinates: numpy array
-            This is a N x 2 numpy array of x and y coordinates that describe the lower surface of the airfoil, where N
+        :return lower_coordinates: ndarray
+            This is a N x 2 ndarray of x and y coordinates that describe the lower surface of the airfoil, where N
             is the number of points.
         """
 
@@ -702,8 +609,8 @@ class Airfoil:
         The order of the returned matrix is from trailing edge to leading edge. This matrix includes the leading edge
         point so be careful about duplicates if using this method in conjunction with self.lower_coordinates.
 
-        :return upper_coordinates: numpy array
-            This is a N x 2 numpy array of x and y coordinates that describe the upper surface of the airfoil, where N
+        :return upper_coordinates: ndarray
+            This is a N x 2 ndarray of x and y coordinates that describe the upper surface of the airfoil, where N
             is the number of points.
         """
 
@@ -716,11 +623,11 @@ class Airfoil:
     def get_downsampled_mcl(self, mcl_fractions):
         """This method returns the mean camber line in a downsampled form.
 
-        :param mcl_fractions: 1D numpy array
-            This is a 1D numpy array that lists the points along the mean camber line (normalized from 0 to 1) at which
+        :param mcl_fractions: 1D ndarray
+            This is a 1D ndarray that lists the points along the mean camber line (normalized from 0 to 1) at which
             to return the mean camber line coordinates.
-        :return mcl_downsampled: 2D numpy array
-            This is a 2D numpy array that contains the coordinates of the downsampled mean camber line.
+        :return mcl_downsampled: 2D ndarray
+            This is a 2D ndarray that contains the coordinates of the downsampled mean camber line.
         """
 
         mcl = self.mcl_coordinates
@@ -731,10 +638,10 @@ class Airfoil:
             np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
         )
 
-        # Create a horizontal 1D numpy array that contains the distance along the mean camber line of each point.
+        # Create a horizontal 1D ndarray that contains the distance along the mean camber line of each point.
         mcl_distances_cumulative = np.hstack((0, np.cumsum(mcl_distances_between_points)))
 
-        # Normalize the 1D numpy array so that it ranges from 0 to 1.
+        # Normalize the 1D ndarray so that it ranges from 0 to 1.
         mcl_distances_cumulative_normalized = mcl_distances_cumulative / mcl_distances_cumulative[-1]
 
         # Linearly interpolate to find the x coordinates of the mean camber line at the given mean camber line
@@ -810,7 +717,7 @@ class Airfoil:
 
         # Find the x and y coordinates of the upper and lower surfaces at each of the cosine-spaced x values.
         x_coordinates = np.hstack((np.flip(cosine_spaced_x_values), cosine_spaced_x_values[1:]))
-        y_coordinates = np.hstack((upper_func(cosine_spaced_x_values), lower_func(cosine_spaced_x_values)[1:]))
+        y_coordinates = np.hstack((upper_func(np.flip(cosine_spaced_x_values)), lower_func(cosine_spaced_x_values[1:])))
 
         # Stack the coordinates together and return them.
         coordinates = np.column_stack((x_coordinates, y_coordinates))
@@ -862,17 +769,35 @@ class Airfoil:
         flapped_airfoil = Airfoil(name=self.name + " flapped", coordinates=coordinates, repanel=False)
         return flapped_airfoil
 
+    def draw(self):
+        x = self.coordinates[:, 0]
+        y = self.coordinates[:, 1]
+        plt.plot(x, y)
+        plt.xlim(0, 1)
+        plt.ylim(-0.5, 0.5)
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.show()
+
 
 class Panel:
-    """This class is used to contain the panels of a meshed wing.
+    """This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
-        calculate_vortex_vertex_locations: This method calculates the locations of the vortex vertices.
-        calculate_collocation_point_location: This method calculates the location of the collocation point.
-        calculate_panel_area_and_normal: This method calculates the panel's area and the panel's normal unit vector at
-                                         its collocation point.
         initialize_vortices: This method calculates the locations of the vortex vertices, and then initializes the
                              panel's vortices.
+        calculate_collocation_point_location: This method calculates the location of the collocation point.
+        calculate_area_and_normal: This method calculates the panel's area and the panel's normal unit vector at
+                                         its collocation point.
+        calculate_normalized_induced_velocity: This method calculates the velocity induced at a point by this panel's
+                                               vortices, assuming a unit vortex strength.
+        calculate_normalized_induced_downwash: This method calculates the downwash induced at a point by this panel's
+                                               vortices, assuming a unit vortex strength.
+        calculate_induced_velocity: This method calculates the velocity induced at a point by this panel's vortices with
+                                    their given vortex strengths.
+        calculate_induced_downwash: This method calculates the downwash induced at a point by this panel's vortices with
+                                    their given vortex strengths.
+        update_force_moment_and_pressure: This method updates the force, moment, and pressure on this panel based on the
+                                          force on its vortices, its area, and its normal vector.
 
     This class contains the following class attributes:
         None
@@ -881,17 +806,17 @@ class Panel:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, front_left_vertex, front_right_vertex, back_left_vertex,
-                 back_right_vertex, is_leading_edge, is_trailing_edge):
+    def __init__(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex, is_leading_edge,
+                 is_trailing_edge):
         """ This is the initialization method.
 
-        :param front_left_vertex: 1D numpy array with three elements
+        :param front_left_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's front left vertex.
-        :param front_right_vertex: 1D numpy array with three elements
+        :param front_right_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's front right vertex.
-        :param back_left_vertex: 1D numpy array with three elements
+        :param back_left_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's back left vertex.
-        :param back_right_vertex: 1D numpy array with three elements
+        :param back_right_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's back right vertex.
         :param is_leading_edge: bool
             This is true if the panel is the leading edge panel on a wing, and false otherwise.
@@ -918,20 +843,23 @@ class Panel:
 
         # Initialize variables to hold the panel area and the panel normal vector at the collocation point. Then
         # populate them.
-        self.panel_area = None
-        self.panel_normal_direction_at_collocation_point = None
-        self.calculate_panel_area_and_normal()
+        self.area = None
+        self.normal_direction_at_collocation_point = None
+        self.calculate_area_and_normal()
+
+        # Calculate the center of the panel.
+        self.center = asmvp.geometry.centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex,
+                                                               back_right_vertex)
+
+        # Calculate the front and back leg lengths, then use them to find and populate the average panel width.
+        front_leg_length = np.linalg.norm(front_left_vertex - front_right_vertex)
+        back_leg_length = np.linalg.norm(back_right_vertex - back_left_vertex)
+        self.width = (front_leg_length + back_leg_length) / 2
 
         # Initialize variables to hold attributes of the panel that will be defined after the solver finds a solution.
-        self.force_on_front_vortex_in_geometry_axes = None
-        self.force_on_back_vortex_in_geometry_axes = None
-        self.force_on_left_vortex_in_geometry_axes = None
-        self.force_on_right_vortex_in_geometry_axes = None
-        self.total_force_on_panel_in_geometry_axes = None
-        self.total_moment_on_panel_in_geometry_axes = None
-        self.normal_force_on_panel = None
-        self.pressure_on_panel = None
-        self.panel_delta_pressure_coefficient = None
+        self.near_field_force = None
+        self.near_field_moment = None
+        self.delta_pressure = None
 
     def initialize_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panel's vortices.
@@ -957,14 +885,14 @@ class Panel:
         back_left_vortex_vertex = front_left_vortex_vertex + (self.back_left_vertex - self.front_left_vertex)
         back_right_vortex_vertex = front_right_vortex_vertex + (self.back_right_vertex - self.front_right_vertex)
 
-        # Initialize the ring vortex.
+        # If the panel has a ring vortex, initialize it.
         self.ring_vortex = asmvp.aerodynamics.RingVortex(front_left_vertex=front_left_vortex_vertex,
                                                          front_right_vertex=front_right_vortex_vertex,
                                                          back_left_vertex=back_left_vortex_vertex,
                                                          back_right_vertex=back_right_vortex_vertex,
                                                          strength=None)
 
-        # If the panel is along the trailing edge of the wing, initialize its horseshoe vortex.
+        # If the panel is along the trailing edge, initialize it's trailing horseshoe vortex.
         if self.is_trailing_edge:
             self.horseshoe_vortex = asmvp.aerodynamics.HorseshoeVortex(finite_leg_origin=back_right_vortex_vertex,
                                                                        finite_leg_termination=back_left_vortex_vertex,
@@ -980,33 +908,115 @@ class Panel:
         """
 
         # Use vector math to calculate the location of the collocation point. Then populate the class attribute.
-        self.collocation_point = self.ring_vortex.front_left_point + 0.5 * (self.ring_vortex.back_right_point
-                                                                            - self.ring_vortex.front_left_point)
+        self.collocation_point = self.ring_vortex.front_left_vertex + 0.5 * (self.ring_vortex.back_right_vertex
+                                                                             - self.ring_vortex.front_left_vertex)
 
-    def calculate_panel_area_and_normal(self):
+    def calculate_area_and_normal(self):
         """This method calculates the panel's area and the panel's normal unit vector at its collocation point.
 
         :return: None
         """
 
         # Calculate vortex ring and panel normal via diagonals.
-        vortex_ring_first_diagonal = self.ring_vortex.front_right_point - self.ring_vortex.back_left_point
-        vortex_ring_second_diagonal = self.ring_vortex.front_left_point - self.ring_vortex.back_right_point
+        vortex_ring_first_diagonal = self.ring_vortex.front_right_vertex - self.ring_vortex.back_left_vertex
+        vortex_ring_second_diagonal = self.ring_vortex.front_left_vertex - self.ring_vortex.back_right_vertex
         vortex_ring_cross_product = np.cross(vortex_ring_first_diagonal, vortex_ring_second_diagonal)
         vortex_ring_cross_product_magnitude = np.linalg.norm(vortex_ring_cross_product)
-        self.panel_normal_direction_at_collocation_point = (vortex_ring_cross_product
-                                                            / vortex_ring_cross_product_magnitude)
+        self.normal_direction_at_collocation_point = (vortex_ring_cross_product
+                                                      / vortex_ring_cross_product_magnitude)
 
         # Calculate panel area via diagonals.
         panel_first_diagonal = self.front_right_vertex - self.back_left_vertex
         panel_second_diagonal = self.front_left_vertex - self.back_right_vertex
         panel_cross_product = np.cross(panel_first_diagonal, panel_second_diagonal)
         panel_cross_product_magnitude = np.linalg.norm(panel_cross_product)
-        self.panel_area = panel_cross_product_magnitude / 2
+        self.area = panel_cross_product_magnitude / 2
+
+    def calculate_normalized_induced_velocity(self, point):
+        """This method calculates the velocity induced at a point by this panel's vortices, assuming a unit vortex
+        strength.
+
+        :param point:  1D ndarray
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return: 1D ndarray
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        normalized_induced_velocity = self.ring_vortex.calculate_normalized_induced_velocity(point=point)
+        if self.horseshoe_vortex is not None:
+            normalized_induced_velocity += self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
+        return normalized_induced_velocity
+
+    def calculate_normalized_induced_downwash(self, point):
+        """This method calculates the downwash induced at a point by this panel's vortices, assuming a unit vortex
+        strength.
+
+        :param point: 1D ndarray
+            This is a vector containing the x, y, and z coordinates of the point to find the induced downwash at.
+        :return: 1D ndarray
+            This is a vector containing the x, y, and z components of the induced downwash.
+        """
+
+        normalized_induced_downwash = self.ring_vortex.calculate_normalized_induced_downwash(point=point)
+        if self.horseshoe_vortex is not None:
+            normalized_induced_downwash += self.horseshoe_vortex.calculate_normalized_induced_downwash(point=point)
+        return normalized_induced_downwash
+
+    def calculate_induced_velocity(self, point):
+        """This method calculates the velocity induced at a point by this panel's vortices with their given vortex
+        strengths.
+
+        :param point: 1D ndarray
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+        :return: 1D ndarray
+            This is a vector containing the x, y, and z components of the induced velocity.
+        """
+
+        induced_velocity = self.ring_vortex.calculate_induced_velocity(point=point)
+        if self.horseshoe_vortex is not None:
+            induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(point=point)
+        return induced_velocity
+
+    def calculate_induced_downwash(self, point):
+        """This method calculates the downwash induced at a point by this panel's vortices with their given vortex
+        strengths.
+
+        :param point: 1D ndarray
+            This is a vector containing the x, y, and z coordinates of the point to find the induced downwash at.
+        :return: 1D ndarray
+            This is a vector containing the x, y, and z components of the induced downwash.
+        """
+
+        induced_downwash = self.ring_vortex.calculate_induced_downwash(point=point)
+        if self.horseshoe_vortex is not None:
+            induced_downwash += self.horseshoe_vortex.calculate_induced_downwash(point=point)
+        return induced_downwash
+
+    def update_force_moment_and_pressure(self):
+        """This method updates the force, moment, and pressure on this panel based on the force on its vortices,
+        its area, and its normal vector.
+
+        :return: None
+        """
+        ring_vortex = self.ring_vortex
+
+        horseshoe_vortex = self.horseshoe_vortex
+
+        ring_vortex.update_force_and_moment()
+        self.near_field_force = ring_vortex.near_field_force
+        self.near_field_moment = np.cross(self.near_field_force, self.center)
+        # self.far_field_induced_drag = ring_vortex.far_field_induced_drag
+
+        if horseshoe_vortex is not None:
+            horseshoe_vortex.update_force_and_moment()
+            self.near_field_force += horseshoe_vortex.near_field_force
+            # self.far_field_induced_drag += horseshoe_vortex.far_field_induced_drag
+
+        self.delta_pressure = np.dot(self.near_field_force, self.normal_direction_at_collocation_point) / self.area
 
 
 def cosspace(minimum=0.0, maximum=1.0, n_points=50):
-    """This function is used to create a numpy array containing a specified number of values between a specified minimum
+    """This function is used to create a ndarray containing a specified number of values between a specified minimum
     and maximum value that are spaced via a cosine function.
 
     Citation:
@@ -1020,8 +1030,8 @@ def cosspace(minimum=0.0, maximum=1.0, n_points=50):
         This is the maximum value of the range of numbers you would like spaced. The default is 1.0.
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
-    :return cosine_spaced_points: 1D numpy array
-        This is a 1D numpy array of the points, ranging from the minimum to the maximum value (inclusive), spaced via a
+    :return cosine_spaced_points: 1D ndarray
+        This is a 1D ndarray of the points, ranging from the minimum to the maximum value (inclusive), spaced via a
         cosine function.
     """
 
@@ -1042,11 +1052,11 @@ def reflect_over_xz_plane(input_vector):
         Author:               Peter Sharpe
         Date of Retrieval:    04/28/2020
 
-    :param input_vector: numpy array
-        This can either be a 1D numpy array of three items, a M x 3 2D numpy array, or a M x N x 3 3D numpy array. N and
+    :param input_vector: ndarray
+        This can either be a 1D ndarray of three items, a M x 3 2D ndarray, or a M x N x 3 3D ndarray. N and
         represent arbitrary numbers of rows or columns.
-    :return output vector: numpy array
-        This is a numpy array with each vertex's y variable flipped.
+    :return output vector: ndarray
+        This is a ndarray with each vertex's y variable flipped.
     """
 
     # Initialize the output vector.
@@ -1057,14 +1067,14 @@ def reflect_over_xz_plane(input_vector):
 
     # Characterize the input vector.
     if len(shape) == 1 and shape[0] == 3:
-        # The input vector is a 1D numpy array of 3 items. Flip the vertex's y variable.
+        # The input vector is a 1D ndarray of 3 items. Flip the vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     elif len(shape) == 2 and shape[1] == 3:
-        # The input vector is a 2D numpy array of shape M x 3. Where M is some arbitrary number of rows. Flip each
+        # The input vector is a 2D ndarray of shape M x 3. Where M is some arbitrary number of rows. Flip each
         # vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     elif len(shape) == 3 and shape[2] == 3:  # 3D MxNx3 vector
-        # The input vector is a 3D numpy array of shape M x N x 3. Where M is some arbitrary number of rows, and N is
+        # The input vector is a 3D ndarray of shape M x N x 3. Where M is some arbitrary number of rows, and N is
         # some arbitrary number of columns. Flip each vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     else:
@@ -1086,16 +1096,16 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     For more information on the math behind this method, see:
     https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 
-    :param angle: float or 1D numpy array of 3 angles
+    :param angle: float or 1D ndarray of 3 angles
         This is the angle. Provide it in radians.
-    :param axis: 1D numpy array of 3 elements.
+    :param axis: 1D ndarray of 3 elements.
         This is the axis.
     :param axis_already_normalized: bool, optional
         Set this as True if the axis given is already normalized, which will skip internal normalization and speed up
         the method. If not, set as False. The default is False.
-    :return rotation matrix: numpy array
-        This is the rotation matrix. If the given angle is a scalar, this will be a 3 x 3 numpy array. If the given
-        angle is a vector, this will be a 3 x 3 x N numpy array.
+    :return rotation matrix: ndarray
+        This is the rotation matrix. If the given angle is a scalar, this will be a 3 x 3 ndarray. If the given
+        angle is a vector, this will be a 3 x 3 x N ndarray.
     """
 
     # Normalize the axis is it is not already normalized.
@@ -1113,16 +1123,38 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     # Find the cross product matrix of the rotation axis vector.
     outer_axis = axis @ np.transpose(axis)
 
-    # Make sure angle is a numpy array.
+    # Make sure angle is a ndarray.
     angle = np.array(angle)
 
     # Check if the angle is a scalar.
     if len(angle.shape) == 0:
         rotation_matrix = cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
     else:
-        # Otherwise, the angle is assumed to be a 1D numpy array.
+        # Otherwise, the angle is assumed to be a 1D ndarray.
         rotation_matrix = cos_theta * np.expand_dims(np.eye(3), 2) + sin_theta * np.expand_dims(cpm, 2) + (
                 1 - cos_theta) * np.expand_dims(outer_axis, 2)
 
     # Return the rotation matrix.
     return rotation_matrix
+
+
+def centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
+    """This function is used to find the centroid of a quadrilateral.
+
+    :param front_left_vertex: 1D ndarray
+        This is an array containing the x, y, and z components of the front left vertex of the quadrilateral.
+    :param front_right_vertex: 1D ndarray
+        This is an array containing the x, y, and z components of the front right vertex of the quadrilateral.
+    :param back_left_vertex: 1D ndarray
+        This is an array containing the x, y, and z components of the back left vertex of the quadrilateral.
+    :param back_right_vertex: 1D ndarray
+        This is an array containing the x, y, and z components of the back right vertex of the quadrilateral.
+    :return: 1D ndarray
+        This is an array containing the x, y, and z components of the centroid of the quadrilateral.
+    """
+
+    vertices = np.vstack((front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex))
+
+    centroid = sp_ndi.measurements.center_of_mass(vertices)
+
+    return centroid

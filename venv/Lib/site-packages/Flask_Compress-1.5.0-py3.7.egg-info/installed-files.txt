@@ -1,0 +1,8 @@
+..\__pycache__\flask_compress.cpython-37.pyc
+..\flask_compress.py
+PKG-INFO
+SOURCES.txt
+dependency_links.txt
+not-zip-safe
+requires.txt
+top_level.txt

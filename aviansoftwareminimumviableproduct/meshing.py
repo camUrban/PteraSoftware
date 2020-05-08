@@ -32,13 +32,13 @@ def mesh_wing(wing):
     """
 
     # Define the number of chordwise panels and points.
-    num_chordwise_panels = wing.chordwise_panels
+    num_chordwise_panels = wing.num_chordwise_panels
     num_chordwise_coordinates = num_chordwise_panels + 1
 
     # Initialize the list of cross sections to None.
     cross_section = None
 
-    # Initialize an empty numpy array that will hold the panels of this wing. It currently has 0 columns and M rows,
+    # Initialize an empty ndarray that will hold the panels of this wing. It currently has 0 columns and M rows,
     # where M is the number of the wing's chordwise panels.
     panels = np.empty((num_chordwise_panels, 0), dtype=object)
 
@@ -51,7 +51,7 @@ def mesh_wing(wing):
         raise Exception("Bad value of wing.chordwise_spacing!")
 
     # Initialize two empty 0 x 3 ndarrays to hold the corners of each cross section. They will eventually be L x 3
-    # numpy arrays, where L is number of cross sections.
+    # ndarrays, where L is number of cross sections.
     cross_section_xyz_le = np.empty((0, 3))
     cross_section_xyz_te = np.empty((0, 3))
 
@@ -75,7 +75,7 @@ def mesh_wing(wing):
     #   Create a L x 2 ndarray with just the y and z components of the the section quarter chord vectors.
     section_quarter_chords_yz = section_quarter_chords[:, 1:]
 
-    # Create a list of the magnitudes of each row of the section_quarter_chords_yz numpy array.
+    # Create a list of the magnitudes of each row of the section_quarter_chords_yz ndarray.
     section_quarter_chords_yz_magnitude_list = np.linalg.norm(section_quarter_chords_yz, axis=1)
 
     # Convert section_quarter_chords_yz_magnitude_list into a column vector.
@@ -227,7 +227,7 @@ def mesh_wing(wing):
                                    + outer_cross_section_mcl_local_up)
 
         # Define number of spanwise points and panels.
-        num_spanwise_panels = cross_section.spanwise_panels
+        num_spanwise_panels = cross_section.num_spanwise_panels
         num_spanwise_coordinates = num_spanwise_panels + 1
 
         # Get the spanwise coordinates.
@@ -286,18 +286,18 @@ def mesh_wing(wing):
         # Compute a matrix that is M x N, where M and N are the number of chordwise and spanwise panels. The values are
         # either 1 if the panel at that location is a trailing edge, or 0 if not.
         section_is_trailing_edge = np.vstack((
-            np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool),
-            np.ones((1, cross_section.spanwise_panels), dtype=bool)
+            np.zeros((num_chordwise_panels - 1, num_spanwise_panels), dtype=bool),
+            np.ones((1, num_spanwise_panels), dtype=bool)
         ))
 
         # Compute a matrix that is M x N, where M and N are the number of chordwise and spanwise panels. The values are
         # either 1 if the panel at that location is a leading edge, or 0 if not.
         section_is_leading_edge = np.vstack((
-            np.ones((1, cross_section.spanwise_panels), dtype=bool),
-            np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool)
+            np.ones((1, num_spanwise_panels), dtype=bool),
+            np.zeros((num_chordwise_panels - 1, num_spanwise_panels), dtype=bool)
         ))
 
-        # Initialize an empty numpy array to hold this sections. The matrix is size M x N, where M and N are the number
+        # Initialize an empty ndarray to hold this sections. The matrix is size M x N, where M and N are the number
         # of chordwise and spanwise panels.
         section_panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
@@ -432,18 +432,18 @@ def mesh_wing(wing):
             # Compute a matrix that is M x N, where M and N are the number of chordwise and spanwise panels. The values
             # are either 1 if the panel at that location is a trailing edge, or 0 if not.
             section_is_trailing_edge = np.vstack((
-                np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool),
-                np.ones((1, cross_section.spanwise_panels), dtype=bool)
+                np.zeros((num_chordwise_panels - 1, num_spanwise_panels), dtype=bool),
+                np.ones((1, num_spanwise_panels), dtype=bool)
             ))
 
             # Compute a matrix that is M x N, where M and N are the number of chordwise and spanwise panels. The values
             # are either 1 if the panel at that location is a leading edge, or 0 if not.
             section_is_leading_edge = np.vstack((
-                np.ones((1, cross_section.spanwise_panels), dtype=bool),
-                np.zeros((wing.chordwise_panels - 1, cross_section.spanwise_panels), dtype=bool)
+                np.ones((1, num_spanwise_panels), dtype=bool),
+                np.zeros((num_chordwise_panels - 1, num_spanwise_panels), dtype=bool)
             ))
 
-            # Initialize an empty numpy array to hold this sections. The matrix is size M x N, where M and N are the
+            # Initialize an empty ndarray to hold this sections. The matrix is size M x N, where M and N are the
             # number of chordwise and spanwise panels.
             section_panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
@@ -465,20 +465,21 @@ def mesh_wing(wing):
                                                                                               spanwise_position])
 
                     section_panels[chordwise_position, spanwise_position] = asmvp.geometry.Panel(
-                        front_left_vertex=front_outer_vertices_reflected[chordwise_position, spanwise_position],
-                        front_right_vertex=front_inner_vertices_reflected[chordwise_position, spanwise_position],
-                        back_left_vertex=back_outer_vertices_reflected[chordwise_position, spanwise_position],
-                        back_right_vertex=back_inner_vertices_reflected[chordwise_position, spanwise_position],
+                        front_left_vertex=front_outer_vertices_reflected,
+                        front_right_vertex=front_inner_vertices_reflected,
+                        back_left_vertex=back_outer_vertices_reflected,
+                        back_right_vertex=back_inner_vertices_reflected,
                         is_trailing_edge=section_is_trailing_edge[chordwise_position, spanwise_position],
                         is_leading_edge=section_is_leading_edge[chordwise_position, spanwise_position])
 
             # This section's panel matrix is stack horizontally, to the left of the wing's panel matrix.
-            panels = np.hstack((section_panels, panels))
+            panels = np.hstack((np.flip(section_panels, axis=1), panels))
 
     # Populate the wing's panels attribute.
     wing.panels = panels
 
 
+# ToDo: Modify this method to utilize the new class architecture.
 def move_panels(unsteady_aerodynamics_problem):
     """This function takes in a problem of the UnsteadyAerodynamicsProblem class, and modifies it's panel locations as
     it time steps through the simulation.

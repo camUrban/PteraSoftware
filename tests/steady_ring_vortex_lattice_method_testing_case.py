@@ -17,7 +17,7 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
             y_le=0,
             z_le=0,
             symmetric=True,
-            chordwise_spacing="uniform",
+            chordwise_spacing="cosine",
             cross_sections=[
                 asmvp.geometry.WingCrossSection(
                     x_le=0,
@@ -25,28 +25,29 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
                     z_le=0,
                     twist=0,
                     chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca0010"),
-                    spanwise_spacing="uniform"
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
+                    spanwise_spacing="cosine"
                 ),
                 asmvp.geometry.WingCrossSection(
-                    x_le=0,
+                    x_le=1.0,
                     y_le=5,
-                    z_le=0,
-                    twist=0,
-                    chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca0010"),
-                    spanwise_spacing="uniform"
+                    z_le=0.5,
+                    twist=5.0,
+                    chord=0.75,
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
+                    spanwise_spacing="cosine"
                 )
             ]
         )
     ]
 )
-# steady_solver_validation_airplane.set_paneling_everywhere(10, 10)
 
 steady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
+steady_solver_validation_problem = asmvp.problems.SteadyProblem(
+    airplane=steady_solver_validation_airplane, operating_point=steady_solver_validation_operating_point)
 
 steady_solver_validation_simulation = asmvp.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-    steady_solver_validation_airplane, steady_solver_validation_operating_point)
+    steady_solver_validation_problem)
 
 steady_solver_validation_simulation.run()
-asmvp.output.draw_airplane(steady_solver_validation_airplane)
+asmvp.output.draw(steady_solver_validation_airplane, show_delta_pressures=True)

@@ -22,7 +22,6 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
-import scipy.ndimage as sp_ndi
 import aviansoftwareminimumviableproduct as asmvp
 
 
@@ -504,8 +503,8 @@ class Airfoil:
                     # Populate the coordinates attribute and return.
                     self.coordinates = coordinates
                     return
-                # If the airfoil is a NACA airfoil but not a NACA 4-series, print an error message.
-                print("Unfortunately, only 4-series NACA airfoils can be generated at this time.")
+                # If the airfoil is a NACA airfoil but not a NACA 4-series, throw an error.
+                raise Exception("Unfortunately, only 4-series NACA airfoils can be generated at this time.")
 
         # Try to read from the airfoil directory.
         try:
@@ -525,7 +524,7 @@ class Airfoil:
 
             # Check to make sure the number of elements in the ndarray is even.
             assert len(
-                coordinates1D) % 2 == 0, 'File was found in airfoil database, but it could not be read correctly!'
+                coordinates1D) % 2 == 0, "File was found in airfoil database, but it could not be read correctly."
 
             # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the number of rows.
             coordinates = np.reshape(coordinates1D, (-1, 2))
@@ -536,7 +535,7 @@ class Airfoil:
 
         except FileNotFoundError:
             # If the airfoil was not a NACA 4-series and was not found in the database, throw an error.
-            print("File was not found in airfoil database!")
+            raise Exception("File was not found in airfoil database.")
 
     def populate_mcl_coordinates(self):
         """This method creates a list of the airfoil's mean camber line coordinates. It also creates two lists of the
@@ -782,11 +781,8 @@ class Panel:
     """This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
-        initialize_vortices: This method calculates the locations of the vortex vertices, and then initializes the
-                             panel's vortices.
         calculate_collocation_point_location: This method calculates the location of the collocation point.
-        calculate_area_and_normal: This method calculates the panel's area and the panel's normal unit vector at
-                                         its collocation point.
+        calculate_area_and_normal: This method calculates the panel's area and the panel's normal unit vector.
         calculate_normalized_induced_velocity: This method calculates the velocity induced at a point by this panel's
                                                vortices, assuming a unit vortex strength.
         calculate_normalized_induced_downwash: This method calculates the downwash induced at a point by this panel's
@@ -831,10 +827,9 @@ class Panel:
         self.is_leading_edge = is_leading_edge
         self.is_trailing_edge = is_trailing_edge
 
-        # Initialize variables to hold the panel's ring and horseshoe vortices, and then populate them.
+        # Initialize variables to hold the panel's ring and horseshoe vortices. These will be populated by the solver.
         self.ring_vortex = None
         self.horseshoe_vortex = None
-        self.initialize_vortices()
 
         # Initialize a variable to hold the collocation point location and then populate it.
         self.collocation_point = None
@@ -843,7 +838,7 @@ class Panel:
         # Initialize variables to hold the panel area and the panel normal vector at the collocation point. Then
         # populate them.
         self.area = None
-        self.normal_direction_at_collocation_point = None
+        self.normal_direction = None
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
@@ -855,81 +850,57 @@ class Panel:
         back_leg_length = np.linalg.norm(back_right_vertex - back_left_vertex)
         self.width = (front_leg_length + back_leg_length) / 2
 
+        # Initialize two variables that are along the panel's left and right legs at the quarter chord. These points
+        # are used for all types of solvers, so we will define them here.
+        self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (self.back_left_vertex - self.front_left_vertex)
+        self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (self.back_right_vertex
+                                                                           - self.front_right_vertex)
+
+        # Initialize a variable to hold the solver type. This will be filled after the solver initializes the vortices.
+        self.solver_type = None
+
         # Initialize variables to hold attributes of the panel that will be defined after the solver finds a solution.
         self.near_field_force = None
         self.near_field_moment = None
         self.delta_pressure = None
 
-    def initialize_vortices(self):
-        """This method calculates the locations of the vortex vertices, and then initializes the panel's vortices.
-
-        The panel's ring vortex is a quadrangle whose front vortex leg is at the panel's quarter chord. The left and
-        right vortex legs run along the panel's left and right legs. They extend backwards and meet the back vortex leg
-        at one quarter chord back from the panel's back leg.
-
-        The collocation point is at the panel's three quarter chord point. This is also directly in the middle of the
-        panel's quad vortex.
-
-        Panels that are at the trailing edge of a wing have a horseshoe vortex in addition to their ring vortex. The
-        ring vortex's finite leg runs along the ring vortex's back leg but in the opposite direction. It's infinite legs
-        point backwards in the positive x direction. The ring vortex and horseshoe vortex have the same strength, so the
-        back leg of the ring vortex is cancelled.
-
-        :return: None
-        """
-
-        # Use vector math to calculate the locations of the vortex vertices.
-        front_left_vortex_vertex = self.front_left_vertex + 0.25 * (self.back_left_vertex - self.front_right_vertex)
-        front_right_vortex_vertex = self.front_right_vertex + 0.25 * (self.back_right_vertex - self.front_right_vertex)
-        back_left_vortex_vertex = front_left_vortex_vertex + (self.back_left_vertex - self.front_left_vertex)
-        back_right_vortex_vertex = front_right_vortex_vertex + (self.back_right_vertex - self.front_right_vertex)
-
-        # If the panel has a ring vortex, initialize it.
-        self.ring_vortex = asmvp.aerodynamics.RingVortex(front_left_vertex=front_left_vortex_vertex,
-                                                         front_right_vertex=front_right_vortex_vertex,
-                                                         back_left_vertex=back_left_vortex_vertex,
-                                                         back_right_vertex=back_right_vortex_vertex,
-                                                         strength=None)
-
-        # If the panel is along the trailing edge, initialize it's trailing horseshoe vortex.
-        if self.is_trailing_edge:
-            self.horseshoe_vortex = asmvp.aerodynamics.HorseshoeVortex(finite_leg_origin=back_right_vortex_vertex,
-                                                                       finite_leg_termination=back_left_vortex_vertex,
-                                                                       strength=None)
-
     def calculate_collocation_point_location(self):
         """This method calculates the location of the collocation point.
 
-        The collocation point is at the panel's three quarter chord point. This is also directly in the middle of the
-        panel's quad vortex.
+        The collocation point is at the panel's three quarter chord point.
 
         :return: None
         """
 
-        # Use vector math to calculate the location of the collocation point. Then populate the class attribute.
-        self.collocation_point = self.ring_vortex.front_left_vertex + 0.5 * (self.ring_vortex.back_right_vertex
-                                                                             - self.ring_vortex.front_left_vertex)
+        # Find the location of points three quarters of the way down the left and right legs of the panel.
+        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * (self.back_left_vertex
+                                                                         - self.front_left_vertex)
+        right_three_quarter_chord_mark = self.front_right_vertex + 0.75 * (self.back_right_vertex
+                                                                           - self.front_right_vertex)
+
+        # Find the vector between the points three quarters of the way down the left and right legs of the panel.
+        three_quarter_chord_vector = right_three_quarter_chord_mark - left_three_quarter_chord_mark
+
+        # Find the collocation point, which is halfway between the points three quarters of the way down the left and
+        # right legs of the panel. Then populate the class attribute.
+        self.collocation_point = left_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
 
     def calculate_area_and_normal(self):
-        """This method calculates the panel's area and the panel's normal unit vector at its collocation point.
+        """This method calculates the panel's area and the panel's normal unit vector.
+
+        This method makes the assumption that the panel is planar. This is technically incorrect for wing's with twist
+        but is a good approximation for small panels.
 
         :return: None
         """
 
-        # Calculate vortex ring and panel normal via diagonals.
-        vortex_ring_first_diagonal = self.ring_vortex.front_right_vertex - self.ring_vortex.back_left_vertex
-        vortex_ring_second_diagonal = self.ring_vortex.front_left_vertex - self.ring_vortex.back_right_vertex
-        vortex_ring_cross_product = np.cross(vortex_ring_first_diagonal, vortex_ring_second_diagonal)
-        vortex_ring_cross_product_magnitude = np.linalg.norm(vortex_ring_cross_product)
-        self.normal_direction_at_collocation_point = (vortex_ring_cross_product
-                                                      / vortex_ring_cross_product_magnitude)
-
-        # Calculate panel area via diagonals.
-        panel_first_diagonal = self.front_right_vertex - self.back_left_vertex
-        panel_second_diagonal = self.front_left_vertex - self.back_right_vertex
-        panel_cross_product = np.cross(panel_first_diagonal, panel_second_diagonal)
-        panel_cross_product_magnitude = np.linalg.norm(panel_cross_product)
-        self.area = panel_cross_product_magnitude / 2
+        # Calculate panel's normal unit vector and its area via its diagonals.
+        first_diagonal = self.front_right_vertex - self.back_left_vertex
+        second_diagonal = self.front_left_vertex - self.back_right_vertex
+        cross_product = np.cross(first_diagonal, second_diagonal)
+        cross_product_magnitude = np.linalg.norm(cross_product)
+        self.normal_direction = (cross_product / cross_product_magnitude)
+        self.area = cross_product_magnitude / 2
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this panel's vortices, assuming a unit vortex
@@ -941,9 +912,13 @@ class Panel:
             This is a vector containing the x, y, and z components of the induced velocity.
         """
 
-        normalized_induced_velocity = self.ring_vortex.calculate_normalized_induced_velocity(point=point)
+        normalized_induced_velocity = np.zeros(3)
+
+        if self.ring_vortex is not None:
+            normalized_induced_velocity += self.ring_vortex.calculate_normalized_induced_velocity(point=point)
         if self.horseshoe_vortex is not None:
             normalized_induced_velocity += self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
+
         return normalized_induced_velocity
 
     def calculate_normalized_induced_downwash(self, point):
@@ -956,9 +931,13 @@ class Panel:
             This is a vector containing the x, y, and z components of the induced downwash.
         """
 
-        normalized_induced_downwash = self.ring_vortex.calculate_normalized_induced_downwash(point=point)
+        normalized_induced_downwash = np.zeros(3)
+
+        if self.ring_vortex is not None:
+            normalized_induced_downwash += self.ring_vortex.calculate_normalized_induced_downwash(point=point)
         if self.horseshoe_vortex is not None:
             normalized_induced_downwash += self.horseshoe_vortex.calculate_normalized_induced_downwash(point=point)
+
         return normalized_induced_downwash
 
     def calculate_induced_velocity(self, point):
@@ -971,9 +950,13 @@ class Panel:
             This is a vector containing the x, y, and z components of the induced velocity.
         """
 
-        induced_velocity = self.ring_vortex.calculate_induced_velocity(point=point)
+        induced_velocity = np.zeros(3)
+
+        if self.ring_vortex is not None:
+            induced_velocity += self.ring_vortex.calculate_induced_velocity(point=point)
         if self.horseshoe_vortex is not None:
             induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(point=point)
+
         return induced_velocity
 
     def calculate_induced_downwash(self, point):
@@ -985,10 +968,13 @@ class Panel:
         :return: 1D ndarray
             This is a vector containing the x, y, and z components of the induced downwash.
         """
+        induced_downwash = np.zeros(3)
 
-        induced_downwash = self.ring_vortex.calculate_induced_downwash(point=point)
+        if self.ring_vortex is not None:
+            induced_downwash = self.ring_vortex.calculate_induced_downwash(point=point)
         if self.horseshoe_vortex is not None:
             induced_downwash += self.horseshoe_vortex.calculate_induced_downwash(point=point)
+
         return induced_downwash
 
     def update_force_moment_and_pressure(self):
@@ -997,21 +983,19 @@ class Panel:
 
         :return: None
         """
-        ring_vortex = self.ring_vortex
 
-        horseshoe_vortex = self.horseshoe_vortex
+        self.near_field_force = np.zeros(3)
 
-        ring_vortex.update_force_and_moment()
-        self.near_field_force = ring_vortex.near_field_force
+        if self.ring_vortex is not None:
+            self.ring_vortex.update_force_and_moment()
+            self.near_field_force += self.ring_vortex.near_field_force
+
+        if self.horseshoe_vortex is not None:
+            self.horseshoe_vortex.update_force_and_moment()
+            self.near_field_force += self.horseshoe_vortex.near_field_force
+
         self.near_field_moment = np.cross(self.near_field_force, self.center)
-        # self.far_field_induced_drag = ring_vortex.far_field_induced_drag
-
-        if horseshoe_vortex is not None:
-            horseshoe_vortex.update_force_and_moment()
-            self.near_field_force += horseshoe_vortex.near_field_force
-            # self.far_field_induced_drag += horseshoe_vortex.far_field_induced_drag
-
-        self.delta_pressure = np.dot(self.near_field_force, self.normal_direction_at_collocation_point) / self.area
+        self.delta_pressure = np.dot(self.near_field_force, self.normal_direction) / self.area
 
 
 def cosspace(minimum=0.0, maximum=1.0, n_points=50):
@@ -1078,7 +1062,7 @@ def reflect_over_xz_plane(input_vector):
         output_vector = output_vector * np.array([1, -1, 1])
     else:
         # The input vector is an unacceptable shape. Throw an error.
-        raise Exception("Invalid input for reflect_over_XZ_plane!")
+        raise Exception("Invalid input for reflect_over_xz_plane.")
 
     # Return the output vector.
     return output_vector
@@ -1151,9 +1135,15 @@ def centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_v
     :return: 1D ndarray
         This is an array containing the x, y, and z components of the centroid of the quadrilateral.
     """
+    x_values = np.hstack((front_left_vertex[0], front_right_vertex[0], back_left_vertex[0], back_right_vertex[0]))
+    x_average = np.average(x_values)
 
-    vertices = np.vstack((front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex))
+    y_values = np.hstack((front_left_vertex[1], front_right_vertex[1], back_left_vertex[1], back_right_vertex[1]))
+    y_average = np.average(y_values)
 
-    centroid = sp_ndi.measurements.center_of_mass(vertices)
+    z_values = np.hstack((front_left_vertex[2], front_right_vertex[2], back_left_vertex[2], back_right_vertex[2]))
+    z_average = np.average(z_values)
+
+    centroid = np.array([x_average, y_average, z_average])
 
     return centroid

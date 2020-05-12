@@ -16,8 +16,11 @@ This package contains the following modules:
     performance.py: This module contains the class definitions for the geometry's movement and the problem's operating
                     point.
     problems.py: This module contains the class definitions for different types of problems.
+    steady_horseshoe_vortex_lattice_method.py: This module contains the class definition of this package's steady
+                                               horseshoe vortex lattice solver.
     steady_ring_vortex_lattice_method.py: This module contains the class definition of this package's steady ring vortex
                                           lattice solver.
+
 """
 
 from aviansoftwareminimumviableproduct import aerodynamics
@@ -26,4 +29,5 @@ from aviansoftwareminimumviableproduct import meshing
 from aviansoftwareminimumviableproduct import output
 from aviansoftwareminimumviableproduct import performance
 from aviansoftwareminimumviableproduct import problems
+from aviansoftwareminimumviableproduct import steady_horseshoe_vortex_lattice_method
 from aviansoftwareminimumviableproduct import steady_ring_vortex_lattice_method

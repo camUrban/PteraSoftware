@@ -36,14 +36,15 @@ def draw(airplane, show_delta_pressures):
     # Set the color map.
     color_map = plt.cm.get_cmap('plasma')
 
-    # Initialize empty ndarrays to hold the vertices, faces, and scalars.
+    # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3))
     panel_faces = np.empty(0)
     scalars = np.empty(0)
+    points = np.empty(0)
 
     # Increment through the airplane's wings.
     for wing in airplane.wings:
-        # Increment through the panel's chordwise and spanwise positions.
+        # Increment through the wing's chordwise and spanwise positions.
         for chordwise_position in range(wing.num_chordwise_panels):
             for spanwise_position in range(wing.num_spanwise_panels):
                 # Calculate the panel number, starting from zero.
@@ -65,7 +66,11 @@ def draw(airplane, show_delta_pressures):
                                               (panel_num * 4) + 1,
                                               (panel_num * 4) + 2,
                                               (panel_num * 4) + 3])
-                scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 5), -5)
+                scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
+                print(scalar_to_add)
+                # points_to_add = panel.ring_vortex.front_left_vertex
+                # points_to_add_to_add = panel.ring_vortex.back_left_vertex
+                # points = np.hstack((points, points_to_add, points_to_add_to_add))
 
                 # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
                 # scalars.
@@ -81,6 +86,12 @@ def draw(airplane, show_delta_pressures):
     else:
         plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, color='white',
                          smooth_shading=True)
+
+    # plotter.add_points(pv.PolyData(points))
+
+    for wing in airplane.wings:
+        streamline_points = np.reshape(wing.stream_line_points, (-1, 1, 3))
+        plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")

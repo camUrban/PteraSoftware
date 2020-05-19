@@ -106,51 +106,79 @@ def calculate_velocity_induced_from_horseshoe_vortex(point, finite_leg_origin, f
     :return velocity_induced_by_vortex: This is the velocity induced at the point by the horseshoe vortex. It's a (3,)
                                         ndarray. Its units are meters per second.
     """
+    velocity_induced_by_right_leg = calculate_velocity_induced_from_line_vortex(
+        point=point,
+        vortex_origin=finite_leg_origin + np.array([20, 0, 0]),
+        vortex_termination=finite_leg_origin,
+        vortex_strength=vortex_strength
+    )
+    velocity_induced_by_front_leg = calculate_velocity_induced_from_line_vortex(
+        point=point,
+        vortex_origin=finite_leg_origin,
+        vortex_termination=finite_leg_termination,
+        vortex_strength=vortex_strength
+    )
+    velocity_induced_by_left_leg = calculate_velocity_induced_from_line_vortex(
+        point=point,
+        vortex_origin=finite_leg_termination,
+        vortex_termination=finite_leg_termination + np.array([20, 0, 0]),
+        vortex_strength=vortex_strength
+    )
 
-    # Define vectors from the vortex's finite leg to the point.
-    a = point - finite_leg_origin
-    b = point - finite_leg_termination
-
-    # Calculate the vector lengths.
-    a_length = np.linalg.norm(a)
-    b_length = np.linalg.norm(b)
-
-    # Define the x direction unit vector.
-    x_unit = np.array([1, 0, 0])
-
-    # Calculate the vector dot and cross products.
-    a_cross_b = np.cross(a, b)
-    a_dot_b = np.dot(a, b)
-    a_cross_x_unit = np.cross(a, x_unit)
-    b_cross_x_unit = np.cross(b, x_unit)
-    a_dot_x_unit = np.dot(a, x_unit)
-    b_dot_x_unit = np.dot(b, x_unit)
-
-    # Check for singularities on each of the three legs
-    horseshoe_radius = 3.0e-16
-    if ((abs(a_length * b_length + a_dot_b) < horseshoe_radius)
-            or (abs(a_length) < horseshoe_radius)
-            or (abs(b_length) < horseshoe_radius)):
-        term1 = 0
-    else:
-        term1 = (a_cross_b / (a_length * b_length + a_dot_b)) * (1 / a_length + 1 / b_length)
-
-    if ((abs(a_length - a_dot_x_unit) < horseshoe_radius)
-            or (abs(a_length) < horseshoe_radius)):
-        term2 = 0
-    else:
-        term2 = (a_cross_x_unit / (a_length - a_dot_x_unit)) * (1 / a_length)
-
-    if ((abs(b_length - b_dot_x_unit) < horseshoe_radius)
-            or (abs(b_length) < horseshoe_radius)):
-        term3 = 0
-    else:
-        term3 = (b_cross_x_unit / (b_length - b_dot_x_unit)) * (1 / b_length)
-
-    velocity_induced_by_vortex = (vortex_strength / (4 * np.pi) * (term1 + term2 - term3))
+    # Sum the velocities induced by each leg to get the velocity induced by the entire horseshoe.
+    velocity_induced_by_vortex = (
+        velocity_induced_by_right_leg
+        + velocity_induced_by_front_leg
+        + velocity_induced_by_left_leg
+    )
 
     # Return the velocity induced by the vortex.
     return velocity_induced_by_vortex
+
+    # # Define vectors from the vortex's finite leg to the point.
+    # a = point - finite_leg_origin
+    # b = point - finite_leg_termination
+    #
+    # # Calculate the vector lengths.
+    # a_length = np.linalg.norm(a)
+    # b_length = np.linalg.norm(b)
+    #
+    # # Define the x direction unit vector.
+    # x_unit = np.array([1, 0, 0])
+    #
+    # # Calculate the vector dot and cross products.
+    # a_cross_b = np.cross(a, b)
+    # a_dot_b = np.dot(a, b)
+    # a_cross_x_unit = np.cross(a, x_unit)
+    # b_cross_x_unit = np.cross(b, x_unit)
+    # a_dot_x_unit = np.dot(a, x_unit)
+    # b_dot_x_unit = np.dot(b, x_unit)
+    #
+    # # Check for singularities on each of the three legs
+    # horseshoe_radius = 3.0e-16
+    # if ((abs(a_length * b_length + a_dot_b) < horseshoe_radius)
+    #         or (abs(a_length) < horseshoe_radius)
+    #         or (abs(b_length) < horseshoe_radius)):
+    #     term1 = 0
+    # else:
+    #     term1 = (a_cross_b / (a_length * b_length + a_dot_b)) * (1 / a_length + 1 / b_length)
+    #
+    # if ((abs(a_length - a_dot_x_unit) < horseshoe_radius)
+    #         or (abs(a_length) < horseshoe_radius)):
+    #     term2 = 0
+    # else:
+    #     term2 = (a_cross_x_unit / (a_length - a_dot_x_unit)) * (1 / a_length)
+    #
+    # if ((abs(b_length - b_dot_x_unit) < horseshoe_radius)
+    #         or (abs(b_length) < horseshoe_radius)):
+    #     term3 = 0
+    # else:
+    #     term3 = (b_cross_x_unit / (b_length - b_dot_x_unit)) * (1 / b_length)
+    #
+    # velocity_induced_by_vortex = (vortex_strength / (4 * np.pi) * (term1 + term2 - term3))
+    #
+    # # Return the velocity induced by the vortex.
+    # return velocity_induced_by_vortex
 
 
 def calculate_velocity_induced_from_ring_vortex(point, front_left_vortex_vertex, front_right_vortex_vertex,
@@ -178,27 +206,38 @@ def calculate_velocity_induced_from_ring_vortex(point, front_left_vortex_vertex,
                                         array. Its units are meters per second.
     """
 
-    # ToDo: Determine if this singularity detection is implemented correctly.
     # Calculate the velocity induced by each leg of the ring vortex. These function calls will return zero if there is a
     # singularity detected on that leg.
-    velocity_induced_by_upper_leg = calculate_velocity_induced_from_line_vortex(
-        point=point, vortex_origin=front_right_vortex_vertex, vortex_termination=front_left_vortex_vertex,
-        vortex_strength=vortex_strength)
+    velocity_induced_by_front_leg = calculate_velocity_induced_from_line_vortex(
+        point=point,
+        vortex_origin=front_right_vortex_vertex,
+        vortex_termination=front_left_vortex_vertex,
+        vortex_strength=vortex_strength
+    )
     velocity_induced_by_left_leg = calculate_velocity_induced_from_line_vortex(
-        point=point, vortex_origin=front_left_vortex_vertex, vortex_termination=back_left_vortex_vertex,
-        vortex_strength=vortex_strength)
-    velocity_induced_by_lower_leg = calculate_velocity_induced_from_line_vortex(
-        point=point, vortex_origin=back_left_vortex_vertex, vortex_termination=back_right_vortex_vertex,
-        vortex_strength=vortex_strength)
+        point=point,
+        vortex_origin=front_left_vortex_vertex,
+        vortex_termination=back_left_vortex_vertex,
+        vortex_strength=vortex_strength
+    )
+    velocity_induced_by_back_leg = calculate_velocity_induced_from_line_vortex(
+        point=point,
+        vortex_origin=back_left_vortex_vertex,
+        vortex_termination=back_right_vortex_vertex,
+        vortex_strength=vortex_strength
+    )
     velocity_induced_by_right_leg = calculate_velocity_induced_from_line_vortex(
-        point=point, vortex_origin=back_right_vortex_vertex, vortex_termination=front_right_vortex_vertex,
-        vortex_strength=vortex_strength)
+        point=point,
+        vortex_origin=back_right_vortex_vertex,
+        vortex_termination=front_right_vortex_vertex,
+        vortex_strength=vortex_strength
+    )
 
     # Sum the velocities induced by each leg to get the velocity induced by the entire ring.
-    velocity_induced_by_vortex = (velocity_induced_by_upper_leg
-                                  + velocity_induced_by_left_leg
-                                  + velocity_induced_by_lower_leg
-                                  + velocity_induced_by_right_leg)
+    velocity_induced_by_vortex = (velocity_induced_by_front_leg
+                                  + velocity_induced_by_right_leg
+                                  + velocity_induced_by_back_leg
+                                  + velocity_induced_by_left_leg)
 
     # Return the velocity induced by the vortex.
     return velocity_induced_by_vortex
@@ -463,14 +502,26 @@ class RingVortex:
         self.strength = strength
 
         # Initialize the line vortices that make up the ring vortex.
-        self.front_leg = LineVortex(origin=self.front_left_vertex, termination=self.front_right_vertex,
-                                    strength=self.strength)
-        self.right_leg = LineVortex(origin=self.front_right_vertex, termination=self.back_right_vertex,
-                                    strength=self.strength)
-        self.back_leg = LineVortex(origin=self.back_right_vertex, termination=self.back_left_vertex,
-                                   strength=self.strength)
-        self.left_leg = LineVortex(origin=self.back_left_vertex, termination=self.front_left_vertex,
-                                   strength=self.strength)
+        self.front_leg = LineVortex(
+            origin=self.front_right_vertex,
+            termination=self.front_left_vertex,
+            strength=self.strength
+        )
+        self.left_leg = LineVortex(
+            origin=self.front_left_vertex,
+            termination=self.back_left_vertex,
+            strength=self.strength
+        )
+        self.back_leg = LineVortex(
+            origin=self.back_left_vertex,
+            termination=self.back_right_vertex,
+            strength=self.strength
+        )
+        self.right_leg = LineVortex(
+            origin=self.back_right_vertex,
+            termination=self.front_right_vertex,
+            strength=self.strength
+        )
 
         # Initialize a variable to hold the centroid of the ring vortex.
         self.center = asmvp.geometry.centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex,
@@ -491,11 +542,13 @@ class RingVortex:
         """
 
         normalized_induced_velocity = calculate_velocity_induced_from_ring_vortex(
-            point=point, front_left_vortex_vertex=self.front_left_vertex,
+            point=point,
+            front_left_vortex_vertex=self.front_left_vertex,
             front_right_vortex_vertex=self.front_right_vertex,
             back_left_vortex_vertex=self.back_left_vertex,
             back_right_vortex_vertex=self.back_right_vertex,
-            vortex_strength=1)
+            vortex_strength=1
+        )
         return normalized_induced_velocity
 
     def calculate_normalized_induced_downwash(self, point):
@@ -528,11 +581,13 @@ class RingVortex:
         """
 
         induced_velocity = calculate_velocity_induced_from_ring_vortex(
-            point=point, front_left_vortex_vertex=self.front_left_vertex,
+            point=point,
+            front_left_vortex_vertex=self.front_left_vertex,
             front_right_vortex_vertex=self.front_right_vertex,
             back_left_vortex_vertex=self.back_left_vertex,
             back_right_vortex_vertex=self.back_right_vertex,
-            vortex_strength=self.strength)
+            vortex_strength=self.strength
+        )
         return induced_velocity
 
     def calculate_induced_downwash(self, point):

@@ -846,8 +846,8 @@ class Panel:
                                                                back_right_vertex)
 
         # Calculate the front and back leg lengths, then use them to find and populate the average panel width.
-        front_leg_length = np.linalg.norm(front_left_vertex - front_right_vertex)
-        back_leg_length = np.linalg.norm(back_right_vertex - back_left_vertex)
+        front_leg_length = np.linalg.norm(front_right_vertex - front_left_vertex)
+        back_leg_length = np.linalg.norm(back_left_vertex - back_right_vertex)
         self.width = (front_leg_length + back_leg_length) / 2
 
         # Initialize two variables that are along the panel's left and right legs at the quarter chord. These points

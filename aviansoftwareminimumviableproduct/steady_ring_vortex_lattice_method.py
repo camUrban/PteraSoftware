@@ -11,11 +11,10 @@ This module contains the following functions:
 """
 
 import numpy as np
-
 import aviansoftwareminimumviableproduct as asmvp
 
 
-# ToDo: Properly cite and document this method.
+# ToDo: Properly cite document this method.
 class SteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses a steady ring vortex lattice method.
 
@@ -42,7 +41,7 @@ class SteadyRingVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly cite document this method.
     def __init__(self, steady_problem):
         """This is the initialization method.
 
@@ -63,7 +62,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.vortex_strengths = np.zeros(self.airplane.num_panels)
         self.downwashes = np.zeros(self.airplane.num_panels)
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly document this method.
     def run(self):
         """Run the solver on the steady problem.
 
@@ -129,19 +128,22 @@ class SteadyRingVortexLatticeMethodSolver:
                                 panel.back_left_vertex - panel.front_left_vertex)
                         back_right_vortex_vertex = front_right_vortex_vertex + (
                                 panel.back_right_vertex - panel.front_right_vertex)
-                        panel.horseshoe_vortex = (
-                            asmvp.aerodynamics.HorseshoeVortex(finite_leg_origin=back_left_vortex_vertex,
-                                                               finite_leg_termination=back_right_vortex_vertex,
-                                                               strength=None))
+                        panel.horseshoe_vortex = asmvp.aerodynamics.HorseshoeVortex(
+                                finite_leg_origin=back_right_vortex_vertex,
+                                finite_leg_termination=back_left_vortex_vertex,
+                                strength=None
+                            )
 
                     # If the panel has a ring vortex, initialize it.
-                    panel.ring_vortex = asmvp.aerodynamics.RingVortex(front_left_vertex=front_left_vortex_vertex,
-                                                                      front_right_vertex=front_right_vortex_vertex,
-                                                                      back_left_vertex=back_left_vortex_vertex,
-                                                                      back_right_vertex=back_right_vortex_vertex,
-                                                                      strength=None)
+                    panel.ring_vortex = asmvp.aerodynamics.RingVortex(
+                        front_left_vertex=front_left_vortex_vertex,
+                        front_right_vertex=front_right_vortex_vertex,
+                        back_left_vertex=back_left_vortex_vertex,
+                        back_right_vertex=back_right_vortex_vertex,
+                        strength=None
+                    )
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly document this method.
     def set_up_geometry(self):
 
         for collocation_panel_wing in self.airplane.wings:
@@ -155,22 +157,16 @@ class SteadyRingVortexLatticeMethodSolver:
                     for vortex_panel_index, vortex_panel in np.ndenumerate(vortex_panel_wings_panels):
                         normalized_induced_velocity_at_collocation_point = (
                             vortex_panel.calculate_normalized_induced_velocity(collocation_panel.collocation_point))
-                        normalized_induced_downwash_at_collocation_point = (
-                            vortex_panel.calculate_normalized_induced_downwash(collocation_panel.collocation_point))
 
                         collocation_panel_normal_direction = collocation_panel.normal_direction
 
                         normal_normalized_induced_velocity_at_collocation_point = np.dot(
                             normalized_induced_velocity_at_collocation_point, collocation_panel_normal_direction)
-                        normal_normalized_induced_downwash_at_collocation_point = np.dot(
-                            normalized_induced_downwash_at_collocation_point, collocation_panel_normal_direction)
 
                         self.aerodynamic_influence_coefficients[collocation_panel_index, vortex_panel_index] = (
                             normal_normalized_induced_velocity_at_collocation_point)
-                        self.downwash_influence_coefficients[collocation_panel_index, vortex_panel_index] = (
-                            normal_normalized_induced_downwash_at_collocation_point)
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly document this method.
     def set_up_operating_point(self):
         # This calculates and updates the direction the wind is going to, in geometry axes coordinates.
         self.freestream_velocity = np.expand_dims(
@@ -186,15 +182,12 @@ class SteadyRingVortexLatticeMethodSolver:
                 self.freestream_influences[collocation_panel_index] = (
                     np.dot(self.freestream_velocity, collocation_panel.normal_direction))
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly document this method.
     def calculate_vortex_strengths(self):
         """
 
         :return:
         """
-        # # Calculate Vortex Strengths
-        # ----------------------------
-        # Governing Equation: AIC @ Gamma + freestream_influence = 0
 
         self.vortex_strengths = np.linalg.solve(self.aerodynamic_influence_coefficients, -self.freestream_influences)
         self.downwashes = self.downwash_influence_coefficients @ self.vortex_strengths
@@ -207,7 +200,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 if panel.horseshoe_vortex is not None:
                     panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_index])
 
-    # ToDo: Properly cite and document this method.
+    # ToDo: Properly document this method.
     def calculate_solution_velocity(self, point):
         velocity_induced_by_vortices = np.zeros(3)
 
@@ -245,30 +238,17 @@ class SteadyRingVortexLatticeMethodSolver:
                         velocity_at_center = self.calculate_solution_velocity(bound_vortex.center)
                         bound_vortex.near_field_force = (density * bound_vortex.strength
                                                          * np.cross(velocity_at_center, bound_vortex.vector))
+
                         bound_vortex.near_field_moment = np.cross(bound_vortex.near_field_force, bound_vortex.center)
 
-                        # if panel.is_leading_edge:
-                        #     bound_vortex.far_field_induced_drag = (density
-                        #                                            * panel.downwash
-                        #                                            * bound_vortex.strength
-                        #                                            * panel.width)
-                        # else:
-                        #     previous_chordwise_location = chordwise_location - 1
-                        #     previous_panel = panels[previous_chordwise_location, spanwise_location]
-                        #     previous_panel_ring_vortex = previous_panel.ring_vortex
-                        #     previous_panel_vortex_strength = previous_panel_ring_vortex.strength
-                        #     bound_vortex.induced_drag = (density
-                        #                                  * panel.downwash
-                        #                                  * (bound_vortex.strength - previous_panel_vortex_strength)
-                        #                                  * panel.width)
                     panel.update_force_moment_and_pressure()
 
     def calculate_streamlines(self):
 
         airplane = self.airplane
 
-        num_steps = 10
-        delta_time = 0.1
+        num_steps = 100
+        delta_time = 0.01
 
         for wing in airplane.wings:
             wing.stream_line_points = np.zeros((num_steps + 1, wing.num_spanwise_panels, 3))
@@ -277,8 +257,7 @@ class SteadyRingVortexLatticeMethodSolver:
             for spanwise_position in range(wing.num_spanwise_panels):
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
-                seed_point = panel.back_left_vertex + 0.5 * (
-                        panel.back_right_vertex - panel.back_left_vertex) + np.array([0.1, 0, 0])
+                seed_point = panel.back_left_vertex + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
                 wing.stream_line_points[0, spanwise_position, :] = seed_point
                 for step in range(num_steps):
                     last_point = wing.stream_line_points[step, spanwise_position, :]

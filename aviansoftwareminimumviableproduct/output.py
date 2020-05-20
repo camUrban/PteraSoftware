@@ -67,7 +67,7 @@ def draw(airplane, show_delta_pressures):
                                               (panel_num * 4) + 2,
                                               (panel_num * 4) + 3])
                 scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
-                print(scalar_to_add)
+
                 # points_to_add = panel.ring_vortex.front_left_vertex
                 # points_to_add_to_add = panel.ring_vortex.back_left_vertex
                 # points = np.hstack((points, points_to_add, points_to_add_to_add))
@@ -90,7 +90,7 @@ def draw(airplane, show_delta_pressures):
     # plotter.add_points(pv.PolyData(points))
 
     for wing in airplane.wings:
-        streamline_points = np.reshape(wing.stream_line_points, (-1, 1, 3))
+        streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
         plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.

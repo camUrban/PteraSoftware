@@ -70,19 +70,32 @@ class SteadyRingVortexLatticeMethodSolver:
         """
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
+        print("Initializing panel vortices...")
         self.initialize_panel_vortices()
         print("Panel vortices initialized.")
+
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+        print("Setting up geometry...")
         self.set_up_geometry()
         print("Geometry set up.")
+
         # Find the normal freestream speed at every collocation point without vortices.
+        print("Setting up operating point...")
         self.set_up_operating_point()
         print("Operating point set up.")
+
         # Solve for each panel's vortex strength.
+        print("Calculating vortex strengths...")
         self.calculate_vortex_strengths()
-        print("Vortex strength's calculated.")
-        self.calculate_near_field_forces()
+        print("Vortex strengths calculated.")
+
+        # Solve for the near field forces and moments on each panel.
+        print("Calculating near field forces...")
+        self.calculate_near_field_forces_and_moments()
         print("Near field forces calculated.")
+
+        # Solve for the location of the streamlines coming off the back of the wings.
+        print("Calculating streamlines...")
         self.calculate_streamlines()
         print("Streamlines calculated.")
 
@@ -109,7 +122,12 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
+        freestream_direction = self.operating_point.calculate_freestream_direction_geometry_axes()
+
         for wing in self.airplane.wings:
+
+            infinite_leg_length = wing.span() * 20
+
             # Increment through the wing's chordwise and spanwise positions.
             for chordwise_position in range(wing.num_chordwise_panels):
                 for spanwise_position in range(wing.num_spanwise_panels):
@@ -131,13 +149,15 @@ class SteadyRingVortexLatticeMethodSolver:
                         panel.horseshoe_vortex = asmvp.aerodynamics.HorseshoeVortex(
                                 finite_leg_origin=back_right_vortex_vertex,
                                 finite_leg_termination=back_left_vortex_vertex,
-                                strength=None
+                                strength=None,
+                                infinite_leg_direction=freestream_direction,
+                                infinite_leg_length=infinite_leg_length
                             )
 
                     # If the panel has a ring vortex, initialize it.
                     panel.ring_vortex = asmvp.aerodynamics.RingVortex(
-                        front_left_vertex=front_left_vortex_vertex,
                         front_right_vertex=front_right_vortex_vertex,
+                        front_left_vertex=front_left_vortex_vertex,
                         back_left_vertex=back_left_vortex_vertex,
                         back_right_vertex=back_right_vortex_vertex,
                         strength=None
@@ -215,7 +235,7 @@ class SteadyRingVortexLatticeMethodSolver:
         return velocity_induced_by_vortices + freestream
 
     # ToDo: Properly cite and document this method.
-    def calculate_near_field_forces(self):
+    def calculate_near_field_forces_and_moments(self):
 
         airplane = self.airplane
         density = self.operating_point.density
@@ -227,19 +247,74 @@ class SteadyRingVortexLatticeMethodSolver:
             for chordwise_location in range(num_chordwise_panels):
                 for spanwise_location in range(num_spanwise_panels):
                     panel = panels[chordwise_location, spanwise_location]
-                    ring_vortex = panel.ring_vortex
-                    horseshoe_vortex = panel.horseshoe_vortex
-                    bound_vortices = np.array([ring_vortex.front_leg, ring_vortex.left_leg, ring_vortex.back_leg,
-                                               ring_vortex.right_leg])
-                    if horseshoe_vortex is not None:
-                        bound_vortices = np.append(bound_vortices, horseshoe_vortex.finite_leg)
 
-                    for bound_vortex in bound_vortices:
-                        velocity_at_center = self.calculate_solution_velocity(bound_vortex.center)
-                        bound_vortex.near_field_force = (density * bound_vortex.strength
-                                                         * np.cross(velocity_at_center, bound_vortex.vector))
+                    if spanwise_location + 1 == num_spanwise_panels:
+                        is_right_edge = True
+                    else:
+                        is_right_edge = False
+                    is_leading_edge = panel.is_leading_edge
+                    if spanwise_location == 0:
+                        is_left_edge = True
+                    else:
+                        is_left_edge = False
 
-                        bound_vortex.near_field_moment = np.cross(bound_vortex.near_field_force, bound_vortex.center)
+                    if is_right_edge:
+                        right_bound_vortex_strength = panel.ring_vortex.strength
+                    else:
+                        right_bound_vortex_strength = 0
+                    if is_leading_edge:
+                        front_bound_vortex_strength = panel.ring_vortex.strength
+                    else:
+                        front_bound_vortex_strength = (
+                            panel.ring_vortex.strength
+                            - panels[chordwise_location - 1, spanwise_location].ring_vortex.strength
+                        )
+                    if is_left_edge:
+                        left_bound_vortex_strength = panel.ring_vortex.strength
+                    else:
+                        left_bound_vortex_strength = (
+                            panel.ring_vortex.strength
+                            - panels[chordwise_location, spanwise_location - 1].ring_vortex.strength
+                        )
+
+                    if right_bound_vortex_strength != 0:
+                        velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
+                            panel.ring_vortex.right_leg.center)
+                        panel.ring_vortex.right_leg.near_field_force = (
+                                density
+                                * right_bound_vortex_strength
+                                * np.cross(velocity_at_right_bound_vortex_center, panel.ring_vortex.right_leg.vector)
+                        )
+                    if front_bound_vortex_strength != 0:
+                        velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
+                            panel.ring_vortex.right_leg.center)
+                        panel.ring_vortex.front_leg.near_field_force = (
+                                density
+                                * front_bound_vortex_strength
+                                * np.cross(velocity_at_front_bound_vortex_center, panel.ring_vortex.front_leg.vector)
+                        )
+                    if left_bound_vortex_strength != 0:
+                        velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
+                            panel.ring_vortex.right_leg.center)
+                        panel.ring_vortex.left_leg.near_field_force = (
+                                density
+                                * left_bound_vortex_strength
+                                * np.cross(velocity_at_left_bound_vortex_center, panel.ring_vortex.left_leg.vector)
+                        )
+
+                    # ring_vortex = panel.ring_vortex
+                    # horseshoe_vortex = panel.horseshoe_vortex
+                    # bound_vortices = np.array([ring_vortex.front_leg, ring_vortex.left_leg, ring_vortex.back_leg,
+                    #                            ring_vortex.right_leg])
+                    # if horseshoe_vortex is not None:
+                    #     bound_vortices = np.append(bound_vortices, horseshoe_vortex.finite_leg)
+                    #
+                    # for bound_vortex in bound_vortices:
+                    #     velocity_at_center = self.calculate_solution_velocity(bound_vortex.center)
+                    #
+                    #     bound_vortex.near_field_force = (density * bound_vortex.strength * np.cross(velocity_at_center, bound_vortex.vector))
+                    #
+                    #     bound_vortex.near_field_moment = np.cross(bound_vortex.near_field_force, bound_vortex.center)
 
                     panel.update_force_moment_and_pressure()
 
@@ -247,22 +322,22 @@ class SteadyRingVortexLatticeMethodSolver:
 
         airplane = self.airplane
 
-        num_steps = 100
-        delta_time = 0.01
+        num_steps = 10
+        delta_time = 0.1
 
         for wing in airplane.wings:
-            wing.stream_line_points = np.zeros((num_steps + 1, wing.num_spanwise_panels, 3))
+            wing.streamline_points = np.zeros((num_steps + 1, wing.num_spanwise_panels, 3))
             chordwise_position = wing.num_chordwise_panels - 1
             # Increment through the wing's chordwise and spanwise positions.
             for spanwise_position in range(wing.num_spanwise_panels):
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
                 seed_point = panel.back_left_vertex + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
-                wing.stream_line_points[0, spanwise_position, :] = seed_point
+                wing.streamline_points[0, spanwise_position, :] = seed_point
                 for step in range(num_steps):
-                    last_point = wing.stream_line_points[step, spanwise_position, :]
+                    last_point = wing.streamline_points[step, spanwise_position, :]
 
-                    wing.stream_line_points[step + 1, spanwise_position, :] = (
+                    wing.streamline_points[step + 1, spanwise_position, :] = (
                             last_point
                             + delta_time
                             * self.calculate_solution_velocity(last_point)

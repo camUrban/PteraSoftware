@@ -25,7 +25,7 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
                     z_le=0,
                     twist=0,
                     chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca0012"),
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                     spanwise_spacing="cosine"
                 ),
                 asmvp.geometry.WingCrossSection(
@@ -34,7 +34,7 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
                     z_le=0.0,
                     twist=0.0,
                     chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca0012"),
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                     spanwise_spacing="cosine"
                 )
             ]

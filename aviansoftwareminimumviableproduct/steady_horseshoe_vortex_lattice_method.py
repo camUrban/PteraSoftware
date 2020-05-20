@@ -69,26 +69,32 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
+        print("Initializing panel vortices...")
         self.initialize_panel_vortices()
         print("Panel vortices initialized.")
 
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+        print("Setting up geometry...")
         self.set_up_geometry()
         print("Geometry set up.")
 
         # Find the normal freestream speed at every collocation point without vortices.
+        print("Setting up operating point...")
         self.set_up_operating_point()
         print("Operating point set up.")
 
         # Solve for each panel's vortex strength.
+        print("Calculating vortex strengths...")
         self.calculate_vortex_strengths()
         print("Vortex strengths calculated.")
 
         # Solve for the near field forces and moments on each panel.
+        print("Calculating near field forces...")
         self.calculate_near_field_forces_and_moments()
         print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
+        print("Calculating streamlines...")
         self.calculate_streamlines()
         print("Streamlines calculated.")
 
@@ -111,9 +117,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                     # Initialize the horseshoe vortex at this panel.
                     panel.horseshoe_vortex = (
-                        asmvp.aerodynamics.HorseshoeVortex(finite_leg_origin=panel.front_left_vortex_vertex,
-                                                           finite_leg_termination=panel.front_right_vortex_vertex,
-                                                           strength=None)
+                        asmvp.aerodynamics.HorseshoeVortex(
+                            finite_leg_origin=panel.front_right_vortex_vertex,
+                            finite_leg_termination=panel.front_left_vortex_vertex,
+                            strength=None,
+                            infinite_leg_direction=self.operating_point.calculate_freestream_direction_geometry_axes(),
+                            infinite_leg_length=wing.span() * 20
+                        )
                     )
 
     def set_up_geometry(self):
@@ -141,7 +151,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                     # Iterate through the list of panels with the vortices.
                     for vortex_panel_index, vortex_panel in np.ndenumerate(vortex_panels):
-
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
                         normalized_induced_velocity_at_collocation_point = (
@@ -176,7 +185,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
             # Iterate through the list of panels with the collocation points.
             for collocation_panel_index, collocation_panel in np.ndenumerate(collocation_panel_wings_panels):
-
                 # Update the solver's list of normal directions.
                 self.normal_directions[collocation_panel_index] = collocation_panel.normal_direction
 
@@ -201,7 +209,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
             # Iterate through this list of panels.
             for panel_index, panel in np.ndenumerate(wing_panels):
-
                 # Update each panel's vortex strength.
                 panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_index])
 
@@ -224,7 +231,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
             # Iterate through this list of panels.
             for panel in wing_panels:
-
                 # Add the velocity induced by this panel's vortex at this point to the total induced velocity.
                 velocity_induced_by_vortices += panel.calculate_induced_velocity(point)
 
@@ -250,7 +256,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             # Iterate through the chordwise and spanwise locations of the wing's panels.
             for chordwise_location in range(num_chordwise_panels):
                 for spanwise_location in range(num_spanwise_panels):
-
                     # Find the panel at this location.
                     panel = wing.panels[chordwise_location, spanwise_location]
 
@@ -262,9 +267,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                     # Calculate the force and moment on this finite leg.
                     bound_vortex.near_field_force = (
-                        self.operating_point.density
-                        * bound_vortex.strength
-                        * np.cross(velocity_at_center, bound_vortex.vector)
+                            self.operating_point.density
+                            * bound_vortex.strength
+                            * np.cross(velocity_at_center, bound_vortex.vector)
                     )
                     bound_vortex.near_field_moment = np.cross(bound_vortex.near_field_force, bound_vortex.center)
 
@@ -305,13 +310,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                 # Iterate through the time steps.
                 for step in range(num_steps):
-
                     # Find the row of streamline points directly before the new row of streamline points.
                     last_point = wing.streamline_points[step, spanwise_position, :]
 
                     # Find and update the new row of streamline points.
                     wing.streamline_points[step + 1, spanwise_position, :] = (
-                        last_point
-                        + delta_time
-                        * self.calculate_solution_velocity(last_point)
+                            last_point
+                            + delta_time
+                            * self.calculate_solution_velocity(last_point)
                     )

@@ -276,7 +276,7 @@ class HorseshoeVortex:
         self.near_field_force = np.zeros(3)
 
         if self.finite_leg.near_field_force is not None:
-            self.near_field_force += self.right_leg.near_field_force
+            self.near_field_force += self.finite_leg.near_field_force
         self.near_field_moment = self.finite_leg.near_field_moment
 
 

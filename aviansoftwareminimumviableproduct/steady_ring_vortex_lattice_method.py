@@ -31,7 +31,6 @@ class SteadyRingVortexLatticeMethodSolver:
         calculate_solution_velocity: Find the velocity at a given point due to the freestream and the vortices.
         calculate_velocity_influences: Find the velocity at a given point due to the vorticity of every vortex if their
                                        strengths were all set to 1.0 meters squared per second.
-        calculate_delta_cp: Find the change in the pressure coefficient between the upper and lower surfaces of a panel.
         calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
 
     This class contains the following class attributes:
@@ -59,6 +58,15 @@ class SteadyRingVortexLatticeMethodSolver:
         self.normal_directions = np.zeros((self.airplane.num_panels, 3))
         self.freestream_influences = np.zeros(self.airplane.num_panels)
         self.vortex_strengths = np.zeros(self.airplane.num_panels)
+        self.total_near_field_force_wind_axes = np.zeros(3)
+        self.total_near_field_moment_wind_axes = np.zeros(3)
+
+        self.CL = None
+        self.CDi = None
+        self.CY = None
+        self.Cl = None
+        self.Cm = None
+        self.Cn = None
 
     # ToDo: Properly document this method.
     def run(self):
@@ -73,29 +81,47 @@ class SteadyRingVortexLatticeMethodSolver:
         print("Panel vortices initialized.")
 
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        print("Setting up geometry...")
+        print("\nSetting up geometry...")
         self.set_up_geometry()
         print("Geometry set up.")
 
         # Find the normal freestream speed at every collocation point without vortices.
-        print("Setting up operating point...")
+        print("\nSetting up operating point...")
         self.set_up_operating_point()
         print("Operating point set up.")
 
         # Solve for each panel's vortex strength.
-        print("Calculating vortex strengths...")
+        print("\nCalculating vortex strengths...")
         self.calculate_vortex_strengths()
         print("Vortex strengths calculated.")
 
         # Solve for the near field forces and moments on each panel.
-        print("Calculating near field forces...")
+        print("\nCalculating near field forces...")
         self.calculate_near_field_forces_and_moments()
         print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
-        print("Calculating streamlines...")
+        print("\nCalculating streamlines...")
         self.calculate_streamlines()
         print("Streamlines calculated.")
+
+        print("\n\nForces in Wind Axes:")
+        print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
+        print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
+        print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
+
+        print("\nMoments in Wind Axes:")
+        print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
+        print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
+        print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
+
+        print("\nCoefficients in Wind Axes:")
+        print("\tCDi:\t\t\t\t\t", np.round(self.CDi, 3))
+        print("\tCY:\t\t\t\t\t\t", np.round(self.CY, 3))
+        print("\tCL:\t\t\t\t\t\t", np.round(self.CL, 3))
+        print("\tCl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+        print("\tCm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+        print("\tCn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     # ToDo: Properly document this method.
     def initialize_panel_vortices(self):
@@ -124,11 +150,12 @@ class SteadyRingVortexLatticeMethodSolver:
 
         for wing in self.airplane.wings:
 
-            infinite_leg_length = wing.span() * 20
+            infinite_leg_length = wing.span * 20
 
             # Increment through the wing's chordwise and spanwise positions.
             for chordwise_position in range(wing.num_chordwise_panels):
                 for spanwise_position in range(wing.num_spanwise_panels):
+
                     # Pull the panel object out of the wing's list of panels.
                     panel = wing.panels[chordwise_position, spanwise_position]
 
@@ -251,11 +278,10 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return:
         """
+        total_near_field_force_geometry_axes = np.zeros(3)
+        total_near_field_moment_geometry_axes = np.zeros(3)
 
-        airplane = self.airplane
-        density = self.operating_point.density
-
-        for wing in airplane.wings:
+        for wing in self.airplane.wings:
             panels = wing.panels
             num_chordwise_panels = wing.num_chordwise_panels
             num_spanwise_panels = wing.num_spanwise_panels
@@ -286,32 +312,96 @@ class SteadyRingVortexLatticeMethodSolver:
                             - panels[chordwise_location, spanwise_location - 1].ring_vortex.strength
                         )
 
+                    panel.near_field_force_geometry_axes = np.zeros(3)
+                    panel.near_field_moment_geometry_axes = np.zeros(3)
+
                     if right_bound_vortex_strength != 0:
                         velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.right_leg.center)
-                        panel.ring_vortex.right_leg.near_field_force = (
-                                density
+                        right_bound_vortex_force_in_geometry_axes = (
+                                self.operating_point.density
                                 * right_bound_vortex_strength
                                 * np.cross(velocity_at_right_bound_vortex_center, panel.ring_vortex.right_leg.vector)
                         )
+                        panel.near_field_force_geometry_axes += right_bound_vortex_force_in_geometry_axes
+                        panel.near_field_moment_geometry_axes += np.cross(
+                            panel.ring_vortex.right_leg.center
+                            - self.airplane.xyz_ref, right_bound_vortex_force_in_geometry_axes
+                        )
                     if front_bound_vortex_strength != 0:
                         velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.right_leg.center)
-                        panel.ring_vortex.front_leg.near_field_force = (
-                                density
+                            panel.ring_vortex.front_leg.center)
+                        front_bound_vortex_force_in_geometry_axes = (
+                                self.operating_point.density
                                 * front_bound_vortex_strength
                                 * np.cross(velocity_at_front_bound_vortex_center, panel.ring_vortex.front_leg.vector)
                         )
+                        panel.near_field_force_geometry_axes += front_bound_vortex_force_in_geometry_axes
+                        panel.near_field_moment_geometry_axes += np.cross(
+                            panel.ring_vortex.front_leg.center
+                            - self.airplane.xyz_ref, front_bound_vortex_force_in_geometry_axes
+                        )
                     if left_bound_vortex_strength != 0:
                         velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.right_leg.center)
-                        panel.ring_vortex.left_leg.near_field_force = (
-                                density
+                            panel.ring_vortex.left_leg.center)
+                        left_bound_vortex_force_in_geometry_axes = (
+                                self.operating_point.density
                                 * left_bound_vortex_strength
                                 * np.cross(velocity_at_left_bound_vortex_center, panel.ring_vortex.left_leg.vector)
                         )
+                        panel.near_field_force_geometry_axes += left_bound_vortex_force_in_geometry_axes
+                        panel.near_field_moment_geometry_axes += np.cross(
+                            panel.ring_vortex.left_leg.center
+                            - self.airplane.xyz_ref, left_bound_vortex_force_in_geometry_axes
+                        )
 
-                    panel.update_force_moment_and_pressure()
+                    panel.update_pressure()
+
+                    total_near_field_force_geometry_axes += panel.near_field_force_geometry_axes
+                    total_near_field_moment_geometry_axes += panel.near_field_moment_geometry_axes
+
+        self.total_near_field_force_wind_axes = (
+                np.transpose(self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
+                @ total_near_field_force_geometry_axes
+        )
+        self.total_near_field_moment_wind_axes = (
+                np.transpose(self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
+                @ total_near_field_moment_geometry_axes
+        )
+
+        self.CDi = (
+                -self.total_near_field_force_wind_axes[0]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+        )
+        self.CY = (
+                self.total_near_field_force_wind_axes[1]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+        )
+        self.CL = (
+                -self.total_near_field_force_wind_axes[2]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+        )
+        self.Cl = (
+                self.total_near_field_moment_wind_axes[0]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+                / self.airplane.b_ref
+        )
+        self.Cm = (
+                self.total_near_field_moment_wind_axes[1]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+                / self.airplane.c_ref
+        )
+        self.Cn = (
+                self.total_near_field_moment_wind_axes[2]
+                / self.operating_point.calculate_dynamic_pressure()
+                / self.airplane.s_ref
+                / self.airplane.b_ref
+        )
 
     # ToDo: Properly document this method.
     def calculate_streamlines(self):

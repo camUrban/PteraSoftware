@@ -67,7 +67,7 @@ class Airplane:
         :param c_ref: float, optional if more than one wing is in the wings list.
             This is the reference chord length. If not set, it populates from first wing object.
         :param b_ref: float, optional if more than one wing is in the wings list.
-            This is the reference span. If not set, it populates from first wing object.
+            This is the reference calculate_span. If not set, it populates from first wing object.
         """
 
         # Initialize the name and the moment reference point.
@@ -97,12 +97,6 @@ class Airplane:
         for wing in self.wings:
             self.num_panels += wing.num_panels
 
-        # Check that everything was set right.
-        assert self.xyz_ref is not None
-        assert self.s_ref is not None
-        assert self.c_ref is not None
-        assert self.b_ref is not None
-
     def set_reference_dimensions_from_main_wing(self):
         """This method sets the reference dimensions of the airplane from measurements obtained from the main wing.
 
@@ -116,9 +110,9 @@ class Airplane:
 
         # Set the objects reference dimension attributes to be the reference dimension attributes of the main wing.
         # These attributes are calculated via methods in the Wing class.
-        self.s_ref = float(main_wing.wetted_area())
-        self.b_ref = float(main_wing.span())
-        self.c_ref = float(main_wing.wetted_area() / main_wing.span())
+        self.s_ref = float(main_wing.wetted_area)
+        self.b_ref = float(main_wing.span)
+        self.c_ref = float(main_wing.wetted_area / main_wing.span)
 
 
 class Wing:
@@ -133,8 +127,8 @@ class Wing:
         Date of Retrieval:    04/24/2020
 
     This class contains the following public methods:
-        wetted_area: This method calculates the wetted area of the wing.
-        span: This method calculates the span of the wing.
+        calculate_wetted_area: This method calculates the wetted area of the wing based on the areas of its panels.
+        calculate_span: This method calculates the span of the wing.
 
     This class contains the following class attributes:
         None
@@ -199,49 +193,42 @@ class Wing:
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-    # ToDo: Rewrite this method to calculate wetted area by summing the panel areas.
-    def wetted_area(self):
-        """This method calculates the wetted area of the wing.
+        # Initialize and calculate the wing's wetted area. If the wing is symmetrical, this includes the area of the
+        # mirrored half.
+        self.wetted_area = None
+        self.calculate_wetted_area()
 
-        This method neglects the effects of camber and twist.
+        # Initialize and calculate the wing's calculate_span. If the wing is symmetrical, this includes the length of
+        # the mirrored half.
+        self.span = None
+        self.calculate_span()
 
-        :return wetted_area: float
-            This method returns the wetted area of the wing.
+    def calculate_wetted_area(self):
+        """This method calculates the wetted area of the wing based on the areas of its panels.
+
+        This method also updates the class's wetted area attribute. If the wing is symmetrical, it includes the area of
+        the mirrored half.
+
+        :return: None
         """
 
-        # Initialize the wetted area of the wing.
         wetted_area = 0
-        # Iterate through all except the last of the wing's cross sections.
-        for i in range(len(self.cross_sections) - 1):
-            # Calculate the average chord between the current and the next cross section.
-            chord_eff = (self.cross_sections[i].chord + self.cross_sections[i + 1].chord) / 2
-            # Calculate the location of the trailing edge for the current and next cross section.
-            this_xyz_te = self.cross_sections[i].xyz_te()
-            that_xyz_te = self.cross_sections[i + 1].xyz_te()
-            # Calculate the effective span of the leading edge and trailing edge.
-            span_le_eff = np.sqrt(
-                (self.cross_sections[i].xyz_le[1] - self.cross_sections[i + 1].xyz_le[1]) ** 2 +
-                (self.cross_sections[i].xyz_le[2] - self.cross_sections[i + 1].xyz_le[2]) ** 2
-            )
-            span_te_eff = np.sqrt(
-                (this_xyz_te[1] - that_xyz_te[1]) ** 2 +
-                (this_xyz_te[2] - that_xyz_te[2]) ** 2
-            )
-            # Average the effective leading and trailing edge spans to calculate the effective overall span.
-            span_eff = (span_le_eff + span_te_eff) / 2
-            # Calculate the wetted area of this section and add it to the total wetted area.
-            wetted_area += chord_eff * span_eff
-        # If the wing is symmetric, multiply the wetted area by two.
-        if self.symmetric:
-            wetted_area *= 2
-        # Return the wetted area.
-        return wetted_area
 
-    def span(self):
-        """This method calculates the span of the wing.
+        # Iterate through the chordwise and spanwise indices of the panels.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                # Add each panel's area to the total wetted area of the wing.
+                wetted_area += self.panels[chordwise_location, spanwise_location].area
 
-        :return span: float
-            This method returns the span of the wing.
+        self.wetted_area = wetted_area
+
+    def calculate_span(self):
+        """This method calculates the calculate_span of the wing.
+
+        This method also updates the class's span attribute. If the wing is symmetrical, it includes the length of the
+        mirrored half.
+
+        :return: None
         """
 
         # Calculate the span (y-distance between the root and the tip) of the entire wing.
@@ -251,8 +238,7 @@ class Wing:
         if self.symmetric:
             span *= 2
 
-        # Return the span.
-        return span
+        self.span = span
 
 
 class WingCrossSection:
@@ -787,8 +773,7 @@ class Panel:
                                                vortices, assuming a unit vortex strength.
         calculate_induced_velocity: This method calculates the velocity induced at a point by this panel's vortices with
                                     their given vortex strengths.
-        update_force_moment_and_pressure: This method updates the force, moment, and pressure on this panel based on the
-                                          force on its vortices, its area, and its normal vector.
+        update_force_moment_and_pressure: This method updates the force, moment, and pressure on this panel.
 
     This class contains the following class attributes:
         None
@@ -853,12 +838,9 @@ class Panel:
         self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (self.back_left_vertex
                                                                          - self.front_left_vertex)
 
-        # Initialize a variable to hold the solver type. This will be filled after the solver initializes the vortices.
-        self.solver_type = None
-
         # Initialize variables to hold attributes of the panel that will be defined after the solver finds a solution.
-        self.near_field_force = None
-        self.near_field_moment = None
+        self.near_field_force_geometry_axes = None
+        self.near_field_moment_geometry_axes = None
         self.delta_pressure = None
 
     def calculate_collocation_point_location(self):
@@ -937,25 +919,13 @@ class Panel:
 
         return induced_velocity
 
-    def update_force_moment_and_pressure(self):
-        """This method updates the force, moment, and pressure on this panel based on the force on its vortices,
-        its area, and its normal vector.
+    def update_pressure(self):
+        """This method updates the pressure across this panel.
 
         :return: None
         """
 
-        self.near_field_force = np.zeros(3)
-
-        if self.ring_vortex is not None:
-            self.ring_vortex.update_force_and_moment()
-            self.near_field_force += self.ring_vortex.near_field_force
-
-        if self.horseshoe_vortex is not None:
-            self.horseshoe_vortex.update_force_and_moment()
-            self.near_field_force += self.horseshoe_vortex.near_field_force
-
-        self.near_field_moment = np.cross(self.near_field_force, self.center)
-        self.delta_pressure = np.dot(self.near_field_force, self.normal_direction) / self.area
+        self.delta_pressure = np.dot(self.near_field_force_geometry_axes, self.normal_direction) / self.area
 
 
 def cosspace(minimum=0.0, maximum=1.0, n_points=50):

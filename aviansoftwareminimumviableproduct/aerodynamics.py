@@ -1,4 +1,4 @@
-"""This module contains useful aerodynamics functions, and the vortex class definitions.
+"""This module contains vortex class definitions.
 
 This module contains the following classes:
     LineVortex: This class is used to contain line vortices.
@@ -51,11 +51,6 @@ class LineVortex:
         # the origin and termination.
         self.vector = self.termination - self.origin
         self.center = self.origin + 0.5 * self.vector
-
-        # Initialize variables to hold the near field force and moment on the vortex. These will be set to None until a
-        # solution is found.
-        self.near_field_force = None
-        self.near_field_moment = None
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
@@ -145,10 +140,8 @@ class HorseshoeVortex:
                                                with a unit vortex strength.
         calculate_induced_velocity: This method calculates the velocity induced at a point by this vortex with its given
                                     vortex strength.
-        update_strength: This method updates the strength of this horseshoe vortex object, and the strength of its legs line vortex
-                         objects.
-        update_force_and_moment: This method updates the force and moment on this horseshoe vortex based on the force
-                                 on its finite leg's line vortex object.
+        update_strength: This method updates the strength of this horseshoe vortex object, and the strength of its legs
+                         line vortex objects.
 
     This class contains the following class attributes:
         None
@@ -200,11 +193,6 @@ class HorseshoeVortex:
             termination=self.finite_leg_termination + infinite_leg_direction * infinite_leg_length,
             strength=self.strength
         )
-
-        # Initialize variables to hold the near field force and moment on the vortex. These will be set to None until a
-        # solution is found.
-        self.near_field_force = None
-        self.near_field_moment = None
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
@@ -266,19 +254,6 @@ class HorseshoeVortex:
         self.finite_leg.strength = strength
         self.left_leg.strength = strength
 
-    def update_force_and_moment(self):
-        """This method updates the force and moment on this horseshoe vortex based on the force on its finite leg's line
-        vortex object.
-
-        :return: None
-        """
-
-        self.near_field_force = np.zeros(3)
-
-        if self.finite_leg.near_field_force is not None:
-            self.near_field_force += self.finite_leg.near_field_force
-        self.near_field_moment = self.finite_leg.near_field_moment
-
 
 class RingVortex:
     """This class is used to contain ring vortices.
@@ -290,8 +265,6 @@ class RingVortex:
                                     vortex strength.
         update_strength: This method updates the strength of this ring vortex object, and the strength of its
                          four legs' line vortex objects.
-        update_force_and_moment: This method updates the force and moment on this ring vortex based on the force
-                                 on its four legs' line vortex objects.
 
     This class contains the following class attributes:
         None
@@ -346,11 +319,6 @@ class RingVortex:
         # Initialize a variable to hold the centroid of the ring vortex.
         self.center = asmvp.geometry.centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex,
                                                                back_right_vertex)
-
-        # Initialize variables to hold the near field force and moment on the vortex. These will be set to None until a
-        # solution is found.
-        self.near_field_force = None
-        self.near_field_moment = None
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
@@ -415,23 +383,3 @@ class RingVortex:
         self.front_leg.strength = strength
         self.left_leg.strength = strength
         self.back_leg.strength = strength
-
-    def update_force_and_moment(self):
-        """This method updates the force and moment on this ring vortex based on the force on its four legs' line
-        objects.
-
-        :return: None
-        """
-
-        self.near_field_force = np.zeros(3)
-
-        if self.right_leg.near_field_force is not None:
-            self.near_field_force += self.right_leg.near_field_force
-        if self.front_leg.near_field_force is not None:
-            self.near_field_force += self.front_leg.near_field_force
-        if self.left_leg.near_field_force is not None:
-            self.near_field_force += self.left_leg.near_field_force
-        if self.back_leg.near_field_force is not None:
-            self.near_field_force += self.back_leg.near_field_force
-
-        self.near_field_moment = np.cross(self.near_field_force, self.center)

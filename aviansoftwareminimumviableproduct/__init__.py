@@ -8,7 +8,7 @@ This package contains the following directories:
 
 This package contains the following modules:
     __init__.py: This module is this package's initialization script. It imports all the modules from this package.
-    aerodynamics.py: This module contains useful aerodynamics functions, and the vortex class definitions.
+    aerodynamics.py: This module contains vortex class definitions.
     geometry.py: This module contains useful functions that relate to geometry, and the class definitions for different
                  types of geometries.
     meshing.py: This module contains useful functions for creating meshes.

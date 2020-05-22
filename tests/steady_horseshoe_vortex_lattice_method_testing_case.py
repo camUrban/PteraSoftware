@@ -15,36 +15,48 @@ import aviansoftwareminimumviableproduct as asmvp
 
 # Initialize the problem's geometry.
 steady_solver_validation_airplane = asmvp.geometry.Airplane(
+
+    # Name the airplane.
     name="Steady Solver Testing Airplane",
-    x_ref=0,
-    y_ref=0,
-    z_ref=0,
+
+    # Define a list of the airplane's wings.
     wings=[
+
+        # Initialize the wing object.
         asmvp.geometry.Wing(
+
+            # Name the wing.
             name="Wing",
-            x_le=0,
-            y_le=0,
-            z_le=0,
+
+            # This will be a symmetrical wing.
             symmetric=True,
-            chordwise_spacing="cosine",
+
+            # Define a list of the wing's cross sections.
             cross_sections=[
+
+                # Initialize the root cross section object.
                 asmvp.geometry.WingCrossSection(
-                    x_le=0,
-                    y_le=0,
-                    z_le=0,
-                    twist=0,
+                    # Define the cross section's twist chord.
                     chord=1.0,
+
+                    # Initialize this cross section's airfoil object.
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
-                    spanwise_spacing="cosine"
                 ),
+
+                # Initialize the tip cross section object.
                 asmvp.geometry.WingCrossSection(
+
+                    # Define the cross section's leading edge placement.
                     x_le=1.0,
-                    y_le=5,
+                    y_le=5.0,
                     z_le=0.0,
+
+                    # Define the cross section's twist and chord.
                     twist=5.0,
                     chord=0.75,
+
+                    # Initialize this cross section's airfoil object.
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
-                    spanwise_spacing="cosine"
                 )
             ]
         )

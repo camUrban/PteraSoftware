@@ -1,7 +1,7 @@
 """This module contains the class definition of this package's steady ring vortex lattice solver.
 
 This module contains the following classes:
-    UnsteadyRingVortexLatticeMethodStaticGeometrySolver: This is an aerodynamics solver that uses a steady ring vortex lattice method.
+    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady ring vortex lattice method.
 
 This module contains the following exceptions:
     None

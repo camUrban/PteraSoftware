@@ -812,6 +812,10 @@ class Panel:
         self.ring_vortex = None
         self.horseshoe_vortex = None
 
+        # Initialize a variable to hold a 1D ndarray of the panel's wake ring vortices. This will be populated by the
+        # solver.
+        self.wake_ring_vortices = np.empty(0)
+
         # Initialize a variable to hold the collocation point location and then populate it.
         self.collocation_point = None
         self.calculate_collocation_point_location()
@@ -885,6 +889,8 @@ class Panel:
         """This method calculates the velocity induced at a point by this panel's vortices, assuming a unit vortex
         strength.
 
+        This method does not include the effect of the panel's wake vortices.
+
         :param point:  1D ndarray
             This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
         :return: 1D ndarray
@@ -904,6 +910,8 @@ class Panel:
         """This method calculates the velocity induced at a point by this panel's vortices with their given vortex
         strengths.
 
+        This method does not include the effect of the panel's wake vortices.
+
         :param point: 1D ndarray
             This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
         :return: 1D ndarray
@@ -918,6 +926,16 @@ class Panel:
             induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(point=point)
 
         return induced_velocity
+
+    # ToDo: Properly document this method.
+    def calculate_velocity_induced_by_wake_ring_vortices(self, point):
+
+        velocity_induced_wake_ring_vortices = np.zeros(3)
+
+        for wake_ring_vortex in self.wake_ring_vortices:
+            velocity_induced_wake_ring_vortices += wake_ring_vortex.calculate_induced_velocity(point=point)
+
+        return velocity_induced_wake_ring_vortices
 
     def update_pressure(self):
         """This method updates the pressure across this panel.

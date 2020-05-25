@@ -317,8 +317,10 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = asmvp.geometry.centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex,
-                                                               back_right_vertex)
+        self.center = asmvp.geometry.centroid_of_quadrilateral(self.front_left_vertex,
+                                                               self.front_right_vertex,
+                                                               self.back_left_vertex,
+                                                               self.back_right_vertex)
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
@@ -383,3 +385,47 @@ class RingVortex:
         self.front_leg.strength = strength
         self.left_leg.strength = strength
         self.back_leg.strength = strength
+
+    # ToDo: Properly document this method.
+    def update_location(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
+        """
+
+        :param front_left_vertex:
+        :param front_right_vertex:
+        :param back_left_vertex:
+        :param back_right_vertex:
+        :return: None
+        """
+
+        self.front_left_vertex = front_left_vertex
+        self.front_right_vertex = front_right_vertex
+        self.back_left_vertex = back_left_vertex
+        self.back_right_vertex = back_right_vertex
+
+        # Initialize the line vortices that make up the ring vortex.
+        self.front_leg = LineVortex(
+            origin=self.front_right_vertex,
+            termination=self.front_left_vertex,
+            strength=self.strength
+        )
+        self.left_leg = LineVortex(
+            origin=self.front_left_vertex,
+            termination=self.back_left_vertex,
+            strength=self.strength
+        )
+        self.back_leg = LineVortex(
+            origin=self.back_left_vertex,
+            termination=self.back_right_vertex,
+            strength=self.strength
+        )
+        self.right_leg = LineVortex(
+            origin=self.back_right_vertex,
+            termination=self.front_right_vertex,
+            strength=self.strength
+        )
+
+        # Initialize a variable to hold the centroid of the ring vortex.
+        self.center = asmvp.geometry.centroid_of_quadrilateral(self.front_left_vertex,
+                                                               self.front_right_vertex,
+                                                               self.back_left_vertex,
+                                                               self.back_right_vertex)

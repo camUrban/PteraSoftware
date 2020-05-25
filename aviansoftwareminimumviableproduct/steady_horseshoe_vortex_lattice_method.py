@@ -28,7 +28,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes the
                                    panels' vortices.
         set_up_geometry: Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        set_up_operating_point: Find the normal freestream speed at every collocation point without the influence of the
+        set_up_operating_point: Find the normal velocity speed at every collocation point without the influence of the
                                 vortices.
         calculate_vortex_strengths: Solve for each panels' vortex strength.
         calculate_solution_velocity: Find the velocity at a given point due to the freestream and the vortices.
@@ -212,7 +212,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                             normal_normalized_induced_velocity_at_collocation_point)
 
     def set_up_operating_point(self):
-        """Find the normal freestream speed at every collocation point without the influence of the vortices.
+        """Find the normal velocity speed at every collocation point without the influence of the vortices.
 
         :return: None
         """
@@ -324,45 +324,63 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # Update the pressure on this panel.
                     panel.update_pressure()
 
+                    # Add the near field force and moment on this panel to the total near field force and moment on this
+                    # airplane.
                     total_near_field_force_geometry_axes += panel.near_field_force_geometry_axes
                     total_near_field_moment_geometry_axes += panel.near_field_moment_geometry_axes
 
+        # Find the total near field force in wind axes from the rotation matrix and the total near field force in
+        # geometry axes.
         self.total_near_field_force_wind_axes = (
                 np.transpose(self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
                 @ total_near_field_force_geometry_axes
         )
+
+        # Find the total near field moment in wind axes from the rotation matrix and the total near field moment in
+        # geometry axes.
         self.total_near_field_moment_wind_axes = (
                 np.transpose(self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes())
                 @ total_near_field_moment_geometry_axes
         )
 
+        # Calculate the airplane's induced drag coefficient
         self.CDi = (
                 -self.total_near_field_force_wind_axes[0]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
+
+        # Calculate the airplane's side force coefficient.
         self.CY = (
                 self.total_near_field_force_wind_axes[1]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
+
+        # Calculate the airplane's lift coefficient.
         self.CL = (
                 -self.total_near_field_force_wind_axes[2]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
+
+        # Calculate the airplane's rolling moment coefficient.
         self.Cl = (
                 self.total_near_field_moment_wind_axes[0]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
                 / self.airplane.b_ref
         )
+
+        # Calculate the airplane's pitching moment coefficient.
         self.Cm = (
                 self.total_near_field_moment_wind_axes[1]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
                 / self.airplane.c_ref
         )
+
+        # Calculate the airplane's yawing moment coefficient.
         self.Cn = (
                 self.total_near_field_moment_wind_axes[2]
                 / self.operating_point.calculate_dynamic_pressure()
@@ -370,21 +388,25 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 / self.airplane.b_ref
         )
 
-    def calculate_streamlines(self):
+    def calculate_streamlines(self, num_steps=10, delta_time=0.1):
         """Calculates the location of the streamlines coming off the back of the wings.
 
+        :param num_steps: int, optional
+            This is the integer number of points along each streamline (not including the initial point). It can be
+            increased for higher fidelity visuals. The default value is 10.
+        :param delta_time: float, optional
+            This is the time in seconds between each time step It can be decreased for higher fidelity visuals or to
+            make the streamlines shorter. It's default value is 0.1 seconds.
         :return: None
         """
-
-        # Define the number of time steps to iterate through, and also the change in time, in seconds, between time
-        # steps.
-        num_steps = 100
-        delta_time = 0.01
 
         # Iterate through the airplane's wings.
         for wing in self.airplane.wings:
 
-            # Initialize an ndarray to hold the wing's streamline points.
+            # Initialize an ndarray to hold the points along the streamline. It is shape (M x N x 3), where M is the
+            # number of points in the streamline (not including the initial point), N is the number of spanwise panels
+            # and thus the number of streamlines), and each bucket in this 2D array holds the x, y, and z components of
+            # the streamline point's location.
             wing.streamline_points = np.zeros((num_steps + 1, wing.num_spanwise_panels, 3))
 
             # The chordwise position is along the trailing edge.
@@ -396,18 +418,19 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
 
-                # Find the seed points, which are the midpoints of the back legs of the trailing edges of the vertices.
+                # The seed point is at the center of the panel's back leg.
                 seed_point = panel.back_left_vertex + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
 
-                # Add the seed points as the first row in the wing's streamline point's array.
+                # Add the seed point to the array of streamline points.
                 wing.streamline_points[0, spanwise_position, :] = seed_point
 
                 # Iterate through the time steps.
                 for step in range(num_steps):
-                    # Find the row of streamline points directly before the new row of streamline points.
+
+                    # Find the last point.
                     last_point = wing.streamline_points[step, spanwise_position, :]
 
-                    # Find and update the new row of streamline points.
+                    # Calculate the location of the new point, and add it to the array of streamline points.
                     wing.streamline_points[step + 1, spanwise_position, :] = (
                             last_point
                             + delta_time

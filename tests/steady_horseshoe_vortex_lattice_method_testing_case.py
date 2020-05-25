@@ -7,8 +7,8 @@
         Cm:     -0.690
         Cn:     0.000
 
-    Note: The expected output was created using XFLR5's VLM1 analysis type, which is a horseshoe vortex lattice method
-    solver.
+    Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a horseshoe vortex
+    lattice method solver.
 """
 
 import aviansoftwareminimumviableproduct as asmvp

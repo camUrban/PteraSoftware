@@ -1,23 +1,14 @@
-"""This is a testing case for the steady ring vortex lattice method solver.
+"""This is a testing case for the unsteady ring vortex lattice method solver.
 
-    Based on an identical XFLR5 testing case, the expected output for this case is:
-        CL:     0.788
-        CDi:    0.019
-        Cl:     -0.000
-        Cm:     -0.687
-        Cn:     -0.000
-
-    Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice
-    method solver.
 """
 
 import aviansoftwareminimumviableproduct as asmvp
 
 # Initialize the problem's geometry.
-steady_solver_validation_airplane = asmvp.geometry.Airplane(
+unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
 
     # Name the airplane.
-    name="Steady Solver Testing Airplane",
+    name="Unsteady Solver Testing Airplane",
 
     # Define a list of the airplane's wings.
     wings=[
@@ -64,23 +55,31 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
 )
 
 # Initialize the problem's operating point.
-steady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
+unsteady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
+
+# Initialize the problem's operating point.
+unsteady_solver_validation_movement = None
 
 # Initialize the problem.
-steady_solver_validation_problem = asmvp.problems.SteadyProblem(
-    airplane=steady_solver_validation_airplane, operating_point=steady_solver_validation_operating_point)
+unsteady_solver_validation_problem = asmvp.problems.UnsteadyProblem(
+    airplane=unsteady_solver_validation_airplane,
+    operating_point=unsteady_solver_validation_operating_point,
+    movement=unsteady_solver_validation_movement,
+    simulation_duration=1.0,
+    simulation_time_step=0.1
+)
 
 # Delete placeholder objects that are now stored in the problem object.
-del steady_solver_validation_airplane
-del steady_solver_validation_operating_point
+del unsteady_solver_validation_airplane
+del unsteady_solver_validation_operating_point
 
 # Initialize the solver.
-steady_solver_validation_solver = asmvp.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-    steady_solver_validation_problem)
+unsteady_solver_validation_solver = asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_solver_validation_problem)
 
 # Delete placeholder object that are now stored in the simulation object.
-del steady_solver_validation_problem
+del unsteady_solver_validation_problem
 
 # Run the solver and draw it's output.
-steady_solver_validation_solver.run()
-asmvp.output.draw(steady_solver_validation_solver.airplane, show_delta_pressures=True)
+unsteady_solver_validation_solver.run()
+asmvp.output.draw(unsteady_solver_validation_solver.airplane, show_delta_pressures=True)

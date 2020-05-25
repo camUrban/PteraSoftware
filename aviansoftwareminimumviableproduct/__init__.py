@@ -20,6 +20,8 @@ This package contains the following modules:
                                                horseshoe vortex lattice solver.
     steady_ring_vortex_lattice_method.py: This module contains the class definition of this package's steady ring vortex
                                           lattice solver.
+    unsteady_ring_vortex_lattice_method.py: This module contains the class definition of this package's unsteady ring
+                                            vortex lattice solver.
 
 """
 
@@ -31,3 +33,4 @@ from aviansoftwareminimumviableproduct import performance
 from aviansoftwareminimumviableproduct import problems
 from aviansoftwareminimumviableproduct import steady_horseshoe_vortex_lattice_method
 from aviansoftwareminimumviableproduct import steady_ring_vortex_lattice_method
+from aviansoftwareminimumviableproduct import unsteady_ring_vortex_lattice_method

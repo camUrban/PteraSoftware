@@ -1,6 +1,4 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver.
-
-"""
+"""This is a testing case for the unsteady ring vortex lattice method solver."""
 
 import aviansoftwareminimumviableproduct as asmvp
 

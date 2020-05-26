@@ -1,16 +1,21 @@
-# ToDo: Properly document this module.
-"""This module contains the class definitions for the geometry's movement and the problem's operating point.
+"""This module contains the class definitions for the problem's movement and the problem's operating point.
 
 This module contains the following classes:
     Movement: This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
+    AirplaneMovement: This is a class used to contain the movement characteristics of an airplane.
+    WingMovement: This is a class used to contain the movement characteristics of a wing.
+    WingCrossSectionMovement: This is a class used to contain the movement characteristics of a wing cross section.
     OperatingPoint: This is a class used to contain the problem's operating point characteristics.
+    OperatingPointMovement: This is a class used to contain the movement characteristics of an operating point.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    oscillating_sinspace:
-    oscillating_linspace:
+    oscillating_sinspace: This function returns a 1D ndarray of values that are calculated by inputting a vector of
+                          linearly spaced time steps into a sine function.
+    oscillating_linspace: This function returns a 1D ndarray of values that are calculated by inputting a vector of
+                          linearly spaced time steps into a triangle function.
 """
 
 from scipy import signal
@@ -20,7 +25,7 @@ import aviansoftwareminimumviableproduct as asmvp
 
 # ToDo: Properly document this class.
 class Movement:
-    """
+    """This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
     
     """
     
@@ -51,7 +56,7 @@ class Movement:
 
 # ToDo: Properly document this class.
 class AirplaneMovement:
-    """
+    """This is a class used to contain the movement characteristics of an airplane.
     
     """
 
@@ -193,7 +198,7 @@ class AirplaneMovement:
 
 # ToDo: Properly document this class.
 class WingMovement:
-    """
+    """This is a class used to contain the movement characteristics of a wing.
 
     """
 
@@ -341,7 +346,7 @@ class WingMovement:
 
 # ToDo: Properly document this class.
 class WingCrossSectionMovement:
-    """
+    """This is a class used to contain the movement characteristics of a wing cross section.
 
     """
 
@@ -658,7 +663,7 @@ class OperatingPoint:
 
 # ToDo: Properly document this class.
 class OperatingPointMovement:
-    """
+    """This is a class used to contain the movement characteristics of an operating point.
     
     """
     
@@ -789,6 +794,17 @@ class OperatingPointMovement:
 
 # ToDo: Properly document this function.
 def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
+    """This function returns a 1D ndarray of values that are calculated by inputting a vector of linearly spaced time
+    steps into a sine function.
+
+    :param amplitude:
+    :param period:
+    :param base_value:
+    :param num_steps:
+    :param delta_time:
+    :return:
+    """
+
     total_time = num_steps * delta_time
 
     times = np.linspace(0, total_time, num_steps)
@@ -805,6 +821,17 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
 
 # ToDo: Properly document this function.
 def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
+    """This function returns a 1D ndarray of values that are calculated by inputting a vector of linearly spaced time
+    steps into a triangle function.
+
+    :param amplitude:
+    :param period:
+    :param base_value:
+    :param num_steps:
+    :param delta_time:
+    :return:
+    """
+
     total_time = num_steps * delta_time
 
     times = np.linspace(0, total_time, num_steps)

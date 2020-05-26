@@ -14,6 +14,8 @@ This module contains the following exceptions:
 This module contains the following functions:
     cosspace: This function is used to create a ndarray containing a specified number of values between a specified
               minimum and maximum value that are spaced via a cosine function.
+    sinspace: This function is used to create a ndarray containing a specified number of values between a specified
+              minimum and maximum value that are spaced via a sine function.
     reflect_over_xz_plane: This function is used to flip a the y coordinate of a coordinate vector.
     angle_axis_rotation_matrix: This function is used to find the rotation matrix for a given axis and angle.
     centroid_of_quadrilateral: This function is used to find the centroid of a quadrilateral.

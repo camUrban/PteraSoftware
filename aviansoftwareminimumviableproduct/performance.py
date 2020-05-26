@@ -24,27 +24,39 @@ import numpy as np
 import aviansoftwareminimumviableproduct as asmvp
 
 
-# ToDo: Properly document this class.
 class Movement:
     """This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
-    
+
+    This class contains the following public methods:
+        None
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
-    
-    # ToDo: Properly document this method.
+
     def __init__(self, airplane_movement, operating_point_movement, num_steps=10, delta_time=0.1):
-        """
+        """This is the initialization method.
         
-        :param airplane_movement: 
-        :param operating_point_movement: 
-        :param num_steps: 
-        :param delta_time: 
+        :param airplane_movement: AirplaneMovement
+            This object characterizes the movement of the airplane.
+        :param operating_point_movement: OperatingPointMovement
+            This object characterizes the movement of the the operating point.
+        :param num_steps: int, optional
+            This integer is the number of time steps of the unsteady simulation. Its default value is 10.
+        :param delta_time: float, optional
+            This float is the time, in seconds, between each time step. Its default value is 0.1 seconds.
         """
-        
+
+        # Initialize the class attributes.
         self.airplane_movement = airplane_movement
         self.operating_point_movement = operating_point_movement
         self.num_steps = num_steps
         self.delta_time = delta_time
 
+        # Generate a list of the airplanes and operating points that are the steps through this movement object.
         self.airplanes = self.airplane_movement.generate_airplanes(
             num_steps=self.num_steps,
             delta_time=self.delta_time

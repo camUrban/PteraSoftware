@@ -1,3 +1,4 @@
+
 """This module contains vortex class definitions.
 
 This module contains the following classes:

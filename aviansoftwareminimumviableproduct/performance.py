@@ -1,3 +1,4 @@
+# ToDo: Properly document this module.
 """This module contains the class definitions for the geometry's movement and the problem's operating point.
 
 This module contains the following classes:
@@ -8,23 +9,13 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    None
+    oscillating_sinspace:
+    oscillating_linspace:
 """
 
 from scipy import signal
 import numpy as np
 import aviansoftwareminimumviableproduct as asmvp
-
-
-"""
-class Movement:
-
-    def __init__(self, movement_period, sweeping_amplitude):
-
-        # Initialize class attributes.
-        self.movement_period = movement_period
-        self.sweeping_amplitude = sweeping_amplitude
-"""
 
 
 # ToDo: Properly document this class.
@@ -119,14 +110,6 @@ class AirplaneMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.x_ref_spacing == 'cosine':
-            x_ref_list = oscillating_cosspace(
-                amplitude=self.x_ref_amplitude,
-                period=self.x_ref_period,
-                base_value=self.x_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.x_ref_spacing == 'uniform':
             x_ref_list = oscillating_linspace(
                 amplitude=self.x_ref_amplitude,
@@ -147,14 +130,6 @@ class AirplaneMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.y_ref_spacing == 'cosine':
-            y_ref_list = oscillating_cosspace(
-                amplitude=self.y_ref_amplitude,
-                period=self.y_ref_period,
-                base_value=self.y_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.y_ref_spacing == 'uniform':
             y_ref_list = oscillating_linspace(
                 amplitude=self.y_ref_amplitude,
@@ -169,14 +144,6 @@ class AirplaneMovement:
         # Create an ndarray of z_ref points.
         if self.z_ref_spacing == 'sine':
             z_ref_list = oscillating_sinspace(
-                amplitude=self.z_ref_amplitude,
-                period=self.z_ref_period,
-                base_value=self.z_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.z_ref_spacing == 'cosine':
-            z_ref_list = oscillating_cosspace(
                 amplitude=self.z_ref_amplitude,
                 period=self.z_ref_period,
                 base_value=self.z_ref_base,
@@ -285,14 +252,6 @@ class WingMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.x_le_spacing == 'cosine':
-            x_le_list = oscillating_cosspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.x_le_spacing == 'uniform':
             x_le_list = oscillating_linspace(
                 amplitude=self.x_le_amplitude,
@@ -313,14 +272,6 @@ class WingMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.y_le_spacing == 'cosine':
-            y_le_list = oscillating_cosspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.y_le_spacing == 'uniform':
             y_le_list = oscillating_linspace(
                 amplitude=self.y_le_amplitude,
@@ -335,14 +286,6 @@ class WingMovement:
         # Create an ndarray of z_le points.
         if self.z_le_spacing == 'sine':
             z_le_list = oscillating_sinspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.z_le_spacing == 'cosine':
-            z_le_list = oscillating_cosspace(
                 amplitude=self.z_le_amplitude,
                 period=self.z_le_period,
                 base_value=self.z_le_base,
@@ -473,14 +416,6 @@ class WingCrossSectionMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.x_le_spacing == 'cosine':
-            x_le_list = oscillating_cosspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.x_le_spacing == 'uniform':
             x_le_list = oscillating_linspace(
                 amplitude=self.x_le_amplitude,
@@ -495,14 +430,6 @@ class WingCrossSectionMovement:
         # Create an ndarray of y_le points.
         if self.y_le_spacing == 'sine':
             y_le_list = oscillating_sinspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.y_le_spacing == 'cosine':
-            y_le_list = oscillating_cosspace(
                 amplitude=self.y_le_amplitude,
                 period=self.y_le_period,
                 base_value=self.y_le_base,
@@ -529,14 +456,6 @@ class WingCrossSectionMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.z_le_spacing == 'cosine':
-            z_le_list = oscillating_cosspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.z_le_spacing == 'uniform':
             z_le_list = oscillating_linspace(
                 amplitude=self.z_le_amplitude,
@@ -557,14 +476,6 @@ class WingCrossSectionMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.twist_spacing == 'cosine':
-            twist_list = oscillating_cosspace(
-                amplitude=self.twist_amplitude,
-                period=self.twist_period,
-                base_value=self.twist_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.twist_spacing == 'uniform':
             twist_list = oscillating_linspace(
                 amplitude=self.twist_amplitude,
@@ -579,14 +490,6 @@ class WingCrossSectionMovement:
         # Create an ndarray of control surface deflection values.
         if self.control_surface_deflection_spacing == 'sine':
             control_surface_deflection_list = oscillating_sinspace(
-                amplitude=self.control_surface_deflection_amplitude,
-                period=self.control_surface_deflection_period,
-                base_value=self.control_surface_deflection_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.control_surface_deflection_spacing == 'cosine':
-            control_surface_deflection_list = oscillating_cosspace(
                 amplitude=self.control_surface_deflection_amplitude,
                 period=self.control_surface_deflection_period,
                 base_value=self.control_surface_deflection_base,
@@ -812,14 +715,6 @@ class OperatingPointMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.velocity_spacing == 'cosine':
-            velocity_list = oscillating_cosspace(
-                amplitude=self.velocity_amplitude,
-                period=self.velocity_period,
-                base_value=self.velocity_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.velocity_spacing == 'uniform':
             velocity_list = oscillating_linspace(
                 amplitude=self.velocity_amplitude,
@@ -840,14 +735,6 @@ class OperatingPointMovement:
                 num_steps=num_steps,
                 delta_time=delta_time
             )
-        elif self.alpha_spacing == 'cosine':
-            alpha_list = oscillating_cosspace(
-                amplitude=self.alpha_amplitude,
-                period=self.alpha_period,
-                base_value=self.alpha_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
         elif self.alpha_spacing == 'uniform':
             alpha_list = oscillating_linspace(
                 amplitude=self.alpha_amplitude,
@@ -862,14 +749,6 @@ class OperatingPointMovement:
         # Create an ndarray of beta values.
         if self.beta_spacing == 'sine':
             beta_list = oscillating_sinspace(
-                amplitude=self.beta_amplitude,
-                period=self.beta_period,
-                base_value=self.beta_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.beta_spacing == 'cosine':
-            beta_list = oscillating_cosspace(
                 amplitude=self.beta_amplitude,
                 period=self.beta_period,
                 base_value=self.beta_base,
@@ -920,22 +799,6 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     k = base_value
 
     values = a * np.sin(b * (times - h)) + k
-
-    return values
-
-
-# ToDo: Properly document this function.
-def oscillating_cosspace(amplitude, period, base_value, num_steps, delta_time):
-    total_time = num_steps * delta_time
-
-    times = np.linspace(0, total_time, num_steps)
-
-    a = amplitude
-    b = 2 * np.pi / period
-    h = 0
-    k = base_value
-
-    values = a * np.cos(b * (times - h)) + k
 
     return values
 

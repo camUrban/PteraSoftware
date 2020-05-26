@@ -1,3 +1,4 @@
+
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:

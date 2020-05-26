@@ -1,3 +1,4 @@
+
 """This module contains useful functions that relate to geometry, and the class definitions for different types of
 geometries.
 

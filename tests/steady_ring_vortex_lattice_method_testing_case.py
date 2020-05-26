@@ -1,3 +1,4 @@
+
 """This is a testing case for the steady ring vortex lattice method solver.
 
     Based on an identical XFLR5 testing case, the expected output for this case is:

@@ -1,4 +1,3 @@
-
 """This module contains the class definitions for the problem's movement and the problem's operating point.
 
 This module contains the following classes:
@@ -70,7 +69,7 @@ class Movement:
 # ToDo: Properly document this class.
 class AirplaneMovement:
     """This is a class used to contain the movement characteristics of an airplane.
-    
+
     """
 
     # ToDo: Properly document this method.
@@ -179,15 +178,15 @@ class AirplaneMovement:
         else:
             raise Exception("Bad value of z_ref_spacing!")
 
-        wings = np.empty((len(self.wing_movements), num_steps))
+        wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
         for wing_movement_location in range(len(self.wing_movements)):
             wing_movement = self.wing_movements[wing_movement_location]
-            wings[wing_movement_location, :] = (
-                wing_movement.generate_cross_sections(num_steps=num_steps, delta_time=delta_time))
+            this_wings_list_of_wings = np.array(wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time))
+            wings[wing_movement_location, :] = this_wings_list_of_wings
 
-        # Create an ndarray of airplanes.
-        airplanes = np.empty(num_steps)
+        # Create an empty list of airplanes.
+        airplanes = []
 
         name = self.base_airplane.name
 
@@ -195,15 +194,17 @@ class AirplaneMovement:
             x_ref = x_ref_list[step]
             y_ref = y_ref_list[step]
             z_ref = z_ref_list[step]
-            wings = wings[:, step]
+            these_wings = wings[:, step]
 
-            airplanes[step] = asmvp.geometry.Airplane(
+            this_airplane = asmvp.geometry.Airplane(
                 name=name,
                 x_ref=x_ref,
                 y_ref=y_ref,
                 z_ref=z_ref,
-                wings=wings
+                wings=these_wings
             )
+
+            airplanes.append(this_airplane)
 
         # Return the ndarray of airplanes.
         return airplanes
@@ -321,15 +322,15 @@ class WingMovement:
         else:
             raise Exception("Bad value of z_le_spacing!")
 
-        wing_cross_sections = np.empty((len(self.wing_cross_section_movements), num_steps))
+        wing_cross_sections = np.empty((len(self.wing_cross_section_movements), num_steps), dtype=object)
 
         for wing_cross_section_movement_location in range(len(self.wing_cross_section_movements)):
             wing_cross_section_movement = self.wing_cross_section_movements[wing_cross_section_movement_location]
-            wing_cross_sections[wing_cross_section_movement_location, :] = (
-                wing_cross_section_movement.generate_cross_sections(num_steps=num_steps, delta_time=delta_time))
+            x = np.array(wing_cross_section_movement.generate_wing_cross_sections(num_steps=num_steps, delta_time=delta_time))
+            wing_cross_sections[wing_cross_section_movement_location, :] = x
 
-        # Create an ndarray of wings.
-        wings = np.empty(num_steps)
+        # Create an empty list of wings.
+        wings = []
 
         name = self.base_wing.name
         symmetric = self.base_wing.symmetric
@@ -342,16 +343,18 @@ class WingMovement:
             z_le = z_le_list[step]
             cross_sections = wing_cross_sections[:, step]
 
-            wings[step] = asmvp.geometry.Wing(
+            this_wing = asmvp.geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
-                cross_sections=cross_sections,
+                wing_cross_sections=cross_sections,
                 symmetric=symmetric,
                 num_chordwise_panels=num_chordwise_panels,
                 chordwise_spacing=chordwise_spacing
             )
+
+            wings.append(this_wing)
 
         # Return the ndarray of wing cross sections.
         return wings
@@ -525,8 +528,8 @@ class WingCrossSectionMovement:
         else:
             raise Exception("Bad value of control_surface_deflection_spacing!")
 
-        # Create an ndarray of wing cross sections.
-        wing_cross_sections = np.empty(num_steps)
+        # Create an empty list of wing cross sections.
+        wing_cross_sections = []
 
         chord = self.base_wing_cross_section.chord
         airfoil = self.base_wing_cross_section.airfoil
@@ -542,7 +545,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
             control_surface_deflection = control_surface_deflection_list[step]
 
-            wing_cross_sections[step] = asmvp.geometry.WingCrossSection(
+            this_wing_cross_section = asmvp.geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -555,6 +558,8 @@ class WingCrossSectionMovement:
                 num_spanwise_panels=num_spanwise_panels,
                 spanwise_spacing=spanwise_spacing
             )
+
+            wing_cross_sections.append(this_wing_cross_section)
 
         # Return the ndarray of wing cross sections.
         return wing_cross_sections
@@ -785,7 +790,7 @@ class OperatingPointMovement:
             raise Exception("Bad value of beta_spacing!")
 
         # Create an ndarray of operating points.
-        operating_points = np.empty(num_steps)
+        operating_points = []
 
         density = self.base_operating_point.density
 
@@ -794,12 +799,14 @@ class OperatingPointMovement:
             alpha = alpha_list[step]
             beta = beta_list[step]
 
-            operating_points[step] = OperatingPoint(
+            this_operating_point = OperatingPoint(
                 density=density,
                 velocity=velocity,
                 alpha=alpha,
                 beta=beta
             )
+
+            operating_points.append(this_operating_point)
 
         # Return the ndarray of operating points.
         return operating_points
@@ -817,6 +824,9 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     :param delta_time:
     :return:
     """
+
+    if amplitude == 0 or period == 0:
+        return np.ones(num_steps) * base_value
 
     total_time = num_steps * delta_time
 
@@ -844,6 +854,9 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     :param delta_time:
     :return:
     """
+
+    if amplitude == 0 or period == 0:
+        return np.ones(num_steps) * base_value
 
     total_time = num_steps * delta_time
 

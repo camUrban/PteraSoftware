@@ -33,7 +33,7 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
             symmetric=True,
 
             # Define a list of the wing's cross sections.
-            cross_sections=[
+            wing_cross_sections=[
 
                 # Initialize the root cross section object.
                 asmvp.geometry.WingCrossSection(

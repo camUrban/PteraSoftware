@@ -232,7 +232,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def set_up_operating_point(self):
         """Find the normal freestream speed at every collocation point without the influence of the vortices.
 
-        :return: None`
+        :return: None
         """
 
         # This calculates and updates the direction the wind is going to, in geometry axes coordinates.

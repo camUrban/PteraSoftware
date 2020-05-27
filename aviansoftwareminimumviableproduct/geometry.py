@@ -75,7 +75,10 @@ class Airplane:
 
         # Initialize the name and the moment reference point.
         self.name = name
-        self.xyz_ref = np.array([float(x_ref), float(y_ref), float(z_ref)])
+        self.x_ref = x_ref
+        self.y_ref = y_ref
+        self.z_ref = z_ref
+        self.xyz_ref = np.array([float(self.x_ref), float(self.y_ref), float(self.z_ref)])
 
         # If wings was passed as None, set wings to an empty list.
         if wings is None:
@@ -140,7 +143,7 @@ class Wing:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, name="Untitled Wing", x_le=0.0, y_le=0.0, z_le=0.0, cross_sections=None, symmetric=False,
+    def __init__(self, name="Untitled Wing", x_le=0.0, y_le=0.0, z_le=0.0, wing_cross_sections=None, symmetric=False,
                  num_chordwise_panels=8, chordwise_spacing="cosine"):
         """This is the initialization method.
 
@@ -155,7 +158,7 @@ class Wing:
         :param z_le: float, optional
             This is the z coordinate of the leading edge of the wing, relative to the airplane's reference point. The
             default is 0.0.
-        :param cross_sections: list of CrossSection objects, optional
+        :param wing_cross_sections: list of WingCrossSection objects, optional
             This is a list of WingCrossSection objects, that represent the wing's cross sections. The default is None.
         :param symmetric: bool, optional
             Set this to true if the wing is across the xz plane. Set it to false if not. The default is false.
@@ -168,14 +171,17 @@ class Wing:
 
         # Initialize the name and the position of the wing's leading edge.
         self.name = name
-        self.xyz_le = np.array([float(x_le), float(y_le), float(z_le)])
+        self.x_le = x_le
+        self.y_le = y_le
+        self.z_le = z_le
+        self.xyz_le = np.array([float(self.x_le), float(self.y_le), float(self.z_le)])
 
-        # If cross_sections is set to None, set it to an empty list.
-        if cross_sections is None:
-            cross_sections = []
+        # If wing_cross_sections is set to None, set it to an empty list.
+        if wing_cross_sections is None:
+            wing_cross_sections = []
 
         # Initialize the other attributes.
-        self.cross_sections = cross_sections
+        self.wing_cross_sections = wing_cross_sections
         self.symmetric = symmetric
         self.num_chordwise_panels = num_chordwise_panels
         self.chordwise_spacing = chordwise_spacing
@@ -188,7 +194,7 @@ class Wing:
         # Exclude the last cross section's number of spanwise panels as this is irrelevant. If the wing is symmetric,
         # multiple the summation by two.
         self.num_spanwise_panels = 0
-        for cross_section in self.cross_sections[:-1]:
+        for cross_section in self.wing_cross_sections[:-1]:
             self.num_spanwise_panels += cross_section.num_spanwise_panels
         if self.symmetric:
             self.num_spanwise_panels *= 2
@@ -235,7 +241,7 @@ class Wing:
         """
 
         # Calculate the span (y-distance between the root and the tip) of the entire wing.
-        span = self.cross_sections[-1].xyz_le[1] - self.cross_sections[0].xyz_le[1]
+        span = self.wing_cross_sections[-1].xyz_le[1] - self.wing_cross_sections[0].xyz_le[1]
 
         # If the wing is symmetric, multiply the span by two.
         if self.symmetric:
@@ -263,8 +269,8 @@ class WingCrossSection:
     """
 
     def __init__(self, x_le=0.0, y_le=0.0, z_le=0.0, chord=0.0, twist=0.0, airfoil=None,
-                 control_surface_type="symmetric", control_surface_hinge_point=0.75,
-                 control_surface_deflection=0, num_spanwise_panels=8, spanwise_spacing="cosine"):
+                 control_surface_type='symmetric', control_surface_hinge_point=0.75,
+                 control_surface_deflection=0, num_spanwise_panels=8, spanwise_spacing='cosine'):
         """This is the initialization method.
 
         :param x_le: float, optional

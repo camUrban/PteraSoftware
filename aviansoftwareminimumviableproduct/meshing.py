@@ -37,7 +37,7 @@ def mesh_wing(wing):
     num_chordwise_coordinates = num_chordwise_panels + 1
 
     # Initialize the list of cross sections to None.
-    cross_section = None
+    wing_cross_section = None
 
     # Initialize an empty ndarray that will hold the panels of this wing. It currently has 0 columns and M rows,
     # where M is the number of the wing's chordwise panels.
@@ -59,9 +59,9 @@ def mesh_wing(wing):
     # Iterate through the meshed wing cross sections and vertically stack the global location each cross sections
     # leading and trailing edges. cross_section.xyz_te is a method that returns the cross section's trailing edge's
     # coordinates.
-    for cross_section in wing.cross_sections:
-        cross_section_xyz_le = np.vstack((cross_section_xyz_le, cross_section.xyz_le + wing.xyz_le))
-        cross_section_xyz_te = np.vstack((cross_section_xyz_te, cross_section.xyz_te() + wing.xyz_le))
+    for wing_cross_section in wing.wing_cross_sections:
+        cross_section_xyz_le = np.vstack((cross_section_xyz_le, wing_cross_section.xyz_le + wing.xyz_le))
+        cross_section_xyz_te = np.vstack((cross_section_xyz_te, wing_cross_section.xyz_te() + wing.xyz_le))
 
     # Get the quarter chord vectors, which are a L x 3 ndarray of points which are the quarter-chord points of cross
     # section, where L is the number of cross sections.
@@ -97,9 +97,9 @@ def mesh_wing(wing):
     section_quarter_chords_proj_yz_norm = np.hstack((zero_column_vector_stand_in_for_quarter_chords_x_values,
                                                      section_quarter_chords_yz_norm_magnitudes))
 
-    # Then, construct the normal directions for each cross_section. Make the normals for the inner cross_sections, where
-    # we need to merge directions.
-    if len(wing.cross_sections) > 2:
+    # Then, construct the normal directions for each cross_section. Make the normals for the inner
+    # wing_cross_sections, where we need to merge directions.
+    if len(wing.wing_cross_sections) > 2:
         # Add together the adjacent normalized section quarter chords projected onto the the yz plane.
         cross_sections_local_normal_inners_non_norm = (section_quarter_chords_proj_yz_norm[:-1, :] +
                                                        section_quarter_chords_proj_yz_norm[1:, :])
@@ -157,10 +157,10 @@ def mesh_wing(wing):
     cross_section_scaling_factor = np.hstack((1, cross_section_scaling_factor, 1))
 
     # Make the panels for each section.
-    for section_num in range(len(wing.cross_sections) - 1):
+    for section_num in range(len(wing.wing_cross_sections) - 1):
         # Define the relevant cross sections.
-        inner_cross_section = wing.cross_sections[section_num]
-        outer_cross_section = wing.cross_sections[section_num + 1]
+        inner_cross_section = wing.wing_cross_sections[section_num]
+        outer_cross_section = wing.wing_cross_sections[section_num + 1]
 
         # Define the airfoils at each cross section.
         inner_airfoil = inner_cross_section.airfoil.add_control_surface(
@@ -228,13 +228,13 @@ def mesh_wing(wing):
                                    + outer_cross_section_mcl_local_up)
 
         # Define number of spanwise points and panels.
-        num_spanwise_panels = cross_section.num_spanwise_panels
+        num_spanwise_panels = wing_cross_section.num_spanwise_panels
         num_spanwise_coordinates = num_spanwise_panels + 1
 
         # Get the spanwise coordinates.
-        if cross_section.spanwise_spacing == 'uniform':
+        if wing_cross_section.spanwise_spacing == 'uniform':
             nondim_spanwise_coordinates = np.linspace(0, 1, num_spanwise_coordinates)
-        elif cross_section.spanwise_spacing == 'cosine':
+        elif wing_cross_section.spanwise_spacing == 'cosine':
             nondim_spanwise_coordinates = asmvp.geometry.cosspace(n_points=num_spanwise_coordinates)
         else:
             raise Exception("Bad value of section.spanwise_spacing!")

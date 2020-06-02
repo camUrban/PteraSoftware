@@ -80,7 +80,7 @@ class UnsteadyProblem(Problem):
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, airplane, operating_point, movement, simulation_duration, simulation_time_step):
+    def __init__(self, airplane, operating_point, movement):
         """This is the initialization method.
 
         :param airplane: Airplane
@@ -89,10 +89,6 @@ class UnsteadyProblem(Problem):
             This is the operating point object for this problem.
         :param movement: Movement
             This is the movement object for this problem's airplane.
-        :param simulation_duration:
-            This is the time period, in seconds, that the simulation will analyze.
-        :param simulation_time_step:
-            This is the time step, in seconds, that the simulation will use to iterate through the simulation time.
         """
 
         # Call the parent class's initialization method
@@ -100,5 +96,4 @@ class UnsteadyProblem(Problem):
 
         # Initialize the other attributes.
         self.movement = movement
-        self.simulation_duration = simulation_duration
-        self.simulation_time_step = simulation_time_step
+

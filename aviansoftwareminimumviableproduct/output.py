@@ -41,7 +41,7 @@ def draw(airplane, show_delta_pressures):
     panel_vertices = np.empty((0, 3))
     panel_faces = np.empty(0)
     scalars = np.empty(0)
-    points = np.empty(0)
+    points = np.empty((0, 3))
 
     # Increment through the airplane's wings.
     for wing in airplane.wings:
@@ -67,17 +67,32 @@ def draw(airplane, show_delta_pressures):
                                               (panel_num * 4) + 1,
                                               (panel_num * 4) + 2,
                                               (panel_num * 4) + 3])
-                scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
 
-                # points_to_add = panel.ring_vortex.front_left_vertex
-                # points_to_add_to_add = panel.ring_vortex.back_left_vertex
-                # points = np.hstack((points, points_to_add, points_to_add_to_add))
+                # wake_ring_vortices = np.ravel(wing.wake_ring_vortices)
+                # for wake_ring_vortex in wake_ring_vortices:
+                #
+                #     points_to_add = wake_ring_vortex.front_left_vertex
+                #     points = np.hstack((points, points_to_add))
+                #
+                #     points_to_add = wake_ring_vortex.front_right_vertex
+                #     points = np.hstack((points, points_to_add))
+                #
+                #     points_to_add = wake_ring_vortex.back_left_vertex
+                #     points = np.hstack((points, points_to_add))
+                #
+                #     points_to_add = wake_ring_vortex.back_right_vertex
+                #     points = np.hstack((points, points_to_add))
 
                 # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
                 # scalars.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
-                scalars = np.hstack((scalars, scalar_to_add))
+                if show_delta_pressures:
+                    scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
+                    scalars = np.hstack((scalars, scalar_to_add))
+
+        points_to_add = wing.wake_ring_vortex_vertices.reshape(-1, 3)
+        points = np.vstack((points, points_to_add))
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
@@ -88,26 +103,31 @@ def draw(airplane, show_delta_pressures):
         plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, color='white',
                          smooth_shading=True)
 
-    # plotter.add_points(pv.PolyData(points))
+    if len(points) > 0:
+        plotter.add_points(pv.PolyData(points))
 
-    for wing in airplane.wings:
-        streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-        plotter.add_points(pv.PolyData(streamline_points))
+    # for wing in airplane.wings:
+    #     streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+    #     plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
+# ToDo: Properly document and cite this function.
 def make_flapping_gif(movement):
     airplanes = movement.airplanes
 
     # Initialize the plotter.
     plotter = pv.Plotter()
 
+    color_map = plt.cm.get_cmap('plasma', 256)
+
     # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3))
     panel_faces = np.empty(0)
+    scalars = np.empty(0)
 
     # Increment through the airplane's wings.
     for wing in airplanes[0].wings:
@@ -133,14 +153,18 @@ def make_flapping_gif(movement):
                                               (panel_num * 4) + 1,
                                               (panel_num * 4) + 2,
                                               (panel_num * 4) + 3])
+                scalar_to_add = panel.center[2] / 2
 
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                scalars = np.hstack((scalars, scalar_to_add))
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-    plotter.add_mesh(panel_surface, show_edges=True, color='white', smooth_shading=True)
+    plotter.add_mesh(panel_surface, show_edges=True, scalars=scalars, cmap=color_map, smooth_shading=True)
+    plotter.update_scalar_bar_range(clim=[-2, 2])
+    plotter.update_scalars(scalars)
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
@@ -157,6 +181,7 @@ def make_flapping_gif(movement):
         # Initialize empty ndarrays to hold the things to plot.
         panel_vertices = np.empty((0, 3))
         panel_faces = np.empty(0)
+        scalars = np.empty(0)
 
         # Increment through the airplane's wings.
         for wing in airplane.wings:
@@ -182,14 +207,20 @@ def make_flapping_gif(movement):
                                                   (panel_num * 4) + 1,
                                                   (panel_num * 4) + 2,
                                                   (panel_num * 4) + 3])
+                    scalar_to_add = panel.center[2] / 2
 
                     panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                     panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                    scalars = np.hstack((scalars, scalar_to_add))
 
         # Initialize the panel surfaces and add the meshes to the plotter.
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
         plotter.clear()
-        plotter.add_mesh(panel_surface, show_edges=True, color='white', smooth_shading=True)
+
+        plotter.add_mesh(panel_surface, show_edges=True, scalars=scalars, cmap=color_map, smooth_shading=True)
+        plotter.update_scalar_bar_range(clim=[-2, 2])
+        plotter.update_scalars(scalars)
+
         plotter.write_frame()
 
     # Close movie and delete object

@@ -103,9 +103,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
-        print("\nCalculating streamlines...")
-        self.calculate_streamlines()
-        print("Streamlines calculated.")
+        # print("\nCalculating streamlines...")
+        # self.calculate_streamlines()
+        # print("Streamlines calculated.")
 
         # Print out the total forces.
         print("\n\nForces in Wind Axes:")

@@ -65,6 +65,168 @@ class Movement:
             delta_time=self.delta_time
         )
 
+    def get_flapping_velocity_at_point_on_panel(self, wing_position, panel_chordwise_position, panel_spanwise_position,
+                                                point_name, current_step):
+        """
+
+        :param wing_position:
+        :param panel_chordwise_position:
+        :param panel_spanwise_position:
+        :param point_name:
+        :param current_step:
+        :return:
+        """
+
+        if current_step < 1:
+            return np.zeros(3)
+
+        airplane = self.airplanes[current_step]
+        last_airplane = self.airplanes[current_step - 1]
+
+        wing = airplane.wings[wing_position]
+        last_wing = last_airplane.wings[wing_position]
+
+        panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
+        last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
+
+        if point_name == 'center':
+            position = panel.center
+            last_position = last_panel.center
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'collocation':
+            position = panel.collocation_point
+            last_position = last_panel.collocation_point
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'front right vertex':
+            position = panel.front_right_vertex
+            last_position = last_panel.front_right_vertex
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'front left vertex':
+            position = panel.front_left_vertex
+            last_position = last_panel.front_left_vertex
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'back left vertex':
+            position = panel.back_left_vertex
+            last_position = last_panel.back_left_vertex
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'back right vertex':
+            position = panel.back_right_vertex
+            last_position = last_panel.back_right_vertex
+
+            return (position - last_position) / self.delta_time
+
+        elif point_name == 'ring vortex front right vertex':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.front_right_vertex
+                last_position = last_panel.ring_vortex.front_right_vertex
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex front right vertex!')
+
+        elif point_name == 'ring vortex front left vertex':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.back_left_vertex
+                last_position = last_panel.ring_vortex.back_left_vertex
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex back left vertex!')
+
+        elif point_name == 'ring vortex back left vertex':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.back_left_vertex
+                last_position = last_panel.ring_vortex.back_left_vertex
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex back left vertex!')
+
+        elif point_name == 'ring vortex back right vertex':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.back_right_vertex
+                last_position = last_panel.ring_vortex.back_right_vertex
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex back right vertex!')
+
+        elif point_name == 'horseshoe vortex origin':
+            if panel.horseshoe_vortex is not None:
+                position = panel.horseshoe_vortex.origin
+                last_position = last_panel.horseshoe_vortex.origin
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no horseshoe vortex origin!')
+
+        elif point_name == 'horseshoe vortex termination':
+            if panel.horseshoe_vortex is not None:
+                position = panel.horseshoe_vortex.termination
+                last_position = last_panel.horseshoe_vortex.termination
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no horseshoe termination!')
+
+        elif point_name == 'ring vortex front leg center':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.front_leg.center
+                last_position = last_panel.ring_vortex.front_leg.center
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex front leg center!')
+
+        elif point_name == 'ring vortex left leg center':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.left_leg.center
+                last_position = last_panel.ring_vortex.left_leg.center
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex left leg center!')
+
+        elif point_name == 'ring vortex back leg center':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.back_leg.center
+                last_position = last_panel.ring_vortex.back_leg.center
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex back leg center!')
+
+        elif point_name == 'ring vortex right leg center':
+            if panel.ring_vortex is not None:
+                position = panel.ring_vortex.right_leg.center
+                last_position = last_panel.ring_vortex.right_leg.center
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no ring vortex right leg center!')
+
+        elif point_name == 'horseshoe vortex finite leg center':
+            if panel.ring_vortex is not None:
+                position = panel.horseshoe_vortex.finite_leg.center
+                last_position = last_panel.ring_vortex.finite_leg.center
+
+                return (position - last_position) / self.delta_time
+
+            raise Exception('This panel has no horseshoe vortex finite leg center!')
+
+        else:
+            raise Exception('Invalid point name inputted!')
+
 
 # ToDo: Properly document this class.
 class AirplaneMovement:
@@ -182,7 +344,8 @@ class AirplaneMovement:
 
         for wing_movement_location in range(len(self.wing_movements)):
             wing_movement = self.wing_movements[wing_movement_location]
-            this_wings_list_of_wings = np.array(wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time))
+            this_wings_list_of_wings = np.array(wing_movement.generate_wings(
+                num_steps=num_steps, delta_time=delta_time))
             wings[wing_movement_location, :] = this_wings_list_of_wings
 
         # Create an empty list of airplanes.
@@ -206,7 +369,7 @@ class AirplaneMovement:
 
             airplanes.append(this_airplane)
 
-        # Return the ndarray of airplanes.
+        # Return the list of airplanes.
         return airplanes
 
 
@@ -326,7 +489,8 @@ class WingMovement:
 
         for wing_cross_section_movement_location in range(len(self.wing_cross_section_movements)):
             wing_cross_section_movement = self.wing_cross_section_movements[wing_cross_section_movement_location]
-            x = np.array(wing_cross_section_movement.generate_wing_cross_sections(num_steps=num_steps, delta_time=delta_time))
+            x = np.array(wing_cross_section_movement.generate_wing_cross_sections(
+                num_steps=num_steps, delta_time=delta_time))
             wing_cross_sections[wing_cross_section_movement_location, :] = x
 
         # Create an empty list of wings.
@@ -356,7 +520,7 @@ class WingMovement:
 
             wings.append(this_wing)
 
-        # Return the ndarray of wing cross sections.
+        # Return the list of wings.
         return wings
 
 
@@ -561,7 +725,7 @@ class WingCrossSectionMovement:
 
             wing_cross_sections.append(this_wing_cross_section)
 
-        # Return the ndarray of wing cross sections.
+        # Return the list of wing cross sections.
         return wing_cross_sections
 
 
@@ -686,21 +850,13 @@ class OperatingPointMovement:
     """
     
     # ToDo: Properly document this method.
-    def __init__(self, base_operating_point, velocity_amplitude=0.0, velocity_period=0.0, velocity_spacing='sine',
-                 alpha_amplitude=0.0, alpha_period=0.0, alpha_spacing='sine', beta_amplitude=0.0, beta_period=0.0,
-                 beta_spacing='sine'):
+    def __init__(self, base_operating_point, velocity_amplitude=0.0, velocity_period=0.0, velocity_spacing='sine'):
         """
         
         :param base_operating_point: 
         :param velocity_amplitude: 
         :param velocity_period: 
-        :param velocity_spacing: 
-        :param alpha_amplitude: 
-        :param alpha_period: 
-        :param alpha_spacing: 
-        :param beta_amplitude: 
-        :param beta_period: 
-        :param beta_spacing: 
+        :param velocity_spacing:
         """
 
         self.base_operating_point = base_operating_point
@@ -709,16 +865,6 @@ class OperatingPointMovement:
         self.velocity_amplitude = velocity_amplitude
         self.velocity_period = velocity_period
         self.velocity_spacing = velocity_spacing
-
-        self.alpha_base = self.base_operating_point.alpha
-        self.alpha_amplitude = alpha_amplitude
-        self.alpha_period = alpha_period
-        self.alpha_spacing = alpha_spacing
-
-        self.beta_base = self.base_operating_point.beta
-        self.beta_amplitude = beta_amplitude
-        self.beta_period = beta_period
-        self.beta_spacing = beta_spacing
 
     # ToDo: Properly document this method.
     def generate_operating_points(self, num_steps=10, delta_time=0.1):
@@ -749,55 +895,15 @@ class OperatingPointMovement:
         else:
             raise Exception("Bad value of velocity_spacing!")
 
-        # Create an ndarray of alpha values.
-        if self.alpha_spacing == 'sine':
-            alpha_list = oscillating_sinspace(
-                amplitude=self.alpha_amplitude,
-                period=self.alpha_period,
-                base_value=self.alpha_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.alpha_spacing == 'uniform':
-            alpha_list = oscillating_linspace(
-                amplitude=self.alpha_amplitude,
-                period=self.alpha_period,
-                base_value=self.alpha_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        else:
-            raise Exception("Bad value of alpha_spacing!")
-
-        # Create an ndarray of beta values.
-        if self.beta_spacing == 'sine':
-            beta_list = oscillating_sinspace(
-                amplitude=self.beta_amplitude,
-                period=self.beta_period,
-                base_value=self.beta_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        elif self.beta_spacing == 'uniform':
-            beta_list = oscillating_linspace(
-                amplitude=self.beta_amplitude,
-                period=self.beta_period,
-                base_value=self.beta_base,
-                num_steps=num_steps,
-                delta_time=delta_time
-            )
-        else:
-            raise Exception("Bad value of beta_spacing!")
-
-        # Create an ndarray of operating points.
+        # Create an empty list of operating points.
         operating_points = []
 
         density = self.base_operating_point.density
+        alpha = self.base_operating_point.alpha
+        beta = self.base_operating_point.beta
 
         for step in range(num_steps):
             velocity = velocity_list[step]
-            alpha = alpha_list[step]
-            beta = beta_list[step]
 
             this_operating_point = OperatingPoint(
                 density=density,
@@ -808,7 +914,7 @@ class OperatingPointMovement:
 
             operating_points.append(this_operating_point)
 
-        # Return the ndarray of operating points.
+        # Return the list of operating points.
         return operating_points
 
 

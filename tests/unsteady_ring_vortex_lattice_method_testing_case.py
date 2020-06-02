@@ -1,51 +1,22 @@
-
-"""This is a testing case for the unsteady ring vortex lattice method solver."""
-
 import aviansoftwareminimumviableproduct as asmvp
 
-# Initialize the problem's geometry.
 unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
-
-    # Name the airplane.
     name="Unsteady Solver Testing Airplane",
-
-    # Define a list of the airplane's wings.
     wings=[
-
-        # Initialize the wing object.
         asmvp.geometry.Wing(
-
-            # Name the wing.
             name="Wing",
-
-            # This will be a symmetrical wing.
             symmetric=True,
-
-            # Define a list of the wing's cross sections.
+            num_chordwise_panels=10,
             wing_cross_sections=[
-
-                # Initialize the root cross section object.
                 asmvp.geometry.WingCrossSection(
-                    # Define the cross section's twist chord.
                     chord=1.0,
-
-                    # Initialize this cross section's airfoil object.
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
+                    num_spanwise_panels=5,
                 ),
-
-                # Initialize the tip cross section object.
                 asmvp.geometry.WingCrossSection(
-
-                    # Define the cross section's leading edge placement.
-                    x_le=1.0,
                     y_le=5.0,
-                    z_le=0.0,
-
-                    # Define the cross section's twist and chord.
-                    twist=5.0,
-                    chord=0.75,
-
-                    # Initialize this cross section's airfoil object.
+                    chord=1.0,
+                    num_spanwise_panels=5,
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                 )
             ]
@@ -53,32 +24,53 @@ unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
     ]
 )
 
-# Initialize the problem's operating point.
 unsteady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
 
-# Initialize the problem's operating point.
-unsteady_solver_validation_movement = None
+unsteady_solver_validation_root_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+    base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[0]
+)
 
-# Initialize the problem.
+unsteady_solver_validation_tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+    base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[1]
+)
+
+unsteady_solver_validation_wing_movement = asmvp.performance.WingMovement(
+    base_wing=unsteady_solver_validation_airplane.wings[0],
+    wing_cross_sections_movements=[unsteady_solver_validation_root_wing_cross_section_movement,
+                                   unsteady_solver_validation_tip_wing_cross_section_movement]
+)
+
+unsteady_solver_validation_airplane_movement = asmvp.performance.AirplaneMovement(
+    base_airplane=unsteady_solver_validation_airplane,
+    wing_movements=[unsteady_solver_validation_wing_movement]
+)
+
+performance_testing_operating_point = asmvp.performance.OperatingPoint()
+
+unsteady_solver_validation_operating_point_movement = asmvp.performance.OperatingPointMovement(
+    base_operating_point=performance_testing_operating_point
+)
+
+unsteady_solver_validation_movement = asmvp.performance.Movement(
+    airplane_movement=unsteady_solver_validation_airplane_movement,
+    operating_point_movement=unsteady_solver_validation_operating_point_movement,
+)
+
+# asmvp.output.make_flapping_gif(unsteady_solver_validation_movement)
+
 unsteady_solver_validation_problem = asmvp.problems.UnsteadyProblem(
     airplane=unsteady_solver_validation_airplane,
     operating_point=unsteady_solver_validation_operating_point,
-    movement=unsteady_solver_validation_movement,
-    simulation_duration=1.0,
-    simulation_time_step=0.1
+    movement=unsteady_solver_validation_movement
 )
 
-# Delete placeholder objects that are now stored in the problem object.
 del unsteady_solver_validation_airplane
 del unsteady_solver_validation_operating_point
 
-# Initialize the solver.
 unsteady_solver_validation_solver = asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     unsteady_solver_validation_problem)
 
-# Delete placeholder object that are now stored in the simulation object.
 del unsteady_solver_validation_problem
 
-# Run the solver and draw it's output.
 unsteady_solver_validation_solver.run()
 asmvp.output.draw(unsteady_solver_validation_solver.airplane, show_delta_pressures=True)

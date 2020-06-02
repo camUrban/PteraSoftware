@@ -388,7 +388,7 @@ class RingVortex:
         self.back_leg.strength = strength
 
     # ToDo: Properly document this method.
-    def update_location(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
+    def update_position(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
         """
 
         :param front_left_vertex:

@@ -84,4 +84,4 @@ del steady_solver_validation_problem
 
 # Run the solver and draw it's output.
 steady_solver_validation_solver.run()
-asmvp.output.draw(steady_solver_validation_solver.airplane, show_delta_pressures=True)
+# asmvp.output.draw(steady_solver_validation_solver.airplane, show_delta_pressures=True)

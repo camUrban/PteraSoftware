@@ -40,7 +40,7 @@ performance_testing_airplane = asmvp.geometry.Airplane(
                     # Define the cross section's leading edge placement.
                     x_le=1.0,
                     y_le=5.0,
-                    z_le=0.5,
+                    z_le=0.0,
 
                     # Define the cross section's twist and chord.
                     twist=5,
@@ -55,28 +55,13 @@ performance_testing_airplane = asmvp.geometry.Airplane(
 )
 
 root_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
-    base_wing_cross_section=performance_testing_airplane.wings[0].wing_cross_sections[0],
-    x_le_amplitude=0.0,
-    x_le_period=0.0,
-    x_le_spacing='sine',
-    y_le_amplitude=0.0,
-    y_le_period=0.0,
-    y_le_spacing='sine',
-    z_le_amplitude=0.0,
-    z_le_period=0.0,
-    z_le_spacing='sine',
-    twist_amplitude=0.0,
-    twist_period=0.0,
-    twist_spacing='sine',
-    control_surface_deflection_amplitude=0.0,
-    control_surface_deflection_period=0.0,
-    control_surface_deflection_spacing='sine'
+    base_wing_cross_section=performance_testing_airplane.wings[0].wing_cross_sections[0]
 )
 
 tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
     base_wing_cross_section=performance_testing_airplane.wings[0].wing_cross_sections[1],
-    x_le_amplitude=1.0,
-    x_le_period=2.5,
+    x_le_amplitude=2.5,
+    x_le_period=5.0,
     x_le_spacing='sine',
     y_le_amplitude=0.0,
     y_le_period=0.0,
@@ -84,63 +69,30 @@ tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
     z_le_amplitude=2.0,
     z_le_period=2.5,
     z_le_spacing='sine',
-    twist_amplitude=15.0,
-    twist_period=2.5,
-    twist_spacing='sine',
-    control_surface_deflection_amplitude=0.0,
-    control_surface_deflection_period=0.0,
-    control_surface_deflection_spacing='sine'
+    twist_amplitude=30.0,
+    twist_period=5.0,
+    twist_spacing='sine'
 )
 
 wing_movement = asmvp.performance.WingMovement(
     base_wing=performance_testing_airplane.wings[0],
-    wing_cross_sections_movements=[root_wing_cross_section_movement, tip_wing_cross_section_movement],
-    x_le_amplitude=0.0,
-    x_le_period=0.0,
-    x_le_spacing='sine',
-    y_le_amplitude=0.0,
-    y_le_period=0.0,
-    y_le_spacing='sine',
-    z_le_amplitude=0.0,
-    z_le_period=0.0,
-    z_le_spacing='sine'
+    wing_cross_sections_movements=[root_wing_cross_section_movement, tip_wing_cross_section_movement]
 )
 
 airplane_movement = asmvp.performance.AirplaneMovement(
     base_airplane=performance_testing_airplane,
-    wing_movements=[wing_movement],
-    x_ref_amplitude=0.0,
-    x_ref_period=0.0,
-    x_ref_spacing='sine',
-    y_ref_amplitude=0.0,
-    y_ref_period=0.0,
-    y_ref_spacing='sine',
-    z_ref_amplitude=0.0,
-    z_ref_period=0.0,
-    z_ref_spacing='sine'
+    wing_movements=[wing_movement]
 )
 
-# Initialize the problem's operating point.
 performance_testing_operating_point = asmvp.performance.OperatingPoint()
 
 operating_point_movement = asmvp.performance.OperatingPointMovement(
-    base_operating_point=performance_testing_operating_point,
-    velocity_amplitude=0.0,
-    velocity_period=0.0,
-    velocity_spacing='sine',
-    alpha_amplitude=0.0,
-    alpha_period=0.0,
-    alpha_spacing='sine',
-    beta_amplitude=0.0,
-    beta_period=0.0,
-    beta_spacing='sine'
+    base_operating_point=performance_testing_operating_point
 )
 
 movement = asmvp.performance.Movement(
     airplane_movement=airplane_movement,
     operating_point_movement=operating_point_movement,
-    num_steps=100,
-    delta_time=0.1
 )
 
 asmvp.output.make_flapping_gif(movement)

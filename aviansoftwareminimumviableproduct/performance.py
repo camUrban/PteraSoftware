@@ -1,3 +1,4 @@
+
 """This module contains the class definitions for the problem's movement and the problem's operating point.
 
 This module contains the following classes:
@@ -27,7 +28,9 @@ class Movement:
     """This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
 
     This class contains the following public methods:
-        None
+        get_flapping_velocity_at_point_on_panel: This method gets the velocity due to flapping at a point on the panel
+                                                 of a given airplane based the time step, its current position, and its
+                                                 last position.
 
     This class contains the following class attributes:
         None
@@ -67,106 +70,110 @@ class Movement:
 
     def get_flapping_velocity_at_point_on_panel(self, wing_position, panel_chordwise_position, panel_spanwise_position,
                                                 point_name, current_step):
+        """This method gets the velocity due to flapping at a point on the panel of a given airplane based the time
+        step, its current position, and its last position.
+
+        :param wing_position: int
+            This is the position of the panel's wing in the airplane's list of wings.
+        :param panel_chordwise_position: int
+            This is the chordwise position of the panel in the wing's ndarray of panels.
+        :param panel_spanwise_position: int
+            This is the spanwise position of the panel in the wing's ndarray of panels.
+        :param point_name: string
+            This is the name of the point at which to find the velocity due to flapping. It can be 'center',
+            'collocation', 'front right vertex', 'front left vertex', 'back left vertex', 'back right vertex',
+            'ring vortex front right vertex', 'ring vortex front left vertex', 'ring vortex back left vertex',
+            'ring vortex back right vertex', 'ring vortex front leg center', 'ring vortex left leg center',
+            'ring vortex back leg center', or 'ring vortex right leg center'.
+        :param current_step: int
+            This is the step number at which to evaluate the flapping velocity at the point.
+        :return flapping_velocity: 1D ndarray
+            This is the flapping velocity at the current time step at the given point. It is a (,3) ndarray with units
+            of meters per second.
         """
 
-        :param wing_position:
-        :param panel_chordwise_position:
-        :param panel_spanwise_position:
-        :param point_name:
-        :param current_step:
-        :return:
-        """
-
+        # If this is the first time step, there is no previous geometry, so the flapping velocity is (0, 0, 0)
+        # meters per second.
         if current_step < 1:
-            return np.zeros(3)
+            flapping_velocity = np.zeros(3)
+            return flapping_velocity
 
+        # Find the current, and the last airplane.
         airplane = self.airplanes[current_step]
         last_airplane = self.airplanes[current_step - 1]
 
+        # Find the current, and the last wing.
         wing = airplane.wings[wing_position]
         last_wing = last_airplane.wings[wing_position]
 
+        # Find the current, and the last panel.
         panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
         last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
 
+        # Initialize variables to hold the current and the last position.
         position = None
         last_position = None
 
+        # Populate the current and last position based on the point's name.
         if point_name == 'center':
             position = panel.center
             last_position = last_panel.center
-
         elif point_name == 'collocation':
             position = panel.collocation_point
             last_position = last_panel.collocation_point
-
         elif point_name == 'front right vertex':
             position = panel.front_right_vertex
             last_position = last_panel.front_right_vertex
-
         elif point_name == 'front left vertex':
             position = panel.front_left_vertex
             last_position = last_panel.front_left_vertex
-
         elif point_name == 'back left vertex':
             position = panel.back_left_vertex
             last_position = last_panel.back_left_vertex
-
         elif point_name == 'back right vertex':
             position = panel.back_right_vertex
             last_position = last_panel.back_right_vertex
-
         elif point_name == 'ring vortex front right vertex':
             position = panel.ring_vortex.front_right_vertex
             last_position = last_panel.ring_vortex.front_right_vertex
-
         elif point_name == 'ring vortex front left vertex':
             position = panel.ring_vortex.back_left_vertex
             last_position = last_panel.ring_vortex.back_left_vertex
-
         elif point_name == 'ring vortex back left vertex':
             position = panel.ring_vortex.back_left_vertex
             last_position = last_panel.ring_vortex.back_left_vertex
-
         elif point_name == 'ring vortex back right vertex':
             position = panel.ring_vortex.back_right_vertex
             last_position = last_panel.ring_vortex.back_right_vertex
-
-        elif point_name == 'horseshoe vortex origin':
-            position = panel.horseshoe_vortex.origin
-            last_position = last_panel.horseshoe_vortex.origin
-
-        elif point_name == 'horseshoe vortex termination':
-            position = panel.horseshoe_vortex.termination
-            last_position = last_panel.horseshoe_vortex.termination
-
         elif point_name == 'ring vortex front leg center':
             position = panel.ring_vortex.front_leg.center
             last_position = last_panel.ring_vortex.front_leg.center
-
         elif point_name == 'ring vortex left leg center':
             position = panel.ring_vortex.left_leg.center
             last_position = last_panel.ring_vortex.left_leg.center
-
         elif point_name == 'ring vortex back leg center':
             position = panel.ring_vortex.back_leg.center
             last_position = last_panel.ring_vortex.back_leg.center
-
         elif point_name == 'ring vortex right leg center':
             position = panel.ring_vortex.right_leg.center
             last_position = last_panel.ring_vortex.right_leg.center
 
-        elif point_name == 'horseshoe vortex finite leg center':
-            position = panel.horseshoe_vortex.finite_leg.center
-            last_position = last_panel.ring_vortex.finite_leg.center
-
-        return (position - last_position) / self.delta_time
+        # Calculate and return the flapping velocity.
+        flapping_velocity = (position - last_position) / self.delta_time
+        return flapping_velocity
 
 
-# ToDo: Properly document this class.
 class AirplaneMovement:
     """This is a class used to contain the movement characteristics of an airplane.
 
+    This class contains the following public methods:
+        generate_airplanes: This method creates the airplane object at each time step, and groups them into a list.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
     # ToDo: Properly document this method.
@@ -208,7 +215,7 @@ class AirplaneMovement:
 
     # ToDo: Properly document this method.
     def generate_airplanes(self, num_steps=10, delta_time=0.1):
-        """
+        """This method creates the airplane object at each time step, and groups them into a list.
         
         :param num_steps: 
         :param delta_time: 
@@ -308,10 +315,17 @@ class AirplaneMovement:
         return airplanes
 
 
-# ToDo: Properly document this class.
 class WingMovement:
     """This is a class used to contain the movement characteristics of a wing.
 
+    This class contains the following public methods:
+        generate_wings: This method creates the wing object at each time step, and groups them into a list.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
     # ToDo: Properly document this method.
@@ -353,7 +367,7 @@ class WingMovement:
 
     # ToDo: Properly document this method.
     def generate_wings(self, num_steps=10, delta_time=0.1):
-        """
+        """This method creates the wing object at each time step, and groups them into a list.
 
         :param num_steps:
         :param delta_time:
@@ -459,10 +473,18 @@ class WingMovement:
         return wings
 
 
-# ToDo: Properly document this class.
 class WingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross section.
 
+    This class contains the following public methods:
+        generate_wing_cross_sections: This method creates the wing cross section objects at each time step, and groups
+                                      them into a list.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
     # ToDo: Properly document this method.
@@ -520,7 +542,7 @@ class WingCrossSectionMovement:
 
     # ToDo: Properly document this method.
     def generate_wing_cross_sections(self, num_steps=10, delta_time=0.1):
-        """
+        """This method creates the wing cross section objects at each time step, and groups them into a list.
 
         :param num_steps:
         :param delta_time:
@@ -778,10 +800,18 @@ class OperatingPoint:
         return freestream_velocity_geometry_axes
 
 
-# ToDo: Properly document this class.
 class OperatingPointMovement:
     """This is a class used to contain the movement characteristics of an operating point.
-    
+
+    This class contains the following public methods:
+        generate_operating_points: This method creates the operating point objects at each time step, and groups them
+                                   into a list.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
     # ToDo: Properly document this method.
@@ -803,7 +833,7 @@ class OperatingPointMovement:
 
     # ToDo: Properly document this method.
     def generate_operating_points(self, num_steps=10, delta_time=0.1):
-        """
+        """This method creates the operating point objects at each time step, and groups them into a list.
         
         :param num_steps: 
         :param delta_time: 

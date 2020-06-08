@@ -96,4 +96,3 @@ class UnsteadyProblem(Problem):
 
         # Initialize the other attributes.
         self.movement = movement
-

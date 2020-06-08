@@ -213,6 +213,7 @@ class Wing:
 
         # Initialize an empty ndarray to hold this wing's wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
+        self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
     def calculate_wetted_area(self):
         """This method calculates the wetted area of the wing based on the areas of its panels.

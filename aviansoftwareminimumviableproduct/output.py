@@ -16,6 +16,7 @@ import pyvista as pv
 import matplotlib.pyplot as plt
 
 
+# ToDo: Properly document this function.
 def draw(airplane, show_delta_pressures):
     """Draw the geometry of an airplane object.
 
@@ -106,9 +107,9 @@ def draw(airplane, show_delta_pressures):
     if len(points) > 0:
         plotter.add_points(pv.PolyData(points))
 
-    # for wing in airplane.wings:
-    #     streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-    #     plotter.add_points(pv.PolyData(streamline_points))
+    for wing in airplane.wings:
+        streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+        plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")

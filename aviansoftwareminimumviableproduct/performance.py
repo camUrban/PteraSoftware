@@ -89,143 +89,78 @@ class Movement:
         panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
         last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
 
+        position = None
+        last_position = None
+
         if point_name == 'center':
             position = panel.center
             last_position = last_panel.center
-
-            return (position - last_position) / self.delta_time
 
         elif point_name == 'collocation':
             position = panel.collocation_point
             last_position = last_panel.collocation_point
 
-            return (position - last_position) / self.delta_time
-
         elif point_name == 'front right vertex':
             position = panel.front_right_vertex
             last_position = last_panel.front_right_vertex
-
-            return (position - last_position) / self.delta_time
 
         elif point_name == 'front left vertex':
             position = panel.front_left_vertex
             last_position = last_panel.front_left_vertex
 
-            return (position - last_position) / self.delta_time
-
         elif point_name == 'back left vertex':
             position = panel.back_left_vertex
             last_position = last_panel.back_left_vertex
-
-            return (position - last_position) / self.delta_time
 
         elif point_name == 'back right vertex':
             position = panel.back_right_vertex
             last_position = last_panel.back_right_vertex
 
-            return (position - last_position) / self.delta_time
-
         elif point_name == 'ring vortex front right vertex':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.front_right_vertex
-                last_position = last_panel.ring_vortex.front_right_vertex
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex front right vertex!')
+            position = panel.ring_vortex.front_right_vertex
+            last_position = last_panel.ring_vortex.front_right_vertex
 
         elif point_name == 'ring vortex front left vertex':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.back_left_vertex
-                last_position = last_panel.ring_vortex.back_left_vertex
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex back left vertex!')
+            position = panel.ring_vortex.back_left_vertex
+            last_position = last_panel.ring_vortex.back_left_vertex
 
         elif point_name == 'ring vortex back left vertex':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.back_left_vertex
-                last_position = last_panel.ring_vortex.back_left_vertex
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex back left vertex!')
+            position = panel.ring_vortex.back_left_vertex
+            last_position = last_panel.ring_vortex.back_left_vertex
 
         elif point_name == 'ring vortex back right vertex':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.back_right_vertex
-                last_position = last_panel.ring_vortex.back_right_vertex
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex back right vertex!')
+            position = panel.ring_vortex.back_right_vertex
+            last_position = last_panel.ring_vortex.back_right_vertex
 
         elif point_name == 'horseshoe vortex origin':
-            if panel.horseshoe_vortex is not None:
-                position = panel.horseshoe_vortex.origin
-                last_position = last_panel.horseshoe_vortex.origin
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no horseshoe vortex origin!')
+            position = panel.horseshoe_vortex.origin
+            last_position = last_panel.horseshoe_vortex.origin
 
         elif point_name == 'horseshoe vortex termination':
-            if panel.horseshoe_vortex is not None:
-                position = panel.horseshoe_vortex.termination
-                last_position = last_panel.horseshoe_vortex.termination
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no horseshoe termination!')
+            position = panel.horseshoe_vortex.termination
+            last_position = last_panel.horseshoe_vortex.termination
 
         elif point_name == 'ring vortex front leg center':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.front_leg.center
-                last_position = last_panel.ring_vortex.front_leg.center
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex front leg center!')
+            position = panel.ring_vortex.front_leg.center
+            last_position = last_panel.ring_vortex.front_leg.center
 
         elif point_name == 'ring vortex left leg center':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.left_leg.center
-                last_position = last_panel.ring_vortex.left_leg.center
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex left leg center!')
+            position = panel.ring_vortex.left_leg.center
+            last_position = last_panel.ring_vortex.left_leg.center
 
         elif point_name == 'ring vortex back leg center':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.back_leg.center
-                last_position = last_panel.ring_vortex.back_leg.center
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex back leg center!')
+            position = panel.ring_vortex.back_leg.center
+            last_position = last_panel.ring_vortex.back_leg.center
 
         elif point_name == 'ring vortex right leg center':
-            if panel.ring_vortex is not None:
-                position = panel.ring_vortex.right_leg.center
-                last_position = last_panel.ring_vortex.right_leg.center
-
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no ring vortex right leg center!')
+            position = panel.ring_vortex.right_leg.center
+            last_position = last_panel.ring_vortex.right_leg.center
 
         elif point_name == 'horseshoe vortex finite leg center':
-            if panel.ring_vortex is not None:
-                position = panel.horseshoe_vortex.finite_leg.center
-                last_position = last_panel.ring_vortex.finite_leg.center
+            position = panel.horseshoe_vortex.finite_leg.center
+            last_position = last_panel.ring_vortex.finite_leg.center
 
-                return (position - last_position) / self.delta_time
-
-            raise Exception('This panel has no horseshoe vortex finite leg center!')
-
-        else:
-            raise Exception('Invalid point name inputted!')
+        return (position - last_position) / self.delta_time
 
 
 # ToDo: Properly document this class.
@@ -252,7 +187,7 @@ class AirplaneMovement:
         :param z_ref_period: 
         :param z_ref_spacing: 
         """
-        
+
         self.base_airplane = base_airplane
         self.wing_movements = wing_movements
 
@@ -279,7 +214,7 @@ class AirplaneMovement:
         :param delta_time: 
         :return: 
         """
-        
+
         # Create an ndarray of x_ref points.
         if self.x_ref_spacing == 'sine':
             x_ref_list = oscillating_sinspace(
@@ -848,7 +783,7 @@ class OperatingPointMovement:
     """This is a class used to contain the movement characteristics of an operating point.
     
     """
-    
+
     # ToDo: Properly document this method.
     def __init__(self, base_operating_point, velocity_amplitude=0.0, velocity_period=0.0, velocity_spacing='sine'):
         """

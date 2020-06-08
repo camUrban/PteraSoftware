@@ -37,9 +37,11 @@ class LineVortex:
         """This is the initialization method.
 
         :param origin: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the origin of the line vortex.
+            This is a vector containing the x, y, and z coordinates of the origin of the line vortex. It's a (3,)
+            ndarray. Its units are meters.
         :param termination: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the termination of the line vortex.
+            This is a vector containing the x, y, and z coordinates of the termination of the line vortex. It's a (3,)
+            ndarray. Its units are meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
         """
@@ -60,7 +62,8 @@ class LineVortex:
             This parameter is the point where the induced velocity is to be calculated. It's a (3,) ndarray. Its units
             are meters.
         :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (3,) ndarray. Its
+            units are meters per second.
         """
 
         normalized_induced_velocity = self.calculate_induced_velocity(point=point, overriding_strength=1)
@@ -83,7 +86,8 @@ class LineVortex:
             None. If None, then this method will use the vortex's assigned strength. Otherwise, it will use this
             strength.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (3,) ndarray. Its
+            units are meters per second.
         """
 
         # If the overriding strength is not None, then calculate the induced velocity using the overriding value.
@@ -160,16 +164,18 @@ class HorseshoeVortex:
         """This is the initialization method.
 
         :param finite_leg_origin: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the origin of the vortex's finite leg.
+            This is a vector containing the x, y, and z coordinates of the origin of the vortex's finite leg. It's a
+            (,3) ndarray. It's units are meters.
         :param finite_leg_termination: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the termination of the vortex's finite leg.
+            This is a vector containing the x, y, and z coordinates of the termination of the vortex's finite leg. It's
+            a (,3) ndarray. It's units are meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
         :param infinite_leg_direction: 1D ndarray
-            This is a unit vector containing the direction that the infinite legs extend towards. It's units are meters.
-            It's default value is the unit vector in the positive x direction.
+            This is a unit vector containing the direction that the infinite legs extend towards. It's a (,3) ndarray.
+            It's units are meters. It's default value is the unit vector in the positive x direction.
         :param infinite_leg_length: float
-            This is the length back to extend the quasi-infinite legs of the horseshoe vortex.
+            This is the length back to extend the quasi-infinite legs of the horseshoe vortex. It's units are meters.
         """
 
         self.finite_leg_origin = finite_leg_origin
@@ -199,9 +205,11 @@ class HorseshoeVortex:
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
+            (,3) ndarray with units of meters.
         :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
+            units of meters per second.
         """
 
         normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(point=point)
@@ -222,9 +230,11 @@ class HorseshoeVortex:
         """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
+            (,3) ndarray with units of meters.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
+            units of meters per second.
         """
 
         velocity_induced_by_right_leg = self.right_leg.calculate_induced_velocity(point=point)
@@ -266,6 +276,7 @@ class RingVortex:
                                     vortex strength.
         update_strength: This method updates the strength of this ring vortex object, and the strength of its
                          four legs' line vortex objects.
+        update_position: This method updates the position of the ring vortex, and the positions of all its attributes.
 
     This class contains the following class attributes:
         None
@@ -278,13 +289,17 @@ class RingVortex:
         """This is the initialization method.
 
         :param front_left_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's front left point.
+            This is a vector containing the x, y, and z coordinates of the vortex's front left point. It's a (,3)
+            ndarray with units of meters.
         :param front_right_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's front right point.
+            This is a vector containing the x, y, and z coordinates of the vortex's front right point. It's a (,3)
+            ndarray with units of meters.
         :param back_left_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's back left point.
+            This is a vector containing the x, y, and z coordinates of the vortex's back left point. It's a (,3)
+            ndarray with units of meters.
         :param back_right_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's back right point.
+            This is a vector containing the x, y, and z coordinates of the vortex's back right point. It's a (,3)
+            ndarray with units of meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
         """
@@ -327,9 +342,11 @@ class RingVortex:
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
+            (,3) ndarray with units of meters.
         :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
+            units of meters per second.
         """
 
         normalized_velocity_induced_by_front_leg = self.front_leg.calculate_normalized_induced_velocity(point=point)
@@ -351,9 +368,11 @@ class RingVortex:
         """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at.
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
+            (,3) ndarray with units of meters.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced velocity.
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
+            units of meters per second.
         """
 
         velocity_induced_by_front_leg = self.front_leg.calculate_induced_velocity(point=point)
@@ -387,14 +406,21 @@ class RingVortex:
         self.left_leg.strength = strength
         self.back_leg.strength = strength
 
-    # ToDo: Properly document this method.
     def update_position(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
-        """
+        """This method updates the position of the ring vortex, and the positions of all its attributes.
 
-        :param front_left_vertex:
-        :param front_right_vertex:
-        :param back_left_vertex:
-        :param back_right_vertex:
+        :param front_left_vertex: 1D ndarray
+            This is the new position of the x, y, and z coordinates of the front left vertex. It is a (,3) ndarray with
+            units of meters.
+        :param front_right_vertex: 1D ndarray
+            This is the new position of the x, y, and z coordinates of the front right vertex. It is a (,3) ndarray with
+            units of meters.
+        :param back_left_vertex: 1D ndarray
+            This is the new position of the x, y, and z coordinates of the back left vertex. It is a (,3) ndarray with
+            units of meters.
+        :param back_right_vertex: 1D ndarray
+            This is the new position of the x, y, and z coordinates of the back right vertex. It is a (,3) ndarray with
+            units of meters.
         :return: None
         """
 

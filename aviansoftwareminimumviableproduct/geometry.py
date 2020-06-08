@@ -211,7 +211,7 @@ class Wing:
         self.span = None
         self.calculate_span()
 
-        # Initialize an empty ndarray to hold this wing's wake ring vortex vertices.
+        # Initialize an empty ndarray to hold this wing's wake ring vortices and its wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 

@@ -27,9 +27,8 @@ class SteadyRingVortexLatticeMethodSolver:
         run: Run the solver on the steady problem.
         initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes the
                                    panels' vortices.
-        set_up_geometry: Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        set_up_operating_point: Find the normal velocity at every collocation point without the influence of the
-                                vortices.
+        calculate_wing_wing_influences: Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
+        calculate_freestream_wing_influences: Find the vector of freestream-wing influence coefficients associated with this problem.
         calculate_vortex_strengths: Solve for each panel's vortex strength.
         calculate_solution_velocity: Find the velocity at a given point due to both the freestream and the vortices.
         calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
@@ -55,10 +54,9 @@ class SteadyRingVortexLatticeMethodSolver:
         self.operating_point = self.steady_problem.operating_point
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
-        self.aerodynamic_influence_coefficients = np.zeros((self.airplane.num_panels, self.airplane.num_panels))
-        self.freestream_velocity = np.zeros(3)
-        self.normal_directions = np.zeros((self.airplane.num_panels, 3))
-        self.freestream_influences = np.zeros(self.airplane.num_panels)
+        self.wing_wing_influences = None
+        self.freestream_velocity = np.expand_dims(self.operating_point.calculate_freestream_velocity_geometry_axes(), 0)
+        self.freestream_wing_influences = None
         self.vortex_strengths = np.zeros(self.airplane.num_panels)
         self.total_near_field_force_wind_axes = np.zeros(3)
         self.total_near_field_moment_wind_axes = np.zeros(3)
@@ -80,15 +78,15 @@ class SteadyRingVortexLatticeMethodSolver:
         self.initialize_panel_vortices()
         print("Panel vortices initialized.")
 
-        # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        print("\nSetting up geometry...")
-        self.set_up_geometry()
-        print("Geometry set up.")
+        # Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
+        print("\nCalculating the wing-wing influences...")
+        self.calculate_wing_wing_influences()
+        print("Wing-wing influences calculated.")
 
-        # Find the normal freestream speed at every collocation point without vortices.
-        print("\nSetting up operating point...")
-        self.set_up_operating_point()
-        print("Operating point set up.")
+        # Find the vector of freestream-wing influence coefficients associated with this problem.
+        print("\nCalculating the freestream-wing influences...")
+        self.calculate_freestream_wing_influences()
+        print("Freestream-wing influences calculated.")
 
         # Solve for each panel's vortex strength.
         print("\nCalculating vortex strengths...")
@@ -119,12 +117,12 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Print out the coefficients.
         print("\nCoefficients in Wind Axes:")
-        print("\tCDi:\t\t\t\t\t", np.round(self.CDi, 3))
-        print("\tCY:\t\t\t\t\t\t", np.round(self.CY, 3))
-        print("\tCL:\t\t\t\t\t\t", np.round(self.CL, 3))
-        print("\tCl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-        print("\tCm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-        print("\tCn:\t\t\t\t\t\t", np.round(self.Cn, 3))
+        print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
+        print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
+        print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
+        print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+        print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+        print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
@@ -146,7 +144,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the freestream direction in geometry axes.
         freestream_direction = self.operating_point.calculate_freestream_direction_geometry_axes()
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
             # Find a suitable length for the "infinite" legs of the horseshoe vortices on this wing. At twenty-times the
@@ -194,14 +192,17 @@ class SteadyRingVortexLatticeMethodSolver:
                         strength=None
                     )
 
-    def set_up_geometry(self):
-        """Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+    def calculate_wing_wing_influences(self):
+        """Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
 
         :return: None
         """
 
-        # Iterate through the airplane's wings. This wing contains the panel with the collocation point where the
-        # vortex influence is to be calculated.
+        # Initialize the wing-wing influence coefficient matrix.
+        self.wing_wing_influences = np.zeros((self.airplane.num_panels, self.airplane.num_panels))
+
+        # Iterate through the current_airplane's wings. This wing contains the panel with the collocation point where
+        # the vortex influence is to be calculated.
         for collocation_panel_wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -210,15 +211,15 @@ class SteadyRingVortexLatticeMethodSolver:
             # Iterate through the list of panels with the collocation points.
             for collocation_panel_index, collocation_panel in np.ndenumerate(collocation_panels):
 
-                # Iterate through the airplane's wings. This wing contains the panel with the vortex whose influence
-                # on the collocation point is to be calculated.
+                # Iterate through the current_airplane's wings. This wing contains the panel with the vortex whose
+                # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.airplane.wings:
 
                     # Convert the 2D ndarray of this wing's panels into a 1D list.
-                    vortex_panel_wings_panels = np.ravel(vortex_panel_wing.panels)
+                    vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
-                    for vortex_panel_index, vortex_panel in np.ndenumerate(vortex_panel_wings_panels):
+                    for vortex_panel_index, vortex_panel in np.ndenumerate(vortex_panels):
 
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
@@ -234,19 +235,19 @@ class SteadyRingVortexLatticeMethodSolver:
                             normalized_induced_velocity_at_collocation_point, collocation_panel_normal_direction)
 
                         # Add this value to the solver's aerodynamic influence coefficient matrix.
-                        self.aerodynamic_influence_coefficients[collocation_panel_index, vortex_panel_index] = (
+                        self.wing_wing_influences[collocation_panel_index, vortex_panel_index] = (
                             normal_normalized_induced_velocity_at_collocation_point)
 
-    def set_up_operating_point(self):
-        """Find the normal velocity at every collocation point without the influence of the vortices.
+    def calculate_freestream_wing_influences(self):
+        """Find the vector of freestream-wing influence coefficients associated with this problem.
 
         :return: None
         """
 
-        # This calculates and updates the direction the wind is going to, in geometry axes coordinates.
-        self.freestream_velocity = np.expand_dims(self.operating_point.calculate_freestream_velocity_geometry_axes(), 0)
+        # Initialize the vector of freestream-wing influence coefficients.
+        self.freestream_wing_influences = np.zeros(self.airplane.num_panels)
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for collocation_panel_wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -254,11 +255,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
             # Iterate through the list of panels with the collocation points.
             for collocation_panel_index, collocation_panel in np.ndenumerate(collocation_panels):
-                # Update the solver's list of normal directions.
-                self.normal_directions[collocation_panel_index] = collocation_panel.normal_direction
 
                 # Update solver's list of freestream influences.
-                self.freestream_influences[collocation_panel_index] = (
+                self.freestream_wing_influences[collocation_panel_index] = (
                     np.dot(self.freestream_velocity, collocation_panel.normal_direction))
 
     def calculate_vortex_strengths(self):
@@ -268,9 +267,9 @@ class SteadyRingVortexLatticeMethodSolver:
         """
 
         # Solve for the strength of each panel's vortex.
-        self.vortex_strengths = np.linalg.solve(self.aerodynamic_influence_coefficients, -self.freestream_influences)
+        self.vortex_strengths = np.linalg.solve(self.wing_wing_influences, -self.freestream_wing_influences)
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -299,7 +298,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Initialize a (3,) ndarray of zeros to hold the velocity induced at the point due to the vortices.
         velocity_induced_by_vortices = np.zeros(3)
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -323,7 +322,7 @@ class SteadyRingVortexLatticeMethodSolver:
             This method uses logic described on pages 9-11 of "Modeling of aerodynamic forces in flapping flight with
             the Unsteady Vortex Lattice Method" by Thomas Lambert.
 
-        The forces and moments calculated by this method are in geometry axes. The moment is about the airplane's
+        The forces and moments calculated by this method are in geometry axes. The moment is about the current_airplane's
         reference point, which should be at the center of gravity.
 
         :return: None
@@ -333,7 +332,7 @@ class SteadyRingVortexLatticeMethodSolver:
         total_near_field_force_geometry_axes = np.zeros(3)
         total_near_field_moment_geometry_axes = np.zeros(3)
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
             # Initialize two variables to hold this wing's number of chordwise and spanwise panels.
@@ -456,7 +455,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     panel.update_pressure()
 
                     # Add the near field force and moment on this panel to the total near field force and moment on this
-                    # airplane.
+                    # current_airplane.
                     total_near_field_force_geometry_axes += panel.near_field_force_geometry_axes
                     total_near_field_moment_geometry_axes += panel.near_field_moment_geometry_axes
 
@@ -474,28 +473,28 @@ class SteadyRingVortexLatticeMethodSolver:
                 @ total_near_field_moment_geometry_axes
         )
 
-        # Calculate the airplane's induced drag coefficient
+        # Calculate the current_airplane's induced drag coefficient
         self.CDi = (
                 -self.total_near_field_force_wind_axes[0]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
 
-        # Calculate the airplane's side force coefficient.
+        # Calculate the current_airplane's side force coefficient.
         self.CY = (
                 self.total_near_field_force_wind_axes[1]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
 
-        # Calculate the airplane's lift coefficient.
+        # Calculate the current_airplane's lift coefficient.
         self.CL = (
                 -self.total_near_field_force_wind_axes[2]
                 / self.operating_point.calculate_dynamic_pressure()
                 / self.airplane.s_ref
         )
 
-        # Calculate the airplane's rolling moment coefficient.
+        # Calculate the current_airplane's rolling moment coefficient.
         self.Cl = (
                 self.total_near_field_moment_wind_axes[0]
                 / self.operating_point.calculate_dynamic_pressure()
@@ -503,7 +502,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 / self.airplane.b_ref
         )
 
-        # Calculate the airplane's pitching moment coefficient.
+        # Calculate the current_airplane's pitching moment coefficient.
         self.Cm = (
                 self.total_near_field_moment_wind_axes[1]
                 / self.operating_point.calculate_dynamic_pressure()
@@ -511,7 +510,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 / self.airplane.c_ref
         )
 
-        # Calculate the airplane's yawing moment coefficient.
+        # Calculate the current_airplane's yawing moment coefficient.
         self.Cn = (
                 self.total_near_field_moment_wind_axes[2]
                 / self.operating_point.calculate_dynamic_pressure()
@@ -526,12 +525,12 @@ class SteadyRingVortexLatticeMethodSolver:
             This is the integer number of points along each streamline (not including the initial point). It can be
             increased for higher fidelity visuals. The default value is 10.
         :param delta_time: float, optional
-            This is the time in seconds between each time step It can be decreased for higher fidelity visuals or to
+            This is the time in seconds between each time current_step It can be decreased for higher fidelity visuals or to
             make the streamlines shorter. It's default value is 0.1 seconds.
         :return: None
         """
 
-        # Iterate through the airplane's wings.
+        # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
             # Initialize an ndarray to hold the points along the streamline. It is shape (M x N x 3), where M is the

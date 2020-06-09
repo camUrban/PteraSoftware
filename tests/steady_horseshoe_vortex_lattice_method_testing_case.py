@@ -2,11 +2,11 @@
 """This is a testing case for the steady horseshoe vortex lattice method solver.
 
     Based on an identical XFLR5 testing case, the expected output for this case is:
-        CL:     0.790
-        CDi:    0.019
-        Cl:     0.000
-        Cm:     -0.690
-        Cn:     0.000
+        current_CL:     0.790
+        current_CDi:    0.019
+        current_Cl:     0.000
+        current_Cm:     -0.690
+        current_Cn:     0.000
 
     Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a horseshoe vortex
     lattice method solver.
@@ -17,10 +17,10 @@ import aviansoftwareminimumviableproduct as asmvp
 # Initialize the problem's geometry.
 steady_solver_validation_airplane = asmvp.geometry.Airplane(
 
-    # Name the airplane.
+    # Name the current_airplane.
     name="Steady Solver Testing Airplane",
 
-    # Define a list of the airplane's wings.
+    # Define a list of the current_airplane's wings.
     wings=[
 
         # Initialize the wing object.
@@ -84,4 +84,4 @@ del steady_solver_validation_problem
 
 # Run the solver and draw it's output.
 steady_solver_validation_solver.run()
-# asmvp.output.draw(steady_solver_validation_solver.airplane, show_delta_pressures=True)
+# asmvp.output.draw(steady_solver_validation_solver.current_airplane, show_delta_pressures=True)

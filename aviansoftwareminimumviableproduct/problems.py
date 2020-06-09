@@ -31,7 +31,7 @@ class Problem:
         """This is the initialization method.
 
         :param airplane: Airplane
-            This is the airplane object for this problem.
+            This is the current_airplane object for this problem.
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         """
@@ -58,7 +58,7 @@ class SteadyProblem(Problem):
         """This is the initialization method.
 
         :param airplane: Airplane
-            This is the airplane object for this problem.
+            This is the current_airplane object for this problem.
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         """
@@ -84,11 +84,11 @@ class UnsteadyProblem(Problem):
         """This is the initialization method.
 
         :param airplane: Airplane
-            This is the airplane object for this problem.
+            This is the current_airplane object for this problem.
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         :param movement: Movement
-            This is the movement object for this problem's airplane.
+            This is the movement object for this problem's current_airplane.
         """
 
         # Call the parent class's initialization method

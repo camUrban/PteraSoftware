@@ -4,13 +4,13 @@
 
 import aviansoftwareminimumviableproduct as asmvp
 
-# Initialize the airplane.
+# Initialize the current_airplane.
 performance_testing_airplane = asmvp.geometry.Airplane(
 
-    # Name the airplane.
+    # Name the current_airplane.
     name="Performance Testing Airplane",
 
-    # Define a list of the airplane's wings.
+    # Define a list of the current_airplane's wings.
     wings=[
 
         # Initialize the wing object.

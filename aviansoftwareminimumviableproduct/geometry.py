@@ -3,9 +3,9 @@ geometries.
 
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
-    Wing: This is a class used to contain the wings of an airplane.
-    WingCrossSection: This class is used to contain the cross sections of the wings of an airplane.
-    Airfoil: This class is used to contain the airfoil of a cross section of a wing of an airplane.
+    Wing: This is a class used to contain the wings of an current_airplane.
+    WingCrossSection: This class is used to contain the cross sections of the wings of an current_airplane.
+    Airfoil: This class is used to contain the airfoil of a cross section of a wing of an current_airplane.
     Panel: This class is used to contain the panels of a wing.
 
 This module contains the following exceptions:
@@ -36,7 +36,7 @@ class Airplane:
         Date of Retrieval:    04/23/2020
 
     This class contains the following public methods:
-        set_reference_dimensions_from_wing: This method sets the reference dimensions of the airplane from measurements
+        set_reference_dimensions_from_wing: This method sets the reference dimensions of the current_airplane from measurements
                                             obtained from the main wing.
 
     This class contains the following class attributes:
@@ -51,7 +51,7 @@ class Airplane:
         """This is the initialization method.
 
         :param name: str, optional
-            A sensible name for your airplane. The default is "Untitled".
+            A sensible name for your current_airplane. The default is "Untitled".
         :param x_ref: float, optional
             This is the x coordinate of the moment reference point. It should be the x coordinate of the center of
             gravity. The default is 0.0.
@@ -62,7 +62,7 @@ class Airplane:
             This is the z coordinate of the moment reference point. It should be the z coordinate of the center of
             gravity. The default is 0.0.
         :param wings: list of Wing objects, optional
-            This is a list of the airplane's wings defined as Wing objects. The default is None, which this method
+            This is a list of the current_airplane's wings defined as Wing objects. The default is None, which this method
             converts to an empty list.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first wing object.
@@ -97,13 +97,13 @@ class Airplane:
         if b_ref is not None:
             self.b_ref = float(b_ref)
 
-        # Calculate the number of panels in the entire airplane.
+        # Calculate the number of panels in the entire current_airplane.
         self.num_panels = 0
         for wing in self.wings:
             self.num_panels += wing.num_panels
 
     def set_reference_dimensions_from_main_wing(self):
-        """This method sets the reference dimensions of the airplane from measurements obtained from the main wing.
+        """This method sets the reference dimensions of the current_airplane from measurements obtained from the main wing.
 
         This method assumes the main wing to be the first wing in the wings list passed by the user.
 
@@ -121,7 +121,7 @@ class Airplane:
 
 
 class Wing:
-    """This is a class used to contain the wings of an airplane.
+    """This is a class used to contain the wings of an current_airplane.
 
     If the wing is symmetric across the XZ plane, just define the right half and supply "symmetric=True" in
     the constructor. If the wing is not symmetric across the XZ plane, just define the wing.
@@ -149,13 +149,13 @@ class Wing:
         :param name: str, optional
             This is a sensible name for the wing. The default is "Untitled Wing".
         :param x_le: float, optional
-            This is the x coordinate of the leading edge of the wing, relative to the airplane's reference point. The
+            This is the x coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
             default is 0.0.
         :param y_le: float, optional
-            This is the y coordinate of the leading edge of the wing, relative to the airplane's reference point. The
+            This is the y coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
             default is 0.0.
         :param z_le: float, optional
-            This is the z coordinate of the leading edge of the wing, relative to the airplane's reference point. The
+            This is the z coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
             default is 0.0.
         :param wing_cross_sections: list of WingCrossSection objects, optional
             This is a list of WingCrossSection objects, that represent the wing's cross sections. The default is None.
@@ -254,7 +254,7 @@ class Wing:
 
 
 class WingCrossSection:
-    """This class is used to contain the cross sections of the wings of an airplane.
+    """This class is used to contain the cross sections of the wings of an current_airplane.
 
     Citation:
         Adapted from:         geometry.WingXSec in AeroSandbox
@@ -339,7 +339,7 @@ class WingCrossSection:
 
 
 class Airfoil:
-    """This class is used to contain the airfoil of a cross section of a wing of an airplane.
+    """This class is used to contain the airfoil of a cross section of a wing of an current_airplane.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox

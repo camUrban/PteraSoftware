@@ -15,7 +15,7 @@ This package contains the following modules:
     meshing.py: This module contains useful functions for creating meshes.
     output.py: This module contains useful functions for visualizing solutions to problems.
     movement.py: This module contains the class definitions for the problem's movement.
-    operating_point.py: This module contains the class definition for the problem's operating point.
+    current_operating_point.py: This module contains the class definition for the problem's operating point.
     problems.py: This module contains the class definitions for different types of problems.
     steady_horseshoe_vortex_lattice_method.py: This module contains the class definition of this package's steady
                                                horseshoe vortex lattice solver.

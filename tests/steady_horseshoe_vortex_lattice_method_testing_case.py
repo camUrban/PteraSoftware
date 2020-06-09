@@ -65,7 +65,7 @@ steady_solver_validation_airplane = asmvp.geometry.Airplane(
 )
 
 # Initialize the problem's operating point.
-steady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
+steady_solver_validation_operating_point = asmvp.operating_point.OperatingPoint()
 
 # Initialize the problem.
 steady_solver_validation_problem = asmvp.problems.SteadyProblem(

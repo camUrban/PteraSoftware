@@ -24,34 +24,32 @@ unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
     ]
 )
 
-unsteady_solver_validation_operating_point = asmvp.performance.OperatingPoint()
+unsteady_solver_validation_operating_point = asmvp.operating_point.OperatingPoint()
 
-unsteady_solver_validation_root_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+unsteady_solver_validation_root_wing_cross_section_movement = asmvp.movement.WingCrossSectionMovement(
     base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[0]
 )
 
-unsteady_solver_validation_tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+unsteady_solver_validation_tip_wing_cross_section_movement = asmvp.movement.WingCrossSectionMovement(
     base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[1]
 )
 
-unsteady_solver_validation_wing_movement = asmvp.performance.WingMovement(
+unsteady_solver_validation_wing_movement = asmvp.movement.WingMovement(
     base_wing=unsteady_solver_validation_airplane.wings[0],
     wing_cross_sections_movements=[unsteady_solver_validation_root_wing_cross_section_movement,
                                    unsteady_solver_validation_tip_wing_cross_section_movement]
 )
 
-unsteady_solver_validation_airplane_movement = asmvp.performance.AirplaneMovement(
+unsteady_solver_validation_airplane_movement = asmvp.movement.AirplaneMovement(
     base_airplane=unsteady_solver_validation_airplane,
     wing_movements=[unsteady_solver_validation_wing_movement]
 )
 
-performance_testing_operating_point = asmvp.performance.OperatingPoint()
-
-unsteady_solver_validation_operating_point_movement = asmvp.performance.OperatingPointMovement(
-    base_operating_point=performance_testing_operating_point
+unsteady_solver_validation_operating_point_movement = asmvp.movement.OperatingPointMovement(
+    base_operating_point=unsteady_solver_validation_operating_point
 )
 
-unsteady_solver_validation_movement = asmvp.performance.Movement(
+unsteady_solver_validation_movement = asmvp.movement.Movement(
     airplane_movement=unsteady_solver_validation_airplane_movement,
     operating_point_movement=unsteady_solver_validation_operating_point_movement,
 )

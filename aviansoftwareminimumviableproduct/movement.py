@@ -3,7 +3,7 @@
 
 This module contains the following classes:
     Movement: This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
-    AirplaneMovement: This is a class used to contain the movement characteristics of an airplane.
+    AirplaneMovement: This is a class used to contain the movement characteristics of an current_airplane.
     WingMovement: This is a class used to contain the movement characteristics of a wing.
     WingCrossSectionMovement: This is a class used to contain the movement characteristics of a wing cross section.
     OperatingPointMovement: This is a class used to contain the movement characteristics of an operating point.
@@ -28,7 +28,7 @@ class Movement:
 
     This class contains the following public methods:
         get_flapping_velocity_at_point_on_panel: This method gets the velocity due to flapping at a point on the panel
-                                                 of a given airplane based the time step, its current position, and its
+                                                 of a given current_airplane based the time current_step, its current position, and its
                                                  last position.
 
     This class contains the following class attributes:
@@ -42,13 +42,13 @@ class Movement:
         """This is the initialization method.
         
         :param airplane_movement: AirplaneMovement
-            This object characterizes the movement of the airplane.
+            This object characterizes the movement of the current_airplane.
         :param operating_point_movement: OperatingPointMovement
             This object characterizes the movement of the the operating point.
         :param num_steps: int, optional
             This integer is the number of time steps of the unsteady simulation. Its default value is 10.
         :param delta_time: float, optional
-            This float is the time, in seconds, between each time step. Its default value is 0.1 seconds.
+            This float is the time, in seconds, between each time current_step. Its default value is 0.1 seconds.
         """
 
         # Initialize the class attributes.
@@ -69,11 +69,11 @@ class Movement:
 
     def get_flapping_velocity_at_point_on_panel(self, wing_position, panel_chordwise_position, panel_spanwise_position,
                                                 point_name, current_step):
-        """This method gets the velocity due to flapping at a point on the panel of a given airplane based the time
-        step, its current position, and its last position.
+        """This method gets the velocity due to flapping at a point on the panel of a given current_airplane based the time
+        current_step, its current position, and its last position.
 
         :param wing_position: int
-            This is the position of the panel's wing in the airplane's list of wings.
+            This is the position of the panel's wing in the current_airplane's list of wings.
         :param panel_chordwise_position: int
             This is the chordwise position of the panel in the wing's ndarray of panels.
         :param panel_spanwise_position: int
@@ -83,19 +83,19 @@ class Movement:
             'collocation_point', 'front_right_vertex', 'front_left_vertex', 'back_left_vertex', 'back_right_vertex',
             'front_right_vortex_vertex', or 'front_left_vortex_vertex'.
         :param current_step: int
-            This is the step number at which to evaluate the flapping velocity at the point.
+            This is the current_step number at which to evaluate the flapping velocity at the point.
         :return flapping_velocity: 1D ndarray
-            This is the flapping velocity at the current time step at the given point. It is a (,3) ndarray with units
+            This is the flapping velocity at the current time current_step at the given point. It is a (,3) ndarray with units
             of meters per second.
         """
 
-        # If this is the first time step, there is no previous geometry, so the flapping velocity is (0, 0, 0)
+        # If this is the first time current_step, there is no previous geometry, so the flapping velocity is (0, 0, 0)
         # meters per second.
         if current_step < 1:
             flapping_velocity = np.zeros(3)
             return flapping_velocity
 
-        # Find the current, and the last airplane.
+        # Find the current, and the last current_airplane.
         airplane = self.airplanes[current_step]
         last_airplane = self.airplanes[current_step - 1]
 
@@ -120,10 +120,10 @@ class Movement:
 
 
 class AirplaneMovement:
-    """This is a class used to contain the movement characteristics of an airplane.
+    """This is a class used to contain the movement characteristics of an current_airplane.
 
     This class contains the following public methods:
-        generate_airplanes: This method creates the airplane object at each time step, and groups them into a list.
+        generate_airplanes: This method creates the current_airplane object at each time current_step, and groups them into a list.
 
     This class contains the following class attributes:
         None
@@ -171,7 +171,7 @@ class AirplaneMovement:
 
     # ToDo: Properly document this method.
     def generate_airplanes(self, num_steps=10, delta_time=0.1):
-        """This method creates the airplane object at each time step, and groups them into a list.
+        """This method creates the current_airplane object at each time current_step, and groups them into a list.
         
         :param num_steps: 
         :param delta_time: 
@@ -275,7 +275,7 @@ class WingMovement:
     """This is a class used to contain the movement characteristics of a wing.
 
     This class contains the following public methods:
-        generate_wings: This method creates the wing object at each time step, and groups them into a list.
+        generate_wings: This method creates the wing object at each time current_step, and groups them into a list.
 
     This class contains the following class attributes:
         None
@@ -323,7 +323,7 @@ class WingMovement:
 
     # ToDo: Properly document this method.
     def generate_wings(self, num_steps=10, delta_time=0.1):
-        """This method creates the wing object at each time step, and groups them into a list.
+        """This method creates the wing object at each time current_step, and groups them into a list.
 
         :param num_steps:
         :param delta_time:
@@ -433,7 +433,7 @@ class WingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross section.
 
     This class contains the following public methods:
-        generate_wing_cross_sections: This method creates the wing cross section objects at each time step, and groups
+        generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and groups
                                       them into a list.
 
     This class contains the following class attributes:
@@ -498,7 +498,7 @@ class WingCrossSectionMovement:
 
     # ToDo: Properly document this method.
     def generate_wing_cross_sections(self, num_steps=10, delta_time=0.1):
-        """This method creates the wing cross section objects at each time step, and groups them into a list.
+        """This method creates the wing cross section objects at each time current_step, and groups them into a list.
 
         :param num_steps:
         :param delta_time:
@@ -646,7 +646,7 @@ class OperatingPointMovement:
     """This is a class used to contain the movement characteristics of an operating point.
 
     This class contains the following public methods:
-        generate_operating_points: This method creates the operating point objects at each time step, and groups them
+        generate_operating_points: This method creates the operating point objects at each time current_step, and groups them
                                    into a list.
 
     This class contains the following class attributes:
@@ -675,7 +675,7 @@ class OperatingPointMovement:
 
     # ToDo: Properly document this method.
     def generate_operating_points(self, num_steps=10, delta_time=0.1):
-        """This method creates the operating point objects at each time step, and groups them into a list.
+        """This method creates the operating point objects at each time current_step, and groups them into a list.
         
         :param num_steps: 
         :param delta_time: 

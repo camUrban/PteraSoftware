@@ -54,11 +54,11 @@ performance_testing_airplane = asmvp.geometry.Airplane(
     ]
 )
 
-root_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+root_wing_cross_section_movement = asmvp.movement.WingCrossSectionMovement(
     base_wing_cross_section=performance_testing_airplane.wings[0].wing_cross_sections[0]
 )
 
-tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
+tip_wing_cross_section_movement = asmvp.movement.WingCrossSectionMovement(
     base_wing_cross_section=performance_testing_airplane.wings[0].wing_cross_sections[1],
     x_le_amplitude=2.5,
     x_le_period=5.0,
@@ -74,23 +74,23 @@ tip_wing_cross_section_movement = asmvp.performance.WingCrossSectionMovement(
     twist_spacing='sine'
 )
 
-wing_movement = asmvp.performance.WingMovement(
+wing_movement = asmvp.movement.WingMovement(
     base_wing=performance_testing_airplane.wings[0],
     wing_cross_sections_movements=[root_wing_cross_section_movement, tip_wing_cross_section_movement]
 )
 
-airplane_movement = asmvp.performance.AirplaneMovement(
+airplane_movement = asmvp.movement.AirplaneMovement(
     base_airplane=performance_testing_airplane,
     wing_movements=[wing_movement]
 )
 
-performance_testing_operating_point = asmvp.performance.OperatingPoint()
+performance_testing_operating_point = asmvp.operating_point.OperatingPoint()
 
-operating_point_movement = asmvp.performance.OperatingPointMovement(
+operating_point_movement = asmvp.movement.OperatingPointMovement(
     base_operating_point=performance_testing_operating_point
 )
 
-movement = asmvp.performance.Movement(
+movement = asmvp.movement.Movement(
     airplane_movement=airplane_movement,
     operating_point_movement=operating_point_movement,
 )

@@ -81,10 +81,8 @@ class Movement:
             This is the spanwise position of the panel in the wing's ndarray of panels.
         :param point_name: string
             This is the name of the point at which to find the velocity due to flapping. It can be 'center',
-            'collocation', 'front right vertex', 'front left vertex', 'back left vertex', 'back right vertex',
-            'ring vortex front right vertex', 'ring vortex front left vertex', 'ring vortex back left vertex',
-            'ring vortex back right vertex', 'ring vortex front leg center', 'ring vortex left leg center',
-            'ring vortex back leg center', or 'ring vortex right leg center'.
+            'collocation_point', 'front_right_vertex', 'front_left_vertex', 'back_left_vertex', 'back_right_vertex',
+            'front_right_vortex_vertex', or 'front_left_vortex_vertex'.
         :param current_step: int
             This is the step number at which to evaluate the flapping velocity at the point.
         :return flapping_velocity: 1D ndarray
@@ -110,53 +108,12 @@ class Movement:
         panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
         last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
 
-        # Initialize variables to hold the current and the last position.
-        position = None
-        last_position = None
-
         # Populate the current and last position based on the point's name.
-        if point_name == 'center':
-            position = panel.center
-            last_position = last_panel.center
-        elif point_name == 'collocation':
-            position = panel.collocation_point
-            last_position = last_panel.collocation_point
-        elif point_name == 'front right vertex':
-            position = panel.front_right_vertex
-            last_position = last_panel.front_right_vertex
-        elif point_name == 'front left vertex':
-            position = panel.front_left_vertex
-            last_position = last_panel.front_left_vertex
-        elif point_name == 'back left vertex':
-            position = panel.back_left_vertex
-            last_position = last_panel.back_left_vertex
-        elif point_name == 'back right vertex':
-            position = panel.back_right_vertex
-            last_position = last_panel.back_right_vertex
-        elif point_name == 'ring vortex front right vertex':
-            position = panel.ring_vortex.front_right_vertex
-            last_position = last_panel.ring_vortex.front_right_vertex
-        elif point_name == 'ring vortex front left vertex':
-            position = panel.ring_vortex.back_left_vertex
-            last_position = last_panel.ring_vortex.back_left_vertex
-        elif point_name == 'ring vortex back left vertex':
-            position = panel.ring_vortex.back_left_vertex
-            last_position = last_panel.ring_vortex.back_left_vertex
-        elif point_name == 'ring vortex back right vertex':
-            position = panel.ring_vortex.back_right_vertex
-            last_position = last_panel.ring_vortex.back_right_vertex
-        elif point_name == 'ring vortex front leg center':
-            position = panel.ring_vortex.front_leg.center
-            last_position = last_panel.ring_vortex.front_leg.center
-        elif point_name == 'ring vortex left leg center':
-            position = panel.ring_vortex.left_leg.center
-            last_position = last_panel.ring_vortex.left_leg.center
-        elif point_name == 'ring vortex back leg center':
-            position = panel.ring_vortex.back_leg.center
-            last_position = last_panel.ring_vortex.back_leg.center
-        elif point_name == 'ring vortex right leg center':
-            position = panel.ring_vortex.right_leg.center
-            last_position = last_panel.ring_vortex.right_leg.center
+        try:
+            position = panel.__getattribute__(point_name)
+            last_position = last_panel.__getattribute__(point_name)
+        except AttributeError:
+            raise Exception("The panel doesn't have an attribute that matches your request!")
 
         # Calculate and return the flapping velocity.
         flapping_velocity = (position - last_position) / self.delta_time

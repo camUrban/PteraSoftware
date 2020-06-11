@@ -4,4 +4,4 @@
 
 """
 
-from tests.integration import fixtures
+from tests.unit.fixtures import vortex_fixtures

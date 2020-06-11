@@ -107,8 +107,8 @@ class LineVortex:
         # Calculate the vector cross product.
         r_1_cross_r_2 = np.cross(r_1, r_2)
 
-        # Calculate the cross product's absolute value.
-        r_1_cross_r_2_absolute_value = r_1_cross_r_2[0] ** 2 + r_1_cross_r_2[1] ** 2 + r_1_cross_r_2[2] ** 2
+        # Calculate the cross product's absolute magnitude.
+        r_1_cross_r_2_absolute_magnitude = r_1_cross_r_2[0] ** 2 + r_1_cross_r_2[1] ** 2 + r_1_cross_r_2[2] ** 2
 
         # Calculate the vector lengths.
         r_1_length = np.linalg.norm(r_1)
@@ -118,7 +118,7 @@ class LineVortex:
         line_vortex_radius = 3.0e-16
         if (r_1_length < line_vortex_radius
                 or r_2_length < line_vortex_radius
-                or r_1_cross_r_2_absolute_value < line_vortex_radius):
+                or r_1_cross_r_2_absolute_magnitude < line_vortex_radius):
             # If there is a singularity, the induced velocity is zero.
             return np.array([0, 0, 0])
 
@@ -127,7 +127,7 @@ class LineVortex:
         r_0_dot_r_2 = np.dot(r_0, r_2)
 
         # Calculate the k coefficient.
-        k = (strength / (4 * np.pi * r_1_cross_r_2_absolute_value)
+        k = (strength / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
              * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length))
 
         # Calculate the induced velocity components, and combine them into the induced velocity ndarray.
@@ -183,10 +183,12 @@ class HorseshoeVortex:
         self.strength = strength
         self.infinite_leg_direction = infinite_leg_direction
         self.infinite_leg_length = infinite_leg_length
+        self.right_leg_origin = self.finite_leg_origin + infinite_leg_direction * infinite_leg_length
+        self.left_leg_termination = self.finite_leg_termination + infinite_leg_direction * infinite_leg_length
 
         # Initialize a line vortex to represent the horseshoe's finite leg.
         self.right_leg = LineVortex(
-            origin=self.finite_leg_origin + infinite_leg_direction * infinite_leg_length,
+            origin=self.right_leg_origin,
             termination=self.finite_leg_origin,
             strength=self.strength
         )
@@ -197,7 +199,7 @@ class HorseshoeVortex:
         )
         self.left_leg = LineVortex(
             origin=self.finite_leg_termination,
-            termination=self.finite_leg_termination + infinite_leg_direction * infinite_leg_length,
+            termination=self.left_leg_termination,
             strength=self.strength
         )
 

@@ -67,62 +67,79 @@ class SteadyRingVortexLatticeMethodSolver:
         self.Cm = None
         self.Cn = None
 
-    def run(self):
+    def run(self, verbose=True):
         """Run the solver on the steady problem.
 
+        :param verbose: Bool, optional
+            This parameter determines if the solver prints output to the console. It's default value is True.
         :return: None
         """
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
-        print("Initializing panel vortices...")
+        if verbose:
+            print("Initializing panel vortices...")
         self.initialize_panel_vortices()
-        print("Panel vortices initialized.")
+        if verbose:
+            print("Panel vortices initialized.")
 
         # Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
-        print("\nCalculating the wing-wing influences...")
+        if verbose:
+            print("\nCalculating the wing-wing influences...")
         self.calculate_wing_wing_influences()
-        print("Wing-wing influences calculated.")
+        if verbose:
+            print("Wing-wing influences calculated.")
 
         # Find the vector of freestream-wing influence coefficients associated with this problem.
-        print("\nCalculating the freestream-wing influences...")
+        if verbose:
+            print("\nCalculating the freestream-wing influences...")
         self.calculate_freestream_wing_influences()
-        print("Freestream-wing influences calculated.")
+        if verbose:
+            print("Freestream-wing influences calculated.")
 
         # Solve for each panel's vortex strength.
-        print("\nCalculating vortex strengths...")
+        if verbose:
+            print("\nCalculating vortex strengths...")
         self.calculate_vortex_strengths()
-        print("Vortex strengths calculated.")
+        if verbose:
+            print("Vortex strengths calculated.")
 
         # Solve for the near field forces and moments on each panel.
-        print("\nCalculating near field forces...")
+        if verbose:
+            print("\nCalculating near field forces...")
         self.calculate_near_field_forces_and_moments()
-        print("Near field forces calculated.")
+        if verbose:
+            print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
-        print("\nCalculating streamlines...")
+        if verbose:
+            print("\nCalculating streamlines...")
         self.calculate_streamlines()
-        print("Streamlines calculated.")
+        if verbose:
+            print("Streamlines calculated.")
 
         # Print out the total forces.
-        print("\n\nTotal Forces in Wind Axes:")
-        print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
-        print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
-        print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
+        if verbose:
+            print("\n\nTotal Forces in Wind Axes:")
+            print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
+            print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
+            print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
 
         # Print out the total moments.
-        print("\nTotal Moments in Wind Axes:")
-        print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
-        print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
-        print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
+        if verbose:
+            print("\nTotal Moments in Wind Axes:")
+            print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
+            print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
+            print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
 
         # Print out the coefficients.
-        print("\nCoefficients in Wind Axes:")
-        print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
-        print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
-        print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
-        print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-        print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-        print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
+        if verbose:
+            print("\nCoefficients in Wind Axes:")
+            print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
+            print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
+            print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
+            print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+            print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+            print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.

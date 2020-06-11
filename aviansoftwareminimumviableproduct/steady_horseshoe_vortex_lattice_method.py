@@ -28,9 +28,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         run: Run the solver on the steady problem.
         initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes the
                                    panels' vortices.
-        calculate_wing_wing_influences: Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        calculate_freestream_wing_influences: Find the normal velocity speed at every collocation point without the influence of the
-                                vortices.
+        calculate_wing_wing_influences: Find the matrix of aerodynamic influence coefficients associated with this
+                                        problem's geometry.
+        calculate_freestream_wing_influences: Find the normal velocity speed at every collocation point without the
+                                              influence of the vortices.
         calculate_vortex_strengths: Solve for each panels' vortex strength.
         calculate_solution_velocity: Find the velocity at a given point due to the freestream and the vortices.
         calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
@@ -71,62 +72,79 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.Cm = None
         self.Cn = None
 
-    def run(self):
+    def run(self, verbose=True):
         """Run the solver on the steady problem.
 
+        :param verbose: Bool, optional
+            This parameter determines if the solver prints output to the console. It's default value is True.
         :return: None
         """
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
-        print("Initializing panel vortices...")
+        if verbose:
+            print("Initializing panel vortices...")
         self.initialize_panel_vortices()
-        print("Panel vortices initialized.")
+        if verbose:
+            print("Panel vortices initialized.")
 
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
-        print("\nSetting up geometry...")
+        if verbose:
+            print("\nCalculating the wing-wing influences...")
         self.set_up_geometry()
-        print("Geometry set up.")
+        if verbose:
+            print("Wing-wing influences calculated.")
 
         # Find the normal freestream speed at every collocation point without vortices.
-        print("\nSetting up operating point...")
+        if verbose:
+            print("\nCalculating the freestream-wing influences...")
         self.set_up_operating_point()
-        print("Operating point set up.")
+        if verbose:
+            print("Freestream-wing influences calculated.")
 
         # Solve for each panel's vortex strength.
-        print("\nCalculating vortex strengths...")
+        if verbose:
+            print("\nCalculating vortex strengths...")
         self.calculate_vortex_strengths()
-        print("Vortex strengths calculated.")
+        if verbose:
+            print("Vortex strengths calculated.")
 
         # Solve for the near field forces and moments on each panel.
-        print("\nCalculating near field forces...")
+        if verbose:
+            print("\nCalculating near field forces...")
         self.calculate_near_field_forces_and_moments()
-        print("Near field forces calculated.")
+        if verbose:
+            print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
-        # print("\nCalculating streamlines...")
-        # self.calculate_streamlines()
-        # print("Streamlines calculated.")
+        if verbose:
+            print("\nCalculating streamlines...")
+        self.calculate_streamlines()
+        if verbose:
+            print("Streamlines calculated.")
 
         # Print out the total forces.
-        print("\n\nForces in Wind Axes:")
-        print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
-        print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
-        print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
+        if verbose:
+            print("\n\nForces in Wind Axes:")
+            print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
+            print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
+            print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
 
         # Print out the total moments.
-        print("\nMoments in Wind Axes:")
-        print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
-        print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
-        print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
+        if verbose:
+            print("\nMoments in Wind Axes:")
+            print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
+            print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
+            print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
 
         # Print out the coefficients.
-        print("\nCoefficients in Wind Axes:")
-        print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
-        print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
-        print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
-        print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-        print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-        print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
+        if verbose:
+            print("\nCoefficients in Wind Axes:")
+            print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
+            print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
+            print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
+            print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+            print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+            print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
@@ -175,8 +193,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
 
-        # Iterate through the current_airplane's wings. This wing contains the panel with the collocation point where the
-        # vortex influence is to be calculated.
+        # Iterate through the current_airplane's wings. This wing contains the panel with the collocation point where
+        # the vortex influence is to be calculated.
         for collocation_panel_wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -185,8 +203,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             # Iterate through the list of panels with the collocation points.
             for collocation_panel_index, collocation_panel in np.ndenumerate(collocation_panels):
 
-                # Iterate through the current_airplane's wings. This wing contains the panel with the vortex whose influence
-                # on the collocation point is to be calculated.
+                # Iterate through the current_airplane's wings. This wing contains the panel with the vortex whose
+                # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.airplane.wings:
 
                     # Convert the 2D ndarray of this wing's panels into a 1D list.
@@ -396,8 +414,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             This is the integer number of points along each streamline (not including the initial point). It can be
             increased for higher fidelity visuals. The default value is 10.
         :param delta_time: float, optional
-            This is the time in seconds between each time current_step It can be decreased for higher fidelity visuals or to
-            make the streamlines shorter. It's default value is 0.1 seconds.
+            This is the time in seconds between each time current_step It can be decreased for higher fidelity visuals
+            or to make the streamlines shorter. It's default value is 0.1 seconds.
         :return: None
         """
 

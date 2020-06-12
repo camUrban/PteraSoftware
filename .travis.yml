@@ -6,4 +6,4 @@ install:
 script:
   - coverage run --source=aviansoftwareminimumviableproduct -m unittest discover -s tests
 after_success:
-  - coveralls
+  - coveralls --service=travis-pro

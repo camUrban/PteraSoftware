@@ -5,9 +5,6 @@ python:
 install:
   - pip install -r REQUIREMENTS.txt
 script:
-  - [run]
-      source =
-      */.aviansoftwareminimumviableproduct/*
   - python -m unittest discover
 after_success:
   - coveralls

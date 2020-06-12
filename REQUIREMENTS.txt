@@ -2,4 +2,4 @@ matplotlib
 numpy
 pyvista
 scipy
-coverage
+coveralls

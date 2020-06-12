@@ -8,6 +8,6 @@ script:
   - [run]
       source =
       */.aviansoftwareminimumviableproduct/*
-  - coverage run --source aviansoftwareminimumviableproduct -m unittest discover
+  - python -m unittest discover
 after_success:
   - coveralls

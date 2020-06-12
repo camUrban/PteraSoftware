@@ -3,3 +3,4 @@ numpy
 pyvista
 scipy
 coveralls
+coveralls[yaml]

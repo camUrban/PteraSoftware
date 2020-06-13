@@ -90,9 +90,9 @@ def draw(airplane, show_delta_pressures):
     plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
                      smooth_shading=True)
 
-    # for wing in current_airplane.wings:
-    #     streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-    #     plotter.add_points(pv.PolyData(streamline_points))
+    for wing in airplane.wings:
+        streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+        plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")

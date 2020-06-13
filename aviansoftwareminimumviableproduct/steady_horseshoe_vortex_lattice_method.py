@@ -82,45 +82,33 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
         if verbose:
-            print("Initializing panel vortices...")
+            print("Initializing panel vortices.")
         self.initialize_panel_vortices()
-        if verbose:
-            print("Panel vortices initialized.")
 
         # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
         if verbose:
-            print("\nCalculating the wing-wing influences...")
+            print("\nCalculating the wing-wing influences.")
         self.set_up_geometry()
-        if verbose:
-            print("Wing-wing influences calculated.")
 
         # Find the normal freestream speed at every collocation point without vortices.
         if verbose:
-            print("\nCalculating the freestream-wing influences...")
+            print("\nCalculating the freestream-wing influences.")
         self.set_up_operating_point()
-        if verbose:
-            print("Freestream-wing influences calculated.")
 
         # Solve for each panel's vortex strength.
         if verbose:
-            print("\nCalculating vortex strengths...")
+            print("\nCalculating vortex strengths.")
         self.calculate_vortex_strengths()
-        if verbose:
-            print("Vortex strengths calculated.")
 
         # Solve for the near field forces and moments on each panel.
         if verbose:
-            print("\nCalculating near field forces...")
+            print("\nCalculating near field forces.")
         self.calculate_near_field_forces_and_moments()
-        if verbose:
-            print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
-            print("\nCalculating streamlines...")
+            print("\nCalculating streamlines.")
         self.calculate_streamlines()
-        if verbose:
-            print("Streamlines calculated.")
 
         # Print out the total forces.
         if verbose:
@@ -139,12 +127,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Print out the coefficients.
         if verbose:
             print("\nCoefficients in Wind Axes:")
-            print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
-            print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
-            print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
-            print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-            print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-            print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
+            print("\tCDi:\t\t\t\t\t", np.round(self.CDi, 3))
+            print("\tCY:\t\t\t\t\t\t", np.round(self.CY, 3))
+            print("\tCL:\t\t\t\t\t\t", np.round(self.CL, 3))
+            print("\tCl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+            print("\tCm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+            print("\tCn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.

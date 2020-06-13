@@ -55,9 +55,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.wing_wing_influences = None
-        self.freestream_velocity = np.expand_dims(self.operating_point.calculate_freestream_velocity_geometry_axes(), 0)
+        self.freestream_velocity = self.operating_point.calculate_freestream_velocity_geometry_axes()
         self.freestream_wing_influences = None
-        self.vortex_strengths = np.zeros(self.airplane.num_panels)
+        self.vortex_strengths = np.zeros(3)
         self.total_near_field_force_wind_axes = np.zeros(3)
         self.total_near_field_moment_wind_axes = np.zeros(3)
         self.CL = None
@@ -77,45 +77,36 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Initialize this problem's panels to have vortices congruent with this solver type.
         if verbose:
-            print("Initializing panel vortices...")
+            print("Initializing panel vortices.")
         self.initialize_panel_vortices()
-        if verbose:
-            print("Panel vortices initialized.")
 
         # Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
         if verbose:
-            print("\nCalculating the wing-wing influences...")
+            print("\nCalculating the wing-wing influences.")
         self.calculate_wing_wing_influences()
-        if verbose:
-            print("Wing-wing influences calculated.")
 
         # Find the vector of freestream-wing influence coefficients associated with this problem.
         if verbose:
-            print("\nCalculating the freestream-wing influences...")
+            print("\nCalculating the freestream-wing influences.")
         self.calculate_freestream_wing_influences()
-        if verbose:
-            print("Freestream-wing influences calculated.")
 
         # Solve for each panel's vortex strength.
         if verbose:
-            print("\nCalculating vortex strengths...")
+            print("\nCalculating vortex strengths.")
         self.calculate_vortex_strengths()
+
         if verbose:
-            print("Vortex strengths calculated.")
+            self.debug_vortices()
 
         # Solve for the near field forces and moments on each panel.
         if verbose:
-            print("\nCalculating near field forces...")
+            print("\nCalculating near field forces.")
         self.calculate_near_field_forces_and_moments()
-        if verbose:
-            print("Near field forces calculated.")
 
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
-            print("\nCalculating streamlines...")
+            print("\nCalculating streamlines.")
         self.calculate_streamlines()
-        if verbose:
-            print("Streamlines calculated.")
 
         # Print out the total forces.
         if verbose:
@@ -134,12 +125,12 @@ class SteadyRingVortexLatticeMethodSolver:
         # Print out the coefficients.
         if verbose:
             print("\nCoefficients in Wind Axes:")
-            print("\tcurrent_CDi:\t\t\t\t\t", np.round(self.CDi, 3))
-            print("\tcurrent_CY:\t\t\t\t\t\t", np.round(self.CY, 3))
-            print("\tcurrent_CL:\t\t\t\t\t\t", np.round(self.CL, 3))
-            print("\tcurrent_Cl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-            print("\tcurrent_Cm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-            print("\tcurrent_Cn:\t\t\t\t\t\t", np.round(self.Cn, 3))
+            print("\tCDi:\t\t\t\t\t", np.round(self.CDi, 3))
+            print("\tCY:\t\t\t\t\t\t", np.round(self.CY, 3))
+            print("\tCL:\t\t\t\t\t\t", np.round(self.CL, 3))
+            print("\tCl:\t\t\t\t\t\t", np.round(self.Cl, 3))
+            print("\tCm:\t\t\t\t\t\t", np.round(self.Cm, 3))
+            print("\tCn:\t\t\t\t\t\t", np.round(self.Cn, 3))
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
@@ -535,7 +526,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 / self.airplane.b_ref
         )
 
-    def calculate_streamlines(self, num_steps=10, delta_time=0.1):
+    def calculate_streamlines(self, num_steps=10, delta_time=0.0125):
         """Calculates the location of the streamlines coming off the back of the wings.
 
         :param num_steps: int, optional
@@ -583,3 +574,16 @@ class SteadyRingVortexLatticeMethodSolver:
                             + delta_time
                             * self.calculate_solution_velocity(last_point)
                     )
+
+    # ToDo: Properly document this method.
+    def debug_vortices(self):
+        for wing in self.airplane.wings:
+            print("\nPanel Vortex Strengths:\n")
+            for chordwise_position in range(wing.num_chordwise_panels):
+                for spanwise_position in range(wing.num_spanwise_panels):
+                    panel = wing.panels[chordwise_position, spanwise_position]
+                    ring_vortex = panel.ring_vortex
+                    strength = ring_vortex.strength
+                    print("\t" + str(round(strength, 2)), end="\t")
+                print()
+        print()

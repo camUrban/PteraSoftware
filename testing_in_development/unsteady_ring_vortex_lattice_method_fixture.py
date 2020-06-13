@@ -2,22 +2,35 @@ import aviansoftwareminimumviableproduct as asmvp
 
 unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
     name="Unsteady Solver Testing Airplane",
+    # Define a list of the current_airplane's wings.
     wings=[
+
+        # Initialize the wing object.
         asmvp.geometry.Wing(
+
+            # Name the wing.
             name="Wing",
-            symmetric=True,
+
+            symmetric=False,
+            num_chordwise_panels=6,
+            chordwise_spacing='uniform',
+
+            # Define a list of the wing's cross sections.
             wing_cross_sections=[
+
+                # Initialize the root cross section object.
                 asmvp.geometry.WingCrossSection(
                     chord=1.0,
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
+                    num_spanwise_panels=24
                 ),
+
+                # Initialize the tip cross section object.
                 asmvp.geometry.WingCrossSection(
-                    x_le=1.0,
-                    y_le=5.0,
-                    z_le=0.0,
-                    twist=5.0,
-                    chord=0.75,
+                    y_le=4.0,
+                    chord=1.0,
                     airfoil=asmvp.geometry.Airfoil(name="naca2412"),
+                    num_spanwise_panels=24
                 )
             ]
         )
@@ -57,8 +70,8 @@ unsteady_solver_validation_operating_point_movement = asmvp.movement.OperatingPo
 unsteady_solver_validation_movement = asmvp.movement.Movement(
     airplane_movement=unsteady_solver_validation_airplane_movement,
     operating_point_movement=unsteady_solver_validation_operating_point_movement,
-    num_steps=5,
-    delta_time=0.0125
+    num_steps=60,
+    delta_time=0.0166
 )
 
 del unsteady_solver_validation_airplane_movement

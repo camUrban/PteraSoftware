@@ -3,11 +3,11 @@
 """This is a testing case for the steady horseshoe vortex lattice method solver.
 
     Based on an identical XFLR5 testing case, the expected output for this case is:
-        current_CL:     0.790
-        current_CDi:    0.019
-        current_Cl:     0.000
-        current_Cm:     -0.690
-        current_Cn:     0.000
+        CL:     0.790
+        CDi:    0.019
+        Cl:     0.000
+        Cm:     -0.690
+        Cn:     0.000
 
     Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a horseshoe vortex
     lattice method solver.

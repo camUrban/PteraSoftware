@@ -90,9 +90,9 @@ def draw(airplane, show_delta_pressures):
     plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
                      smooth_shading=True)
 
-    for wing in airplane.wings:
-        streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-        plotter.add_points(pv.PolyData(streamline_points))
+    # for wing in airplane.wings:
+    #     streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+    #     plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
@@ -203,10 +203,21 @@ def make_flapping_gif(movement):
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
                 scalars = np.hstack((scalars, scalar_to_add))
 
-    # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surface = pv.PolyData(panel_vertices, panel_faces)
+        for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
+            plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
+                             show_edges=True, cmap=color_map, color='white')
+            plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
+                             show_edges=True, cmap=color_map, color='white')
+            plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
+                             show_edges=True, cmap=color_map, color='white')
+            plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
+                             show_edges=True, cmap=color_map, color='white')
 
-    plotter.add_mesh(panel_surface, show_edges=True, scalars=scalars, cmap=color_map, smooth_shading=True)
+        # Initialize the panel surfaces and add the meshes to the plotter.
+    panel_surface = pv.PolyData(panel_vertices, panel_faces)
+    plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
+                     smooth_shading=True)
+
     plotter.update_scalar_bar_range(clim=[-2, 2])
     plotter.update_scalars(scalars)
 
@@ -226,6 +237,8 @@ def make_flapping_gif(movement):
         panel_vertices = np.empty((0, 3))
         panel_faces = np.empty(0)
         scalars = np.empty(0)
+
+        plotter.clear()
 
         # Increment through the current_airplane's wings.
         for wing in airplane.wings:
@@ -257,11 +270,20 @@ def make_flapping_gif(movement):
                     panel_faces = np.hstack((panel_faces, panel_face_to_add))
                     scalars = np.hstack((scalars, scalar_to_add))
 
+            for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
+                plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+
         # Initialize the panel surfaces and add the meshes to the plotter.
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
-        plotter.clear()
-
-        plotter.add_mesh(panel_surface, show_edges=True, scalars=scalars, cmap=color_map, smooth_shading=True)
+        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
+                         smooth_shading=True)
         plotter.update_scalar_bar_range(clim=[-2, 2])
         plotter.update_scalars(scalars)
 

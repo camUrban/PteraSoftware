@@ -10,10 +10,8 @@ unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
 
             # Name the wing.
             name="Wing",
-
-            symmetric=False,
-            num_chordwise_panels=6,
-            chordwise_spacing='uniform',
+            symmetric=True,
+            num_chordwise_panels=8,
 
             # Define a list of the wing's cross sections.
             wing_cross_sections=[
@@ -21,16 +19,14 @@ unsteady_solver_validation_airplane = asmvp.geometry.Airplane(
                 # Initialize the root cross section object.
                 asmvp.geometry.WingCrossSection(
                     chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
-                    num_spanwise_panels=24
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412")
                 ),
 
                 # Initialize the tip cross section object.
                 asmvp.geometry.WingCrossSection(
-                    y_le=4.0,
+                    y_le=5.0,
                     chord=1.0,
-                    airfoil=asmvp.geometry.Airfoil(name="naca2412"),
-                    num_spanwise_panels=24
+                    airfoil=asmvp.geometry.Airfoil(name="naca2412")
                 )
             ]
         )
@@ -44,7 +40,10 @@ unsteady_solver_validation_root_wing_cross_section_movement = asmvp.movement.Win
 )
 
 unsteady_solver_validation_tip_wing_cross_section_movement = asmvp.movement.WingCrossSectionMovement(
-    base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[1]
+    base_wing_cross_section=unsteady_solver_validation_airplane.wings[0].wing_cross_sections[1],
+    z_le_amplitude=0.5,
+    z_le_period=0.25,
+    z_le_spacing='sine'
 )
 
 unsteady_solver_validation_wing_movement = asmvp.movement.WingMovement(
@@ -70,14 +69,12 @@ unsteady_solver_validation_operating_point_movement = asmvp.movement.OperatingPo
 unsteady_solver_validation_movement = asmvp.movement.Movement(
     airplane_movement=unsteady_solver_validation_airplane_movement,
     operating_point_movement=unsteady_solver_validation_operating_point_movement,
-    num_steps=60,
-    delta_time=0.0166
+    num_steps=15,
+    delta_time=1 / 6 / 10
 )
 
 del unsteady_solver_validation_airplane_movement
 del unsteady_solver_validation_operating_point_movement
-
-# asmvp.output.make_flapping_gif(unsteady_solver_validation_movement)
 
 unsteady_solver_validation_problem = asmvp.problems.UnsteadyProblem(
     airplane=unsteady_solver_validation_airplane,
@@ -87,11 +84,14 @@ unsteady_solver_validation_problem = asmvp.problems.UnsteadyProblem(
 
 del unsteady_solver_validation_airplane
 del unsteady_solver_validation_operating_point
-del unsteady_solver_validation_movement
 
 unsteady_solver_validation_solver = asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     unsteady_solver_validation_problem)
 
 del unsteady_solver_validation_problem
 
-unsteady_solver_validation_solver.run()
+unsteady_solver_validation_solver.run(verbose=True)
+
+asmvp.output.make_flapping_gif(unsteady_solver_validation_movement)
+
+del unsteady_solver_validation_movement

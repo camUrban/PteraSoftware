@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 # ToDo: Properly document this function.
-def draw(airplane, show_delta_pressures):
+def draw(airplane, show_delta_pressures, show_streamlines):
     """Draw the geometry of an current_airplane object.
 
     Citation:
@@ -72,8 +72,10 @@ def draw(airplane, show_delta_pressures):
                 # scalars.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
-                scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
-                scalars = np.hstack((scalars, scalar_to_add))
+
+                if show_delta_pressures:
+                    scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
+                    scalars = np.hstack((scalars, scalar_to_add))
 
         for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
             plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
@@ -87,12 +89,17 @@ def draw(airplane, show_delta_pressures):
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
-    plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
-                     smooth_shading=True)
 
-    # for wing in airplane.wings:
-    #     streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-    #     plotter.add_points(pv.PolyData(streamline_points))
+    if show_delta_pressures:
+        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
+                         smooth_shading=True)
+    else:
+        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, color='white', smooth_shading=True)
+
+    if show_streamlines:
+        for wing in airplane.wings:
+            streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+            plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
@@ -160,7 +167,7 @@ def draw_geometry(airplane):
 
 
 # ToDo: Properly document and cite this function.
-def make_flapping_gif(movement):
+def make_flapping_gif(movement, show_delta_pressures):
     airplanes = movement.airplanes
 
     # Initialize the plotter.
@@ -197,7 +204,11 @@ def make_flapping_gif(movement):
                                               (panel_num * 4) + 1,
                                               (panel_num * 4) + 2,
                                               (panel_num * 4) + 3])
-                scalar_to_add = panel.center[2] / 2
+
+                if show_delta_pressures:
+                    scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 100), -100)
+                else:
+                    scalar_to_add = panel.center[2] / 2
 
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
@@ -218,7 +229,10 @@ def make_flapping_gif(movement):
     plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
                      smooth_shading=True)
 
-    plotter.update_scalar_bar_range(clim=[-2, 2])
+    if show_delta_pressures:
+        plotter.update_scalar_bar_range(clim=[-100, 100])
+    else:
+        plotter.update_scalar_bar_range(clim=[-2, 2])
     plotter.update_scalars(scalars)
 
     # Set the plotter background color and show the plotter.
@@ -264,7 +278,10 @@ def make_flapping_gif(movement):
                                                   (panel_num * 4) + 1,
                                                   (panel_num * 4) + 2,
                                                   (panel_num * 4) + 3])
-                    scalar_to_add = panel.center[2] / 2
+                    if show_delta_pressures:
+                        scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 100), -100)
+                    else:
+                        scalar_to_add = panel.center[2] / 2
 
                     panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                     panel_faces = np.hstack((panel_faces, panel_face_to_add))
@@ -284,7 +301,10 @@ def make_flapping_gif(movement):
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
         plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
                          smooth_shading=True)
-        plotter.update_scalar_bar_range(clim=[-2, 2])
+        if show_delta_pressures:
+            plotter.update_scalar_bar_range(clim=[-100, 100])
+        else:
+            plotter.update_scalar_bar_range(clim=[-2, 2])
         plotter.update_scalars(scalars)
 
         plotter.write_frame()

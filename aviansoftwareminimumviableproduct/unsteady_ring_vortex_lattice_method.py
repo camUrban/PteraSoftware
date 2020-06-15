@@ -13,6 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 import aviansoftwareminimumviableproduct as asmvp
+import copy
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -125,16 +126,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Solve for the near field forces and moments on each panel.
             if verbose:
+                print("Calculating near field forces.")
+            self.calculate_near_field_forces_and_moments()
+
+            # Solve for the near field forces and moments on each panel.
+            if verbose:
                 print("Shedding wake vortices.")
             self.calculate_wake_rollup()
 
             if verbose:
                 self.debug_wake_vortices()
-
-        # Solve for the near field forces and moments on each panel.
-        if verbose:
-            print("\nCalculating near field forces.")
-        self.calculate_near_field_forces_and_moments()
 
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
@@ -143,7 +144,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         if verbose:
             print('Final Airplane\'s wake vortex vertices:')
-        asmvp.output.draw(self.current_airplane, show_delta_pressures=True)
+            asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
 
         # Print out the total forces.
         if verbose:
@@ -248,7 +249,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                     # Iterate through the list of panels with the vortices.
                     for vortex_panel_index, vortex_panel in np.ndenumerate(vortex_panels):
-
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
                         normalized_induced_velocity_at_collocation_point = (
@@ -279,23 +279,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-        # # Initialize the vector of freestream-wing influence coefficients.
-        # self.current_freestream_wing_influences = np.zeros(self.current_airplane.num_panels)
-        #
-        # # Iterate through the current_airplane's wings.
-        # for collocation_panel_wing in self.current_airplane.wings:
-        #
-        #     # Convert the 2D ndarray of this wing's panels into a 1D list.
-        #     collocation_panels = np.ravel(collocation_panel_wing.panels)
-        #
-        #     # Iterate through the list of panels with the collocation points.
-        #     for collocation_panel_index, collocation_panel in np.ndenumerate(collocation_panels):
-        #
-        #         # Update solver's list of freestream influences.
-        #         self.current_freestream_wing_influences[collocation_panel_index] = (
-        #             np.dot(self.current_freestream_velocity, collocation_panel.normal_direction))
-
-        # Initialize the vector of freestream-wing influence coefficients.
         self.current_freestream_wing_influences = np.zeros(self.current_airplane.num_panels)
 
         for collocation_panel_wing_position in range(len(self.current_airplane.wings)):
@@ -617,22 +600,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 if step == 0:
                     num_spanwise_panels = this_wing.num_spanwise_panels
                     num_chordwise_panels = this_wing.num_chordwise_panels
+
                     chordwise_position = num_chordwise_panels - 1
+
                     new_row_of_wake_ring_vertex_vertices = np.zeros((1, num_spanwise_panels + 1, 3))
 
                     for spanwise_position in range(num_spanwise_panels):
                         next_panel = next_wing.panels[chordwise_position, spanwise_position]
                         next_front_left_vertex = (
-                            next_panel.back_left_vertex
-                            + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                next_panel.back_left_vertex
+                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
                         )
 
                         new_row_of_wake_ring_vertex_vertices[0, spanwise_position] = next_front_left_vertex
 
                         if spanwise_position == (num_spanwise_panels - 1):
                             next_front_right_vertex = (
-                                next_panel.back_right_vertex
-                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                    next_panel.back_right_vertex
+                                    + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
                             )
                             new_row_of_wake_ring_vertex_vertices[0, spanwise_position + 1] = next_front_right_vertex
 
@@ -701,16 +686,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     for spanwise_position in range(num_spanwise_panels):
                         next_panel = next_wing.panels[chordwise_position, spanwise_position]
                         next_front_left_vertex = (
-                            next_panel.back_left_vertex
-                            + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                next_panel.back_left_vertex
+                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
                         )
 
                         new_row_of_wake_ring_vertex_vertices[0, spanwise_position] = next_front_left_vertex
 
                         if spanwise_position == (num_spanwise_panels - 1):
                             next_front_right_vertex = (
-                                next_panel.back_right_vertex
-                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                    next_panel.back_right_vertex
+                                    + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
                             )
                             new_row_of_wake_ring_vertex_vertices[0, spanwise_position + 1] = next_front_right_vertex
 
@@ -729,33 +714,33 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_wing.wake_ring_vortex_vertices = np.vstack(
                         (new_row_of_wake_ring_vertex_vertices, next_wing.wake_ring_vortex_vertices)
                     )
-        else:
-            return
 
     # ToDo: Properly document this method.
     def calculate_next_airplanes_wake_vortices(self):
         step = self.current_step
+
         num_steps = self.unsteady_problem.movement.num_steps
-        this_airplane = self.current_airplane
+
+        this_airplane_copy = copy.deepcopy(self.current_airplane)
 
         if step < num_steps - 1:
             next_airplane = self.unsteady_problem.movement.airplanes[step + 1]
-            num_wings = len(this_airplane.wings)
+            num_wings = len(this_airplane_copy.wings)
 
             for wing_num in range(num_wings):
-                this_wing = this_airplane.wings[wing_num]
+                this_wing_copy = this_airplane_copy.wings[wing_num]
                 next_wing = next_airplane.wings[wing_num]
 
                 next_wing_wake_ring_vortex_vertices = next_wing.wake_ring_vortex_vertices
 
-                this_wing_wake_ring_vortices = this_wing.wake_ring_vortices
+                this_wing_wake_ring_vortices_copy = this_wing_copy.wake_ring_vortices
 
                 num_chordwise_vertices = next_wing_wake_ring_vortex_vertices.shape[0]
                 num_spanwise_vertices = next_wing_wake_ring_vortex_vertices.shape[1]
 
                 new_row_of_wake_ring_vortices = np.empty((1, num_spanwise_vertices - 1), dtype=object)
-                next_wing.wake_ring_vortices = np.vstack((new_row_of_wake_ring_vortices, np.copy(
-                    this_wing_wake_ring_vortices)))
+                next_wing.wake_ring_vortices = np.vstack((new_row_of_wake_ring_vortices,
+                                                          this_wing_wake_ring_vortices_copy))
 
                 for chordwise_vertex_position in range(num_chordwise_vertices):
                     for spanwise_vertex_position in range(num_spanwise_vertices):
@@ -783,19 +768,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
 
                             if chordwise_vertex_position == 0:
-                                this_strength = this_wing.panels[this_wing.num_chordwise_panels - 1,
-                                                                 spanwise_vertex_position].ring_vortex.strength
+                                this_strength_copy = this_wing_copy.panels[
+                                    this_wing_copy.num_chordwise_panels - 1,
+                                    spanwise_vertex_position
+                                ].ring_vortex.strength
                                 next_wing.wake_ring_vortices[chordwise_vertex_position, spanwise_vertex_position] = (
                                     asmvp.aerodynamics.RingVortex(
                                         front_left_vertex=front_left_vertex,
                                         front_right_vertex=front_right_vertex,
                                         back_left_vertex=back_left_vertex,
                                         back_right_vertex=back_right_vertex,
-                                        strength=this_strength
+                                        strength=this_strength_copy
                                     )
                                 )
-        else:
-            return
 
     # ToDo: Properly document this method.
     def debug_wake_vortices(self):

@@ -92,6 +92,4 @@ del unsteady_solver_validation_problem
 
 unsteady_solver_validation_solver.run(verbose=True)
 
-asmvp.output.make_flapping_gif(unsteady_solver_validation_movement)
-
-del unsteady_solver_validation_movement
+asmvp.output.make_flapping_gif(unsteady_solver_validation_movement, show_delta_pressures=True)

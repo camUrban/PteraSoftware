@@ -8,7 +8,7 @@ import aviansoftwareminimumviableproduct as asmvp
 
 
 # ToDo: Properly document this method.
-def make_steady_validation_operating_point():
+def make_validation_operating_point():
     """
 
     :return:

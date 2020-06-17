@@ -69,7 +69,7 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         Cn_expected = -0.000
         Cn_error = abs(self.unsteady_ring_vortex_lattice_method_validation_solver.Cn - Cn_expected)
 
-        allowable_error = 0.10
+        allowable_error = 0.25
 
         self.assertTrue(CDi_error < allowable_error)
         self.assertTrue(CL_error < allowable_error)

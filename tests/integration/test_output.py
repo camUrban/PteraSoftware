@@ -76,22 +76,9 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         :return:
         """
 
-        plotter = pv.Plotter()
-        plotter.show_grid()
-        plotter.add_mesh(pv.Sphere())
-        plotter.show()
-        plotter.close()
+        plotter = pv.Plotter
 
-        asmvp.output.draw_geometry(self.airplane)
-        plotter.close()
+        with unittest.mock.patch.object(plotter, 'show') as mocked_plotter_show:
+            asmvp.output.draw_geometry(self.airplane)
 
-        self.assertTrue(True)
-        # plotter = pv.Plotter
-        #
-
-
-
-        # with unittest.mock.patch.object(plotter, 'show') as mocked_plotter_show:
-        #     asmvp.output.draw_geometry(self.airplane)
-        #
-        # assert mocked_plotter_show.call_count == 1
+        assert mocked_plotter_show.call_count == 1

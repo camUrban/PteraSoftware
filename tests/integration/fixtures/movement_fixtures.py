@@ -56,7 +56,7 @@ def make_validation_movement():
     unsteady_validation_movement = asmvp.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=60,
+        num_steps=15,
         delta_time=1 / 6 / 10
     )
 

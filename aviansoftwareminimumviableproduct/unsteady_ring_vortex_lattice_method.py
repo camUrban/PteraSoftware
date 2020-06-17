@@ -177,11 +177,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
             print("\nCalculating streamlines.")
-        self.calculate_streamlines()
+            self.calculate_streamlines()
 
         if verbose:
             print('Final Airplane\'s wake vortex vertices:')
-        asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
+            asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
 
         # Print out the total forces.
         if verbose:

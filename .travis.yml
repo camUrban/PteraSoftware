@@ -2,7 +2,11 @@ language: python
 python:
   - "3.7"
 os: linux
-
+dist: xenial
+before_install:
+      # configure a headless display
+      - git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+      - source ./gl-ci-helpers/travis/setup_headless_display.sh
 install:
   - pip install -r REQUIREMENTS.txt
 script:

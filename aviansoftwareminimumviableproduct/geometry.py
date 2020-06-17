@@ -102,6 +102,11 @@ class Airplane:
         for wing in self.wings:
             self.num_panels += wing.num_panels
 
+        self.total_near_field_force_wind_axes = None
+        self.total_near_field_force_coefficients_wind_axes = None
+        self.total_near_field_moment_wind_axes = None
+        self.total_near_field_moment_coefficients_wind_axes = None
+
     def set_reference_dimensions_from_main_wing(self):
         """This method sets the reference dimensions of the current_airplane from measurements obtained from the main wing.
 

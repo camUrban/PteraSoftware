@@ -311,3 +311,79 @@ def make_flapping_gif(movement, show_delta_pressures):
 
     # Close movie and delete object
     plotter.close()
+
+
+# ToDo: Properly document this function.
+def plot_results_versus_time(movement):
+
+    num_steps = movement.num_steps
+    delta_time = movement.delta_time
+    airplanes = movement.airplanes
+
+    times = np.arange(0, num_steps * delta_time, delta_time)
+
+    total_near_field_force_wind_axes = np.zeros((3, num_steps))
+    total_near_field_force_coefficients_wind_axes = np.zeros((3, num_steps))
+    total_near_field_moment_wind_axes = np.zeros((3, num_steps))
+    total_near_field_moment_coefficients_wind_axes = np.zeros((3, num_steps))
+
+    for step in range(num_steps):
+
+        airplane = airplanes[step]
+
+        total_near_field_force_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
+        total_near_field_force_coefficients_wind_axes[:, step] = airplane.total_near_field_force_coefficients_wind_axes
+        total_near_field_moment_wind_axes[:, step] = airplane.total_near_field_moment_wind_axes
+        total_near_field_moment_coefficients_wind_axes[:, step] = (airplane.total_near_field_moment_coefficients_wind_axes)
+
+    force_figure, force_axes = plt.subplots()
+    force_axes.plot(times, total_near_field_force_wind_axes[0], label='Induced Drag')
+    force_axes.plot(times, total_near_field_force_wind_axes[1], label='Side Force')
+    force_axes.plot(times, total_near_field_force_wind_axes[2], label='Lift')
+    force_axes.set_xlabel('Time (s)')
+    force_axes.set_ylabel('Force (N)')
+    force_axes.set_title('Total Forces in Wind Axes versus Time')
+    force_axes.legend()
+    force_figure.show()
+
+    force_coefficients_figure, force_coefficients_axes = plt.subplots()
+    force_coefficients_axes.plot(
+        times, total_near_field_force_coefficients_wind_axes[0], label='Coefficient of Induced Drag'
+    )
+    force_coefficients_axes.plot(
+        times, total_near_field_force_coefficients_wind_axes[1], label='Coefficient of Side Force'
+    )
+    force_coefficients_axes.plot(
+        times, total_near_field_force_coefficients_wind_axes[2], label='Coefficient of Lift'
+    )
+    force_coefficients_axes.set_xlabel('Time (s)')
+    force_coefficients_axes.set_ylabel('Dimensionless')
+    force_coefficients_axes.set_title('Total Force Coefficients in Wind Axes versus Time')
+    force_coefficients_axes.legend()
+    force_coefficients_figure.show()
+
+    moment_figure, moment_axes = plt.subplots()
+    moment_axes.plot(times, total_near_field_moment_wind_axes[0], label='Rolling Moment')
+    moment_axes.plot(times, total_near_field_moment_wind_axes[1], label='Pitching Moment')
+    moment_axes.plot(times, total_near_field_moment_wind_axes[2], label='Yawing Moment')
+    moment_axes.set_xlabel('Time (s)')
+    moment_axes.set_ylabel('Moment (Nm)')
+    moment_axes.set_title('Total Moments in Wind Axes versus Time')
+    moment_axes.legend()
+    moment_figure.show()
+
+    moment_coefficients_figure, moment_coefficients_axes = plt.subplots()
+    moment_coefficients_axes.plot(
+        times, total_near_field_moment_coefficients_wind_axes[0], label='Coefficient of Rolling Moment'
+    )
+    moment_coefficients_axes.plot(
+        times, total_near_field_moment_coefficients_wind_axes[1], label='Coefficient of Pitching Moment'
+    )
+    moment_coefficients_axes.plot(
+        times, total_near_field_moment_coefficients_wind_axes[2], label='Coefficient of Yawing Moment'
+    )
+    moment_coefficients_axes.set_xlabel('Time (s)')
+    moment_coefficients_axes.set_ylabel('Dimensionless')
+    moment_coefficients_axes.set_title('Total Moment Coefficients in Wind Axes versus Time')
+    moment_coefficients_axes.legend()
+    moment_coefficients_figure.show()

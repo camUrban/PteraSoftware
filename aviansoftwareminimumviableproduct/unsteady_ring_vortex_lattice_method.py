@@ -1,3 +1,4 @@
+
 """This module contains the class definition of this package's unsteady ring vortex lattice solver.
 
 This module contains the following classes:
@@ -13,26 +14,30 @@ This module contains the following functions:
 
 import numpy as np
 import aviansoftwareminimumviableproduct as asmvp
-import copy
+import copy as copy
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
     This class contains the following public methods:
-        run: Run the solver on the unsteady problem.
-        initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes the
-                                   panels' vortices.
-        calculate_wing_wing_influences: Find the matrix of aerodynamic influence coefficients associated with this
+        run: This method runs the solver on the unsteady problem.
+        initialize_panel_vortices: This method calculates the locations of an airplane's bound vortex vertices, and then
+                                   initializes its panels' bound vortices.
+        calculate_wing_wing_influences: This method finds the matrix of wing-wing influences associated with this
                                         problem's geometry.
-        calculate_freestream_wing_influences: Find the normal freestream speed at every collocation point without the
-                                              influence of the vortices.
-        calculate_vortex_strengths: Solve for each panel's vortex strength.
-        calculate_solution_velocity: Find the velocity at a given point due to the freestream and the vortices.
-        calculate_velocity_influences: Find the velocity at a given point due to the vorticity of every vortex if their
-                                       strengths were all set to 1.0 meters squared per second.
-        calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
-        calculate_streamlines: Calculates the location of the streamlines coming off the back of the wings.
+        calculate_freestream_wing_influences: This method finds the vector of freestream-wing influences associated with
+                                              the problem at this time step.
+        calculate_wake_wing_influences: This method finds the vector of the wake-wing influences associated with the
+                                        problem at this time step.
+        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+        calculate_solution_velocity: This method finds the velocity at a given point due to the freestream and the
+                                     vortices.
+        calculate_velocity_influences: This method finds the velocity at a given point due to the vorticity of every
+                                       vortex if their strengths were all set to 1.0 meters squared per second.
+        calculate_near_field_forces_and_moments: This method finds the the forces and moments calculated from the near
+                                                 field.
+        calculate_streamlines: This method calculates the location of the streamlines coming off the back of the wings.
 
     This class contains the following class attributes:
         None
@@ -71,7 +76,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def run(self, verbose=True):
-        """Run the solver on the unsteady problem.
+        """This method runs the solver on the unsteady problem.
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console. It's default value is True.
@@ -87,7 +92,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.current_step = step
 
             if verbose:
-                print("\nBeginning time current_step "
+                print("\nBeginning time step "
                       + str(self.current_step)
                       + " out of "
                       + str(self.unsteady_problem.movement.num_steps - 1)
@@ -137,6 +142,38 @@ class UnsteadyRingVortexLatticeMethodSolver:
             if verbose:
                 self.debug_wake_vortices()
 
+            if verbose:
+                CDi_exp = self.current_airplane.total_near_field_force_coefficients_wind_axes[0]
+                CDi_thr = 0.011
+                CDi_error = abs(CDi_exp - CDi_thr) / CDi_thr
+                print("Induced Drag Error: " + str(np.round(CDi_error, 3)))
+
+                CL_exp = self.current_airplane.total_near_field_force_coefficients_wind_axes[2]
+                CL_thr = 0.588
+                CL_error = abs(CL_exp - CL_thr) / CL_thr
+                print("Lift Error: " + str(np.round(CL_error, 3)))
+
+                Cl_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[0]
+                Cl_thr = -0.000
+                try:
+                    Cl_error = abs(Cl_exp - Cl_thr) / Cl_thr
+                except ZeroDivisionError:
+                    Cl_error = Cl_exp - Cl_thr
+                print("Rolling Moment Error: " + str(np.round(Cl_error, 3)))
+
+                Cm_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[1]
+                Cm_thr = -0.197
+                Cm_error = abs(Cm_exp - Cm_thr) / Cm_thr
+                print("Pitching Moment Error: " + str(np.round(Cm_error, 3)))
+
+                Cn_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[2]
+                Cn_thr = -0.000
+                try:
+                    Cn_error = abs(Cn_exp - Cn_thr) / Cn_thr
+                except ZeroDivisionError:
+                    Cn_error = Cn_exp - Cn_thr
+                print("Yawing Moment Error: " + str(np.round(Cn_error, 3)))
+
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
             print("\nCalculating streamlines.")
@@ -144,7 +181,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         if verbose:
             print('Final Airplane\'s wake vortex vertices:')
-            asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
+        asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
 
         # Print out the total forces.
         if verbose:
@@ -172,7 +209,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def initialize_panel_vortices(self, airplane_to_initialize):
-        """This method calculates the locations of the vortex vertices, and then initializes the panel's vortices.
+        """This method calculates the locations of an airplane's bound vortex vertices, and then initializes its panels'
+        bound vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg is at the panel's quarter chord.
         The left and right vortex legs run along the panel's left and right legs. If the panel is not along the
@@ -220,7 +258,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def calculate_wing_wing_influences(self):
-        """Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
+        """This method finds the matrix of wing-wing influences associated with this problem's geometry.
 
         :return: None
         """
@@ -271,10 +309,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def calculate_freestream_wing_influences(self):
-        """Find the vector of freestream-wing influence coefficients associated with this problem.
+        """This method finds the vector of freestream-wing influences associated with the problem at this time step.
 
-        Note: This contains the influence due to the freestream and due to any geometry unsteady_problem.movement
-        relative to the freestream.
+        Note: This contains the influence due to the freestream and due to any geometry movement relative to the
+        freestream.
 
         :return: None
         """
@@ -318,6 +356,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def calculate_wake_wing_influences(self):
+        """This method finds the vector of the wake-wing influences associated with the problem at this time step.
+
+        :return: None
+        """
 
         self.current_wake_wing_influences = np.zeros(self.current_airplane.num_panels)
 
@@ -357,9 +399,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     )
 
     def calculate_vortex_strengths(self):
-        """Solve for each panel's vortex strength.
+        """This method solves for each panel's vortex strength.
 
-        :return:
+        :return: None
         """
 
         # Solve for the strength of each panel's vortex.
@@ -387,10 +429,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def calculate_solution_velocity(self, point):
-        """
+        """This method finds the velocity at a given point due to the freestream and the vortices.
 
-        :param point:
-        :return:
+        Note: The velocity this method returns does not include the velocity due to flapping. The velocity calculated by
+        this method is in geometry axes.
+
+        :param point: 1D ndarray of floats
+            This is the x, y, and z coordinates of the location, in meters, where this method will solve for the
+            velocity.
+        :return solution_velocity: 1D ndarray of floats
+            This is the x, y, and z components of the velocity, in meters per second, where this method will solve for
+            the velocity.
         """
 
         velocity_induced_by_vortices = np.zeros(3)
@@ -406,24 +455,49 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 if wake_ring_vortex is not None:
                     velocity_induced_by_vortices += wake_ring_vortex.calculate_induced_velocity(point)
 
-        return velocity_induced_by_vortices + self.current_freestream_velocity
+        solution_velocity = velocity_induced_by_vortices + self.current_freestream_velocity
+        return solution_velocity
 
     # ToDo: Properly cite and document this method.
     def calculate_near_field_forces_and_moments(self):
+        """This method finds the the forces and moments calculated from the near field.
+
+        Citation:
+            This method uses logic described on pages 9-11 of "Modeling of aerodynamic forces in flapping flight with
+            the Unsteady Vortex Lattice Method" by Thomas Lambert.
+
+        Note: The forces and moments calculated are in geometry axes. The moment is about the current_airplane's
+        reference point, which should be at the center of gravity. The units are Newtons and Newton-meters.
+
+        :return: None
         """
 
-        :return:
-        """
         total_near_field_force_geometry_axes = np.zeros(3)
         total_near_field_moment_geometry_axes = np.zeros(3)
 
-        for wing in self.current_airplane.wings:
+        step = self.current_step
+        if step > 0:
+            last_step = step - 1
+        else:
+            last_step = step
+        last_airplane = self.unsteady_problem.movement.airplanes[last_step]
+
+        for wing_num in range(len(self.current_airplane.wings)):
+
+            wing = self.current_airplane.wings[wing_num]
+            last_wing = last_airplane.wings[wing_num]
+
             panels = wing.panels
+            last_panels = last_wing.panels
+
             num_chordwise_panels = wing.num_chordwise_panels
             num_spanwise_panels = wing.num_spanwise_panels
+
             for chordwise_location in range(num_chordwise_panels):
                 for spanwise_location in range(num_spanwise_panels):
+
                     panel = panels[chordwise_location, spanwise_location]
+                    last_panel = last_panels[chordwise_location, spanwise_location]
 
                     is_right_edge = (spanwise_location + 1 == num_spanwise_panels)
                     is_leading_edge = panel.is_leading_edge
@@ -491,6 +565,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             - self.current_airplane.xyz_ref, left_bound_vortex_force_in_geometry_axes
                         )
 
+                    ring_vortex = panel.ring_vortex
+                    last_ring_vortex = last_panel.ring_vortex
+                    vortex_strength = ring_vortex.strength
+                    last_vortex_strength = last_ring_vortex.strength
+                    density = self.current_operating_point.density
+                    area = panel.area
+                    normal = panel.normal_direction
+                    unsteady_force_geometry_axes = density * (vortex_strength - last_vortex_strength) * area * normal
+                    panel.near_field_force_geometry_axes += unsteady_force_geometry_axes
+                    panel.near_field_moment_geometry_axes += np.cross(
+                        panel.ring_vortex.center
+                        - self.current_airplane.xyz_ref, unsteady_force_geometry_axes
+                    )
+
                     panel.update_pressure()
 
                     total_near_field_force_geometry_axes += panel.near_field_force_geometry_axes
@@ -538,6 +626,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 / self.current_airplane.s_ref
                 / self.current_airplane.b_ref
         )
+
+        self.current_airplane.total_near_field_force_wind_axes = self.total_near_field_force_wind_axes
+        self.current_airplane.total_near_field_force_coefficients_wind_axes = np.array([self.CDi, self.CY, self.CL])
+        self.current_airplane.total_near_field_moment_wind_axes = self.total_near_field_moment_wind_axes
+        self.current_airplane.total_near_field_moment_coefficients_wind_axes = np.array([self.Cl, self.Cm, self.Cn])
 
     # ToDo: Properly document this method.
     def calculate_streamlines(self):

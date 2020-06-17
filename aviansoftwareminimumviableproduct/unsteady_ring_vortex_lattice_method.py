@@ -145,7 +145,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
             print("\nCalculating streamlines.")
-            self.calculate_streamlines()
+        self.calculate_streamlines()
 
         if verbose:
             print('Final Airplane\'s wake vortex vertices:')

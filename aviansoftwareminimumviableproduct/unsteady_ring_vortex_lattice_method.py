@@ -142,38 +142,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             if verbose:
                 self.debug_wake_vortices()
 
-            if verbose:
-                CDi_exp = self.current_airplane.total_near_field_force_coefficients_wind_axes[0]
-                CDi_thr = 0.011
-                CDi_error = abs(CDi_exp - CDi_thr) / CDi_thr
-                print("Induced Drag Error: " + str(np.round(CDi_error, 3)))
-
-                CL_exp = self.current_airplane.total_near_field_force_coefficients_wind_axes[2]
-                CL_thr = 0.588
-                CL_error = abs(CL_exp - CL_thr) / CL_thr
-                print("Lift Error: " + str(np.round(CL_error, 3)))
-
-                Cl_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[0]
-                Cl_thr = -0.000
-                try:
-                    Cl_error = abs(Cl_exp - Cl_thr) / Cl_thr
-                except ZeroDivisionError:
-                    Cl_error = Cl_exp - Cl_thr
-                print("Rolling Moment Error: " + str(np.round(Cl_error, 3)))
-
-                Cm_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[1]
-                Cm_thr = -0.197
-                Cm_error = abs(Cm_exp - Cm_thr) / Cm_thr
-                print("Pitching Moment Error: " + str(np.round(Cm_error, 3)))
-
-                Cn_exp = self.current_airplane.total_near_field_moment_coefficients_wind_axes[2]
-                Cn_thr = -0.000
-                try:
-                    Cn_error = abs(Cn_exp - Cn_thr) / Cn_thr
-                except ZeroDivisionError:
-                    Cn_error = Cn_exp - Cn_thr
-                print("Yawing Moment Error: " + str(np.round(Cn_error, 3)))
-
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
             print("\nCalculating streamlines.")

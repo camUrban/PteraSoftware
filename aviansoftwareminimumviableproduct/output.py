@@ -29,6 +29,8 @@ def draw(airplane, show_delta_pressures, show_streamlines):
         This is the current_airplane object whose geometry is to be plotted.
     :param show_delta_pressures: bool
         Set this variable to true to show the change in pressure across the panels.
+    :param show_streamlines: bool
+
     :return: None
     """
 

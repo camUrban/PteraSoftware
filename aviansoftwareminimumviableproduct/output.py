@@ -167,6 +167,8 @@ def draw_geometry(airplane):
     plotter.set_background(color="black")
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
+    plotter.close()
+
 
 # ToDo: Properly document and cite this function.
 def make_flapping_gif(movement, show_delta_pressures):

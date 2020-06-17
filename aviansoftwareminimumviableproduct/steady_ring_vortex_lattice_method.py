@@ -27,12 +27,16 @@ class SteadyRingVortexLatticeMethodSolver:
         run: Run the solver on the steady problem.
         initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes the
                                    panels' vortices.
-        calculate_wing_wing_influences: Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
-        calculate_freestream_wing_influences: Find the vector of freestream-wing influence coefficients associated with this problem.
-        calculate_vortex_strengths: Solve for each panel's vortex strength.
-        calculate_solution_velocity: Find the velocity at a given point due to both the freestream and the vortices.
-        calculate_near_field_forces_and_moments: Find the the forces and moments calculated from the near field.
-        calculate_streamlines: Calculates the location of the streamlines coming off the back of the wings.
+        calculate_wing_wing_influences: This method finds the matrix of wing-wing influence coefficients associated with
+                                        this current_airplane's geometry.
+        calculate_freestream_wing_influences: This method finds the vector of freestream-wing influence coefficients
+                                              associated with this problem.
+        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+        calculate_solution_velocity: This method finds the velocity at a given point due to both the freestream and the
+                                     vortices.
+        calculate_near_field_forces_and_moments: This method finds the the forces and moments calculated from the near
+                                                 field.
+        calculate_streamlines: This method calculates the location of the streamlines coming off the back of the wings.
 
     This class contains the following class attributes:
         None
@@ -94,9 +98,6 @@ class SteadyRingVortexLatticeMethodSolver:
         if verbose:
             print("\nCalculating vortex strengths.")
         self.calculate_vortex_strengths()
-
-        if verbose:
-            self.debug_vortices()
 
         # Solve for the near field forces and moments on each panel.
         if verbose:
@@ -201,7 +202,8 @@ class SteadyRingVortexLatticeMethodSolver:
                     )
 
     def calculate_wing_wing_influences(self):
-        """Find the matrix of wing-wing influence coefficients associated with this current_airplane's geometry.
+        """This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
+        geometry.
 
         :return: None
         """
@@ -247,7 +249,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             normal_normalized_induced_velocity_at_collocation_point)
 
     def calculate_freestream_wing_influences(self):
-        """Find the vector of freestream-wing influence coefficients associated with this problem.
+        """This method finds the vector of freestream-wing influence coefficients associated with this problem.
 
         :return: None
         """
@@ -269,7 +271,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     np.dot(self.freestream_velocity, collocation_panel.normal_direction))
 
     def calculate_vortex_strengths(self):
-        """Solve for each panel's vortex strength.
+        """This method solves for each panel's vortex strength.
 
         :return: None
         """
@@ -294,13 +296,16 @@ class SteadyRingVortexLatticeMethodSolver:
                     panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_index])
 
     def calculate_solution_velocity(self, point):
-        """Find the velocity at a given point due to both the freestream and the vortices.
+        """This method finds the velocity at a given point due to both the freestream and the vortices.
 
-        The velocity calculated by this method is in geometry axes.
+        Note: The velocity calculated by this method is in geometry axes.
 
         :param point: 1D ndarray of floats
-            This is the x, y, and z coordinates of the location where this method will solve for the velocity.
-        :return: None
+            This is the x, y, and z coordinates of the location, in meters, where this method will solve for the
+            velocity.
+        :return solution_velocity: 1D ndarray of floats
+            This is the x, y, and z components of the velocity, in meters per second, where this method will solve for
+            the velocity.
         """
 
         # Initialize a (3,) ndarray of zeros to hold the velocity induced at the point due to the vortices.
@@ -324,14 +329,14 @@ class SteadyRingVortexLatticeMethodSolver:
         return velocity_induced_by_vortices + freestream
 
     def calculate_near_field_forces_and_moments(self):
-        """Find the the forces and moments calculated from the near field.
+        """This method finds the the forces and moments calculated from the near field.
 
         Citation:
             This method uses logic described on pages 9-11 of "Modeling of aerodynamic forces in flapping flight with
             the Unsteady Vortex Lattice Method" by Thomas Lambert.
 
-        The forces and moments calculated by this method are in geometry axes. The moment is about the current_airplane's
-        reference point, which should be at the center of gravity.
+        Note: The forces and moments calculated are in geometry axes. The moment is about the current_airplane's
+        reference point, which should be at the center of gravity. The units are Newtons and Newton-meters.
 
         :return: None
         """
@@ -527,14 +532,14 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.0125):
-        """Calculates the location of the streamlines coming off the back of the wings.
+        """This method calculates the location of the streamlines coming off the back of the wings.
 
         :param num_steps: int, optional
             This is the integer number of points along each streamline (not including the initial point). It can be
             increased for higher fidelity visuals. The default value is 10.
         :param delta_time: float, optional
-            This is the time in seconds between each time current_step It can be decreased for higher fidelity visuals or to
-            make the streamlines shorter. It's default value is 0.1 seconds.
+            This is the time in seconds between each time current_step It can be decreased for higher fidelity visuals
+            or to make the streamlines shorter. It's default value is 0.1 seconds.
         :return: None
         """
 
@@ -574,16 +579,3 @@ class SteadyRingVortexLatticeMethodSolver:
                             + delta_time
                             * self.calculate_solution_velocity(last_point)
                     )
-
-    # ToDo: Properly document this method.
-    def debug_vortices(self):
-        for wing in self.airplane.wings:
-            print("\nPanel Vortex Strengths:\n")
-            for chordwise_position in range(wing.num_chordwise_panels):
-                for spanwise_position in range(wing.num_spanwise_panels):
-                    panel = wing.panels[chordwise_position, spanwise_position]
-                    ring_vortex = panel.ring_vortex
-                    strength = ring_vortex.strength
-                    print("\t" + str(round(strength, 2)), end="\t")
-                print()
-        print()

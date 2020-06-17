@@ -314,7 +314,7 @@ def make_flapping_gif(movement, show_delta_pressures):
 
 
 # ToDo: Properly document this function.
-def plot_results_versus_time(movement):
+def plot_results_versus_time(movement, verbose=True):
 
     num_steps = movement.num_steps
     delta_time = movement.delta_time
@@ -334,7 +334,9 @@ def plot_results_versus_time(movement):
         total_near_field_force_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
         total_near_field_force_coefficients_wind_axes[:, step] = airplane.total_near_field_force_coefficients_wind_axes
         total_near_field_moment_wind_axes[:, step] = airplane.total_near_field_moment_wind_axes
-        total_near_field_moment_coefficients_wind_axes[:, step] = (airplane.total_near_field_moment_coefficients_wind_axes)
+        total_near_field_moment_coefficients_wind_axes[:, step] = (
+            airplane.total_near_field_moment_coefficients_wind_axes
+        )
 
     force_figure, force_axes = plt.subplots()
     force_axes.plot(times, total_near_field_force_wind_axes[0], label='Induced Drag')
@@ -344,7 +346,8 @@ def plot_results_versus_time(movement):
     force_axes.set_ylabel('Force (N)')
     force_axes.set_title('Total Forces in Wind Axes versus Time')
     force_axes.legend()
-    force_figure.show()
+    if verbose:
+        force_figure.show()
 
     force_coefficients_figure, force_coefficients_axes = plt.subplots()
     force_coefficients_axes.plot(
@@ -360,7 +363,8 @@ def plot_results_versus_time(movement):
     force_coefficients_axes.set_ylabel('Dimensionless')
     force_coefficients_axes.set_title('Total Force Coefficients in Wind Axes versus Time')
     force_coefficients_axes.legend()
-    force_coefficients_figure.show()
+    if verbose:
+        force_coefficients_figure.show()
 
     moment_figure, moment_axes = plt.subplots()
     moment_axes.plot(times, total_near_field_moment_wind_axes[0], label='Rolling Moment')
@@ -370,7 +374,8 @@ def plot_results_versus_time(movement):
     moment_axes.set_ylabel('Moment (Nm)')
     moment_axes.set_title('Total Moments in Wind Axes versus Time')
     moment_axes.legend()
-    moment_figure.show()
+    if verbose:
+        moment_figure.show()
 
     moment_coefficients_figure, moment_coefficients_axes = plt.subplots()
     moment_coefficients_axes.plot(
@@ -386,4 +391,5 @@ def plot_results_versus_time(movement):
     moment_coefficients_axes.set_ylabel('Dimensionless')
     moment_coefficients_axes.set_title('Total Moment Coefficients in Wind Axes versus Time')
     moment_coefficients_axes.legend()
-    moment_coefficients_figure.show()
+    if verbose:
+        moment_coefficients_figure.show()

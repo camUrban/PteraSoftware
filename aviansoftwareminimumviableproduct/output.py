@@ -159,6 +159,18 @@ def draw_geometry(airplane):
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
+    # mesh points
+    panel_vertices = np.array([[0, 0, 0],
+                         [1, 0, 0],
+                         [1, 1, 0],
+                         [0, 1, 0],
+                         [0.5, 0.5, -1]])
+
+    # mesh faces
+    panel_faces = np.hstack([[4, 0, 1, 2, 3],  # square
+                       [3, 0, 1, 4],  # triangle
+                       [3, 1, 2, 4]])  # triangle
+
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
     plotter.add_mesh(panel_surface, show_edges=True, color='white')
@@ -166,8 +178,6 @@ def draw_geometry(airplane):
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
-
-    plotter.close()
 
 
 # ToDo: Properly document and cite this function.

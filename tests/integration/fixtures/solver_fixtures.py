@@ -50,3 +50,25 @@ def make_steady_ring_vortex_lattice_method_validation_solver():
     del steady_validation_problem
 
     return steady_ring_vortex_lattice_method_validation_solver
+
+
+# ToDo: Properly document this method.
+def make_unsteady_ring_vortex_lattice_method_validation_solver():
+    """
+
+    :return:
+    """
+
+    unsteady_validation_problem = (
+        tests.integration.fixtures.problem_fixtures.make_unsteady_validation_problem()
+    )
+
+    unsteady_ring_vortex_lattice_method_validation_solver = (
+        asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_validation_problem
+        )
+    )
+
+    del unsteady_validation_problem
+
+    return unsteady_ring_vortex_lattice_method_validation_solver

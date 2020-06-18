@@ -496,6 +496,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if right_bound_vortex_strength != 0:
                         velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.right_leg.center)
+
+                        velocity_at_right_bound_vortex_center += (
+                            self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name='ring_vortex.right_leg.center',
+                                current_step=self.current_step)
+                        )
+
                         right_bound_vortex_force_in_geometry_axes = (
                                 self.current_operating_point.density
                                 * right_bound_vortex_strength
@@ -509,6 +519,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if front_bound_vortex_strength != 0:
                         velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.front_leg.center)
+
+                        velocity_at_front_bound_vortex_center += (
+                            self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name='ring_vortex.front_leg.center',
+                                current_step=self.current_step)
+                        )
+
                         front_bound_vortex_force_in_geometry_axes = (
                                 self.current_operating_point.density
                                 * front_bound_vortex_strength
@@ -522,6 +542,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if left_bound_vortex_strength != 0:
                         velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.left_leg.center)
+
+                        velocity_at_left_bound_vortex_center += (
+                            self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name='ring_vortex.left_leg.center',
+                                current_step=self.current_step)
+                        )
+
                         left_bound_vortex_force_in_geometry_axes = (
                                 self.current_operating_point.density
                                 * left_bound_vortex_strength
@@ -668,17 +698,41 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                     for spanwise_position in range(num_spanwise_panels):
                         next_panel = next_wing.panels[chordwise_position, spanwise_position]
+
+                        velocity_here = (
+                            self.current_freestream_velocity
+                            + self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                current_step=self.current_step,
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_position,
+                                panel_spanwise_position=spanwise_position,
+                                point_name='back_left_vertex'
+                            )
+                        )
+
                         next_front_left_vertex = (
                                 next_panel.back_left_vertex
-                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                + 0.25 * velocity_here * self.unsteady_problem.movement.delta_time
                         )
 
                         new_row_of_wake_ring_vertex_vertices[0, spanwise_position] = next_front_left_vertex
 
                         if spanwise_position == (num_spanwise_panels - 1):
+
+                            velocity_here = (
+                                self.current_freestream_velocity
+                                + self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                    current_step=self.current_step,
+                                    wing_position=wing_num,
+                                    panel_chordwise_position=chordwise_position,
+                                    panel_spanwise_position=spanwise_position,
+                                    point_name='back_right_vertex'
+                                )
+                            )
+
                             next_front_right_vertex = (
                                     next_panel.back_right_vertex
-                                    + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                    + 0.25 * velocity_here * self.unsteady_problem.movement.delta_time
                             )
                             new_row_of_wake_ring_vertex_vertices[0, spanwise_position + 1] = next_front_right_vertex
 
@@ -746,17 +800,41 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                     for spanwise_position in range(num_spanwise_panels):
                         next_panel = next_wing.panels[chordwise_position, spanwise_position]
+
+                        velocity_here = (
+                            self.current_freestream_velocity
+                            + self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                current_step=self.current_step,
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_position,
+                                panel_spanwise_position=spanwise_position,
+                                point_name='back_left_vertex'
+                            )
+                        )
+
                         next_front_left_vertex = (
                                 next_panel.back_left_vertex
-                                + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                + 0.25 * velocity_here * self.unsteady_problem.movement.delta_time
                         )
 
                         new_row_of_wake_ring_vertex_vertices[0, spanwise_position] = next_front_left_vertex
 
                         if spanwise_position == (num_spanwise_panels - 1):
+
+                            velocity_here = (
+                                self.current_freestream_velocity
+                                + self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
+                                    current_step=self.current_step,
+                                    wing_position=wing_num,
+                                    panel_chordwise_position=chordwise_position,
+                                    panel_spanwise_position=spanwise_position,
+                                    point_name='back_right_vertex'
+                                )
+                            )
+
                             next_front_right_vertex = (
                                     next_panel.back_right_vertex
-                                    + 0.25 * self.current_freestream_velocity * self.unsteady_problem.movement.delta_time
+                                    + 0.25 * velocity_here * self.unsteady_problem.movement.delta_time
                             )
                             new_row_of_wake_ring_vertex_vertices[0, spanwise_position + 1] = next_front_right_vertex
 

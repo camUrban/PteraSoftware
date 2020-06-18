@@ -3,10 +3,6 @@
 
 import unittest
 import matplotlib.pyplot as plt
-import unittest.mock as mock
-import pyvista as pv
-
-import numpy as np
 
 import aviansoftwareminimumviableproduct as asmvp
 import tests.integration

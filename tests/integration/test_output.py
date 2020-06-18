@@ -26,24 +26,8 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         """
 
         self.movement = (
-            tests.integration.fixtures.movement_fixtures.make_validation_movement()
+            tests.integration.fixtures.movement_fixtures.make_static_validation_movement()
         )
-
-        self.airplane = (
-            tests.integration.fixtures.airplane_fixtures.make_steady_validation_airplane()
-        )
-
-        num_airplanes = len(self.movement.airplanes)
-        times = np.linspace(0, 1, num_airplanes)
-
-        for airplane_num in range(num_airplanes):
-            airplane = self.movement.airplanes[airplane_num]
-            time = times[airplane_num]
-
-            airplane.total_near_field_force_wind_axes = np.ones(3) * np.sin(time)
-            airplane.total_near_field_force_coefficients_wind_axes = - np.ones(3) * np.sin(time)
-            airplane.total_near_field_moment_wind_axes = np.ones(3) * np.cos(time)
-            airplane.total_near_field_moment_coefficients_wind_axes = - np.ones(3) * np.cos(time)
 
     # ToDo: Properly document this method.
     def tearDown(self):
@@ -53,7 +37,6 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         """
 
         del self.movement
-        del self.airplane
 
     # ToDo: Properly document this method.
     def test_plot_results_versus_time(self):

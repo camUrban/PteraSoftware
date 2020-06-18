@@ -32,7 +32,7 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         """
 
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver()
+            tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
 
     # ToDo: Properly document this method.

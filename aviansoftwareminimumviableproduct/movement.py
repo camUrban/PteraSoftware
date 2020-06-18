@@ -107,12 +107,26 @@ class Movement:
         panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
         last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
 
-        # Populate the current and last position based on the point's name.
-        try:
-            position = panel.__getattribute__(point_name)
-            last_position = last_panel.__getattribute__(point_name)
-        except AttributeError:
-            raise Exception("The panel doesn't have an attribute that matches your request!")
+        sub_names = point_name.split('.')
+        parent = panel
+        last_parent = last_panel
+        sub = None
+        last_sub = None
+
+        for sub_name in sub_names:
+
+            try:
+                sub = parent.__getattribute__(sub_name)
+                last_sub = last_parent.__getattribute__(sub_name)
+
+                parent = sub
+                last_parent = last_sub
+
+            except AttributeError:
+                raise Exception("The panel doesn't have an attribute that matches your request!")
+
+        position = sub
+        last_position = last_sub
 
         # Calculate and return the flapping velocity.
         flapping_velocity = (position - last_position) / self.delta_time

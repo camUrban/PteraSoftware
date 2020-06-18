@@ -65,7 +65,7 @@ def make_steady_validation_airplane():
 
 
 # ToDo: Properly document this method.
-def make_unsteady_validation_airplane():
+def make_asymmetric_unsteady_validation_airplane():
     """
 
     :return:
@@ -102,6 +102,50 @@ def make_unsteady_validation_airplane():
                         chord=1.0,
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                         num_spanwise_panels=16
+                    )
+                ]
+            )
+        ]
+    )
+
+
+# ToDo: Properly document this method.
+def make_symmetric_unsteady_validation_airplane():
+    """
+
+    :return:
+    """
+
+    return asmvp.geometry.Airplane(
+        name="Unsteady Solver Testing Airplane",
+        # Define a list of the current_airplane's wings.
+        wings=[
+
+            # Initialize the wing object.
+            asmvp.geometry.Wing(
+
+                # Name the wing.
+                name="Wing",
+                symmetric=True,
+                num_chordwise_panels=6,
+                chordwise_spacing='uniform',
+
+                # Define a list of the wing's cross sections.
+                wing_cross_sections=[
+
+                    # Initialize the root cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        chord=1.0,
+                        airfoil=asmvp.geometry.Airfoil(name="naca0012"),
+                        num_spanwise_panels=8
+                    ),
+
+                    # Initialize the tip cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        y_le=5.0,
+                        chord=1.0,
+                        airfoil=asmvp.geometry.Airfoil(name="naca0012"),
+                        num_spanwise_panels=8
                     )
                 ]
             )

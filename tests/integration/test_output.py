@@ -68,17 +68,3 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         num_figs_after = plt.gcf().number
 
         self.assertEqual(num_figs_before + 4, num_figs_after)
-
-    # ToDo: Properly document this method.
-    def test_draw_geometry(self):
-        """
-
-        :return:
-        """
-
-        plotter = pv.Plotter
-
-        with unittest.mock.patch.object(plotter, 'show') as mocked_plotter_show:
-            asmvp.output.draw_geometry(self.airplane)
-
-        assert mocked_plotter_show.call_count == 1

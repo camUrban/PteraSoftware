@@ -78,16 +78,3 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(Cl_error < allowable_error)
         self.assertTrue(Cm_error < allowable_error)
         self.assertTrue(Cn_error < allowable_error)
-
-    def test_output(self):
-
-        plotter = pv.Plotter
-
-        with unittest.mock.patch.object(plotter, 'show') as mocked_plotter_show:
-            asmvp.output.draw(
-                self.steady_horseshoe_vortex_lattice_method_validation_solver.airplane,
-                show_delta_pressures=False,
-                show_streamlines=False
-            )
-
-        assert mocked_plotter_show.call_count == 1

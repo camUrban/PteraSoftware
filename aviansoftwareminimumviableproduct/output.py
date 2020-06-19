@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 # ToDo: Properly document this function.
-def draw(airplane, show_delta_pressures, show_streamlines):
+def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
     """Draw the geometry of an current_airplane object.
 
     Citation:
@@ -30,7 +30,9 @@ def draw(airplane, show_delta_pressures, show_streamlines):
     :param show_delta_pressures: bool
         Set this variable to true to show the change in pressure across the panels.
     :param show_streamlines: bool
-
+        Set this variable to true to show the streamlines emanating from the back of the wings.
+    :param show_wake_vortices: bool
+        Set this variable to true to show the airplane object's wake ring vortices.
     :return: None
     """
 
@@ -79,15 +81,16 @@ def draw(airplane, show_delta_pressures, show_streamlines):
                     scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
                     scalars = np.hstack((scalars, scalar_to_add))
 
-        for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-            plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
-                             show_edges=True, cmap=color_map, color='white')
+        if show_wake_vortices:
+            for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
+                plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
+                                 show_edges=True, cmap=color_map, color='white')
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)

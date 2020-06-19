@@ -51,7 +51,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         """
 
         # Run the solver.
-        self.steady_ring_vortex_lattice_method_validation_solver.run(verbose=False)
+        self.steady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
 
         CDi_expected = 0.019
         CDi_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.CDi - CDi_expected) / CDi_expected

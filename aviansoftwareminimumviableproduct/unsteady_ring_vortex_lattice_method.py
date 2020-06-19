@@ -38,6 +38,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         calculate_near_field_forces_and_moments: This method finds the the forces and moments calculated from the near
                                                  field.
         calculate_streamlines: This method calculates the location of the streamlines coming off the back of the wings.
+        populate_next_airplanes_wake: This method updates the next time step's airplane's wake.
+        populate_next_airplanes_wake_vortex_vertices: This method populates the locations of the next airplane's wake
+                                                      vortex vertices.
+        populate_next_airplanes_wake_vortices: This method populates the locations of the next airplane's wake vortices.
+        debug_vortices: This method prints out the current strength of the problem's vortices.
 
     This class contains the following class attributes:
         None
@@ -74,23 +79,30 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.Cm = None
         self.Cn = None
 
-    # ToDo: Properly document this method.
     def run(self, verbose=True):
         """This method runs the solver on the unsteady problem.
 
         :param verbose: Bool, optional
-            This parameter determines if the solver prints output to the console. It's default value is True.
+            This parameter determines if the solver prints output to the console and opens a visualization. It's default
+            value is True.
         :return: None
         """
 
+        # Initialize all the airplanes' panels' vortices.
         if verbose:
             print("Initializing all airplanes' panel vortices.")
-        for airplane in self.unsteady_problem.movement.airplanes:
-            self.initialize_panel_vortices(airplane_to_initialize=airplane)
+        self.initialize_panel_vortices()
 
+        # Iterate through the time steps.
         for step in range(self.unsteady_problem.movement.num_steps):
-            self.current_step = step
 
+            # Save attributes to hold the current step, airplane, and operating point.
+            self.current_step = step
+            self.current_airplane = self.unsteady_problem.movement.airplanes[self.current_step]
+            self.current_operating_point = self.unsteady_problem.movement.operating_points[self.current_step]
+            self.current_freestream_velocity = (
+                self.current_operating_point.calculate_freestream_velocity_geometry_axes()
+            )
             if verbose:
                 print("\nBeginning time step "
                       + str(self.current_step)
@@ -98,15 +110,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                       + str(self.unsteady_problem.movement.num_steps - 1)
                       + ".")
 
-            self.current_airplane = self.unsteady_problem.movement.airplanes[self.current_step]
-            self.current_operating_point = self.unsteady_problem.movement.operating_points[self.current_step]
-
             # Initialize attributes to hold aerodynamic data that pertains to this problem.
             self.current_wing_wing_influences = None
             self.current_freestream_wing_influences = None
-            self.current_freestream_velocity = (
-                self.current_operating_point.calculate_freestream_velocity_geometry_axes()
-            )
             self.current_wake_wing_influences = None
             self.current_vortex_strengths = None
 
@@ -120,6 +126,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 print("Calculating the freestream-wing influences.")
             self.calculate_freestream_wing_influences()
 
+            # Find the vector of wake-wing influence coefficients associated with this problem.
             if verbose:
                 print("Calculating the wake-wing influences.")
             self.calculate_wake_wing_influences()
@@ -137,8 +144,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Solve for the near field forces and moments on each panel.
             if verbose:
                 print("Shedding wake vortices.")
-            self.calculate_wake_rollup()
+            self.populate_next_airplanes_wake()
 
+            # If the user has requested verbose output, print out the strength of all the ring vortices.
             if verbose:
                 self.debug_wake_vortices()
 
@@ -147,36 +155,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             print("\nCalculating streamlines.")
         self.calculate_streamlines()
 
+        # If the user has requested verbose output, output a visualization of the last airplane object.
         if verbose:
-            print('Final Airplane\'s wake vortex vertices:')
+            print('Final airplane\'s visualization:')
             asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
 
-        # Print out the total forces.
-        if verbose:
-            print("\n\nTotal Forces in Wind Axes:")
-            print("\tInduced Drag:\t\t\t", np.round(self.total_near_field_force_wind_axes[0], 3), " N")
-            print("\tSide Force:\t\t\t\t", np.round(self.total_near_field_force_wind_axes[1], 3), " N")
-            print("\tLift:\t\t\t\t\t", np.round(self.total_near_field_force_wind_axes[2], 3), " N")
-
-        # Print out the total moments.
-        if verbose:
-            print("\nTotal Moments in Wind Axes:")
-            print("\tRolling Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[0], 3), " Nm")
-            print("\tPitching Moment:\t\t", np.round(self.total_near_field_moment_wind_axes[1], 3), " Nm")
-            print("\tYawing Moment:\t\t\t", np.round(self.total_near_field_moment_wind_axes[2], 3), " Nm")
-
-        # Print out the coefficients.
-        if verbose:
-            print("\nCoefficients in Wind Axes:")
-            print("\tCDi:\t\t\t\t\t", np.round(self.CDi, 3))
-            print("\tCY:\t\t\t\t\t\t", np.round(self.CY, 3))
-            print("\tCL:\t\t\t\t\t\t", np.round(self.CL, 3))
-            print("\tCl:\t\t\t\t\t\t", np.round(self.Cl, 3))
-            print("\tCm:\t\t\t\t\t\t", np.round(self.Cm, 3))
-            print("\tCn:\t\t\t\t\t\t", np.round(self.Cn, 3))
-
-    # ToDo: Properly document this method.
-    def initialize_panel_vortices(self, airplane_to_initialize):
+    def initialize_panel_vortices(self):
         """This method calculates the locations of an airplane's bound vortex vertices, and then initializes its panels'
         bound vortices.
 
@@ -189,40 +173,43 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-        # Iterate through the current_airplane's wings.
-        for wing in airplane_to_initialize.wings:
+        # Iterate through all the movement's airplane objects.
+        for airplane in self.unsteady_problem.movement.airplanes:
 
-            # Iterate through the wing's chordwise and spanwise positions.
-            for chordwise_position in range(wing.num_chordwise_panels):
-                for spanwise_position in range(wing.num_spanwise_panels):
+            # Iterate through the current airplane's wings.
+            for wing in airplane.wings:
 
-                    # Pull the panel object out of the wing's list of panels.
-                    panel = wing.panels[chordwise_position, spanwise_position]
+                # Iterate through the wing's chordwise and spanwise positions.
+                for chordwise_position in range(wing.num_chordwise_panels):
+                    for spanwise_position in range(wing.num_spanwise_panels):
 
-                    # Find the location of the panel's front left and right vortex vertices.
-                    front_left_vortex_vertex = panel.front_left_vortex_vertex
-                    front_right_vortex_vertex = panel.front_right_vortex_vertex
+                        # Get the panel object from the wing's list of panels.
+                        panel = wing.panels[chordwise_position, spanwise_position]
 
-                    # Define the back left and right vortex vertices based on whether the panel is along the trailing
-                    # edge or not.
-                    if not panel.is_trailing_edge:
-                        next_chordwise_panel = wing.panels[chordwise_position + 1, spanwise_position]
-                        back_left_vortex_vertex = next_chordwise_panel.front_left_vortex_vertex
-                        back_right_vortex_vertex = next_chordwise_panel.front_right_vortex_vertex
-                    else:
-                        back_left_vortex_vertex = front_left_vortex_vertex + (
-                                panel.back_left_vertex - panel.front_left_vertex)
-                        back_right_vortex_vertex = front_right_vortex_vertex + (
-                                panel.back_right_vertex - panel.front_right_vertex)
+                        # Find the location of the panel's front left and right vortex vertices.
+                        front_left_vortex_vertex = panel.front_left_vortex_vertex
+                        front_right_vortex_vertex = panel.front_right_vortex_vertex
 
-                    # Initialize the panel's ring vortex.
-                    panel.ring_vortex = asmvp.aerodynamics.RingVortex(
-                        front_right_vertex=front_right_vortex_vertex,
-                        front_left_vertex=front_left_vortex_vertex,
-                        back_left_vertex=back_left_vortex_vertex,
-                        back_right_vertex=back_right_vortex_vertex,
-                        strength=None
-                    )
+                        # Define the back left and right vortex vertices based on whether the panel is along the
+                        # trailing edge or not.
+                        if not panel.is_trailing_edge:
+                            next_chordwise_panel = wing.panels[chordwise_position + 1, spanwise_position]
+                            back_left_vortex_vertex = next_chordwise_panel.front_left_vortex_vertex
+                            back_right_vortex_vertex = next_chordwise_panel.front_right_vortex_vertex
+                        else:
+                            back_left_vortex_vertex = front_left_vortex_vertex + (
+                                    panel.back_left_vertex - panel.front_left_vertex)
+                            back_right_vortex_vertex = front_right_vortex_vertex + (
+                                    panel.back_right_vertex - panel.front_right_vertex)
+
+                        # Initialize the panel's ring vortex.
+                        panel.ring_vortex = asmvp.aerodynamics.RingVortex(
+                            front_right_vertex=front_right_vortex_vertex,
+                            front_left_vertex=front_left_vortex_vertex,
+                            back_left_vertex=back_left_vortex_vertex,
+                            back_right_vertex=back_right_vortex_vertex,
+                            strength=None
+                        )
 
     # ToDo: Properly document this method.
     def calculate_wing_wing_influences(self):
@@ -632,7 +619,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # ToDo: Properly document this method.
     def calculate_streamlines(self):
-        """
+        """This method calculates the location of the streamlines coming off the back of the wings.
 
         :return:
         """
@@ -651,7 +638,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
-                seed_point = panel.back_left_vertex + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
+                seed_point = (panel.back_left_vertex
+                              + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
+                              + self.current_freestream_velocity * self.unsteady_problem.movement.delta_time * 0.25)
                 wing.streamline_points[0, spanwise_position, :] = seed_point
                 for step in range(num_steps):
                     last_point = wing.streamline_points[step, spanwise_position, :]
@@ -662,18 +651,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             * self.calculate_solution_velocity(last_point)
                     )
 
-    # ToDo: Properly document and cite this method.
-    def calculate_wake_rollup(self):
-        """
+    def populate_next_airplanes_wake(self):
+        """This method updates the next time step's airplane's wake.
         
-        :return: 
+        :return: None
         """
 
-        self.calculate_next_airplanes_wake_vortex_vertices()
-        self.calculate_next_airplanes_wake_vortices()
+        # Populate the locations of the next airplane's wake's vortex vertices:
+        self.populate_next_airplanes_wake_vortex_vertices()
+
+        # Populate the locations of the next airplane's wake vortices.
+        self.populate_next_airplanes_wake_vortices()
 
     # ToDo: Properly document this method.
-    def calculate_next_airplanes_wake_vortex_vertices(self):
+    def populate_next_airplanes_wake_vortex_vertices(self):
+        """This method populates the locations of the next airplane's wake vortex vertices.
+
+        :return: None
+        """
 
         delta_time = self.unsteady_problem.movement.delta_time
         step = self.current_step
@@ -855,7 +850,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     )
 
     # ToDo: Properly document this method.
-    def calculate_next_airplanes_wake_vortices(self):
+    def populate_next_airplanes_wake_vortices(self):
+        """This method populates the locations of the next airplane's wake vortices.
+
+        :return: None
+        """
+
         step = self.current_step
 
         num_steps = self.unsteady_problem.movement.num_steps
@@ -921,22 +921,40 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
                                 )
 
-    # ToDo: Properly document this method.
     def debug_wake_vortices(self):
+        """This method prints out the current strength of the problem's vortices.
+
+        :return: None
+        """
+
+        # Iterate through the airplane's wings.
         for wing in self.current_airplane.wings:
+
             print("\nWing Vortex Strengths: ")
             print("\n\tPanel Vortex Strengths:\n")
+
+            # Iterate through the wing's panel positions.
             for chordwise_position in range(wing.num_chordwise_panels):
                 for spanwise_position in range(wing.num_spanwise_panels):
+
+                    # Get the panel at this position, its ring vortex, and its ring vortex's strength.
                     panel = wing.panels[chordwise_position, spanwise_position]
                     ring_vortex = panel.ring_vortex
                     strength = ring_vortex.strength
+
+                    # Print out the strength.
                     print("\t\t" + str(round(strength, 2)), end="\t")
                 print()
             print("\n\tWake Vortex Strengths:\n")
+
+            # Iterate through the wing's wake vortex positions.
             for chordwise_position in range(wing.wake_ring_vortices.shape[0]):
                 for spanwise_position in range(wing.wake_ring_vortices.shape[1]):
+
+                    # Get the wake vortex at this position, and its strength.
                     ring_vortex = wing.wake_ring_vortices[chordwise_position, spanwise_position]
+
+                    # Print out the strength.
                     strength = ring_vortex.strength
                     print("\t\t" + str(round(strength, 2)), end="\t")
                 print()

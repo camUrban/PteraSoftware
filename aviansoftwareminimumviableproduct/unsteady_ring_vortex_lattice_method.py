@@ -206,6 +206,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             strength=None
                         )
 
+    # ToDo: Correct this method to work with multiple wings.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influences associated with this problem's geometry.
 
@@ -256,7 +257,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             normal_normalized_induced_velocity_at_collocation_point
                         )
 
-    # ToDo: Properly document this method.
+    # ToDo: Correct this method to work with multiple wings.
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influences associated with the problem at this time step.
 
@@ -265,25 +266,33 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-    
+
+        # Initialize the vector of freestream-wing influence coefficients.
         self.current_freestream_wing_influences = np.zeros(self.current_airplane.num_panels)
 
+        # Iterate through the current_airplane's wings.
         for collocation_panel_wing_position in range(len(self.current_airplane.wings)):
 
+            # Get the current collocation panel wing.
             collocation_panel_wing = self.current_airplane.wings[collocation_panel_wing_position]
 
+            # Iterate through the chordwise and spanwise panel locations on the current collocation wing.
             for collocation_panel_chordwise_position in range(collocation_panel_wing.num_chordwise_panels):
-
                 for collocation_panel_spanwise_position in range(collocation_panel_wing.num_spanwise_panels):
+
+                    # Get the collocation panel's position in an equivalent 1D vector. We do this because the freestream
+                    # influences are stored as a 1D vector, where each location stores the influence on a particular
+                    # panel.
                     collocation_panel_position = (collocation_panel_chordwise_position
                                                   * collocation_panel_wing.num_spanwise_panels
                                                   + collocation_panel_spanwise_position)
 
+                    # Get the panel at this location, and its normal direction.
                     collocation_panel = collocation_panel_wing.panels[collocation_panel_chordwise_position,
                                                                       collocation_panel_spanwise_position]
-
                     collocation_panel_normal_direction = collocation_panel.normal_direction
 
+                    # Calculate the velocity due to flapping at this point.
                     velocity_induced_by_flapping_at_collocation_point = (
                         self.unsteady_problem.movement.get_flapping_velocity_at_point_on_panel(
                             wing_position=collocation_panel_wing_position,
@@ -293,6 +302,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             current_step=self.current_step)
                     )
 
+                    # Calculate the freestream influence, which is found by dotting the sum of the freestream and
+                    # flapping velocity on the panel with its normal unit vector.
                     self.current_freestream_wing_influences[collocation_panel_position] = (
                         np.dot(
                             (
@@ -304,6 +315,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     )
 
     # ToDo: Properly document this method.
+    # ToDo: Correct this method to work with multiple wings.
     def calculate_wake_wing_influences(self):
         """This method finds the vector of the wake-wing influences associated with the problem at this time step.
 
@@ -611,34 +623,49 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_airplane.total_near_field_moment_wind_axes = self.total_near_field_moment_wind_axes
         self.current_airplane.total_near_field_moment_coefficients_wind_axes = np.array([self.Cl, self.Cm, self.Cn])
 
-    # ToDo: Properly document this method.
-    def calculate_streamlines(self):
+    def calculate_streamlines(self, num_steps=10, delta_time=0.1):
         """This method calculates the location of the streamlines coming off the back of the wings.
 
-        :return:
+        :param num_steps: int, optional
+            This variable is the number of time steps the streamline solver will analyze. Its default value is 10.
+        :param delta_time: float, optional
+            This variable is the amount of time, in seconds, between each time step. Its default value is 0.1 seconds.
+        :return: None
         """
 
+        # Get the current airplane.
         airplane = self.current_airplane
 
-        num_steps = 10
-        delta_time = 0.0125
-
+        # Iterate through the current airplane's wings.
         for wing in airplane.wings:
+
+            # Initialize an array to hold the locations of all the streamline points.
             wing.streamline_points = np.zeros((num_steps + 1, wing.num_spanwise_panels, 3))
+
+            # Set the chordwise position to be at the trailing edge.
             chordwise_position = wing.num_chordwise_panels - 1
 
-            # Increment through the wing's chordwise and spanwise positions.
+            # Increment through the wing's spanwise positions at the trailing edge.
             for spanwise_position in range(wing.num_spanwise_panels):
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
-                seed_point = (panel.back_left_vertex
-                              + 0.5 * (panel.back_right_vertex - panel.back_left_vertex)
+
+                # Calculate the location of the seed point at this panel. It should be a bit behind the center of the
+                # ring vortex's back leg. "Behind" refers to the direction the flow is moving.
+                seed_point = (panel.ring_vortex.back_leg.center
                               + self.current_freestream_velocity * self.unsteady_problem.movement.delta_time * 0.25)
+
+                # Add the seed point to the first row of the wing's streamline point matrix.
                 wing.streamline_points[0, spanwise_position, :] = seed_point
+
+                # Iterate through the number of streamline steps.
                 for step in range(num_steps):
+
+                    # Pull this panel's previous streamline point.
                     last_point = wing.streamline_points[step, spanwise_position, :]
 
+                    # Find the new streamline point's position and add it to the streamline point matrix.
                     wing.streamline_points[step + 1, spanwise_position, :] = (
                             last_point
                             + delta_time

@@ -175,6 +175,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         )
                     )
 
+    # ToDo: Correct this method to work with multiple wings.
     def set_up_geometry(self):
         """Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
 
@@ -218,6 +219,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         self.aerodynamic_influence_coefficients[collocation_panel_index, vortex_panel_index] = (
                             normal_normalized_induced_velocity_at_collocation_point)
 
+    # ToDo: Correct this method to work with multiple wings.
     def set_up_operating_point(self):
         """Find the normal velocity speed at every collocation point without the influence of the vortices.
 

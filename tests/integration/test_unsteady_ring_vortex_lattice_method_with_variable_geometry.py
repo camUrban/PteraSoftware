@@ -42,4 +42,4 @@ class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         :return:
         """
 
-        self.unsteady_ring_vortex_lattice_method_validation_solver.run(verbose=False)
+        self.unsteady_ring_vortex_lattice_method_validation_solver.run(verbose=True)

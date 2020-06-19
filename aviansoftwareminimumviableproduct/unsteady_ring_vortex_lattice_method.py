@@ -155,11 +155,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             print("\nCalculating streamlines.")
         self.calculate_streamlines()
 
-        # If the user has requested verbose output, output a visualization of the last airplane object.
-        if verbose:
-            print('Final airplane\'s visualization:')
-            asmvp.output.draw(self.current_airplane, show_delta_pressures=True, show_streamlines=False)
-
     def initialize_panel_vortices(self):
         """This method calculates the locations of an airplane's bound vortex vertices, and then initializes its panels'
         bound vortices.
@@ -211,7 +206,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             strength=None
                         )
 
-    # ToDo: Properly document this method.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influences associated with this problem's geometry.
 
@@ -271,7 +265,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-
+    
         self.current_freestream_wing_influences = np.zeros(self.current_airplane.num_panels)
 
         for collocation_panel_wing_position in range(len(self.current_airplane.wings)):

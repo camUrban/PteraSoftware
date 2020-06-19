@@ -201,6 +201,7 @@ class SteadyRingVortexLatticeMethodSolver:
                         strength=None
                     )
 
+    # ToDo: Correct this method to work with multiple wings.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
         geometry.
@@ -248,6 +249,7 @@ class SteadyRingVortexLatticeMethodSolver:
                         self.wing_wing_influences[collocation_panel_index, vortex_panel_index] = (
                             normal_normalized_induced_velocity_at_collocation_point)
 
+    # ToDo: Correct this method to work with multiple wings.
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influence coefficients associated with this problem.
 

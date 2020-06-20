@@ -13,8 +13,9 @@ This module contains the following functions:
                  locations as it time steps through the simulation.
 """
 
-import aviansoftwareminimumviableproduct as asmvp
 import numpy as np
+
+import aviansoftwareminimumviableproduct as asmvp
 
 
 def mesh_wing(wing):

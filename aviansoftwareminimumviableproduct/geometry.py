@@ -24,6 +24,7 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
+
 import aviansoftwareminimumviableproduct as asmvp
 
 

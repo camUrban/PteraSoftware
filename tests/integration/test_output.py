@@ -1,6 +1,7 @@
 # ToDo: Properly document this module.
 
 import unittest
+
 import matplotlib.pyplot as plt
 
 import aviansoftwareminimumviableproduct as asmvp

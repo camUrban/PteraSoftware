@@ -28,9 +28,9 @@ This package contains the following modules:
 from aviansoftwareminimumviableproduct import aerodynamics
 from aviansoftwareminimumviableproduct import geometry
 from aviansoftwareminimumviableproduct import meshing
-from aviansoftwareminimumviableproduct import output
 from aviansoftwareminimumviableproduct import movement
 from aviansoftwareminimumviableproduct import operating_point
+from aviansoftwareminimumviableproduct import output
 from aviansoftwareminimumviableproduct import problems
 from aviansoftwareminimumviableproduct import steady_horseshoe_vortex_lattice_method
 from aviansoftwareminimumviableproduct import steady_ring_vortex_lattice_method

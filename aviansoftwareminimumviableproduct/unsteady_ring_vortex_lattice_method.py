@@ -11,9 +11,11 @@ This module contains the following functions:
     None
 """
 
-import numpy as np
-import aviansoftwareminimumviableproduct as asmvp
 import copy as copy
+
+import numpy as np
+
+import aviansoftwareminimumviableproduct as asmvp
 
 
 class UnsteadyRingVortexLatticeMethodSolver:

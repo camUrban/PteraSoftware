@@ -2,9 +2,8 @@
 """This module contains the class definitions for different types of problems.
 
 This module contains the following classes:
-    Problem: This class is used to contain aerodynamics problems to be analyzed.
-    SteadyProblem: This is a subclass of the Problems class and is for steady aerodynamics problems to be analyzed.
-    UnsteadyProblem: This is a subclass of the Problems class and is for unsteady aerodynamics problems to be analyzed.
+    SteadyProblem: This is a class for steady aerodynamics problems.
+    UnsteadyProblem: This is a class for unsteady aerodynamics problems.
 
 This module contains the following exceptions:
     None
@@ -14,8 +13,8 @@ This module contains the following functions:
 """
 
 
-class Problem:
-    """This class is used to contain aerodynamics problems to be analyzed.
+class SteadyProblem:
+    """This is a class for steady aerodynamics problems.
 
     This class contains the following public methods:
         None
@@ -24,7 +23,7 @@ class Problem:
         None
 
     Subclassing:
-        This class is meant to be subclassed by SteadyProblem and UnsteadyProblem.
+        This class is not meant to be subclassed.
     """
 
     def __init__(self, airplane, operating_point):
@@ -36,13 +35,13 @@ class Problem:
             This is the operating point object for this problem.
         """
 
-        # Initialize the attributes.
+        # Initialize the problem's attributes.
         self.airplane = airplane
         self.operating_point = operating_point
 
 
-class SteadyProblem(Problem):
-    """This is a subclass of the Problems class and is for steady aerodynamics problems to be analyzed.
+class UnsteadyProblem:
+    """This is a class for unsteady aerodynamics problems.
 
     This class contains the following public methods:
         None
@@ -54,45 +53,29 @@ class SteadyProblem(Problem):
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, airplane, operating_point):
+    def __init__(self, movement):
         """This is the initialization method.
 
-        :param airplane: Airplane
-            This is the current_airplane object for this problem.
-        :param operating_point: OperatingPoint
-            This is the operating point object for this problem.
-        """
-
-        # Call the parent class's initialization method
-        super().__init__(airplane=airplane, operating_point=operating_point)
-
-
-class UnsteadyProblem(Problem):
-    """This is a subclass of the Problems class and is for unsteady aerodynamics problems to be analyzed.
-
-    This class contains the following public methods:
-        None
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
-
-    def __init__(self, airplane, operating_point, movement):
-        """This is the initialization method.
-
-        :param airplane: Airplane
-            This is the current_airplane object for this problem.
-        :param operating_point: OperatingPoint
-            This is the operating point object for this problem.
         :param movement: Movement
-            This is the movement object for this problem's current_airplane.
+            This is the movement object that contains this problem's airplane and operating point objects.
         """
 
-        # Call the parent class's initialization method
-        super().__init__(airplane=airplane, operating_point=operating_point)
+        # Initialize the class attributes for the number of time steps and the time in between these time steps.
+        self.num_steps = movement.num_steps
+        self.delta_time = movement.delta_time
 
-        # Initialize the other attributes.
-        self.movement = movement
+        # Initialize an empty list to hold the steady problems.
+        self.steady_problems = []
+
+        # Iterate through the problem's time steps.
+        for step in range(self.num_steps):
+
+            # Get the airplane and operating point object at this time step.
+            this_airplane = movement.airplanes[step]
+            this_operating_point = movement.operating_points[step]
+
+            # Initialize the steady problem object at this time step.
+            this_steady_problem = SteadyProblem(airplane=this_airplane, operating_point=this_operating_point)
+
+            # Append this steady problem to the list of steady problems.
+            self.steady_problems.append(this_steady_problem)

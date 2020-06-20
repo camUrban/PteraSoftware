@@ -494,7 +494,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         return solution_velocity
 
-    # ToDo: Properly cite and document this method.
     def calculate_near_field_forces_and_moments(self):
         """This method finds the the forces and moments calculated from the near field.
 
@@ -508,41 +507,53 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
+        # Initialize variables to hold the total near field force and moment on this airplane in geometry axes.
         total_near_field_force_geometry_axes = np.zeros(3)
         total_near_field_moment_geometry_axes = np.zeros(3)
 
+        # If the this isn't the first step, set the last step to one less than the current step. If this is the first
+        # step, then set the last step to the first step.
         if self.current_step > 0:
             last_step = self.current_step - 1
         else:
             last_step = self.current_step
 
+        # Get the last airplane object.
         last_airplane = self.steady_problems[last_step].airplane
 
+        # Iterate through the current airplane's wings.
         for wing_num in range(len(self.current_airplane.wings)):
 
+            # Get the wing, the current matrix of panels, and last wing, and the last matrix of panels.
             wing = self.current_airplane.wings[wing_num]
             last_wing = last_airplane.wings[wing_num]
-
             panels = wing.panels
             last_panels = last_wing.panels
 
-            num_chordwise_panels = wing.num_chordwise_panels
-            num_spanwise_panels = wing.num_spanwise_panels
+            # Iterate through the chordwise and spanwise locations of the panels.
+            for chordwise_location in range(wing.num_chordwise_panels):
+                for spanwise_location in range(wing.num_spanwise_panels):
 
-            for chordwise_location in range(num_chordwise_panels):
-                for spanwise_location in range(num_spanwise_panels):
-
+                    # Ge the current and last panel objects.
                     panel = panels[chordwise_location, spanwise_location]
                     last_panel = last_panels[chordwise_location, spanwise_location]
 
-                    is_right_edge = spanwise_location + 1 == num_spanwise_panels
+                    # Determine if this panel is on the right edge, leading edge, trailing edge, and/or the left edge of
+                    # the wing.
+                    is_right_edge = spanwise_location + 1 == wing.num_spanwise_panels
                     is_leading_edge = panel.is_leading_edge
                     is_left_edge = spanwise_location == 0
 
+                    # If this panel is on the right edge, set the right bound vortex strength to the panel's ring
+                    # vortex's strength. Otherwise set the strength to zero.
                     if is_right_edge:
                         right_bound_vortex_strength = panel.ring_vortex.strength
                     else:
                         right_bound_vortex_strength = 0
+
+                    # If this panel is on the leading edge, set the leading bound vortex strength this panel's vortex
+                    # strength. Otherwise set the strength to the difference between this panel's vortex strength and
+                    # the forward panel's vortex strength.
                     if is_leading_edge:
                         front_bound_vortex_strength = panel.ring_vortex.strength
                     else:
@@ -552,6 +563,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 chordwise_location - 1, spanwise_location
                             ].ring_vortex.strength
                         )
+
+                    # If this panel is on the left edge, set the left bound vortex strength this panel's vortex
+                    # strength. Otherwise set the strength to the difference between this panel's vortex strength and
+                    # the leftward panel's vortex strength.
                     if is_left_edge:
                         left_bound_vortex_strength = panel.ring_vortex.strength
                     else:
@@ -562,14 +577,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             ].ring_vortex.strength
                         )
 
+                    # Initialize variables to hold the panel's near field force and moment on this airplane in geometry
+                    # axes.
                     panel.near_field_force_geometry_axes = np.zeros(3)
                     panel.near_field_moment_geometry_axes = np.zeros(3)
 
                     if right_bound_vortex_strength != 0:
+
+                        # If the right bound vortex strength isn't zero, calculate the velocity due to the freestream,
+                        # the problem's vortices, and the flapping at the center of the right leg center.
                         velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.right_leg.center
                         )
-
                         velocity_at_right_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
                             wing_position=wing_num,
                             panel_chordwise_position=chordwise_location,
@@ -577,6 +596,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             point_name="ring_vortex.right_leg.center",
                         )
 
+                        # Using the Kutta-Joukowski theorem, calculate the force on this leg.
                         right_bound_vortex_force_in_geometry_axes = (
                             self.current_operating_point.density
                             * right_bound_vortex_strength
@@ -585,6 +605,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 panel.ring_vortex.right_leg.vector,
                             )
                         )
+
+                        # Update the force and the moment on this panel.
                         panel.near_field_force_geometry_axes += (
                             right_bound_vortex_force_in_geometry_axes
                         )
@@ -593,11 +615,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             - self.current_airplane.xyz_ref,
                             right_bound_vortex_force_in_geometry_axes,
                         )
+
                     if front_bound_vortex_strength != 0:
+
+                        # If the front bound vortex strength isn't zero, calculate the velocity due to the freestream,
+                        # the problem's vortices, and the flapping at the center of the front leg center.
                         velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.front_leg.center
                         )
-
                         velocity_at_front_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
                             wing_position=wing_num,
                             panel_chordwise_position=chordwise_location,
@@ -605,6 +630,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             point_name="ring_vortex.front_leg.center",
                         )
 
+                        # Using the Kutta-Joukowski theorem, calculate the force on this leg.
                         front_bound_vortex_force_in_geometry_axes = (
                             self.current_operating_point.density
                             * front_bound_vortex_strength
@@ -613,6 +639,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 panel.ring_vortex.front_leg.vector,
                             )
                         )
+
+                        # Update the force and the moment on this panel.
                         panel.near_field_force_geometry_axes += (
                             front_bound_vortex_force_in_geometry_axes
                         )
@@ -621,11 +649,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             - self.current_airplane.xyz_ref,
                             front_bound_vortex_force_in_geometry_axes,
                         )
+
                     if left_bound_vortex_strength != 0:
+
+                        # If the left bound vortex strength isn't zero, calculate the velocity due to the freestream,
+                        # the problem's vortices, and the flapping at the center of the left leg center.
                         velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
                             panel.ring_vortex.left_leg.center
                         )
-
                         velocity_at_left_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
                             wing_position=wing_num,
                             panel_chordwise_position=chordwise_location,
@@ -633,6 +664,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             point_name="ring_vortex.left_leg.center",
                         )
 
+                        # Using the Kutta-Joukowski theorem, calculate the force on this leg.
                         left_bound_vortex_force_in_geometry_axes = (
                             self.current_operating_point.density
                             * left_bound_vortex_strength
@@ -641,6 +673,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 panel.ring_vortex.left_leg.vector,
                             )
                         )
+
+                        # Update the force and the moment on this panel.
                         panel.near_field_force_geometry_axes += (
                             left_bound_vortex_force_in_geometry_axes
                         )
@@ -650,27 +684,25 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             left_bound_vortex_force_in_geometry_axes,
                         )
 
-                    ring_vortex = panel.ring_vortex
-                    last_ring_vortex = last_panel.ring_vortex
-                    vortex_strength = ring_vortex.strength
-                    last_vortex_strength = last_ring_vortex.strength
-                    density = self.current_operating_point.density
-                    area = panel.area
-                    normal = panel.normal_direction
+                    # Calculate the unsteady component of the force on this panel.
                     unsteady_force_geometry_axes = (
-                        density
-                        * (vortex_strength - last_vortex_strength)
-                        * area
-                        * normal
+                        self.current_operating_point.density
+                        * (panel.ring_vortex.strength - last_panel.ring_vortex.strength)
+                        * panel.area
+                        * panel.normal_direction
                     )
+
+                    # Add the unsteady component of the force and moment on this panel to the total near field force and
+                    # moment on this panel.
                     panel.near_field_force_geometry_axes += unsteady_force_geometry_axes
                     panel.near_field_moment_geometry_axes += np.cross(
                         panel.ring_vortex.center - self.current_airplane.xyz_ref,
                         unsteady_force_geometry_axes,
                     )
-
                     panel.update_pressure()
 
+                    # Add the near field force and moment on this panel to the total near field force and moment on the
+                    # current airplane.
                     total_near_field_force_geometry_axes += (
                         panel.near_field_force_geometry_axes
                     )
@@ -678,6 +710,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         panel.near_field_moment_geometry_axes
                     )
 
+        # Calculate the total near field force and moment on the current airplane in wind axes.
         self.current_airplane.total_near_field_force_wind_axes = (
             np.transpose(
                 self.current_operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
@@ -691,6 +724,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             @ total_near_field_moment_geometry_axes
         )
 
+        # Calculate the force and moment coefficients of the current airplane.
         CDi = (
             -self.current_airplane.total_near_field_force_wind_axes[0]
             / self.current_operating_point.calculate_dynamic_pressure()
@@ -725,6 +759,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             / self.current_airplane.b_ref
         )
 
+        # Update the force and moment coefficients of the current airplane.
         self.current_airplane.total_near_field_force_coefficients_wind_axes = np.array(
             [CDi, CY, CL]
         )
@@ -839,20 +874,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             chordwise_position, spanwise_position
                         ]
 
-                        velocity_here = (
-                            self.current_freestream_velocity_geometry_axes
-                            + self.calculate_flapping_velocity_on_panel(
-                                wing_position=wing_num,
-                                panel_chordwise_position=chordwise_position,
-                                panel_spanwise_position=spanwise_position,
-                                point_name="back_left_vertex",
-                            )
-                        )
-
-                        next_front_left_vertex = (
-                            next_panel.back_left_vertex
-                            + 0.25 * velocity_here * self.delta_time
-                        )
+                        next_front_left_vertex = next_panel.ring_vortex.back_left_vertex
 
                         new_row_of_wake_ring_vertex_vertices[
                             0, spanwise_position
@@ -860,20 +882,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         if spanwise_position == (num_spanwise_panels - 1):
 
-                            velocity_here = (
-                                self.current_freestream_velocity_geometry_axes
-                                + self.calculate_flapping_velocity_on_panel(
-                                    wing_position=wing_num,
-                                    panel_chordwise_position=chordwise_position,
-                                    panel_spanwise_position=spanwise_position,
-                                    point_name="back_right_vertex",
-                                )
+                            next_front_right_vertex = (
+                                next_panel.ring_vortex.back_right_vertex
                             )
 
-                            next_front_right_vertex = (
-                                next_panel.back_right_vertex
-                                + 0.25 * velocity_here * self.delta_time
-                            )
                             new_row_of_wake_ring_vertex_vertices[
                                 0, spanwise_position + 1
                             ] = next_front_right_vertex
@@ -982,20 +994,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             chordwise_position, spanwise_position
                         ]
 
-                        velocity_here = (
-                            self.current_freestream_velocity_geometry_axes
-                            + self.calculate_flapping_velocity_on_panel(
-                                wing_position=wing_num,
-                                panel_chordwise_position=chordwise_position,
-                                panel_spanwise_position=spanwise_position,
-                                point_name="back_left_vertex",
-                            )
-                        )
-
-                        next_front_left_vertex = (
-                            next_panel.back_left_vertex
-                            + 0.25 * velocity_here * self.delta_time
-                        )
+                        next_front_left_vertex = next_panel.ring_vortex.back_left_vertex
 
                         new_row_of_wake_ring_vertex_vertices[
                             0, spanwise_position
@@ -1003,20 +1002,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         if spanwise_position == (num_spanwise_panels - 1):
 
-                            velocity_here = (
-                                self.current_freestream_velocity_geometry_axes
-                                + self.calculate_flapping_velocity_on_panel(
-                                    wing_position=wing_num,
-                                    panel_chordwise_position=chordwise_position,
-                                    panel_spanwise_position=spanwise_position,
-                                    point_name="back_right_vertex",
-                                )
+                            next_front_right_vertex = (
+                                next_panel.ring_vortex.back_right_vertex
                             )
 
-                            next_front_right_vertex = (
-                                next_panel.back_right_vertex
-                                + 0.25 * velocity_here * self.delta_time
-                            )
                             new_row_of_wake_ring_vertex_vertices[
                                 0, spanwise_position + 1
                             ] = next_front_right_vertex
@@ -1172,7 +1161,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 print()
         print()
 
-    # ToDo: Properly document this method.
     def calculate_flapping_velocity_on_panel(
         self,
         wing_position,
@@ -1211,29 +1199,38 @@ class UnsteadyRingVortexLatticeMethodSolver:
         last_wing = last_airplane.wings[wing_position]
 
         # Find the current, and the last panel.
-        panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
-        last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
+        parent = wing.panels[panel_chordwise_position, panel_spanwise_position]
+        last_parent = last_wing.panels[
+            panel_chordwise_position, panel_spanwise_position
+        ]
 
+        # Split the point name at the periods. Now it is a list of the nested objects within the panels.
         sub_names = point_name.split(".")
-        parent = panel
-        last_parent = last_panel
+
+        # Initialize the two variables to hold the objects nested one level down below the panels.
         sub = None
         last_sub = None
 
+        # Iterate through the list of the names of the nested objects.
         for sub_name in sub_names:
 
+            # Try getting the attributes of the of the parent via the sub name.
             try:
+                # Set sub and last_sub to the attributes of the parent and last_parent.
                 sub = parent.__getattribute__(sub_name)
                 last_sub = last_parent.__getattribute__(sub_name)
 
+                # Set the new parent and the last_parent to the sub and last_sub.
                 parent = sub
                 last_parent = last_sub
 
+            # Catch attribute errors and display an error message.
             except AttributeError:
                 raise Exception(
                     "The panel doesn't have an attribute that matches your request!"
                 )
 
+        # Set the position and the last position to the latest values of sub and last_sub.
         position = sub
         last_position = last_sub
 

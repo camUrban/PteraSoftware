@@ -27,9 +27,7 @@ class Movement:
     """This is a class used to contain the movement characteristics of an unsteady aerodynamics problem.
 
     This class contains the following public methods:
-        get_flapping_velocity_at_point_on_panel: This method gets the velocity due to flapping at a point on the panel
-                                                 of a given current_airplane based the time current_step, its current position, and its
-                                                 last position.
+        None
 
     This class contains the following class attributes:
         None
@@ -52,92 +50,26 @@ class Movement:
         """
 
         # Initialize the class attributes.
-        self.airplane_movement = airplane_movement
-        self.operating_point_movement = operating_point_movement
         self.num_steps = num_steps
         self.delta_time = delta_time
 
         # Generate a list of the airplanes and operating points that are the steps through this movement object.
-        self.airplanes = self.airplane_movement.generate_airplanes(
+        self.airplanes = airplane_movement.generate_airplanes(
             num_steps=self.num_steps,
             delta_time=self.delta_time
         )
-        self.operating_points = self.operating_point_movement.generate_operating_points(
+        self.operating_points = operating_point_movement.generate_operating_points(
             num_steps=self.num_steps,
             delta_time=self.delta_time
         )
-
-    def get_flapping_velocity_at_point_on_panel(self, wing_position, panel_chordwise_position, panel_spanwise_position,
-                                                point_name, current_step):
-        """This method gets the velocity due to flapping at a point on the panel of a given current_airplane based the time
-        current_step, its current position, and its last position.
-
-        :param wing_position: int
-            This is the position of the panel's wing in the current_airplane's list of wings.
-        :param panel_chordwise_position: int
-            This is the chordwise position of the panel in the wing's ndarray of panels.
-        :param panel_spanwise_position: int
-            This is the spanwise position of the panel in the wing's ndarray of panels.
-        :param point_name: string
-            This is the name of the point at which to find the velocity due to flapping. It can be 'center',
-            'collocation_point', 'front_right_vertex', 'front_left_vertex', 'back_left_vertex', 'back_right_vertex',
-            'front_right_vortex_vertex', or 'front_left_vortex_vertex'.
-        :param current_step: int
-            This is the current_step number at which to evaluate the flapping velocity at the point.
-        :return flapping_velocity: 1D ndarray
-            This is the flapping velocity at the current time current_step at the given point. It is a (,3) ndarray with units
-            of meters per second.
-        """
-
-        # If this is the first time current_step, there is no previous geometry, so the flapping velocity is (0, 0, 0)
-        # meters per second.
-        if current_step < 1:
-            flapping_velocity = np.zeros(3)
-            return flapping_velocity
-
-        # Find the current, and the last current_airplane.
-        airplane = self.airplanes[current_step]
-        last_airplane = self.airplanes[current_step - 1]
-
-        # Find the current, and the last wing.
-        wing = airplane.wings[wing_position]
-        last_wing = last_airplane.wings[wing_position]
-
-        # Find the current, and the last panel.
-        panel = wing.panels[panel_chordwise_position, panel_spanwise_position]
-        last_panel = last_wing.panels[panel_chordwise_position, panel_spanwise_position]
-
-        sub_names = point_name.split('.')
-        parent = panel
-        last_parent = last_panel
-        sub = None
-        last_sub = None
-
-        for sub_name in sub_names:
-
-            try:
-                sub = parent.__getattribute__(sub_name)
-                last_sub = last_parent.__getattribute__(sub_name)
-
-                parent = sub
-                last_parent = last_sub
-
-            except AttributeError:
-                raise Exception("The panel doesn't have an attribute that matches your request!")
-
-        position = sub
-        last_position = last_sub
-
-        # Calculate and return the flapping velocity.
-        flapping_velocity = (position - last_position) / self.delta_time
-        return flapping_velocity
 
 
 class AirplaneMovement:
     """This is a class used to contain the movement characteristics of an current_airplane.
 
     This class contains the following public methods:
-        generate_airplanes: This method creates the current_airplane object at each time current_step, and groups them into a list.
+        generate_airplanes: This method creates the current_airplane object at each time current_step, and groups them
+                            into a list.
 
     This class contains the following class attributes:
         None
@@ -447,8 +379,8 @@ class WingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross section.
 
     This class contains the following public methods:
-        generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and groups
-                                      them into a list.
+        generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and
+                                      groups them into a list.
 
     This class contains the following class attributes:
         None
@@ -660,8 +592,8 @@ class OperatingPointMovement:
     """This is a class used to contain the movement characteristics of an operating point.
 
     This class contains the following public methods:
-        generate_operating_points: This method creates the operating point objects at each time current_step, and groups them
-                                   into a list.
+        generate_operating_points: This method creates the operating point objects at each time current_step, and groups
+                                   them into a list.
 
     This class contains the following class attributes:
         None

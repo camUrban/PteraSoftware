@@ -5,3 +5,4 @@ The minimum viable release of Avian: a fast, easy-to-use, and opensource softwar
 [![CodeFactor](https://www.codefactor.io/repository/github/camurban/aviansoftwareminimumviableproduct/badge?s=e465e6fbb66473e0171f0e2c633603b8643ed935)](https://www.codefactor.io/repository/github/camurban/aviansoftwareminimumviableproduct)
 [![Build Status](https://travis-ci.com/camUrban/AvianSoftwareMinimumViableProduct.svg?token=5y8sMbF86xTyULBZ2oZN&branch=master)](https://travis-ci.com/camUrban/AvianSoftwareMinimumViableProduct)
 [![Coverage Status](https://coveralls.io/repos/github/camUrban/AvianSoftwareMinimumViableProduct/badge.svg?branch=master&t=bhqIht)](https://coveralls.io/github/camUrban/AvianSoftwareMinimumViableProduct?branch=master)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

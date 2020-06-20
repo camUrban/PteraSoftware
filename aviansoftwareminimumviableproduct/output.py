@@ -40,7 +40,7 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
     plotter = pv.Plotter()
 
     # Set the color map.
-    color_map = plt.cm.get_cmap('plasma')
+    color_map = plt.cm.get_cmap("plasma")
 
     # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3))
@@ -53,24 +53,32 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
         for chordwise_position in range(wing.num_chordwise_panels):
             for spanwise_position in range(wing.num_spanwise_panels):
                 # Calculate the panel number, starting from zero.
-                panel_num = (chordwise_position * wing.num_spanwise_panels) + spanwise_position
+                panel_num = (
+                    chordwise_position * wing.num_spanwise_panels
+                ) + spanwise_position
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
 
                 # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
                 # details.
-                panel_vertices_to_add = np.vstack((
-                    panel.front_left_vertex,
-                    panel.front_right_vertex,
-                    panel.back_right_vertex,
-                    panel.back_left_vertex
-                ))
-                panel_face_to_add = np.array([4,
-                                              (panel_num * 4),
-                                              (panel_num * 4) + 1,
-                                              (panel_num * 4) + 2,
-                                              (panel_num * 4) + 3])
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
+                )
+                panel_face_to_add = np.array(
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
 
                 # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
                 # scalars.
@@ -78,28 +86,70 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
                 if show_delta_pressures:
-                    scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 1000), -1000)
+                    scalar_to_add = np.maximum(
+                        np.minimum(panel.delta_pressure, 1000), -1000
+                    )
                     scalars = np.hstack((scalars, scalar_to_add))
 
         if show_wake_vortices:
             for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-                plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_right_vertex,
+                        wake_ring_vortex.front_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_left_vertex,
+                        wake_ring_vortex.back_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_left_vertex,
+                        wake_ring_vortex.back_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_right_vertex,
+                        wake_ring_vortex.front_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
     if show_delta_pressures:
-        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
-                         smooth_shading=True)
+        plotter.add_mesh(
+            panel_surface,
+            show_edges=True,
+            cmap=color_map,
+            scalars=scalars,
+            color="white",
+            smooth_shading=True,
+        )
     else:
-        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, color='white', smooth_shading=True)
+        plotter.add_mesh(
+            panel_surface,
+            show_edges=True,
+            cmap=color_map,
+            color="white",
+            smooth_shading=True,
+        )
 
     if show_streamlines:
         for wing in airplane.wings:
@@ -118,7 +168,7 @@ def make_flapping_gif(movement, show_delta_pressures):
     # Initialize the plotter.
     plotter = pv.Plotter()
 
-    color_map = plt.cm.get_cmap('plasma', 256)
+    color_map = plt.cm.get_cmap("plasma", 256)
 
     # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3))
@@ -131,27 +181,37 @@ def make_flapping_gif(movement, show_delta_pressures):
         for chordwise_position in range(wing.num_chordwise_panels):
             for spanwise_position in range(wing.num_spanwise_panels):
                 # Calculate the panel number, starting from zero.
-                panel_num = (chordwise_position * wing.num_spanwise_panels) + spanwise_position
+                panel_num = (
+                    chordwise_position * wing.num_spanwise_panels
+                ) + spanwise_position
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
 
                 # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
                 # details.
-                panel_vertices_to_add = np.vstack((
-                    panel.front_left_vertex,
-                    panel.front_right_vertex,
-                    panel.back_right_vertex,
-                    panel.back_left_vertex
-                ))
-                panel_face_to_add = np.array([4,
-                                              (panel_num * 4),
-                                              (panel_num * 4) + 1,
-                                              (panel_num * 4) + 2,
-                                              (panel_num * 4) + 3])
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
+                )
+                panel_face_to_add = np.array(
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
 
                 if show_delta_pressures:
-                    scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 100), -100)
+                    scalar_to_add = np.maximum(
+                        np.minimum(panel.delta_pressure, 100), -100
+                    )
                 else:
                     scalar_to_add = panel.center[2] / 2
 
@@ -160,19 +220,53 @@ def make_flapping_gif(movement, show_delta_pressures):
                 scalars = np.hstack((scalars, scalar_to_add))
 
         for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
-            plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
-                             show_edges=True, cmap=color_map, color='white')
-            plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
-                             show_edges=True, cmap=color_map, color='white')
+            plotter.add_mesh(
+                pv.Line(
+                    wake_ring_vortex.front_right_vertex,
+                    wake_ring_vortex.front_left_vertex,
+                ),
+                show_edges=True,
+                cmap=color_map,
+                color="white",
+            )
+            plotter.add_mesh(
+                pv.Line(
+                    wake_ring_vortex.front_left_vertex,
+                    wake_ring_vortex.back_left_vertex,
+                ),
+                show_edges=True,
+                cmap=color_map,
+                color="white",
+            )
+            plotter.add_mesh(
+                pv.Line(
+                    wake_ring_vortex.back_left_vertex,
+                    wake_ring_vortex.back_right_vertex,
+                ),
+                show_edges=True,
+                cmap=color_map,
+                color="white",
+            )
+            plotter.add_mesh(
+                pv.Line(
+                    wake_ring_vortex.back_right_vertex,
+                    wake_ring_vortex.front_right_vertex,
+                ),
+                show_edges=True,
+                cmap=color_map,
+                color="white",
+            )
 
         # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
-    plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
-                     smooth_shading=True)
+    plotter.add_mesh(
+        panel_surface,
+        show_edges=True,
+        cmap=color_map,
+        scalars=scalars,
+        color="white",
+        smooth_shading=True,
+    )
 
     if show_delta_pressures:
         plotter.update_scalar_bar_range(clim=[-100, 100])
@@ -205,26 +299,36 @@ def make_flapping_gif(movement, show_delta_pressures):
             for chordwise_position in range(wing.num_chordwise_panels):
                 for spanwise_position in range(wing.num_spanwise_panels):
                     # Calculate the panel number, starting from zero.
-                    panel_num = (chordwise_position * wing.num_spanwise_panels) + spanwise_position
+                    panel_num = (
+                        chordwise_position * wing.num_spanwise_panels
+                    ) + spanwise_position
 
                     # Pull the panel object out of the wing's list of panels.
                     panel = wing.panels[chordwise_position, spanwise_position]
 
                     # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
                     # details.
-                    panel_vertices_to_add = np.vstack((
-                        panel.front_left_vertex,
-                        panel.front_right_vertex,
-                        panel.back_right_vertex,
-                        panel.back_left_vertex
-                    ))
-                    panel_face_to_add = np.array([4,
-                                                  (panel_num * 4),
-                                                  (panel_num * 4) + 1,
-                                                  (panel_num * 4) + 2,
-                                                  (panel_num * 4) + 3])
+                    panel_vertices_to_add = np.vstack(
+                        (
+                            panel.front_left_vertex,
+                            panel.front_right_vertex,
+                            panel.back_right_vertex,
+                            panel.back_left_vertex,
+                        )
+                    )
+                    panel_face_to_add = np.array(
+                        [
+                            4,
+                            (panel_num * 4),
+                            (panel_num * 4) + 1,
+                            (panel_num * 4) + 2,
+                            (panel_num * 4) + 3,
+                        ]
+                    )
                     if show_delta_pressures:
-                        scalar_to_add = np.maximum(np.minimum(panel.delta_pressure, 100), -100)
+                        scalar_to_add = np.maximum(
+                            np.minimum(panel.delta_pressure, 100), -100
+                        )
                     else:
                         scalar_to_add = panel.center[2] / 2
 
@@ -233,19 +337,53 @@ def make_flapping_gif(movement, show_delta_pressures):
                     scalars = np.hstack((scalars, scalar_to_add))
 
             for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
-                plotter.add_mesh(pv.Line(wake_ring_vortex.front_right_vertex, wake_ring_vortex.front_left_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.front_left_vertex, wake_ring_vortex.back_left_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.back_left_vertex, wake_ring_vortex.back_right_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
-                plotter.add_mesh(pv.Line(wake_ring_vortex.back_right_vertex, wake_ring_vortex.front_right_vertex),
-                                 show_edges=True, cmap=color_map, color='white')
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_right_vertex,
+                        wake_ring_vortex.front_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_left_vertex,
+                        wake_ring_vortex.back_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_left_vertex,
+                        wake_ring_vortex.back_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_right_vertex,
+                        wake_ring_vortex.front_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
 
         # Initialize the panel surfaces and add the meshes to the plotter.
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
-        plotter.add_mesh(panel_surface, show_edges=True, cmap=color_map, scalars=scalars, color='white',
-                         smooth_shading=True)
+        plotter.add_mesh(
+            panel_surface,
+            show_edges=True,
+            cmap=color_map,
+            scalars=scalars,
+            color="white",
+            smooth_shading=True,
+        )
         if show_delta_pressures:
             plotter.update_scalar_bar_range(clim=[-100, 100])
         else:
@@ -276,65 +414,91 @@ def plot_results_versus_time(movement, verbose=True):
 
         airplane = airplanes[step]
 
-        total_near_field_force_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
-        total_near_field_force_coefficients_wind_axes[:, step] = airplane.total_near_field_force_coefficients_wind_axes
-        total_near_field_moment_wind_axes[:, step] = airplane.total_near_field_moment_wind_axes
-        total_near_field_moment_coefficients_wind_axes[:, step] = (
-            airplane.total_near_field_moment_coefficients_wind_axes
-        )
+        total_near_field_force_wind_axes[
+            :, step
+        ] = airplane.total_near_field_force_wind_axes
+        total_near_field_force_coefficients_wind_axes[
+            :, step
+        ] = airplane.total_near_field_force_coefficients_wind_axes
+        total_near_field_moment_wind_axes[
+            :, step
+        ] = airplane.total_near_field_moment_wind_axes
+        total_near_field_moment_coefficients_wind_axes[
+            :, step
+        ] = airplane.total_near_field_moment_coefficients_wind_axes
 
     force_figure, force_axes = plt.subplots()
-    force_axes.plot(times, total_near_field_force_wind_axes[0], label='Induced Drag')
-    force_axes.plot(times, total_near_field_force_wind_axes[1], label='Side Force')
-    force_axes.plot(times, total_near_field_force_wind_axes[2], label='Lift')
-    force_axes.set_xlabel('Time (s)')
-    force_axes.set_ylabel('Force (N)')
-    force_axes.set_title('Total Forces in Wind Axes versus Time')
+    force_axes.plot(times, total_near_field_force_wind_axes[0], label="Induced Drag")
+    force_axes.plot(times, total_near_field_force_wind_axes[1], label="Side Force")
+    force_axes.plot(times, total_near_field_force_wind_axes[2], label="Lift")
+    force_axes.set_xlabel("Time (s)")
+    force_axes.set_ylabel("Force (N)")
+    force_axes.set_title("Total Forces in Wind Axes versus Time")
     force_axes.legend()
     if verbose:
         force_figure.show()
 
     force_coefficients_figure, force_coefficients_axes = plt.subplots()
     force_coefficients_axes.plot(
-        times, total_near_field_force_coefficients_wind_axes[0], label='Coefficient of Induced Drag'
+        times,
+        total_near_field_force_coefficients_wind_axes[0],
+        label="Coefficient of Induced Drag",
     )
     force_coefficients_axes.plot(
-        times, total_near_field_force_coefficients_wind_axes[1], label='Coefficient of Side Force'
+        times,
+        total_near_field_force_coefficients_wind_axes[1],
+        label="Coefficient of Side Force",
     )
     force_coefficients_axes.plot(
-        times, total_near_field_force_coefficients_wind_axes[2], label='Coefficient of Lift'
+        times,
+        total_near_field_force_coefficients_wind_axes[2],
+        label="Coefficient of Lift",
     )
-    force_coefficients_axes.set_xlabel('Time (s)')
-    force_coefficients_axes.set_ylabel('Dimensionless')
-    force_coefficients_axes.set_title('Total Force Coefficients in Wind Axes versus Time')
+    force_coefficients_axes.set_xlabel("Time (s)")
+    force_coefficients_axes.set_ylabel("Dimensionless")
+    force_coefficients_axes.set_title(
+        "Total Force Coefficients in Wind Axes versus Time"
+    )
     force_coefficients_axes.legend()
     if verbose:
         force_coefficients_figure.show()
 
     moment_figure, moment_axes = plt.subplots()
-    moment_axes.plot(times, total_near_field_moment_wind_axes[0], label='Rolling Moment')
-    moment_axes.plot(times, total_near_field_moment_wind_axes[1], label='Pitching Moment')
-    moment_axes.plot(times, total_near_field_moment_wind_axes[2], label='Yawing Moment')
-    moment_axes.set_xlabel('Time (s)')
-    moment_axes.set_ylabel('Moment (Nm)')
-    moment_axes.set_title('Total Moments in Wind Axes versus Time')
+    moment_axes.plot(
+        times, total_near_field_moment_wind_axes[0], label="Rolling Moment"
+    )
+    moment_axes.plot(
+        times, total_near_field_moment_wind_axes[1], label="Pitching Moment"
+    )
+    moment_axes.plot(times, total_near_field_moment_wind_axes[2], label="Yawing Moment")
+    moment_axes.set_xlabel("Time (s)")
+    moment_axes.set_ylabel("Moment (Nm)")
+    moment_axes.set_title("Total Moments in Wind Axes versus Time")
     moment_axes.legend()
     if verbose:
         moment_figure.show()
 
     moment_coefficients_figure, moment_coefficients_axes = plt.subplots()
     moment_coefficients_axes.plot(
-        times, total_near_field_moment_coefficients_wind_axes[0], label='Coefficient of Rolling Moment'
+        times,
+        total_near_field_moment_coefficients_wind_axes[0],
+        label="Coefficient of Rolling Moment",
     )
     moment_coefficients_axes.plot(
-        times, total_near_field_moment_coefficients_wind_axes[1], label='Coefficient of Pitching Moment'
+        times,
+        total_near_field_moment_coefficients_wind_axes[1],
+        label="Coefficient of Pitching Moment",
     )
     moment_coefficients_axes.plot(
-        times, total_near_field_moment_coefficients_wind_axes[2], label='Coefficient of Yawing Moment'
+        times,
+        total_near_field_moment_coefficients_wind_axes[2],
+        label="Coefficient of Yawing Moment",
     )
-    moment_coefficients_axes.set_xlabel('Time (s)')
-    moment_coefficients_axes.set_ylabel('Dimensionless')
-    moment_coefficients_axes.set_title('Total Moment Coefficients in Wind Axes versus Time')
+    moment_coefficients_axes.set_xlabel("Time (s)")
+    moment_coefficients_axes.set_ylabel("Dimensionless")
+    moment_coefficients_axes.set_title(
+        "Total Moment Coefficients in Wind Axes versus Time"
+    )
     moment_coefficients_axes.legend()
     if verbose:
         moment_coefficients_figure.show()

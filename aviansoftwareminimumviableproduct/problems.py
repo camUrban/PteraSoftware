@@ -1,4 +1,3 @@
-
 """This module contains the class definitions for different types of problems.
 
 This module contains the following classes:
@@ -75,7 +74,9 @@ class UnsteadyProblem:
             this_operating_point = movement.operating_points[step]
 
             # Initialize the steady problem object at this time step.
-            this_steady_problem = SteadyProblem(airplane=this_airplane, operating_point=this_operating_point)
+            this_steady_problem = SteadyProblem(
+                airplane=this_airplane, operating_point=this_operating_point
+            )
 
             # Append this steady problem to the list of steady problems.
             self.steady_problems.append(this_steady_problem)

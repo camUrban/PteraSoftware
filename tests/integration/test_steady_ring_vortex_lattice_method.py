@@ -1,13 +1,10 @@
 
-# ToDo: Properly document this module.
 """This is a testing case for the steady ring vortex lattice method solver.
 
     Based on an identical XFLR5 testing case, the expected output for this case is:
         CL:     0.788
         CDi:    0.019
-        Cl:     -0.000
         Cm:     -0.687
-        Cn:     -0.000
 
     Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice
     method solver.
@@ -17,61 +14,81 @@ import unittest
 import tests.integration
 
 
-# ToDo: Properly document this class.
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
+    """This is a class for testing the steady ring vortex lattice method solver.
+
+    This class contains the following public methods:
+        setUp: This method sets up the test.
+        tearDown: This method tears down the test.
+        test_method: This method tests the solver's output.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
-    """
-
-    # ToDo: Properly document this method.
     def setUp(self):
+        """This method sets up the test.
+
+        :return: None
         """
 
-        :return:
-        """
-
+        # Create the steady method solver.
         self.steady_ring_vortex_lattice_method_validation_solver = (
             tests.integration.fixtures.solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
         )
 
-    # ToDo: Properly document this method.
     def tearDown(self):
-        """
+        """This method tears down the test.
 
-        :return:
+        :return: None
         """
 
         del self.steady_ring_vortex_lattice_method_validation_solver
 
-    # ToDo: Properly document this method.
     def test_method(self):
-        """
+        """This method tests the solver's output.
 
-        :return:
+        :return: None
         """
 
         # Run the solver.
         self.steady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
 
+        # Calculate the percent errors of the output.
         CDi_expected = 0.019
-        CDi_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.CDi - CDi_expected) / CDi_expected
+        CDi_calculated = (
+            self.
+            steady_ring_vortex_lattice_method_validation_solver.
+            airplane.
+            total_near_field_force_coefficients_wind_axes[0]
+        )
+        CDi_error = abs(CDi_calculated - CDi_expected) / CDi_expected
 
         CL_expected = 0.788
-        CL_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.CL - CL_expected) / CL_expected
-
-        Cl_expected = -0.000
-        Cl_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.Cl - Cl_expected)
+        CL_calculated = (
+            self.
+            steady_ring_vortex_lattice_method_validation_solver.
+            airplane.
+            total_near_field_force_coefficients_wind_axes[2]
+        )
+        CL_error = abs(CL_calculated - CL_expected) / CL_expected
 
         Cm_expected = -0.687
-        Cm_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.Cm - Cm_expected) / Cm_expected
+        Cm_calculated = (
+            self.
+            steady_ring_vortex_lattice_method_validation_solver.
+            airplane.
+            total_near_field_force_coefficients_wind_axes[1]
+        )
+        Cm_error = abs(Cm_calculated - Cm_expected) / Cm_expected
 
-        Cn_expected = -0.000
-        Cn_error = abs(self.steady_ring_vortex_lattice_method_validation_solver.Cn - Cn_expected)
-
+        # Set the allowable percent error.
         allowable_error = 0.05
 
+        # Assert that the percent errors are less than the allowable error.
         self.assertTrue(CDi_error < allowable_error)
         self.assertTrue(CL_error < allowable_error)
-        self.assertTrue(Cl_error < allowable_error)
         self.assertTrue(Cm_error < allowable_error)
-        self.assertTrue(Cn_error < allowable_error)

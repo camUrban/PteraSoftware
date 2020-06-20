@@ -36,8 +36,8 @@ class Airplane:
         Date of Retrieval:    04/23/2020
 
     This class contains the following public methods:
-        set_reference_dimensions_from_wing: This method sets the reference dimensions of the current_airplane from measurements
-                                            obtained from the main wing.
+        set_reference_dimensions_from_wing: This method sets the reference dimensions of the current_airplane from
+                                            measurements obtained from the main wing.
 
     This class contains the following class attributes:
         None
@@ -62,8 +62,8 @@ class Airplane:
             This is the z coordinate of the moment reference point. It should be the z coordinate of the center of
             gravity. The default is 0.0.
         :param wings: list of Wing objects, optional
-            This is a list of the current_airplane's wings defined as Wing objects. The default is None, which this method
-            converts to an empty list.
+            This is a list of the current_airplane's wings defined as Wing objects. The default is None, which this
+            method converts to an empty list.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first wing object.
         :param c_ref: float, optional if more than one wing is in the wings list.
@@ -102,13 +102,16 @@ class Airplane:
         for wing in self.wings:
             self.num_panels += wing.num_panels
 
+        # Initialize empty class attributes to hold the force, moment, force coefficients, and moment coefficients this
+        # airplane experiences after
         self.total_near_field_force_wind_axes = None
         self.total_near_field_force_coefficients_wind_axes = None
         self.total_near_field_moment_wind_axes = None
         self.total_near_field_moment_coefficients_wind_axes = None
 
     def set_reference_dimensions_from_main_wing(self):
-        """This method sets the reference dimensions of the current_airplane from measurements obtained from the main wing.
+        """This method sets the reference dimensions of the current_airplane from measurements obtained from the main
+        wing.
 
         This method assumes the main wing to be the first wing in the wings list passed by the user.
 
@@ -154,14 +157,14 @@ class Wing:
         :param name: str, optional
             This is a sensible name for the wing. The default is "Untitled Wing".
         :param x_le: float, optional
-            This is the x coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
-            default is 0.0.
+            This is the x coordinate of the leading edge of the wing, relative to the current_airplane's reference
+            point. The default is 0.0.
         :param y_le: float, optional
-            This is the y coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
-            default is 0.0.
+            This is the y coordinate of the leading edge of the wing, relative to the current_airplane's reference
+            point. The default is 0.0.
         :param z_le: float, optional
-            This is the z coordinate of the leading edge of the wing, relative to the current_airplane's reference point. The
-            default is 0.0.
+            This is the z coordinate of the leading edge of the wing, relative to the current_airplane's reference
+            point. The default is 0.0.
         :param wing_cross_sections: list of WingCrossSection objects, optional
             This is a list of WingCrossSection objects, that represent the wing's cross sections. The default is None.
         :param symmetric: bool, optional

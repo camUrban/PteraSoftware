@@ -17,8 +17,9 @@ This module contains the following functions:
                           linearly spaced time steps into a triangle function.
 """
 
-from scipy import signal
 import numpy as np
+from scipy import signal
+
 import aviansoftwareminimumviableproduct as asmvp
 
 

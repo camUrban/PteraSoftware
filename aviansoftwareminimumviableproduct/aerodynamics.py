@@ -1,4 +1,3 @@
-
 """This module contains vortex class definitions.
 
 This module contains the following classes:
@@ -66,7 +65,9 @@ class LineVortex:
             units are meters per second.
         """
 
-        normalized_induced_velocity = self.calculate_induced_velocity(point=point, overriding_strength=1)
+        normalized_induced_velocity = self.calculate_induced_velocity(
+            point=point, overriding_strength=1
+        )
 
         # Return the normalized induced velocity.
         return normalized_induced_velocity
@@ -108,7 +109,9 @@ class LineVortex:
         r_1_cross_r_2 = np.cross(r_1, r_2)
 
         # Calculate the cross product's absolute magnitude.
-        r_1_cross_r_2_absolute_magnitude = r_1_cross_r_2[0] ** 2 + r_1_cross_r_2[1] ** 2 + r_1_cross_r_2[2] ** 2
+        r_1_cross_r_2_absolute_magnitude = (
+            r_1_cross_r_2[0] ** 2 + r_1_cross_r_2[1] ** 2 + r_1_cross_r_2[2] ** 2
+        )
 
         # Calculate the vector lengths.
         r_1_length = np.linalg.norm(r_1)
@@ -116,9 +119,11 @@ class LineVortex:
 
         # Check for singularities.
         line_vortex_radius = 3.0e-16
-        if (r_1_length < line_vortex_radius
-                or r_2_length < line_vortex_radius
-                or r_1_cross_r_2_absolute_magnitude < line_vortex_radius):
+        if (
+            r_1_length < line_vortex_radius
+            or r_2_length < line_vortex_radius
+            or r_1_cross_r_2_absolute_magnitude < line_vortex_radius
+        ):
             # If there is a singularity, the induced velocity is zero.
             return np.array([0, 0, 0])
 
@@ -127,8 +132,11 @@ class LineVortex:
         r_0_dot_r_2 = np.dot(r_0, r_2)
 
         # Calculate the k coefficient.
-        k = (strength / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
-             * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length))
+        k = (
+            strength
+            / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
+            * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
+        )
 
         # Calculate the induced velocity components, and combine them into the induced velocity ndarray.
         u = k * r_1_cross_r_2[0]
@@ -155,12 +163,14 @@ class HorseshoeVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self,
-                 finite_leg_origin,
-                 finite_leg_termination,
-                 strength,
-                 infinite_leg_direction,
-                 infinite_leg_length):
+    def __init__(
+        self,
+        finite_leg_origin,
+        finite_leg_termination,
+        strength,
+        infinite_leg_direction,
+        infinite_leg_length,
+    ):
         """This is the initialization method.
 
         :param finite_leg_origin: 1D ndarray
@@ -183,24 +193,28 @@ class HorseshoeVortex:
         self.strength = strength
         self.infinite_leg_direction = infinite_leg_direction
         self.infinite_leg_length = infinite_leg_length
-        self.right_leg_origin = self.finite_leg_origin + infinite_leg_direction * infinite_leg_length
-        self.left_leg_termination = self.finite_leg_termination + infinite_leg_direction * infinite_leg_length
+        self.right_leg_origin = (
+            self.finite_leg_origin + infinite_leg_direction * infinite_leg_length
+        )
+        self.left_leg_termination = (
+            self.finite_leg_termination + infinite_leg_direction * infinite_leg_length
+        )
 
         # Initialize a line vortex to represent the horseshoe's finite leg.
         self.right_leg = LineVortex(
             origin=self.right_leg_origin,
             termination=self.finite_leg_origin,
-            strength=self.strength
+            strength=self.strength,
         )
         self.finite_leg = LineVortex(
             origin=self.finite_leg_origin,
             termination=self.finite_leg_termination,
-            strength=self.strength
+            strength=self.strength,
         )
         self.left_leg = LineVortex(
             origin=self.finite_leg_termination,
             termination=self.left_leg_termination,
-            strength=self.strength
+            strength=self.strength,
         )
 
     def calculate_normalized_induced_velocity(self, point):
@@ -214,9 +228,15 @@ class HorseshoeVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(point=point)
-        normalized_velocity_induced_by_finite_leg = self.finite_leg.calculate_normalized_induced_velocity(point=point)
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(point=point)
+        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
+        normalized_velocity_induced_by_finite_leg = self.finite_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
+        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
 
         # Sum the velocities induced by each leg to get the velocity induced by the entire horseshoe.
         normalized_induced_velocity = (
@@ -239,9 +259,15 @@ class HorseshoeVortex:
             units of meters per second.
         """
 
-        velocity_induced_by_right_leg = self.right_leg.calculate_induced_velocity(point=point)
-        velocity_induced_by_finite_leg = self.finite_leg.calculate_induced_velocity(point=point)
-        velocity_induced_by_left_leg = self.left_leg.calculate_induced_velocity(point=point)
+        velocity_induced_by_right_leg = self.right_leg.calculate_induced_velocity(
+            point=point
+        )
+        velocity_induced_by_finite_leg = self.finite_leg.calculate_induced_velocity(
+            point=point
+        )
+        velocity_induced_by_left_leg = self.left_leg.calculate_induced_velocity(
+            point=point
+        )
 
         # Sum the velocities induced by each leg to get the velocity induced by the entire horseshoe.
         induced_velocity = (
@@ -287,7 +313,14 @@ class RingVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex, strength):
+    def __init__(
+        self,
+        front_left_vertex,
+        front_right_vertex,
+        back_left_vertex,
+        back_right_vertex,
+        strength,
+    ):
         """This is the initialization method.
 
         :param front_left_vertex: 1D ndarray
@@ -316,29 +349,31 @@ class RingVortex:
         self.front_leg = LineVortex(
             origin=self.front_right_vertex,
             termination=self.front_left_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.left_leg = LineVortex(
             origin=self.front_left_vertex,
             termination=self.back_left_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.back_leg = LineVortex(
             origin=self.back_left_vertex,
             termination=self.back_right_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.right_leg = LineVortex(
             origin=self.back_right_vertex,
             termination=self.front_right_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = asmvp.geometry.centroid_of_quadrilateral(self.front_left_vertex,
-                                                               self.front_right_vertex,
-                                                               self.back_left_vertex,
-                                                               self.back_right_vertex)
+        self.center = asmvp.geometry.centroid_of_quadrilateral(
+            self.front_left_vertex,
+            self.front_right_vertex,
+            self.back_left_vertex,
+            self.back_right_vertex,
+        )
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
@@ -351,17 +386,25 @@ class RingVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_front_leg = self.front_leg.calculate_normalized_induced_velocity(point=point)
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(point=point)
-        normalized_velocity_induced_by_back_leg = self.back_leg.calculate_normalized_induced_velocity(point=point)
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(point=point)
+        normalized_velocity_induced_by_front_leg = self.front_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
+        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
+        normalized_velocity_induced_by_back_leg = self.back_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
+        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
+            point=point
+        )
 
         # Sum the velocities induced by each leg to get the velocity induced by the entire ring vortex.
         normalized_induced_velocity = (
-                normalized_velocity_induced_by_front_leg
-                + normalized_velocity_induced_by_left_leg
-                + normalized_velocity_induced_by_back_leg
-                + normalized_velocity_induced_by_right_leg
+            normalized_velocity_induced_by_front_leg
+            + normalized_velocity_induced_by_left_leg
+            + normalized_velocity_induced_by_back_leg
+            + normalized_velocity_induced_by_right_leg
         )
 
         return normalized_induced_velocity
@@ -377,10 +420,18 @@ class RingVortex:
             units of meters per second.
         """
 
-        velocity_induced_by_front_leg = self.front_leg.calculate_induced_velocity(point=point)
-        velocity_induced_by_left_leg = self.left_leg.calculate_induced_velocity(point=point)
-        velocity_induced_by_back_leg = self.back_leg.calculate_induced_velocity(point=point)
-        velocity_induced_by_right_leg = self.right_leg.calculate_induced_velocity(point=point)
+        velocity_induced_by_front_leg = self.front_leg.calculate_induced_velocity(
+            point=point
+        )
+        velocity_induced_by_left_leg = self.left_leg.calculate_induced_velocity(
+            point=point
+        )
+        velocity_induced_by_back_leg = self.back_leg.calculate_induced_velocity(
+            point=point
+        )
+        velocity_induced_by_right_leg = self.right_leg.calculate_induced_velocity(
+            point=point
+        )
 
         # Sum the velocities induced by each leg to get the velocity induced by the entire ring vortex.
         induced_velocity = (
@@ -408,7 +459,9 @@ class RingVortex:
         self.left_leg.strength = strength
         self.back_leg.strength = strength
 
-    def update_position(self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
+    def update_position(
+        self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
+    ):
         """This method updates the position of the ring vortex, and the positions of all its attributes.
 
         :param front_left_vertex: 1D ndarray
@@ -435,26 +488,28 @@ class RingVortex:
         self.front_leg = LineVortex(
             origin=self.front_right_vertex,
             termination=self.front_left_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.left_leg = LineVortex(
             origin=self.front_left_vertex,
             termination=self.back_left_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.back_leg = LineVortex(
             origin=self.back_left_vertex,
             termination=self.back_right_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
         self.right_leg = LineVortex(
             origin=self.back_right_vertex,
             termination=self.front_right_vertex,
-            strength=self.strength
+            strength=self.strength,
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = asmvp.geometry.centroid_of_quadrilateral(self.front_left_vertex,
-                                                               self.front_right_vertex,
-                                                               self.back_left_vertex,
-                                                               self.back_right_vertex)
+        self.center = asmvp.geometry.centroid_of_quadrilateral(
+            self.front_left_vertex,
+            self.front_right_vertex,
+            self.back_left_vertex,
+            self.back_right_vertex,
+        )

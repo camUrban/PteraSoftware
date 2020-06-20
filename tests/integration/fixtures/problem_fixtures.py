@@ -22,7 +22,8 @@ def make_steady_validation_problem():
     )
 
     steady_validation_problem = asmvp.problems.SteadyProblem(
-        airplane=steady_validation_airplane, operating_point=steady_validation_operating_point
+        airplane=steady_validation_airplane,
+        operating_point=steady_validation_operating_point,
     )
 
     del steady_validation_airplane

@@ -1,4 +1,3 @@
-
 """This module contains the class definitions for the problem's movement.
 
 This module contains the following classes:
@@ -36,7 +35,9 @@ class Movement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, airplane_movement, operating_point_movement, num_steps=10, delta_time=0.1):
+    def __init__(
+        self, airplane_movement, operating_point_movement, num_steps=10, delta_time=0.1
+    ):
         """This is the initialization method.
         
         :param airplane_movement: AirplaneMovement
@@ -55,12 +56,10 @@ class Movement:
 
         # Generate a list of the airplanes and operating points that are the steps through this movement object.
         self.airplanes = airplane_movement.generate_airplanes(
-            num_steps=self.num_steps,
-            delta_time=self.delta_time
+            num_steps=self.num_steps, delta_time=self.delta_time
         )
         self.operating_points = operating_point_movement.generate_operating_points(
-            num_steps=self.num_steps,
-            delta_time=self.delta_time
+            num_steps=self.num_steps, delta_time=self.delta_time
         )
 
 
@@ -79,9 +78,20 @@ class AirplaneMovement:
     """
 
     # ToDo: Properly document this method.
-    def __init__(self, base_airplane, wing_movements, x_ref_amplitude=0.0, x_ref_period=0.0, x_ref_spacing='sine',
-                 y_ref_amplitude=0.0, y_ref_period=0.0, y_ref_spacing='sine', z_ref_amplitude=0.0, z_ref_period=0.0,
-                 z_ref_spacing='sine'):
+    def __init__(
+        self,
+        base_airplane,
+        wing_movements,
+        x_ref_amplitude=0.0,
+        x_ref_period=0.0,
+        x_ref_spacing="sine",
+        y_ref_amplitude=0.0,
+        y_ref_period=0.0,
+        y_ref_spacing="sine",
+        z_ref_amplitude=0.0,
+        z_ref_period=0.0,
+        z_ref_spacing="sine",
+    ):
         """
         
         :param base_airplane: 
@@ -125,61 +135,61 @@ class AirplaneMovement:
         """
 
         # Create an ndarray of x_ref points.
-        if self.x_ref_spacing == 'sine':
+        if self.x_ref_spacing == "sine":
             x_ref_list = oscillating_sinspace(
                 amplitude=self.x_ref_amplitude,
                 period=self.x_ref_period,
                 base_value=self.x_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.x_ref_spacing == 'uniform':
+        elif self.x_ref_spacing == "uniform":
             x_ref_list = oscillating_linspace(
                 amplitude=self.x_ref_amplitude,
                 period=self.x_ref_period,
                 base_value=self.x_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of x_ref_spacing!")
 
         # Create an ndarray of y_ref points.
-        if self.y_ref_spacing == 'sine':
+        if self.y_ref_spacing == "sine":
             y_ref_list = oscillating_sinspace(
                 amplitude=self.y_ref_amplitude,
                 period=self.y_ref_period,
                 base_value=self.y_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.y_ref_spacing == 'uniform':
+        elif self.y_ref_spacing == "uniform":
             y_ref_list = oscillating_linspace(
                 amplitude=self.y_ref_amplitude,
                 period=self.y_ref_period,
                 base_value=self.y_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of y_ref_spacing!")
 
         # Create an ndarray of z_ref points.
-        if self.z_ref_spacing == 'sine':
+        if self.z_ref_spacing == "sine":
             z_ref_list = oscillating_sinspace(
                 amplitude=self.z_ref_amplitude,
                 period=self.z_ref_period,
                 base_value=self.z_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.z_ref_spacing == 'uniform':
+        elif self.z_ref_spacing == "uniform":
             z_ref_list = oscillating_linspace(
                 amplitude=self.z_ref_amplitude,
                 period=self.z_ref_period,
                 base_value=self.z_ref_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of z_ref_spacing!")
@@ -188,8 +198,9 @@ class AirplaneMovement:
 
         for wing_movement_location in range(len(self.wing_movements)):
             wing_movement = self.wing_movements[wing_movement_location]
-            this_wings_list_of_wings = np.array(wing_movement.generate_wings(
-                num_steps=num_steps, delta_time=delta_time))
+            this_wings_list_of_wings = np.array(
+                wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time)
+            )
             wings[wing_movement_location, :] = this_wings_list_of_wings
 
         # Create an empty list of airplanes.
@@ -204,11 +215,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             this_airplane = asmvp.geometry.Airplane(
-                name=name,
-                x_ref=x_ref,
-                y_ref=y_ref,
-                z_ref=z_ref,
-                wings=these_wings
+                name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
             airplanes.append(this_airplane)
@@ -231,9 +238,20 @@ class WingMovement:
     """
 
     # ToDo: Properly document this method.
-    def __init__(self, base_wing, wing_cross_sections_movements, x_le_amplitude=0.0, x_le_period=0.0,
-                 x_le_spacing='sine', y_le_amplitude=0.0, y_le_period=0.0, y_le_spacing='sine', z_le_amplitude=0.0,
-                 z_le_period=0.0, z_le_spacing='sine'):
+    def __init__(
+        self,
+        base_wing,
+        wing_cross_sections_movements,
+        x_le_amplitude=0.0,
+        x_le_period=0.0,
+        x_le_spacing="sine",
+        y_le_amplitude=0.0,
+        y_le_period=0.0,
+        y_le_spacing="sine",
+        z_le_amplitude=0.0,
+        z_le_period=0.0,
+        z_le_spacing="sine",
+    ):
         """
 
         :param base_wing:
@@ -277,71 +295,80 @@ class WingMovement:
         """
 
         # Create an ndarray of x_le points.
-        if self.x_le_spacing == 'sine':
+        if self.x_le_spacing == "sine":
             x_le_list = oscillating_sinspace(
                 amplitude=self.x_le_amplitude,
                 period=self.x_le_period,
                 base_value=self.x_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.x_le_spacing == 'uniform':
+        elif self.x_le_spacing == "uniform":
             x_le_list = oscillating_linspace(
                 amplitude=self.x_le_amplitude,
                 period=self.x_le_period,
                 base_value=self.x_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of x_le_spacing!")
 
         # Create an ndarray of y_le points.
-        if self.y_le_spacing == 'sine':
+        if self.y_le_spacing == "sine":
             y_le_list = oscillating_sinspace(
                 amplitude=self.y_le_amplitude,
                 period=self.y_le_period,
                 base_value=self.y_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.y_le_spacing == 'uniform':
+        elif self.y_le_spacing == "uniform":
             y_le_list = oscillating_linspace(
                 amplitude=self.y_le_amplitude,
                 period=self.y_le_period,
                 base_value=self.y_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of y_le_spacing!")
 
         # Create an ndarray of z_le points.
-        if self.z_le_spacing == 'sine':
+        if self.z_le_spacing == "sine":
             z_le_list = oscillating_sinspace(
                 amplitude=self.z_le_amplitude,
                 period=self.z_le_period,
                 base_value=self.z_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.z_le_spacing == 'uniform':
+        elif self.z_le_spacing == "uniform":
             z_le_list = oscillating_linspace(
                 amplitude=self.z_le_amplitude,
                 period=self.z_le_period,
                 base_value=self.z_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of z_le_spacing!")
 
-        wing_cross_sections = np.empty((len(self.wing_cross_section_movements), num_steps), dtype=object)
+        wing_cross_sections = np.empty(
+            (len(self.wing_cross_section_movements), num_steps), dtype=object
+        )
 
-        for wing_cross_section_movement_location in range(len(self.wing_cross_section_movements)):
-            wing_cross_section_movement = self.wing_cross_section_movements[wing_cross_section_movement_location]
-            x = np.array(wing_cross_section_movement.generate_wing_cross_sections(
-                num_steps=num_steps, delta_time=delta_time))
+        for wing_cross_section_movement_location in range(
+            len(self.wing_cross_section_movements)
+        ):
+            wing_cross_section_movement = self.wing_cross_section_movements[
+                wing_cross_section_movement_location
+            ]
+            x = np.array(
+                wing_cross_section_movement.generate_wing_cross_sections(
+                    num_steps=num_steps, delta_time=delta_time
+                )
+            )
             wing_cross_sections[wing_cross_section_movement_location, :] = x
 
         # Create an empty list of wings.
@@ -366,7 +393,7 @@ class WingMovement:
                 wing_cross_sections=cross_sections,
                 symmetric=symmetric,
                 num_chordwise_panels=num_chordwise_panels,
-                chordwise_spacing=chordwise_spacing
+                chordwise_spacing=chordwise_spacing,
             )
 
             wings.append(this_wing)
@@ -390,11 +417,25 @@ class WingCrossSectionMovement:
     """
 
     # ToDo: Properly document this method.
-    def __init__(self, base_wing_cross_section, x_le_amplitude=0.0, x_le_period=0.0, x_le_spacing='sine',
-                 y_le_amplitude=0.0, y_le_period=0.0, y_le_spacing='sine', z_le_amplitude=0.0, z_le_period=0.0,
-                 z_le_spacing='sine', twist_amplitude=0.0, twist_period=0.0, twist_spacing='sine',
-                 control_surface_deflection_amplitude=0.0, control_surface_deflection_period=0.0,
-                 control_surface_deflection_spacing='sine'):
+    def __init__(
+        self,
+        base_wing_cross_section,
+        x_le_amplitude=0.0,
+        x_le_period=0.0,
+        x_le_spacing="sine",
+        y_le_amplitude=0.0,
+        y_le_period=0.0,
+        y_le_spacing="sine",
+        z_le_amplitude=0.0,
+        z_le_period=0.0,
+        z_le_spacing="sine",
+        twist_amplitude=0.0,
+        twist_period=0.0,
+        twist_spacing="sine",
+        control_surface_deflection_amplitude=0.0,
+        control_surface_deflection_period=0.0,
+        control_surface_deflection_spacing="sine",
+    ):
         """
 
         :param base_wing_cross_section:
@@ -437,7 +478,9 @@ class WingCrossSectionMovement:
         self.twist_period = twist_period
         self.twist_spacing = twist_spacing
 
-        self.control_surface_deflection_base = self.base_wing_cross_section.control_surface_deflection
+        self.control_surface_deflection_base = (
+            self.base_wing_cross_section.control_surface_deflection
+        )
         self.control_surface_deflection_amplitude = control_surface_deflection_amplitude
         self.control_surface_deflection_period = control_surface_deflection_period
         self.control_surface_deflection_spacing = control_surface_deflection_spacing
@@ -452,101 +495,101 @@ class WingCrossSectionMovement:
         """
 
         # Create an ndarray of x_le points.
-        if self.x_le_spacing == 'sine':
+        if self.x_le_spacing == "sine":
             x_le_list = oscillating_sinspace(
                 amplitude=self.x_le_amplitude,
                 period=self.x_le_period,
                 base_value=self.x_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.x_le_spacing == 'uniform':
+        elif self.x_le_spacing == "uniform":
             x_le_list = oscillating_linspace(
                 amplitude=self.x_le_amplitude,
                 period=self.x_le_period,
                 base_value=self.x_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of x_le_spacing!")
 
         # Create an ndarray of y_le points.
-        if self.y_le_spacing == 'sine':
+        if self.y_le_spacing == "sine":
             y_le_list = oscillating_sinspace(
                 amplitude=self.y_le_amplitude,
                 period=self.y_le_period,
                 base_value=self.y_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.y_le_spacing == 'uniform':
+        elif self.y_le_spacing == "uniform":
             y_le_list = oscillating_linspace(
                 amplitude=self.y_le_amplitude,
                 period=self.y_le_period,
                 base_value=self.y_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of y_le_spacing!")
 
         # Create an ndarray of z_le points.
-        if self.z_le_spacing == 'sine':
+        if self.z_le_spacing == "sine":
             z_le_list = oscillating_sinspace(
                 amplitude=self.z_le_amplitude,
                 period=self.z_le_period,
                 base_value=self.z_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.z_le_spacing == 'uniform':
+        elif self.z_le_spacing == "uniform":
             z_le_list = oscillating_linspace(
                 amplitude=self.z_le_amplitude,
                 period=self.z_le_period,
                 base_value=self.z_le_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of z_le_spacing!")
 
         # Create an ndarray of twist values.
-        if self.twist_spacing == 'sine':
+        if self.twist_spacing == "sine":
             twist_list = oscillating_sinspace(
                 amplitude=self.twist_amplitude,
                 period=self.twist_period,
                 base_value=self.twist_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.twist_spacing == 'uniform':
+        elif self.twist_spacing == "uniform":
             twist_list = oscillating_linspace(
                 amplitude=self.twist_amplitude,
                 period=self.twist_period,
                 base_value=self.twist_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of twist_spacing!")
 
         # Create an ndarray of control surface deflection values.
-        if self.control_surface_deflection_spacing == 'sine':
+        if self.control_surface_deflection_spacing == "sine":
             control_surface_deflection_list = oscillating_sinspace(
                 amplitude=self.control_surface_deflection_amplitude,
                 period=self.control_surface_deflection_period,
                 base_value=self.control_surface_deflection_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.control_surface_deflection_spacing == 'uniform':
+        elif self.control_surface_deflection_spacing == "uniform":
             control_surface_deflection_list = oscillating_linspace(
                 amplitude=self.control_surface_deflection_amplitude,
                 period=self.control_surface_deflection_period,
                 base_value=self.control_surface_deflection_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of control_surface_deflection_spacing!")
@@ -557,7 +600,9 @@ class WingCrossSectionMovement:
         chord = self.base_wing_cross_section.chord
         airfoil = self.base_wing_cross_section.airfoil
         control_surface_type = self.base_wing_cross_section.control_surface_type
-        control_surface_hinge_point = self.base_wing_cross_section.control_surface_hinge_point
+        control_surface_hinge_point = (
+            self.base_wing_cross_section.control_surface_hinge_point
+        )
         num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
         spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
 
@@ -579,7 +624,7 @@ class WingCrossSectionMovement:
                 control_surface_hinge_point=control_surface_hinge_point,
                 control_surface_deflection=control_surface_deflection,
                 num_spanwise_panels=num_spanwise_panels,
-                spanwise_spacing=spanwise_spacing
+                spanwise_spacing=spanwise_spacing,
             )
 
             wing_cross_sections.append(this_wing_cross_section)
@@ -603,7 +648,13 @@ class OperatingPointMovement:
     """
 
     # ToDo: Properly document this method.
-    def __init__(self, base_operating_point, velocity_amplitude=0.0, velocity_period=0.0, velocity_spacing='sine'):
+    def __init__(
+        self,
+        base_operating_point,
+        velocity_amplitude=0.0,
+        velocity_period=0.0,
+        velocity_spacing="sine",
+    ):
         """
         
         :param base_operating_point: 
@@ -629,21 +680,21 @@ class OperatingPointMovement:
         """
 
         # Create an ndarray of velocities.
-        if self.velocity_spacing == 'sine':
+        if self.velocity_spacing == "sine":
             velocity_list = oscillating_sinspace(
                 amplitude=self.velocity_amplitude,
                 period=self.velocity_period,
                 base_value=self.velocity_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
-        elif self.velocity_spacing == 'uniform':
+        elif self.velocity_spacing == "uniform":
             velocity_list = oscillating_linspace(
                 amplitude=self.velocity_amplitude,
                 period=self.velocity_period,
                 base_value=self.velocity_base,
                 num_steps=num_steps,
-                delta_time=delta_time
+                delta_time=delta_time,
             )
         else:
             raise Exception("Bad value of velocity_spacing!")
@@ -659,10 +710,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             this_operating_point = asmvp.operating_point.OperatingPoint(
-                density=density,
-                velocity=velocity,
-                alpha=alpha,
-                beta=beta
+                density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 
             operating_points.append(this_operating_point)

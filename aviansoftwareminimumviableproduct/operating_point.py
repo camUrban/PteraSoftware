@@ -1,4 +1,3 @@
-
 """This module contains the class definition for the problem's operating point.
 
 This module contains the following classes:
@@ -82,27 +81,21 @@ class OperatingPoint:
         cos_beta = np.cos(np.radians(self.beta))
         eye = np.eye(3)
 
-        alpha_rotation = np.array([
-            [cos_alpha, 0, -sin_alpha],
-            [0, 1, 0],
-            [sin_alpha, 0, cos_alpha]
-        ])
-        beta_rotation = np.array([
-            [cos_beta, -sin_beta, 0],
-            [sin_beta, cos_beta, 0],
-            [0, 0, 1]
-        ])
+        alpha_rotation = np.array(
+            [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]]
+        )
+        beta_rotation = np.array(
+            [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
+        )
 
         # Flip the axes because in geometry axes x is downstream by convention, while in wind axes x is upstream by
         # convention. Same with z being up/down respectively.
-        axes_flip = np.array([
-            [-1, 0, 0],
-            [0, 1, 0, ],
-            [0, 0, -1]
-        ])
+        axes_flip = np.array([[-1, 0, 0], [0, 1, 0,], [0, 0, -1]])
 
         # Calculate and return the rotation matrix to convert wind axes to geometry axes.
-        rotation_matrix_wind_axes_to_geometry_axes = axes_flip @ alpha_rotation @ beta_rotation @ eye
+        rotation_matrix_wind_axes_to_geometry_axes = (
+            axes_flip @ alpha_rotation @ beta_rotation @ eye
+        )
         return rotation_matrix_wind_axes_to_geometry_axes
 
     def calculate_freestream_direction_geometry_axes(self):
@@ -113,8 +106,10 @@ class OperatingPoint:
         """
 
         velocity_direction_wind_axes = np.array([-1, 0, 0])
-        velocity_direction_geometry_axes = (self.calculate_rotation_matrix_wind_axes_to_geometry_axes()
-                                            @ velocity_direction_wind_axes)
+        velocity_direction_geometry_axes = (
+            self.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+            @ velocity_direction_wind_axes
+        )
         return velocity_direction_geometry_axes
 
     def calculate_freestream_velocity_geometry_axes(self):
@@ -124,5 +119,7 @@ class OperatingPoint:
             This is the freestream velocity vector in geometry axes.
         """
 
-        freestream_velocity_geometry_axes = self.calculate_freestream_direction_geometry_axes() * self.velocity
+        freestream_velocity_geometry_axes = (
+            self.calculate_freestream_direction_geometry_axes() * self.velocity
+        )
         return freestream_velocity_geometry_axes

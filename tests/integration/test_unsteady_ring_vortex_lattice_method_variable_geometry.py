@@ -1,4 +1,3 @@
-
 """This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
 
 """
@@ -30,11 +29,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            tests
-            .integration
-            .fixtures
-            .solver_fixtures
-            .make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry()
+            tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry()
         )
 
     def tearDown(self):

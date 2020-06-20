@@ -1,4 +1,3 @@
-
 """This package contains all the source code for the Avian Software Minimum Viable Product project.
 
 This package contains the following subpackages:

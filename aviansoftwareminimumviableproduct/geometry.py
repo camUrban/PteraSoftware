@@ -46,8 +46,17 @@ class Airplane:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, name="Untitled", x_ref=0.0, y_ref=0.0, z_ref=0.0, wings=None, s_ref=None, c_ref=None,
-                 b_ref=None):
+    def __init__(
+        self,
+        name="Untitled",
+        x_ref=0.0,
+        y_ref=0.0,
+        z_ref=0.0,
+        wings=None,
+        s_ref=None,
+        c_ref=None,
+        b_ref=None,
+    ):
         """This is the initialization method.
 
         :param name: str, optional
@@ -77,7 +86,9 @@ class Airplane:
         self.x_ref = x_ref
         self.y_ref = y_ref
         self.z_ref = z_ref
-        self.xyz_ref = np.array([float(self.x_ref), float(self.y_ref), float(self.z_ref)])
+        self.xyz_ref = np.array(
+            [float(self.x_ref), float(self.y_ref), float(self.z_ref)]
+        )
 
         # If wings was passed as None, set wings to an empty list.
         if wings is None:
@@ -150,8 +161,17 @@ class Wing:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, name="Untitled Wing", x_le=0.0, y_le=0.0, z_le=0.0, wing_cross_sections=None, symmetric=False,
-                 num_chordwise_panels=8, chordwise_spacing="cosine"):
+    def __init__(
+        self,
+        name="Untitled Wing",
+        x_le=0.0,
+        y_le=0.0,
+        z_le=0.0,
+        wing_cross_sections=None,
+        symmetric=False,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    ):
         """This is the initialization method.
 
         :param name: str, optional
@@ -252,7 +272,10 @@ class Wing:
         """
 
         # Calculate the span (y-distance between the root and the tip) of the entire wing.
-        span = self.wing_cross_sections[-1].xyz_le[1] - self.wing_cross_sections[0].xyz_le[1]
+        span = (
+            self.wing_cross_sections[-1].xyz_le[1]
+            - self.wing_cross_sections[0].xyz_le[1]
+        )
 
         # If the wing is symmetric, multiply the span by two.
         if self.symmetric:
@@ -279,9 +302,20 @@ class WingCrossSection:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, x_le=0.0, y_le=0.0, z_le=0.0, chord=0.0, twist=0.0, airfoil=None,
-                 control_surface_type='symmetric', control_surface_hinge_point=0.75,
-                 control_surface_deflection=0, num_spanwise_panels=8, spanwise_spacing='cosine'):
+    def __init__(
+        self,
+        x_le=0.0,
+        y_le=0.0,
+        z_le=0.0,
+        chord=0.0,
+        twist=0.0,
+        airfoil=None,
+        control_surface_type="symmetric",
+        control_surface_hinge_point=0.75,
+        control_surface_deflection=0,
+        num_spanwise_panels=8,
+        spanwise_spacing="cosine",
+    ):
         """This is the initialization method.
 
         :param x_le: float, optional
@@ -378,7 +412,13 @@ class Airfoil:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, name="Untitled Airfoil", coordinates=None, repanel=True, n_points_per_side=400):
+    def __init__(
+        self,
+        name="Untitled Airfoil",
+        coordinates=None,
+        repanel=True,
+        n_points_per_side=400,
+    ):
         """This is the initialization method.
 
         :param name: str, optional
@@ -409,7 +449,7 @@ class Airfoil:
             self.populate_coordinates()  # populates self.coordinates
 
         # Check that the coordinates have been set.
-        assert hasattr(self, 'coordinates')
+        assert hasattr(self, "coordinates")
 
         # Initialize other attributes.
         self.repanel = repanel
@@ -455,12 +495,16 @@ class Airfoil:
                     # Make uncambered coordinates.
                     # Generate cosine-spaced points.
                     x_t = cosspace(n_points=n_points_per_side)
-                    y_t = 5 * thickness * (
-                            + 0.2969 * np.power(x_t, 0.5)
+                    y_t = (
+                        5
+                        * thickness
+                        * (
+                            +0.2969 * np.power(x_t, 0.5)
                             - 0.1260 * x_t
                             - 0.3516 * np.power(x_t, 2)
                             + 0.2843 * np.power(x_t, 3)
                             - 0.1015 * np.power(x_t, 4)
+                        )
                     )
 
                     # Prevent divide by zero errors for airfoils like the NACA 0012.
@@ -468,23 +512,37 @@ class Airfoil:
                         camber_loc = 0.5
 
                     # Get camber.
-                    y_c_piece1 = max_camber / camber_loc ** 2 * (
+                    y_c_piece1 = (
+                        max_camber
+                        / camber_loc ** 2
+                        * (
                             2 * camber_loc * x_t[x_t <= camber_loc]
                             - x_t[x_t <= camber_loc] ** 2
+                        )
                     )
-                    y_c_piece2 = max_camber / (1 - camber_loc) ** 2 * (
-                            (1 - 2 * camber_loc) +
-                            2 * camber_loc * x_t[x_t > camber_loc]
+                    y_c_piece2 = (
+                        max_camber
+                        / (1 - camber_loc) ** 2
+                        * (
+                            (1 - 2 * camber_loc)
+                            + 2 * camber_loc * x_t[x_t > camber_loc]
                             - x_t[x_t > camber_loc] ** 2
+                        )
                     )
                     y_c = np.hstack((y_c_piece1, y_c_piece2))
 
                     # Get camber slope.
-                    first_piece_slope = 2 * max_camber / camber_loc ** 2 * (
-                            camber_loc - x_t[x_t <= camber_loc]
+                    first_piece_slope = (
+                        2
+                        * max_camber
+                        / camber_loc ** 2
+                        * (camber_loc - x_t[x_t <= camber_loc])
                     )
-                    second_piece_slope = 2 * max_camber / (1 - camber_loc) ** 2 * (
-                            camber_loc - x_t[x_t > camber_loc]
+                    second_piece_slope = (
+                        2
+                        * max_camber
+                        / (1 - camber_loc) ** 2
+                        * (camber_loc - x_t[x_t > camber_loc])
                     )
                     slope = np.hstack((first_piece_slope, second_piece_slope))
                     theta = np.arctan(slope)
@@ -510,7 +568,9 @@ class Airfoil:
                     self.coordinates = coordinates
                     return
                 # If the airfoil is a NACA airfoil but not a NACA 4-series, throw an error.
-                raise Exception("Unfortunately, only 4-series NACA airfoils can be generated at this time.")
+                raise Exception(
+                    "Unfortunately, only 4-series NACA airfoils can be generated at this time."
+                )
 
         # Try to read from the airfoil directory.
         try:
@@ -520,17 +580,18 @@ class Airfoil:
             from . import airfoils
 
             # Read the text from the airfoil file.
-            raw_text = importlib.resources.read_text(str(airfoils), name + '.dat')
+            raw_text = importlib.resources.read_text(str(airfoils), name + ".dat")
 
             # Trim the text at the return characters.
-            trimmed_text = raw_text[raw_text.find('\n'):]
+            trimmed_text = raw_text[raw_text.find("\n") :]
 
             # Input the coordinates into a 1D ndarray.
-            coordinates1D = np.fromstring(trimmed_text, sep='\n')
+            coordinates1D = np.fromstring(trimmed_text, sep="\n")
 
             # Check to make sure the number of elements in the ndarray is even.
-            assert len(
-                coordinates1D) % 2 == 0, "File was found in airfoil database, but it could not be read correctly."
+            assert (
+                len(coordinates1D) % 2 == 0
+            ), "File was found in airfoil database, but it could not be read correctly."
 
             # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the number of rows.
             coordinates = np.reshape(coordinates1D, (-1, 2))
@@ -566,12 +627,7 @@ class Airfoil:
         self.upper_minus_mcl = upper - self.mcl_coordinates
 
         # Create a list of values that are the thickness of the airfoil at each mean camber line.
-        thickness = np.sqrt(
-            np.sum(
-                np.power(self.upper_minus_mcl, 2),
-                axis=1
-            )
-        ) * 2
+        thickness = np.sqrt(np.sum(np.power(self.upper_minus_mcl, 2), axis=1)) * 2
 
         # Populate the class attribute with the thicknesses at their associated x coordinates.
         self.thickness = np.column_stack((self.mcl_coordinates[:, 0], thickness))
@@ -602,7 +658,7 @@ class Airfoil:
         """
 
         # Find the lower coordinates.
-        lower_coordinates = self.coordinates[self.leading_edge_index():, :]
+        lower_coordinates = self.coordinates[self.leading_edge_index() :, :]
 
         # Return the lower coordinates.
         return lower_coordinates
@@ -619,7 +675,7 @@ class Airfoil:
         """
 
         # Find the upper coordinates.
-        upper_coordinates = self.coordinates[:self.leading_edge_index() + 1, :]
+        upper_coordinates = self.coordinates[: self.leading_edge_index() + 1, :]
 
         # Return the upper coordinates.
         return upper_coordinates
@@ -638,30 +694,30 @@ class Airfoil:
 
         # Find the distances between points along the mean camber line, assuming linear interpolation.
         mcl_distances_between_points = np.sqrt(
-            np.power(mcl[:-1, 0] - mcl[1:, 0], 2) +
-            np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
+            np.power(mcl[:-1, 0] - mcl[1:, 0], 2)
+            + np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
         )
 
         # Create a horizontal 1D ndarray that contains the distance along the mean camber line of each point.
-        mcl_distances_cumulative = np.hstack((0, np.cumsum(mcl_distances_between_points)))
+        mcl_distances_cumulative = np.hstack(
+            (0, np.cumsum(mcl_distances_between_points))
+        )
 
         # Normalize the 1D ndarray so that it ranges from 0 to 1.
-        mcl_distances_cumulative_normalized = mcl_distances_cumulative / mcl_distances_cumulative[-1]
+        mcl_distances_cumulative_normalized = (
+            mcl_distances_cumulative / mcl_distances_cumulative[-1]
+        )
 
         # Linearly interpolate to find the x coordinates of the mean camber line at the given mean camber line
         # fractions.
         mcl_downsampled_x = np.interp(
-            x=mcl_fractions,
-            xp=mcl_distances_cumulative_normalized,
-            fp=mcl[:, 0]
+            x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 0]
         )
 
         # Linearly interpolate to find the y coordinates of the mean camber line at the given mean camber line
         # fractions.
         mcl_downsampled_y = np.interp(
-            x=mcl_fractions,
-            xp=mcl_distances_cumulative_normalized,
-            fp=mcl[:, 1]
+            x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 1]
         )
 
         # Combine the x and y coordinates of the downsampled mean camber line.
@@ -684,7 +740,7 @@ class Airfoil:
             x=self.mcl_coordinates[:, 0],
             y=self.mcl_coordinates[:, 1],
             copy=False,
-            fill_value='extrapolate'
+            fill_value="extrapolate",
         )
 
         # Find the value of the camber (the y coordinate) of the airfoil at the requested chord fraction.
@@ -714,14 +770,24 @@ class Airfoil:
 
         # Create interpolated functions for the x and y values of the upper and lower surfaces as a function of the
         # chord fractions
-        upper_func = sp_interp.PchipInterpolator(x=np.flip(upper_original_coordinates[:, 0]),
-                                                 y=np.flip(upper_original_coordinates[:, 1]))
-        lower_func = sp_interp.PchipInterpolator(x=lower_original_coordinates[:, 0],
-                                                 y=lower_original_coordinates[:, 1])
+        upper_func = sp_interp.PchipInterpolator(
+            x=np.flip(upper_original_coordinates[:, 0]),
+            y=np.flip(upper_original_coordinates[:, 1]),
+        )
+        lower_func = sp_interp.PchipInterpolator(
+            x=lower_original_coordinates[:, 0], y=lower_original_coordinates[:, 1]
+        )
 
         # Find the x and y coordinates of the upper and lower surfaces at each of the cosine-spaced x values.
-        x_coordinates = np.hstack((np.flip(cosine_spaced_x_values), cosine_spaced_x_values[1:]))
-        y_coordinates = np.hstack((upper_func(np.flip(cosine_spaced_x_values)), lower_func(cosine_spaced_x_values[1:])))
+        x_coordinates = np.hstack(
+            (np.flip(cosine_spaced_x_values), cosine_spaced_x_values[1:])
+        )
+        y_coordinates = np.hstack(
+            (
+                upper_func(np.flip(cosine_spaced_x_values)),
+                lower_func(cosine_spaced_x_values[1:]),
+            )
+        )
 
         # Stack the coordinates together and return them.
         coordinates = np.column_stack((x_coordinates, y_coordinates))
@@ -741,13 +807,12 @@ class Airfoil:
         # Make the rotation matrix for the given angle.
         sin_theta = np.sin(np.radians(-deflection))
         cos_theta = np.cos(np.radians(-deflection))
-        rotation_matrix = np.array(
-            [[cos_theta, -sin_theta],
-             [sin_theta, cos_theta]]
-        )
+        rotation_matrix = np.array([[cos_theta, -sin_theta], [sin_theta, cos_theta]])
 
         # Find y coordinate at the hinge point x coordinate and make it a vector.
-        hinge_point = np.array((hinge_point, self.get_camber_at_chord_fraction(hinge_point)))
+        hinge_point = np.array(
+            (hinge_point, self.get_camber_at_chord_fraction(hinge_point))
+        )
 
         # Split the airfoil into the sections before and after the hinge.
         split_index = np.where(self.mcl_coordinates[:, 0] > hinge_point[0])[0][0]
@@ -757,20 +822,32 @@ class Airfoil:
         upper_minus_mcl_after = self.upper_minus_mcl[split_index:, :]
 
         # Rotate the mean camber line coordinates and upper minus mean camber line vectors.
-        new_mcl_coordinates_after = np.transpose(
-            rotation_matrix @ np.transpose(mcl_coordinates_after - hinge_point)) + hinge_point
-        new_upper_minus_mcl_after = np.transpose(rotation_matrix @ np.transpose(upper_minus_mcl_after))
+        new_mcl_coordinates_after = (
+            np.transpose(
+                rotation_matrix @ np.transpose(mcl_coordinates_after - hinge_point)
+            )
+            + hinge_point
+        )
+        new_upper_minus_mcl_after = np.transpose(
+            rotation_matrix @ np.transpose(upper_minus_mcl_after)
+        )
 
         # Assemble the new, flapped airfoil.
-        new_mcl_coordinates = np.vstack((mcl_coordinates_before, new_mcl_coordinates_after))
-        new_upper_minus_mcl = np.vstack((upper_minus_mcl_before, new_upper_minus_mcl_after))
+        new_mcl_coordinates = np.vstack(
+            (mcl_coordinates_before, new_mcl_coordinates_after)
+        )
+        new_upper_minus_mcl = np.vstack(
+            (upper_minus_mcl_before, new_upper_minus_mcl_after)
+        )
         upper_coordinates = np.flipud(new_mcl_coordinates + new_upper_minus_mcl)
         lower_coordinates = new_mcl_coordinates - new_upper_minus_mcl
         coordinates = np.vstack((upper_coordinates, lower_coordinates[1:, :]))
 
         # ToDo: Fix self-intersecting airfoils at high deflections.
         # Initialize the new, flapped airfoil and return it.
-        flapped_airfoil = Airfoil(name=self.name + " flapped", coordinates=coordinates, repanel=False)
+        flapped_airfoil = Airfoil(
+            name=self.name + " flapped", coordinates=coordinates, repanel=False
+        )
         return flapped_airfoil
 
     def draw(self):
@@ -779,7 +856,7 @@ class Airfoil:
         plt.plot(x, y)
         plt.xlim(0, 1)
         plt.ylim(-0.5, 0.5)
-        plt.gca().set_aspect('equal', adjustable='box')
+        plt.gca().set_aspect("equal", adjustable="box")
         plt.show()
 
 
@@ -802,8 +879,15 @@ class Panel:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex, is_leading_edge,
-                 is_trailing_edge):
+    def __init__(
+        self,
+        front_right_vertex,
+        front_left_vertex,
+        back_left_vertex,
+        back_right_vertex,
+        is_leading_edge,
+        is_trailing_edge,
+    ):
         """ This is the initialization method.
 
         :param front_right_vertex: 1D ndarray with three elements
@@ -843,8 +927,9 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = asmvp.geometry.centroid_of_quadrilateral(front_right_vertex, front_left_vertex, back_left_vertex,
-                                                               back_right_vertex)
+        self.center = asmvp.geometry.centroid_of_quadrilateral(
+            front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
+        )
 
         # Calculate the front and back leg lengths, then use them to find and populate the average panel width.
         front_leg_length = np.linalg.norm(front_left_vertex - front_right_vertex)
@@ -853,10 +938,12 @@ class Panel:
 
         # Initialize two variables that are along the panel's left and right legs at the quarter chord. These points
         # are used for all types of solvers, so we will define them here.
-        self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (self.back_right_vertex
-                                                                           - self.front_right_vertex)
-        self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (self.back_left_vertex
-                                                                         - self.front_left_vertex)
+        self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (
+            self.back_right_vertex - self.front_right_vertex
+        )
+        self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (
+            self.back_left_vertex - self.front_left_vertex
+        )
 
         # Initialize variables to hold attributes of the panel that will be defined after the solver finds a solution.
         self.near_field_force_geometry_axes = None
@@ -872,17 +959,23 @@ class Panel:
         """
 
         # Find the location of points three quarters of the way down the left and right legs of the panel.
-        right_three_quarter_chord_mark = self.front_right_vertex + 0.75 * (self.back_right_vertex
-                                                                           - self.front_right_vertex)
-        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * (self.back_left_vertex
-                                                                         - self.front_left_vertex)
+        right_three_quarter_chord_mark = self.front_right_vertex + 0.75 * (
+            self.back_right_vertex - self.front_right_vertex
+        )
+        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * (
+            self.back_left_vertex - self.front_left_vertex
+        )
 
         # Find the vector between the points three quarters of the way down the left and right legs of the panel.
-        three_quarter_chord_vector = left_three_quarter_chord_mark - right_three_quarter_chord_mark
+        three_quarter_chord_vector = (
+            left_three_quarter_chord_mark - right_three_quarter_chord_mark
+        )
 
         # Find the collocation point, which is halfway between the points three quarters of the way down the left and
         # right legs of the panel. Then populate the class attribute.
-        self.collocation_point = right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
+        self.collocation_point = (
+            right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
+        )
 
     def calculate_area_and_normal(self):
         """This method calculates the panel's area and the panel's normal unit vector.
@@ -898,7 +991,7 @@ class Panel:
         second_diagonal = self.front_left_vertex - self.back_right_vertex
         cross_product = np.cross(first_diagonal, second_diagonal)
         cross_product_magnitude = np.linalg.norm(cross_product)
-        self.normal_direction = (cross_product / cross_product_magnitude)
+        self.normal_direction = cross_product / cross_product_magnitude
         self.area = cross_product_magnitude / 2
 
     def calculate_normalized_induced_velocity(self, point):
@@ -916,9 +1009,13 @@ class Panel:
         normalized_induced_velocity = np.zeros(3)
 
         if self.ring_vortex is not None:
-            normalized_induced_velocity += self.ring_vortex.calculate_normalized_induced_velocity(point=point)
+            normalized_induced_velocity += self.ring_vortex.calculate_normalized_induced_velocity(
+                point=point
+            )
         if self.horseshoe_vortex is not None:
-            normalized_induced_velocity += self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
+            normalized_induced_velocity += self.horseshoe_vortex.calculate_normalized_induced_velocity(
+                point=point
+            )
 
         return normalized_induced_velocity
 
@@ -939,7 +1036,9 @@ class Panel:
         if self.ring_vortex is not None:
             induced_velocity += self.ring_vortex.calculate_induced_velocity(point=point)
         if self.horseshoe_vortex is not None:
-            induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(point=point)
+            induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(
+                point=point
+            )
 
         return induced_velocity
 
@@ -949,7 +1048,10 @@ class Panel:
         :return: None
         """
 
-        self.delta_pressure = np.dot(self.near_field_force_geometry_axes, self.normal_direction) / self.area
+        self.delta_pressure = (
+            np.dot(self.near_field_force_geometry_axes, self.normal_direction)
+            / self.area
+        )
 
 
 def cosspace(minimum=0.0, maximum=1.0, n_points=50):
@@ -1052,9 +1154,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     sin_theta = np.sin(angle)
     cos_theta = np.cos(angle)
     cpm = np.array(
-        [[0, -axis[2], axis[1]],
-         [axis[2], 0, -axis[0]],
-         [-axis[1], axis[0], 0]]
+        [[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]]
     )
 
     # Find the cross product matrix of the rotation axis vector.
@@ -1065,17 +1165,24 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
 
     # Check if the angle is a scalar.
     if len(angle.shape) == 0:
-        rotation_matrix = cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
+        rotation_matrix = (
+            cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
+        )
     else:
         # Otherwise, the angle is assumed to be a 1D ndarray.
-        rotation_matrix = cos_theta * np.expand_dims(np.eye(3), 2) + sin_theta * np.expand_dims(cpm, 2) + (
-                1 - cos_theta) * np.expand_dims(outer_axis, 2)
+        rotation_matrix = (
+            cos_theta * np.expand_dims(np.eye(3), 2)
+            + sin_theta * np.expand_dims(cpm, 2)
+            + (1 - cos_theta) * np.expand_dims(outer_axis, 2)
+        )
 
     # Return the rotation matrix.
     return rotation_matrix
 
 
-def centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex):
+def centroid_of_quadrilateral(
+    front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
+):
     """This function is used to find the centroid of a quadrilateral.
 
     :param front_left_vertex: 1D ndarray
@@ -1089,13 +1196,34 @@ def centroid_of_quadrilateral(front_left_vertex, front_right_vertex, back_left_v
     :return: 1D ndarray
         This is an array containing the x, y, and z components of the centroid of the quadrilateral.
     """
-    x_values = np.hstack((front_left_vertex[0], front_right_vertex[0], back_left_vertex[0], back_right_vertex[0]))
+    x_values = np.hstack(
+        (
+            front_left_vertex[0],
+            front_right_vertex[0],
+            back_left_vertex[0],
+            back_right_vertex[0],
+        )
+    )
     x_average = np.average(x_values)
 
-    y_values = np.hstack((front_left_vertex[1], front_right_vertex[1], back_left_vertex[1], back_right_vertex[1]))
+    y_values = np.hstack(
+        (
+            front_left_vertex[1],
+            front_right_vertex[1],
+            back_left_vertex[1],
+            back_right_vertex[1],
+        )
+    )
     y_average = np.average(y_values)
 
-    z_values = np.hstack((front_left_vertex[2], front_right_vertex[2], back_left_vertex[2], back_right_vertex[2]))
+    z_values = np.hstack(
+        (
+            front_left_vertex[2],
+            front_right_vertex[2],
+            back_left_vertex[2],
+            back_right_vertex[2],
+        )
+    )
     z_average = np.average(z_values)
 
     centroid = np.array([x_average, y_average, z_average])

@@ -4,3 +4,5 @@ pyvista
 scipy
 coveralls
 coveralls[yaml]
+black
+pre-commit

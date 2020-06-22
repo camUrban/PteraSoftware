@@ -52,6 +52,83 @@ def make_steady_validation_airplane():
 
 
 # ToDo: Properly document this method.
+def make_multiple_wing_steady_validation_airplane():
+    """
+
+    :return:
+    """
+
+    return asmvp.geometry.Airplane(
+        # Name the current_airplane.
+        name="Multiple Wing Steady Solver Testing Airplane",
+        # Define a list of the current_airplane's wings.
+        wings=[
+            # Initialize the wing object.
+            asmvp.geometry.Wing(
+                # Name the wing.
+                name="Main Wing",
+                # This will be a symmetrical wing.
+                symmetric=True,
+                # Define a list of the wing's cross sections.
+                wing_cross_sections=[
+                    # Initialize the root cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        # Define the cross section's twist chord.
+                        chord=1.0,
+                        # Initialize this cross section's airfoil object.
+                        airfoil=asmvp.geometry.Airfoil(name="naca23012"),
+                    ),
+                    # Initialize the tip cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        # Define the cross section's leading edge placement.
+                        x_le=1.0,
+                        y_le=5.0,
+                        z_le=0.0,
+                        # Define the cross section's twist and chord.
+                        twist=5.0,
+                        chord=0.75,
+                        # Initialize this cross section's airfoil object.
+                        airfoil=asmvp.geometry.Airfoil(name="naca23012"),
+                    ),
+                ],
+            ),
+            # Initialize the wing object for the airplane's horizontal stabilizer.
+            asmvp.geometry.Wing(
+                # Name the wing.
+                name="Horizontal Stabilizer",
+                # This will be a symmetrical wing.
+                symmetric=True,
+                # Set this wing to be 5 meters back from the main wing.
+                x_le=5.0,
+                # Define a list of the wing's cross sections.
+                wing_cross_sections=[
+                    # Initialize the root cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        # Define the cross section's twist chord.
+                        chord=1.0,
+                        # Initialize this cross section's airfoil object.
+                        airfoil=asmvp.geometry.Airfoil(name="naca0010"),
+                        twist=-5.0,
+                    ),
+                    # Initialize the tip cross section object.
+                    asmvp.geometry.WingCrossSection(
+                        # Define the cross section's leading edge placement.
+                        x_le=1.0,
+                        y_le=1.0,
+                        z_le=0.0,
+                        # Define the cross section's twist and chord.
+                        twist=-5.0,
+                        chord=0.75,
+                        # Initialize this cross section's airfoil object.
+                        airfoil=asmvp.geometry.Airfoil(name="naca0010"),
+                    ),
+                ],
+            ),
+        ],
+    )
+
+
+# ToDo: Properly document this method.
 def make_asymmetric_unsteady_validation_airplane():
     """
 

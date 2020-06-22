@@ -79,6 +79,15 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.05
 
+        import aviansoftwareminimumviableproduct as asmvp
+
+        asmvp.output.draw(
+            airplane=self.steady_ring_vortex_lattice_method_validation_solver.airplane,
+            show_delta_pressures=True,
+            show_wake_vortices=False,
+            show_streamlines=True,
+        )
+
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(CDi_error < allowable_error)
         self.assertTrue(CL_error < allowable_error)

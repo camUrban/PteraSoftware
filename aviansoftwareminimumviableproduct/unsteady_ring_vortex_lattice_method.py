@@ -242,7 +242,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
-            for collocation_panel_index, collocation_panel in np.ndenumerate(
+            for collocation_panel_index, collocation_panel in enumerate(
                 collocation_panels
             ):
 
@@ -254,9 +254,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
-                    for vortex_panel_index, vortex_panel in np.ndenumerate(
-                        vortex_panels
-                    ):
+                    for vortex_panel_index, vortex_panel in enumerate(vortex_panels):
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
                         normalized_induced_velocity_at_collocation_point = vortex_panel.calculate_normalized_induced_velocity(
@@ -434,7 +432,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
-            for panel_index, panel in np.ndenumerate(wing_panels):
+            for panel_index, panel in enumerate(wing_panels):
 
                 # Update each panel's ring vortex strength.
                 panel.ring_vortex.update_strength(

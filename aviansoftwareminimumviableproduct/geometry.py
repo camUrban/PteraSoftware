@@ -568,20 +568,18 @@ class Airfoil:
                     # Populate the coordinates attribute and return.
                     self.coordinates = coordinates
                     return
-                # If the airfoil is a NACA airfoil but not a NACA 4-series, throw an error.
-                raise Exception(
-                    "Unfortunately, only 4-series NACA airfoils can be generated at this time."
-                )
 
         # Try to read from the airfoil directory.
         try:
             import importlib.resources
 
-            # Import the airfoil directory.
-            from . import airfoils
+            # Import the airfoils package as "airfoils".
+            airfoils = importlib.import_module(
+                name=".airfoils", package="aviansoftwareminimumviableproduct"
+            )
 
             # Read the text from the airfoil file.
-            raw_text = importlib.resources.read_text(str(airfoils), name + ".dat")
+            raw_text = importlib.resources.read_text(airfoils, name + ".dat")
 
             # Trim the text at the return characters.
             trimmed_text = raw_text[raw_text.find("\n") :]

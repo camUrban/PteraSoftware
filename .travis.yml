@@ -10,5 +10,5 @@ before_install:
 install:
   - pip install -r REQUIREMENTS.txt
 script:
-  - coverage run --source=aviansoftwareminimumviableproduct -m unittest discover -s tests/unit
+  - coverage run --source=aviansoftwareminimumviableproduct -m unittest discover -s tests
   - codecov

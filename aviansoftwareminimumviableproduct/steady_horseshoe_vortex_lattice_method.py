@@ -230,67 +230,29 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
 
+        # Initialize two variables to hold the global positions of the current collocation and vortex panel.
+        global_collocation_panel_index = 0
+        global_vortex_panel_index = 0
+
         # Iterate through the current_airplane's wings. This wing contains the panel with the collocation point where
         # the vortex influence is to be calculated.
-        for collocation_panel_wing_index, collocation_panel_wing in enumerate(
-            self.airplane.wings
-        ):
+        for collocation_panel_wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
-            for collocation_panel_index, collocation_panel in enumerate(
-                collocation_panels
-            ):
+            for collocation_panel in collocation_panels:
 
                 # Iterate through the current_airplane's wings. This wing contains the panel with the vortex whose
                 # influence on the collocation point is to be calculated.
-                for vortex_panel_wing_index, vortex_panel_wing in enumerate(
-                    self.airplane.wings
-                ):
+                for vortex_panel_wing in self.airplane.wings:
 
                     # Convert the 2D ndarray of this wing's panels into a 1D list.
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
-                    for vortex_panel_index, vortex_panel in enumerate(vortex_panels):
-
-                        # Find the global positions of the collocation and vortex panels, given the entire airplane
-                        # object may have multiple wings, but only has one wing wing influence coefficient matrix.
-
-                        # First, initialize the two variables to hold the number of collocation and vortex panels in
-                        # wings before this wing in the airplane object's wing list.
-                        num_collocation_panels_before = 0
-                        num_vortex_panels_before = 0
-
-                        # Then, iterate through the airplane's wings.
-                        for previous_wing_index, previous_wing in enumerate(
-                            self.airplane.wings
-                        ):
-
-                            # Check if this wing is before the collocation panel's wing.
-                            if previous_wing_index < collocation_panel_wing_index:
-
-                                # If so, increment the collocation panels in wings before the current wing.
-                                num_collocation_panels_before += (
-                                    previous_wing.num_panels
-                                )
-
-                            # Check if this wing is before the vortex panel's wing.
-                            if previous_wing_index < vortex_panel_wing_index:
-
-                                # If so, increment the vortex panels in wings before the current wing.
-                                num_vortex_panels_before += previous_wing.num_panels
-
-                        # The global panel indices are the panel's current index in its wing's unraveled matrix of
-                        # panels summed with the number of panels in wings before this wing.
-                        global_collocation_panel_index = (
-                            num_collocation_panels_before + collocation_panel_index
-                        )
-                        global_vortex_panel_index = (
-                            num_vortex_panels_before + vortex_panel_index
-                        )
+                    for vortex_panel in vortex_panels:
 
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
@@ -315,53 +277,42 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                             global_collocation_panel_index, global_vortex_panel_index
                         ] = normal_normalized_induced_velocity_at_collocation_point
 
+                        # At the next loop, we will analyze the effect of the next vortex panel on this collocation
+                        # panel, so increment the global vortex panel's index.
+                        global_vortex_panel_index += 1
+
+                # At the next loop, we will analyze the effects of all the vortex panels on the next collocation panel,
+                # so increment the collocation panel's global index. As we are starting over with the vortex panels, set
+                # the vortex panel's global index to zero.
+                global_collocation_panel_index += 1
+                global_vortex_panel_index = 0
+
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influence coefficients associated with this problem.
 
         :return: None
         """
 
+        # Initialize a variable to hold the global position of the current collocation panel.
+        global_collocation_panel_index = 0
+
         # Iterate through the current_airplane's wings.
-        for collocation_panel_wing_index, collocation_panel_wing in enumerate(
-            self.airplane.wings
-        ):
+        for collocation_panel_wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
-            for collocation_panel_index, collocation_panel in enumerate(
-                collocation_panels
-            ):
-
-                # Find the global position of the collocation panel, given the entire airplane object may have multiple
-                # wings, but only has one freestream wing influence coefficient vector.
-
-                # First, initialize a variable to hold the number of collocation panels in the wings before this wing in
-                # the airplane object's wing list.
-                num_collocation_panels_before = 0
-
-                # Then, iterate through the airplane's wings.
-                for previous_wing_index, previous_wing in enumerate(
-                    self.airplane.wings
-                ):
-
-                    # Check if this wing is before the collocation panel's wing.
-                    if previous_wing_index < collocation_panel_wing_index:
-
-                        # If so, increment the collocation panels in wings before the current wing.
-                        num_collocation_panels_before += previous_wing.num_panels
-
-                # The global panel index is the panel's current index in its wing's unraveled matrix of panels
-                # summed with the number of panels in wings before this wing.
-                global_collocation_panel_index = (
-                    num_collocation_panels_before + collocation_panel_index
-                )
+            for collocation_panel in collocation_panels:
 
                 # Update solver's list of freestream influences.
                 self.freestream_wing_influences[
                     global_collocation_panel_index
                 ] = np.dot(self.freestream_velocity, collocation_panel.normal_direction)
+
+                # At the next loop, we will analyze the freestream influences on the next collocation panel, so
+                # increment the panel's global index.
+                global_collocation_panel_index += 1
 
     def calculate_vortex_strengths(self):
         """Solve for each panel's vortex strength.
@@ -374,41 +325,26 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             self.wing_wing_influences, -self.freestream_wing_influences
         )
 
+        # Initialize a variable to hold the global position of the current panel.
+        global_panel_index = 0
+
         # Iterate through the current_airplane's wings.
-        for wing_index, wing in enumerate(self.airplane.wings):
+        for wing in self.airplane.wings:
 
             # Convert the 2D ndarray of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
-            for panel_index, panel in enumerate(wing_panels):
-
-                # Find the global position of the panel, given the entire airplane object may have multiple wings, but
-                # only has one vortex strength vector.
-
-                # First, initialize a variable to hold the number of collocation panels in the wings before this wing in
-                # the airplane object's wing list.
-                num_panels_before = 0
-
-                # Then, iterate through the airplane's wings.
-                for previous_wing_index, previous_wing in enumerate(
-                    self.airplane.wings
-                ):
-
-                    # Check if this wing is before the panel's wing.
-                    if previous_wing_index < wing_index:
-
-                        # If so, increment the panels in wings before the current wing.
-                        num_panels_before += previous_wing.num_panels
-
-                # The global panel index is the panel's current index in its wing's unraveled matrix of panels summed
-                # with the number of panels in wings before this wing.
-                global_panel_index = num_panels_before + panel_index
+            for panel in wing_panels:
 
                 # Update each panel's vortex strength.
                 panel.horseshoe_vortex.update_strength(
                     self.vortex_strengths[global_panel_index]
                 )
+
+                # At the next loop, we will update the vortex strength of the next panel, so increment the panel's
+                # global index.
+                global_panel_index += 1
 
     def calculate_solution_velocity(self, point):
         """Find the velocity at a given point due to the freestream and the vortices.

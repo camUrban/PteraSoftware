@@ -2,7 +2,6 @@ matplotlib
 numpy
 pyvista
 scipy
-coveralls
-coveralls[yaml]
 black
 pre-commit
+codecov

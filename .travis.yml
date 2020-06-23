@@ -11,5 +11,4 @@ install:
   - pip install -r REQUIREMENTS.txt
 script:
   - coverage run --source=asmvp -m unittest discover -s tests
-after_success:
-  - coveralls --service=travis-pro
+

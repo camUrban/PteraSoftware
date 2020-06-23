@@ -43,10 +43,11 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
     color_map = plt.cm.get_cmap("plasma")
 
     # Initialize empty ndarrays to hold the things to plot.
-    panel_vertices = np.empty((0, 3))
-    panel_faces = np.empty(0)
-    # scalars = np.empty(0)
+    panel_vertices = np.empty((0, 3), dtype=int)
+    panel_faces = np.empty(0, dtype=int)
+    scalars = np.empty(0, dtype=int)
 
+    # Initialize a variable to keep track of how many panels have been added thus far.
     current_panel_num = 0
 
     # Increment through the current_airplane's wings.
@@ -54,10 +55,6 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
         # Increment through the wing's chordwise and spanwise positions.
         for chordwise_position in range(wing.num_chordwise_panels):
             for spanwise_position in range(wing.num_spanwise_panels):
-                # Calculate the panel number, starting from zero.
-                panel_num = (
-                    chordwise_position * wing.num_spanwise_panels
-                ) + spanwise_position
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
@@ -87,78 +84,79 @@ def draw(airplane, show_delta_pressures, show_streamlines, show_wake_vortices):
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
+                # Update the number of previous panels.
                 current_panel_num += 1
 
-                # if show_delta_pressures:
-                #     scalar_to_add = np.maximum(
-                #         np.minimum(panel.delta_pressure, 1000), -1000
-                #     )
-                #     scalars = np.hstack((scalars, scalar_to_add))
+                if show_delta_pressures:
+                    scalar_to_add = np.maximum(
+                        np.minimum(panel.delta_pressure, 1000), -1000
+                    )
+                    scalars = np.hstack((scalars, scalar_to_add))
 
-        # if show_wake_vortices:
-        #     for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-        #         plotter.add_mesh(
-        #             pv.Line(
-        #                 wake_ring_vortex.front_right_vertex,
-        #                 wake_ring_vortex.front_left_vertex,
-        #             ),
-        #             show_edges=True,
-        #             cmap=color_map,
-        #             color="white",
-        #         )
-        #         plotter.add_mesh(
-        #             pv.Line(
-        #                 wake_ring_vortex.front_left_vertex,
-        #                 wake_ring_vortex.back_left_vertex,
-        #             ),
-        #             show_edges=True,
-        #             cmap=color_map,
-        #             color="white",
-        #         )
-        #         plotter.add_mesh(
-        #             pv.Line(
-        #                 wake_ring_vortex.back_left_vertex,
-        #                 wake_ring_vortex.back_right_vertex,
-        #             ),
-        #             show_edges=True,
-        #             cmap=color_map,
-        #             color="white",
-        #         )
-        #         plotter.add_mesh(
-        #             pv.Line(
-        #                 wake_ring_vortex.back_right_vertex,
-        #                 wake_ring_vortex.front_right_vertex,
-        #             ),
-        #             show_edges=True,
-        #             cmap=color_map,
-        #             color="white",
-        #         )
+        if show_wake_vortices:
+            for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_right_vertex,
+                        wake_ring_vortex.front_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.front_left_vertex,
+                        wake_ring_vortex.back_left_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_left_vertex,
+                        wake_ring_vortex.back_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
+                plotter.add_mesh(
+                    pv.Line(
+                        wake_ring_vortex.back_right_vertex,
+                        wake_ring_vortex.front_right_vertex,
+                    ),
+                    show_edges=True,
+                    cmap=color_map,
+                    color="white",
+                )
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(np.array(panel_vertices), np.array(panel_faces))
 
-    # if show_delta_pressures:
-    #     plotter.add_mesh(
-    #         panel_surface,
-    #         show_edges=True,
-    #         cmap=color_map,
-    #         scalars=scalars,
-    #         color="white",
-    #         smooth_shading=True,
-    #     )
-    # else:
-    plotter.add_mesh(
-        panel_surface,
-        show_edges=True,
-        cmap=color_map,
-        color="white",
-        smooth_shading=True,
-    )
+    if show_delta_pressures:
+        plotter.add_mesh(
+            panel_surface,
+            show_edges=True,
+            cmap=color_map,
+            scalars=scalars,
+            color="white",
+            smooth_shading=True,
+        )
+    else:
+        plotter.add_mesh(
+            panel_surface,
+            show_edges=True,
+            cmap=color_map,
+            color="white",
+            smooth_shading=True,
+        )
 
-    # if show_streamlines:
-    #     for wing in airplane.wings:
-    #         streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
-    #         plotter.add_points(pv.PolyData(streamline_points))
+    if show_streamlines:
+        for wing in airplane.wings:
+            streamline_points = np.reshape(wing.streamline_points, (-1, 1, 3))
+            plotter.add_points(pv.PolyData(streamline_points))
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="black")
@@ -179,15 +177,14 @@ def make_flapping_gif(movement, show_delta_pressures):
     panel_faces = np.empty(0)
     scalars = np.empty(0)
 
+    # Initialize a variable to keep track of how many panels have been added thus far.
+    current_panel_num = 0
+
     # Increment through the current_airplane's wings.
     for wing in airplanes[0].wings:
         # Increment through the wing's chordwise and spanwise positions.
         for chordwise_position in range(wing.num_chordwise_panels):
             for spanwise_position in range(wing.num_spanwise_panels):
-                # Calculate the panel number, starting from zero.
-                panel_num = (
-                    chordwise_position * wing.num_spanwise_panels
-                ) + spanwise_position
 
                 # Pull the panel object out of the wing's list of panels.
                 panel = wing.panels[chordwise_position, spanwise_position]
@@ -205,10 +202,10 @@ def make_flapping_gif(movement, show_delta_pressures):
                 panel_face_to_add = np.array(
                     [
                         4,
-                        (panel_num * 4),
-                        (panel_num * 4) + 1,
-                        (panel_num * 4) + 2,
-                        (panel_num * 4) + 3,
+                        (current_panel_num * 4),
+                        (current_panel_num * 4) + 1,
+                        (current_panel_num * 4) + 2,
+                        (current_panel_num * 4) + 3,
                     ]
                 )
 
@@ -222,6 +219,9 @@ def make_flapping_gif(movement, show_delta_pressures):
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
                 scalars = np.hstack((scalars, scalar_to_add))
+
+                # Update the number of previous panels.
+                current_panel_num += 1
 
         for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
             plotter.add_mesh(
@@ -297,15 +297,14 @@ def make_flapping_gif(movement, show_delta_pressures):
 
         plotter.clear()
 
+        # Initialize a variable to keep track of how many panels have been added thus far.
+        current_panel_num = 0
+
         # Increment through the current_airplane's wings.
         for wing in airplane.wings:
             # Increment through the wing's chordwise and spanwise positions.
             for chordwise_position in range(wing.num_chordwise_panels):
                 for spanwise_position in range(wing.num_spanwise_panels):
-                    # Calculate the panel number, starting from zero.
-                    panel_num = (
-                        chordwise_position * wing.num_spanwise_panels
-                    ) + spanwise_position
 
                     # Pull the panel object out of the wing's list of panels.
                     panel = wing.panels[chordwise_position, spanwise_position]
@@ -323,10 +322,10 @@ def make_flapping_gif(movement, show_delta_pressures):
                     panel_face_to_add = np.array(
                         [
                             4,
-                            (panel_num * 4),
-                            (panel_num * 4) + 1,
-                            (panel_num * 4) + 2,
-                            (panel_num * 4) + 3,
+                            (current_panel_num * 4),
+                            (current_panel_num * 4) + 1,
+                            (current_panel_num * 4) + 2,
+                            (current_panel_num * 4) + 3,
                         ]
                     )
                     if show_delta_pressures:
@@ -339,6 +338,9 @@ def make_flapping_gif(movement, show_delta_pressures):
                     panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                     panel_faces = np.hstack((panel_faces, panel_face_to_add))
                     scalars = np.hstack((scalars, scalar_to_add))
+
+                    # Update the number of previous panels.
+                    current_panel_num += 1
 
             for wake_ring_vortex in np.flip(np.ravel(wing.wake_ring_vortices)):
                 plotter.add_mesh(

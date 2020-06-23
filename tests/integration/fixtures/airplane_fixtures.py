@@ -70,6 +70,7 @@ def make_multiple_wing_steady_validation_airplane():
                 # This will be a symmetrical wing.
                 symmetric=True,
                 # Define a list of the wing's cross sections.
+                chordwise_spacing="uniform",
                 wing_cross_sections=[
                     # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
@@ -77,6 +78,7 @@ def make_multiple_wing_steady_validation_airplane():
                         chord=1.0,
                         # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca23012"),
+                        spanwise_spacing="uniform",
                     ),
                     # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
@@ -84,11 +86,11 @@ def make_multiple_wing_steady_validation_airplane():
                         x_le=1.0,
                         y_le=5.0,
                         z_le=0.0,
-                        # Define the cross section's twist and chord.
-                        twist=5.0,
+                        # Define the cross section's chord.
                         chord=0.75,
                         # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca23012"),
+                        spanwise_spacing="uniform",
                     ),
                 ],
             ),

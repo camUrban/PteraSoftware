@@ -227,12 +227,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             strength=None,
                         )
 
-    # ToDo: Correct this method to work with multiple wings.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influences associated with this problem's geometry.
 
         :return: None
         """
+
+        # Initialize two variables to hold the global positions of the current collocation and vortex panel.
+        global_collocation_panel_index = 0
+        global_vortex_panel_index = 0
 
         # Iterate through the current_airplane's wings. This wing contains the panel with the collocation point where
         # the vortex influence is to be calculated.
@@ -242,9 +245,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
-            for collocation_panel_index, collocation_panel in enumerate(
-                collocation_panels
-            ):
+            for collocation_panel in collocation_panels:
 
                 # Iterate through the current_airplane's wings. This wing contains the panel with the vortex whose
                 # influence on the collocation point is to be calculated.
@@ -254,7 +255,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
-                    for vortex_panel_index, vortex_panel in enumerate(vortex_panels):
+                    for vortex_panel in vortex_panels:
                         # Calculate the velocity induced at this collocation point by this vortex if the vortex's
                         # strength was 1.
                         normalized_induced_velocity_at_collocation_point = vortex_panel.calculate_normalized_induced_velocity(
@@ -273,12 +274,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             collocation_panel_normal_direction,
                         )
 
-                        # Add this value to the solver's aerodynamic influence coefficient matrix.
+                        # Add this value to the solver's aerodynamic influence coefficient matrix at the location
+                        # specified by the global collocation and vortex panel indices.
                         self.current_wing_wing_influences[
-                            collocation_panel_index, vortex_panel_index
+                            global_collocation_panel_index, global_vortex_panel_index
                         ] = normal_normalized_induced_velocity_at_collocation_point
 
-    # ToDo: Correct this method to work with multiple wings.
+                        # At the next loop, we will analyze the effect of the next vortex panel on this collocation
+                        # panel, so increment the global vortex panel's index.
+                        global_vortex_panel_index += 1
+
+                # At the next loop, we will analyze the effects of all the vortex panels on the next collocation panel,
+                # so increment the collocation panel's global index. As we are starting over with the vortex panels, set
+                # the vortex panel's global index to zero.
+                global_collocation_panel_index += 1
+                global_vortex_panel_index = 0
+
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influences associated with the problem at this time step.
 
@@ -287,6 +298,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
+
+        # Initialize a variable to hold the global position of the current collocation panel.
+        global_collocation_panel_index = 0
 
         # Iterate through the current_airplane's wings.
         for collocation_panel_wing_position in range(len(self.current_airplane.wings)):
@@ -303,15 +317,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 for collocation_panel_spanwise_position in range(
                     collocation_panel_wing.num_spanwise_panels
                 ):
-                    # Get the collocation panel's position in an equivalent 1D vector. We do this because the freestream
-                    # influences are stored as a 1D vector, where each location stores the influence on a particular
-                    # panel.
-                    collocation_panel_position = (
-                        collocation_panel_chordwise_position
-                        * collocation_panel_wing.num_spanwise_panels
-                        + collocation_panel_spanwise_position
-                    )
-
                     # Get the panel at this location, and its normal direction.
                     collocation_panel = collocation_panel_wing.panels[
                         collocation_panel_chordwise_position,
@@ -330,9 +335,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     )
 
                     # Calculate the freestream influence, which is found by dotting the sum of the freestream and
-                    # flapping velocity on the panel with its normal unit vector.
+                    # flapping velocity on the panel with its normal unit vector. Update the influence at the current
+                    # collocation panel, as located by global index.
                     self.current_freestream_wing_influences[
-                        collocation_panel_position
+                        global_collocation_panel_index
                     ] = np.dot(
                         (
                             self.current_freestream_velocity_geometry_axes
@@ -341,76 +347,63 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         collocation_panel_normal_direction,
                     )
 
-    # ToDo: Correct this method to work with multiple wings.
+                    # At the next loop, we will analyze the freestream influences on the next collocation panel, so
+                    # increment the panel's global index.
+                    global_collocation_panel_index += 1
+
     def calculate_wake_wing_influences(self):
         """This method finds the vector of the wake-wing influences associated with the problem at this time step.
 
         :return: None
         """
 
+        # Initialize a variable to hold the global position of the current collocation panel.
+        global_collocation_panel_index = 0
+
         # Iterate through the wings.
-        for collocation_panel_wing_position in range(len(self.current_airplane.wings)):
+        for collocation_panel_wing in self.current_airplane.wings:
 
-            # Get the wing object with the collocation panels to be analyzed.
-            collocation_panel_wing = self.current_airplane.wings[
-                collocation_panel_wing_position
-            ]
+            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            collocation_panels = np.ravel(collocation_panel_wing.panels)
 
-            # Iterate through the chordwise and spanwise positions of this wings collocation panels.
-            for collocation_panel_chordwise_position in range(
-                collocation_panel_wing.num_chordwise_panels
-            ):
-                for collocation_panel_spanwise_position in range(
-                    collocation_panel_wing.num_spanwise_panels
-                ):
+            # Iterate through the list of panels with the collocation points.
+            for collocation_panel in collocation_panels:
 
-                    # Get the collocation panel's position in an equivalent 1D vector. We do this because the freestream
-                    # influences are stored as a 1D vector, where each location stores the influence on a particular
-                    # panel.
-                    collocation_panel_position = (
-                        collocation_panel_chordwise_position
-                        * collocation_panel_wing.num_spanwise_panels
-                        + collocation_panel_spanwise_position
+                # Get this panel's collocation point and normal direction.
+                collocation_point = collocation_panel.collocation_point
+                collocation_panel_normal_direction = collocation_panel.normal_direction
+
+                # Initialize a 1D vector to hold the influence of the wake on this collocation point.
+                wake_velocity = np.zeros(3)
+
+                # Iterate through the wings with the wakes to be analyzed.
+                for wake_ring_vortex_wing in self.current_airplane.wings:
+
+                    # Convert the matrix of wake ring vortices into a 1D vector.
+                    wake_ring_vortices = np.ravel(
+                        wake_ring_vortex_wing.wake_ring_vortices
                     )
 
-                    # Get the collocation panel at this position.
-                    collocation_panel = collocation_panel_wing.panels[
-                        collocation_panel_chordwise_position,
-                        collocation_panel_spanwise_position,
-                    ]
+                    # Iterate through this wing's wake ring vortices.
+                    for wake_ring_vortex in wake_ring_vortices:
 
-                    # Get this panel's collocation point and normal direction.
-                    collocation_point = collocation_panel.collocation_point
-                    collocation_panel_normal_direction = (
-                        collocation_panel.normal_direction
-                    )
+                        # If the wake ring vortex exists, add the velocity it induces to the total wake velocity at
+                        # this collocation point.
+                        if wake_ring_vortex is not None:
+                            wake_velocity += wake_ring_vortex.calculate_induced_velocity(
+                                collocation_point
+                            )
 
-                    # Initialize a 1D vector to hold the influence of the wake on this collocation point.
-                    wake_velocity = np.zeros(3)
+                # Calculate the wake influence on this collocation point and add it to the 1D vector of all the wake
+                # influences on each panel's collocation point. Update the influence at the current collocation
+                # panel, as located by global index.
+                self.current_wake_wing_influences[
+                    global_collocation_panel_index
+                ] = np.dot(wake_velocity, collocation_panel_normal_direction)
 
-                    # Iterate through the wings with the wakes to be analyzed.
-                    for wake_ring_vortex_wing in self.current_airplane.wings:
-
-                        # Convert the matrix of wake ring vortices into a 1D vector.
-                        wake_ring_vortices = np.ravel(
-                            wake_ring_vortex_wing.wake_ring_vortices
-                        )
-
-                        # Iterate through this wing's wake ring vortices.
-                        for wake_ring_vortex in wake_ring_vortices:
-
-                            # If the wake ring vortex exists, add the velocity it induces to the total wake velocity at
-                            # this collocation point.
-                            if wake_ring_vortex is not None:
-                                wake_velocity += wake_ring_vortex.calculate_induced_velocity(
-                                    collocation_point
-                                )
-
-                    # Calculate the wake influence on this collocation point and add it to the 1D vector of all the wake
-                    # influences on each panel's collocation point.
-                    self.current_wake_wing_influences[
-                        collocation_panel_position
-                    ] = np.dot(wake_velocity, collocation_panel_normal_direction)
+                # At the next loop, we will analyze the wake influences on the next collocation panel, so
+                # increment the panel's global index.
+                global_collocation_panel_index += 1
 
     def calculate_vortex_strengths(self):
         """This method solves for each panel's vortex strength.
@@ -425,6 +418,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             - self.current_freestream_wing_influences,
         )
 
+        # Initialize a variable to hold the global position of the current panel.
+        global_panel_index = 0
+
         # Iterate through the current_airplane's wings.
         for wing in self.current_airplane.wings:
 
@@ -432,18 +428,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
-            for panel_index, panel in enumerate(wing_panels):
-
+            for panel in wing_panels:
                 # Update each panel's ring vortex strength.
                 panel.ring_vortex.update_strength(
-                    self.current_vortex_strengths[panel_index]
+                    self.current_vortex_strengths[global_panel_index]
                 )
 
-                # If the panel has a horseshoe vortex, update its strength.
-                if panel.horseshoe_vortex is not None:
-                    panel.horseshoe_vortex.update_strength(
-                        self.current_vortex_strengths[panel_index]
-                    )
+                # At the next loop, we will update the vortex strength of the next panel, so increment the panel's
+                # global index.
+                global_panel_index += 1
 
     def calculate_solution_velocity(self, point):
         """This method finds the velocity at a given point due to the freestream and the vortices.
@@ -1024,7 +1017,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         ] = next_panel.ring_vortex.back_left_vertex
 
                         if spanwise_position == (this_wing.num_spanwise_panels - 1):
-
                             # If the panel object is at the right edge of the wing, add its back right ring vortex
                             # vertex to the matrix of new wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
@@ -1116,7 +1108,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             ]
 
                             if chordwise_vertex_position > 0:
-
                                 # If this is isn't the front of the wake, update the position of the ring vortex at this
                                 # location.
                                 next_wing.wake_ring_vortices[
@@ -1129,7 +1120,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
 
                             if chordwise_vertex_position == 0:
-
                                 # If this is the front of the wake, get the vortex strength from the wing panel's ring
                                 # vortex direction in front of it.
                                 this_strength_copy = this_wing_copy.panels[

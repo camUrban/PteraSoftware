@@ -452,7 +452,6 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly document this method.
     def __init__(
         self,
         base_wing_cross_section,
@@ -474,46 +473,73 @@ class WingCrossSectionMovement:
     ):
         """ This is the initialization method.
 
-        :param base_wing_cross_section:
-        :param x_le_amplitude:
-        :param x_le_period:
-        :param x_le_spacing:
-        :param y_le_amplitude:
-        :param y_le_period:
-        :param y_le_spacing:
-        :param z_le_amplitude:
-        :param z_le_period:
-        :param z_le_spacing:
-        :param twist_amplitude:
-        :param twist_period:
-        :param twist_spacing:
-        :param control_surface_deflection_amplitude:
-        :param control_surface_deflection_period:
-        :param control_surface_deflection_spacing:
+        :param base_wing_cross_section: WingCrossSection
+            This is the first wing cross section object, from which the others will be created.
+        :param x_le_amplitude: float, optional
+            This is the amplitude of the cross section's change in its x reference point. Its units are meters and its
+            default value is 0 meters.
+        :param x_le_period: float, optional
+            This is the period of the cross section's change in its x reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param x_le_spacing: string, optional
+            This value determines the spacing of the cross section's change in its x reference point. The options are
+            "sine", and "uniform". The default value is "sine".
+        :param y_le_amplitude: float, optional
+            This is the amplitude of the cross section's change in its y reference point. Its units are meters and its
+            default value is 0 meters.
+        :param y_le_period: float, optional
+            This is the period of the cross section's change in its y reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param y_le_spacing: string, optional
+            This value determines the spacing of the cross section's change in its y reference point. The options are
+            "sine", and "uniform". The default value is "sine".
+        :param z_le_amplitude: float, optional
+            This is the amplitude of the cross section's change in its z reference point. Its units are meters and its
+            default value is 0 meters.
+        :param z_le_period: float, optional
+            This is the period of the cross section's change in its z reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param z_le_spacing: string, optional
+            This value determines the spacing of the cross section's change in its z reference point. The options are
+            "sine", and "uniform". The default value is "sine".
+        :param twist_amplitude: float, optional
+            This is the amplitude of the cross section's change in twist. Its units are degrees and its
+            default value is 0 degrees.
+        :param twist_period: float, optional
+            This is the period of the cross section's change in twist. Its units are seconds and its
+            default value is 0 seconds.
+        :param twist_spacing: string, optional
+            This value determines the spacing of the cross section's change in twist. The options are "sine",
+            and "uniform". The default value is "sine".
+        :param control_surface_deflection_amplitude: float, optional
+            This is the amplitude of the cross section's control surface's change in deflection. Its units are degrees
+            and its default value is 0 degrees.
+        :param control_surface_deflection_period: float, optional
+            This is the period of the cross section's control surface's change in deflection. Its units are seconds and
+            its default value is 0 seconds.
+        :param control_surface_deflection_spacing: string, optional
+            This value determines the spacing of the cross section's control surface's change in deflection. The options
+            are "sine", and "uniform". The default value is "sine".
         """
 
+        # Initialize the class attributes.
         self.base_wing_cross_section = base_wing_cross_section
-
         self.x_le_base = self.base_wing_cross_section.x_le
         self.x_le_amplitude = x_le_amplitude
         self.x_le_period = x_le_period
         self.x_le_spacing = x_le_spacing
-
         self.y_le_base = self.base_wing_cross_section.y_le
         self.y_le_amplitude = y_le_amplitude
         self.y_le_period = y_le_period
         self.y_le_spacing = y_le_spacing
-
         self.z_le_base = self.base_wing_cross_section.z_le
         self.z_le_amplitude = z_le_amplitude
         self.z_le_period = z_le_period
         self.z_le_spacing = z_le_spacing
-
         self.twist_base = self.base_wing_cross_section.twist
         self.twist_amplitude = twist_amplitude
         self.twist_period = twist_period
         self.twist_spacing = twist_spacing
-
         self.control_surface_deflection_base = (
             self.base_wing_cross_section.control_surface_deflection
         )
@@ -683,7 +709,6 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly document this method.
     def __init__(
         self,
         base_operating_point,
@@ -693,14 +718,21 @@ class OperatingPointMovement:
     ):
         """ This is the initialization method.
         
-        :param base_operating_point: 
-        :param velocity_amplitude: 
-        :param velocity_period: 
-        :param velocity_spacing:
+        :param base_operating_point: OperatingPoint
+            This is the operating point object, from which the others will be created.
+        :param velocity_amplitude: float, optional
+            This is the amplitude of the operating point's change in velocity. Its units are meters per second and its
+            default value is 0 meters per second.
+        :param velocity_period: float, optional
+            This is the period of the operating point's change in its velocity. Its units are seconds and its
+            default value is 0 seconds.
+        :param velocity_spacing: string, optional
+            This value determines the spacing of the operating point's change in its velocity. The options are "sine",
+            and "uniform". The default value is "sine".
         """
 
+        # Initialize the class attributes.
         self.base_operating_point = base_operating_point
-
         self.velocity_base = self.base_operating_point.velocity
         self.velocity_amplitude = velocity_amplitude
         self.velocity_period = velocity_period

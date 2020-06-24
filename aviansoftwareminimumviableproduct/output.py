@@ -9,6 +9,8 @@ This module contains the following exceptions:
 This module contains the following functions:
     draw: Draw the geometry of an airplane object.
     animate: Create an animation of a problem's movement.
+    plot_results_versus_time: This method takes in an unsteady solver object, and plots the geometries' forces, moments,
+                              and coefficients as a function of time.
 """
 
 import matplotlib.pyplot as plt
@@ -191,7 +193,7 @@ def draw(
                         plotter.add_mesh(
                             pv.Line(last_point, point,),
                             show_edges=True,
-                            color="#FEEEEE",
+                            color="#EEEEEF",
                             line_width=2,
                         )
 
@@ -213,9 +215,7 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     """
 
     # Get this solver's problem's airplanes.
-
     airplanes = []
-
     for steady_problem in unsteady_solver.steady_problems:
         airplanes.append(steady_problem.airplane)
 
@@ -300,7 +300,7 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         plotter.update_scalars(scalars)
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color="black")
+    plotter.set_background(color="#000000")
 
     # Print a message to the console on how to set up the window.
     print(
@@ -445,19 +445,38 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     plotter.close()
 
 
-# ToDo: Properly document this function.
-def plot_results_versus_time(movement, verbose=True):
-    num_steps = movement.num_steps
-    delta_time = movement.delta_time
-    airplanes = movement.airplanes
+def plot_results_versus_time(unsteady_solver, testing=False):
+    """ This method takes in an unsteady solver object, and plots the geometries' forces, moments, and coefficients as a
+    function of time.
 
+    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver object whose resulting forces, moments, and coefficients are to be plotted.
+    :param testing: bool, Optional
+        This boolean determines if the plots will be shown. If true, no plots will be shown. It is useful for testing,
+        where the user wants to know that the plots were created without having to show them. It's default value is
+        false.
+    :return: None
+    """
+
+    # Get this solver's problem's airplanes.
+    airplanes = []
+    for steady_problem in unsteady_solver.steady_problems:
+        airplanes.append(steady_problem.airplane)
+
+    # Get this solver's time step characteristics.
+    num_steps = unsteady_solver.num_steps
+    delta_time = unsteady_solver.delta_time
+
+    # Create a 1D ndarray with the time at each time step.
     times = np.arange(0, num_steps * delta_time, delta_time)
 
+    # Initialize matrices to hold the forces, moments, and coefficients at each time step.
     total_near_field_force_wind_axes = np.zeros((3, num_steps))
     total_near_field_force_coefficients_wind_axes = np.zeros((3, num_steps))
     total_near_field_moment_wind_axes = np.zeros((3, num_steps))
     total_near_field_moment_coefficients_wind_axes = np.zeros((3, num_steps))
 
+    # Iterate through the time steps and add the results to their respective matrices.
     for step in range(num_steps):
         airplane = airplanes[step]
 
@@ -474,78 +493,160 @@ def plot_results_versus_time(movement, verbose=True):
             :, step
         ] = airplane.total_near_field_moment_coefficients_wind_axes
 
+    # Create and show the force plot.
+    # Initialize the plot.
     force_figure, force_axes = plt.subplots()
-    force_axes.plot(times, total_near_field_force_wind_axes[0], label="Induced Drag")
-    force_axes.plot(times, total_near_field_force_wind_axes[1], label="Side Force")
-    force_axes.plot(times, total_near_field_force_wind_axes[2], label="Lift")
-    force_axes.set_xlabel("Time (s)")
-    force_axes.set_ylabel("Force (N)")
-    force_axes.set_title("Total Forces in Wind Axes versus Time")
-    force_axes.legend()
-    if verbose:
+
+    # Add each of the three components of the force.
+    force_axes.plot(
+        times,
+        total_near_field_force_wind_axes[0],
+        label="Induced Drag",
+        color="#000000",
+    )
+    force_axes.plot(
+        times, total_near_field_force_wind_axes[1], label="Side Force", color="#86C552"
+    )
+    force_axes.plot(
+        times, total_near_field_force_wind_axes[2], label="Lift", color="#E62128"
+    )
+
+    # Name the axis labels and the title.
+    force_axes.set_xlabel("Time (s)", color="#000000")
+    force_axes.set_ylabel("Force (N)", color="#000000")
+    force_axes.set_title("Total Forces in Wind Axes versus Time", color="#000000")
+
+    # Set the plot's background color.
+    force_figure.patch.set_facecolor("#EEEEEF")
+    force_axes.set_facecolor("#EEEEEF")
+
+    # Add a legend.
+    force_axes.legend(facecolor="#EEEEEF")
+
+    # Show the plot.
+    if not testing:
         force_figure.show()
 
+    # Create and show the force coefficient plot.
+    # Initialize the plot.
     force_coefficients_figure, force_coefficients_axes = plt.subplots()
+
+    # Add each of the three force coefficients.
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[0],
         label="Coefficient of Induced Drag",
+        color="#000000",
     )
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[1],
         label="Coefficient of Side Force",
+        color="#86C552",
     )
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[2],
         label="Coefficient of Lift",
+        color="#E62128",
     )
-    force_coefficients_axes.set_xlabel("Time (s)")
-    force_coefficients_axes.set_ylabel("Dimensionless")
+
+    # Name the axis labels and the title.
+    force_coefficients_axes.set_xlabel("Time (s)", color="#000000")
+    force_coefficients_axes.set_ylabel("Dimensionless", color="#000000")
     force_coefficients_axes.set_title(
-        "Total Force Coefficients in Wind Axes versus Time"
+        "Total Force Coefficients in Wind Axes versus Time", color="#000000"
     )
-    force_coefficients_axes.legend()
-    if verbose:
+
+    # Set the plot's background color.
+    force_coefficients_figure.patch.set_facecolor("#EEEEEF")
+    force_coefficients_axes.set_facecolor("#EEEEEF")
+
+    # Add a legend.
+    force_coefficients_axes.legend(facecolor="#EEEEEF")
+
+    # Show the plot.
+    if not testing:
         force_coefficients_figure.show()
 
+    # Create and show the moment plot.
+    # Initialize the plot.
     moment_figure, moment_axes = plt.subplots()
+
+    # Add each of the three components of the moment.
     moment_axes.plot(
-        times, total_near_field_moment_wind_axes[0], label="Rolling Moment"
+        times,
+        total_near_field_moment_wind_axes[0],
+        label="Rolling Moment",
+        color="#000000",
     )
     moment_axes.plot(
-        times, total_near_field_moment_wind_axes[1], label="Pitching Moment"
+        times,
+        total_near_field_moment_wind_axes[1],
+        label="Pitching Moment",
+        color="#86C552",
     )
-    moment_axes.plot(times, total_near_field_moment_wind_axes[2], label="Yawing Moment")
-    moment_axes.set_xlabel("Time (s)")
-    moment_axes.set_ylabel("Moment (Nm)")
-    moment_axes.set_title("Total Moments in Wind Axes versus Time")
-    moment_axes.legend()
-    if verbose:
+    moment_axes.plot(
+        times,
+        total_near_field_moment_wind_axes[2],
+        label="Yawing Moment",
+        color="#E62128",
+    )
+
+    # Name the axis labels and the title.
+    moment_axes.set_xlabel("Time (s)", color="#000000")
+    moment_axes.set_ylabel("Moment (Nm)", color="#000000")
+    moment_axes.set_title("Total Moments in Wind Axes versus Time", color="#000000")
+
+    # Set the plot's background color.
+    moment_figure.patch.set_facecolor("#EEEEEF")
+    moment_axes.set_facecolor("#EEEEEF")
+
+    # Add a legend.
+    moment_axes.legend(facecolor="#EEEEEF")
+
+    # Show the plot.
+    if not testing:
         moment_figure.show()
 
+    # Create and show the moment coefficient plot.
+    # Initialize the plot.
     moment_coefficients_figure, moment_coefficients_axes = plt.subplots()
+
+    # Add each of the three moment coefficients.
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[0],
         label="Coefficient of Rolling Moment",
+        color="#000000",
     )
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[1],
         label="Coefficient of Pitching Moment",
+        color="#86C552",
     )
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[2],
         label="Coefficient of Yawing Moment",
+        color="#E62128",
     )
-    moment_coefficients_axes.set_xlabel("Time (s)")
-    moment_coefficients_axes.set_ylabel("Dimensionless")
+
+    # Name the axis labels and the title.
+    moment_coefficients_axes.set_xlabel("Time (s)", color="#000000")
+    moment_coefficients_axes.set_ylabel("Dimensionless", color="#000000")
     moment_coefficients_axes.set_title(
-        "Total Moment Coefficients in Wind Axes versus Time"
+        "Total Moment Coefficients in Wind Axes versus Time", color="#000000"
     )
-    moment_coefficients_axes.legend()
-    if verbose:
+
+    # Set the plot's background color.
+    moment_coefficients_figure.patch.set_facecolor("#EEEEEF")
+    moment_coefficients_axes.set_facecolor("#EEEEEF")
+
+    # Add a legend.
+    moment_coefficients_axes.legend(facecolor="#EEEEEF")
+
+    # Show the plot.
+    if not testing:
         moment_coefficients_figure.show()

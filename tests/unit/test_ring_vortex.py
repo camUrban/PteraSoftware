@@ -35,7 +35,6 @@ class TestRingVortex(unittest.TestCase):
 
     Subclassing:
         This class is not meant to be subclassed.
-
     """
 
     def setUp(self):

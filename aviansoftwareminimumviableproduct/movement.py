@@ -78,7 +78,6 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly document this method.
     def __init__(
         self,
         base_airplane,
@@ -93,34 +92,52 @@ class AirplaneMovement:
         z_ref_period=0.0,
         z_ref_spacing="sine",
     ):
-        """
+        """ This is the initialization method.
         
-        :param base_airplane: 
-        :param wing_movements: 
-        :param x_ref_amplitude: 
-        :param x_ref_period: 
-        :param x_ref_spacing: 
-        :param y_ref_amplitude: 
-        :param y_ref_period: 
-        :param y_ref_spacing: 
-        :param z_ref_amplitude: 
-        :param z_ref_period: 
-        :param z_ref_spacing: 
+        :param base_airplane: Airplane
+            This is the first airplane object, from which the others will be created.
+        :param wing_movements: list of WingMovement objects
+            This is a list of the WingMovement objects associated with each of the base airplane's wings.
+        :param x_ref_amplitude: float, optional
+            This is the amplitude of the airplane's change in its x reference point. Its units are meters and its
+            default value is 0 meters.
+        :param x_ref_period: float, optional
+            This is the period of the airplane's change in its x reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param x_ref_spacing: string, optional
+            This value determines the spacing of the airplane's change in its x reference point. The options are "sine",
+            and "uniform". The default value is "sine".
+        :param y_ref_amplitude: float, optional
+            This is the amplitude of the airplane's change in its y reference point. Its units are meters and its
+            default value is 0 meters.
+        :param y_ref_period: float, optional
+            This is the period of the airplane's change in its y reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param y_ref_spacing: string, optional
+            This value determines the spacing of the airplane's change in its y reference point. The options are "sine",
+            and "uniform". The default value is "sine".
+        :param z_ref_amplitude: float, optional
+            This is the amplitude of the airplane's change in its z reference point. Its units are meters and its
+            default value is 0 meters.
+        :param z_ref_period: float, optional
+            This is the period of the airplane's change in its z reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param z_ref_spacing: string, optional
+            This value determines the spacing of the airplane's change in its z reference point. The options are "sine",
+            and "uniform". The default value is "sine".
         """
 
+        # Initialize the class attributes.
         self.base_airplane = base_airplane
         self.wing_movements = wing_movements
-
         self.x_ref_base = self.base_airplane.x_ref
         self.x_ref_amplitude = x_ref_amplitude
         self.x_ref_period = x_ref_period
         self.x_ref_spacing = x_ref_spacing
-
         self.y_ref_base = self.base_airplane.y_ref
         self.y_ref_amplitude = y_ref_amplitude
         self.y_ref_period = y_ref_period
         self.y_ref_spacing = y_ref_spacing
-
         self.z_ref_base = self.base_airplane.z_ref
         self.z_ref_amplitude = z_ref_amplitude
         self.z_ref_period = z_ref_period
@@ -238,7 +255,6 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly document this method.
     def __init__(
         self,
         base_wing,
@@ -253,34 +269,53 @@ class WingMovement:
         z_le_period=0.0,
         z_le_spacing="sine",
     ):
+        """ This is the initialization method.
+
+        :param base_wing: Wing
+            This is the first wing object, from which the others will be created.
+        :param wing_cross_sections_movements: list of WingCrossSectionMovement objects
+            This is a list of the WingCrossSectionMovement objects associated with each of the base wing's cross
+            sections.
+        :param x_le_amplitude: float, optional
+            This is the amplitude of the wing's change in its x reference point. Its units are meters and its
+            default value is 0 meters.
+        :param x_le_period: float, optional
+            This is the period of the wing's change in its x reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param x_le_spacing: string, optional
+            This value determines the spacing of the wing's change in its x reference point. The options are "sine",
+            and "uniform". The default value is "sine".
+        :param y_le_amplitude: float, optional
+            This is the amplitude of the wing's change in its y reference point. Its units are meters and its
+            default value is 0 meters.
+        :param y_le_period: float, optional
+            This is the period of the wing's change in its y reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param y_le_spacing: string, optional
+            This value determines the spacing of the wing's change in its y reference point. The options are "sine",
+            and "uniform". The default value is "sine".
+        :param z_le_amplitude: float, optional
+            This is the amplitude of the wing's change in its z reference point. Its units are meters and its
+            default value is 0 meters.
+        :param z_le_period: float, optional
+            This is the period of the wing's change in its z reference point. Its units are seconds and its
+            default value is 0 seconds.
+        :param z_le_spacing: string, optional
+            This value determines the spacing of the wing's change in its z reference point. The options are "sine",
+            and "uniform". The default value is "sine".
         """
 
-        :param base_wing:
-        :param wing_cross_sections_movements:
-        :param x_le_amplitude:
-        :param x_le_period:
-        :param x_le_spacing:
-        :param y_le_amplitude:
-        :param y_le_period:
-        :param y_le_spacing:
-        :param z_le_amplitude:
-        :param z_le_period:
-        :param z_le_spacing:
-        """
-
+        # Initialize the class attributes.
         self.base_wing = base_wing
         self.wing_cross_section_movements = wing_cross_sections_movements
-
         self.x_le_base = self.base_wing.x_le
         self.x_le_amplitude = x_le_amplitude
         self.x_le_period = x_le_period
         self.x_le_spacing = x_le_spacing
-
         self.y_le_base = self.base_wing.y_le
         self.y_le_amplitude = y_le_amplitude
         self.y_le_period = y_le_period
         self.y_le_spacing = y_le_spacing
-
         self.z_le_base = self.base_wing.z_le
         self.z_le_amplitude = z_le_amplitude
         self.z_le_period = z_le_period
@@ -437,7 +472,7 @@ class WingCrossSectionMovement:
         control_surface_deflection_period=0.0,
         control_surface_deflection_spacing="sine",
     ):
-        """
+        """ This is the initialization method.
 
         :param base_wing_cross_section:
         :param x_le_amplitude:
@@ -656,7 +691,7 @@ class OperatingPointMovement:
         velocity_period=0.0,
         velocity_spacing="sine",
     ):
-        """
+        """ This is the initialization method.
         
         :param base_operating_point: 
         :param velocity_amplitude: 

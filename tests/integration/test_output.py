@@ -1,4 +1,14 @@
-# ToDo: Properly document this module.
+""" This module contains a class to test the output module.
+
+This module contains the following classes:
+    None
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    TestRingVortex: This is a class with functions to test the output module.
+"""
 
 import unittest
 
@@ -8,68 +18,84 @@ import aviansoftwareminimumviableproduct as asmvp
 import tests.integration
 
 
-# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
+    """ This is a class with functions to test the output module.
+
+    This class contains the following public methods:
+        setUp: This method is automatically called before each testing method to set up the fixtures.
+        tearDown: This method is automatically called before each testing method to tear down the fixtures.
+        test_plot_results_versus_time: This method tests the plot_results_versus_time method.
+        test_animate_does_not_throw: This method tests that the animate method does not throw any errors.
+        test_draw_does_not_throw: This method tests that the draw method does not throw any errors.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
-    """
-
-    # ToDo: Properly document this method.
     def setUp(self):
+        """ This method is automatically called before each testing method to set up the fixtures.
+
+        :return: None
         """
 
-        :return:
-        """
-
+        # Set up the constructing fixtures.
         self.unsteady_solver = (
             tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
 
-    # ToDo: Properly document this method.
     def tearDown(self):
+        """ This method is automatically called before each testing method to tear down the fixtures.
+
+        :return: None
         """
 
-        :return:
-        """
-
+        # Delete the constructing fixtures.
         del self.unsteady_solver
 
-    # ToDo: Properly document this method.
     def test_plot_results_versus_time(self):
+        """ This method tests the plot_results_versus_time method.
+
+        :return: None
         """
 
-        :return:
-        """
+        # Get the number of matplotlib figures before running the test.
         num_figs_before = plt.gcf().number
 
+        # Call the plot_results_versus_time method on the solver fixture. The testing flag is set to true, so the
+        # figures will not be displayed.
         asmvp.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, testing=True
         )
 
+        # Get the number of matplotlib figures after running the test.
         num_figs_after = plt.gcf().number
 
+        # Test that the method call produced four more figures.
         self.assertEqual(num_figs_before + 4, num_figs_after)
 
-    # ToDo: Properly document this method.
     def test_animate_does_not_throw(self):
+        """ This method tests that the animate method does not throw any errors.
+
+        :return: None
         """
 
-        :return:
-        """
-
+        # Call the animate function on the unsteady solver fixture.
         asmvp.output.animate(
             unsteady_solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
         )
 
-    # ToDo: Properly document this method.
     def test_draw_does_not_throw(self):
+        """ This method tests that the draw method does not throw any errors.
+
+        :return: None
         """
 
-        :return:
-        """
-
+        # Call the draw function on the unsteady solver fixture.
         asmvp.output.draw(
             airplane=self.unsteady_solver.steady_problems[0].airplane,
             show_delta_pressures=False,

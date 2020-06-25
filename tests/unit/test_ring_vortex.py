@@ -326,7 +326,7 @@ class TestRingVortex(unittest.TestCase):
         )
 
     def test_update_strength(self):
-        """This method tests the update_strength method.
+        """ This method tests the update_strength method.
 
         :return: None
         """
@@ -357,7 +357,7 @@ class TestRingVortex(unittest.TestCase):
         self.ring_vortex_fixture.update_strength(strength=old_strength_fixture)
 
     def test_update_position(self):
-        """This method tests the update_position method.
+        """ This method tests the update_position method.
 
         :return: None
         """

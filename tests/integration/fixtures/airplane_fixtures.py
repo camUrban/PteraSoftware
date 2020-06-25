@@ -28,8 +28,6 @@ def make_steady_validation_airplane():
                 wing_cross_sections=[
                     # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's twist chord.
-                        chord=1.0,
                         # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                     ),
@@ -38,7 +36,6 @@ def make_steady_validation_airplane():
                         # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=5.0,
-                        z_le=0.0,
                         # Define the cross section's twist and chord.
                         twist=5.0,
                         chord=0.75,
@@ -74,8 +71,6 @@ def make_multiple_wing_steady_validation_airplane():
                 wing_cross_sections=[
                     # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's twist chord.
-                        chord=1.0,
                         # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca23012"),
                         spanwise_spacing="uniform",
@@ -85,7 +80,6 @@ def make_multiple_wing_steady_validation_airplane():
                         # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=5.0,
-                        z_le=0.0,
                         # Define the cross section's chord.
                         chord=0.75,
                         # Initialize this cross section's airfoil object.
@@ -106,8 +100,6 @@ def make_multiple_wing_steady_validation_airplane():
                 wing_cross_sections=[
                     # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's twist chord.
-                        chord=1.0,
                         # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca0010"),
                         twist=-5.0,
@@ -117,7 +109,6 @@ def make_multiple_wing_steady_validation_airplane():
                         # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=1.0,
-                        z_le=0.0,
                         # Define the cross section's twist and chord.
                         twist=-5.0,
                         chord=0.75,
@@ -153,7 +144,6 @@ def make_asymmetric_unsteady_validation_airplane():
                 wing_cross_sections=[
                     # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        chord=1.0,
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                         num_spanwise_panels=16,
                     ),

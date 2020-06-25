@@ -1,153 +1,123 @@
-# ToDo: Properly document this module.
 """ This module creates airplane objects to be used as fixtures.
+
+This module contains the following classes:
+    None
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    make_steady_validation_airplane: This function creates an airplane object to be used as a fixture for testing steady
+                                     solvers.
+    make_multiple_wing_steady_validation_airplane: This function creates a multi-wing airplane object to be used as a
+                                                   fixture for testing steady solvers.
+    make_asymmetric_unsteady_validation_airplane: This function creates an asymmetric airplane object to be used as a
+                                                  fixture for testing unsteady solvers.
+    make_symmetric_unsteady_validation_airplane: This function creates a symmetric airplane object to be used as a
+                                                 fixture for testing unsteady solvers.
 
 """
 
 import aviansoftwareminimumviableproduct as asmvp
 
 
-# ToDo: Properly document this method.
 def make_steady_validation_airplane():
+    """ This function creates an airplane object to be used as a fixture for testing steady solvers.
+
+    :return steady_validation_airplane: Airplane
+        This is the airplane fixture.
     """
 
-    :return:
-    """
-
-    return asmvp.geometry.Airplane(
-        # Name the current_airplane.
-        name="Steady Solver Testing Airplane",
-        # Define a list of the current_airplane's wings.
+    # Create and return the airplane object.
+    steady_validation_airplane = asmvp.geometry.Airplane(
         wings=[
-            # Initialize the wing object.
             asmvp.geometry.Wing(
-                # Name the wing.
-                name="Wing",
-                # This will be a symmetrical wing.
                 symmetric=True,
-                # Define a list of the wing's cross sections.
                 wing_cross_sections=[
-                    # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                     ),
-                    # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=5.0,
-                        # Define the cross section's twist and chord.
                         twist=5.0,
                         chord=0.75,
-                        # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                     ),
                 ],
             )
         ],
     )
+    return steady_validation_airplane
 
 
-# ToDo: Properly document this method.
 def make_multiple_wing_steady_validation_airplane():
+    """ This function creates a multi-wing airplane object to be used as a fixture for testing steady solvers.
+
+    :return multiple_wing_steady_validation_airplane: Airplane
+        This is the airplane fixture.
     """
 
-    :return:
-    """
-
-    return asmvp.geometry.Airplane(
-        # Name the current_airplane.
-        name="Multiple Wing Steady Solver Testing Airplane",
-        # Define a list of the current_airplane's wings.
+    # Create and return the airplane object.
+    multiple_wing_steady_validation_airplane = asmvp.geometry.Airplane(
         wings=[
-            # Initialize the wing object.
             asmvp.geometry.Wing(
-                # Name the wing.
-                name="Main Wing",
-                # This will be a symmetrical wing.
                 symmetric=True,
-                # Define a list of the wing's cross sections.
                 chordwise_spacing="uniform",
                 wing_cross_sections=[
-                    # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca23012"),
                         spanwise_spacing="uniform",
                     ),
-                    # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=5.0,
-                        # Define the cross section's chord.
                         chord=0.75,
-                        # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca23012"),
                         spanwise_spacing="uniform",
                     ),
                 ],
             ),
-            # Initialize the wing object for the airplane's horizontal stabilizer.
             asmvp.geometry.Wing(
-                # Name the wing.
-                name="Horizontal Stabilizer",
-                # This will be a symmetrical wing.
                 symmetric=True,
-                # Set this wing to be 5 meters back from the main wing.
                 x_le=5.0,
-                # Define a list of the wing's cross sections.
                 wing_cross_sections=[
-                    # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Initialize this cross section's airfoil object.
-                        airfoil=asmvp.geometry.Airfoil(name="naca0010"),
-                        twist=-5.0,
+                        airfoil=asmvp.geometry.Airfoil(name="naca0010"), twist=-5.0,
                     ),
-                    # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
-                        # Define the cross section's leading edge placement.
                         x_le=1.0,
                         y_le=1.0,
-                        # Define the cross section's twist and chord.
                         twist=-5.0,
                         chord=0.75,
-                        # Initialize this cross section's airfoil object.
                         airfoil=asmvp.geometry.Airfoil(name="naca0010"),
                     ),
                 ],
             ),
         ],
     )
+    return multiple_wing_steady_validation_airplane
 
 
-# ToDo: Properly document this method.
 def make_asymmetric_unsteady_validation_airplane():
+    """ This function creates an asymmetric airplane object to be used as a fixture for testing unsteady solvers.
+
+    :return asymmetric_unsteady_validation_airplane: Airplane
+        This is the airplane fixture.
     """
 
-    :return:
-    """
-
-    return asmvp.geometry.Airplane(
-        name="Unsteady Solver Testing Airplane",
+    # Create and return the airplane object.
+    asymmetric_unsteady_validation_airplane = asmvp.geometry.Airplane(
         y_ref=5.0,
-        # Define a list of the current_airplane's wings.
         wings=[
-            # Initialize the wing object.
             asmvp.geometry.Wing(
-                # Name the wing.
-                name="Wing",
-                symmetric=False,
                 num_chordwise_panels=6,
                 chordwise_spacing="uniform",
-                # Define a list of the wing's cross sections.
                 wing_cross_sections=[
-                    # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
                         airfoil=asmvp.geometry.Airfoil(name="naca2412"),
                         num_spanwise_panels=16,
                     ),
-                    # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
                         y_le=10.0,
                         chord=1.0,
@@ -158,42 +128,32 @@ def make_asymmetric_unsteady_validation_airplane():
             )
         ],
     )
+    return asymmetric_unsteady_validation_airplane
 
 
-# ToDo: Properly document this method.
 def make_symmetric_unsteady_validation_airplane():
+    """ This function creates a symmetric airplane object to be used as a fixture for testing unsteady solvers.
+
+    :return symmetric_unsteady_validation_airplane: Airplane
+        This is the airplane fixture.
     """
 
-    :return:
-    """
-
-    return asmvp.geometry.Airplane(
-        name="Unsteady Solver Testing Airplane",
-        # Define a list of the current_airplane's wings.
+    # Create and return the airplane object.
+    symmetric_unsteady_validation_airplane = asmvp.geometry.Airplane(
         wings=[
-            # Initialize the wing object.
             asmvp.geometry.Wing(
-                # Name the wing.
-                name="Wing",
                 symmetric=True,
                 num_chordwise_panels=6,
                 chordwise_spacing="uniform",
-                # Define a list of the wing's cross sections.
                 wing_cross_sections=[
-                    # Initialize the root cross section object.
                     asmvp.geometry.WingCrossSection(
-                        chord=1.0,
                         airfoil=asmvp.geometry.Airfoil(name="naca0012"),
-                        num_spanwise_panels=8,
                     ),
-                    # Initialize the tip cross section object.
                     asmvp.geometry.WingCrossSection(
-                        y_le=5.0,
-                        chord=1.0,
-                        airfoil=asmvp.geometry.Airfoil(name="naca0012"),
-                        num_spanwise_panels=8,
+                        y_le=5.0, airfoil=asmvp.geometry.Airfoil(name="naca0012"),
                     ),
                 ],
             )
         ],
     )
+    return symmetric_unsteady_validation_airplane

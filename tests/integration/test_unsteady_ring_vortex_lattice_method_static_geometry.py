@@ -1,13 +1,23 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with static geometry.
+""" This is a testing case for the unsteady ring vortex lattice method solver with static geometry.
 
-    Based on an equivalent XFLR5 testing case, the expected output for this case is:
-        CL:     0.588
-        CDi:    0.011
-        Cm:     -0.197
+Based on an equivalent XFLR5 testing case, the expected output for this case is:
+    CL:     0.588
+    CDi:    0.011
+    Cm:     -0.197
 
-    Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice
-    method solver. The geometry in this case is static. Therefore the results of this unsteady solver should converge to
-    be close to XFLR5's static result.
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice method
+solver. The geometry in this case is static. Therefore the results of this unsteady solver should converge to be close
+to XFLR5's static result.
+
+This module contains the following classes:
+    TestUnsteadyRingVortexLatticeMethodStaticGeometry: This is a class for testing the unsteady ring vortex lattice
+                                                       method solver on static geometry.
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
 """
 
 import unittest
@@ -16,7 +26,7 @@ import tests.integration
 
 
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
-    """This is a class for testing the unsteady ring vortex lattice method solver on static geometry.
+    """ This is a class for testing the unsteady ring vortex lattice method solver on static geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
@@ -31,7 +41,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
     """
 
     def setUp(self):
-        """This method sets up the test.
+        """ This method sets up the test.
 
         :return: None
         """
@@ -42,7 +52,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         )
 
     def tearDown(self):
-        """This method tears down the test.
+        """ This method tears down the test.
 
         :return: None
         """
@@ -50,7 +60,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
     def test_method(self):
-        """This method tests the solver's output.
+        """ This method tests the solver's output.
 
         :return: None
         """

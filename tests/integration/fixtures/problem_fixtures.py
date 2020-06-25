@@ -17,7 +17,9 @@ This module contains the following functions:
 """
 
 import aviansoftwareminimumviableproduct as asmvp
-import tests as tests
+import tests.integration.fixtures.operating_point_fixtures
+import tests.integration.fixtures.airplane_fixtures
+import tests.integration.fixtures.movement_fixtures
 
 
 def make_steady_validation_problem():

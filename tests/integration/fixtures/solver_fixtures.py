@@ -28,7 +28,7 @@ This module contains the following functions:
 """
 
 import aviansoftwareminimumviableproduct as asmvp
-import tests.integration
+import tests.integration.fixtures.problem_fixtures
 
 
 def make_steady_horseshoe_vortex_lattice_method_validation_solver():

@@ -1,5 +1,14 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
+""" This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
 
+This module contains the following classes:
+    TestUnsteadyRingVortexLatticeMethodVariableGeometry: This is a class for testing the unsteady ring vortex lattice
+                                                         method solver on variable geometry.
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
 """
 
 import unittest
@@ -8,7 +17,7 @@ import tests.integration
 
 
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
-    """This is a class for testing the unsteady ring vortex lattice method solver on variable geometry.
+    """ This is a class for testing the unsteady ring vortex lattice method solver on variable geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
@@ -23,7 +32,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
     """
 
     def setUp(self):
-        """This method sets up the test.
+        """ This method sets up the test.
 
         :return: None
         """
@@ -34,7 +43,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         )
 
     def tearDown(self):
-        """This method tears down the test.
+        """ This method tears down the test.
 
         :return: None
         """
@@ -42,7 +51,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
     def test_method_does_not_throw(self):
-        """This method tests that the solver does not throw any errors.
+        """ This method tests that the solver does not throw any errors.
 
         :return: None
         """

@@ -89,7 +89,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             airplane=self.steady_horseshoe_vortex_lattice_method_validation_solver.airplane,
             show_wake_vortices=False,
             show_streamlines=True,
-            show_delta_pressures=False,
+            show_delta_pressures=True,
         )
 
         # Assert that the percent errors are less than the allowable error.
@@ -129,6 +129,15 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         # Set the allowable percent error.
         allowable_error = 0.10
+
+        import aviansoftwareminimumviableproduct as asmvp
+
+        asmvp.output.draw(
+            airplane=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplane,
+            show_delta_pressures=True,
+            show_streamlines=True,
+            show_wake_vortices=False,
+        )
 
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(CDi_error < allowable_error)

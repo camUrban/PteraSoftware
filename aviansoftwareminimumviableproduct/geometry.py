@@ -1,4 +1,4 @@
-"""This module contains useful functions that relate to geometry, and the class definitions for different types of
+""" This module contains useful functions that relate to geometry, and the class definitions for different types of
 geometries.
 
 This module contains the following classes:
@@ -29,7 +29,7 @@ import aviansoftwareminimumviableproduct as asmvp
 
 
 class Airplane:
-    """This is a class used to contain airplanes.
+    """ This is a class used to contain airplanes.
 
     Citation:
         Adapted from:         geometry.Airplane in AeroSandbox
@@ -141,7 +141,7 @@ class Airplane:
 
 
 class Wing:
-    """This is a class used to contain the wings of an current_airplane.
+    """ This is a class used to contain the wings of an current_airplane.
 
     If the wing is symmetric across the XZ plane, just define the right half and supply "symmetric=True" in
     the constructor. If the wing is not symmetric across the XZ plane, just define the wing.
@@ -286,7 +286,7 @@ class Wing:
 
 
 class WingCrossSection:
-    """This class is used to contain the cross sections of the wings of an current_airplane.
+    """ This class is used to contain the cross sections of the wings of an current_airplane.
 
     Citation:
         Adapted from:         geometry.WingXSec in AeroSandbox
@@ -382,7 +382,7 @@ class WingCrossSection:
 
 
 class Airfoil:
-    """This class is used to contain the airfoil of a cross section of a wing of an current_airplane.
+    """ This class is used to contain the airfoil of a cross section of a wing of an current_airplane.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox
@@ -803,6 +803,12 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
 
+        # Insure that the airfoil's deflection is not too high, which increases the risk of self intersection.
+        if deflection > 90 or deflection < -90:
+            raise Exception(
+                "The deflection of this airfoil is too high! Limit it to -90 degrees to 90 degrees."
+            )
+
         # Make the rotation matrix for the given angle.
         sin_theta = np.sin(np.radians(-deflection))
         cos_theta = np.cos(np.radians(-deflection))
@@ -842,7 +848,6 @@ class Airfoil:
         lower_coordinates = new_mcl_coordinates - new_upper_minus_mcl
         coordinates = np.vstack((upper_coordinates, lower_coordinates[1:, :]))
 
-        # ToDo: Fix self-intersecting airfoils at high deflections.
         # Initialize the new, flapped airfoil and return it.
         flapped_airfoil = Airfoil(
             name=self.name + " flapped", coordinates=coordinates, repanel=False
@@ -860,7 +865,7 @@ class Airfoil:
 
 
 class Panel:
-    """This class is used to contain the panels of a wing.
+    """ This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
         calculate_collocation_point_location: This method calculates the location of the collocation point.
@@ -1054,7 +1059,7 @@ class Panel:
 
 
 def cosspace(minimum=0.0, maximum=1.0, n_points=50):
-    """This function is used to create a ndarray containing a specified number of values between a specified minimum
+    """ This function is used to create a ndarray containing a specified number of values between a specified minimum
     and maximum value that are spaced via a cosine function.
 
     Citation:
@@ -1083,7 +1088,7 @@ def cosspace(minimum=0.0, maximum=1.0, n_points=50):
 
 
 def reflect_over_xz_plane(input_vector):
-    """This function is used to flip a the y coordinate of a coordinate vector.
+    """ This function is used to flip a the y coordinate of a coordinate vector.
 
     Citation:
         Adapted from:         geometry.reflect_over_xz_plane in AeroSandbox
@@ -1124,7 +1129,7 @@ def reflect_over_xz_plane(input_vector):
 
 
 def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
-    """This function is used to find the rotation matrix for a given axis and angle.
+    """ This function is used to find the rotation matrix for a given axis and angle.
 
     Citation:
         Adapted from:         geometry.angle_axis_rotation_matrix in AeroSandbox
@@ -1182,7 +1187,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
 def centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
-    """This function is used to find the centroid of a quadrilateral.
+    """ This function is used to find the centroid of a quadrilateral.
 
     :param front_left_vertex: 1D ndarray
         This is an array containing the x, y, and z components of the front left vertex of the quadrilateral.

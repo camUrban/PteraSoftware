@@ -7,7 +7,7 @@ This package contains the following directories:
     None
 
 This package contains the following modules:
-    __init__.py: This module is this package's initialization script. It imports all the modules from this package.
+    __init__.py: This module is this package's initialization script.
     airplane_fixtures: This module creates airplane objects to be used as fixtures.
     movement_fixtures: This module creates movement objects to be used as fixtures.
     operating_point_fixtures: This module creates operating point objects to be used as fixtures.

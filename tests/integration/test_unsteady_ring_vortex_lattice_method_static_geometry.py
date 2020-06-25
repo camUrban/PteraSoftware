@@ -80,6 +80,14 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.25
 
+        import aviansoftwareminimumviableproduct as asmvp
+
+        asmvp.output.animate(
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
+            show_wake_vortices=True,
+            show_delta_pressures=True,
+        )
+
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(CDi_error < allowable_error)
         self.assertTrue(CL_error < allowable_error)

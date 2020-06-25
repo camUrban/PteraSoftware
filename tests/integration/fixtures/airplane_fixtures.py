@@ -1,5 +1,5 @@
 # ToDo: Properly document this module.
-"""
+""" This module creates airplane objects to be used as fixtures.
 
 """
 

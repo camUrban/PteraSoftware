@@ -1,4 +1,4 @@
-"""This module contains functions to create vortex objects for use in tests.
+""" This module contains functions to create vortex objects for use in tests.
 
 This module contains the following classes:
     None

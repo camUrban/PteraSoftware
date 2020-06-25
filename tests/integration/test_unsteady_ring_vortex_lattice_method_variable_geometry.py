@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import unittest
 
-import tests.integration
+import tests.integration.fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):

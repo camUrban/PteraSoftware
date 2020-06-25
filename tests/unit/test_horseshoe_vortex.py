@@ -15,7 +15,7 @@ import unittest
 import numpy as np
 
 import aviansoftwareminimumviableproduct as asmvp
-import tests.unit
+import tests.unit.fixtures
 
 
 class TestHorseshoeVortex(unittest.TestCase):

@@ -1,4 +1,4 @@
-""" This module contains a class to test the output module.
+""" This module is a testing case for the output module.
 
 This module contains the following classes:
     None
@@ -7,7 +7,7 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    TestRingVortex: This is a class with functions to test the output module.
+    TestOutput: This is a class with functions to test the output module.
 """
 
 import unittest
@@ -18,7 +18,7 @@ import aviansoftwareminimumviableproduct as asmvp
 import tests.integration
 
 
-class TestUnsteadyRingVortexLatticeMethod(unittest.TestCase):
+class TestOutput(unittest.TestCase):
     """ This is a class with functions to test the output module.
 
     This class contains the following public methods:

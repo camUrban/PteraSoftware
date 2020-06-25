@@ -308,7 +308,7 @@ class WingCrossSection:
         x_le=0.0,
         y_le=0.0,
         z_le=0.0,
-        chord=0.0,
+        chord=1.0,
         twist=0.0,
         airfoil=None,
         control_surface_type="symmetric",
@@ -329,7 +329,7 @@ class WingCrossSection:
             This is the z coordinate of the leading edge of the cross section relative to the wing's datum. The default
             value is 0.0.
         :param chord: float, optional
-            This is the chord of the wing at this cross section. The default value is 0.0.
+            This is the chord of the wing at this cross section. The default value is 1.0.
         :param twist: float, optional
             This is the twist of the cross section about the leading edge in degrees. The default value is 0.0.
         :param airfoil: Airfoil, optional
@@ -363,6 +363,12 @@ class WingCrossSection:
         self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
         self.xyz_le = np.array([x_le, y_le, z_le])
+
+        # Catch bad values of the chord length.
+        if self.chord <= 0:
+            raise Exception(
+                "The chord length of this wing cross section needs to be greater than zero meters!"
+            )
 
     def xyz_te(self):
         """This method calculates the coordinates of the trailing edge of the cross section.

@@ -146,7 +146,7 @@ class TestRingVortex(unittest.TestCase):
             )
         )
 
-        # Test the vortex objects' strengths were correctly set.
+        # Test that the vortex objects' strengths were correctly set.
         self.assertEqual(self.ring_vortex_fixture.strength, self.strength_fixture)
         self.assertEqual(
             self.ring_vortex_fixture.front_leg.strength, self.strength_fixture

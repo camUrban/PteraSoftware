@@ -15,7 +15,7 @@ import unittest
 import matplotlib.pyplot as plt
 
 import aviansoftwareminimumviableproduct as asmvp
-import tests.integration
+import tests.integration.fixtures
 
 
 class TestOutput(unittest.TestCase):

@@ -1,16 +1,25 @@
-# ToDo: Properly document this module.
-"""
+""" This module creates operating point objects to be used as fixtures.
 
+This module contains the following classes:
+    None
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    make_validation_operating_point: This method makes an operating point object for use in tests.
 """
 
 import aviansoftwareminimumviableproduct as asmvp
 
 
-# ToDo: Properly document this method.
 def make_validation_operating_point():
+    """ This method makes an operating point object for use in tests.
+
+    :return operating_point_fixture: OperatingPoint
+        This is an operating point fixture.
     """
 
-    :return:
-    """
-
-    return asmvp.operating_point.OperatingPoint()
+    # Create and return an operating point fixture.
+    operating_point_fixture = asmvp.operating_point.OperatingPoint()
+    return operating_point_fixture

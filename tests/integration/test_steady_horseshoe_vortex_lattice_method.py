@@ -21,7 +21,7 @@ This module contains the following functions:
 
 import unittest
 
-import tests.integration.fixtures
+import tests.integration.fixtures.solver_fixtures
 
 
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
@@ -59,8 +59,8 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
 
-        # del self.steady_horseshoe_vortex_lattice_method_validation_solver
-        # del self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver
+        del self.steady_horseshoe_vortex_lattice_method_validation_solver
+        del self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver
 
     def test_method(self):
         """ This method tests the solver's output.

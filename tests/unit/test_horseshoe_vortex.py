@@ -1,4 +1,4 @@
-"""This module contains a class to test horseshoe vortex objects.
+""" This module contains a class to test horseshoe vortex objects.
 
 This module contains the following classes:
     TestHorseshoeVortex: This class contains methods for testing horseshoe vortex objects.
@@ -19,7 +19,7 @@ import tests.unit
 
 
 class TestHorseshoeVortex(unittest.TestCase):
-    """This class contains methods for testing horseshoe vortex objects.
+    """ This class contains methods for testing horseshoe vortex objects.
 
     This class contains the following public methods:
         setUp: This method is automatically called before each testing method to set up the fixtures.
@@ -39,7 +39,7 @@ class TestHorseshoeVortex(unittest.TestCase):
     def setUp(self):
         """This method is automatically called before each testing method to set up the fixtures.
         
-        :return: 
+        :return: None
         """
 
         # Get the constructing fixtures.
@@ -61,9 +61,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def tearDown(self):
-        """This method is automatically called before each testing method to tear down the fixtures.
+        """ This method is automatically called before each testing method to tear down the fixtures.
         
-        :return: 
+        :return: None
         """
 
         # Delete the constructing fixtures.
@@ -75,9 +75,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         del self.infinite_leg_length_fixture
 
     def test_class(self):
-        """This method tests the class's instantiation.
+        """ This method tests the class's instantiation.
 
-        :return:
+        :return: None
         """
 
         # Test that the objects are all of the right type.
@@ -141,9 +141,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_calculate_normalized_induced_velocity(self):
-        """This method tests the calculation of normalized induced velocity.
+        """ This method tests the calculation of normalized induced velocity.
 
-        :return:
+        :return: None
         """
 
         # Test the velocity is correctly calculated at a point on the finite leg.
@@ -195,9 +195,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_calculate_induced_velocity(self):
-        """This method tests the calculation of induced velocity.
+        """ This method tests the calculation of induced velocity.
 
-        :return:
+        :return: None
         """
 
         # Test the velocity is correctly calculated at a point on the finite leg.
@@ -249,9 +249,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_update_strength(self):
-        """This method tests the update_strength method.
+        """ This method tests the update_strength method.
 
-        :return:
+        :return: None
         """
 
         # Create fixtures to hold the current and new strengths.

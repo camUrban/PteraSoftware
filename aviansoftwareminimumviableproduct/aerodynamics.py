@@ -1,4 +1,4 @@
-"""This module contains vortex class definitions.
+"""This module contains vortex class definitions, and useful aerodynamic functions.
 
 This module contains the following classes:
     LineVortex: This class is used to contain line vortices.
@@ -9,7 +9,10 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    None
+    calculate_velocity_induced_by_line_vortices: This function takes in a group of points, origins, terminations and
+                                                 strengths. At every point, it finds the induced velocity due to every
+                                                 line vortex, which are characterized by the groups of origins,
+                                                 terminations, and strengths.
 """
 
 import numpy as np
@@ -76,7 +79,7 @@ class LineVortex:
     def calculate_induced_velocity(self, point, overriding_strength=None):
         """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
-        This function uses methodology described on pp. 251-255 of the second edition of "Low-Speed Aerodynamics" by
+        This method uses methodology described on pp. 251-255 of the second edition of "Low-Speed Aerodynamics" by
         Joseph Katz and Allen Plotkin.
 
         :param point: 1D ndarray
@@ -514,3 +517,182 @@ class RingVortex:
             self.back_left_vertex,
             self.back_right_vertex,
         )
+
+
+def calculate_velocity_induced_by_line_vortices(
+    points, origins, terminations, strengths, collapse=True
+):
+    """ This function takes in a group of points, origins, terminations and strengths. At every point, it finds the
+        induced velocity due to every line vortex, which are characterized by the groups of origins, terminations, and
+        strengths.
+
+        This method uses vectorization, and therefore is much faster for batch operations than using the vortex objects'
+        class methods for calculating induced velocity.
+
+        This function uses methodology described on pp. 251-255 of the second edition of "Low-Speed Aerodynamics" by
+        Joseph Katz and Allen Plotkin.
+
+    :param points: 2D ndarray of floats
+        This variable is an ndarray of shape (N x 3), where N is the number of points. Each row contains the x, y, and z
+        float coordinates of that point's position in meters.
+    :param origins: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of line vortices. Each row contains the x,
+        y, and z float coordinates of that line vortex's origin's position in meters.
+    :param terminations: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of line vortices. Each row contains the x,
+        y, and z float coordinates of that line vortex's terminations's position in meters.
+    :param strengths: 1D ndarray of floats
+        This variable is an ndarray of shape (, M), where M is the number of line vortices. Each row contains the x, y,
+        and z float coordinates of that line vortex's strength in meters squared per second.
+    :param collapse: bool, optional
+        This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
+        (N x 3). If true, than the effect from every line vortex on a given point will be summed, so the result will be
+        of shape (N x 3), where each row identifies the summed effects on a point. If false, than the effect from every
+        line vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the
+        effect on a point by one of the line vortices.
+    :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
+        If collapse is true, the output is the summed effects from every line vortex on a given point. The result will
+        be of shape (N x 3), where each row identifies the effects on a point. If false, than the effect from every line
+        vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the effect
+        on one point by one of the line vortices. Either way, the results units are meters per second.
+    """
+
+    # Validate the input. These steps significantly reduces the complexity of debugging.
+
+    # Check that all the inputs are ndarrays.
+    assert isinstance(points, np.ndarray)
+    assert isinstance(origins, np.ndarray)
+    assert isinstance(terminations, np.ndarray)
+    assert isinstance(strengths, np.ndarray)
+
+    # Get the shapes of the input ndarrays.
+    points_shape = points.shape
+    origin_shape = origins.shape
+    termination_shape = terminations.shape
+    strength_shape = strengths.shape
+
+    # Get the number of dimensions of the input ndarrays.
+    points_num_dims = points.ndim
+    origin_num_dims = origins.ndim
+    termination_num_dims = terminations.ndim
+    strength_num_dims = strengths.ndim
+
+    # Validate that each input has the correct dimensionality.
+    assert points_num_dims == 2
+    assert origin_num_dims == 2
+    assert termination_num_dims == 2
+    assert strength_num_dims == 1
+
+    # Find the number of line vortices, according to the origins, terminations, and strengths inputs.
+    num_origins = origin_shape[0]
+    num_terminations = termination_shape[0]
+    num_strengths = strength_shape[0]
+
+    # Check that the origins, terminations, and strengths inputs agree on the number of line vortices.
+    assert num_origins == num_terminations == num_strengths
+
+    # Get the number of coordinates for each row in the points, origins, and terminations inputs.
+    points_num_coordinates = points_shape[-1]
+    origin_num_coordinates = origin_shape[-1]
+    termination_num_coordinates = termination_shape[-1]
+
+    # Check that each row of the points, origins, and terminations inputs all have three coordinates (x, y, and z).
+    assert points_num_coordinates == 3
+    assert origin_num_coordinates == 3
+    assert termination_num_coordinates == 3
+
+    # Check that every position in every input holds a float.
+    for coordinate in np.ravel(points):
+        assert isinstance(coordinate, float)
+    for coordinate in np.ravel(origins):
+        assert isinstance(coordinate, float)
+    for coordinate in np.ravel(terminations):
+        assert isinstance(coordinate, float)
+    for strength in np.ravel(strengths):
+        assert isinstance(strength, float)
+
+    # We have now verified that:
+    #   1.  points is a 2D ndarray of floats with shape Nx3. Each row stores one of N points. The columns store each
+    #       point's x, y, and z coordinates.
+    #   2.  origins is a 2D ndarray of floats with shape Mx3. Each row stores one of M origins. The columns store each
+    #       origin's x, y, and z coordinates.
+    #   3.  terminations is a 2D ndarray of floats with shape Mx3. Each row stores one of M terminations. The columns
+    #       store each termination's x, y, and z coordinates
+    #   4.  strengths is a 1D ndarray of floats with shape M. Each positions stores one of M strengths. The columns
+    #       store each strength's value.
+
+    # Get the number of vortices, and the number of points.
+    num_vortices = num_strengths
+    num_points = points_shape[0]
+
+    # Expand the dimensionality of the points input. It is now of shape (N x 1 x 3). This will allow numpy to
+    # broadcast the upcoming subtractions.
+    points = np.expand_dims(points, axis=1)
+
+    # Define the vectors from the vortex to the points. r_1 and r_2 now both are of shape (N x M x 3). Each row/column
+    # pair holds the vector associated with each point/vortex pair.
+    r_1 = points - origins
+    r_2 = points - terminations
+
+    # Define the vector from the vortex origins to the vortex terminations. This is of shape (N x M x 3).
+    r_0 = r_1 - r_2
+
+    # Calculate the vector cross product. This is of shape (N x M x 3).
+    r_1_cross_r_2 = np.cross(r_1, r_2, axis=-1)
+
+    # Calculate the cross product's absolute magnitude. This is of shape (N x M).
+    r_1_cross_r_2_absolute_magnitude = (
+        r_1_cross_r_2[:, :, 0] ** 2
+        + r_1_cross_r_2[:, :, 1] ** 2
+        + r_1_cross_r_2[:, :, 2] ** 2
+    )
+
+    # Calculate the vector lengths. These are of shape (N x M).
+    r_1_length = np.linalg.norm(r_1, axis=-1)
+    r_2_length = np.linalg.norm(r_2, axis=-1)
+
+    # Define the radius of the line vortices. This is used to get rid of any singularities.
+    radius = 3.0e-16
+
+    # Set the lengths and the absolute magnitudes to zero, at the places where the lengths and absolute magnitudes are
+    # less than the vortex radius. This insures that the calculation for the constant k will produce np.inf or np.nan
+    # values at the locations where there are singularities.
+    r_1_length[r_1_length < radius] = 0
+    r_2_length[r_2_length < radius] = 0
+    r_1_cross_r_2_absolute_magnitude[r_1_cross_r_2_absolute_magnitude < radius] = 0
+
+    # Calculate the vector dot products. This uses numpy's einsum function for speed.
+    r_0_dot_r_1 = np.einsum("ijk,ijk->ij", r_0, r_1)
+    r_0_dot_r_2 = np.einsum("ijk,ijk->ij", r_0, r_2)
+
+    # Calculate k, ignoring any divide-by-zero or nan errors. k is of shape (N x M)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        k = (
+            strengths
+            / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
+            * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
+        )
+
+    # Set the values of k to zero where there are singularities. k is still of shape (N x M)
+    k[np.isinf(k)] = 0
+    k[np.isnan(k)] = 0
+
+    # Set the shape of k to be (N x M x 1) to support numpy broadcasting in the subsequent multiplication.
+    k = np.expand_dims(k, axis=2)
+
+    # Multiple k by the cross products of r_1 and r_2 to get the non-collapsed matrix of induced velocities. This is of
+    # shape (M x N x 3).
+    induced_velocities = k * r_1_cross_r_2
+
+    # Get the shape of the induced velocity matrix.
+    induced_velocities_shape = induced_velocities.shape
+
+    # Check that the calculations produced the expected shape.
+    assert induced_velocities_shape == (num_points, num_vortices, 3)
+
+    if collapse:
+        induced_velocities = np.sum(induced_velocities, axis=1)
+        induced_velocities_shape = induced_velocities.shape
+        assert induced_velocities_shape == (num_points, 3)
+
+    return induced_velocities

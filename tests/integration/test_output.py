@@ -97,7 +97,7 @@ class TestOutput(unittest.TestCase):
 
         # Call the draw function on the unsteady solver fixture.
         asmvp.output.draw(
-            airplane=self.unsteady_solver.steady_problems[0].airplane,
+            solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
             show_streamlines=False,

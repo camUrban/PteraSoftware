@@ -55,7 +55,7 @@ def draw(
         solver,
         asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
-        airplane = solver.current_airplane
+        airplane = solver.steady_problems[-1].airplane
     else:
         airplane = solver.airplane
 

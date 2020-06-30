@@ -66,6 +66,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
         self.freestream_wing_influences = np.zeros(self.airplane.num_panels)
         self.vortex_strengths = np.zeros(self.airplane.num_panels)
+        self.streamline_points = None
 
     def run(self, verbose=True):
         """Run the solver on the steady problem.
@@ -683,6 +684,9 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
+        # Initialize the streamline points attribute using the number of steps in this simulation.
+        self.streamline_points = np.empty((num_steps + 1, 0, 3))
+
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
@@ -722,3 +726,8 @@ class SteadyRingVortexLatticeMethodSolver:
                         last_point
                         + delta_time * self.calculate_solution_velocity(last_point)
                     )
+
+            # Stack the current wing's streamline point matrix on to the solver's streamline point matrix.
+            self.streamline_points = np.hstack(
+                (self.streamline_points, wing.streamline_points)
+            )

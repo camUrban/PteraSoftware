@@ -23,6 +23,8 @@ import unittest
 
 import tests.integration.fixtures.solver_fixtures
 
+import aviansoftwareminimumviableproduct as asmvp
+
 
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
     """ This is a class for testing the steady horseshoe vortex lattice method solver.
@@ -93,10 +95,8 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        import aviansoftwareminimumviableproduct as asmvp
-
         asmvp.output.draw(
-            airplane=self.steady_horseshoe_vortex_lattice_method_validation_solver.airplane,
+            solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
             show_delta_pressures=True,
@@ -140,10 +140,8 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        import aviansoftwareminimumviableproduct as asmvp
-
         asmvp.output.draw(
-            airplane=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplane,
+            solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_streamlines=True,
             show_wake_vortices=False,

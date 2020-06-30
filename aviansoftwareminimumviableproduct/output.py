@@ -16,10 +16,11 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
+import aviansoftwareminimumviableproduct as asmvp
 
 
 def draw(
-    airplane,
+    solver,
     show_delta_pressures=False,
     show_streamlines=False,
     show_wake_vortices=False,
@@ -31,8 +32,8 @@ def draw(
         Author:               Peter Sharpe
         Date of Retrieval:    03/28/2020
 
-    :param airplane: Airplane
-        This is the airplane object whose geometry is to be plotted.
+    :param solver: SteadyHorseshoeVortexLatticeMethodSolver or SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
+        This is the solver object whose geometry and attributes are to be plotted.
     :param show_delta_pressures: bool, optional
         Set this variable to true to show the change in pressure across the panels. The default value is False.
     :param show_streamlines: bool, optional
@@ -48,6 +49,15 @@ def draw(
 
     # Set the color map.
     color_map = plt.cm.get_cmap("plasma")
+
+    # Get the solver's geometry.
+    if isinstance(
+        solver,
+        asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
+        airplane = solver.current_airplane
+    else:
+        airplane = solver.airplane
 
     # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3), dtype=int)
@@ -171,31 +181,28 @@ def draw(
     # Check if the user wants to plot streamlines.
     if show_streamlines:
 
-        # Iterate through the airplane's wings.
-        for wing in airplane.wings:
+        # Iterate through the spanwise positions in the solver's streamline point matrix.
+        for spanwise_position in range(solver.streamline_points.shape[1]):
 
-            # Iterate through the wing's spanwise positions, and slice the wing's streamline point matrix into columns.
-            for spanwise_position in range(wing.num_spanwise_panels):
-                streamline_point_column = wing.streamline_points[
-                    :, spanwise_position, :
-                ]
+            # Get the column of streamline points at this spanwise position.
+            streamline_point_column = solver.streamline_points[:, spanwise_position, :]
 
-                # Iterate through each streamline point column.
-                for point_index in range(streamline_point_column.shape[0]):
+            # Iterate through each streamline point column.
+            for point_index in range(streamline_point_column.shape[0]):
 
-                    # Skip the first point because it has not previous point with which to make a line.
-                    if point_index != 0:
-                        # Get the current, and the last point.
-                        point = streamline_point_column[point_index, :]
-                        last_point = streamline_point_column[point_index - 1, :]
+                # Skip the first point because it has not previous point with which to make a line.
+                if point_index != 0:
+                    # Get the current, and the last point.
+                    point = streamline_point_column[point_index, :]
+                    last_point = streamline_point_column[point_index - 1, :]
 
-                        # Add a line to make this segment of the streamline.
-                        plotter.add_mesh(
-                            pv.Line(last_point, point,),
-                            show_edges=True,
-                            color="#EEEEEF",
-                            line_width=2,
-                        )
+                    # Add a line to make this segment of the streamline.
+                    plotter.add_mesh(
+                        pv.Line(last_point, point,),
+                        show_edges=True,
+                        color="#EEEEEF",
+                        line_width=2,
+                    )
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="#000000")

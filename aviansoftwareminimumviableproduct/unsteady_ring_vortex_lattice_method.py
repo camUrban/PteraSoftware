@@ -75,6 +75,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_freestream_wing_influences = None
         self.current_wake_wing_influences = None
         self.current_vortex_strengths = None
+        self.streamline_points = None
 
     def run(self, verbose=True, prescribed_wake=True):
         """This method runs the solver on the unsteady problem.
@@ -765,6 +766,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
+        # Initialize the streamline points attribute using the number of steps in this simulation.
+        self.streamline_points = np.empty((streamline_num_steps + 1, 0, 3))
+
         # Get the current airplane.
         airplane = self.current_airplane
 
@@ -808,6 +812,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         + streamline_delta_time
                         * self.calculate_solution_velocity(last_point)
                     )
+
+            # Stack the current wing's streamline point matrix on to the solver's streamline point matrix.
+            self.streamline_points = np.hstack(
+                (self.streamline_points, wing.streamline_points)
+            )
 
     def populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplane's wake.

@@ -18,6 +18,11 @@ This module contains the following functions:
                                                       velocity due to every horseshoe vortex, which are characterized by
                                                       groups of back right vertices, front right vertices, front left
                                                       vertices, back left vertices, and strengths.
+    calculate_velocity_induced_by_ring_vortices: This function takes in a group of points, and the attributes of a group
+                                                 of ring vortices. At every point, it finds the induced velocity due to
+                                                 every ring vortex, which are characterized by groups of back right
+                                                 vertices, front right vertices, front left vertices, back left
+                                                 vertices, and strengths.
 """
 
 import numpy as np
@@ -703,7 +708,6 @@ def calculate_velocity_induced_by_line_vortices(
     return induced_velocities
 
 
-# ToDo: Properly document this function.
 def calculate_velocity_induced_by_horseshoe_vortices(
     points,
     back_right_vortex_vertices,
@@ -751,6 +755,7 @@ def calculate_velocity_induced_by_horseshoe_vortices(
         the effect on one point by one of the horseshoe vortices. Either way, the results units are meters per second.
     """
 
+    # Get the velocity induced by each leg of the horseshoe vortex.
     right_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_right_vortex_vertices,
@@ -758,7 +763,6 @@ def calculate_velocity_induced_by_horseshoe_vortices(
         strengths=strengths,
         collapse=collapse,
     )
-
     finite_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_right_vortex_vertices,
@@ -766,7 +770,6 @@ def calculate_velocity_induced_by_horseshoe_vortices(
         strengths=strengths,
         collapse=collapse,
     )
-
     left_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_left_vortex_vertices,
@@ -775,8 +778,99 @@ def calculate_velocity_induced_by_horseshoe_vortices(
         collapse=collapse,
     )
 
+    # Calculate the total induced velocity by summing the velocities induced by each leg.
     induced_velocities = (
         right_leg_velocities + finite_leg_velocities + left_leg_velocities
     )
 
+    # Return the induced velocity.
+    return induced_velocities
+
+
+def calculate_velocity_induced_by_ring_vortices(
+    points,
+    back_right_vortex_vertices,
+    front_right_vortex_vertices,
+    front_left_vortex_vertices,
+    back_left_vortex_vertices,
+    strengths,
+    collapse=True,
+):
+    """ This function takes in a group of points, and the attributes of a group of ring vortices. At every point, it
+    finds the induced velocity due to every ring vortex, which are characterized by groups of back right vertices, front
+    right vertices, front left vertices, back left vertices, and strengths.
+
+        This method uses vectorization, and therefore is much faster for batch operations than using the vortex objects'
+        class methods for calculating induced velocity.
+
+    :param points: 2D ndarray of floats
+        This variable is an ndarray of shape (N x 3), where N is the number of points. Each row contains the x, y, and z
+        float coordinates of that point's position in meters.
+    :param back_right_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's back right vertex's position in meters.
+    :param front_right_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front right vertex's position in meters.
+    :param front_left_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front left vertex's position in meters.
+    :param back_left_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front left vertex's position in meters.
+    :param strengths: 1D ndarray of floats
+        This variable is an ndarray of shape (, M), where M is the number of ring vortices. Each holds the strength of
+        that ring vortex in meters squared per second.
+    :param collapse: bool, optional
+        This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
+        (N x 3). If true, than the effect from every ring vortex on a given point will be summed, so the result will be
+        of shape (N x 3), where each row identifies the summed effects on a point. If false, than the effect from every
+        ring vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the
+        effect on a point by one of the ring vortices.
+    :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
+        If collapse is true, the output is the summed effects from every ring vortex on a given point. The result will
+        be of shape (N x 3), where each row identifies the effects on a point. If false, than the effect from every ring
+        vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the effect
+        on one point by one of the ring vortices. Either way, the results units are meters per second.
+    """
+
+    # Get the velocity induced by each leg of the ring vortex.
+    right_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=back_right_vortex_vertices,
+        terminations=front_right_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+    front_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=front_right_vortex_vertices,
+        terminations=front_left_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+    left_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=front_left_vortex_vertices,
+        terminations=back_left_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+    back_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=back_left_vortex_vertices,
+        terminations=back_right_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+
+    # Calculate the total induced velocity by summing the velocities induced by each leg.
+    induced_velocities = (
+        right_leg_velocities
+        + front_leg_velocities
+        + left_leg_velocities
+        + back_leg_velocities
+    )
+
+    # Return the induced velocity.
     return induced_velocities

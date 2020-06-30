@@ -13,6 +13,11 @@ This module contains the following functions:
                                                  strengths. At every point, it finds the induced velocity due to every
                                                  line vortex, which are characterized by the groups of origins,
                                                  terminations, and strengths.
+    calculate_velocity_induced_by_horseshoe_vortices: This function takes in a group of points, and the attributes of a
+                                                      group of horseshoe vortices. At every point, it finds the induced
+                                                      velocity due to every horseshoe vortex, which are characterized by
+                                                      groups of back right vertices, front right vertices, front left
+                                                      vertices, back left vertices, and strengths.
 """
 
 import numpy as np
@@ -523,8 +528,8 @@ def calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
     """ This function takes in a group of points, origins, terminations and strengths. At every point, it finds the
-        induced velocity due to every line vortex, which are characterized by the groups of origins, terminations, and
-        strengths.
+    induced velocity due to every line vortex, which are characterized by the groups of origins, terminations, and
+    strengths.
 
         This method uses vectorization, and therefore is much faster for batch operations than using the vortex objects'
         class methods for calculating induced velocity.
@@ -540,10 +545,10 @@ def calculate_velocity_induced_by_line_vortices(
         y, and z float coordinates of that line vortex's origin's position in meters.
     :param terminations: 2D ndarray of floats
         This variable is an ndarray of shape (M x 3), where M is the number of line vortices. Each row contains the x,
-        y, and z float coordinates of that line vortex's terminations's position in meters.
+        y, and z float coordinates of that line vortex's termination's position in meters.
     :param strengths: 1D ndarray of floats
-        This variable is an ndarray of shape (, M), where M is the number of line vortices. Each row contains the x, y,
-        and z float coordinates of that line vortex's strength in meters squared per second.
+        This variable is an ndarray of shape (, M), where M is the number of line vortices. Each position contains the
+        strength of that line vortex in meters squared per second.
     :param collapse: bool, optional
         This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
         (N x 3). If true, than the effect from every line vortex on a given point will be summed, so the result will be
@@ -694,5 +699,84 @@ def calculate_velocity_induced_by_line_vortices(
         induced_velocities = np.sum(induced_velocities, axis=1)
         induced_velocities_shape = induced_velocities.shape
         assert induced_velocities_shape == (num_points, 3)
+
+    return induced_velocities
+
+
+# ToDo: Properly document this function.
+def calculate_velocity_induced_by_horseshoe_vortices(
+    points,
+    back_right_vortex_vertices,
+    front_right_vortex_vertices,
+    front_left_vortex_vertices,
+    back_left_vortex_vertices,
+    strengths,
+    collapse=True,
+):
+    """ This function takes in a group of points, and the attributes of a group of horseshoe vortices. At every point,
+    it finds the induced velocity due to every horseshoe vortex, which are characterized by groups of back right
+    vertices, front right vertices, front left vertices, back left vertices, and strengths.
+
+        This method uses vectorization, and therefore is much faster for batch operations than using the vortex objects'
+        class methods for calculating induced velocity.
+
+    :param points: 2D ndarray of floats
+        This variable is an ndarray of shape (N x 3), where N is the number of points. Each row contains the x, y, and z
+        float coordinates of that point's position in meters.
+    :param back_right_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's back right vertex's position in meters.
+    :param front_right_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front right vertex's position in meters.
+    :param front_left_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front left vertex's position in meters.
+    :param back_left_vortex_vertices: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front left vertex's position in meters.
+    :param strengths: 1D ndarray of floats
+        This variable is an ndarray of shape (, M), where M is the number of horseshoe vortices. Each holds the strength
+        of that horseshoe vortex in meters squared per second.
+    :param collapse: bool, optional
+        This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
+        (N x 3). If true, than the effect from every horseshoe vortex on a given point will be summed, so the result
+        will be of shape (N x 3), where each row identifies the summed effects on a point. If false, than the effect
+        from every horseshoe vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair
+        identifies the effect on a point by one of the horseshoe vortices.
+    :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
+        If collapse is true, the output is the summed effects from every horseshoe vortex on a given point. The result
+        will be of shape (N x 3), where each row identifies the effects on a point. If false, than the effect from every
+        horseshoe vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies
+        the effect on one point by one of the horseshoe vortices. Either way, the results units are meters per second.
+    """
+
+    right_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=back_right_vortex_vertices,
+        terminations=front_right_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+
+    finite_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=front_right_vortex_vertices,
+        terminations=front_left_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+
+    left_leg_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_line_vortices(
+        points=points,
+        origins=front_left_vortex_vertices,
+        terminations=back_left_vortex_vertices,
+        strengths=strengths,
+        collapse=collapse,
+    )
+
+    induced_velocities = (
+        right_leg_velocities + finite_leg_velocities + left_leg_velocities
+    )
 
     return induced_velocities

@@ -22,6 +22,8 @@ import unittest
 
 import tests.integration.fixtures.solver_fixtures
 
+import aviansoftwareminimumviableproduct as asmvp
+
 
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """ This is a class for testing the steady ring vortex lattice method solver.
@@ -87,6 +89,13 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
         # Set the allowable percent error.
         allowable_error = 0.10
+
+        asmvp.output.draw(
+            solver=self.steady_ring_vortex_lattice_method_validation_solver,
+            show_wake_vortices=False,
+            show_streamlines=True,
+            show_delta_pressures=True,
+        )
 
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(CDi_error < allowable_error)

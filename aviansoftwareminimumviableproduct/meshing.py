@@ -625,5 +625,21 @@ def mesh_wing(wing):
             # This section's panel matrix is stack horizontally, to the left of the wing's panel matrix.
             panels = np.hstack((np.flip(section_panels, axis=1), panels))
 
+    # Iterate through the panels and populate their left and right edge flags. Also populate their local position
+    # attributes.
+    for chordwise_position in range(wing.num_chordwise_panels):
+        for spanwise_position in range(wing.num_spanwise_panels):
+            panel = panels[chordwise_position, spanwise_position]
+            panel.local_chordwise_position = chordwise_position
+            panel.local_spanwise_position = spanwise_position
+            if spanwise_position == 0:
+                panel.is_left_edge = True
+            else:
+                panel.is_left_edge = False
+            if spanwise_position == wing.num_spanwise_panels - 1:
+                panel.is_right_edge = True
+            else:
+                panel.is_right_edge = False
+
     # Populate the wing's panels attribute.
     wing.panels = panels

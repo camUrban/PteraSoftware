@@ -81,7 +81,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.streamline_points = None
 
     def run(self, verbose=True):
-        """Run the solver on the steady problem.
+        """ Run the solver on the steady problem.
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console. It's default value is True.
@@ -202,7 +202,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
 
     def initialize_panel_vortices(self):
-        """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
+        """ This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
 
         Every panel has a horseshoe vortex. The vortex's finite leg runs along the panel's quarter chord from right to
         left. It's infinite legs points backwards in the positive x direction.
@@ -270,9 +270,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 self.panel_collocation_points[
                     global_panel_position, :
                 ] = panel.collocation_point
-                self.panel_vortex_strengths[
-                    global_panel_position
-                ] = panel.horseshoe_vortex.strength
                 self.panel_back_right_vortex_vertices[
                     global_panel_position, :
                 ] = panel.horseshoe_vortex.right_leg.origin
@@ -308,7 +305,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 global_panel_position += 1
 
     def calculate_wing_wing_influences(self):
-        """This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
+        """ This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
         geometry.
 
         :return: None
@@ -335,7 +332,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
     def calculate_freestream_wing_influences(self):
-        """This method finds the vector of freestream-wing influence coefficients associated with this problem.
+        """ This method finds the vector of freestream-wing influence coefficients associated with this problem.
 
         :return: None
         """
@@ -347,7 +344,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
     def calculate_vortex_strengths(self):
-        """Solve for each panel's vortex strengths.
+        """ Solve for each panel's vortex strengths.
 
         :return: None
         """
@@ -367,7 +364,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_num])
 
     def calculate_near_field_forces_and_moments(self):
-        """Find the the forces and moments calculated from the near field.
+        """ Find the the forces and moments calculated from the near field.
+
+        Note: The forces and moments calculated are in geometry axes. The moment is about the airplane's reference
+              point, which should be at the center of gravity. The units are Newtons and Newton-meters.
 
         :return: None
         """
@@ -500,7 +500,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):
-        """Calculates the location of the streamlines coming off the back of the wings.
+        """ Calculates the location of the streamlines coming off the back of the wings.
 
         :param num_steps: int, optional
             This is the integer number of points along each streamline (not including the initial points). It can be

@@ -111,7 +111,7 @@ class Airplane:
 
         # Calculate the number of panels in the entire current_airplane.
         self.num_panels = 0
-        for wing in self.wings:
+        for wing_position, wing in enumerate(self.wings):
             self.num_panels += wing.num_panels
 
         # Initialize empty class attributes to hold the force, moment, force coefficients, and moment coefficients this
@@ -214,10 +214,6 @@ class Wing:
         self.num_chordwise_panels = num_chordwise_panels
         self.chordwise_spacing = chordwise_spacing
 
-        # Initialize the the panels attribute. Then mesh the wing, which will populate this attribute.
-        self.panels = None
-        asmvp.meshing.mesh_wing(self)
-
         # Find the number of spanwise panels on the wing by adding each cross section's number of spanwise panels.
         # Exclude the last cross section's number of spanwise panels as this is irrelevant. If the wing is symmetric,
         # multiple the summation by two.
@@ -229,6 +225,10 @@ class Wing:
 
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
+
+        # Initialize the the panels attribute. Then mesh the wing, which will populate this attribute.
+        self.panels = None
+        asmvp.meshing.mesh_wing(self)
 
         # Initialize and calculate the wing's wetted area. If the wing is symmetrical, this includes the area of the
         # mirrored half.
@@ -909,9 +909,9 @@ class Panel:
         :param back_right_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's back right vertex.
         :param is_leading_edge: bool
-            This is true if the panel is the leading edge panel on a wing, and false otherwise.
+            This is true if the panel is a leading edge panel on a wing, and false otherwise.
         :param is_trailing_edge: bool
-            This is true if the panel is the trailing edge panel on a wing, and false otherwise.
+            This is true if the panel is a trailing edge panel on a wing, and false otherwise.
         """
 
         # Initialize the attributes.
@@ -921,6 +921,17 @@ class Panel:
         self.back_right_vertex = back_right_vertex
         self.is_leading_edge = is_leading_edge
         self.is_trailing_edge = is_trailing_edge
+
+        # Initialize variables to hold attributes that describe the panel's position in its wing's panel matrix. They
+        # will be populated by the meshing function.
+        self.is_right_edge = None
+        self.is_left_edge = None
+        self.local_chordwise_position = None
+        self.local_spanwise_position = None
+
+        # Initialize a variable to hold the position of the wing (who this panel belongs to) in the airplane's wing
+        # list. This will be populated by the airplane object.
+        self.wing_position = None
 
         # Initialize variables to hold the panel's ring and horseshoe vortices. These will be populated by the solver.
         self.ring_vortex = None

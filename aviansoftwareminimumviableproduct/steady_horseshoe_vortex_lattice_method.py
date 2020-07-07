@@ -30,8 +30,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                                    panels' vortices.
         collapse_geometry: This method converts attributes of the problem's geometry into 1D ndarrays. This facilitates
                            vectorization, which speeds up the solver.
-        calculate_wing_wing_influences: Find the matrix of aerodynamic influence coefficients associated with this
-                                        problem's geometry.
+        calculate_wing_wing_influences: This method finds the matrix of wing-wing influence coefficients associated with
+                                        this airplane's geometry.
         calculate_freestream_wing_influences: Find the normal velocity speed at every collocation points without the
                                               influence of the vortices.
         calculate_vortex_strengths: Solve for each panels' vortex strengths.
@@ -252,7 +252,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Initialize a variable to hold the global position of the panel as we iterate through them.
         global_panel_position = 0
 
-        # Iterate through the current_airplane's wings.
+        # Iterate through the airplane's wings.
         for wing in self.airplane.wings:
 
             # Convert this wing's 2D ndarray of panels into a 1D ndarray.
@@ -305,8 +305,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 global_panel_position += 1
 
     def calculate_wing_wing_influences(self):
-        """ This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
-        geometry.
+        """ This method finds the matrix of wing-wing influence coefficients associated with this airplane's geometry.
 
         :return: None
         """

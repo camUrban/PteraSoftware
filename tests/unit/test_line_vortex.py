@@ -14,7 +14,7 @@ import unittest
 
 import numpy as np
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 import tests.unit.fixtures.vortex_fixtures
 
 

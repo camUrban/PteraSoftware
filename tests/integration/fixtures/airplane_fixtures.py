@@ -18,7 +18,7 @@ This module contains the following functions:
 
 """
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 def make_steady_validation_airplane():

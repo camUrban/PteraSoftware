@@ -16,7 +16,7 @@ This module contains the following functions:
                                                              variable geometry to be used as a fixture.
 """
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 import tests.integration.fixtures.operating_point_fixtures
 import tests.integration.fixtures.airplane_fixtures
 import tests.integration.fixtures.movement_fixtures

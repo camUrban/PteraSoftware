@@ -57,4 +57,18 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         """
 
         # Run the unsteady solver.
-        self.unsteady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
+        self.unsteady_ring_vortex_lattice_method_validation_solver.run(
+            verbose=True, prescribed_wake=True
+        )
+
+        import aviansoftwareminimumviableproduct as asmvp
+
+        asmvp.output.animate(
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
+            show_delta_pressures=True,
+            show_wake_vortices=True,
+        )
+
+        asmvp.output.plot_results_versus_time(
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
+        )

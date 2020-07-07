@@ -82,7 +82,7 @@ def make_static_validation_movement():
     unsteady_validation_movement = asmvp.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=15,
+        num_steps=60,
         delta_time=1 / 6 / 10,
     )
 
@@ -121,9 +121,9 @@ def make_variable_validation_movement():
         base_wing_cross_section=unsteady_validation_airplane.wings[
             0
         ].wing_cross_sections[1],
-        z_le_amplitude=1.0,
-        z_le_period=0.1,
-        z_le_spacing="uniform",
+        z_le_amplitude=2.0,
+        z_le_period=1.0,
+        z_le_spacing="sine",
     )
 
     # Create a wing movement object associated with this airplane's wing.
@@ -152,8 +152,6 @@ def make_variable_validation_movement():
     # Create an operating point movement object associated with this operating point.
     unsteady_validation_operating_point_movement = asmvp.movement.OperatingPointMovement(
         base_operating_point=unsteady_validation_operating_point,
-        velocity_amplitude=1.0,
-        velocity_period=0.2,
     )
 
     # Delete the now extraneous constructing fixtures.
@@ -163,7 +161,7 @@ def make_variable_validation_movement():
     unsteady_validation_movement = asmvp.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=5,
+        num_steps=60,
         delta_time=1 / 6 / 10,
     )
 

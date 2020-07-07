@@ -66,7 +66,9 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         """
 
         # Run the solver.
-        self.unsteady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
+        self.unsteady_ring_vortex_lattice_method_validation_solver.run(
+            verbose=True, prescribed_wake=True
+        )
 
         # Calculate the percent errors of the output.
         CDi_expected = 0.011
@@ -96,6 +98,10 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             show_delta_pressures=True,
+        )
+
+        asmvp.output.plot_results_versus_time(
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
         )
 
         # Assert that the percent errors are less than the allowable error.

@@ -27,7 +27,7 @@ This module contains the following functions:
                                                                                        fixture.
 """
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 import tests.integration.fixtures.problem_fixtures
 
 

@@ -20,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 from scipy import signal
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 class Movement:

@@ -16,7 +16,7 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 def draw(

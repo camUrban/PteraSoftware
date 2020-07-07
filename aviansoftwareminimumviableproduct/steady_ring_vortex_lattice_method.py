@@ -30,7 +30,7 @@ class SteadyRingVortexLatticeMethodSolver:
         collapse_geometry: This method converts attributes of the problem's geometry into 1D ndarrays. This facilitates
                            vectorization, which speeds up the solver.
         calculate_wing_wing_influences: This method finds the matrix of wing-wing influence coefficients associated with
-                                        this current_airplane's geometry.
+                                        this airplane's geometry.
         calculate_freestream_wing_influences: This method finds the vector of freestream-wing influence coefficients
                                               associated with this problem.
         calculate_vortex_strengths: This method solves for each panel's vortex strength.
@@ -70,7 +70,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.vortex_strengths = np.ones(self.airplane.num_panels)
         self.panel_normal_directions = np.zeros((self.airplane.num_panels, 3))
         self.panel_areas = np.zeros(self.airplane.num_panels)
-        self.panel_collocation_point = np.zeros((self.airplane.num_panels, 3))
+        self.panel_collocation_points = np.zeros((self.airplane.num_panels, 3))
         self.panel_back_right_vortex_vertices = np.zeros((self.airplane.num_panels, 3))
         self.panel_front_right_vortex_vertices = np.zeros((self.airplane.num_panels, 3))
         self.panel_front_left_vortex_vertices = np.zeros((self.airplane.num_panels, 3))
@@ -103,7 +103,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.horseshoe_vortex_back_left_vertex = np.zeros((self.airplane.num_panels, 3))
         self.horseshoe_vortex_strengths = np.zeros(self.airplane.num_panels)
 
-        # Initialize variables to hold details on this panel's location in its wing.
+        # Initialize variables to hold details about this panel's location on its wing.
         self.panel_is_trailing_edge = np.zeros(self.airplane.num_panels, dtype=bool)
         self.panel_is_leading_edge = np.zeros(self.airplane.num_panels, dtype=bool)
         self.panel_is_left_edge = np.zeros(self.airplane.num_panels, dtype=bool)
@@ -318,7 +318,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Initialize a variable to hold the global position of the panel as we iterate through them.
         global_panel_position = 0
 
-        # Iterate through the current_airplane's wings.
+        # Iterate through the airplane's wings.
         for wing in self.airplane.wings:
 
             # Convert this wing's 2D ndarray of panels into a 1D ndarray.
@@ -333,7 +333,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     global_panel_position, :
                 ] = panel.normal_direction
                 self.panel_areas[global_panel_position] = panel.area
-                self.panel_collocation_point[
+                self.panel_collocation_points[
                     global_panel_position, :
                 ] = panel.collocation_point
                 self.panel_back_right_vortex_vertices[
@@ -415,8 +415,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 global_panel_position += 1
 
     def calculate_wing_wing_influences(self):
-        """ This method finds the matrix of wing-wing influence coefficients associated with this current_airplane's
-        geometry.
+        """ This method finds the matrix of wing-wing influence coefficients associated with this airplane's geometry.
 
         :return: None
         """
@@ -425,7 +424,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # vortex. The answer is normalized because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
         ring_vortex_influences = asmvp.aerodynamics.calculate_velocity_induced_by_ring_vortices(
-            points=self.panel_collocation_point,
+            points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
             front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
@@ -440,7 +439,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # horseshoe vortices will be updated once the correct vortex strength's are calculated. The positions elsewhere
         # will remain zero.
         horseshoe_vortex_influences = asmvp.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
-            points=self.panel_collocation_point,
+            points=self.panel_collocation_points,
             back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
             front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
             front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,

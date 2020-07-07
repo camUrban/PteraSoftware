@@ -22,7 +22,7 @@ import unittest
 
 import tests.integration.fixtures.solver_fixtures
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):

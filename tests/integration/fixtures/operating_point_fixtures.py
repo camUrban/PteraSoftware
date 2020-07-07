@@ -10,7 +10,7 @@ This module contains the following functions:
     make_validation_operating_point: This method makes an operating point object for use in tests.
 """
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 def make_validation_operating_point():

@@ -15,7 +15,7 @@ import copy as copy
 
 import numpy as np
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 class UnsteadyRingVortexLatticeMethodSolver:

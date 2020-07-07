@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 class Airplane:
@@ -581,7 +581,7 @@ class Airfoil:
 
             # Import the airfoils package as "airfoils".
             airfoils = importlib.import_module(
-                name=".airfoils", package="aviansoftwareminimumviableproduct"
+                name=".airfoils", package="pterasoftware"
             )
 
             # Read the text from the airfoil file.

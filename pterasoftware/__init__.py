@@ -1,4 +1,4 @@
-""" This package contains all the source code for the Avian Software Minimum Viable Product project.
+""" This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
     None
@@ -25,14 +25,14 @@ This package contains the following modules:
 
 """
 
-from aviansoftwareminimumviableproduct import aerodynamics
-from aviansoftwareminimumviableproduct import airfoils
-from aviansoftwareminimumviableproduct import geometry
-from aviansoftwareminimumviableproduct import meshing
-from aviansoftwareminimumviableproduct import movement
-from aviansoftwareminimumviableproduct import operating_point
-from aviansoftwareminimumviableproduct import output
-from aviansoftwareminimumviableproduct import problems
-from aviansoftwareminimumviableproduct import steady_horseshoe_vortex_lattice_method
-from aviansoftwareminimumviableproduct import steady_ring_vortex_lattice_method
-from aviansoftwareminimumviableproduct import unsteady_ring_vortex_lattice_method
+from pterasoftware import aerodynamics
+from pterasoftware import airfoils
+from pterasoftware import geometry
+from pterasoftware import meshing
+from pterasoftware import movement
+from pterasoftware import operating_point
+from pterasoftware import output
+from pterasoftware import problems
+from pterasoftware import steady_horseshoe_vortex_lattice_method
+from pterasoftware import steady_ring_vortex_lattice_method
+from pterasoftware import unsteady_ring_vortex_lattice_method

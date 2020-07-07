@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import aviansoftwareminimumviableproduct as asmvp
+import pterasoftware as asmvp
 
 
 class LegacySteadyHorseshoeVortexLatticeMethodSolver:

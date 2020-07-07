@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AvianSoftwareMinimumViableProduct.iml" filepath="$PROJECT_DIR$/.idea/AvianSoftwareMinimumViableProduct.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../PteraSoftware/.idea/PteraSoftware.iml" filepath="$PROJECT_DIR$/../PteraSoftware/.idea/PteraSoftware.iml" />
     </modules>
   </component>
 </project>

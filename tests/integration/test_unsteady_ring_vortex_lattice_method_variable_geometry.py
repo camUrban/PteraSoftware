@@ -61,7 +61,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             verbose=True, prescribed_wake=True
         )
 
-        import aviansoftwareminimumviableproduct as asmvp
+        import pterasoftware as asmvp
 
         asmvp.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,

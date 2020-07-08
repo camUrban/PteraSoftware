@@ -152,18 +152,6 @@ def make_symmetric_unsteady_validation_airplane():
                     ),
                 ],
             ),
-            ps.geometry.Wing(
-                symmetric=True,
-                chordwise_spacing="uniform",
-                wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(name="naca2412"),
-                    ),
-                    ps.geometry.WingCrossSection(
-                        y_le=5.0, airfoil=ps.geometry.Airfoil(name="naca2412"),
-                    ),
-                ],
-            ),
         ],
     )
     return symmetric_unsteady_validation_airplane

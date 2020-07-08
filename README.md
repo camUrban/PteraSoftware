@@ -24,11 +24,11 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 <img src="docs/FlappingExample.gif" alt="Flapping Example Animation" width="50%" style="vertical-align:top">
 <div>
-  <div style="padding:5px;float:left">
-    <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs" width="25%", style="float:left" padding="5%">
+  <div style="padding:5px;float:left;width:50%">
+    <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs">
   </div>
-  <div style="padding:5px;float:right">
-    <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs" width="25%", style="float:right" padding="5%">
+  <div style="padding:5px;float:left;width:50%">
+    <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs">
   </div>
 </div>
 

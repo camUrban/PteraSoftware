@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 class SteadyHorseshoeVortexLatticeMethodSolver:
@@ -234,7 +234,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Initialize the horseshoe vortex at this panel.
-                    panel.horseshoe_vortex = asmvp.aerodynamics.HorseshoeVortex(
+                    panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
                         finite_leg_origin=front_right_vortex_vertex,
                         finite_leg_termination=front_left_vortex_vertex,
                         strength=None,
@@ -312,7 +312,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Find the matrix of normalized velocities induced at every panel's collocation point by every panel's horseshoe
         # vortex.
-        induced_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+        induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -372,7 +372,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
 
         # Calculate the velocities induced at every panel's bound vortex center.
-        induced_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+        induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
             points=self.panel_bound_vortex_centers,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -520,7 +520,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             last_row_streamline_points = self.streamline_points[-1, :, :]
 
             # Find the induced velocities at this row of points.
-            induced_velocities = asmvp.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=last_row_streamline_points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,

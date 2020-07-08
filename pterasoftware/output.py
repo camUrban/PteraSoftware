@@ -16,7 +16,7 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 def draw(
@@ -51,7 +51,7 @@ def draw(
     # Get the solver's geometry.
     if isinstance(
         solver,
-        asmvp.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         airplane = solver.steady_problems[-1].airplane
     else:

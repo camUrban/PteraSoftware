@@ -55,9 +55,9 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         :return: None
         """
-        import pterasoftware as asmvp
+        import pterasoftware as ps
 
-        asmvp.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
@@ -68,12 +68,12 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             verbose=True, prescribed_wake=True
         )
 
-        asmvp.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_wake_vortices=True,
         )
 
-        asmvp.output.plot_results_versus_time(
+        ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
         )

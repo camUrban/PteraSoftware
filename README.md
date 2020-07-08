@@ -55,3 +55,5 @@ This project's primary deliverable is an opensource, fast, unsteady aerodynamics
 ## Credits
 
 ## License
+
+![MIT License](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)

@@ -90,7 +90,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         Cm_error = abs(Cm_calculated - Cm_expected) / Cm_expected
 
         # Set the allowable percent error.
-        allowable_error = 0.25
+        allowable_error = 0.10
 
         import pterasoftware as ps
 

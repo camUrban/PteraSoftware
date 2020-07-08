@@ -1,8 +1,8 @@
 # Ptera Software
 
 <p>
-The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and opensource software package for analyzing flapping-wing flight.
-<img src="docs/PteraSoftwareLogo.jpg" alt="Ptera Software Logo" width="200" height="200" style="float:right;">
+  <img src="docs/PteraSoftwareLogo.jpg" alt="Ptera Software Logo" width="200" height="200" align="right">
+  The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and opensource software package for analyzing flapping-wing flight.
 </p>
 
 ## Motivation

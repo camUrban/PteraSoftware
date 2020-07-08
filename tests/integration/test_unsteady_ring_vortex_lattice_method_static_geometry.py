@@ -92,15 +92,15 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.25
 
-        import pterasoftware as asmvp
+        import pterasoftware as ps
 
-        asmvp.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             show_delta_pressures=True,
         )
 
-        asmvp.output.plot_results_versus_time(
+        ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
         )
 

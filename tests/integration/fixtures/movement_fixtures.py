@@ -138,54 +138,19 @@ def make_variable_validation_movement():
         ],
     )
 
-    # Create a wing cross section movement object associated with this airplane's root wing cross section.
-    unsteady_validation_root_top_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[0],
-    )
-
-    # Create a wing cross section movement object associated with this airplane's tip wing cross section.
-    unsteady_validation_tip_top_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[1],
-        z_le_amplitude=3.0,
-        z_le_period=1.0,
-        z_le_spacing="sine",
-        y_le_amplitude=-1.0,
-        y_le_period=2.0,
-        y_le_spacing="sine",
-    )
-
-    # Create a wing movement object associated with this airplane's wing.
-    unsteady_validation_top_wing_movement = ps.movement.WingMovement(
-        base_wing=unsteady_validation_airplane.wings[1],
-        wing_cross_sections_movements=[
-            unsteady_validation_root_top_wing_cross_section_movement,
-            unsteady_validation_tip_top_wing_cross_section_movement,
-        ],
-    )
-
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_root_wing_cross_section_movement
     del unsteady_validation_tip_wing_cross_section_movement
-    del unsteady_validation_root_top_wing_cross_section_movement
-    del unsteady_validation_tip_top_wing_cross_section_movement
 
     # Create an airplane movement object associated with this airplane.
     unsteady_validation_airplane_movement = ps.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
-        wing_movements=[
-            unsteady_validation_wing_movement,
-            unsteady_validation_top_wing_movement,
-        ],
+        wing_movements=[unsteady_validation_wing_movement,],
     )
 
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_airplane
     del unsteady_validation_wing_movement
-    del unsteady_validation_top_wing_movement
 
     # Create an operating point movement object associated with this operating point.
     unsteady_validation_operating_point_movement = ps.movement.OperatingPointMovement(

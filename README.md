@@ -6,13 +6,15 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 ## Motivation
 
+This project's primary deliverable is an opensource, fast, unsteady aerodynamics solver for analyzing flapping-wing flight
+
 ## Build Status
 
-[![Build Status](https://travis-ci.com/camUrban/PteraSoftware.svg?token=5y8sMbF86xTyULBZ2oZN&branch=master)](https://travis-ci.com/camUrban/PteraSoftware)
+![Build Status](https://img.shields.io/travis/camUrban/PteraSoftware)
 
 ## Code Style
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Black Code Style](https://img.shields.io/badge/code%20style-black-black)
 
 ## Example Output
 
@@ -30,7 +32,7 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 ## Features
 
-[![CodeFactor](https://www.codefactor.io/repository/github/camurban/pterasoftware/badge?s=4875aaea393d225294fb04c7f190d4a4419188b1)](https://www.codefactor.io/repository/github/camurban/pterasoftware)
+![Code Quality Grade](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware)
 
 ## Code Example
 
@@ -44,7 +46,7 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 ## Tests
 
-[![codecov](https://codecov.io/gh/camUrban/PteraSoftware/branch/master/graph/badge.svg?token=DON88GF8IC)](https://codecov.io/gh/camUrban/PteraSoftware)
+![Percent Coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
 
 ## How to Use
 

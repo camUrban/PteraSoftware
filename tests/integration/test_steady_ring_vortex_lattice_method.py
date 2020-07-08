@@ -22,7 +22,7 @@ import unittest
 
 import tests.integration.fixtures.solver_fixtures
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
@@ -90,7 +90,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        asmvp.output.draw(
+        ps.output.draw(
             solver=self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,

@@ -15,7 +15,7 @@ import copy as copy
 
 import numpy as np
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 # ToDo: Properly document this class.
@@ -46,7 +46,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         populate_next_airplanes_wake_vortex_vertices: This method populates the locations of the next airplane's wake
                                                       vortex vertices.
         populate_next_airplanes_wake_vortices: This method populates the locations of the next airplane's wake vortices.
-        debug_vortices: This method prints out the current strength of the problem's vortices.
         calculate_flapping_velocity: This method gets the velocity due to flapping at a point on the panel of the
                                      current airplane based its current position, and its last position.
 
@@ -330,10 +329,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 print("Shedding wake vortices.")
             self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
 
-            # If the user has requested verbose output, print out the strength of all the ring vortices.
-            if verbose:
-                self.debug_wake_vortices()
-
         # Solve for the location of the streamlines coming off the back of the wings.
         if verbose:
             print("\nCalculating streamlines.")
@@ -392,7 +387,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the panel's ring vortex.
-                        panel.ring_vortex = asmvp.aerodynamics.RingVortex(
+                        panel.ring_vortex = ps.aerodynamics.RingVortex(
                             front_right_vertex=front_right_vortex_vertex,
                             front_left_vertex=front_left_vortex_vertex,
                             back_left_vertex=back_left_vortex_vertex,
@@ -590,7 +585,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the matrix of normalized velocities induced at every panel's collocation point by every panel's ring
         # vortex. The answer is normalized because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
-        total_influences = asmvp.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+        total_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -641,7 +636,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         if self.current_step > 0:
 
-            total_influences = asmvp.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            total_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
                 front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
@@ -685,7 +680,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Find the matrix of velocities induced at every panel's collocation point by every panel's ring
         # vortex. The effect of every ring vortex on each point will be summed.
-        ring_vortex_influences = asmvp.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+        ring_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -695,7 +690,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             collapse=True,
         )
 
-        wake_ring_vortex_influences = asmvp.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+        wake_ring_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=points,
             back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
             front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
@@ -1363,53 +1358,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # strength, and add it to the matrix of ring vortices.
                                 next_wing.wake_ring_vortices[
                                     chordwise_vertex_position, spanwise_vertex_position
-                                ] = asmvp.aerodynamics.RingVortex(
+                                ] = ps.aerodynamics.RingVortex(
                                     front_left_vertex=front_left_vertex,
                                     front_right_vertex=front_right_vertex,
                                     back_left_vertex=back_left_vertex,
                                     back_right_vertex=back_right_vertex,
                                     strength=this_strength_copy,
                                 )
-
-    # Note: This has not been vectorized.
-    def debug_wake_vortices(self):
-        """This method prints out the current strength of the problem's vortices.
-
-        :return: None
-        """
-
-        # Iterate through the airplane's wings.
-        for wing in self.current_airplane.wings:
-
-            print("\nWing Vortex Strengths: ")
-            print("\n\tPanel Vortex Strengths:\n")
-
-            # Iterate through the wing's panel positions.
-            for chordwise_position in range(wing.num_chordwise_panels):
-                for spanwise_position in range(wing.num_spanwise_panels):
-                    # Get the panel at this position, its ring vortex, and its ring vortex's strength.
-                    panel = wing.panels[chordwise_position, spanwise_position]
-                    ring_vortex = panel.ring_vortex
-                    strength = ring_vortex.strength
-
-                    # Print out the strength.
-                    print("\t\t" + str(round(strength, 2)), end="\t")
-                print()
-            print("\n\tWake Vortex Strengths:\n")
-
-            # Iterate through the wing's wake vortex positions.
-            for chordwise_position in range(wing.wake_ring_vortices.shape[0]):
-                for spanwise_position in range(wing.wake_ring_vortices.shape[1]):
-                    # Get the wake vortex at this position, and its strength.
-                    ring_vortex = wing.wake_ring_vortices[
-                        chordwise_position, spanwise_position
-                    ]
-
-                    # Print out the strength.
-                    strength = ring_vortex.strength
-                    print("\t\t" + str(round(strength, 2)), end="\t")
-                print()
-        print()
 
     # Note: This has not been vectorized.
     def calculate_flapping_velocity_on_panel(

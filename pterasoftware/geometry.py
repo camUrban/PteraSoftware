@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 class Airplane:
@@ -228,7 +228,7 @@ class Wing:
 
         # Initialize the the panels attribute. Then mesh the wing, which will populate this attribute.
         self.panels = None
-        asmvp.meshing.mesh_wing(self)
+        ps.meshing.mesh_wing(self)
 
         # Initialize and calculate the wing's wetted area. If the wing is symmetrical, this includes the area of the
         # mirrored half.
@@ -948,7 +948,7 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = asmvp.geometry.centroid_of_quadrilateral(
+        self.center = ps.geometry.centroid_of_quadrilateral(
             front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
         )
 

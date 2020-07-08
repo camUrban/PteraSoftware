@@ -14,7 +14,23 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## Screenshots
+## Example Output
+
+### Steady Horseshoe VLM
+
+### Steady Ring VLM
+
+### Unsteady Ring VLM
+
+<img src="docs/FlappingExample.gif" alt="Flapping Example Animation" width="50%" style="vertical-align:top">
+<div>
+  <div style="padding:5px">
+    <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs" width="25%", style="float:left" padding="5%">
+  </div>
+  <div style="padding:5px">
+    <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs" width="25%", style="float:right" padding="5%">
+  </div>
+</div>
 
 ## Features
 
@@ -25,6 +41,8 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 ## Installation
 
 ```pip install pterasoftware```
+
+### Requirements
 
 ## API Reference
 

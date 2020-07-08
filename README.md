@@ -23,13 +23,12 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 ### Unsteady Ring VLM
 
 <img src="docs/FlappingExample.gif" alt="Flapping Example Animation" width="50%" style="vertical-align:top">
-<div>
-  <div style="padding:5px;float:left;width:50%">
-    <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs">
-  </div>
-  <div style="padding:5px;float:left;width:50%">
-    <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs">
-  </div>
+
+<div style="padding:15px;float:left;">
+  <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs" width="27.5%" style="padding:10px;">
+</div>
+<div style="padding:15px;float:right;">
+  <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs" width="27.5%" style="padding:10px;">
 </div>
 
 ## Features

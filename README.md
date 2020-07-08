@@ -1,6 +1,6 @@
 # Ptera Software
 
-<img src="docs/PteraSoftwareLogo.jpg" alt="Ptera Software Logo" width="50%" style="vertical-align:top">
+<img src="docs/PteraSoftwareLogo.jpg" alt="Ptera Software Logo" width="50%" style="vertical-align:top;display:block;margin-left:auto;margin-right:auto;">
 
 The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and opensource software package for analyzing flapping-wing flight.
 
@@ -22,14 +22,9 @@ The minimum viable release of the Ptera Software suite: a fast, easy-to-use, and
 
 ### Unsteady Ring VLM
 
-<img src="docs/FlappingExample.gif" alt="Flapping Example Animation" width="50%" style="vertical-align:top">
-
-<div style="padding:15px;float:left;">
-  <img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs" width="27.5%" style="padding:10px;">
-</div>
-<div style="padding:15px;float:right;">
-  <img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs" width="27.5%" style="padding:10px;">
-</div>
+<img src="docs/FlappingExample.gif" alt="Flapping Example Animation" width="50%" style="vertical-align:top;display:block;margin-left:auto;margin-right:auto;">
+<img src="docs/FlappingExampleForceOutputs.jpg" alt="Flapping Example Force Outputs" width="50%" style="vertical-align:top;display:block;margin-left:auto;margin-right:auto;">
+<img src="docs/FlappingExampleMomentOutputs.jpg" alt="Flapping Example Moment Outputs" width="50%" style="vertical-align:top;display:block;margin-left:auto;margin-right:auto;">
 
 ## Features
 

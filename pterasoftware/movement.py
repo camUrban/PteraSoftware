@@ -20,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 from scipy import signal
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 class Movement:
@@ -266,7 +266,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = asmvp.geometry.Airplane(
+            this_airplane = ps.geometry.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -492,7 +492,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = asmvp.geometry.Wing(
+            this_wing = ps.geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -784,7 +784,7 @@ class WingCrossSectionMovement:
             control_surface_deflection = control_surface_deflection_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = asmvp.geometry.WingCrossSection(
+            this_wing_cross_section = ps.geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -900,7 +900,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = asmvp.operating_point.OperatingPoint(
+            this_operating_point = ps.operating_point.OperatingPoint(
                 density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 

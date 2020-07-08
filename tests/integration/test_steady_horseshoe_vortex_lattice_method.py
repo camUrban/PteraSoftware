@@ -23,7 +23,7 @@ import unittest
 
 import tests.integration.fixtures.solver_fixtures
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 
 
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
@@ -95,7 +95,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        asmvp.output.draw(
+        ps.output.draw(
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -140,7 +140,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        asmvp.output.draw(
+        ps.output.draw(
             solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_streamlines=True,

@@ -16,7 +16,7 @@ This module contains the following functions:
                                                              variable geometry to be used as a fixture.
 """
 
-import pterasoftware as asmvp
+import pterasoftware as ps
 import tests.integration.fixtures.operating_point_fixtures
 import tests.integration.fixtures.airplane_fixtures
 import tests.integration.fixtures.movement_fixtures
@@ -38,7 +38,7 @@ def make_steady_validation_problem():
     )
 
     # Create the problem fixture.
-    steady_validation_problem = asmvp.problems.SteadyProblem(
+    steady_validation_problem = ps.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -67,7 +67,7 @@ def make_steady_multiple_wing_validation_problem():
     )
 
     # Create the problem fixture.
-    steady_validation_problem = asmvp.problems.SteadyProblem(
+    steady_validation_problem = ps.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -93,7 +93,7 @@ def make_unsteady_validation_problem_with_static_geometry():
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = asmvp.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -117,7 +117,7 @@ def make_unsteady_validation_problem_with_variable_geometry():
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = asmvp.problems.UnsteadyProblem(
+    unsteady_validation_problem = ps.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 

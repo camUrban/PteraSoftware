@@ -594,6 +594,21 @@ class SteadyRingVortexLatticeMethodSolver:
                         global_panel_position
                     ] = self.vortex_strengths[global_panel_position]
 
+                else:
+
+                    # Get the panel directly to the right of this panel.
+                    panel_to_right = wing.panels[
+                        panel.local_chordwise_position,
+                        panel.local_spanwise_position + 1,
+                    ]
+
+                    # Change the effective right vortex line strength from zero to the difference between this panel's
+                    # ring vortex's strength, and the ring vortex strength of the panel to the right of it.
+                    effective_right_vortex_line_strengths[global_panel_position] = (
+                        self.vortex_strengths[global_panel_position]
+                        - panel_to_right.ring_vortex.strength
+                    )
+
                 # Check if this panel is on its wing's leading edge.
                 if panel.is_leading_edge:
 
@@ -654,6 +669,15 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Using the effective line vortex strengths, and the Kutta-Joukowski theorem to find the near field force in
         # geometry axes on the front leg, left leg, and right leg.
+        near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
+            self.operating_point.density
+            * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
+            * np.cross(
+                velocities_at_ring_vortex_right_leg_centers,
+                self.panel_right_vortex_vectors,
+                axis=-1,
+            )
+        )
         near_field_forces_on_ring_vortex_front_legs_geometry_axes = (
             self.operating_point.density
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
@@ -669,15 +693,6 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.cross(
                 velocities_at_ring_vortex_left_leg_centers,
                 self.panel_left_vortex_vectors,
-                axis=-1,
-            )
-        )
-        near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
-            self.operating_point.density
-            * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
-            * np.cross(
-                velocities_at_ring_vortex_right_leg_centers,
-                self.panel_right_vortex_vectors,
                 axis=-1,
             )
         )

@@ -520,8 +520,8 @@ class SteadyRingVortexLatticeMethodSolver:
             per second.
         """
 
-        # Find the matrix of velocities induced at every panel's collocation point by every panel's ring
-        # vortex. The effect of every ring vortex on each point will be summed.
+        # Find the matrix of velocities induced at every point by every panel's ring vortex. The effect of every ring
+        # vortex on each point will be summed.
         ring_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,

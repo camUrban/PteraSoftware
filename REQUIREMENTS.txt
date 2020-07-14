@@ -5,3 +5,4 @@ scipy
 black
 pre-commit
 codecov
+numexpr

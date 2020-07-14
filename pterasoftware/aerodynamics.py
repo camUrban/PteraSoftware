@@ -26,6 +26,7 @@ This module contains the following functions:
 """
 
 import numpy as np
+import numexpr as ne
 
 import pterasoftware as ps
 
@@ -569,57 +570,57 @@ def calculate_velocity_induced_by_line_vortices(
 
     # Validate the input. These steps significantly reduces the complexity of debugging.
 
-    # Check that all the inputs are ndarrays.
-    assert isinstance(points, np.ndarray)
-    assert isinstance(origins, np.ndarray)
-    assert isinstance(terminations, np.ndarray)
-    assert isinstance(strengths, np.ndarray)
-
-    # Get the shapes of the input ndarrays.
+    # # Check that all the inputs are ndarrays.
+    # assert isinstance(points, np.ndarray)
+    # assert isinstance(origins, np.ndarray)
+    # assert isinstance(terminations, np.ndarray)
+    # assert isinstance(strengths, np.ndarray)
+    #
+    # # Get the shapes of the input ndarrays.
     points_shape = points.shape
-    origins_shape = origins.shape
-    terminations_shape = terminations.shape
+    # origins_shape = origins.shape
+    # terminations_shape = terminations.shape
     strengths_shape = strengths.shape
-
-    # Get the number of dimensions of the input ndarrays.
-    points_num_dims = points.ndim
-    origins_num_dims = origins.ndim
-    terminations_num_dims = terminations.ndim
-    strengths_num_dims = strengths.ndim
-
-    # Validate that each input has the correct dimensionality.
-    assert points_num_dims == 2
-    assert origins_num_dims == 2
-    assert terminations_num_dims == 2
-    assert strengths_num_dims == 1
-
-    # Find the number of line vortices, according to the origins, terminations, and strengths inputs.
-    num_origins = origins_shape[0]
-    num_terminations = terminations_shape[0]
+    #
+    # # Get the number of dimensions of the input ndarrays.
+    # points_num_dims = points.ndim
+    # origins_num_dims = origins.ndim
+    # terminations_num_dims = terminations.ndim
+    # strengths_num_dims = strengths.ndim
+    #
+    # # Validate that each input has the correct dimensionality.
+    # assert points_num_dims == 2
+    # assert origins_num_dims == 2
+    # assert terminations_num_dims == 2
+    # assert strengths_num_dims == 1
+    #
+    # # Find the number of line vortices, according to the origins, terminations, and strengths inputs.
+    # num_origins = origins_shape[0]
+    # num_terminations = terminations_shape[0]
     num_strengths = strengths_shape[0]
-
-    # Check that the origins, terminations, and strengths inputs agree on the number of line vortices.
-    assert num_origins == num_terminations == num_strengths
-
-    # Get the number of coordinates for each row in the points, origins, and terminations inputs.
-    points_num_coordinates = points_shape[-1]
-    origin_num_coordinates = origins_shape[-1]
-    termination_num_coordinates = terminations_shape[-1]
-
-    # Check that each row of the points, origins, and terminations inputs all have three coordinates (x, y, and z).
-    assert points_num_coordinates == 3
-    assert origin_num_coordinates == 3
-    assert termination_num_coordinates == 3
-
-    # Check that every position in every input holds a float.
-    for coordinate in np.ravel(points):
-        assert isinstance(coordinate, float)
-    for coordinate in np.ravel(origins):
-        assert isinstance(coordinate, float)
-    for coordinate in np.ravel(terminations):
-        assert isinstance(coordinate, float)
-    for strength in np.ravel(strengths):
-        assert isinstance(strength, float)
+    #
+    # # Check that the origins, terminations, and strengths inputs agree on the number of line vortices.
+    # assert num_origins == num_terminations == num_strengths
+    #
+    # # Get the number of coordinates for each row in the points, origins, and terminations inputs.
+    # points_num_coordinates = points_shape[-1]
+    # origin_num_coordinates = origins_shape[-1]
+    # termination_num_coordinates = terminations_shape[-1]
+    #
+    # # Check that each row of the points, origins, and terminations inputs all have three coordinates (x, y, and z).
+    # assert points_num_coordinates == 3
+    # assert origin_num_coordinates == 3
+    # assert termination_num_coordinates == 3
+    #
+    # # Check that every position in every input holds a float.
+    # for coordinate in np.ravel(points):
+    #     assert isinstance(coordinate, float)
+    # for coordinate in np.ravel(origins):
+    #     assert isinstance(coordinate, float)
+    # for coordinate in np.ravel(terminations):
+    #     assert isinstance(coordinate, float)
+    # for strength in np.ravel(strengths):
+    #     assert isinstance(strength, float)
 
     # We have now verified that:
     #   1.  points is a 2D ndarray of floats with shape Nx3. Each row stores one of N points. The columns store each
@@ -645,10 +646,10 @@ def calculate_velocity_induced_by_line_vortices(
     r_2 = points - terminations
 
     # Define the vector from the vortex origins to the vortex terminations. This is of shape (N x M x 3).
-    r_0 = r_1 - r_2
+    r_0 = ne.evaluate("r_1 - r_2")
 
     # Calculate the vector cross product. This is of shape (N x M x 3).
-    r_1_cross_r_2 = np.cross(r_1, r_2, axis=-1)
+    r_1_cross_r_2 = np.cross(r_1, r_2)
 
     # Calculate the cross product's absolute magnitude. This is of shape (N x M).
     r_1_cross_r_2_absolute_magnitude = (
@@ -677,10 +678,10 @@ def calculate_velocity_induced_by_line_vortices(
 
     # Calculate k and then the induced velocity, ignoring any divide-by-zero or nan errors. k is of shape (N x M)
     with np.errstate(divide="ignore", invalid="ignore"):
-        k = (
-            strengths
-            / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
-            * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
+
+        pi = np.pi
+        k = ne.evaluate(
+            "strengths / (4 * pi * r_1_cross_r_2_absolute_magnitude) * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)"
         )
 
         # Set the shape of k to be (N x M x 1) to support numpy broadcasting in the subsequent multiplication.
@@ -688,13 +689,13 @@ def calculate_velocity_induced_by_line_vortices(
 
         # Multiple k by the cross products of r_1 and r_2 to get the non-collapsed matrix of induced velocities. This is
         # of shape (M x N x 3).
-        induced_velocities = k * r_1_cross_r_2
+        induced_velocities = ne.evaluate("k * r_1_cross_r_2")
 
     # Get the shape of the induced velocity matrix.
     induced_velocities_shape = induced_velocities.shape
 
     # Check that the calculations produced the expected shape.
-    assert induced_velocities_shape == (num_points, num_vortices, 3)
+    # assert induced_velocities_shape == (num_points, num_vortices, 3)
 
     # Set the values of the induced velocity to zero where there are singularities.
     induced_velocities[np.isinf(induced_velocities)] = 0
@@ -702,8 +703,8 @@ def calculate_velocity_induced_by_line_vortices(
 
     if collapse:
         induced_velocities = np.sum(induced_velocities, axis=1)
-        induced_velocities_shape = induced_velocities.shape
-        assert induced_velocities_shape == (num_points, 3)
+        # induced_velocities_shape = induced_velocities.shape
+        # assert induced_velocities_shape == (num_points, 3)
 
     return induced_velocities
 
@@ -779,8 +780,8 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     )
 
     # Calculate the total induced velocity by summing the velocities induced by each leg.
-    induced_velocities = (
-        right_leg_velocities + finite_leg_velocities + left_leg_velocities
+    induced_velocities = ne.evaluate(
+        "right_leg_velocities + finite_leg_velocities + left_leg_velocities"
     )
 
     # Return the induced velocity.
@@ -865,11 +866,8 @@ def calculate_velocity_induced_by_ring_vortices(
     )
 
     # Calculate the total induced velocity by summing the velocities induced by each leg.
-    induced_velocities = (
-        right_leg_velocities
-        + front_leg_velocities
-        + left_leg_velocities
-        + back_leg_velocities
+    induced_velocities = ne.evaluate(
+        "right_leg_velocities + front_leg_velocities + left_leg_velocities + back_leg_velocities"
     )
 
     # Return the induced velocity.

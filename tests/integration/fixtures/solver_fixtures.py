@@ -25,6 +25,22 @@ This module contains the following functions:
                                                                                        using the unsteady ring vortex
                                                                                        lattice method to be used as a
                                                                                        fixture.
+    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry: This function creates
+                                                                                                   a solver object with
+                                                                                                   multi-wing, static
+                                                                                                   geometry using the
+                                                                                                   unsteady ring vortex
+                                                                                                   lattice method to be
+                                                                                                   used as a fixture.
+    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry: This function
+                                                                                                     creates a solver
+                                                                                                     object with
+                                                                                                     multi-wing,
+                                                                                                     variable geometry
+                                                                                                     using the unsteady
+                                                                                                     ring vortex lattice
+                                                                                                     method to be used
+                                                                                                     as a fixture.
 """
 
 import pterasoftware as ps
@@ -140,6 +156,61 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
     # Create the problem fixture.
     unsteady_validation_problem = (
         tests.integration.fixtures.problem_fixtures.make_unsteady_validation_problem_with_variable_geometry()
+    )
+
+    # Use the problem fixture to create the solver fixture.
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_validation_problem
+    )
+
+    # Delete the constructing fixture.
+    del unsteady_validation_problem
+
+    # Return the solver.
+    return unsteady_ring_vortex_lattice_method_validation_solver
+
+
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry():
+    """ This function creates a solver object with multi-wing, static geometry using the unsteady ring vortex lattice
+    method to be used as a fixture.
+
+    :return unsteady_ring_vortex_lattice_method_validation_solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+
+    # Create the problem fixture.
+    unsteady_validation_problem = (
+        tests.integration.fixtures.problem_fixtures.make_unsteady_validation_problem_with_multiple_wing_static_geometry()
+    )
+
+    # Use the problem fixture to create the solver fixture.
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_validation_problem
+    )
+
+    # test_steady_problem = ps.problems.SteadyProblem(airplane=unsteady_validation_problem.steady_problems[0].airplane, operating_point=unsteady_validation_problem.steady_problems[0].operating_point)
+    # unsteady_ring_vortex_lattice_method_validation_solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+    #     test_steady_problem
+    # )
+
+    # Delete the constructing fixture.
+    del unsteady_validation_problem
+
+    # Return the solver.
+    return unsteady_ring_vortex_lattice_method_validation_solver
+
+
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry():
+    """ This function creates a solver object with multi-wing variable geometry using the unsteady ring vortex lattice
+    method to be used as a fixture.
+
+    :return unsteady_ring_vortex_lattice_method_validation_solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+
+    # Create the problem fixture.
+    unsteady_validation_problem = (
+        tests.integration.fixtures.problem_fixtures.make_unsteady_validation_problem_with_multiple_wing_variable_geometry()
     )
 
     # Use the problem fixture to create the solver fixture.

@@ -461,10 +461,63 @@ class WingMovement:
                 wing_cross_section_movement_location
             ]
 
+            # Check if this is this wing's root cross section.
+            if wing_cross_section_movement_location == 0:
+
+                # Get the root cross section's sweeping and heaving attributes.
+                first_wing_cross_section_movement_sweeping_amplitude = (
+                    wing_cross_section_movement.sweeping_amplitude
+                )
+                first_wing_cross_section_movement_sweeping_period = (
+                    wing_cross_section_movement.sweeping_period
+                )
+                first_wing_cross_section_movement_heaving_amplitude = (
+                    wing_cross_section_movement.heaving_amplitude
+                )
+                first_wing_cross_section_movement_heaving_period = (
+                    wing_cross_section_movement.heaving_period
+                )
+
+                # Check that the root cross section is not sweeping or heaving.
+                assert first_wing_cross_section_movement_sweeping_amplitude == 0
+                assert first_wing_cross_section_movement_sweeping_period == 0
+                assert first_wing_cross_section_movement_heaving_amplitude == 0
+                assert first_wing_cross_section_movement_heaving_period == 0
+
+                cross_section_span = 0.0
+
+            else:
+                last_wing_cross_section_movement = self.wing_cross_section_movements[
+                    wing_cross_section_movement_location - 1
+                ]
+
+                this_base_wing_cross_section = (
+                    wing_cross_section_movement.base_wing_cross_section
+                )
+                last_base_wing_cross_section = (
+                    last_wing_cross_section_movement.base_wing_cross_section
+                )
+
+                this_x_le = this_base_wing_cross_section.x_le
+                this_y_le = this_base_wing_cross_section.y_le
+                this_z_le = this_base_wing_cross_section.x_le
+
+                last_x_le = last_base_wing_cross_section.x_le
+                last_y_le = last_base_wing_cross_section.y_le
+                last_z_le = last_base_wing_cross_section.z_le
+
+                cross_section_span = np.sqrt(
+                    (this_x_le - last_x_le) ** 2
+                    + (this_y_le - last_y_le) ** 2
+                    + (this_z_le - last_z_le) ** 2
+                )
+
             # Generate this wing cross section's vector of other wing cross section's based on its movement.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
-                    num_steps=num_steps, delta_time=delta_time
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    cross_section_span=cross_section_span,
                 )
             )
 
@@ -510,7 +563,7 @@ class WingMovement:
         return wings
 
 
-class WingCrossSectionMovement:
+class LegacyWingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross section.
 
     This class contains the following public methods:
@@ -782,6 +835,215 @@ class WingCrossSectionMovement:
             z_le = z_le_list[step]
             twist = twist_list[step]
             control_surface_deflection = control_surface_deflection_list[step]
+
+            # Make a new wing cross section object for this time step.
+            this_wing_cross_section = ps.geometry.WingCrossSection(
+                x_le=x_le,
+                y_le=y_le,
+                z_le=z_le,
+                chord=chord,
+                twist=twist,
+                airfoil=airfoil,
+                control_surface_type=control_surface_type,
+                control_surface_hinge_point=control_surface_hinge_point,
+                control_surface_deflection=control_surface_deflection,
+                num_spanwise_panels=num_spanwise_panels,
+                spanwise_spacing=spanwise_spacing,
+            )
+
+            # Add this new object to the list of wing cross sections.
+            wing_cross_sections.append(this_wing_cross_section)
+
+        # Return the list of wing cross sections.
+        return wing_cross_sections
+
+
+# ToDo: Properly document this class.
+class WingCrossSectionMovement:
+    """This is a class used to contain the movement characteristics of a wing cross section.
+
+    This class contains the following public methods:
+        generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and
+                                      groups them into a list.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def __init__(
+        self,
+        base_wing_cross_section,
+        sweeping_amplitude=0.0,
+        sweeping_period=0.0,
+        sweeping_spacing="sine",
+        pitching_amplitude=0.0,
+        pitching_period=0.0,
+        pitching_spacing="sine",
+        heaving_amplitude=0.0,
+        heaving_period=0.0,
+        heaving_spacing="sine",
+    ):
+        """ This is the initialization method.
+
+        :param base_wing_cross_section: WingCrossSection
+            This is the first wing cross section object, from which the others will be created.
+        """
+
+        # Initialize the class attributes.
+        self.base_wing_cross_section = base_wing_cross_section
+
+        self.sweeping_amplitude = sweeping_amplitude
+        self.sweeping_period = sweeping_period
+        self.sweeping_spacing = sweeping_spacing
+        self.sweeping_base = 0.0
+
+        self.pitching_amplitude = pitching_amplitude
+        self.pitching_period = pitching_period
+        self.pitching_spacing = pitching_spacing
+        self.pitching_base = self.base_wing_cross_section.twist
+
+        self.heaving_amplitude = heaving_amplitude
+        self.heaving_period = heaving_period
+        self.heaving_spacing = heaving_spacing
+        self.heaving_base = 0.0
+
+        self.x_le_base = self.base_wing_cross_section.x_le
+        self.y_le_base = self.base_wing_cross_section.y_le
+        self.z_le_base = self.base_wing_cross_section.z_le
+        self.twist_base = self.base_wing_cross_section.twist
+        self.control_surface_deflection_base = (
+            self.base_wing_cross_section.control_surface_deflection
+        )
+
+    def generate_wing_cross_sections(
+        self, num_steps=10, delta_time=0.1, cross_section_span=0.0
+    ):
+        """This method creates the wing cross section objects at each time current_step, and groups them into a list.
+
+        :param num_steps: int, optional
+            This is the number of time steps in this movement. The default value is 10.
+        :param delta_time: float, optional
+            This is the time, in seconds, between each time step. The default value is 0.1 seconds.
+        :param cross_section_span: float, optional
+            This is the length, in meters, of the leading edge stretching between this cross section at the previous
+            cross section. If this is the first cross section, it should be 0.0 meters. The default value is 0.0 meters.
+        :return wing_cross_sections: list of WingCrossSection objects
+            This is the list of WingCrossSection objects that is associated with this WingCrossSectionMovement object.
+        """
+
+        # Check the sweeping spacing value.
+        if self.sweeping_spacing == "sine":
+
+            # Create an ndarray of points with a sinusoidal spacing.
+            sweeping_list = oscillating_sinspace(
+                amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period,
+                base_value=self.sweeping_base,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        elif self.sweeping_spacing == "uniform":
+
+            # Create an ndarray of points with a uniform spacing.
+            sweeping_list = oscillating_linspace(
+                amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period,
+                base_value=self.sweeping_base,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        else:
+
+            # Throw an exception if the spacing value is not "sine" or "uniform".
+            raise Exception("Bad value of sweeping_spacing!")
+
+        # Check the pitching spacing value.
+        if self.pitching_spacing == "sine":
+
+            # Create an ndarray of points with a sinusoidal spacing.
+            pitching_list = oscillating_sinspace(
+                amplitude=self.pitching_amplitude,
+                period=self.pitching_period,
+                base_value=self.pitching_base,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        elif self.pitching_spacing == "uniform":
+
+            # Create an ndarray of points with a uniform spacing.
+            pitching_list = oscillating_linspace(
+                amplitude=self.pitching_amplitude,
+                period=self.pitching_period,
+                base_value=self.pitching_base,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        else:
+
+            # Throw an exception if the spacing value is not "sine" or "uniform".
+            raise Exception("Bad value of pitching_spacing!")
+
+        # Check the heaving spacing value.
+        if self.heaving_spacing == "sine":
+
+            # Create an ndarray of points with a sinusoidal spacing.
+            heaving_list = oscillating_sinspace(
+                amplitude=self.heaving_amplitude,
+                period=self.heaving_period,
+                base_value=0.0,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        elif self.heaving_spacing == "uniform":
+
+            # Create an ndarray of points with a uniform spacing.
+            heaving_list = oscillating_linspace(
+                amplitude=self.heaving_amplitude,
+                period=self.heaving_period,
+                base_value=0.0,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
+        else:
+
+            # Throw an exception if the spacing value is not "sine" or "uniform".
+            raise Exception("Bad value of heaving_spacing!")
+
+        # Find the list of new leading edge points.
+        x_le_list = self.x_le_base + cross_section_span * np.cos(
+            sweeping_list
+        ) * np.sin(heaving_list)
+        y_le_list = self.y_le_base + cross_section_span * np.cos(
+            sweeping_list
+        ) * np.cos(heaving_list)
+        z_le_list = self.z_le_base + cross_section_span * np.sin(sweeping_list)
+        twist_list = pitching_list
+
+        # Create an empty list of wing cross sections.
+        wing_cross_sections = []
+
+        # Generate the non-changing wing cross section attributes.
+        chord = self.base_wing_cross_section.chord
+        airfoil = self.base_wing_cross_section.airfoil
+        control_surface_deflection = self.control_surface_deflection_base
+        control_surface_type = self.base_wing_cross_section.control_surface_type
+        control_surface_hinge_point = (
+            self.base_wing_cross_section.control_surface_hinge_point
+        )
+        num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
+        spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
+
+        # Iterate through the time steps.
+        for step in range(num_steps):
+
+            # Get the changing wing cross section attributes at this time step.
+            x_le = x_le_list[step]
+            y_le = y_le_list[step]
+            z_le = z_le_list[step]
+            twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
             this_wing_cross_section = ps.geometry.WingCrossSection(

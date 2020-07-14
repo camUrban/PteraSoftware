@@ -14,6 +14,12 @@ This module contains the following functions:
                                                            geometry to be used as a fixture.
     make_unsteady_validation_problem_with_variable_geometry: This function creates an unsteady problem object with
                                                              variable geometry to be used as a fixture.
+    make_unsteady_validation_problem_with_multiple_wing_static_geometry: This function creates an unsteady problem
+                                                                         object with multi-wing, static geometry to be
+                                                                         used as a fixture.
+    make_unsteady_validation_problem_with_multiple_wing_variable_geometry: This function creates an unsteady problem
+                                                                           object with multi-wing, variable geometry to
+                                                                           be used as a fixture.
 """
 
 import pterasoftware as ps
@@ -114,6 +120,54 @@ def make_unsteady_validation_problem_with_variable_geometry():
     # Create the constructing fixture.
     unsteady_validation_movement = (
         tests.integration.fixtures.movement_fixtures.make_variable_validation_movement()
+    )
+
+    # Create the problem fixture.
+    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+        movement=unsteady_validation_movement
+    )
+
+    # Delete the constructing fixture.
+    del unsteady_validation_movement
+
+    # Return the problem fixture.
+    return unsteady_validation_problem
+
+
+def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
+    """ This function creates an unsteady problem object with multi-wing, static geometry to be used as a fixture.
+
+    :return unsteady_validation_problem: UnsteadyProblem
+        This is the problem fixture.
+    """
+
+    # Create the constructing fixture.
+    unsteady_validation_movement = (
+        tests.integration.fixtures.movement_fixtures.make_multiple_wing_static_validation_movement()
+    )
+
+    # Create the problem fixture.
+    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+        movement=unsteady_validation_movement
+    )
+
+    # Delete the constructing fixture.
+    del unsteady_validation_movement
+
+    # Return the problem fixture.
+    return unsteady_validation_problem
+
+
+def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
+    """ This function creates an unsteady problem object with multi-wing, variable geometry to be used as a fixture.
+
+    :return unsteady_validation_problem: UnsteadyProblem
+        This is the problem fixture.
+    """
+
+    # Create the constructing fixture.
+    unsteady_validation_movement = (
+        tests.integration.fixtures.movement_fixtures.make_multiple_wing_variable_validation_movement()
     )
 
     # Create the problem fixture.

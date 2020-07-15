@@ -86,7 +86,7 @@ def make_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=40,
+        num_steps=80,
         delta_time=1 / 8 / 10,
     )
 
@@ -171,7 +171,7 @@ def make_variable_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=40,
+        num_steps=20,
         delta_time=1 / 8 / 10,
     )
 
@@ -303,7 +303,7 @@ def make_multiple_wing_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=40,
+        num_steps=20,
         delta_time=1 / 8 / 10,
     )
 
@@ -444,7 +444,7 @@ def make_multiple_wing_variable_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=40,
+        num_steps=20,
         delta_time=1 / 8 / 10,
     )
 

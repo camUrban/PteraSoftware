@@ -485,6 +485,9 @@ class WingMovement:
                 assert first_wing_cross_section_movement_heaving_period == 0
 
                 cross_section_span = 0.0
+                last_x_le = 0.0
+                last_y_le = 0.0
+                last_z_le = 0.0
 
             else:
                 last_wing_cross_section_movement = self.wing_cross_section_movements[
@@ -518,6 +521,9 @@ class WingMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                     cross_section_span=cross_section_span,
+                    last_x_le=last_x_le,
+                    last_y_le=last_y_le,
+                    last_z_le=last_z_le,
                 )
             )
 
@@ -563,6 +569,7 @@ class WingMovement:
         return wings
 
 
+# ToDo: Delete this class.
 class LegacyWingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross section.
 
@@ -873,6 +880,7 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
+    # ToDo: Properly document this method.
     def __init__(
         self,
         base_wing_cross_section,
@@ -918,8 +926,15 @@ class WingCrossSectionMovement:
             self.base_wing_cross_section.control_surface_deflection
         )
 
+    # ToDo: Properly document this method.
     def generate_wing_cross_sections(
-        self, num_steps=10, delta_time=0.1, cross_section_span=0.0
+        self,
+        num_steps=10,
+        delta_time=0.1,
+        cross_section_span=0.0,
+        last_x_le=0.0,
+        last_y_le=0.0,
+        last_z_le=0.0,
     ):
         """This method creates the wing cross section objects at each time current_step, and groups them into a list.
 
@@ -1013,13 +1028,13 @@ class WingCrossSectionMovement:
             raise Exception("Bad value of heaving_spacing!")
 
         # Find the list of new leading edge points.
-        x_le_list = self.x_le_base + cross_section_span * np.cos(
-            sweeping_list
-        ) * np.sin(heaving_list)
-        y_le_list = self.y_le_base + cross_section_span * np.cos(
-            sweeping_list
-        ) * np.cos(heaving_list)
-        z_le_list = self.z_le_base + cross_section_span * np.sin(sweeping_list)
+        x_le_list = last_x_le + cross_section_span * np.cos(sweeping_list) * np.sin(
+            heaving_list
+        )
+        y_le_list = last_y_le + cross_section_span * np.cos(sweeping_list) * np.cos(
+            heaving_list
+        )
+        z_le_list = last_z_le + cross_section_span * np.sin(sweeping_list)
         twist_list = pitching_list
 
         # Create an empty list of wing cross sections.
@@ -1089,7 +1104,7 @@ class OperatingPointMovement:
         velocity_spacing="sine",
     ):
         """ This is the initialization method.
-        
+
         :param base_operating_point: OperatingPoint
             This is the operating point object, from which the others will be created.
         :param velocity_amplitude: float, optional
@@ -1112,7 +1127,7 @@ class OperatingPointMovement:
 
     def generate_operating_points(self, num_steps=10, delta_time=0.1):
         """This method creates the operating point objects at each time current_step, and groups them into a list.
-        
+
         :param num_steps: int, optional
             This is the number of time steps in this movement. The default value is 10.
         :param delta_time: float, optional

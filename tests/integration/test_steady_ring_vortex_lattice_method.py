@@ -1,3 +1,4 @@
+# ToDo: Properly document this module.
 """ This module is a testing case for the steady ring vortex lattice method solver.
 
 Based on an identical XFLR5 testing case, the expected output for this case is:
@@ -25,6 +26,7 @@ import tests.integration.fixtures.solver_fixtures
 import pterasoftware as ps
 
 
+# ToDo: Properly document this class.
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """ This is a class for testing the steady ring vortex lattice method solver.
 
@@ -59,6 +61,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
         del self.steady_ring_vortex_lattice_method_validation_solver
 
+    # ToDo: Properly document this method.
     def test_method(self):
         """ This method tests the solver's output.
 
@@ -82,7 +85,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         CL_error = abs(CL_calculated - CL_expected) / CL_expected
 
         Cm_expected = -0.687
-        Cm_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
+        Cm_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_moment_coefficients_wind_axes[
             1
         ]
         Cm_error = abs(Cm_calculated - Cm_expected) / Cm_expected
@@ -98,6 +101,6 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
         # Assert that the percent errors are less than the allowable error.
-        self.assertTrue(CDi_error < allowable_error)
-        self.assertTrue(CL_error < allowable_error)
-        self.assertTrue(Cm_error < allowable_error)
+        self.assertTrue(abs(CDi_error) < allowable_error)
+        self.assertTrue(abs(CL_error) < allowable_error)
+        self.assertTrue(abs(Cm_error) < allowable_error)

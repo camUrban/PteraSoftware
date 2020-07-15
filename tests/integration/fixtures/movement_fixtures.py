@@ -303,7 +303,7 @@ def make_multiple_wing_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=20,
+        num_steps=8,
         delta_time=1 / 8 / 10,
     )
 

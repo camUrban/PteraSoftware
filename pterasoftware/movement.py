@@ -569,305 +569,8 @@ class WingMovement:
         return wings
 
 
-# ToDo: Delete this class.
-class LegacyWingCrossSectionMovement:
-    """This is a class used to contain the movement characteristics of a wing cross section.
-
-    This class contains the following public methods:
-        generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and
-                                      groups them into a list.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
-
-    def __init__(
-        self,
-        base_wing_cross_section,
-        x_le_amplitude=0.0,
-        x_le_period=0.0,
-        x_le_spacing="sine",
-        y_le_amplitude=0.0,
-        y_le_period=0.0,
-        y_le_spacing="sine",
-        z_le_amplitude=0.0,
-        z_le_period=0.0,
-        z_le_spacing="sine",
-        twist_amplitude=0.0,
-        twist_period=0.0,
-        twist_spacing="sine",
-        control_surface_deflection_amplitude=0.0,
-        control_surface_deflection_period=0.0,
-        control_surface_deflection_spacing="sine",
-    ):
-        """ This is the initialization method.
-
-        :param base_wing_cross_section: WingCrossSection
-            This is the first wing cross section object, from which the others will be created.
-        :param x_le_amplitude: float, optional
-            This is the amplitude of the cross section's change in its x reference point. Its units are meters and its
-            default value is 0 meters.
-        :param x_le_period: float, optional
-            This is the period of the cross section's change in its x reference point. Its units are seconds and its
-            default value is 0 seconds.
-        :param x_le_spacing: string, optional
-            This value determines the spacing of the cross section's change in its x reference point. The options are
-            "sine", and "uniform". The default value is "sine".
-        :param y_le_amplitude: float, optional
-            This is the amplitude of the cross section's change in its y reference point. Its units are meters and its
-            default value is 0 meters.
-        :param y_le_period: float, optional
-            This is the period of the cross section's change in its y reference point. Its units are seconds and its
-            default value is 0 seconds.
-        :param y_le_spacing: string, optional
-            This value determines the spacing of the cross section's change in its y reference point. The options are
-            "sine", and "uniform". The default value is "sine".
-        :param z_le_amplitude: float, optional
-            This is the amplitude of the cross section's change in its z reference point. Its units are meters and its
-            default value is 0 meters.
-        :param z_le_period: float, optional
-            This is the period of the cross section's change in its z reference point. Its units are seconds and its
-            default value is 0 seconds.
-        :param z_le_spacing: string, optional
-            This value determines the spacing of the cross section's change in its z reference point. The options are
-            "sine", and "uniform". The default value is "sine".
-        :param twist_amplitude: float, optional
-            This is the amplitude of the cross section's change in twist. Its units are degrees and its
-            default value is 0 degrees.
-        :param twist_period: float, optional
-            This is the period of the cross section's change in twist. Its units are seconds and its
-            default value is 0 seconds.
-        :param twist_spacing: string, optional
-            This value determines the spacing of the cross section's change in twist. The options are "sine",
-            and "uniform". The default value is "sine".
-        :param control_surface_deflection_amplitude: float, optional
-            This is the amplitude of the cross section's control surface's change in deflection. Its units are degrees
-            and its default value is 0 degrees.
-        :param control_surface_deflection_period: float, optional
-            This is the period of the cross section's control surface's change in deflection. Its units are seconds and
-            its default value is 0 seconds.
-        :param control_surface_deflection_spacing: string, optional
-            This value determines the spacing of the cross section's control surface's change in deflection. The options
-            are "sine", and "uniform". The default value is "sine".
-        """
-
-        # Initialize the class attributes.
-        self.base_wing_cross_section = base_wing_cross_section
-        self.x_le_base = self.base_wing_cross_section.x_le
-        self.x_le_amplitude = x_le_amplitude
-        self.x_le_period = x_le_period
-        self.x_le_spacing = x_le_spacing
-        self.y_le_base = self.base_wing_cross_section.y_le
-        self.y_le_amplitude = y_le_amplitude
-        self.y_le_period = y_le_period
-        self.y_le_spacing = y_le_spacing
-        self.z_le_base = self.base_wing_cross_section.z_le
-        self.z_le_amplitude = z_le_amplitude
-        self.z_le_period = z_le_period
-        self.z_le_spacing = z_le_spacing
-        self.twist_base = self.base_wing_cross_section.twist
-        self.twist_amplitude = twist_amplitude
-        self.twist_period = twist_period
-        self.twist_spacing = twist_spacing
-        self.control_surface_deflection_base = (
-            self.base_wing_cross_section.control_surface_deflection
-        )
-        self.control_surface_deflection_amplitude = control_surface_deflection_amplitude
-        self.control_surface_deflection_period = control_surface_deflection_period
-        self.control_surface_deflection_spacing = control_surface_deflection_spacing
-
-    def generate_wing_cross_sections(self, num_steps=10, delta_time=0.1):
-        """This method creates the wing cross section objects at each time current_step, and groups them into a list.
-
-        :param num_steps: int, optional
-            This is the number of time steps in this movement. The default value is 10.
-        :param delta_time: float, optional
-            This is the time, in seconds, between each time step. The default value is 0.1 seconds.
-        :return wing_cross_sections: list of WingCrossSection objects
-            This is the list of WingCrossSection objects that is associated with this WingCrossSectionMovement object.
-        """
-
-        # Check the x_le spacing value.
-        if self.x_le_spacing == "sine":
-
-            # Create an ndarray of points with a sinusoidal spacing.
-            x_le_list = oscillating_sinspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.x_le_spacing == "uniform":
-
-            # Create an ndarray of points with a uniform spacing.
-            x_le_list = oscillating_linspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of x_le_spacing!")
-
-        # Check the y_le spacing value.
-        if self.y_le_spacing == "sine":
-
-            # Create an ndarray of points with a sinusoidal spacing.
-            y_le_list = oscillating_sinspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.y_le_spacing == "uniform":
-
-            # Create an ndarray of points with a uniform spacing.
-            y_le_list = oscillating_linspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of y_le_spacing!")
-
-        # Check the z_le spacing value.
-        if self.z_le_spacing == "sine":
-
-            # Create an ndarray of points with a sinusoidal spacing.
-            z_le_list = oscillating_sinspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.z_le_spacing == "uniform":
-
-            # Create an ndarray of points with a uniform spacing.
-            z_le_list = oscillating_linspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of z_le_spacing!")
-
-        # Check the twist spacing value.
-        if self.twist_spacing == "sine":
-
-            # Create an ndarray of points with a sinusoidal spacing.
-            twist_list = oscillating_sinspace(
-                amplitude=self.twist_amplitude,
-                period=self.twist_period,
-                base_value=self.twist_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.twist_spacing == "uniform":
-
-            # Create an ndarray of points with a uniform spacing.
-            twist_list = oscillating_linspace(
-                amplitude=self.twist_amplitude,
-                period=self.twist_period,
-                base_value=self.twist_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of twist_spacing!")
-
-        # Check the control_surface_deflection spacing value.
-        if self.control_surface_deflection_spacing == "sine":
-
-            # Create an ndarray of points with a sinusoidal spacing.
-            control_surface_deflection_list = oscillating_sinspace(
-                amplitude=self.control_surface_deflection_amplitude,
-                period=self.control_surface_deflection_period,
-                base_value=self.control_surface_deflection_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.control_surface_deflection_spacing == "uniform":
-
-            # Create an ndarray of points with a uniform spacing.
-            control_surface_deflection_list = oscillating_linspace(
-                amplitude=self.control_surface_deflection_amplitude,
-                period=self.control_surface_deflection_period,
-                base_value=self.control_surface_deflection_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of control_surface_deflection_spacing!")
-
-        # Create an empty list of wing cross sections.
-        wing_cross_sections = []
-
-        # Generate the non-changing wing cross section attributes.
-        chord = self.base_wing_cross_section.chord
-        airfoil = self.base_wing_cross_section.airfoil
-        control_surface_type = self.base_wing_cross_section.control_surface_type
-        control_surface_hinge_point = (
-            self.base_wing_cross_section.control_surface_hinge_point
-        )
-        num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
-        spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
-
-        # Iterate through the time steps.
-        for step in range(num_steps):
-
-            # Get the changing wing cross section attributes at this time step.
-            x_le = x_le_list[step]
-            y_le = y_le_list[step]
-            z_le = z_le_list[step]
-            twist = twist_list[step]
-            control_surface_deflection = control_surface_deflection_list[step]
-
-            # Make a new wing cross section object for this time step.
-            this_wing_cross_section = ps.geometry.WingCrossSection(
-                x_le=x_le,
-                y_le=y_le,
-                z_le=z_le,
-                chord=chord,
-                twist=twist,
-                airfoil=airfoil,
-                control_surface_type=control_surface_type,
-                control_surface_hinge_point=control_surface_hinge_point,
-                control_surface_deflection=control_surface_deflection,
-                num_spanwise_panels=num_spanwise_panels,
-                spanwise_spacing=spanwise_spacing,
-            )
-
-            # Add this new object to the list of wing cross sections.
-            wing_cross_sections.append(this_wing_cross_section)
-
-        # Return the list of wing cross sections.
-        return wing_cross_sections
-
-
-# ToDo: Properly document this class.
 class WingCrossSectionMovement:
-    """This is a class used to contain the movement characteristics of a wing cross section.
+    """ This is a class used to contain the movement characteristics of a wing cross section.
 
     This class contains the following public methods:
         generate_wing_cross_sections: This method creates the wing cross section objects at each time current_step, and
@@ -880,7 +583,6 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Properly document this method.
     def __init__(
         self,
         base_wing_cross_section,
@@ -898,26 +600,49 @@ class WingCrossSectionMovement:
 
         :param base_wing_cross_section: WingCrossSection
             This is the first wing cross section object, from which the others will be created.
+        :param sweeping_amplitude: float, optional
+            This is the amplitude of the cross section's change in its sweep, relative to the previous cross section.
+            Its units are degrees and its default value is 0.0 degrees.
+        :param sweeping_period: float, optional
+            This is the period of the cross section's change in its sweep. Its units are seconds and its default value
+            is 0.0 seconds.
+        :param sweeping_spacing: string, optional
+            This value determines the spacing of the cross section's change in its sweep. The options are "sine", and
+            "uniform". The default value is "sine".
+        :param pitching_amplitude: float, optional
+            This is the amplitude of the cross section's change in its pitch, relative to the previous cross section.
+            Its units are degrees and its default value is 0.0 degrees.
+        :param pitching_period: float, optional
+            This is the period of the cross section's change in its pitch. Its units are seconds and its default value
+            is 0.0 seconds.
+        :param pitching_spacing: string, optional
+            This value determines the spacing of the cross section's change in its pitch. The options are "sine", and
+            "uniform". The default value is "sine".
+        :param heaving_amplitude: float, optional
+            This is the amplitude of the cross section's change in its heave, relative to the previous cross section.
+            Its units are degrees and its default value is 0.0 degrees.
+        :param heaving_period: float, optional
+            This is the period of the cross section's change in its heave. Its units are seconds and its default value
+            is 0.0 seconds.
+        :param heaving_spacing: string, optional
+            This value determines the spacing of the cross section's change in its heave. The options are "sine", and
+            "uniform". The default value is "sine".
         """
 
         # Initialize the class attributes.
         self.base_wing_cross_section = base_wing_cross_section
-
         self.sweeping_amplitude = sweeping_amplitude
         self.sweeping_period = sweeping_period
         self.sweeping_spacing = sweeping_spacing
         self.sweeping_base = 0.0
-
         self.pitching_amplitude = pitching_amplitude
         self.pitching_period = pitching_period
         self.pitching_spacing = pitching_spacing
         self.pitching_base = self.base_wing_cross_section.twist
-
         self.heaving_amplitude = heaving_amplitude
         self.heaving_period = heaving_period
         self.heaving_spacing = heaving_spacing
         self.heaving_base = 0.0
-
         self.x_le_base = self.base_wing_cross_section.x_le
         self.y_le_base = self.base_wing_cross_section.y_le
         self.z_le_base = self.base_wing_cross_section.z_le
@@ -926,7 +651,6 @@ class WingCrossSectionMovement:
             self.base_wing_cross_section.control_surface_deflection
         )
 
-    # ToDo: Properly document this method.
     def generate_wing_cross_sections(
         self,
         num_steps=10,
@@ -945,6 +669,15 @@ class WingCrossSectionMovement:
         :param cross_section_span: float, optional
             This is the length, in meters, of the leading edge stretching between this cross section at the previous
             cross section. If this is the first cross section, it should be 0.0 meters. The default value is 0.0 meters.
+        :param last_x_le: float, optional
+            This is the x coordinate of the reference location of the previous cross section. Its units are in meters,
+            and its default value is 0.0 meters.
+        :param last_y_le: float, optional
+            This is the y coordinate of the reference location of the previous cross section. Its units are in meters,
+            and its default value is 0.0 meters.
+        :param last_z_le: float, optional
+            This is the z coordinate of the reference location of the previous cross section. Its units are in meters,
+            and its default value is 0.0 meters.
         :return wing_cross_sections: list of WingCrossSection objects
             This is the list of WingCrossSection objects that is associated with this WingCrossSectionMovement object.
         """
@@ -1027,14 +760,16 @@ class WingCrossSectionMovement:
             # Throw an exception if the spacing value is not "sine" or "uniform".
             raise Exception("Bad value of heaving_spacing!")
 
-        # Find the list of new leading edge points.
-        x_le_list = last_x_le + cross_section_span * np.cos(sweeping_list) * np.sin(
-            heaving_list
-        )
-        y_le_list = last_y_le + cross_section_span * np.cos(sweeping_list) * np.cos(
-            heaving_list
-        )
-        z_le_list = last_z_le + cross_section_span * np.sin(sweeping_list)
+        # Find the list of new leading edge points. This uses a spherical coordinate transformation, referencing the
+        # previous wing cross section's leading edge point as the origin. Also convert the lists of sweep, pitch, and
+        # heave values to radians before passing them into numpy's trigonometry functions.
+        x_le_list = last_x_le + cross_section_span * np.cos(
+            sweeping_list * np.pi / 180
+        ) * np.sin(heaving_list * np.pi / 180)
+        y_le_list = last_y_le + cross_section_span * np.cos(
+            sweeping_list * np.pi / 180
+        ) * np.cos(heaving_list * np.pi / 180)
+        z_le_list = last_z_le + cross_section_span * np.sin(sweeping_list * np.pi / 180)
         twist_list = pitching_list
 
         # Create an empty list of wing cross sections.

@@ -356,6 +356,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through all the steady problem objects.
         for steady_problem in self.steady_problems:
 
+            # Get the freestream velocity at this time step's problem.
+            this_freestream_velocity_geometry_axes = (
+                steady_problem.operating_point.calculate_freestream_velocity_geometry_axes()
+            )
+
             # Iterate through this problem's airplane's wings.
             for wing in steady_problem.airplane.wings:
 
@@ -383,11 +388,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 next_chordwise_panel.front_right_vortex_vertex
                             )
                         else:
-                            back_left_vortex_vertex = front_left_vortex_vertex + (
-                                panel.back_left_vertex - panel.front_left_vertex
+                            # As these vertices are directly behind the trailing edge, they are spaced back from their
+                            # panel's vertex by one quarter the distance traveled during a time step. This is to more
+                            # accurately predict drag. More information can be found on pages 37-39 of "Modeling of
+                            # aerodynamic forces in flapping flight with the Unsteady Vortex Lattice Method" by Thomas
+                            # Lambert.
+                            back_left_vortex_vertex = (
+                                front_left_vortex_vertex
+                                + (panel.back_left_vertex - panel.front_left_vertex)
+                                + this_freestream_velocity_geometry_axes
+                                * self.delta_time
+                                * 0.25
                             )
-                            back_right_vortex_vertex = front_right_vortex_vertex + (
-                                panel.back_right_vertex - panel.front_right_vertex
+                            back_right_vortex_vertex = (
+                                front_right_vortex_vertex
+                                + (panel.back_right_vertex - panel.front_right_vertex)
+                                + this_freestream_velocity_geometry_axes
+                                * self.delta_time
+                                * 0.25
                             )
 
                         # Initialize the panel's ring vortex.
@@ -1154,19 +1172,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         ]
 
                         # The position of the next front left wake ring vortex vertex is the next panel's ring vortex's
-                        # back left vertex. As this vertex is directly behind the panel's trailing edge, it is spaced
-                        # back from the bound vortex vertex by one quarter the distance traveled by a time step. This is
-                        # to more accurately predict drag. More information can be found on pages 37-39 of "Modeling of
-                        # aerodynamic forces in flapping flight with the Unsteady Vortex Lattice Method" by Thomas
-                        # Lambert.
-                        next_front_left_vertex = (
-                            next_panel.ring_vortex.back_left_vertex
-                            + (
-                                0.25
-                                * self.current_freestream_velocity_geometry_axes
-                                * self.delta_time
-                            )
-                        )
+                        # back left vertex.
+                        next_front_left_vertex = next_panel.ring_vortex.back_left_vertex
 
                         # Add this to the new row of wake ring vortex vertices.
                         first_row_of_wake_ring_vortex_vertices[
@@ -1176,18 +1183,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Check if this panel is on the right edge of the wing.
                         if spanwise_position == (num_spanwise_panels - 1):
                             # The position of the next front right wake ring vortex vertex is the next panel's ring
-                            # vortex's back right vertex. As this vertex is directly behind the panel's trailing edge,
-                            # it is spaced back from the bound vortex vertex by one quarter the distance traveled by a
-                            # time step. This is to more accurately predict drag. More information can be found on pages
-                            # 37-39 of "Modeling of aerodynamic forces in flapping flight with the Unsteady Vortex
-                            # Lattice Method" by Thomas Lambert.
-
+                            # vortex's back right vertex.
                             next_front_right_vertex = (
                                 next_panel.ring_vortex.back_right_vertex
-                            ) + (
-                                0.25
-                                * self.current_freestream_velocity_geometry_axes
-                                * self.delta_time
                             )
 
                             # Add this to the new row of wake ring vortex vertices.
@@ -1313,33 +1311,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         ]
 
                         # Add the panel object's back left ring vortex vertex to the matrix of new wake ring vortex
-                        # vertices. As this vertex is directly behind the panel's trailing edge, it is spaced back from
-                        # the bound vortex vertex by one quarter the distance traveled by a time step. This is to more
-                        # accurately predict drag. More information can be found on pages 37-39 of "Modeling of
-                        # aerodynamic forces in flapping flight with the Unsteady Vortex Lattice Method" by Thomas
-                        # Lambert.
-                        first_row_of_wake_ring_vortex_vertices[0, spanwise_position] = (
-                            next_panel.ring_vortex.back_left_vertex
-                            + 0.25
-                            * self.current_freestream_velocity_geometry_axes
-                            * self.delta_time
-                        )
+                        # vertices.
+                        first_row_of_wake_ring_vortex_vertices[
+                            0, spanwise_position
+                        ] = next_panel.ring_vortex.back_left_vertex
 
                         if spanwise_position == (this_wing.num_spanwise_panels - 1):
                             # If the panel object is at the right edge of the wing, add its back right ring vortex
-                            # vertex to the matrix of new wake ring vortex vertices. As this vertex is directly behind
-                            # the panel's trailing edge, it is spaced back from the bound vortex vertex by one quarter
-                            # the distance traveled by a time step. This is to more accurately predict drag. More
-                            # information can be found on pages 37-39 of "Modeling of aerodynamic forces in flapping
-                            # flight with the Unsteady Vortex Lattice Method" by Thomas Lambert.
+                            # vertex to the matrix of new wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
                                 0, spanwise_position + 1
-                            ] = (
-                                next_panel.ring_vortex.back_right_vertex
-                                + 0.25
-                                * self.current_freestream_velocity_geometry_axes
-                                * self.delta_time
-                            )
+                            ] = next_panel.ring_vortex.back_right_vertex
 
                     # Stack the new first row of wake ring vortex vertices above the wing's matrix of wake ring vortex
                     # vertices.

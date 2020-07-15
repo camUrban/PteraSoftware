@@ -120,13 +120,15 @@ def make_asymmetric_unsteady_validation_airplane():
                     ps.geometry.WingCrossSection(
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
                         num_spanwise_panels=16,
-                        twist=0,
+                        spanwise_spacing="cosine",
+                        chord=1.0,
                     ),
                     ps.geometry.WingCrossSection(
                         y_le=10.0,
+                        chord=1.0,
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
                         num_spanwise_panels=16,
-                        twist=45,
+                        spanwise_spacing="cosine",
                     ),
                 ],
             )
@@ -148,7 +150,6 @@ def make_symmetric_unsteady_validation_airplane():
             ps.geometry.Wing(
                 symmetric=True,
                 chordwise_spacing="uniform",
-                num_chordwise_panels=6,
                 wing_cross_sections=[
                     ps.geometry.WingCrossSection(
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
@@ -158,7 +159,6 @@ def make_symmetric_unsteady_validation_airplane():
                     ps.geometry.WingCrossSection(
                         y_le=5.0,
                         chord=2.0,
-                        twist=90,
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
                         spanwise_spacing="cosine",
                     ),

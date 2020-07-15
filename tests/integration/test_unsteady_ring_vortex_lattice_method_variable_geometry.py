@@ -1,3 +1,4 @@
+# ToDo: Properly document this script.
 """ This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
 
 This module contains the following classes:
@@ -16,6 +17,7 @@ import unittest
 import tests.integration.fixtures.solver_fixtures
 
 
+# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
     """ This is a class for testing the unsteady ring vortex lattice method solver on variable geometry.
 
@@ -50,6 +52,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
+    # ToDo: Properly document this method.
     def test_method_does_not_throw(self):
         """ This method tests that the solver does not throw any errors.
 
@@ -65,7 +68,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
-            show_wake_vortices=False,
+            show_wake_vortices=True,
         )
 
         ps.output.plot_results_versus_time(

@@ -86,7 +86,7 @@ def make_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=10,
+        num_steps=40,
         delta_time=1 / 8 / 10,
     )
 
@@ -125,21 +125,15 @@ def make_variable_validation_movement():
         base_wing_cross_section=unsteady_validation_airplane.wings[
             0
         ].wing_cross_sections[1],
-        # sweeping_amplitude=1.0,
-        # sweeping_period=1.0,
-        # sweeping_spacing="sine",
+        sweeping_amplitude=1.0,
+        sweeping_period=1.0,
+        sweeping_spacing="sine",
         pitching_amplitude=30,
         pitching_period=0.5,
         pitching_spacing="sine",
         heaving_amplitude=1.0,
         heaving_period=0.5,
         heaving_spacing="sine",
-        # z_le_amplitude=-3.0,
-        # z_le_period=1.0,
-        # z_le_spacing="sine",
-        # y_le_amplitude=-1.0,
-        # y_le_period=2.0,
-        # y_le_spacing="uniform",
     )
 
     # Create a wing movement object associated with this airplane's wing.
@@ -177,8 +171,8 @@ def make_variable_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=60,
-        delta_time=1 / 6 / 10,
+        num_steps=40,
+        delta_time=1 / 8 / 10,
     )
 
     # Delete the now extraneous constructing fixtures.
@@ -309,7 +303,7 @@ def make_multiple_wing_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=10,
+        num_steps=40,
         delta_time=1 / 8 / 10,
     )
 
@@ -357,9 +351,6 @@ def make_multiple_wing_variable_validation_movement():
         pitching_amplitude=0.5,
         pitching_period=2.0,
         pitching_spacing="sine",
-        # z_le_amplitude=1.0,
-        # z_le_spacing="sine",
-        # z_le_period=1.0,
     )
 
     # Create a wing cross section movement object associated with this airplane's horizontal stabilizer's root wing cross section.
@@ -453,7 +444,7 @@ def make_multiple_wing_variable_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=24,
+        num_steps=40,
         delta_time=1 / 8 / 10,
     )
 

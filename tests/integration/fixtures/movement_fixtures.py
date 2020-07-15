@@ -125,13 +125,13 @@ def make_variable_validation_movement():
         base_wing_cross_section=unsteady_validation_airplane.wings[
             0
         ].wing_cross_sections[1],
-        sweeping_amplitude=1.0,
+        sweeping_amplitude=30.0,
         sweeping_period=1.0,
         sweeping_spacing="sine",
-        pitching_amplitude=30,
+        pitching_amplitude=30.0,
         pitching_period=0.5,
         pitching_spacing="sine",
-        heaving_amplitude=1.0,
+        heaving_amplitude=30.0,
         heaving_period=0.5,
         heaving_spacing="sine",
     )
@@ -342,14 +342,14 @@ def make_multiple_wing_variable_validation_movement():
         base_wing_cross_section=unsteady_validation_airplane.wings[
             0
         ].wing_cross_sections[1],
-        sweeping_amplitude=1.0,
-        sweeping_period=5.0,
+        sweeping_amplitude=30.0,
+        sweeping_period=1.0,
         sweeping_spacing="sine",
-        heaving_amplitude=1.0,
-        heaving_period=4.0,
+        heaving_amplitude=15.0,
+        heaving_period=1.0,
         heaving_spacing="sine",
-        pitching_amplitude=0.5,
-        pitching_period=2.0,
+        pitching_amplitude=15.0,
+        pitching_period=0.5,
         pitching_spacing="sine",
     )
 

@@ -1,3 +1,4 @@
+# ToDo: Properly document this script.
 """ This is a testing case for the unsteady ring vortex lattice method solver with static geometry.
 
 Based on an equivalent XFLR5 testing case, the expected output for this case is:
@@ -25,6 +26,7 @@ import unittest
 import tests.integration.fixtures.solver_fixtures
 
 
+# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
     """ This is a class for testing the unsteady ring vortex lattice method solver on static geometry.
 
@@ -59,6 +61,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
+    # ToDo: Properly document this method.
     def test_method(self):
         """ This method tests the solver's output.
 
@@ -84,7 +87,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         CL_error = abs(CL_calculated - CL_expected) / CL_expected
 
         Cm_expected = -0.197
-        Cm_calculated = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplane.total_near_field_force_coefficients_wind_axes[
+        Cm_calculated = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplane.total_near_field_moment_coefficients_wind_axes[
             1
         ]
         Cm_error = abs(Cm_calculated - Cm_expected) / Cm_expected
@@ -105,6 +108,6 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         )
 
         # Assert that the percent errors are less than the allowable error.
-        self.assertTrue(CDi_error < allowable_error)
-        self.assertTrue(CL_error < allowable_error)
-        self.assertTrue(Cm_error < allowable_error)
+        self.assertTrue(abs(CDi_error) < allowable_error)
+        self.assertTrue(abs(CL_error) < allowable_error)
+        self.assertTrue(abs(Cm_error) < allowable_error)

@@ -8,13 +8,14 @@ import unittest
 import tests.integration.fixtures.solver_fixtures
 
 
+# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.TestCase):
     """ This is a class for testing the unsteady ring vortex lattice method solver on multi-wing, static geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
         tearDown: This method tears down the test.
-        test_method: This method tests the solver's output.
+        test_method_does_not_throw: This method tests the solver's output.
 
     This class contains the following class attributes:
         None
@@ -42,7 +43,8 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
 
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
-    def test_method(self):
+    # ToDo: Properly document this method.
+    def test_method_does_not_throw(self):
         """ This method tests the solver's output.
 
         :return: None

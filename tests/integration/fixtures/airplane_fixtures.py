@@ -186,13 +186,14 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                 wing_cross_sections=[
                     ps.geometry.WingCrossSection(
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
+                        chord=1.5,
                         spanwise_spacing="cosine",
                     ),
                     ps.geometry.WingCrossSection(
-                        x_le=1.0,
+                        x_le=0.5,
                         y_le=5.0,
-                        chord=0.75,
-                        z_le=0.5,
+                        z_le=0.0,
+                        chord=1.0,
                         airfoil=ps.geometry.Airfoil(name="naca2412"),
                         spanwise_spacing="cosine",
                     ),
@@ -207,15 +208,14 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.WingCrossSection(
                         airfoil=ps.geometry.Airfoil(name="naca0010"),
                         spanwise_spacing="cosine",
-                        twist=-5,
-                        x_le=0.25,
-                        chord=0.75,
+                        twist=-5.0,
+                        chord=1.00,
                     ),
                     ps.geometry.WingCrossSection(
-                        y_le=1.25,
-                        twist=-5,
-                        chord=0.5,
-                        x_le=0.5,
+                        y_le=1.5,
+                        twist=-5.0,
+                        chord=0.75,
+                        x_le=0.25,
                         airfoil=ps.geometry.Airfoil(name="naca0010"),
                         spanwise_spacing="cosine",
                     ),
@@ -230,6 +230,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.WingCrossSection(
                         airfoil=ps.geometry.Airfoil(name="naca0010"),
                         spanwise_spacing="cosine",
+                        chord=1.0,
                     ),
                     ps.geometry.WingCrossSection(
                         z_le=1.5,

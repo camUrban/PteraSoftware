@@ -461,6 +461,8 @@ class WingMovement:
                 wing_cross_section_movement_location
             ]
 
+            wing_is_vertical = False
+
             # Check if this is this wing's root cross section.
             if wing_cross_section_movement_location == 0:
 
@@ -485,6 +487,9 @@ class WingMovement:
                 assert first_wing_cross_section_movement_heaving_period == 0
 
                 cross_section_span = 0.0
+                cross_section_sweep = 0.0
+                cross_section_pitch = 0.0
+                cross_section_heave = 0.0
                 last_x_le = 0.0
                 last_y_le = 0.0
                 last_z_le = 0.0
@@ -503,11 +508,13 @@ class WingMovement:
 
                 this_x_le = this_base_wing_cross_section.x_le
                 this_y_le = this_base_wing_cross_section.y_le
-                this_z_le = this_base_wing_cross_section.x_le
+                this_z_le = this_base_wing_cross_section.z_le
+                this_twist = this_base_wing_cross_section.twist
 
                 last_x_le = last_base_wing_cross_section.x_le
                 last_y_le = last_base_wing_cross_section.y_le
                 last_z_le = last_base_wing_cross_section.z_le
+                last_twist = last_base_wing_cross_section.twist
 
                 cross_section_span = np.sqrt(
                     (this_x_le - last_x_le) ** 2
@@ -515,15 +522,41 @@ class WingMovement:
                     + (this_z_le - last_z_le) ** 2
                 )
 
+                try:
+                    cross_section_sweep = (
+                        np.arctan((this_z_le - last_z_le) / (this_y_le - last_y_le))
+                        * 180
+                        / np.pi
+                    )
+                except ZeroDivisionError:
+                    cross_section_sweep = 0.0
+                    wing_is_vertical = True
+
+                cross_section_pitch = this_twist - last_twist
+
+                try:
+                    cross_section_heave = (
+                        np.arctan((this_x_le - last_x_le) / (this_y_le - last_y_le))
+                        * 180
+                        / np.pi
+                    )
+                except ZeroDivisionError:
+                    cross_section_heave = 0.0
+                    wing_is_vertical = True
+
             # Generate this wing cross section's vector of other wing cross section's based on its movement.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
                     num_steps=num_steps,
                     delta_time=delta_time,
                     cross_section_span=cross_section_span,
+                    cross_section_sweep=cross_section_sweep,
+                    cross_section_pitch=cross_section_pitch,
+                    cross_section_heave=cross_section_heave,
                     last_x_le=last_x_le,
                     last_y_le=last_y_le,
                     last_z_le=last_z_le,
+                    wing_is_vertical=wing_is_vertical,
                 )
             )
 
@@ -656,9 +689,13 @@ class WingCrossSectionMovement:
         num_steps=10,
         delta_time=0.1,
         cross_section_span=0.0,
+        cross_section_sweep=0.0,
+        cross_section_pitch=0.0,
+        cross_section_heave=0.0,
         last_x_le=0.0,
         last_y_le=0.0,
         last_z_le=0.0,
+        wing_is_vertical=False,
     ):
         """This method creates the wing cross section objects at each time current_step, and groups them into a list.
 
@@ -689,7 +726,7 @@ class WingCrossSectionMovement:
             sweeping_list = oscillating_sinspace(
                 amplitude=self.sweeping_amplitude,
                 period=self.sweeping_period,
-                base_value=self.sweeping_base,
+                base_value=cross_section_sweep,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -699,7 +736,7 @@ class WingCrossSectionMovement:
             sweeping_list = oscillating_linspace(
                 amplitude=self.sweeping_amplitude,
                 period=self.sweeping_period,
-                base_value=self.sweeping_base,
+                base_value=cross_section_sweep,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -741,7 +778,7 @@ class WingCrossSectionMovement:
             heaving_list = oscillating_sinspace(
                 amplitude=self.heaving_amplitude,
                 period=self.heaving_period,
-                base_value=0.0,
+                base_value=cross_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -751,7 +788,7 @@ class WingCrossSectionMovement:
             heaving_list = oscillating_linspace(
                 amplitude=self.heaving_amplitude,
                 period=self.heaving_period,
-                base_value=0.0,
+                base_value=cross_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -760,17 +797,28 @@ class WingCrossSectionMovement:
             # Throw an exception if the spacing value is not "sine" or "uniform".
             raise Exception("Bad value of heaving_spacing!")
 
-        # Find the list of new leading edge points. This uses a spherical coordinate transformation, referencing the
-        # previous wing cross section's leading edge point as the origin. Also convert the lists of sweep, pitch, and
-        # heave values to radians before passing them into numpy's trigonometry functions.
-        x_le_list = last_x_le + cross_section_span * np.cos(
-            sweeping_list * np.pi / 180
-        ) * np.sin(heaving_list * np.pi / 180)
-        y_le_list = last_y_le + cross_section_span * np.cos(
-            sweeping_list * np.pi / 180
-        ) * np.cos(heaving_list * np.pi / 180)
-        z_le_list = last_z_le + cross_section_span * np.sin(sweeping_list * np.pi / 180)
-        twist_list = pitching_list
+        if wing_is_vertical:
+            print("Wing is vertical!")
+
+            x_le_list = np.ones(num_steps) * self.x_le_base
+            y_le_list = np.ones(num_steps) * self.y_le_base
+            z_le_list = np.ones(num_steps) * self.z_le_base
+            twist_list = np.ones(num_steps) * self.twist_base
+        else:
+
+            # Find the list of new leading edge points. This uses a spherical coordinate transformation, referencing the
+            # previous wing cross section's leading edge point as the origin. Also convert the lists of sweep, pitch, and
+            # heave values to radians before passing them into numpy's trigonometry functions.
+            x_le_list = last_x_le + cross_section_span * np.cos(
+                sweeping_list * np.pi / 180
+            ) * np.sin(heaving_list * np.pi / 180)
+            y_le_list = last_y_le + cross_section_span * np.cos(
+                sweeping_list * np.pi / 180
+            ) * np.cos(heaving_list * np.pi / 180)
+            z_le_list = last_z_le + cross_section_span * np.sin(
+                sweeping_list * np.pi / 180
+            )
+            twist_list = pitching_list
 
         # Create an empty list of wing cross sections.
         wing_cross_sections = []

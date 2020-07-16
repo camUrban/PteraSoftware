@@ -2,7 +2,5 @@ matplotlib
 numpy
 pyvista
 scipy
-black
-pre-commit
 codecov
 numexpr

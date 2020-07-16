@@ -4,3 +4,5 @@ pyvista
 scipy
 codecov
 numexpr
+pre-commit
+black

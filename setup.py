@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="PteraSoftware",
-    version="0.1.1",
+    version="0.1.2",
     author="Cameron Urban",
     author_email="camerongurban@gmail.com",
     description="This is an open-source, unsteady aerodynamics solver for analyzing flapping-wing flight.",
@@ -22,9 +22,9 @@ setuptools.setup(
         'Programming Language :: Python :: 3.7',
     ],
     keywords='aerospace computational-biology airplane cfd computational-fluid-dynamics aerodynamics aeronautics aerospace-engineering unmanned-aerial-system aircraft-design unmanned-aerial-vehicle ornithopter ornithology vortex-lattice-method unsteady-flows vlm potential-flow',
-    python_requires='>= 3.7.7, < 3.8',
+    python_requires='>= 3.7.6, < 3.8',
     install_requires=[
-        'matplotlib >= 3.2.2, < 4'
+        'matplotlib >= 3.2.2, < 4',
         'numpy >= 1.18.5, < 1.19.0',
         'pyvista >= 0.25.3, < 1',
         'scipy >= 1.5, < 2',

@@ -1,8 +1,1 @@
-matplotlib
-numpy
-pyvista
-scipy
-codecov
-numexpr
-pre-commit
-black
+pterasoftware

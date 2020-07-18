@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import pterasoftware as ps
+import main as main
 
 
 class SteadyHorseshoeVortexLatticeMethodSolver:
@@ -234,7 +234,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Initialize the horseshoe vortex at this panel.
-                    panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
+                    panel.horseshoe_vortex = main.aerodynamics.HorseshoeVortex(
                         finite_leg_origin=front_right_vortex_vertex,
                         finite_leg_termination=front_left_vortex_vertex,
                         strength=None,
@@ -312,7 +312,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Find the matrix of normalized velocities induced at every panel's collocation point by every panel's horseshoe
         # vortex.
-        induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+        induced_velocities = main.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -372,7 +372,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
 
         # Calculate the velocities induced at every panel's bound vortex center.
-        induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+        induced_velocities = main.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
             points=self.panel_bound_vortex_centers,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -447,28 +447,28 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's induced drag coefficient
-        CDi = (
+        induced_drag_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's side force coefficient.
-        CY = (
+        side_force_coefficient = (
             self.airplane.total_near_field_force_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's lift coefficient.
-        CL = (
+        lift_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's rolling moment coefficient.
-        Cl = (
+        rolling_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -476,7 +476,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's pitching moment coefficient.
-        Cm = (
+        pitching_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -484,7 +484,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's yawing moment coefficient.
-        Cn = (
+        yawing_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -492,10 +492,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         self.airplane.total_near_field_force_coefficients_wind_axes = np.array(
-            [CDi, CY, CL]
+            [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
         )
         self.airplane.total_near_field_moment_coefficients_wind_axes = np.array(
-            [Cl, Cm, Cn]
+            [
+                rolling_moment_coefficient,
+                pitching_moment_coefficient,
+                yawing_moment_coefficient,
+            ]
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):
@@ -520,7 +524,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             last_row_streamline_points = self.streamline_points[-1, :, :]
 
             # Find the induced velocities at this row of points.
-            induced_velocities = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            induced_velocities = main.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=last_row_streamline_points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,

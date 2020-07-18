@@ -20,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 from scipy import signal
 
-import pterasoftware as ps
+import main as main
 
 
 class Movement:
@@ -266,7 +266,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = ps.geometry.Airplane(
+            this_airplane = main.geometry.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -584,7 +584,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = ps.geometry.Wing(
+            this_wing = main.geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -798,8 +798,6 @@ class WingCrossSectionMovement:
             raise Exception("Bad value of heaving_spacing!")
 
         if wing_is_vertical:
-            print("Wing is vertical!")
-
             x_le_list = np.ones(num_steps) * self.x_le_base
             y_le_list = np.ones(num_steps) * self.y_le_base
             z_le_list = np.ones(num_steps) * self.z_le_base
@@ -844,7 +842,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = ps.geometry.WingCrossSection(
+            this_wing_cross_section = main.geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -960,7 +958,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = ps.operating_point.OperatingPoint(
+            this_operating_point = main.operating_point.OperatingPoint(
                 density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 

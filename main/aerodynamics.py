@@ -28,7 +28,7 @@ This module contains the following functions:
 import numpy as np
 import numexpr as ne
 
-import pterasoftware as ps
+import main
 
 
 class LineVortex:
@@ -383,7 +383,7 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = main.geometry.centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
@@ -522,7 +522,7 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = main.geometry.centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
@@ -568,71 +568,10 @@ def calculate_velocity_induced_by_line_vortices(
         on one point by one of the line vortices. Either way, the results units are meters per second.
     """
 
-    # Validate the input. These steps significantly reduces the complexity of debugging.
-
-    # # Check that all the inputs are ndarrays.
-    # assert isinstance(points, np.ndarray)
-    # assert isinstance(origins, np.ndarray)
-    # assert isinstance(terminations, np.ndarray)
-    # assert isinstance(strengths, np.ndarray)
-    #
-    # # Get the shapes of the input ndarrays.
     points_shape = points.shape
-    # origins_shape = origins.shape
-    # terminations_shape = terminations.shape
     strengths_shape = strengths.shape
-    #
-    # # Get the number of dimensions of the input ndarrays.
-    # points_num_dims = points.ndim
-    # origins_num_dims = origins.ndim
-    # terminations_num_dims = terminations.ndim
-    # strengths_num_dims = strengths.ndim
-    #
-    # # Validate that each input has the correct dimensionality.
-    # assert points_num_dims == 2
-    # assert origins_num_dims == 2
-    # assert terminations_num_dims == 2
-    # assert strengths_num_dims == 1
-    #
-    # # Find the number of line vortices, according to the origins, terminations, and strengths inputs.
-    # num_origins = origins_shape[0]
-    # num_terminations = terminations_shape[0]
     num_strengths = strengths_shape[0]
-    #
-    # # Check that the origins, terminations, and strengths inputs agree on the number of line vortices.
-    # assert num_origins == num_terminations == num_strengths
-    #
-    # # Get the number of coordinates for each row in the points, origins, and terminations inputs.
-    # points_num_coordinates = points_shape[-1]
-    # origin_num_coordinates = origins_shape[-1]
-    # termination_num_coordinates = terminations_shape[-1]
-    #
-    # # Check that each row of the points, origins, and terminations inputs all have three coordinates (x, y, and z).
-    # assert points_num_coordinates == 3
-    # assert origin_num_coordinates == 3
-    # assert termination_num_coordinates == 3
-    #
-    # # Check that every position in every input holds a float.
-    # for coordinate in np.ravel(points):
-    #     assert isinstance(coordinate, float)
-    # for coordinate in np.ravel(origins):
-    #     assert isinstance(coordinate, float)
-    # for coordinate in np.ravel(terminations):
-    #     assert isinstance(coordinate, float)
-    # for strength in np.ravel(strengths):
-    #     assert isinstance(strength, float)
 
-    # We have now verified that:
-    #   1.  points is a 2D ndarray of floats with shape Nx3. Each row stores one of N points. The columns store each
-    #       point's x, y, and z coordinates.
-    #   2.  origins is a 2D ndarray of floats with shape Mx3. Each row stores one of M origins. The columns store each
-    #       origin's x, y, and z coordinates.
-    #   3.  terminations is a 2D ndarray of floats with shape Mx3. Each row stores one of M terminations. The columns
-    #       store each termination's x, y, and z coordinates
-    #   4.  strengths is a 1D ndarray of floats with shape M. Each positions stores one of M strengths. The columns
-    #       store each strength's value.
-
-    # Get the number of vortices, and the number of points.
     num_vortices = num_strengths
     num_points = points_shape[0]
 
@@ -757,21 +696,21 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     """
 
     # Get the velocity induced by each leg of the horseshoe vortex.
-    right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    right_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_right_vortex_vertices,
         terminations=front_right_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    finite_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    finite_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_right_vortex_vertices,
         terminations=front_left_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    left_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    left_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_left_vortex_vertices,
         terminations=back_left_vortex_vertices,
@@ -836,28 +775,28 @@ def calculate_velocity_induced_by_ring_vortices(
     """
 
     # Get the velocity induced by each leg of the ring vortex.
-    right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    right_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_right_vortex_vertices,
         terminations=front_right_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    front_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    front_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_right_vortex_vertices,
         terminations=front_left_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    left_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    left_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_left_vortex_vertices,
         terminations=back_left_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    back_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    back_leg_velocities = main.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_left_vortex_vertices,
         terminations=back_right_vortex_vertices,

@@ -1,8 +1,8 @@
-""" This module contains the class definition of this package's unsteady ring vortex lattice solver.
+""" This module contains the class definition of a depreciated unsteady ring vortex lattice solver.
 
 This module contains the following classes:
     UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses an unsteady ring vortex lattice
-                                           method.
+                                           method. It has not been vectorized for speed.
 
 This module contains the following exceptions:
     None
@@ -15,11 +15,12 @@ import copy as copy
 
 import numpy as np
 
-import pterasoftware as ps
+import main as main
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
+    """ This is an aerodynamics solver that uses an unsteady ring vortex lattice method. It has not been vectorized for
+    speed.
 
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
@@ -220,7 +221,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the panel's ring vortex.
-                        panel.ring_vortex = ps.aerodynamics.RingVortex(
+                        panel.ring_vortex = main.aerodynamics.RingVortex(
                             front_right_vertex=front_right_vortex_vertex,
                             front_left_vertex=front_left_vortex_vertex,
                             back_left_vertex=back_left_vortex_vertex,
@@ -713,34 +714,34 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the force and moment coefficients of the current airplane.
-        CDi = (
+        induced_drag_coefficient = (
             -self.current_airplane.total_near_field_force_wind_axes[0]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
         )
-        CY = (
+        side_force_coefficient = (
             self.current_airplane.total_near_field_force_wind_axes[1]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
         )
-        CL = (
+        lift_coefficient = (
             -self.current_airplane.total_near_field_force_wind_axes[2]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
         )
-        Cl = (
+        rolling_moment_coefficient = (
             self.current_airplane.total_near_field_moment_wind_axes[0]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
             / self.current_airplane.b_ref
         )
-        Cm = (
+        pitching_moment_coefficient = (
             self.current_airplane.total_near_field_moment_wind_axes[1]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
             / self.current_airplane.c_ref
         )
-        Cn = (
+        yawing_moment_coefficient = (
             self.current_airplane.total_near_field_moment_wind_axes[2]
             / self.current_operating_point.calculate_dynamic_pressure()
             / self.current_airplane.s_ref
@@ -749,10 +750,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Update the force and moment coefficients of the current airplane.
         self.current_airplane.total_near_field_force_coefficients_wind_axes = np.array(
-            [CDi, CY, CL]
+            [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
         )
         self.current_airplane.total_near_field_moment_coefficients_wind_axes = np.array(
-            [Cl, Cm, Cn]
+            [
+                rolling_moment_coefficient,
+                pitching_moment_coefficient,
+                yawing_moment_coefficient,
+            ]
         )
 
     def calculate_streamlines(self, streamline_num_steps=10, streamline_delta_time=0.1):
@@ -1140,7 +1145,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # strength, and add it to the matrix of ring vortices.
                                 next_wing.wake_ring_vortices[
                                     chordwise_vertex_position, spanwise_vertex_position
-                                ] = ps.aerodynamics.RingVortex(
+                                ] = main.aerodynamics.RingVortex(
                                     front_left_vertex=front_left_vertex,
                                     front_right_vertex=front_right_vertex,
                                     back_left_vertex=back_left_vertex,

@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-import pterasoftware as ps
+import main as main
 
 
 class Airplane:
@@ -228,7 +228,7 @@ class Wing:
 
         # Initialize the the panels attribute. Then mesh the wing, which will populate this attribute.
         self.panels = None
-        ps.meshing.mesh_wing(self)
+        main.meshing.mesh_wing(self)
 
         # Initialize and calculate the wing's wetted area. If the wing is symmetrical, this includes the area of the
         # mirrored half.
@@ -313,7 +313,7 @@ class WingCrossSection:
         airfoil=None,
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
-        control_surface_deflection=0,
+        control_surface_deflection=0.0,
         num_spanwise_panels=8,
         spanwise_spacing="cosine",
     ):
@@ -342,7 +342,8 @@ class WingCrossSection:
             This is the The location of the control surface hinge from the leading edge as a fraction of chord. The
             default value is 0.75.
         :param control_surface_deflection: float, optional
-            This is the Control deflection in degrees. Deflection downwards is positive. The default value is 0.0.
+            This is the Control deflection in degrees. Deflection downwards is positive. The default value is 0.0
+            degrees.
         :param num_spanwise_panels: int, optional
             This is the number of spanwise panels to be used between this cross section and the next one. The default
             value is 8.
@@ -518,7 +519,7 @@ class Airfoil:
                     if camber_loc == 0:
                         camber_loc = 0.5
 
-                    # Get camber.
+                    # Get the camber.
                     y_c_piece1 = (
                         max_camber
                         / camber_loc ** 2
@@ -555,20 +556,20 @@ class Airfoil:
                     theta = np.arctan(slope)
 
                     # Combine everything.
-                    x_U = x_t - y_t * np.sin(theta)
-                    x_L = x_t + y_t * np.sin(theta)
-                    y_U = y_c + y_t * np.cos(theta)
-                    y_L = y_c - y_t * np.cos(theta)
+                    x_u = x_t - y_t * np.sin(theta)
+                    x_l = x_t + y_t * np.sin(theta)
+                    y_u = y_c + y_t * np.cos(theta)
+                    y_l = y_c - y_t * np.cos(theta)
 
                     # Flip upper surface so it's back to front.
-                    x_U, y_U = np.flipud(x_U), np.flipud(y_U)
+                    x_u, y_u = np.flipud(x_u), np.flipud(y_u)
 
                     # Trim 1 point from lower surface so there's no overlap.
-                    x_L, y_L = x_L[1:], y_L[1:]
+                    x_l, y_l = x_l[1:], y_l[1:]
 
                     # Combine and format the coordinates.
-                    x = np.hstack((x_U, x_L))
-                    y = np.hstack((y_U, y_L))
+                    x = np.hstack((x_u, x_l))
+                    y = np.hstack((y_u, y_l))
                     coordinates = np.column_stack((x, y))
 
                     # Populate the coordinates attribute and return.
@@ -580,9 +581,7 @@ class Airfoil:
             import importlib.resources
 
             # Import the airfoils package as "airfoils".
-            airfoils = importlib.import_module(
-                name=".airfoils", package="pterasoftware"
-            )
+            airfoils = importlib.import_module(name=".airfoils", package="main")
 
             # Read the text from the airfoil file.
             raw_text = importlib.resources.read_text(airfoils, name + ".dat")
@@ -591,15 +590,15 @@ class Airfoil:
             trimmed_text = raw_text[raw_text.find("\n") :]
 
             # Input the coordinates into a 1D ndarray.
-            coordinates1D = np.fromstring(trimmed_text, sep="\n")
+            coordinates_1d = np.fromstring(trimmed_text, sep="\n")
 
             # Check to make sure the number of elements in the ndarray is even.
             assert (
-                len(coordinates1D) % 2 == 0
+                len(coordinates_1d) % 2 == 0
             ), "File was found in airfoil database, but it could not be read correctly."
 
             # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the number of rows.
-            coordinates = np.reshape(coordinates1D, (-1, 2))
+            coordinates = np.reshape(coordinates_1d, (-1, 2))
 
             # Populate the coordinates attribute and return.
             self.coordinates = coordinates
@@ -948,7 +947,7 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = main.geometry.centroid_of_quadrilateral(
             front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
         )
 

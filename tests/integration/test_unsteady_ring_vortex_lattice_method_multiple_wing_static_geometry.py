@@ -5,7 +5,7 @@
 
 import unittest
 
-import tests.integration.fixtures.solver_fixtures
+from tests.integration.fixtures import solver_fixtures
 
 
 # ToDo: Properly document this class.
@@ -32,7 +32,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry()
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry()
         )
 
     def tearDown(self):
@@ -55,9 +55,9 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
             verbose=True, prescribed_wake=True,
         )
 
-        import pterasoftware as ps
+        import main as main
 
-        ps.output.animate(
+        main.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             show_delta_pressures=True,

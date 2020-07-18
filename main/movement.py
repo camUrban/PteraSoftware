@@ -20,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 from scipy import signal
 
-import pterasoftware as ps
+import main as main
 
 
 class Movement:
@@ -266,7 +266,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = ps.geometry.Airplane(
+            this_airplane = main.geometry.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -551,7 +551,6 @@ class WingMovement:
                     delta_time=delta_time,
                     cross_section_span=cross_section_span,
                     cross_section_sweep=cross_section_sweep,
-                    cross_section_pitch=cross_section_pitch,
                     cross_section_heave=cross_section_heave,
                     last_x_le=last_x_le,
                     last_y_le=last_y_le,
@@ -584,7 +583,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = ps.geometry.Wing(
+            this_wing = main.geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -688,24 +687,20 @@ class WingCrossSectionMovement:
         self,
         num_steps=10,
         delta_time=0.1,
-        cross_section_span=0.0,
-        cross_section_sweep=0.0,
-        cross_section_pitch=0.0,
-        cross_section_heave=0.0,
         last_x_le=0.0,
         last_y_le=0.0,
         last_z_le=0.0,
         wing_is_vertical=False,
+        cross_section_span=0.0,
+        cross_section_sweep=0.0,
+        cross_section_heave=0.0,
     ):
-        """This method creates the wing cross section objects at each time current_step, and groups them into a list.
+        """ This method creates the wing cross section objects at each time current_step, and groups them into a list.
 
         :param num_steps: int, optional
             This is the number of time steps in this movement. The default value is 10.
         :param delta_time: float, optional
             This is the time, in seconds, between each time step. The default value is 0.1 seconds.
-        :param cross_section_span: float, optional
-            This is the length, in meters, of the leading edge stretching between this cross section at the previous
-            cross section. If this is the first cross section, it should be 0.0 meters. The default value is 0.0 meters.
         :param last_x_le: float, optional
             This is the x coordinate of the reference location of the previous cross section. Its units are in meters,
             and its default value is 0.0 meters.
@@ -715,6 +710,20 @@ class WingCrossSectionMovement:
         :param last_z_le: float, optional
             This is the z coordinate of the reference location of the previous cross section. Its units are in meters,
             and its default value is 0.0 meters.
+        :param wing_is_vertical: bool, optional
+            This flag is set to true if the wing containing this wing cross section is vertical. If true, the cross
+            section's movement will automatically be eliminated. This is a temporary patch until vertical wing cross
+            section movement is supported. The default value is false.
+        :param cross_section_span: float, optional
+            This is the length, in meters, of the leading edge stretching between this wing cross section at the
+            previous wing cross section. If this is the first cross section, it should be 0.0 meters. The default value
+            is 0.0 meters.
+        :param cross_section_sweep: float, optional
+            This is the sweep, in degrees, of this wing cross section relative to the the previous wing cross section.
+            If this is the first cross section, it should be 0.0 degrees. The default value is 0.0 degrees.
+        :param cross_section_heave: float, optional
+            This is the heave, in degrees, of this wing cross section relative to the the previous wing cross section.
+            If this is the first cross section, it should be 0.0 degrees. The default value is 0.0 degrees.
         :return wing_cross_sections: list of WingCrossSection objects
             This is the list of WingCrossSection objects that is associated with this WingCrossSectionMovement object.
         """
@@ -798,8 +807,6 @@ class WingCrossSectionMovement:
             raise Exception("Bad value of heaving_spacing!")
 
         if wing_is_vertical:
-            print("Wing is vertical!")
-
             x_le_list = np.ones(num_steps) * self.x_le_base
             y_le_list = np.ones(num_steps) * self.y_le_base
             z_le_list = np.ones(num_steps) * self.z_le_base
@@ -844,7 +851,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = ps.geometry.WingCrossSection(
+            this_wing_cross_section = main.geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -960,7 +967,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = ps.operating_point.OperatingPoint(
+            this_operating_point = main.operating_point.OperatingPoint(
                 density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 

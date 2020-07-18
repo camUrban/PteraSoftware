@@ -4,6 +4,7 @@
       <w>aero</w>
       <w>aerosandbox</w>
       <w>afsmo</w>
+      <w>aiaa</w>
       <w>albatros</w>
       <w>ames</w>
       <w>arctan</w>
@@ -34,9 +35,11 @@
       <w>drela</w>
       <w>dsma</w>
       <w>einsum</w>
+      <w>eppler</w>
       <w>fage</w>
       <w>fauvel</w>
       <w>firebee</w>
+      <w>flyer</w>
       <w>freestream</w>
       <w>friedrichshafen</w>
       <w>genese</w>
@@ -77,6 +80,7 @@
       <w>numba</w>
       <w>numexpr</w>
       <w>onera</w>
+      <w>ornithopter</w>
       <w>pchip</w>
       <w>pfalz</w>
       <w>plotkin</w>
@@ -94,8 +98,10 @@
       <w>rhode</w>
       <w>roncz</w>
       <w>royer</w>
+      <w>rutan</w>
       <w>scipy</w>
       <w>semispan</w>
+      <w>sideslip</w>
       <w>sinspace</w>
       <w>sokolov</w>
       <w>spanwise</w>
@@ -117,6 +123,7 @@
       <w>wikipedia</w>
       <w>wortmann</w>
       <w>xflr</w>
+      <w>xfoil</w>
       <w>xsec</w>
       <w>xsecs</w>
       <w>ycoord</w>

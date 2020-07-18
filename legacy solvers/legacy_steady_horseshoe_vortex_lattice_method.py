@@ -1,4 +1,4 @@
-""" This module contains the class definition of this package's steady horseshoe vortex lattice solver.
+""" This module contains the class definition of a depreciated steady horseshoe vortex lattice solver.
 
 This module contains the following classes:
     LegacySteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady horseshoe vortex
@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import pterasoftware as ps
+import main as main
 
 
 class LegacySteadyHorseshoeVortexLatticeMethodSolver:
@@ -217,7 +217,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Initialize the horseshoe vortex at this panel.
-                    panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
+                    panel.horseshoe_vortex = main.aerodynamics.HorseshoeVortex(
                         finite_leg_origin=front_right_vortex_vertex,
                         finite_leg_termination=front_left_vortex_vertex,
                         strength=None,
@@ -448,28 +448,28 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's induced drag coefficient
-        CDi = (
+        induced_drag_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's side force coefficient.
-        CY = (
+        side_force_coefficient = (
             self.airplane.total_near_field_force_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's lift coefficient.
-        CL = (
+        lift_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's rolling moment coefficient.
-        Cl = (
+        rolling_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -477,7 +477,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's pitching moment coefficient.
-        Cm = (
+        pitching_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -485,7 +485,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's yawing moment coefficient.
-        Cn = (
+        yawing_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -493,10 +493,14 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         self.airplane.total_near_field_force_coefficients_wind_axes = np.array(
-            [CDi, CY, CL]
+            [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
         )
         self.airplane.total_near_field_moment_coefficients_wind_axes = np.array(
-            [Cl, Cm, Cn]
+            [
+                rolling_moment_coefficient,
+                pitching_moment_coefficient,
+                yawing_moment_coefficient,
+            ]
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):

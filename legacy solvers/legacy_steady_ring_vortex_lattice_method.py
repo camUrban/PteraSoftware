@@ -1,7 +1,8 @@
-""" This module contains the class definition of this package's steady ring vortex lattice solver.
+""" This module contains the class definition of a depreciated steady ring vortex lattice solver.
 
 This module contains the following classes:
-    LegacySteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady ring vortex lattice method.
+    LegacySteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady ring vortex lattice
+                                               method. It has not been vectorized for speed.
 
 This module contains the following exceptions:
     None
@@ -12,11 +13,12 @@ This module contains the following functions:
 
 import numpy as np
 
-import pterasoftware as ps
+import main as main
 
 
 class LegacySteadyRingVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses a steady ring vortex lattice method.
+    """ This is an aerodynamics solver that uses a steady ring vortex lattice method. It has not been vectorized for
+    speed.
 
     Citation:
         Adapted from:         aerodynamics.vlm3.py in AeroSandbox
@@ -245,7 +247,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         )
 
                         # If the panel is along the trailing edge, initialize its horseshoe vortex.
-                        panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
+                        panel.horseshoe_vortex = main.aerodynamics.HorseshoeVortex(
                             finite_leg_origin=back_right_vortex_vertex,
                             finite_leg_termination=back_left_vortex_vertex,
                             strength=None,
@@ -254,7 +256,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         )
 
                     # Initialize the panel's ring vortex.
-                    panel.ring_vortex = ps.aerodynamics.RingVortex(
+                    panel.ring_vortex = main.aerodynamics.RingVortex(
                         front_right_vertex=front_right_vortex_vertex,
                         front_left_vertex=front_left_vortex_vertex,
                         back_left_vertex=back_left_vortex_vertex,
@@ -618,28 +620,28 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's induced drag coefficient
-        CDi = (
+        induced_drag_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's side force coefficient.
-        CY = (
+        side_force_coefficient = (
             self.airplane.total_near_field_force_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's lift coefficient.
-        CL = (
+        lift_coefficient = (
             -self.airplane.total_near_field_force_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
         )
 
         # Calculate the current_airplane's rolling moment coefficient.
-        Cl = (
+        rolling_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[0]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -647,7 +649,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's pitching moment coefficient.
-        Cm = (
+        pitching_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[1]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -655,7 +657,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the current_airplane's yawing moment coefficient.
-        Cn = (
+        yawing_moment_coefficient = (
             self.airplane.total_near_field_moment_wind_axes[2]
             / self.operating_point.calculate_dynamic_pressure()
             / self.airplane.s_ref
@@ -663,10 +665,14 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         )
 
         self.airplane.total_near_field_force_coefficients_wind_axes = np.array(
-            [CDi, CY, CL]
+            [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
         )
         self.airplane.total_near_field_moment_coefficients_wind_axes = np.array(
-            [Cl, Cm, Cn]
+            [
+                rolling_moment_coefficient,
+                pitching_moment_coefficient,
+                yawing_moment_coefficient,
+            ]
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):

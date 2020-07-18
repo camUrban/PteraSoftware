@@ -10,7 +10,7 @@ This module contains the following functions:
     make_validation_operating_point: This method makes an operating point object for use in tests.
 """
 
-import pterasoftware as ps
+import main as main
 
 
 def make_validation_operating_point():
@@ -21,5 +21,5 @@ def make_validation_operating_point():
     """
 
     # Create and return an operating point fixture.
-    operating_point_fixture = ps.operating_point.OperatingPoint()
+    operating_point_fixture = main.operating_point.OperatingPoint()
     return operating_point_fixture

@@ -22,10 +22,10 @@ This module contains the following functions:
                                                                            be used as a fixture.
 """
 
-import pterasoftware as ps
-import tests.integration.fixtures.operating_point_fixtures
-import tests.integration.fixtures.airplane_fixtures
-import tests.integration.fixtures.movement_fixtures
+import main as main
+from tests.integration.fixtures import operating_point_fixtures
+from tests.integration.fixtures import airplane_fixtures
+from tests.integration.fixtures import movement_fixtures
 
 
 def make_steady_validation_problem():
@@ -36,15 +36,13 @@ def make_steady_validation_problem():
     """
 
     # Create the constructing fixtures.
-    steady_validation_airplane = (
-        tests.integration.fixtures.airplane_fixtures.make_steady_validation_airplane()
-    )
+    steady_validation_airplane = airplane_fixtures.make_steady_validation_airplane()
     steady_validation_operating_point = (
-        tests.integration.fixtures.operating_point_fixtures.make_validation_operating_point()
+        operating_point_fixtures.make_validation_operating_point()
     )
 
     # Create the problem fixture.
-    steady_validation_problem = ps.problems.SteadyProblem(
+    steady_validation_problem = main.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -66,14 +64,14 @@ def make_steady_multiple_wing_validation_problem():
 
     # Create the constructing fixtures.
     steady_validation_airplane = (
-        tests.integration.fixtures.airplane_fixtures.make_multiple_wing_steady_validation_airplane()
+        airplane_fixtures.make_multiple_wing_steady_validation_airplane()
     )
     steady_validation_operating_point = (
-        tests.integration.fixtures.operating_point_fixtures.make_validation_operating_point()
+        operating_point_fixtures.make_validation_operating_point()
     )
 
     # Create the problem fixture.
-    steady_validation_problem = ps.problems.SteadyProblem(
+    steady_validation_problem = main.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -94,12 +92,10 @@ def make_unsteady_validation_problem_with_static_geometry():
     """
 
     # Create the constructing fixture.
-    unsteady_validation_movement = (
-        tests.integration.fixtures.movement_fixtures.make_static_validation_movement()
-    )
+    unsteady_validation_movement = movement_fixtures.make_static_validation_movement()
 
     # Create the problem fixture.
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = main.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -118,12 +114,10 @@ def make_unsteady_validation_problem_with_variable_geometry():
     """
 
     # Create the constructing fixture.
-    unsteady_validation_movement = (
-        tests.integration.fixtures.movement_fixtures.make_variable_validation_movement()
-    )
+    unsteady_validation_movement = movement_fixtures.make_variable_validation_movement()
 
     # Create the problem fixture.
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = main.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -143,11 +137,11 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
 
     # Create the constructing fixture.
     unsteady_validation_movement = (
-        tests.integration.fixtures.movement_fixtures.make_multiple_wing_static_validation_movement()
+        movement_fixtures.make_multiple_wing_static_validation_movement()
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = main.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -167,11 +161,11 @@ def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
 
     # Create the constructing fixture.
     unsteady_validation_movement = (
-        tests.integration.fixtures.movement_fixtures.make_multiple_wing_variable_validation_movement()
+        movement_fixtures.make_multiple_wing_variable_validation_movement()
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = ps.problems.UnsteadyProblem(
+    unsteady_validation_problem = main.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 

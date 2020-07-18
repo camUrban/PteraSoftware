@@ -21,9 +21,8 @@ This module contains the following functions:
 
 import unittest
 
-import tests.integration.fixtures.solver_fixtures
-
-import pterasoftware as ps
+import main as main
+from tests.integration.fixtures import solver_fixtures
 
 
 # ToDo: Properly document this class.
@@ -50,7 +49,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
         # Create the steady method solver.
         self.steady_ring_vortex_lattice_method_validation_solver = (
-            tests.integration.fixtures.solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
+            solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
         )
 
     def tearDown(self):
@@ -72,28 +71,28 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         self.steady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
 
         # Calculate the percent errors of the output.
-        CDi_expected = 0.019
-        CDi_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
+        c_di_expected = 0.019
+        c_di_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
             0
         ]
-        CDi_error = abs(CDi_calculated - CDi_expected) / CDi_expected
+        c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
 
-        CL_expected = 0.788
-        CL_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
+        c_l_expected = 0.788
+        c_l_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
             2
         ]
-        CL_error = abs(CL_calculated - CL_expected) / CL_expected
+        c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
 
-        Cm_expected = -0.687
-        Cm_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_moment_coefficients_wind_axes[
+        c_m_expected = -0.687
+        c_m_calculated = self.steady_ring_vortex_lattice_method_validation_solver.airplane.total_near_field_moment_coefficients_wind_axes[
             1
         ]
-        Cm_error = abs(Cm_calculated - Cm_expected) / Cm_expected
+        c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
 
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        main.output.draw(
             solver=self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -101,6 +100,6 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
         # Assert that the percent errors are less than the allowable error.
-        self.assertTrue(abs(CDi_error) < allowable_error)
-        self.assertTrue(abs(CL_error) < allowable_error)
-        self.assertTrue(abs(Cm_error) < allowable_error)
+        self.assertTrue(abs(c_di_error) < allowable_error)
+        self.assertTrue(abs(c_l_error) < allowable_error)
+        self.assertTrue(abs(c_m_error) < allowable_error)

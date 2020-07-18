@@ -26,7 +26,6 @@ This module contains the following functions:
 """
 
 import numpy as np
-import numexpr as ne
 
 import main
 
@@ -568,13 +567,6 @@ def calculate_velocity_induced_by_line_vortices(
         on one point by one of the line vortices. Either way, the results units are meters per second.
     """
 
-    points_shape = points.shape
-    strengths_shape = strengths.shape
-    num_strengths = strengths_shape[0]
-
-    num_vortices = num_strengths
-    num_points = points_shape[0]
-
     # Expand the dimensionality of the points input. It is now of shape (N x 1 x 3). This will allow numpy to
     # broadcast the upcoming subtractions.
     points = np.expand_dims(points, axis=1)
@@ -585,7 +577,7 @@ def calculate_velocity_induced_by_line_vortices(
     r_2 = points - terminations
 
     # Define the vector from the vortex origins to the vortex terminations. This is of shape (N x M x 3).
-    r_0 = ne.evaluate("r_1 - r_2")
+    r_0 = r_1 - r_2
 
     # Calculate the vector cross product. This is of shape (N x M x 3).
     r_1_cross_r_2 = np.cross(r_1, r_2)
@@ -617,10 +609,10 @@ def calculate_velocity_induced_by_line_vortices(
 
     # Calculate k and then the induced velocity, ignoring any divide-by-zero or nan errors. k is of shape (N x M)
     with np.errstate(divide="ignore", invalid="ignore"):
-
-        pi = np.pi
-        k = ne.evaluate(
-            "strengths / (4 * pi * r_1_cross_r_2_absolute_magnitude) * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)"
+        k = (
+            strengths
+            / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
+            * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
         )
 
         # Set the shape of k to be (N x M x 1) to support numpy broadcasting in the subsequent multiplication.
@@ -628,13 +620,7 @@ def calculate_velocity_induced_by_line_vortices(
 
         # Multiple k by the cross products of r_1 and r_2 to get the non-collapsed matrix of induced velocities. This is
         # of shape (M x N x 3).
-        induced_velocities = ne.evaluate("k * r_1_cross_r_2")
-
-    # Get the shape of the induced velocity matrix.
-    induced_velocities_shape = induced_velocities.shape
-
-    # Check that the calculations produced the expected shape.
-    # assert induced_velocities_shape == (num_points, num_vortices, 3)
+        induced_velocities = k * r_1_cross_r_2
 
     # Set the values of the induced velocity to zero where there are singularities.
     induced_velocities[np.isinf(induced_velocities)] = 0
@@ -642,8 +628,6 @@ def calculate_velocity_induced_by_line_vortices(
 
     if collapse:
         induced_velocities = np.sum(induced_velocities, axis=1)
-        # induced_velocities_shape = induced_velocities.shape
-        # assert induced_velocities_shape == (num_points, 3)
 
     return induced_velocities
 
@@ -719,8 +703,8 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     )
 
     # Calculate the total induced velocity by summing the velocities induced by each leg.
-    induced_velocities = ne.evaluate(
-        "right_leg_velocities + finite_leg_velocities + left_leg_velocities"
+    induced_velocities = (
+        right_leg_velocities + finite_leg_velocities + left_leg_velocities
     )
 
     # Return the induced velocity.
@@ -805,8 +789,11 @@ def calculate_velocity_induced_by_ring_vortices(
     )
 
     # Calculate the total induced velocity by summing the velocities induced by each leg.
-    induced_velocities = ne.evaluate(
-        "right_leg_velocities + front_leg_velocities + left_leg_velocities + back_leg_velocities"
+    induced_velocities = (
+        right_leg_velocities
+        + front_leg_velocities
+        + left_leg_velocities
+        + back_leg_velocities
     )
 
     # Return the induced velocity.

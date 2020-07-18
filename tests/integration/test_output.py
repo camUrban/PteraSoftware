@@ -14,8 +14,8 @@ import unittest
 
 import matplotlib.pyplot as plt
 
-import pterasoftware as ps
-import tests.integration.fixtures.solver_fixtures
+import main as main
+from tests.integration.fixtures import solver_fixtures
 
 
 class TestOutput(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestOutput(unittest.TestCase):
 
         # Set up the constructing fixtures.
         self.unsteady_solver = (
-            tests.integration.fixtures.solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
 
     def tearDown(self):
@@ -66,7 +66,7 @@ class TestOutput(unittest.TestCase):
 
         # Call the plot_results_versus_time method on the solver fixture. The testing flag is set to true, so the
         # figures will not be displayed.
-        ps.output.plot_results_versus_time(
+        main.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, testing=True
         )
 
@@ -83,7 +83,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the animate function on the unsteady solver fixture.
-        ps.output.animate(
+        main.output.animate(
             unsteady_solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
@@ -96,7 +96,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the draw function on the unsteady solver fixture.
-        ps.output.draw(
+        main.output.draw(
             solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,

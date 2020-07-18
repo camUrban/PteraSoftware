@@ -48,7 +48,7 @@ class OperatingPoint:
         :param alpha: float, optional
             This parameter is the angle of attack. The units are degrees. The default value is 5.0.
         :param beta: float, optional
-            This parameter is the side slip angle. The units are degrees. The default value is 0.0.
+            This parameter is the sideslip angle. The units are degrees. The default value is 0.0.
         """
 
         # Initialize the attributes.

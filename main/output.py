@@ -16,7 +16,7 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
-import pterasoftware as ps
+import main as main
 
 
 def draw(
@@ -51,7 +51,7 @@ def draw(
     # Get the solver's geometry.
     if isinstance(
         solver,
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         airplane = solver.steady_problems[-1].airplane
     else:
@@ -108,51 +108,49 @@ def draw(
         # Check if the user wants to show the wake vortices.
         if show_wake_vortices:
 
+            wake_ring_vortex_vertices = np.empty((0, 3), dtype=int)
+            wake_ring_vortex_faces = np.empty(0, dtype=int)
+            current_wake_ring_vortex_num = 0
+
             # Iterate through the unraveled array of wake vortices for the given wing.
             for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-                # Add a line to make this wake ring vortex's front edge.
-                plotter.add_mesh(
-                    pv.Line(
-                        wake_ring_vortex.front_right_vertex,
+                wake_ring_vortex_vertices_to_add = np.vstack(
+                    (
                         wake_ring_vortex.front_left_vertex,
-                    ),
-                    show_edges=True,
-                    color="#EEEEEF",
-                    line_width=2,
-                )
-
-                # Add a line to make this wake ring vortex's left edge.
-                plotter.add_mesh(
-                    pv.Line(
-                        wake_ring_vortex.front_left_vertex,
-                        wake_ring_vortex.back_left_vertex,
-                    ),
-                    show_edges=True,
-                    color="#EEEEEF",
-                    line_width=2,
-                )
-
-                # Add a line to make this wake ring vortex's back edge.
-                plotter.add_mesh(
-                    pv.Line(
-                        wake_ring_vortex.back_left_vertex,
-                        wake_ring_vortex.back_right_vertex,
-                    ),
-                    show_edges=True,
-                    color="#EEEEEF",
-                    line_width=2,
-                )
-
-                # Add a line to make this wake ring vortex's right edge.
-                plotter.add_mesh(
-                    pv.Line(
-                        wake_ring_vortex.back_right_vertex,
                         wake_ring_vortex.front_right_vertex,
-                    ),
-                    show_edges=True,
-                    color="#EEEEEF",
-                    line_width=2,
+                        wake_ring_vortex.back_right_vertex,
+                        wake_ring_vortex.back_left_vertex,
+                    )
                 )
+                wake_ring_vortex_face_to_add = np.array(
+                    [
+                        4,
+                        (current_wake_ring_vortex_num * 4),
+                        (current_wake_ring_vortex_num * 4) + 1,
+                        (current_wake_ring_vortex_num * 4) + 2,
+                        (current_wake_ring_vortex_num * 4) + 3,
+                    ]
+                )
+
+                wake_ring_vortex_vertices = np.vstack(
+                    (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
+                )
+                wake_ring_vortex_faces = np.hstack(
+                    (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
+                )
+
+                current_wake_ring_vortex_num += 1
+
+            wake_ring_vortex_surface = pv.PolyData(
+                wake_ring_vortex_vertices, wake_ring_vortex_faces
+            )
+
+            plotter.add_mesh(
+                wake_ring_vortex_surface,
+                show_edges=True,
+                smooth_shading=True,
+                color="white",
+            )
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)

@@ -25,14 +25,14 @@ This package contains the following modules:
 
 """
 
-from . import aerodynamics
-from . import airfoils
-from . import geometry
-from . import meshing
-from . import movement
-from . import operating_point
-from . import output
-from . import problems
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from main import aerodynamics
+from main import airfoils
+from main import geometry
+from main import meshing
+from main import movement
+from main import operating_point
+from main import output
+from main import problems
+from main import steady_horseshoe_vortex_lattice_method
+from main import steady_ring_vortex_lattice_method
+from main import unsteady_ring_vortex_lattice_method

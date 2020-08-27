@@ -126,3 +126,6 @@ cython_debug/
 
 # This is a folder full of random tests to ignore.
 /testing_in_development/
+
+# This is the pre-commit configuration file to ignore.
+.pre-commit-config.yaml

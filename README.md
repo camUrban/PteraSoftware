@@ -52,9 +52,6 @@ Here are the requirements necessary to run Ptera Software:
 * numpy >= 1.18.5, < 1.19.0
 * pyvista >= 0.25.3, < 1.0.0
 * scipy >= 1.5, < 2.0
-* codecov >= 2.1.8, < 3.0.0
-* pre-commit >= 2.6, < 3.0
-* black >= 19.10b0, < 20.0
  
 If you've downloaded the source code, you an install them by running:
 

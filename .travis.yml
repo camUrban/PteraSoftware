@@ -9,6 +9,9 @@ before_install:
   - source ./gl-ci-helpers/travis/setup_headless_display.sh
 install:
   - pip install -r REQUIREMENTS.txt
+  - pip install black
+  - pip install codecov
+  - pip install pre-commit
 script:
   - coverage run --source=pterasoftware -m unittest discover -s tests
   - codecov

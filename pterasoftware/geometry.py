@@ -581,7 +581,9 @@ class Airfoil:
             import importlib.resources
 
             # Import the airfoils package as "airfoils".
-            airfoils = importlib.import_module(name=".airfoils", package="main")
+            airfoils = importlib.import_module(
+                name=".airfoils", package="pterasoftware"
+            )
 
             # Read the text from the airfoil file.
             raw_text = importlib.resources.read_text(airfoils, name + ".dat")

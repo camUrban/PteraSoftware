@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import main as main
+import pterasoftware as ps
 
 
 class LegacySteadyRingVortexLatticeMethodSolver:
@@ -247,7 +247,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         )
 
                         # If the panel is along the trailing edge, initialize its horseshoe vortex.
-                        panel.horseshoe_vortex = main.aerodynamics.HorseshoeVortex(
+                        panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
                             finite_leg_origin=back_right_vortex_vertex,
                             finite_leg_termination=back_left_vortex_vertex,
                             strength=None,
@@ -256,7 +256,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         )
 
                     # Initialize the panel's ring vortex.
-                    panel.ring_vortex = main.aerodynamics.RingVortex(
+                    panel.ring_vortex = ps.aerodynamics.RingVortex(
                         front_right_vertex=front_right_vortex_vertex,
                         front_left_vertex=front_left_vortex_vertex,
                         back_left_vertex=back_left_vortex_vertex,

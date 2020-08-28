@@ -32,17 +32,23 @@ With your help, I hope we will improve the open-source communities interest and 
 
 ## How to Install
 
-First things first, you will need a Python 3.7.6 or 3.7.7. I recommend downloading it via the Anaconda distribution.
+First things first, you will need a copy of Python 3.7.6 or 3.7.7. Download it from the official Python website. At this
+time, I do not recommend using a version from the Anaconda distribution as it could introduce compatibility issues with
+PyPI.
 
 There are a few ways to install Ptera Software. If you wish to use this package as a dependency in your own projects,
 simply run:
 
-```pip install pterasoftware```
+```pip install PteraSoftware```
 
 via command prompt in your project's directory.
 
 If you just want to play around with the software, feel free to fork this repository and open the source code in the IDE
-of your choice.
+of your choice. You will then need to run:
+
+```pip install -r REQUIREMENTS.txt```
+
+via command prompt in your fork's directory.
 
 ### Requirements
 
@@ -52,12 +58,6 @@ Here are the requirements necessary to run Ptera Software:
 * numpy >= 1.18.5, < 1.19.0
 * pyvista >= 0.25.3, < 1.0.0
 * scipy >= 1.5, < 2.0
- 
-If you've downloaded the source code, you an install them by running:
-
-```pip install -r requirements.txt```
-
-via the command prompt in the project directory.
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 

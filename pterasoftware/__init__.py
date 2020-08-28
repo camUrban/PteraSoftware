@@ -25,14 +25,14 @@ This package contains the following modules:
 
 """
 
-from main import aerodynamics
-from main import airfoils
-from main import geometry
-from main import meshing
-from main import movement
-from main import operating_point
-from main import output
-from main import problems
-from main import steady_horseshoe_vortex_lattice_method
-from main import steady_ring_vortex_lattice_method
-from main import unsteady_ring_vortex_lattice_method
+from pterasoftware import aerodynamics
+from pterasoftware import airfoils
+from pterasoftware import geometry
+from pterasoftware import meshing
+from pterasoftware import movement
+from pterasoftware import operating_point
+from pterasoftware import output
+from pterasoftware import problems
+from pterasoftware import steady_horseshoe_vortex_lattice_method
+from pterasoftware import steady_ring_vortex_lattice_method
+from pterasoftware import unsteady_ring_vortex_lattice_method

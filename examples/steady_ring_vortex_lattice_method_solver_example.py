@@ -4,12 +4,12 @@ airplane."""
 # First, import the software's main package. Note that if you wished to import this software into another package, you
 # would first install the software by running "pip install pterasoftware" in your terminal. Then, at the top of your
 # script, you would insert "import pterasoftware as ps".
-import main as main
+import pterasoftware as ps
 
 # Create an airplane object. Note, I am going to declare every attribute for each class, even most of them have usable
 # default values. This is simply for educational purposes, even though it makes the code much longer than what it needs
 # to be.
-example_airplane = main.geometry.Airplane(
+example_airplane = ps.geometry.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point around about which the solver will
@@ -28,7 +28,7 @@ example_airplane = main.geometry.Airplane(
     # All airplane objects have a list of wings.
     wings=[
         # Create the first wing object in this airplane.
-        main.geometry.Wing(
+        ps.geometry.Wing(
             # Give the wing a name, this defaults to "Untitled Wing".
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the airplane's reference position. These
@@ -51,7 +51,7 @@ example_airplane = main.geometry.Airplane(
             # must have at least two wing cross sections.
             wing_cross_sections=[
                 # Create a new wing cross section object.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     # Define the location of the leading edge of the wing cross section relative to the wing's leading
                     # edge. These values all default to 0.0 meters.
                     x_le=0.0,
@@ -83,7 +83,7 @@ example_airplane = main.geometry.Airplane(
                     # Set the chord of this cross section to be 1.75 meters. This value defaults to 1.0 meter.
                     chord=1.5,
                     # Every wing cross section has an airfoil object.
-                    airfoil=main.geometry.Airfoil(
+                    airfoil=ps.geometry.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled Airfoil". This name should correspond to a
                         # name in the airfoil directory or a NACA four series airfoil, unless you are passing in your
                         # own coordinates.
@@ -104,7 +104,7 @@ example_airplane = main.geometry.Airplane(
                 ),
                 # Define the next wing cross section. From here on out, the declarations will not be as commented as the
                 # previous. See the above comments if you have questions.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     x_le=1.5,
                     y_le=6.0,
                     z_le=0.5,
@@ -112,55 +112,55 @@ example_airplane = main.geometry.Airplane(
                     control_surface_type="asymmetric",
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=10.0,
-                    airfoil=main.geometry.Airfoil(name="naca2412",),
+                    airfoil=ps.geometry.Airfoil(name="naca2412",),
                 ),
             ],
         ),
         # Define the next wing.
-        main.geometry.Wing(
+        ps.geometry.Wing(
             name="Horizontal Stabilizer",
             x_le=6.75,
             z_le=0.25,
             symmetric=True,
             # Define this wing's root wing cross section.
             wing_cross_sections=[
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     x_le=0.5,
                     y_le=2.0,
                     chord=1.0,
                     twist=-5.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                 ),
             ],
         ),
         # Define the next wing.
-        main.geometry.Wing(
+        ps.geometry.Wing(
             name="Vertical Stabilizer",
             x_le=6.75,
             z_le=0.5,
             symmetric=False,
             # Define this wing's root wing cross section.
             wing_cross_sections=[
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                 ),
                 # Define the wing's tip wing cross section.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     x_le=0.5,
                     z_le=2.0,
                     chord=1.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                 ),
             ],
         ),
@@ -168,7 +168,7 @@ example_airplane = main.geometry.Airplane(
 )
 
 # Define a new operating point object. This defines the state at which the airplane object is operating.
-example_operating_point = main.operating_point.OperatingPoint(
+example_operating_point = ps.operating_point.OperatingPoint(
     # Define the density of the fluid the airplane is flying in. This defaults to 1.225 kilograms per meters cubed.
     density=1.225,
     # Define the angle of sideslip the airplane is experiencing. This defaults to 0.0 degrees.
@@ -180,7 +180,7 @@ example_operating_point = main.operating_point.OperatingPoint(
 )
 
 # Define a new steady problem. A steady problem contains an airplane object and an operating point object.
-example_problem = main.problems.SteadyProblem(
+example_problem = ps.problems.SteadyProblem(
     # Set this steady problem's airplane object to be the one we just created.
     airplane=example_airplane,
     # Set this steady problem's operating point object ot be the one we just created.
@@ -194,7 +194,7 @@ del example_operating_point
 
 # Define a new solver. The available solver objects are the steady horseshoe vortex lattice method solver, the steady
 # ring vortex lattice method solver, and the unsteady ring vortex lattice method solver.
-example_solver = main.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+example_solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
     # Solvers just take in one attribute: the problem they are going to solve.
     steady_problem=example_problem
 )
@@ -211,7 +211,7 @@ example_solver.run(
 )
 
 # Call the software's draw function on the solver.
-main.output.draw(
+ps.output.draw(
     # Set the solver to the one we just ran.
     solver=example_solver,
     # Tell the draw function to show the pressure's on the aircraft's panels. This value defaults to false.

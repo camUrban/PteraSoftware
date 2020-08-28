@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import main as main
+import pterasoftware as ps
 
 
 class LegacySteadyHorseshoeVortexLatticeMethodSolver:
@@ -217,7 +217,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Initialize the horseshoe vortex at this panel.
-                    panel.horseshoe_vortex = main.aerodynamics.HorseshoeVortex(
+                    panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
                         finite_leg_origin=front_right_vortex_vertex,
                         finite_leg_termination=front_left_vortex_vertex,
                         strength=None,

@@ -32,9 +32,9 @@ With your help, I hope we will improve the open-source communities interest and 
 
 ## How to Install
 
-### Standard Method
-
-First things first, you will need a copy of Python 3.7.6 or 3.7.7. Download it from the official Python website.
+First things first, you will need a copy of Python 3.7.6 or 3.7.7. Download it from the official Python website. At this
+time, I do not recommend using a version from the Anaconda distribution as it could introduce compatibility issues with
+PyPI.
 
 There are a few ways to install Ptera Software. If you wish to use this package as a dependency in your own projects,
 simply run:
@@ -49,12 +49,6 @@ of your choice. You will then need to run:
 ```pip install -r REQUIREMENTS.txt```
 
 via command prompt in your fork's directory.
-
-### Anaconda Method
-
-Download a copy of Python 3.7.6 or 3.7.7 via the Anaconda distribution.
-
-To be continued...
 
 ### Requirements
 

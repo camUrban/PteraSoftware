@@ -20,7 +20,7 @@ This module contains the following functions:
 import numpy as np
 from scipy import signal
 
-import main as main
+import pterasoftware as ps
 
 
 class Movement:
@@ -266,7 +266,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = main.geometry.Airplane(
+            this_airplane = ps.geometry.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -488,7 +488,6 @@ class WingMovement:
 
                 cross_section_span = 0.0
                 cross_section_sweep = 0.0
-                cross_section_pitch = 0.0
                 cross_section_heave = 0.0
                 last_x_le = 0.0
                 last_y_le = 0.0
@@ -509,12 +508,10 @@ class WingMovement:
                 this_x_le = this_base_wing_cross_section.x_le
                 this_y_le = this_base_wing_cross_section.y_le
                 this_z_le = this_base_wing_cross_section.z_le
-                this_twist = this_base_wing_cross_section.twist
 
                 last_x_le = last_base_wing_cross_section.x_le
                 last_y_le = last_base_wing_cross_section.y_le
                 last_z_le = last_base_wing_cross_section.z_le
-                last_twist = last_base_wing_cross_section.twist
 
                 cross_section_span = np.sqrt(
                     (this_x_le - last_x_le) ** 2
@@ -531,8 +528,6 @@ class WingMovement:
                 except ZeroDivisionError:
                     cross_section_sweep = 0.0
                     wing_is_vertical = True
-
-                cross_section_pitch = this_twist - last_twist
 
                 try:
                     cross_section_heave = (
@@ -583,7 +578,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = main.geometry.Wing(
+            this_wing = ps.geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -851,7 +846,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = main.geometry.WingCrossSection(
+            this_wing_cross_section = ps.geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -967,7 +962,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = main.operating_point.OperatingPoint(
+            this_operating_point = ps.operating_point.OperatingPoint(
                 density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 

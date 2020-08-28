@@ -15,7 +15,7 @@ import copy as copy
 
 import numpy as np
 
-import main as main
+import pterasoftware as ps
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -221,7 +221,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the panel's ring vortex.
-                        panel.ring_vortex = main.aerodynamics.RingVortex(
+                        panel.ring_vortex = ps.aerodynamics.RingVortex(
                             front_right_vertex=front_right_vortex_vertex,
                             front_left_vertex=front_left_vortex_vertex,
                             back_left_vertex=back_left_vortex_vertex,
@@ -1145,7 +1145,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # strength, and add it to the matrix of ring vortices.
                                 next_wing.wake_ring_vortices[
                                     chordwise_vertex_position, spanwise_vertex_position
-                                ] = main.aerodynamics.RingVortex(
+                                ] = ps.aerodynamics.RingVortex(
                                     front_left_vertex=front_left_vertex,
                                     front_right_vertex=front_right_vertex,
                                     back_left_vertex=back_left_vertex,

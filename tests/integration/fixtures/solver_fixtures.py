@@ -43,7 +43,7 @@ This module contains the following functions:
                                                                                                      as a fixture.
 """
 
-import main as main
+import pterasoftware as ps
 from tests.integration.fixtures import problem_fixtures
 
 
@@ -58,7 +58,7 @@ def make_steady_horseshoe_vortex_lattice_method_validation_solver():
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
     # Use the problem fixture to create the solver fixture.
-    steady_horseshoe_vortex_lattice_method_validation_solver = main.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+    steady_horseshoe_vortex_lattice_method_validation_solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
         steady_validation_problem
     )
 
@@ -83,7 +83,7 @@ def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver(
     )
 
     # Use the problem fixture to create the solver fixture.
-    steady_horseshoe_vortex_lattice_method_validation_solver = main.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+    steady_horseshoe_vortex_lattice_method_validation_solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
         steady_validation_problem
     )
 
@@ -105,7 +105,7 @@ def make_steady_ring_vortex_lattice_method_validation_solver():
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
     # Use the problem fixture to create the solver fixture.
-    steady_ring_vortex_lattice_method_validation_solver = main.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+    steady_ring_vortex_lattice_method_validation_solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
         steady_validation_problem
     )
 
@@ -130,7 +130,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
     )
 
     # Use the problem fixture to create the solver fixture.
-    unsteady_ring_vortex_lattice_method_validation_solver = main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_validation_problem
     )
 
@@ -155,7 +155,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
     )
 
     # Use the problem fixture to create the solver fixture.
-    unsteady_ring_vortex_lattice_method_validation_solver = main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_validation_problem
     )
 
@@ -180,7 +180,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     )
 
     # Use the problem fixture to create the solver fixture.
-    unsteady_ring_vortex_lattice_method_validation_solver = main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_validation_problem
     )
 
@@ -205,7 +205,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     )
 
     # Use the problem fixture to create the solver fixture.
-    unsteady_ring_vortex_lattice_method_validation_solver = main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_ring_vortex_lattice_method_validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_validation_problem
     )
 

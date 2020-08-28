@@ -22,7 +22,7 @@ This module contains the following functions:
 
 import unittest
 
-import main as main
+import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -97,7 +97,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        main.output.draw(
+        ps.output.draw(
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -143,7 +143,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        main.output.draw(
+        ps.output.draw(
             solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_streamlines=True,

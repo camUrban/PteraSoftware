@@ -57,9 +57,9 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
             verbose=True, prescribed_wake=True,
         )
 
-        import main as main
+        import pterasoftware as ps
 
-        main.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_wake_vortices=True,

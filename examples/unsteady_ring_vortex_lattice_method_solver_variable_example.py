@@ -4,12 +4,12 @@ custom airplane with variable geometry."""
 # First, import the software's main package. Note that if you wished to import this software into another package, you
 # would first install the software by running "pip install pterasoftware" in your terminal. Then, at the top of your
 # script, you would insert "import pterasoftware as ps".
-import main as main
+import pterasoftware as ps
 
 # Create an airplane object. Note, I am going to declare every attribute for each class, even most of them have usable
 # default values. This is simply for educational purposes, even though it makes the code much longer than what it needs
 # to be.
-example_airplane = main.geometry.Airplane(
+example_airplane = ps.geometry.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point around about which the solver will
@@ -28,7 +28,7 @@ example_airplane = main.geometry.Airplane(
     # All airplane objects have a list of wings.
     wings=[
         # Create the first wing object in this airplane.
-        main.geometry.Wing(
+        ps.geometry.Wing(
             # Give the wing a name, this defaults to "Untitled Wing".
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the airplane's reference position. These
@@ -52,7 +52,7 @@ example_airplane = main.geometry.Airplane(
             # must have at least two wing cross sections.
             wing_cross_sections=[
                 # Create a new wing cross section object.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     # Define the location of the leading edge of the wing cross section relative to the wing's leading
                     # edge. These values all default to 0.0 meters.
                     x_le=0.0,
@@ -83,7 +83,7 @@ example_airplane = main.geometry.Airplane(
                     # Set the chord of this cross section to be 1.75 meters. This value defaults to 1.0 meter.
                     chord=1.75,
                     # Every wing cross section has an airfoil object.
-                    airfoil=main.geometry.Airfoil(
+                    airfoil=ps.geometry.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled Airfoil". This name should correspond to a
                         # name in the airfoil directory or a NACA four series airfoil, unless you are passing in your
                         # own coordinates.
@@ -104,19 +104,19 @@ example_airplane = main.geometry.Airplane(
                 ),
                 # Define the next wing cross section. From here on out, the declarations will not be as commented as the
                 # previous. See the above comments if you have questions.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     z_le=1.0,
                     chord=1.5,
                     twist=5.0,
                     # Give this wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca2412",),
+                    airfoil=ps.geometry.Airfoil(name="naca2412",),
                 ),
             ],
         ),
         # Define the next wing.
-        main.geometry.Wing(
+        ps.geometry.Wing(
             name="V-Tail",
             x_le=6.75,
             z_le=0.25,
@@ -125,21 +125,21 @@ example_airplane = main.geometry.Airplane(
             symmetric=True,
             # Define this wing's root wing cross section.
             wing_cross_sections=[
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
-                main.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     x_le=0.5,
                     y_le=2.0,
                     z_le=1.0,
                     chord=1.0,
                     twist=-5.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=main.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(name="naca0012",),
                 ),
             ],
         ),
@@ -152,7 +152,7 @@ example_airplane = main.geometry.Airplane(
 # rotation of this wing cross section's leading edge to the preceding wing cross section's leading edge about the body
 # y axis. Heaving is defined as the relative rotation of this wing cross section's leading edge to the preceding wing
 # cross section's leading edge about the body z axis. The sign of all rotations is determined via the right-hand-rule.
-main_wing_root_wing_cross_section_movement = main.movement.WingCrossSectionMovement(
+main_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     # Provide the base cross section.
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
     # Define the sweeping amplitude. This value is in degrees. As this is the first wing cross section, this must be 0.0
@@ -182,7 +182,7 @@ main_wing_root_wing_cross_section_movement = main.movement.WingCrossSectionMovem
 )
 
 # Define the main wing's tip wing cross section's movement.
-main_wing_tip_wing_cross_section_movement = main.movement.WingCrossSectionMovement(
+main_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
     sweeping_amplitude=30.0,
     sweeping_period=1.0,
@@ -197,19 +197,19 @@ main_wing_tip_wing_cross_section_movement = main.movement.WingCrossSectionMoveme
 
 # Define the v-tail's root wing cross section's movement. This wing will be static, so the movement attributes can be
 # excluded, and the default values will suffice.
-v_tail_root_wing_cross_section_movement = main.movement.WingCrossSectionMovement(
+v_tail_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
 )
 
 # Define the v-tail's root wing cross section's movement. This wing will be static, so the movement attributes can be
 # excluded, and the default values will suffice.
-v_tail_tip_wing_cross_section_movement = main.movement.WingCrossSectionMovement(
+v_tail_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
 )
 
 # Now define the main wing's movement. In addition to their wing cross sections' relative movements, wings' leading edge
 # positions can move as well.
-main_wing_movement = main.movement.WingMovement(
+main_wing_movement = ps.movement.WingMovement(
     # Define the base wing object.
     base_wing=example_airplane.wings[0],
     # Add the list of wing cross section movement objects.
@@ -252,7 +252,7 @@ del main_wing_root_wing_cross_section_movement
 del main_wing_tip_wing_cross_section_movement
 
 # Make the v-tail's wing movement object.
-v_tail_movement = main.movement.WingMovement(
+v_tail_movement = ps.movement.WingMovement(
     # Define the base wing object.
     base_wing=example_airplane.wings[1],
     # Add the list of wing cross section movement objects.
@@ -269,7 +269,7 @@ del v_tail_tip_wing_cross_section_movement
 
 # Now define the airplane's movement object. In addition to their wing's and wing cross sections' relative movements,
 # airplane's reference positions can move as well.
-airplane_movement = main.movement.AirplaneMovement(
+airplane_movement = ps.movement.AirplaneMovement(
     # Define the base airplane object.
     base_airplane=example_airplane,
     # Add the list of wing movement objects.
@@ -308,7 +308,7 @@ del main_wing_movement
 del v_tail_movement
 
 # Define a new operating point object. This defines the state at which the airplane object is operating.
-example_operating_point = main.operating_point.OperatingPoint(
+example_operating_point = ps.operating_point.OperatingPoint(
     # Define the density of the fluid the airplane is flying in. This defaults to 1.225 kilograms per meters cubed.
     density=1.225,
     # Define the angle of sideslip the airplane is experiencing. This defaults to 0.0 degrees.
@@ -320,7 +320,7 @@ example_operating_point = main.operating_point.OperatingPoint(
 )
 
 # Define the operating point's movement. The operating point's velocity can change with respect to time.
-operating_point_movement = main.movement.OperatingPointMovement(
+operating_point_movement = ps.movement.OperatingPointMovement(
     # Define the base operating point object.
     base_operating_point=example_operating_point,
     # Define the amplitude of the velocity's change in time. This value is set to 0.0 meters per second, which is the
@@ -334,7 +334,7 @@ operating_point_movement = main.movement.OperatingPointMovement(
 )
 
 # Define the movement object. This contains the airplane movement and the operating point movement.
-movement = main.movement.Movement(
+movement = ps.movement.Movement(
     # Add the airplane movement.
     airplane_movement=airplane_movement,
     # Add the operating point movement.
@@ -354,11 +354,11 @@ del airplane_movement
 del operating_point_movement
 
 # Define the unsteady example problem.
-example_problem = main.problems.UnsteadyProblem(movement=movement,)
+example_problem = ps.problems.UnsteadyProblem(movement=movement,)
 
 # Define a new solver. The available solver objects are the steady horseshoe vortex lattice method solver, the steady
 # ring vortex lattice method solver, and the unsteady ring vortex lattice method solver.
-example_solver = main.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+example_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     # Solvers just take in one attribute: the problem they are going to solve.
     unsteady_problem=example_problem,
 )
@@ -378,7 +378,7 @@ example_solver.run(
 
 # Call the software's animate function on the solver. This produces a GIF of the wake being shed. The GIF is saved in
 # the same directory as this script. Press "q", after orienting the view, to begin the animation.
-main.output.animate(
+ps.output.animate(
     # Set the unsteady solver to the one we just ran.
     unsteady_solver=example_solver,
     # Tell the animate function to show the pressure's on the aircraft's panels. This value defaults to false.
@@ -389,7 +389,7 @@ main.output.animate(
 
 # Call the software's plotting function on the solver. This produces graphs of the output forces and moments with
 # respect to time.
-main.output.plot_results_versus_time(
+ps.output.plot_results_versus_time(
     # Set the unsteady solver to the one we just ran.
     unsteady_solver=example_solver,
     # Set the testing attribute to False, which is the default value. This is only used by the output testing modules.

@@ -451,6 +451,9 @@ class WingMovement:
             (len(self.wing_cross_section_movements), num_steps), dtype=object
         )
 
+        # Initialize a variable to hold the inner wing cross section's list of wing cross sections for each time step.
+        last_wing_cross_section_time_histories = None
+
         # Iterate through the wing cross section movement locations.
         for wing_cross_section_movement_location in range(
             len(self.wing_cross_section_movements)
@@ -486,70 +489,83 @@ class WingMovement:
                 assert first_wing_cross_section_movement_heaving_amplitude == 0
                 assert first_wing_cross_section_movement_heaving_period == 0
 
-                cross_section_span = 0.0
-                cross_section_sweep = 0.0
-                cross_section_heave = 0.0
-                last_x_le = 0.0
-                last_y_le = 0.0
-                last_z_le = 0.0
+                # Set the variables relating this wing cross section to the inner wing cross section to zero because
+                # this is the innermost wing cross section
+                wing_cross_section_span = 0.0
+                base_wing_cross_section_sweep = 0.0
+                base_wing_cross_section_heave = 0.0
+                last_x_les = np.zeros(num_steps) * 0.0
+                last_y_les = np.zeros(num_steps) * 0.0
+                last_z_les = np.zeros(num_steps) * 0.0
 
             else:
-                last_wing_cross_section_movement = self.wing_cross_section_movements[
-                    wing_cross_section_movement_location - 1
-                ]
-
                 this_base_wing_cross_section = (
                     wing_cross_section_movement.base_wing_cross_section
-                )
-                last_base_wing_cross_section = (
-                    last_wing_cross_section_movement.base_wing_cross_section
                 )
 
                 this_x_le = this_base_wing_cross_section.x_le
                 this_y_le = this_base_wing_cross_section.y_le
                 this_z_le = this_base_wing_cross_section.z_le
 
-                last_x_le = last_base_wing_cross_section.x_le
-                last_y_le = last_base_wing_cross_section.y_le
-                last_z_le = last_base_wing_cross_section.z_le
+                # Initialize variables to hold the inner wing cross section's time histories of its leading edge
+                # coordinates.
+                last_x_les = []
+                last_y_les = []
+                last_z_les = []
 
-                cross_section_span = np.sqrt(
-                    (this_x_le - last_x_le) ** 2
-                    + (this_y_le - last_y_le) ** 2
-                    + (this_z_le - last_z_le) ** 2
+                # Iterate through the inner wing cross section's time history and populate the leading edge coordinate
+                # variables.
+                for last_wing_cross_section in last_wing_cross_section_time_histories:
+                    last_x_les.append(last_wing_cross_section.x_le)
+                    last_y_les.append(last_wing_cross_section.y_le)
+                    last_z_les.append(last_wing_cross_section.z_le)
+
+                # Find the span between this wing cross section and the inner wing cross section.
+                wing_cross_section_span = np.sqrt(
+                    (this_x_le - last_x_les[0]) ** 2
+                    + (this_y_le - last_y_les[0]) ** 2
+                    + (this_z_le - last_z_les[0]) ** 2
                 )
 
                 try:
-                    cross_section_sweep = (
-                        np.arctan((this_z_le - last_z_le) / (this_y_le - last_y_le))
+                    # Find the base sweep angle of this wing cross section compared to the inner wing cross section at
+                    # the first time step.
+                    base_wing_cross_section_sweep = (
+                        np.arctan(
+                            (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
+                        )
                         * 180
                         / np.pi
                     )
                 except ZeroDivisionError:
-                    cross_section_sweep = 0.0
+                    base_wing_cross_section_sweep = 0.0
                     wing_is_vertical = True
 
                 try:
-                    cross_section_heave = (
-                        np.arctan((this_x_le - last_x_le) / (this_y_le - last_y_le))
+                    # Find the base heave angle of this wing cross section compared to the inner wing cross section at
+                    # the first time step.
+                    base_wing_cross_section_heave = (
+                        np.arctan(
+                            (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
+                        )
                         * 180
                         / np.pi
                     )
                 except ZeroDivisionError:
-                    cross_section_heave = 0.0
+                    base_wing_cross_section_heave = 0.0
                     wing_is_vertical = True
 
-            # Generate this wing cross section's vector of other wing cross section's based on its movement.
+            # Generate this wing cross section's vector of wing cross sections at each time step based on its movement.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
                     num_steps=num_steps,
                     delta_time=delta_time,
-                    cross_section_span=cross_section_span,
-                    cross_section_sweep=cross_section_sweep,
-                    cross_section_heave=cross_section_heave,
-                    last_x_le=last_x_le,
-                    last_y_le=last_y_le,
-                    last_z_le=last_z_le,
+                    cross_section_span=wing_cross_section_span,
+                    cross_section_sweep=base_wing_cross_section_sweep,
+                    cross_section_heave=base_wing_cross_section_heave,
+                    last_x_les=last_x_les,
+                    last_y_les=last_y_les,
+                    last_z_les=last_z_les,
                     wing_is_vertical=wing_is_vertical,
                 )
             )
@@ -558,6 +574,11 @@ class WingMovement:
             wing_cross_sections[
                 wing_cross_section_movement_location, :
             ] = this_wing_cross_sections_list_of_wing_cross_sections
+
+            # Update the inner wing cross section's list of wing cross sections for each time step.
+            last_wing_cross_section_time_histories = (
+                this_wing_cross_sections_list_of_wing_cross_sections
+            )
 
         # Create an empty list of wings.
         wings = []
@@ -628,8 +649,8 @@ class WingCrossSectionMovement:
         :param base_wing_cross_section: WingCrossSection
             This is the first wing cross section object, from which the others will be created.
         :param sweeping_amplitude: float, optional
-            This is the amplitude of the cross section's change in its sweep, relative to the previous cross section.
-            Its units are degrees and its default value is 0.0 degrees.
+            This is the amplitude of the cross section's change in its sweep, relative to the vehicle's body axes. Its
+            units are degrees and its default value is 0.0 degrees.
         :param sweeping_period: float, optional
             This is the period of the cross section's change in its sweep. Its units are seconds and its default value
             is 0.0 seconds.
@@ -637,8 +658,8 @@ class WingCrossSectionMovement:
             This value determines the spacing of the cross section's change in its sweep. The options are "sine", and
             "uniform". The default value is "sine".
         :param pitching_amplitude: float, optional
-            This is the amplitude of the cross section's change in its pitch, relative to the previous cross section.
-            Its units are degrees and its default value is 0.0 degrees.
+            This is the amplitude of the cross section's change in its pitch, relative to the vehicle's body axes. Its
+            units are degrees and its default value is 0.0 degrees.
         :param pitching_period: float, optional
             This is the period of the cross section's change in its pitch. Its units are seconds and its default value
             is 0.0 seconds.
@@ -646,8 +667,8 @@ class WingCrossSectionMovement:
             This value determines the spacing of the cross section's change in its pitch. The options are "sine", and
             "uniform". The default value is "sine".
         :param heaving_amplitude: float, optional
-            This is the amplitude of the cross section's change in its heave, relative to the previous cross section.
-            Its units are degrees and its default value is 0.0 degrees.
+            This is the amplitude of the cross section's change in its heave, relative to the vehicle's body axes. Its
+            units are degrees and its default value is 0.0 degrees.
         :param heaving_period: float, optional
             This is the period of the cross section's change in its heave. Its units are seconds and its default value
             is 0.0 seconds.
@@ -682,9 +703,9 @@ class WingCrossSectionMovement:
         self,
         num_steps=10,
         delta_time=0.1,
-        last_x_le=0.0,
-        last_y_le=0.0,
-        last_z_le=0.0,
+        last_x_les=None,
+        last_y_les=None,
+        last_z_les=None,
         wing_is_vertical=False,
         cross_section_span=0.0,
         cross_section_sweep=0.0,
@@ -696,14 +717,17 @@ class WingCrossSectionMovement:
             This is the number of time steps in this movement. The default value is 10.
         :param delta_time: float, optional
             This is the time, in seconds, between each time step. The default value is 0.1 seconds.
-        :param last_x_le: float, optional
-            This is the x coordinate of the reference location of the previous cross section. Its units are in meters,
+        :param last_x_les: float, optional
+            This is an array of the x coordinates of the reference location of the previous cross section at each time
+            step. Its units are in meters,
             and its default value is 0.0 meters.
-        :param last_y_le: float, optional
-            This is the y coordinate of the reference location of the previous cross section. Its units are in meters,
+        :param last_y_les: float, optional
+            This is an array of the y coordinates of the reference location of the previous cross section at each time
+            step. Its units are in meters,
             and its default value is 0.0 meters.
-        :param last_z_le: float, optional
-            This is the z coordinate of the reference location of the previous cross section. Its units are in meters,
+        :param last_z_les: float, optional
+            This is an array of the z coordinates of the reference location of the previous cross section at each time
+            step. Its units are in meters,
             and its default value is 0.0 meters.
         :param wing_is_vertical: bool, optional
             This flag is set to true if the wing containing this wing cross section is vertical. If true, the cross
@@ -809,15 +833,15 @@ class WingCrossSectionMovement:
         else:
 
             # Find the list of new leading edge points. This uses a spherical coordinate transformation, referencing the
-            # previous wing cross section's leading edge point as the origin. Also convert the lists of sweep, pitch, and
-            # heave values to radians before passing them into numpy's trigonometry functions.
-            x_le_list = last_x_le + cross_section_span * np.cos(
+            # previous wing cross section's leading edge point (at each time step) as the origin. Also convert the lists
+            # of sweep, pitch, and heave values to radians before passing them into numpy's trigonometry functions.
+            x_le_list = last_x_les + cross_section_span * np.cos(
                 sweeping_list * np.pi / 180
             ) * np.sin(heaving_list * np.pi / 180)
-            y_le_list = last_y_le + cross_section_span * np.cos(
+            y_le_list = last_y_les + cross_section_span * np.cos(
                 sweeping_list * np.pi / 180
             ) * np.cos(heaving_list * np.pi / 180)
-            z_le_list = last_z_le + cross_section_span * np.sin(
+            z_le_list = last_z_les + cross_section_span * np.sin(
                 sweeping_list * np.pi / 180
             )
             twist_list = pitching_list

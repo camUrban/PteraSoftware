@@ -1173,30 +1173,33 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     if not axis_already_normalized:
         axis = axis / np.linalg.norm(axis)
 
+    # Define constants to use when calculating the rotation matrix.
     sin_theta = np.sin(angle)
     cos_theta = np.cos(angle)
-    cpm = np.array(
-        [[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]]
+    u_x = axis[0]
+    u_y = axis[1]
+    u_z = axis[2]
+
+    # Calculate the rotation matrix.
+    rotation_matrix = np.array(
+        [
+            [
+                cos_theta + u_x ** 2 * (1 - cos_theta),
+                u_x * u_y * (1 - cos_theta) - u_z * sin_theta,
+                u_x * u_z * (1 - cos_theta) + u_y * sin_theta,
+            ],
+            [
+                u_y * u_x * (1 - cos_theta) + u_z * sin_theta,
+                cos_theta + u_y ** 2 * (1 - cos_theta),
+                u_y * u_z * (1 - cos_theta) - u_x * sin_theta,
+            ],
+            [
+                u_z * u_x * (1 - cos_theta) - u_y * sin_theta,
+                u_z * u_y * (1 - cos_theta) + u_x * sin_theta,
+                cos_theta + u_z ** 2 * (1 - cos_theta),
+            ],
+        ]
     )
-
-    # Find the cross product matrix of the rotation axis vector.
-    outer_axis = axis @ np.transpose(axis)
-
-    # Make sure angle is a ndarray.
-    angle = np.array(angle)
-
-    # Check if the angle is a scalar.
-    if len(angle.shape) == 0:
-        rotation_matrix = (
-            cos_theta * np.eye(3) + sin_theta * cpm + (1 - cos_theta) * outer_axis
-        )
-    else:
-        # Otherwise, the angle is assumed to be a 1D ndarray.
-        rotation_matrix = (
-            cos_theta * np.expand_dims(np.eye(3), 2)
-            + sin_theta * np.expand_dims(cpm, 2)
-            + (1 - cos_theta) * np.expand_dims(outer_axis, 2)
-        )
 
     # Return the rotation matrix.
     return rotation_matrix

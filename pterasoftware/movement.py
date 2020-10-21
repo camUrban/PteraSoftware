@@ -637,12 +637,15 @@ class WingCrossSectionMovement:
         sweeping_amplitude=0.0,
         sweeping_period=0.0,
         sweeping_spacing="sine",
+        custom_sweep_function=None,
         pitching_amplitude=0.0,
         pitching_period=0.0,
         pitching_spacing="sine",
+        custom_pitch_function=None,
         heaving_amplitude=0.0,
         heaving_period=0.0,
         heaving_spacing="sine",
+        custom_heave_function=None,
     ):
         """ This is the initialization method.
 
@@ -655,8 +658,16 @@ class WingCrossSectionMovement:
             This is the period of the cross section's change in its sweep. Its units are seconds and its default value
             is 0.0 seconds.
         :param sweeping_spacing: string, optional
-            This value determines the spacing of the cross section's change in its sweep. The options are "sine", and
-            "uniform". The default value is "sine".
+            This value determines the spacing of the cross section's change in its sweep. The options are "sine",
+            "uniform", and "custom". The default value is "sine". If "custom", then the value of custom_sweep_function
+            must not be none. If both sweeping_spacing and custom_sweep_function are not none, then the value of
+            sweeping_spacing will take precedence.
+        :param custom_sweep_function: function, optional
+            This is a function that describes the motion of the sweeping. For example, it could be np.cos or np.sinh
+            (assuming numpy had previously been imported as np). It will be horizontally scaled by the sweeping_period,
+            vertically scaled by the the sweeping_amplitude. For example, say the function has an amplitude of 2 units,
+            a period of 3 units, sweeping_amplitude is set to 4 units and sweeping_period is set to 5 units. The
+            sweeping motion will have a net amplitude of 8 units and a net period of 15 units.
         :param pitching_amplitude: float, optional
             This is the amplitude of the cross section's change in its pitch, relative to the vehicle's body axes. Its
             units are degrees and its default value is 0.0 degrees.
@@ -664,8 +675,16 @@ class WingCrossSectionMovement:
             This is the period of the cross section's change in its pitch. Its units are seconds and its default value
             is 0.0 seconds.
         :param pitching_spacing: string, optional
-            This value determines the spacing of the cross section's change in its pitch. The options are "sine", and
-            "uniform". The default value is "sine".
+            This value determines the spacing of the cross section's change in its pitch. The options are "sine",
+            "uniform", and "custom". The default value is "sine". If "custom", then the value of custom_pitch_function
+            must not be none. If both pitching_spacing and custom_pitch_function are not none, then the value of
+            pitching_spacing will take precedence.
+        :param custom_pitch_function: function, optional
+            This is a function that describes the motion of the pitching. For example, it could be np.cos or np.sinh
+            (assuming numpy had previously been imported as np). It will be horizontally scaled by the pitching_period,
+            vertically scaled by the the pitching_amplitude. For example, say the function has an amplitude of 2 units,
+            a period of 3 units, pitching_amplitude is set to 4 units and pitching_period is set to 5 units. The
+            pitching motion will have a net amplitude of 8 units and a net period of 15 units.
         :param heaving_amplitude: float, optional
             This is the amplitude of the cross section's change in its heave, relative to the vehicle's body axes. Its
             units are degrees and its default value is 0.0 degrees.
@@ -673,8 +692,16 @@ class WingCrossSectionMovement:
             This is the period of the cross section's change in its heave. Its units are seconds and its default value
             is 0.0 seconds.
         :param heaving_spacing: string, optional
-            This value determines the spacing of the cross section's change in its heave. The options are "sine", and
-            "uniform". The default value is "sine".
+            This value determines the spacing of the cross section's change in its heave. The options are "sine",
+            "uniform", and "custom". The default value is "sine". If "custom", then the value of custom_heave_function
+            must not be none. If both heaving_spacing and custom_heave_function are not none, then the value of
+            heaving_spacing will take precedence.
+        :param custom_heave_function: function, optional
+            This is a function that describes the motion of the heaving. For example, it could be np.cos or np.sinh
+            (assuming numpy had previously been imported as np). It will be horizontally scaled by the heaving_period,
+            vertically scaled by the the heaving_amplitude. For example, say the function has an amplitude of 2 units,
+            a period of 3 units, heaving_amplitude is set to 4 units and heaving_period is set to 5 units. The
+            heaving motion will have a net amplitude of 8 units and a net period of 15 units.
         """
 
         # Initialize the class attributes.
@@ -682,14 +709,17 @@ class WingCrossSectionMovement:
         self.sweeping_amplitude = sweeping_amplitude
         self.sweeping_period = sweeping_period
         self.sweeping_spacing = sweeping_spacing
+        self.custom_sweep_function = custom_sweep_function
         self.sweeping_base = 0.0
         self.pitching_amplitude = pitching_amplitude
         self.pitching_period = pitching_period
         self.pitching_spacing = pitching_spacing
+        self.custom_pitch_function = custom_pitch_function
         self.pitching_base = self.base_wing_cross_section.twist
         self.heaving_amplitude = heaving_amplitude
         self.heaving_period = heaving_period
         self.heaving_spacing = heaving_spacing
+        self.custom_heave_function = custom_heave_function
         self.heaving_base = 0.0
         self.x_le_base = self.base_wing_cross_section.x_le
         self.y_le_base = self.base_wing_cross_section.y_le
@@ -768,6 +798,23 @@ class WingCrossSectionMovement:
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
+        elif self.sweeping_spacing == "custom":
+
+            # Raise an exception if the user did not declare a custom sweep function.
+            if self.custom_sweep_function is None:
+                raise Exception(
+                    "You can't declare custom sweep spacing without providing a custom sweep function."
+                )
+
+            # Create an ndarray of points with a uniform spacing.
+            sweeping_list = oscillating_customspace(
+                amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period,
+                base_value=cross_section_sweep,
+                num_steps=num_steps,
+                delta_time=delta_time,
+                custom_function=self.custom_sweep_function,
+            )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -794,6 +841,23 @@ class WingCrossSectionMovement:
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
+        elif self.pitching_spacing == "custom":
+
+            # Raise an exception if the user did not declare a custom pitch function.
+            if self.custom_pitch_function is None:
+                raise Exception(
+                    "You can't declare custom pitch spacing without providing a custom pitch function."
+                )
+
+            # Create an ndarray of points with a uniform spacing.
+            pitching_list = oscillating_customspace(
+                amplitude=self.pitching_amplitude,
+                period=self.pitching_period,
+                base_value=self.pitching_base,
+                num_steps=num_steps,
+                delta_time=delta_time,
+                custom_function=self.custom_pitch_function,
+            )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -819,6 +883,23 @@ class WingCrossSectionMovement:
                 base_value=cross_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
+            )
+        elif self.heaving_spacing == "custom":
+
+            # Raise an exception if the user did not declare a custom heave function.
+            if self.custom_heave_function is None:
+                raise Exception(
+                    "You can't declare custom heave spacing without providing a custom heave function."
+                )
+
+            # Create an ndarray of points with custom spacing.
+            heaving_list = oscillating_customspace(
+                amplitude=self.heaving_amplitude,
+                period=self.heaving_period,
+                base_value=cross_section_heave,
+                num_steps=num_steps,
+                delta_time=delta_time,
+                custom_function=self.custom_heave_function,
             )
         else:
 
@@ -1074,4 +1155,52 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
 
     # Calculate and return the values.
     values = a * signal.sawtooth((b * times + h), 0.5) + k
+    return values
+
+
+def oscillating_customspace(
+    amplitude, period, base_value, num_steps, delta_time, custom_function
+):
+    """This function returns a 1D ndarray of values that are calculated by inputting a vector of linearly spaced time
+    steps into a custom function.
+
+    :param amplitude: float
+        This is the amplitude of the value fluctuation.
+    :param period: float
+        This is the period of the value fluctuation.
+    :param base_value: float
+        This is the starting value.
+    :param num_steps: int
+        This is the number of time steps to iterate through.
+    :param delta_time: float
+        This is the change in time between each time step.
+    :param custom_function: function
+        This is a custom function used to return the values. For example, it could be np.cos or np.sinh (assuming numpy
+        had previously been imported as np). It will be horizontally scaled by the period, vertically scaled by the the
+        amplitude. For example, say the function has an internal amplitude of 2 units, an internal period of 3 units,
+        amplitude is set to 4 units and period is set to 5 units. The result will have a net amplitude of 8 units and a
+        net period of 15 units.
+    :return values: 1D ndarray of floats
+        This is the resulting vector of custom spaced values
+    """
+
+    # If either the amplitude or the period are 0, return a vector with length equal to the number of steps, and all the
+    # values equal to the base value.
+    if amplitude == 0 or period == 0:
+        return np.ones(num_steps) * base_value
+
+    # Calculate the total time.
+    total_time = num_steps * delta_time
+
+    # Get the time at each time step.
+    times = np.linspace(0, total_time, num_steps)
+
+    # Convert the function characteristics into classic wave function constants.
+    a = amplitude
+    b = 2 * np.pi / period
+    h = 0
+    k = base_value
+
+    # Calculate and return the values.
+    values = a * custom_function(b * (times - h)) + k
     return values

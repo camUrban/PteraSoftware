@@ -471,7 +471,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     delta_time = unsteady_solver.delta_time
 
     # Create a 1D ndarray with the time at each time step.
-    times = np.arange(0, num_steps * delta_time, delta_time)
+    times = np.linspace(0, num_steps * delta_time, num_steps)
 
     # Initialize matrices to hold the forces, moments, and coefficients at each time step.
     total_near_field_force_wind_axes = np.zeros((3, num_steps))

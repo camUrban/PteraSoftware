@@ -317,7 +317,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Find the vector of wake-wing influence coefficients associated with this problem.
             if verbose:
-                print("calculating the wake-wing influences.")
+                print("Calculating the wake-wing influences.")
             self.calculate_wake_wing_influences()
 
             # Solve for each panel's vortex strength.

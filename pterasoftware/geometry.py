@@ -502,7 +502,7 @@ class Airfoil:
 
                     # Make uncambered coordinates.
                     # Generate cosine-spaced points.
-                    x_t = cosspace(n_points=n_points_per_side)
+                    x_t = cosspace(n_points=n_points_per_side, endpoint=True)
                     y_t = (
                         5
                         * thickness
@@ -772,7 +772,7 @@ class Airfoil:
         lower_original_coordinates = self.lower_coordinates()
 
         # Generate a cosine-spaced list of points from 0 to 1.
-        cosine_spaced_x_values = cosspace(n_points=n_points_per_side)
+        cosine_spaced_x_values = cosspace(n_points=n_points_per_side, endpoint=True,)
 
         # Create interpolated functions for the x and y values of the upper and lower surfaces as a function of the
         # chord fractions
@@ -1076,7 +1076,9 @@ class Panel:
         )
 
 
-def cosspace(minimum=0.0, maximum=1.0, n_points=50):
+def cosspace(
+    minimum=0.0, maximum=1.0, n_points=50, endpoint=True,
+):
     """ This function is used to create a ndarray containing a specified number of values between a specified minimum
     and maximum value that are spaced via a cosine function.
 
@@ -1091,6 +1093,8 @@ def cosspace(minimum=0.0, maximum=1.0, n_points=50):
         This is the maximum value of the range of numbers you would like spaced. The default is 1.0.
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
+    :param endpoint: bool, optional
+        This sets whether or not the maximum value will be included in the output. The default is True.
     :return cosine_spaced_points: 1D ndarray
         This is a 1D ndarray of the points, ranging from the minimum to the maximum value (inclusive), spaced via a
         cosine function.
@@ -1101,7 +1105,9 @@ def cosspace(minimum=0.0, maximum=1.0, n_points=50):
     amp = (maximum - minimum) / 2
 
     # Space the points by applying cosine to the linspace function. Then return the points.
-    cosine_spaced_points = mean + amp * np.cos(np.linspace(np.pi, 0, n_points))
+    cosine_spaced_points = mean + amp * np.cos(
+        np.linspace(np.pi, 0, n_points, endpoint=endpoint)
+    )
     return cosine_spaced_points
 
 

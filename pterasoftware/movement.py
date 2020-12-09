@@ -1105,7 +1105,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps)
+    times = np.linspace(0, total_time, num_steps, endpoint=False,)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1145,7 +1145,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps)
+    times = np.linspace(0, total_time, num_steps, endpoint=False,)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1193,7 +1193,7 @@ def oscillating_customspace(
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps)
+    times = np.linspace(0, total_time, num_steps, endpoint=False,)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude

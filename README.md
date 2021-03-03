@@ -160,6 +160,7 @@ start, this is for you!
 * Ideally, we should fix up the style so that the entire repository has an A+ CodeFactor Rating.
 * We should fill in any of the "Properly document this..." TODO statements.
 * We should ensure that all files have between 30% and 70% comment lines.
+* We should continue to ensure that all source code is formatted using Black.
 
 ### Features
 
@@ -170,6 +171,9 @@ start, this is for you!
   Vortex-Lattice Method to Study Flapping Wings in Hover Flight." by Bruno Roccia, Sergio Preidikman, Julio Massa, and
   Dean Mook for details.
 * We should create a command-line interface or GUI.
+* We should try to implement aeroelastic effects in Ptera Software's solvers.
+* Flapping wing controls is both fascinating and complicated. We should try to create a workflow in Ptera Software for
+controls systems identification for flapping wing vehicles.
 
 ## Credits
 

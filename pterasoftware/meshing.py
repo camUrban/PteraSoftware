@@ -215,8 +215,8 @@ def mesh_wing(wing):
             hinge_point=inner_cross_section.control_surface_hinge_point,
         )
         outer_airfoil = outer_cross_section.airfoil.add_control_surface(
-            deflection=inner_cross_section.control_surface_deflection,
             # The inner cross section dictates control surface deflections.
+            deflection=inner_cross_section.control_surface_deflection,
             hinge_point=inner_cross_section.control_surface_hinge_point,
         )
 
@@ -297,16 +297,17 @@ def mesh_wing(wing):
             + outer_cross_section_mcl_local_up
         )
 
-        # Define number of spanwise points and panels.
-        num_spanwise_panels = wing_cross_section.num_spanwise_panels
+        # Define number of spanwise points and panels. This is based on the inner
+        # cross section.
+        num_spanwise_panels = inner_cross_section.num_spanwise_panels
         num_spanwise_coordinates = num_spanwise_panels + 1
 
-        # Get the spanwise coordinates.
-        if wing_cross_section.spanwise_spacing == "uniform":
+        # Get the spanwise coordinates. This is based on the inner cross section.
+        if inner_cross_section.spanwise_spacing == "uniform":
             nondim_spanwise_coordinates = np.linspace(
                 0, 1, num_spanwise_coordinates, endpoint=True,
             )
-        elif wing_cross_section.spanwise_spacing == "cosine":
+        elif inner_cross_section.spanwise_spacing == "cosine":
             nondim_spanwise_coordinates = ps.geometry.cosspace(
                 n_points=num_spanwise_coordinates, endpoint=True,
             )

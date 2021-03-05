@@ -7,7 +7,8 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    make_validation_operating_point: This method makes an operating point object for use in tests.
+    make_validation_operating_point: This method makes an operating point object for
+    use in tests.
 """
 
 import pterasoftware as ps

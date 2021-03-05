@@ -56,10 +56,12 @@ class UnsteadyProblem:
         """This is the initialization method.
 
         :param movement: Movement
-            This is the movement object that contains this problem's airplane and operating point objects.
+            This is the movement object that contains this problem's airplane and
+            operating point objects.
         """
 
-        # Initialize the class attributes for the number of time steps and the time in between these time steps.
+        # Initialize the class attributes for the number of time steps and the time
+        # in between these time steps.
         self.num_steps = movement.num_steps
         self.delta_time = movement.delta_time
 
@@ -68,7 +70,6 @@ class UnsteadyProblem:
 
         # Iterate through the problem's time steps.
         for step in range(self.num_steps):
-
             # Get the airplane and operating point object at this time step.
             this_airplane = movement.airplanes[step]
             this_operating_point = movement.operating_points[step]

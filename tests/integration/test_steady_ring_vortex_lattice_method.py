@@ -6,11 +6,13 @@ Based on an identical XFLR5 testing case, the expected output for this case is:
     CDi:    0.019
     Cm:     -0.687
 
-Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice method
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
+which is a ring vortex lattice method
 solver.
 
 This module contains the following classes:
-    TestRingHorseshoeVortexLatticeMethod: This is a class for testing the steady ring vortex lattice method solver.
+    TestRingHorseshoeVortexLatticeMethod: This is a class for testing the steady ring
+    vortex lattice method solver.
 
 This module contains the following exceptions:
     None

@@ -141,7 +141,7 @@ With the release of version 1.0.0, Ptera Software is now validated against exper
 
 ## How to Contribute
 
-As I said before, the primary goal of this project is to increase the open-source community's understanding and 
+As I said before, the primary goal of this project is to increase the open-source community's understanding and
 appreciation for unsteady aerodynamics in general and flapping wing flight in particular. This will only happen through
 your participation. Feel free to request features, report bugs and security issues, and provide suggestions. No comment
 is too big or small!
@@ -151,7 +151,7 @@ start, this is for you!
 
 ### Testing
 
-* We should make sure that all the integration tests compare output against expected results. This means getting rid of 
+* We should make sure that all the integration tests compare output against expected results. This means getting rid of
   all the "test_method_does_not_throw" tests.
 * We should eventually reach and maintain 100% testing coverage.
 
@@ -173,7 +173,7 @@ start, this is for you!
 * We should create a command-line interface or GUI.
 * We should try to implement aeroelastic effects in Ptera Software's solvers.
 * Flapping wing controls is both fascinating and complicated. We should try to create a workflow in Ptera Software for
-controls systems identification for flapping wing vehicles.
+  controls systems identification for flapping wing vehicles.
 
 ## Credits
 

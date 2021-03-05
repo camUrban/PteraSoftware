@@ -18,6 +18,7 @@ A clear and concise description of what the bug is.
 **To Reproduce:**
 
 Steps to reproduce the behavior:
+
 1. "Go to..."
 2. "Click on..."
 3. "Scroll down to..."
@@ -33,8 +34,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
 
- - OS: [e.g. iOS]
- - Version [e.g. v0.1.0]
+- OS: [e.g. iOS]
+- Version [e.g. v0.1.0]
 
 **Additional Context:**
 

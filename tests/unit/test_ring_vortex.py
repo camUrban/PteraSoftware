@@ -22,11 +22,15 @@ class TestRingVortex(unittest.TestCase):
     """ This is a class with functions to test ring vortex objects.
 
     This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set up the fixtures.
-        tearDown: This method is automatically called before each testing method to tear down the fixtures.
+        setUp: This method is automatically called before each testing method to set
+        up the fixtures.
+        tearDown: This method is automatically called before each testing method to
+        tear down the fixtures.
         test_class: This method tests the class's instantiation.
-        test_calculate_normalized_induced_velocity: This method tests the calculation of normalized induced velocity.
-        test_calculate_induced_velocity: This method tests the calculation of induced velocity.
+        test_calculate_normalized_induced_velocity: This method tests the calculation
+        of normalized induced velocity.
+        test_calculate_induced_velocity: This method tests the calculation of induced
+        velocity.
         test_update_strength: This method tests the update_strength method.
         test_update_position: This method tests the update_position method.
 
@@ -38,7 +42,8 @@ class TestRingVortex(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method is automatically called before each testing method to set up the fixtures.
+        """ This method is automatically called before each testing method to set up
+        the fixtures.
 
         :return: None
         """
@@ -64,7 +69,8 @@ class TestRingVortex(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method is automatically called before each testing method to tear down the fixtures.
+        """ This method is automatically called before each testing method to tear
+        down the fixtures.
 
         :return: None
         """
@@ -368,7 +374,8 @@ class TestRingVortex(unittest.TestCase):
         old_back_left_vertex_fixture = self.ring_vortex_fixture.back_left_vertex
         old_back_right_vertex_fixture = self.ring_vortex_fixture.back_right_vertex
 
-        # Create fixtures to hold the soon-to-be new values of the ring vortex's position.
+        # Create fixtures to hold the soon-to-be new values of the ring vortex's
+        # position.
         new_front_right_vertex_fixture = old_front_right_vertex_fixture + np.array(
             [1, 0, 0]
         )

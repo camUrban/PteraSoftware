@@ -1,9 +1,12 @@
 # ToDo: Properly document this script.
-""" This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
+""" This is a testing case for the unsteady ring vortex lattice method solver with
+variable geometry.
 
 This module contains the following classes:
-    TestUnsteadyRingVortexLatticeMethodVariableGeometry: This is a class for testing the unsteady ring vortex lattice
-                                                         method solver on variable geometry.
+    TestUnsteadyRingVortexLatticeMethodVariableGeometry: This is a class for testing
+    the unsteady ring vortex lattice
+                                                         method solver on variable
+                                                         geometry.
 
 This module contains the following exceptions:
     None
@@ -19,12 +22,14 @@ from tests.integration.fixtures import solver_fixtures
 
 # ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
-    """ This is a class for testing the unsteady ring vortex lattice method solver on variable geometry.
+    """ This is a class for testing the unsteady ring vortex lattice method solver on
+    variable geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
         tearDown: This method tears down the test.
-        test_method_does_not_throw: This method tests that the solver does not throw any errors.
+        test_method_does_not_throw: This method tests that the solver does not throw
+        any errors.
 
     This class contains the following class attributes:
         None

@@ -10,7 +10,8 @@ from tests.integration.fixtures import solver_fixtures
 
 # ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.TestCase):
-    """ This is a class for testing the unsteady ring vortex lattice method solver on multi-wing, static geometry.
+    """ This is a class for testing the unsteady ring vortex lattice method solver on
+    multi-wing, static geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.

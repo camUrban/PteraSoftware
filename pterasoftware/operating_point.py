@@ -1,7 +1,8 @@
 """This module contains the class definition for the problem's operating point.
 
 This module contains the following classes:
-    OperatingPoint: This is a class used to contain the problem's operating point characteristics.
+    OperatingPoint: This is a class used to contain the problem's operating point
+    characteristics.
 
 This module contains the following exceptions:
     None
@@ -22,13 +23,19 @@ class OperatingPoint:
         Date of Retrieval:    04/29/2020
 
     This class contains the following public methods:
-        calculate_dynamic_pressure: This method calculates the freestream dynamic pressure of the working fluid.
-        calculate_rotation_matrix_wind_to_geometry: This method computes the 3 x 3 rotation matrix for converting from
+        calculate_dynamic_pressure: This method calculates the freestream dynamic
+        pressure of the working fluid.
+        calculate_rotation_matrix_wind_to_geometry: This method computes the 3 x 3
+        rotation matrix for converting from
                                                     wind axes to geometry axes.
-        calculate_freestream_direction_geometry_axes: This method computes the freestream direction (the direction the
-                                                      wind is going to) in geometry axes.
-        calculate_freestream_velocity_geometry_axes: This method computes the freestream velocity vector (in the
-                                                     direction the wind is going to) in geometry axes.
+        calculate_freestream_direction_geometry_axes: This method computes the
+        freestream direction (the direction the
+                                                      wind is going to) in geometry
+                                                      axes.
+        calculate_freestream_velocity_geometry_axes: This method computes the
+        freestream velocity vector (in the
+                                                     direction the wind is going to)
+                                                     in geometry axes.
 
     This class contains the following class attributes:
         None
@@ -41,14 +48,18 @@ class OperatingPoint:
         """This is the initialization method.
 
         :param density: float, optional
-            This parameter is the density. The units are kilograms per meters cubed. The default value is 1.225.
+            This parameter is the density. The units are kilograms per meters cubed.
+            The default value is 1.225.
         :param velocity: float, optional
-            This parameter is the freestream speed in the positive x direction. The units are meters per second. The
+            This parameter is the freestream speed in the positive x direction. The
+            units are meters per second. The
             default value is 10.0.
         :param alpha: float, optional
-            This parameter is the angle of attack. The units are degrees. The default value is 5.0.
+            This parameter is the angle of attack. The units are degrees. The default
+            value is 5.0.
         :param beta: float, optional
-            This parameter is the sideslip angle. The units are degrees. The default value is 0.0.
+            This parameter is the sideslip angle. The units are degrees. The default
+            value is 0.0.
         """
 
         # Initialize the attributes.
@@ -69,7 +80,8 @@ class OperatingPoint:
         return dynamic_pressure
 
     def calculate_rotation_matrix_wind_axes_to_geometry_axes(self):
-        """This method computes the 3 x 3 rotation matrix for converting from wind axes to geometry axes.
+        """This method computes the 3 x 3 rotation matrix for converting from wind
+        axes to geometry axes.
 
         :return rotation_matrix_wind_axes_to_geometry_axes: 3 x 3 ndarray
             This is the rotation matrix to convert wind axes to geometry axes.
@@ -88,18 +100,21 @@ class OperatingPoint:
             [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
         )
 
-        # Flip the axes because in geometry axes x is downstream by convention, while in wind axes x is upstream by
+        # Flip the axes because in geometry axes x is downstream by convention,
+        # while in wind axes x is upstream by
         # convention. Same with z being up/down respectively.
         axes_flip = np.array([[-1, 0, 0], [0, 1, 0,], [0, 0, -1]])
 
-        # Calculate and return the rotation matrix to convert wind axes to geometry axes.
+        # Calculate and return the rotation matrix to convert wind axes to geometry
+        # axes.
         rotation_matrix_wind_axes_to_geometry_axes = (
             axes_flip @ alpha_rotation @ beta_rotation @ eye
         )
         return rotation_matrix_wind_axes_to_geometry_axes
 
     def calculate_freestream_direction_geometry_axes(self):
-        """This method computes the freestream direction (the direction the wind is going to) in geometry axes.
+        """This method computes the freestream direction (the direction the wind is
+        going to) in geometry axes.
 
         :return velocity_direction_geometry_axes: 1D ndarray
             This is the freestream velocity direction in geometry axes.
@@ -113,7 +128,8 @@ class OperatingPoint:
         return velocity_direction_geometry_axes
 
     def calculate_freestream_velocity_geometry_axes(self):
-        """This method computes the freestream velocity vector (in the direction the wind is going to) in geometry axes.
+        """This method computes the freestream velocity vector (in the direction the
+        wind is going to) in geometry axes.
 
         :return freestream_velocity_geometry_axes: 1D ndarray
             This is the freestream velocity vector in geometry axes.

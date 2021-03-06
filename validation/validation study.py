@@ -422,10 +422,8 @@ validation_solver.run(prescribed_wake=True)
 # Call the software’s animate function on the solver. This produces a GIF. The GIF is
 # saved in the same directory as this script. Press "q," after orienting the view,
 # to begin the animation.
-ps.output.animate(
-    # Set the unsteady solver to the one we just ran.
-    unsteady_solver=validation_solver,
-    # Show the pressures in the animation.
+ps.output.animate(  # Set the unsteady solver to the one we just ran.
+    unsteady_solver=validation_solver,  # Show the pressures in the animation.
     show_delta_pressures=True,
     # Set this value to False to hide the wake vortices in the animation.
     show_wake_vortices=True,

@@ -22,11 +22,16 @@ class TestOutput(unittest.TestCase):
     """ This is a class with functions to test the output module.
 
     This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set up the fixtures.
-        tearDown: This method is automatically called before each testing method to tear down the fixtures.
-        test_plot_results_versus_time: This method tests the plot_results_versus_time method.
-        test_animate_does_not_throw: This method tests that the animate method does not throw any errors.
-        test_draw_does_not_throw: This method tests that the draw method does not throw any errors.
+        setUp: This method is automatically called before each testing method to set
+        up the fixtures.
+        tearDown: This method is automatically called before each testing method to
+        tear down the fixtures.
+        test_plot_results_versus_time: This method tests the plot_results_versus_time
+        method.
+        test_animate_does_not_throw: This method tests that the animate method does
+        not throw any errors.
+        test_draw_does_not_throw: This method tests that the draw method does not
+        throw any errors.
 
     This class contains the following class attributes:
         None
@@ -36,7 +41,8 @@ class TestOutput(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method is automatically called before each testing method to set up the fixtures.
+        """ This method is automatically called before each testing method to set up
+        the fixtures.
 
         :return: None
         """
@@ -47,7 +53,8 @@ class TestOutput(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method is automatically called before each testing method to tear down the fixtures.
+        """ This method is automatically called before each testing method to tear
+        down the fixtures.
 
         :return: None
         """
@@ -64,7 +71,8 @@ class TestOutput(unittest.TestCase):
         # Get the number of matplotlib figures before running the test.
         num_figs_before = plt.gcf().number
 
-        # Call the plot_results_versus_time method on the solver fixture. The testing flag is set to true, so the
+        # Call the plot_results_versus_time method on the solver fixture. The testing
+        # flag is set to true, so the
         # figures will not be displayed.
         ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, testing=True

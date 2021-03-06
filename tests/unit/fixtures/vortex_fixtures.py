@@ -7,17 +7,24 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    make_origin_fixture: This method makes a fixture that holds the coordinates of a position.
-    make_termination_fixture: This method makes a fixture that holds the coordinates of a position.
+    make_origin_fixture: This method makes a fixture that holds the coordinates of a
+    position.
+    make_termination_fixture: This method makes a fixture that holds the coordinates
+    of a position.
     make_strength_fixture: This method makes a fixture that holds a value.
     make_line_vortex_fixture: This method makes a fixture that is a line vortex object.
     make_infinite_leg_direction_fixture: This method makes a direction fixture.
     make_infinite_leg_length_fixture: This method makes a fixture that holds a value.
-    make_horseshoe_vortex_fixture: This method makes a fixture that is a horseshoe vortex object.
-    make_front_left_vertex_fixture: This method makes a fixture that holds the coordinates of a position.
-    make_front_right_vertex_fixture: This method makes a fixture that holds the coordinates of a position.
-    make_back_left_vertex_fixture: This method makes a fixture that holds the coordinates of a position.
-    make_back_right_vertex_fixture: This method makes a fixture that holds the coordinates of a position.
+    make_horseshoe_vortex_fixture: This method makes a fixture that is a horseshoe
+    vortex object.
+    make_front_left_vertex_fixture: This method makes a fixture that holds the
+    coordinates of a position.
+    make_front_right_vertex_fixture: This method makes a fixture that holds the
+    coordinates of a position.
+    make_back_left_vertex_fixture: This method makes a fixture that holds the
+    coordinates of a position.
+    make_back_right_vertex_fixture: This method makes a fixture that holds the
+    coordinates of a position.
     make_ring_vortex_fixture: This method makes a fixture that is a ring vortex object.
 """
 

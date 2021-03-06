@@ -12,7 +12,8 @@ from tests.integration.fixtures import solver_fixtures
 class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
     unittest.TestCase
 ):
-    """ This is a class for testing the unsteady ring vortex lattice method solver on multi-wing, variable geometry.
+    """ This is a class for testing the unsteady ring vortex lattice method solver on
+    multi-wing, variable geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.

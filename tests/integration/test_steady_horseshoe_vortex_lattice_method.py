@@ -6,11 +6,13 @@ Based on an identical XFLR5 testing case, the expected output for this case is:
     CDi:    0.019
     Cm:     -0.690
 
-Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a horseshoe vortex lattice
+Note: The expected output was created using XFLR5's inviscid VLM1 analysis type,
+which is a horseshoe vortex lattice
 method solver.
 
 This module contains the following classes:
-    TestSteadyHorseshoeVortexLatticeMethod: This is a class for testing the steady horseshoe vortex lattice method
+    TestSteadyHorseshoeVortexLatticeMethod: This is a class for testing the steady
+    horseshoe vortex lattice method
                                             solver.
 
 This module contains the following exceptions:

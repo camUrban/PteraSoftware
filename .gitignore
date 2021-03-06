@@ -129,3 +129,4 @@ cython_debug/
 
 # This is the pre-commit configuration file to ignore.
 .pre-commit-config.yaml
+/venvTest/

@@ -9,7 +9,8 @@ This module contains the following exceptions:
 This module contains the following functions:
     draw: Draw the geometry of an airplane object.
     animate: Create an animation of a problem's movement.
-    plot_results_versus_time: This method takes in an unsteady solver object, and plots the geometries' forces, moments,
+    plot_results_versus_time: This method takes in an unsteady solver object,
+    and plots the geometries' forces, moments,
                               and coefficients as a function of time.
 """
 
@@ -32,15 +33,19 @@ def draw(
         Author:               Peter Sharpe
         Date of Retrieval:    03/28/2020
 
-    :param solver: SteadyHorseshoeVortexLatticeMethodSolver or SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
+    :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
+    SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry and attributes are to be plotted.
     :param show_delta_pressures: bool, optional
-        Set this variable to true to show the change in pressure across the panels. The default value is False.
+        Set this variable to true to show the change in pressure across the panels.
+        The default value is False.
     :param show_streamlines: bool, optional
-        Set this variable to true to show the streamlines emanating from the back of the wings. The default value is
+        Set this variable to true to show the streamlines emanating from the back of
+        the wings. The default value is
         False.
     :param show_wake_vortices: bool, optional
-        Set this variable to true to show the airplane object's wake ring vortices. The default value is False.
+        Set this variable to true to show the airplane object's wake ring vortices.
+        The default value is False.
     :return: None
     """
 
@@ -72,7 +77,8 @@ def draw(
         panels = np.ravel(wing.panels)
         for panel in panels:
 
-            # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
+            # Stack this panel's vertices, faces, and scalars. Look through the
+            # PolyData documentation for more
             # details.
             panel_vertices_to_add = np.vstack(
                 (
@@ -92,12 +98,14 @@ def draw(
                 ]
             )
 
-            # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
+            # Stack this panel's vertices, faces, and scalars with the ndarray of all
+            # the vertices, faces, and
             # scalars.
             panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
             panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
-            # If the user wants to plot the pressures, add the panel's delta pressure to the ndarray of scalars.
+            # If the user wants to plot the pressures, add the panel's delta pressure
+            # to the ndarray of scalars.
             if show_delta_pressures:
                 scalar_to_add = panel.delta_pressure
                 scalars = np.hstack((scalars, scalar_to_add))
@@ -155,7 +163,8 @@ def draw(
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-    # Check if the user wants to plot pressures. If so, add the panel surfaces to the plotter with the pressure scalars.
+    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
+    # plotter with the pressure scalars.
     # Otherwise, add the panel surfaces without the pressure scalars.
     if show_delta_pressures:
         plotter.add_mesh(
@@ -177,7 +186,8 @@ def draw(
     # Check if the user wants to plot streamlines.
     if show_streamlines:
 
-        # Iterate through the spanwise positions in the solver's streamline point matrix.
+        # Iterate through the spanwise positions in the solver's streamline point
+        # matrix.
         for spanwise_position in range(solver.streamline_points.shape[1]):
 
             # Get the column of streamline points at this spanwise position.
@@ -186,7 +196,8 @@ def draw(
             # Iterate through each streamline point column.
             for point_index in range(streamline_point_column.shape[0]):
 
-                # Skip the first point because it has not previous point with which to make a line.
+                # Skip the first point because it has not previous point with which
+                # to make a line.
                 if point_index != 0:
                     # Get the current, and the last point.
                     point = streamline_point_column[point_index, :]
@@ -211,11 +222,15 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry is to be animated.
     :param show_delta_pressures: bool, optional
-        Set this variable to true to show the change in pressure across the panels. The default value is false.
+        Set this variable to true to show the change in pressure across the panels.
+        The default value is false.
     :param show_wake_vortices: bool, optional
-        Set this variable to true to show the airplane object's wake ring vortices. The default value is false.
+        Set this variable to true to show the airplane object's wake ring vortices.
+        The default value is false.
     :return: None
     """
+
+    first_results_step = unsteady_solver.first_results_step
 
     # Get this solver's problem's airplanes.
     airplanes = []
@@ -241,7 +256,8 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         panels = np.ravel(wing.panels)
         for panel in panels:
 
-            # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
+            # Stack this panel's vertices, faces, and scalars. Look through the
+            # PolyData documentation for more
             # details.
             panel_vertices_to_add = np.vstack(
                 (
@@ -261,12 +277,14 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
                 ]
             )
 
-            # If the user wants to plot the pressures, add the panel's delta pressure to the ndarray of scalars.
+            # If the user wants to plot the pressures, add the panel's delta pressure
+            # to the ndarray of scalars.
             if show_delta_pressures:
                 scalar_to_add = panel.delta_pressure
                 scalars = np.hstack((scalars, scalar_to_add))
 
-            # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
+            # Stack this panel's vertices, faces, and scalars with the ndarray of all
+            # the vertices, faces, and
             # scalars.
             panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
             panel_faces = np.hstack((panel_faces, panel_face_to_add))
@@ -277,9 +295,10 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-    # Check if the user wants to plot pressures. If so, add the panel surfaces to the plotter with the pressure scalars.
+    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
+    # plotter with the pressure scalars.
     # Otherwise, add the panel surfaces without the pressure scalars.
-    if show_delta_pressures:
+    if show_delta_pressures and first_results_step == 0:
         plotter.add_mesh(
             panel_surface,
             show_edges=True,
@@ -287,6 +306,11 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
             scalars=scalars,
             smooth_shading=True,
         )
+        # As this is the first step with pressures update the scalar bar range (so it
+        # is not automatically set each frame), and update the scalars after doing so.
+        if show_delta_pressures:
+            plotter.update_scalar_bar_range(clim=[-1000, 1000])
+            plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
             panel_surface,
@@ -296,18 +320,13 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
             smooth_shading=True,
         )
 
-    # If the user wants to show the pressures, update the scalar bar range (so it is not automatically set each frame),
-    # and update the scalars after doing so.
-    if show_delta_pressures:
-        plotter.update_scalar_bar_range(clim=[-1000, 1000])
-        plotter.update_scalars(scalars)
-
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="#000000")
 
     # Print a message to the console on how to set up the window.
     print(
-        'Orient the view, then press "q" to close the window and produce the animation.'
+        'Orient the view, then press "q" to close the window and produce the '
+        "animation."
     )
 
     # Set up the camera and close the window.
@@ -315,6 +334,9 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
 
     # Open a gif.
     plotter.open_gif("animation.gif")
+
+    # Initialize a variable to keep track of which step we are on.
+    current_step = 1
 
     # Begin to iterate through all the other airplanes.
     for airplane in airplanes[1:]:
@@ -327,7 +349,8 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         panel_faces = np.empty(0, dtype=int)
         scalars = np.empty(0, dtype=int)
 
-        # Initialize a variable to keep track of how many panels have been added thus far.
+        # Initialize a variable to keep track of how many panels have been added thus
+        # far.
         current_panel_num = 0
 
         # Increment through the current airplane's wings.
@@ -337,7 +360,8 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
             panels = np.ravel(wing.panels)
             for panel in panels:
 
-                # Stack this panel's vertices, faces, and scalars. Look through the PolyData documentation for more
+                # Stack this panel's vertices, faces, and scalars. Look through the
+                # PolyData documentation for more
                 # details.
                 panel_vertices_to_add = np.vstack(
                     (
@@ -357,12 +381,14 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
                     ]
                 )
 
-                # Stack this panel's vertices, faces, and scalars with the ndarray of all the vertices, faces, and
+                # Stack this panel's vertices, faces, and scalars with the ndarray of
+                # all the vertices, faces, and
                 # scalars.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
-                # If the user wants to plot the pressures, add the panel's delta pressure to the ndarray of scalars.
+                # If the user wants to plot the pressures, add the panel's delta
+                # pressure to the ndarray of scalars.
                 if show_delta_pressures:
                     scalar_to_add = panel.delta_pressure
                     scalars = np.hstack((scalars, scalar_to_add))
@@ -377,9 +403,9 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
                 wake_ring_vortex_faces = np.empty(0, dtype=int)
                 current_wake_ring_vortex_num = 0
 
-                # Iterate through the unraveled array of wake vortices for the given wing.
+                # Iterate through the unraveled array of wake vortices for the given
+                # wing.
                 for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-
                     wake_ring_vortex_vertices_to_add = np.vstack(
                         (
                             wake_ring_vortex.front_left_vertex,
@@ -421,9 +447,11 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         # Initialize the panel surfaces and add the meshes to the plotter.
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-        # Check if the user wants to plot pressures. If so, add the panel surfaces to the plotter with the pressure scalars.
-        # Otherwise, add the panel surfaces without the pressure scalars.
-        if show_delta_pressures:
+        # Check if the user wants to plot pressures and this step is equal to or
+        # greater than the first step with calculated results. If so, add the panel
+        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
+        # surfaces without the pressure scalars.
+        if show_delta_pressures and first_results_step <= current_step:
             plotter.add_mesh(
                 panel_surface,
                 show_edges=True,
@@ -431,6 +459,14 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
                 scalars=scalars,
                 smooth_shading=True,
             )
+            if first_results_step == current_step:
+
+                # If this is the first step with pressures update the scalar bar
+                # range (so it is not automatically set each frame), and update the
+                # scalars after doing so.
+                if show_delta_pressures:
+                    plotter.update_scalar_bar_range(clim=[-1000, 1000])
+                    plotter.update_scalars(scalars)
         else:
             plotter.add_mesh(
                 panel_surface,
@@ -444,57 +480,83 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         plotter.write_frame()
         plotter.clear()
 
+        # Increment the step number tracker.
+        current_step += 1
+
     # Close the animation and delete the plotter.
     plotter.close()
 
 
 def plot_results_versus_time(unsteady_solver, testing=False):
-    """ This method takes in an unsteady solver object, and plots the geometries' forces, moments, and coefficients as a
+    """ This method takes in an unsteady solver object, and plots the geometries'
+    forces, moments, and coefficients as a
     function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-        This is the solver object whose resulting forces, moments, and coefficients are to be plotted.
+        This is the solver object whose resulting forces, moments, and coefficients
+        are to be plotted.
     :param testing: bool, Optional
-        This boolean determines if the plots will be shown. If true, no plots will be shown. It is useful for testing,
-        where the user wants to know that the plots were created without having to show them. It's default value is
+        This boolean determines if the plots will be shown. If true, no plots will be
+        shown. It is useful for testing,
+        where the user wants to know that the plots were created without having to
+        show them. It's default value is
         false.
     :return: None
     """
 
-    # Get this solver's problem's airplanes.
-    airplanes = []
-    for steady_problem in unsteady_solver.steady_problems:
-        airplanes.append(steady_problem.airplane)
+    first_results_step = unsteady_solver.first_results_step
 
-    # Get this solver's time step characteristics.
+    # Get this solver's time step characteristics. Note that the first time step,
+    # time step 0, occurs at 0 seconds.
     num_steps = unsteady_solver.num_steps
     delta_time = unsteady_solver.delta_time
+    first_results_time_step_time = delta_time * first_results_step
+    final_time_step_time = delta_time * (num_steps - 1)
+    num_steps_with_results = num_steps - first_results_step
 
-    # Create a 1D ndarray with the time at each time step.
-    times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False,)
+    # Create a 1D ndarray with the time at each time step where results have been
+    # calculated.
+    times = np.linspace(
+        first_results_time_step_time,
+        final_time_step_time,
+        num_steps_with_results,
+        endpoint=True,
+    )
 
-    # Initialize matrices to hold the forces, moments, and coefficients at each time step.
-    total_near_field_force_wind_axes = np.zeros((3, num_steps))
-    total_near_field_force_coefficients_wind_axes = np.zeros((3, num_steps))
-    total_near_field_moment_wind_axes = np.zeros((3, num_steps))
-    total_near_field_moment_coefficients_wind_axes = np.zeros((3, num_steps))
+    # Initialize matrices to hold the forces, moments, and coefficients at each time
+    # step which has results.
+    total_near_field_force_wind_axes = np.zeros((3, num_steps_with_results))
+    total_near_field_force_coefficients_wind_axes = np.zeros(
+        (3, num_steps_with_results)
+    )
+    total_near_field_moment_wind_axes = np.zeros((3, num_steps_with_results))
+    total_near_field_moment_coefficients_wind_axes = np.zeros(
+        (3, num_steps_with_results)
+    )
+
+    # Initialize a variable to track position in the results arrays.
+    results_step = 0
 
     # Iterate through the time steps and add the results to their respective matrices.
-    for step in range(num_steps):
-        airplane = airplanes[step]
+    for step in range(first_results_step, num_steps):
+
+        # Get the airplane from the problem at this step.
+        airplane = unsteady_solver.steady_problems[step].airplane
 
         total_near_field_force_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_force_wind_axes
         total_near_field_force_coefficients_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_force_coefficients_wind_axes
         total_near_field_moment_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_moment_wind_axes
         total_near_field_moment_coefficients_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_moment_coefficients_wind_axes
+
+        results_step += 1
 
     # Create and show the force plot.
     # Initialize the plot.

@@ -105,6 +105,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.num_steps = unsteady_problem.num_steps
         self.delta_time = unsteady_problem.delta_time
         self.steady_problems = unsteady_problem.steady_problems
+        self.first_results_step = unsteady_problem.first_results_step
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.current_step = None
@@ -369,9 +370,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.calculate_vortex_strengths()
 
             # Solve for the near field forces and moments on each panel.
-            if verbose:
-                print("Calculating near field forces.")
-            self.calculate_near_field_forces_and_moments()
+            if self.current_step >= self.first_results_step:
+                if verbose:
+                    print("Calculating near field forces.")
+                self.calculate_near_field_forces_and_moments()
 
             # Solve for the near field forces and moments on each panel.
             if verbose:

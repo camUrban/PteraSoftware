@@ -230,6 +230,8 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     :return: None
     """
 
+    first_results_step = unsteady_solver.first_results_step
+
     # Get this solver's problem's airplanes.
     airplanes = []
     for steady_problem in unsteady_solver.steady_problems:
@@ -296,7 +298,7 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     # Check if the user wants to plot pressures. If so, add the panel surfaces to the
     # plotter with the pressure scalars.
     # Otherwise, add the panel surfaces without the pressure scalars.
-    if show_delta_pressures:
+    if show_delta_pressures and first_results_step == 0:
         plotter.add_mesh(
             panel_surface,
             show_edges=True,
@@ -304,6 +306,11 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
             scalars=scalars,
             smooth_shading=True,
         )
+        # As this is the first step with pressures update the scalar bar range (so it
+        # is not automatically set each frame), and update the scalars after doing so.
+        if show_delta_pressures:
+            plotter.update_scalar_bar_range(clim=[-1000, 1000])
+            plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
             panel_surface,
@@ -312,13 +319,6 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
             color="#86C552",
             smooth_shading=True,
         )
-
-    # If the user wants to show the pressures, update the scalar bar range (so it is
-    # not automatically set each frame),
-    # and update the scalars after doing so.
-    if show_delta_pressures:
-        plotter.update_scalar_bar_range(clim=[-1000, 1000])
-        plotter.update_scalars(scalars)
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color="#000000")
@@ -334,6 +334,9 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
 
     # Open a gif.
     plotter.open_gif("animation.gif")
+
+    # Initialize a variable to keep track of which step we are on.
+    current_step = 1
 
     # Begin to iterate through all the other airplanes.
     for airplane in airplanes[1:]:
@@ -444,10 +447,11 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         # Initialize the panel surfaces and add the meshes to the plotter.
         panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-        # Check if the user wants to plot pressures. If so, add the panel surfaces to
-        # the plotter with the pressure scalars.
-        # Otherwise, add the panel surfaces without the pressure scalars.
-        if show_delta_pressures:
+        # Check if the user wants to plot pressures and this step is equal to or
+        # greater than the first step with calculated results. If so, add the panel
+        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
+        # surfaces without the pressure scalars.
+        if show_delta_pressures and first_results_step <= current_step:
             plotter.add_mesh(
                 panel_surface,
                 show_edges=True,
@@ -455,6 +459,14 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
                 scalars=scalars,
                 smooth_shading=True,
             )
+            if first_results_step == current_step:
+
+                # If this is the first step with pressures update the scalar bar
+                # range (so it is not automatically set each frame), and update the
+                # scalars after doing so.
+                if show_delta_pressures:
+                    plotter.update_scalar_bar_range(clim=[-1000, 1000])
+                    plotter.update_scalars(scalars)
         else:
             plotter.add_mesh(
                 panel_surface,
@@ -467,6 +479,9 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
         # Write the current frame to the plotter.
         plotter.write_frame()
         plotter.clear()
+
+        # Increment the step number tracker.
+        current_step += 1
 
     # Close the animation and delete the plotter.
     plotter.close()
@@ -489,41 +504,59 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     :return: None
     """
 
-    # Get this solver's problem's airplanes.
-    airplanes = []
-    for steady_problem in unsteady_solver.steady_problems:
-        airplanes.append(steady_problem.airplane)
+    first_results_step = unsteady_solver.first_results_step
 
-    # Get this solver's time step characteristics.
+    # Get this solver's time step characteristics. Note that the first time step,
+    # time step 0, occurs at 0 seconds.
     num_steps = unsteady_solver.num_steps
     delta_time = unsteady_solver.delta_time
+    first_results_time_step_time = delta_time * first_results_step
+    final_time_step_time = delta_time * (num_steps - 1)
+    num_steps_with_results = num_steps - first_results_step
 
-    # Create a 1D ndarray with the time at each time step.
-    times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False,)
+    # Create a 1D ndarray with the time at each time step where results have been
+    # calculated.
+    times = np.linspace(
+        first_results_time_step_time,
+        final_time_step_time,
+        num_steps_with_results,
+        endpoint=True,
+    )
 
     # Initialize matrices to hold the forces, moments, and coefficients at each time
-    # step.
-    total_near_field_force_wind_axes = np.zeros((3, num_steps))
-    total_near_field_force_coefficients_wind_axes = np.zeros((3, num_steps))
-    total_near_field_moment_wind_axes = np.zeros((3, num_steps))
-    total_near_field_moment_coefficients_wind_axes = np.zeros((3, num_steps))
+    # step which has results.
+    total_near_field_force_wind_axes = np.zeros((3, num_steps_with_results))
+    total_near_field_force_coefficients_wind_axes = np.zeros(
+        (3, num_steps_with_results)
+    )
+    total_near_field_moment_wind_axes = np.zeros((3, num_steps_with_results))
+    total_near_field_moment_coefficients_wind_axes = np.zeros(
+        (3, num_steps_with_results)
+    )
+
+    # Initialize a variable to track position in the results arrays.
+    results_step = 0
 
     # Iterate through the time steps and add the results to their respective matrices.
-    for step in range(num_steps):
-        airplane = airplanes[step]
+    for step in range(first_results_step, num_steps):
+
+        # Get the airplane from the problem at this step.
+        airplane = unsteady_solver.steady_problems[step].airplane
 
         total_near_field_force_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_force_wind_axes
         total_near_field_force_coefficients_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_force_coefficients_wind_axes
         total_near_field_moment_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_moment_wind_axes
         total_near_field_moment_coefficients_wind_axes[
-            :, step
+            :, results_step
         ] = airplane.total_near_field_moment_coefficients_wind_axes
+
+        results_step += 1
 
     # Create and show the force plot.
     # Initialize the plot.

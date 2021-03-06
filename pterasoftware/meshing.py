@@ -39,9 +39,6 @@ def mesh_wing(wing):
     num_chordwise_panels = wing.num_chordwise_panels
     num_chordwise_coordinates = num_chordwise_panels + 1
 
-    # Initialize the list of cross sections to None.
-    wing_cross_section = None
-
     # Initialize an empty ndarray that will hold the panels of this wing. It
     # currently has 0 columns and M rows,
     # where M is the number of the wing's chordwise panels.

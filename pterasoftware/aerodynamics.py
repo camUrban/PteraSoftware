@@ -41,6 +41,8 @@ import numpy as np
 
 import pterasoftware as ps
 
+from numba import njit
+
 
 class LineVortex:
     """This class is used to contain line vortices.
@@ -156,8 +158,8 @@ class LineVortex:
         )
 
         # Calculate the vector lengths.
-        r_1_length = np.linalg.norm(r_1)
-        r_2_length = np.linalg.norm(r_2)
+        r_1_length = nb_explicit_norm(r_1)
+        r_2_length = nb_explicit_norm(r_2)
 
         # Check for singularities.
         line_vortex_radius = 3.0e-16
@@ -282,14 +284,14 @@ class HorseshoeVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_right_leg = (
+            self.right_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_finite_leg = self.finite_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_finite_leg = (
+            self.finite_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_left_leg = (
+            self.left_leg.calculate_normalized_induced_velocity(point=point)
         )
 
         # Sum the velocities induced by each leg to get the velocity induced by the
@@ -458,17 +460,17 @@ class RingVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_front_leg = self.front_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_front_leg = (
+            self.front_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_left_leg = (
+            self.left_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_back_leg = self.back_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_back_leg = (
+            self.back_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_right_leg = (
+            self.right_leg.calculate_normalized_induced_velocity(point=point)
         )
 
         # Sum the velocities induced by each leg to get the velocity induced by the
@@ -602,7 +604,7 @@ class RingVortex:
 def calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
-    """ This function takes in a group of points, origins, terminations and
+    """This function takes in a group of points, origins, terminations and
     strengths. At every point, it finds the
     induced velocity due to every line vortex, which are characterized by the groups
     of origins, terminations, and
@@ -670,7 +672,7 @@ def calculate_velocity_induced_by_line_vortices(
     r_0 = r_1 - r_2
 
     # Calculate the vector cross product. This is of shape (N x M x 3).
-    r_1_cross_r_2 = np.cross(r_1, r_2)
+    r_1_cross_r_2 = nb_2d_explicit_cross(r_1, r_2)
 
     # Calculate the cross product's absolute magnitude. This is of shape (N x M).
     r_1_cross_r_2_absolute_magnitude = (
@@ -680,8 +682,8 @@ def calculate_velocity_induced_by_line_vortices(
     )
 
     # Calculate the vector lengths. These are of shape (N x M).
-    r_1_length = np.linalg.norm(r_1, axis=-1)
-    r_2_length = np.linalg.norm(r_2, axis=-1)
+    r_1_length = nb_2d_explicit_norm(r_1)
+    r_2_length = nb_2d_explicit_norm(r_2)
 
     # Define the radius of the line vortices. This is used to get rid of any
     # singularities.
@@ -737,7 +739,7 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     strengths,
     collapse=True,
 ):
-    """ This function takes in a group of points, and the attributes of a group of
+    """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point,
     it finds the induced velocity due to every horseshoe vortex, which are
     characterized by groups of back right
@@ -839,7 +841,7 @@ def calculate_velocity_induced_by_ring_vortices(
     strengths,
     collapse=True,
 ):
-    """ This function takes in a group of points, and the attributes of a group of
+    """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it
     finds the induced velocity due to every ring vortex, which are characterized by
     groups of back right vertices, front
@@ -939,3 +941,27 @@ def calculate_velocity_induced_by_ring_vortices(
 
     # Return the induced velocity.
     return induced_velocities
+
+
+# ToDo: Document this function.
+@njit
+def nb_explicit_norm(vectors):
+    return np.sqrt((vectors[:, 0]) ** 2 + (vectors[:, 1]) ** 2 + (vectors[:, 2]) ** 2)
+
+
+# ToDo: Document this function.
+@njit
+def nb_2d_explicit_norm(vectors):
+    return np.sqrt(
+        (vectors[:, :, 0]) ** 2 + (vectors[:, :, 1]) ** 2 + (vectors[:, :, 2]) ** 2
+    )
+
+
+# ToDo: Document this function.
+@njit
+def nb_2d_explicit_cross(a, b):
+    e = np.zeros_like(a)
+    e[:, :, 0] = a[:, :, 1] * b[:, :, 2] - a[:, :, 2] * b[:, :, 1]
+    e[:, :, 1] = a[:, :, 2] * b[:, :, 0] - a[:, :, 0] * b[:, :, 2]
+    e[:, :, 2] = a[:, :, 0] * b[:, :, 1] - a[:, :, 1] * b[:, :, 0]
+    return e

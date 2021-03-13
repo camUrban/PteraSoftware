@@ -1482,9 +1482,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-        # Create a copy of the current airplane.
-        current_airplane_copy = copy.deepcopy(self.current_airplane)
-
         # Check if the current step is not the last step.
         if self.current_step < self.num_steps - 1:
 
@@ -1492,11 +1489,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             next_airplane = self.steady_problems[self.current_step + 1].airplane
 
             # Iterate through the copy of the current airplane's wing positions.
-            for wing_num in range(len(current_airplane_copy.wings)):
+            # for wing_num in range(len(current_airplane_copy.wings)):
+            for wing_num in range(len(self.current_airplane.wings)):
 
-                # Get the current airplane copy's wing, and the next airplane's wing
-                # at this location.
-                this_wing_copy = current_airplane_copy.wings[wing_num]
+                this_wing = self.current_airplane.wings[wing_num]
                 next_wing = next_airplane.wings[wing_num]
 
                 # Get the next wing's matrix of wake ring vortex vertices.
@@ -1504,8 +1500,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_wing.wake_ring_vortex_vertices
                 )
 
-                # Get the wake ring vortices from the this wing copy object.
-                this_wing_wake_ring_vortices_copy = this_wing_copy.wake_ring_vortices
+                # # Get the wake ring vortices from the this wing copy object.
+                this_wing_wake_ring_vortices_copy = copy.deepcopy(
+                    self.current_airplane.wings[wing_num].wake_ring_vortices
+                )
 
                 # Find the number of chordwise and spanwise vertices in the next
                 # wing's matrix of wake ring vortex
@@ -1574,8 +1572,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # If this is the front of the wake, get the vortex
                                 # strength from the wing panel's ring
                                 # vortex direction in front of it.
-                                this_strength_copy = this_wing_copy.panels[
-                                    this_wing_copy.num_chordwise_panels - 1,
+                                this_strength_copy = this_wing.panels[
+                                    this_wing.num_chordwise_panels - 1,
                                     spanwise_vertex_position,
                                 ].ring_vortex.strength
 

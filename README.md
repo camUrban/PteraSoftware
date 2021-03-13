@@ -32,9 +32,9 @@ With your help, I hope we will increase the open-source community's interest and
 
 ## How to Install
 
-First things first, you will need a copy of Python 3.7.6 or 3.7.7. Download it from the official Python website. At this
-time, I do not recommend using a version from the Anaconda distribution as it could introduce compatibility issues with
-PyPI.
+First things first, you will need a copy of Python 3.7 or 3.8. Python 3.9 is not yet supported due to a dependency issue
+in VTK. Download Python 3.7 or 3.8 from the official Python website. At this time, I do not recommend using a version
+from the Anaconda distribution as it could introduce compatibility issues with PyPI.
 
 There are a few ways to install Ptera Software. If you wish to use this package as a dependency in your own projects,
 simply run:

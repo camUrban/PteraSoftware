@@ -12,7 +12,7 @@ from tests.integration.fixtures import solver_fixtures
 class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
     unittest.TestCase
 ):
-    """ This is a class for testing the unsteady ring vortex lattice method solver on
+    """This is a class for testing the unsteady ring vortex lattice method solver on
     multi-wing, variable geometry.
 
     This class contains the following public methods:
@@ -28,7 +28,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
     """
 
     def setUp(self):
-        """ This method sets up the test.
+        """This method sets up the test.
 
         :return: None
         """
@@ -39,7 +39,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
         )
 
     def tearDown(self):
-        """ This method tears down the test.
+        """This method tears down the test.
 
         :return: None
         """
@@ -48,14 +48,15 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
 
     # ToDo: Properly document this method.
     def test_method(self):
-        """ This method tests the solver's output.
+        """This method tests the solver's output.
 
         :return: None
         """
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            verbose=True, prescribed_wake=True,
+            verbose=True,
+            prescribed_wake=True,
         )
 
         import pterasoftware as ps
@@ -64,4 +65,5 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_wake_vortices=True,
+            keep_file=False,
         )

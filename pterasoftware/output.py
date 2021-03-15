@@ -14,6 +14,8 @@ This module contains the following functions:
                               and coefficients as a function of time.
 """
 
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -205,7 +207,10 @@ def draw(
 
                     # Add a line to make this segment of the streamline.
                     plotter.add_mesh(
-                        pv.Line(last_point, point,),
+                        pv.Line(
+                            last_point,
+                            point,
+                        ),
                         show_edges=True,
                         color="#EEEEEF",
                         line_width=2,
@@ -216,7 +221,12 @@ def draw(
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
-def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=False):
+def animate(
+    unsteady_solver,
+    show_delta_pressures=False,
+    show_wake_vortices=False,
+    keep_file=True,
+):
     """Create an animation of a solver's geometry.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
@@ -227,6 +237,9 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is false.
+    :param keep_file: bool, optional
+        Set this variable to false in order to not save the resulting GIF. The
+        default value is true.
     :return: None
     """
 
@@ -486,9 +499,13 @@ def animate(unsteady_solver, show_delta_pressures=False, show_wake_vortices=Fals
     # Close the animation and delete the plotter.
     plotter.close()
 
+    # Delete the file if requested.
+    if not keep_file:
+        os.remove("animation.gif")
+
 
 def plot_results_versus_time(unsteady_solver, testing=False):
-    """ This method takes in an unsteady solver object, and plots the geometries'
+    """This method takes in an unsteady solver object, and plots the geometries'
     forces, moments, and coefficients as a
     function of time.
 

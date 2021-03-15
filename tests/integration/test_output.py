@@ -19,7 +19,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestOutput(unittest.TestCase):
-    """ This is a class with functions to test the output module.
+    """This is a class with functions to test the output module.
 
     This class contains the following public methods:
         setUp: This method is automatically called before each testing method to set
@@ -41,7 +41,7 @@ class TestOutput(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method is automatically called before each testing method to set up
+        """This method is automatically called before each testing method to set up
         the fixtures.
 
         :return: None
@@ -53,7 +53,7 @@ class TestOutput(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method is automatically called before each testing method to tear
+        """This method is automatically called before each testing method to tear
         down the fixtures.
 
         :return: None
@@ -63,7 +63,7 @@ class TestOutput(unittest.TestCase):
         del self.unsteady_solver
 
     def test_plot_results_versus_time(self):
-        """ This method tests the plot_results_versus_time method.
+        """This method tests the plot_results_versus_time method.
 
         :return: None
         """
@@ -85,7 +85,7 @@ class TestOutput(unittest.TestCase):
         self.assertEqual(num_figs_before + 4, num_figs_after)
 
     def test_animate_does_not_throw(self):
-        """ This method tests that the animate method does not throw any errors.
+        """This method tests that the animate method does not throw any errors.
 
         :return: None
         """
@@ -95,10 +95,11 @@ class TestOutput(unittest.TestCase):
             unsteady_solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
+            keep_file=False,
         )
 
     def test_draw_does_not_throw(self):
-        """ This method tests that the draw method does not throw any errors.
+        """This method tests that the draw method does not throw any errors.
 
         :return: None
         """

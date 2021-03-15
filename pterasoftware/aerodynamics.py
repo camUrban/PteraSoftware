@@ -158,8 +158,8 @@ class LineVortex:
         )
 
         # Calculate the vector lengths.
-        r_1_length = nb_explicit_norm(r_1)
-        r_2_length = nb_explicit_norm(r_2)
+        r_1_length = np.linalg.norm(r_1)
+        r_2_length = np.linalg.norm(r_2)
 
         # Check for singularities.
         line_vortex_radius = 3.0e-16
@@ -941,12 +941,6 @@ def calculate_velocity_induced_by_ring_vortices(
 
     # Return the induced velocity.
     return induced_velocities
-
-
-# ToDo: Document this function.
-@njit
-def nb_explicit_norm(vectors):
-    return np.sqrt((vectors[:, 0]) ** 2 + (vectors[:, 1]) ** 2 + (vectors[:, 2]) ** 2)
 
 
 # ToDo: Document this function.

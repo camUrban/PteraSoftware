@@ -492,6 +492,8 @@ ps.output.animate(  # Set the unsteady solver to the one we just ran.
     show_delta_pressures=True,
     # Tell the animate function to show the wake vortices. This value defaults to false.
     show_wake_vortices=True,
+    # Set this value to True in order to save the GIF file.
+    keep_file=False,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the

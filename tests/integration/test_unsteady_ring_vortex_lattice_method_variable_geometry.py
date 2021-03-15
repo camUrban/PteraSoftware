@@ -22,7 +22,7 @@ from tests.integration.fixtures import solver_fixtures
 
 # ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
-    """ This is a class for testing the unsteady ring vortex lattice method solver on
+    """This is a class for testing the unsteady ring vortex lattice method solver on
     variable geometry.
 
     This class contains the following public methods:
@@ -39,7 +39,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method sets up the test.
+        """This method sets up the test.
 
         :return: None
         """
@@ -50,7 +50,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method tears down the test.
+        """This method tears down the test.
 
         :return: None
         """
@@ -59,7 +59,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
     # ToDo: Properly document this method.
     def test_method_does_not_throw(self):
-        """ This method tests that the solver does not throw any errors.
+        """This method tests that the solver does not throw any errors.
 
         :return: None
         """
@@ -67,13 +67,15 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         # Run the unsteady solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            verbose=True, prescribed_wake=True,
+            verbose=True,
+            prescribed_wake=True,
         )
 
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_wake_vortices=True,
+            keep_file=False,
         )
 
         ps.output.plot_results_versus_time(

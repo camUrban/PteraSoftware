@@ -20,7 +20,7 @@ import pterasoftware as ps
 
 
 class LegacySteadyRingVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses a steady ring vortex lattice method.
+    """This is an aerodynamics solver that uses a steady ring vortex lattice method.
     It has not been vectorized for
     speed.
 
@@ -58,7 +58,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
     """
 
     def __init__(self, steady_problem):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param steady_problem: SteadyProblem
             This is the steady problem to be solved.
@@ -81,7 +81,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         self.streamline_points = None
 
     def run(self, verbose=True):
-        """ Run the solver on the steady problem.
+        """Run the solver on the steady problem.
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console.
@@ -201,7 +201,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
             )
 
     def initialize_panel_vortices(self):
-        """ This method calculates the locations of the vortex vertices, and then
+        """This method calculates the locations of the vortex vertices, and then
         initializes the panels' vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg
@@ -292,7 +292,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                     )
 
     def calculate_wing_wing_influences(self):
-        """ This method finds the matrix of wing-wing influence coefficients
+        """This method finds the matrix of wing-wing influence coefficients
         associated with this current_airplane's
         geometry.
 
@@ -328,8 +328,10 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         # Calculate the velocity induced at this collocation point by
                         # this vortex if the vortex's
                         # strength was 1.
-                        normalized_induced_velocity_at_collocation_point = vortex_panel.calculate_normalized_induced_velocity(
-                            collocation_panel.collocation_point
+                        normalized_induced_velocity_at_collocation_point = (
+                            vortex_panel.calculate_normalized_induced_velocity(
+                                collocation_panel.collocation_point
+                            )
                         )
 
                         # Find the normal direction of the panel with the collocation
@@ -341,9 +343,11 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                         # Calculate the normal component of the velocity induced at
                         # this collocation point by this
                         # vortex if the vortex's strength was 1.
-                        normal_normalized_induced_velocity_at_collocation_point = np.dot(
-                            normalized_induced_velocity_at_collocation_point,
-                            collocation_panel_normal_direction,
+                        normal_normalized_induced_velocity_at_collocation_point = (
+                            np.dot(
+                                normalized_induced_velocity_at_collocation_point,
+                                collocation_panel_normal_direction,
+                            )
                         )
 
                         # Add this value to the solver's aerodynamic influence
@@ -367,7 +371,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                 global_vortex_panel_index = 0
 
     def calculate_freestream_wing_influences(self):
-        """ This method finds the vector of freestream-wing influence coefficients
+        """This method finds the vector of freestream-wing influence coefficients
         associated with this problem.
 
         :return: None
@@ -398,7 +402,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                 global_collocation_panel_index += 1
 
     def calculate_vortex_strengths(self):
-        """ This method solves for each panel's vortex strength.
+        """This method solves for each panel's vortex strength.
 
         :return: None
         """
@@ -437,7 +441,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                 global_panel_index += 1
 
     def calculate_solution_velocity(self, point):
-        """ This method finds the velocity at a given point due to both the
+        """This method finds the velocity at a given point due to both the
         freestream and the vortices.
 
         Note: The velocity calculated by this method is in geometry axes.
@@ -473,7 +477,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         return velocity_induced_by_vortices + self.freestream_velocity
 
     def calculate_near_field_forces_and_moments(self):
-        """ This method finds the the forces and moments calculated from the near field.
+        """This method finds the the forces and moments calculated from the near field.
 
         Citation:
             This method uses logic described on pages 9-11 of "Modeling of
@@ -571,8 +575,10 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                     # right line vortex is not zero.
                     if effective_right_vortex_line_strength != 0:
                         # Find the velocity at the center of the right line vortex.
-                        velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.right_leg.center
+                        velocity_at_right_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.right_leg.center
+                            )
                         )
 
                         # Find the force on the right line vortex using the
@@ -601,8 +607,10 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                     # front line vortex is not zero.
                     if effective_front_vortex_line_strength != 0:
                         # Find the velocity at the center of the front line vortex.
-                        velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.front_leg.center
+                        velocity_at_front_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.front_leg.center
+                            )
                         )
 
                         # Find the force on the front line vortex using the
@@ -631,8 +639,10 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                     # left line vortex is not zero.
                     if effective_left_bound_vortex_strength != 0:
                         # Find the velocity at the center of the left line vortex.
-                        velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.left_leg.center
+                        velocity_at_left_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.left_leg.center
+                            )
                         )
 
                         # Find the force on the left line vortex using the
@@ -747,7 +757,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         )
 
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):
-        """ This method calculates the location of the streamlines coming off the
+        """This method calculates the location of the streamlines coming off the
         back of the wings.
 
         :param num_steps: int, optional
@@ -803,9 +813,10 @@ class LegacySteadyRingVortexLatticeMethodSolver:
 
                     # Calculate the location of the new point, and add it to the
                     # array of streamline points.
-                    wing.streamline_points[step + 1, spanwise_position, :] = (
+                    wing.streamline_points[
+                        step + 1, spanwise_position, :
+                    ] = last_point + delta_time * self.calculate_solution_velocity(
                         last_point
-                        + delta_time * self.calculate_solution_velocity(last_point)
                     )
 
             # Stack the current wing's streamline point matrix on to the solver's

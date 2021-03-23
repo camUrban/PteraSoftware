@@ -103,7 +103,17 @@ class OperatingPoint:
         # Flip the axes because in geometry axes x is downstream by convention,
         # while in wind axes x is upstream by
         # convention. Same with z being up/down respectively.
-        axes_flip = np.array([[-1, 0, 0], [0, 1, 0,], [0, 0, -1]])
+        axes_flip = np.array(
+            [
+                [-1, 0, 0],
+                [
+                    0,
+                    1,
+                    0,
+                ],
+                [0, 0, -1],
+            ]
+        )
 
         # Calculate and return the rotation matrix to convert wind axes to geometry
         # axes.

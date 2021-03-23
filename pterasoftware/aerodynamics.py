@@ -38,10 +38,9 @@ This module contains the following functions:
 """
 
 import numpy as np
-
 import pterasoftware as ps
 
-from numba import njit
+from numba import njit, prange
 
 
 class LineVortex:
@@ -601,7 +600,7 @@ class RingVortex:
         )
 
 
-def calculate_velocity_induced_by_line_vortices(
+def old_calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
     """This function takes in a group of points, origins, terminations and
@@ -659,13 +658,16 @@ def calculate_velocity_induced_by_line_vortices(
     # Expand the dimensionality of the points input. It is now of shape (N x 1 x 3).
     # This will allow numpy to
     # broadcast the upcoming subtractions.
-    points = np.expand_dims(points, axis=1)
+    # points = np.expand_dims(points, axis=1)
 
     # Define the vectors from the vortex to the points. r_1 and r_2 now both are of
     # shape (N x M x 3). Each row/column
     # pair holds the vector associated with each point/vortex pair.
-    r_1 = points - origins
-    r_2 = points - terminations
+    # r_1 = points - origins
+    # r_2 = points - terminations
+
+    r_1 = nb_subtract(points, origins)
+    r_2 = nb_subtract(points, terminations)
 
     # Define the vector from the vortex origins to the vortex terminations. This is
     # of shape (N x M x 3).
@@ -899,6 +901,25 @@ def calculate_velocity_induced_by_ring_vortices(
         on one point by one of the ring vortices. Either way, the results units are
         meters per second.
     """
+    # num_points = points.shape[0]
+    # num_rings = back_right_vortex_vertices.shape[0]
+    #
+    # if collapse:
+    #     right_leg_velocities = np.empty((num_points, 3))
+    #     front_leg_velocities = np.empty((num_points, 3))
+    #     left_leg_velocities = np.empty((num_points, 3))
+    #     back_leg_velocities = np.empty((num_points, 3))
+    # else:
+    #     right_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     front_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     left_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     back_leg_velocities = np.empty((num_points, num_rings, 3))
+    #
+    # leg_velocities = [right_leg_velocities, front_leg_velocities,
+    #                   left_leg_velocities, back_leg_velocities]
+    #
+    # with multiprocessing.Pool() as pool:
+    #     pool.map()
 
     # Get the velocity induced by each leg of the ring vortex.
     right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
@@ -945,7 +966,7 @@ def calculate_velocity_induced_by_ring_vortices(
 
 # ToDo: Document this function.
 @njit
-def nb_2d_explicit_norm(vectors):
+def old_nb_2d_explicit_norm(vectors):
     return np.sqrt(
         (vectors[:, :, 0]) ** 2 + (vectors[:, :, 1]) ** 2 + (vectors[:, :, 2]) ** 2
     )
@@ -953,9 +974,159 @@ def nb_2d_explicit_norm(vectors):
 
 # ToDo: Document this function.
 @njit
-def nb_2d_explicit_cross(a, b):
+def old_nb_2d_explicit_cross(a, b):
     e = np.zeros_like(a)
     e[:, :, 0] = a[:, :, 1] * b[:, :, 2] - a[:, :, 2] * b[:, :, 1]
     e[:, :, 1] = a[:, :, 2] * b[:, :, 0] - a[:, :, 0] * b[:, :, 2]
     e[:, :, 2] = a[:, :, 0] * b[:, :, 1] - a[:, :, 1] * b[:, :, 0]
     return e
+
+
+@njit
+def nb_subtract(a, b):
+    c = np.empty((a.shape[0], b.shape[0], 3))
+
+    for i in range(a.shape[0]):
+        for j in range(b.shape[0]):
+            for k in range(3):
+                c[i, j, k] = a[i, k] - b[j, k]
+
+    return c
+
+
+########################################################################################
+@njit(parallel=True)
+def subtract(a, b):
+    c = np.empty((a.shape[0], b.shape[0], 3))
+    for i in prange(c.shape[0]):
+        for j in range(c.shape[1]):
+            for k in range(3):
+                c[i, j, k] = a[i, k] - b[j, k]
+    return c
+
+
+@njit(parallel=True)
+def nb_2d_explicit_norm(vectors):
+    res = np.empty((vectors.shape[0], vectors.shape[1]))
+    for i in prange(res.shape[0]):
+        for j in range(res.shape[1]):
+            res[i, j] = np.sqrt(
+                vectors[i, j, 0] ** 2 + vectors[i, j, 1] ** 2 + vectors[i, j, 2] ** 2
+            )
+    return res
+
+
+# NOTE: better memory access pattern
+@njit(parallel=True)
+def nb_2d_explicit_cross(a, b):
+    e = np.empty(a.shape)
+    for i in prange(e.shape[0]):
+        for j in range(e.shape[1]):
+            e[i, j, 0] = a[i, j, 1] * b[i, j, 2] - a[i, j, 2] * b[i, j, 1]
+            e[i, j, 1] = a[i, j, 2] * b[i, j, 0] - a[i, j, 0] * b[i, j, 2]
+            e[i, j, 2] = a[i, j, 0] * b[i, j, 1] - a[i, j, 1] * b[i, j, 0]
+    return e
+
+
+# NOTE: avoid the slow building of temporary arrays
+@njit(parallel=True)
+def cross_absolute_magnitude(cross):
+    return cross[:, :, 0] ** 2 + cross[:, :, 1] ** 2 + cross[:, :, 2] ** 2
+
+
+# NOTE: avoid the slow building of temporary arrays again and multiple pass in memory
+# Warning: do the work in-place
+@njit(parallel=True)
+def discard_singularities(arr):
+    for i in prange(arr.shape[0]):
+        for j in range(arr.shape[1]):
+            for k in range(3):
+                if np.isinf(arr[i, j, k]) or np.isnan(arr[i, j, k]):
+                    arr[i, j, k] = 0.0
+
+
+@njit(parallel=True)
+def compute_k(
+    strengths,
+    r_1_cross_r_2_absolute_magnitude,
+    r_0_dot_r_1,
+    r_1_length,
+    r_0_dot_r_2,
+    r_2_length,
+):
+    return (
+        strengths
+        / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
+        * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
+    )
+
+
+@njit(parallel=True)
+def r_dot_products(b, c):
+    assert b.shape == c.shape and b.shape[2] == 3
+    n, m = b.shape[0], b.shape[1]
+    ab = np.empty((n, m))
+    ac = np.empty((n, m))
+    for i in prange(n):
+        for j in range(m):
+            ab[i, j] = 0.0
+            ac[i, j] = 0.0
+            for k in range(3):
+                a = b[i, j, k] - c[i, j, k]
+                ab[i, j] += a * b[i, j, k]
+                ac[i, j] += a * c[i, j, k]
+    return ab, ac
+
+
+# Compute `np.sum(arr, axis=1)` in parallel.
+@njit(parallel=True)
+def collapse_arr(arr):
+    assert arr.shape[2] == 3
+    n, m = arr.shape[0], arr.shape[1]
+    res = np.empty((n, 3))
+    for i in prange(n):
+        res[i, 0] = np.sum(arr[i, :, 0])
+        res[i, 1] = np.sum(arr[i, :, 1])
+        res[i, 2] = np.sum(arr[i, :, 2])
+    return res
+
+
+def calculate_velocity_induced_by_line_vortices(
+    points, origins, terminations, strengths, collapse=True
+):
+    r_1 = subtract(points, origins)
+    r_2 = subtract(points, terminations)
+    # NOTE: r_0 is computed on the fly by rDotProducts
+
+    r_1_cross_r_2 = nb_2d_explicit_cross(r_1, r_2)
+
+    r_1_cross_r_2_absolute_magnitude = cross_absolute_magnitude(r_1_cross_r_2)
+
+    r_1_length = nb_2d_explicit_norm(r_1)
+    r_2_length = nb_2d_explicit_norm(r_2)
+
+    radius = 3.0e-16
+    r_1_length[r_1_length < radius] = 0
+    r_2_length[r_2_length < radius] = 0
+    r_1_cross_r_2_absolute_magnitude[r_1_cross_r_2_absolute_magnitude < radius] = 0
+
+    r_0_dot_r_1, r_0_dot_r_2 = r_dot_products(r_1, r_2)
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        k = compute_k(
+            strengths,
+            r_1_cross_r_2_absolute_magnitude,
+            r_0_dot_r_1,
+            r_1_length,
+            r_0_dot_r_2,
+            r_2_length,
+        )
+        k = np.expand_dims(k, axis=2)
+        induced_velocities = k * r_1_cross_r_2
+
+    discard_singularities(induced_velocities)
+
+    if collapse:
+        induced_velocities = collapse_arr(induced_velocities)
+
+    return induced_velocities

@@ -28,66 +28,42 @@ class UnsteadyRingVortexLatticeMethodSolver:
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
         initialize_panel_vortices: This method calculates the locations of an
-        airplane's bound vortex vertices, and then
-                                   initializes its panels' bound vortices.
+        airplane's bound vortex vertices, and then initializes its panels' bound
+        vortices.
         collapse_geometry: This method converts attributes of the problem's geometry
-        into 1D ndarrays. This facilitates
-                           vectorization, which speeds up the solver.
+        into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with
-                                        this airplane's geometry.
+        influence coefficients associated with this airplane's geometry.
         calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influences associated with
-                                              the problem at this time step.
+        freestream-wing influences associated with the problem at this time step.
         calculate_wake_wing_influences: This method finds the vector of the wake-wing
-        influences associated with the
-                                        problem at this time step.
+        influences associated with the problem at this time step.
         calculate_vortex_strengths: This method solves for each panel's vortex strength.
         calculate_solution_velocity: This function takes in a group of points. At
-        every point, it finds the induced
-                                     velocity due to every vortex and the freestream
-                                     velocity.
+        every point, it finds the induced velocity due to every vortex and the
+        freestream velocity.
         calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near
-                                                 field.
+        moments calculated from the near field.
         calculate_streamlines: This method calculates the location of the streamlines
         coming off the back of the wings.
         populate_next_airplanes_wake: This method updates the next time step's
         airplane's wake.
         populate_next_airplanes_wake_vortex_vertices: This method populates the
-        locations of the next airplane's wake
-                                                      vortex vertices.
+        locations of the next airplane's wake vortex vertices.
         populate_next_airplanes_wake_vortices: This method populates the locations of
         the next airplane's wake vortices.
         calculate_current_flapping_velocities_at_collocation_points: This method gets
-        the velocity due to flapping at
-                                                                     all of the
-                                                                     current
-                                                                     airplane's
-                                                                     collocation points.
+        the velocity due to flapping at all of the current airplane's collocation
+        points.
         calculate_current_flapping_velocities_at_right_leg_centers: This method gets
-        the velocity due to flapping at the
-                                                                    centers of the
-                                                                    current
-                                                                    airplane's bound
-                                                                    ring
-                                                                    vortices' right
-                                                                    legs.
+        the velocity due to flapping at the centers of the current airplane's bound
+        ring vortices' right legs.
         calculate_current_flapping_velocities_at_front_leg_centers: This method gets
-        the velocity due to flapping at the
-                                                                    centers of the
-                                                                    current
-                                                                    airplane's bound
-                                                                    ring
-                                                                    vortices' front
-                                                                    legs.
+        the velocity due to flapping at the centers of the current airplane's bound
+        ring vortices' front legs.
         calculate_current_flapping_velocities_at_left_leg_centers: This method gets
-        the velocity due to flapping at the
-                                                                   centers of the
-                                                                   current airplane's
-                                                                   bound ring
-                                                                   vortices' left legs.
-
+        the velocity due to flapping at the centers of the current airplane's bound ring
+        vortices' left legs.
 
     This class contains the following class attributes:
         None
@@ -185,14 +161,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
             opens a visualization. Its default value is True.
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
-            false it will use a free-wake,
-            which may be more accurate but will make the solver significantly slower.
-            The default is True.
+            false it will use a free-wake, which may be more accurate but will make
+            the solver significantly slower. The default is True.
         :param calculate_streamlines: Bool, optional
             This parameter determines if the solver uses calculates streamlines
-            emanating from the back of the wing after running the solver.
-            prescribed wake model. Setting this to False is recommended to increase
-            performance, but the default value is True for back-compatibility.
+            emanating from the back of the wing after running the solver.prescribed
+            wake model. Setting this to False is recommended to increase performance,
+            but the default value is True for back-compatibility.
         :return: None
         """
 
@@ -397,7 +372,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 print("\nCalculating streamlines.")
             self.calculate_streamlines()
 
-    # ToDo: Vectorize this method.
+    # ToDo: Vectorize this method fifth+.
     def initialize_panel_vortices(self):
         """This method calculates the locations every problem's airplane's bound
         vortex vertices, and then initializes
@@ -487,7 +462,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             strength=None,
                         )
 
-    # ToDo: Vectorize this method.
+    # ToDo: Vectorize this method fifth+.
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
         ndarrays. This facilitates vectorization,
@@ -670,7 +645,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     # Increment the global panel position.
                     global_panel_position += 1
 
-    # ToDo: Vectorize this method.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influence coefficients
         associated with this airplane's geometry.
@@ -702,7 +676,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             np.expand_dims(self.panel_normal_directions, axis=1),
         )
 
-    # ToDo: Vectorize this method.
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influence coefficients
         associated with this problem.
@@ -785,7 +758,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_airplane.num_panels
             )
 
-    # ToDo: Vectorize this method.
     def calculate_vortex_strengths(self):
         """This method solves for each panel's vortex strength.
 
@@ -807,7 +779,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Update this panel's ring vortex strength.
             panel.ring_vortex.update_strength(self.current_vortex_strengths[panel_num])
 
-    # ToDo: Vectorize this method.
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
         induced velocity due to every vortex
@@ -879,19 +850,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         return solution_velocities
 
-    # ToDo: Vectorize this method.
     def calculate_near_field_forces_and_moments(self):
         """This method finds the the forces and moments calculated from the near field.
 
         Citation:
             This method uses logic described on pages 9-11 of "Modeling of
-            aerodynamic forces in flapping flight with
-            the Unsteady Vortex Lattice Method" by Thomas Lambert.
+            aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
+            Method" by Thomas Lambert.
 
         Note: The forces and moments calculated are in geometry axes. The moment is
-        about the airplane's reference
-                point, which should be at the center of gravity. The units are
-                Newtons and Newton-meters.
+        about the airplane's reference point, which should be at the center of
+        gravity. The units are Newtons and Newton-meters.
 
         :return: None
         """
@@ -1199,7 +1168,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ]
         )
 
-    # ToDo: Vectorize this method.
+        # ToDo: Vectorize this method first.
+
+    # ToDo: Vectorize this method fifth+.
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):
         """Calculates the location of the streamlines coming off the back of the wings.
 
@@ -1243,7 +1214,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 )
             )
 
-    # ToDo: Vectorize this method.
     def populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplane's wake.
 
@@ -1264,7 +1234,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next airplane's wake vortices.
         self.populate_next_airplanes_wake_vortices()
 
-    # ToDo: Vectorize this method.
+    # ToDo: Vectorize this method fifth+.
     def populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
         """This method populates the locations of the next airplane's wake vortex
         vertices.
@@ -1499,7 +1469,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
                     )
 
-    # ToDo: Vectorize this method.
+    # ToDo: Vectorize this method fourth.
     def populate_next_airplanes_wake_vortices(self):
         """This method populates the locations of the next airplane's wake vortices.
 

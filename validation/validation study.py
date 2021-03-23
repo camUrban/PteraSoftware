@@ -108,19 +108,25 @@ for spanwise_loc in range(num_spanwise_sections):
     # Interpolate between the leading edge coordinates to find the x-coordinate of
     # the front left vertex.
     front_left_vertices[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step, leading_coords[:, 1], leading_coords[:, 0],
+        spanwise_loc * spanwise_step,
+        leading_coords[:, 1],
+        leading_coords[:, 0],
     )
 
     # Interpolate between the trailing edge coordinates to find the x-coordinate of
     # the back left vertex.
     back_left_vertices[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step, trailing_coords[:, 1], trailing_coords[:, 0],
+        spanwise_loc * spanwise_step,
+        trailing_coords[:, 1],
+        trailing_coords[:, 0],
     )
 
     # Interpolate between the leading edge coordinates to find the x-coordinate of
     # the front right vertex.
     front_right_vertices[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step, leading_coords[:, 1], leading_coords[:, 0],
+        (spanwise_loc + 1) * spanwise_step,
+        leading_coords[:, 1],
+        leading_coords[:, 0],
     )
 
     # Interpolate between the trailing edge coordinates to find the x-coordinate of
@@ -157,7 +163,9 @@ for i in range(num_spanwise_sections):
         x_le=this_x_le,
         y_le=this_y_le,
         chord=this_chord,
-        airfoil=ps.geometry.Airfoil(name="naca0000",),
+        airfoil=ps.geometry.Airfoil(
+            name="naca0000",
+        ),
         num_spanwise_panels=1,
     )
 
@@ -185,7 +193,9 @@ for i in range(num_spanwise_sections):
             x_le=this_x_le,
             y_le=this_y_le,
             chord=this_chord,
-            airfoil=ps.geometry.Airfoil(name="naca0000",),
+            airfoil=ps.geometry.Airfoil(
+                name="naca0000",
+            ),
             num_spanwise_panels=1,
         )
 
@@ -223,7 +233,7 @@ del first_wing_cross_section_movement
 
 
 def validation_geometry_sweep_function(time):
-    """ This function takes in the time during a flap cycle and returns the flap
+    """This function takes in the time during a flap cycle and returns the flap
     angle in degrees. It uses the flapping frequency defined in the encompassing
     script, and is based on a fourth-order Fourier series. The coefficients were
     calculated by the authors of Yeo et al., 2011.
@@ -264,7 +274,7 @@ def validation_geometry_sweep_function(time):
 
 
 def normalized_validation_geometry_sweep_function_rad(time):
-    """ This function takes in the time during a flap cycle and returns the flap
+    """This function takes in the time during a flap cycle and returns the flap
     angle in radians. It uses a normalized flapping frequency of 1 Hertz,
     and is based on a fourth-order Fourier series. The coefficients were calculated
     by the authors of Yeo et al., 2011.
@@ -332,7 +342,10 @@ del validation_wing_cross_section_movements
 
 # Define the airplane movement that contains the wing movement.
 validation_airplane_movement = ps.movement.AirplaneMovement(
-    base_airplane=validation_airplane, wing_movements=[validation_main_wing_movement,],
+    base_airplane=validation_airplane,
+    wing_movements=[
+        validation_main_wing_movement,
+    ],
 )
 
 # Delete the extraneous pointers.
@@ -341,7 +354,8 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    alpha=validation_alpha, velocity=validation_velocity,
+    alpha=validation_alpha,
+    velocity=validation_velocity,
 )
 
 # Define an operating point movement that contains the operating point.
@@ -382,14 +396,18 @@ del validation_airplane_movement
 del validation_operating_point_movement
 
 # Define the validation problem.
-validation_problem = ps.problems.UnsteadyProblem(movement=validation_movement,)
+validation_problem = ps.problems.UnsteadyProblem(
+    movement=validation_movement,
+)
 
 # Delete the extraneous pointer.
 del validation_movement
 
 # Define the validation solver.
-validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-    unsteady_problem=validation_problem,
+validation_solver = (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=validation_problem,
+    )
 )
 
 # Delete the extraneous pointer.
@@ -657,9 +675,15 @@ lift_axes.plot(
 )
 
 # Label the axis, add a title, and add a legend.
-lift_axes.set_xlabel("Normalized Flap Cycle Time",)
-lift_axes.set_ylabel("Lift (N)",)
-lift_axes.set_title("Simulated and Experimental Lift Versus Time",)
+lift_axes.set_xlabel(
+    "Normalized Flap Cycle Time",
+)
+lift_axes.set_ylabel(
+    "Lift (N)",
+)
+lift_axes.set_title(
+    "Simulated and Experimental Lift Versus Time",
+)
 lift_axes.legend()
 
 # Show the figure.

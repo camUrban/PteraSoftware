@@ -27,7 +27,7 @@ from tests.integration.fixtures import operating_point_fixtures
 
 
 def make_static_validation_movement():
-    """ This function creates a movement with static geometry to be used as a fixture.
+    """This function creates a movement with static geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement
         This is a movement object with static geometry to be used as a fixture.
@@ -43,18 +43,22 @@ def make_static_validation_movement():
 
     # Create a wing cross section movement object associated with this airplane's
     # root wing cross section.
-    unsteady_validation_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[0]
+    unsteady_validation_root_wing_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's tip
     # wing cross section.
-    unsteady_validation_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[1],
+    unsteady_validation_tip_wing_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing movement object associated with this airplane's wing.
@@ -105,7 +109,7 @@ def make_static_validation_movement():
 
 
 def make_variable_validation_movement():
-    """ This function creates a movement with variable geometry to be used as a fixture.
+    """This function creates a movement with variable geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement
         This is a movement object with variable geometry to be used as a fixture.
@@ -121,27 +125,31 @@ def make_variable_validation_movement():
 
     # Create a wing cross section movement object associated with this airplane's
     # root wing cross section.
-    unsteady_validation_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[0],
+    unsteady_validation_root_wing_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[0],
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's tip
     # wing cross section.
-    unsteady_validation_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[1],
-        sweeping_amplitude=30.0,
-        sweeping_period=1.0,
-        sweeping_spacing="sine",
-        pitching_amplitude=30.0,
-        pitching_period=0.5,
-        pitching_spacing="sine",
-        heaving_amplitude=30.0,
-        heaving_period=0.5,
-        heaving_spacing="sine",
+    unsteady_validation_tip_wing_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[1],
+            sweeping_amplitude=30.0,
+            sweeping_period=1.0,
+            sweeping_spacing="sine",
+            pitching_amplitude=30.0,
+            pitching_period=0.5,
+            pitching_spacing="sine",
+            heaving_amplitude=30.0,
+            heaving_period=0.5,
+            heaving_spacing="sine",
+        )
     )
 
     # Create a wing movement object associated with this airplane's wing.
@@ -160,7 +168,9 @@ def make_variable_validation_movement():
     # Create an airplane movement object associated with this airplane.
     unsteady_validation_airplane_movement = ps.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
-        wing_movements=[unsteady_validation_wing_movement,],
+        wing_movements=[
+            unsteady_validation_wing_movement,
+        ],
     )
 
     # Delete the now extraneous constructing fixtures.
@@ -190,7 +200,7 @@ def make_variable_validation_movement():
 
 
 def make_multiple_wing_static_validation_movement():
-    """ This function creates a movement object with static, multi-wing geometry to
+    """This function creates a movement object with static, multi-wing geometry to
     be used as a fixture.
 
     :return unsteady_validation_movement: Movement
@@ -207,50 +217,62 @@ def make_multiple_wing_static_validation_movement():
 
     # Create a wing cross section movement object associated with this airplane's
     # main wing's root wing cross section.
-    unsteady_validation_main_wing_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[0]
+    unsteady_validation_main_wing_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # main wing's tip wing cross section.
-    unsteady_validation_main_wing_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[1],
+    unsteady_validation_main_wing_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's root wing cross section.
-    unsteady_validation_hstab_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[0]
+    unsteady_validation_hstab_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                1
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's tip wing cross section.
-    unsteady_validation_hstab_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[1],
+    unsteady_validation_hstab_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                1
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's root wing cross section.
-    unsteady_validation_vstab_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            2
-        ].wing_cross_sections[0]
+    unsteady_validation_vstab_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                2
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's tip wing cross section.
-    unsteady_validation_vstab_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            2
-        ].wing_cross_sections[1],
+    unsteady_validation_vstab_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                2
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing movement object associated with this airplane's main wing.
@@ -330,7 +352,7 @@ def make_multiple_wing_static_validation_movement():
 
 
 def make_multiple_wing_variable_validation_movement():
-    """ This function creates a movement object with variable, multi-wing geometry to
+    """This function creates a movement object with variable, multi-wing geometry to
     be used as a fixture.
 
     :return unsteady_validation_movement: Movement
@@ -347,59 +369,71 @@ def make_multiple_wing_variable_validation_movement():
 
     # Create a wing cross section movement object associated with this airplane's
     # main wing's root wing cross section.
-    unsteady_validation_main_wing_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[0],
+    unsteady_validation_main_wing_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[0],
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # main wing's tip wing cross section.
-    unsteady_validation_main_wing_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            0
-        ].wing_cross_sections[1],
-        sweeping_amplitude=30.0,
-        sweeping_period=1.0,
-        sweeping_spacing="sine",
-        heaving_amplitude=15.0,
-        heaving_period=1.0,
-        heaving_spacing="sine",
-        pitching_amplitude=15.0,
-        pitching_period=0.5,
-        pitching_spacing="sine",
+    unsteady_validation_main_wing_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                0
+            ].wing_cross_sections[1],
+            sweeping_amplitude=30.0,
+            sweeping_period=1.0,
+            sweeping_spacing="sine",
+            heaving_amplitude=15.0,
+            heaving_period=1.0,
+            heaving_spacing="sine",
+            pitching_amplitude=15.0,
+            pitching_period=0.5,
+            pitching_spacing="sine",
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's root wing cross section.
-    unsteady_validation_hstab_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[0]
+    unsteady_validation_hstab_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                1
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's tip wing cross section.
-    unsteady_validation_hstab_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            1
-        ].wing_cross_sections[1],
+    unsteady_validation_hstab_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                1
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's root wing cross section.
-    unsteady_validation_vstab_root_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            2
-        ].wing_cross_sections[0]
+    unsteady_validation_vstab_root_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                2
+            ].wing_cross_sections[0]
+        )
     )
 
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's tip wing cross section.
-    unsteady_validation_vstab_tip_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=unsteady_validation_airplane.wings[
-            2
-        ].wing_cross_sections[1],
+    unsteady_validation_vstab_tip_cross_section_movement = (
+        ps.movement.WingCrossSectionMovement(
+            base_wing_cross_section=unsteady_validation_airplane.wings[
+                2
+            ].wing_cross_sections[1],
+        )
     )
 
     # Create a wing movement object associated with this airplane's main wing.

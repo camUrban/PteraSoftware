@@ -18,7 +18,7 @@ import pterasoftware as ps
 
 
 class SteadyRingVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses a steady ring vortex lattice method.
+    """This is an aerodynamics solver that uses a steady ring vortex lattice method.
 
     Citation:
         Adapted from:         aerodynamics.vlm3.py in AeroSandbox
@@ -58,7 +58,7 @@ class SteadyRingVortexLatticeMethodSolver:
     """
 
     def __init__(self, steady_problem):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param steady_problem: SteadyProblem
             This is the steady problem to be solved.
@@ -123,7 +123,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.panel_is_right_edge = np.zeros(self.airplane.num_panels, dtype=bool)
 
     def run(self, verbose=True):
-        """ Run the solver on the steady problem.
+        """Run the solver on the steady problem.
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console.
@@ -248,7 +248,7 @@ class SteadyRingVortexLatticeMethodSolver:
             )
 
     def initialize_panel_vortices(self):
-        """ This method calculates the locations of the vortex vertices, and then
+        """This method calculates the locations of the vortex vertices, and then
         initializes the panels' vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg
@@ -339,7 +339,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     )
 
     def collapse_geometry(self):
-        """ This method converts attributes of the problem's geometry into 1D
+        """This method converts attributes of the problem's geometry into 1D
         ndarrays. This facilitates vectorization,
         which speeds up the solver.
 
@@ -450,7 +450,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 global_panel_position += 1
 
     def calculate_wing_wing_influences(self):
-        """ This method finds the matrix of wing-wing influence coefficients
+        """This method finds the matrix of wing-wing influence coefficients
         associated with this airplane's geometry.
 
         :return: None
@@ -461,14 +461,16 @@ class SteadyRingVortexLatticeMethodSolver:
         # vortex. The answer is normalized because the solver's vortex strength list
         # was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
-        ring_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
-            points=self.panel_collocation_points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-            strengths=self.vortex_strengths,
-            collapse=False,
+        ring_vortex_influences = (
+            ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+                points=self.panel_collocation_points,
+                back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
+                front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
+                front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
+                back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+                strengths=self.vortex_strengths,
+                collapse=False,
+            )
         )
 
         # Find the matrix of normalized velocities induced at every panel's
@@ -480,14 +482,16 @@ class SteadyRingVortexLatticeMethodSolver:
         # horseshoe vortices will be updated once the correct vortex strength's are
         # calculated. The positions elsewhere
         # will remain zero.
-        horseshoe_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
-            points=self.panel_collocation_points,
-            back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
-            front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
-            front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
-            back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
-            strengths=self.horseshoe_vortex_strengths,
-            collapse=False,
+        horseshoe_vortex_influences = (
+            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+                points=self.panel_collocation_points,
+                back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
+                front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
+                front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
+                back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
+                strengths=self.horseshoe_vortex_strengths,
+                collapse=False,
+            )
         )
 
         # Calculate the total normalized influences, which is the sum of the
@@ -505,7 +509,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
     def calculate_freestream_wing_influences(self):
-        """ This method finds the vector of freestream-wing influence coefficients
+        """This method finds the vector of freestream-wing influence coefficients
         associated with this problem.
 
         :return: None
@@ -519,7 +523,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
     def calculate_vortex_strengths(self):
-        """ Solve for each panel's vortex strengths.
+        """Solve for each panel's vortex strengths.
 
         :return: None
         """
@@ -547,7 +551,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 ]
 
     def calculate_solution_velocity(self, points):
-        """ This function takes in a group of points. At every point, it finds the
+        """This function takes in a group of points. At every point, it finds the
         induced velocity due to every vortex
         and the freestream velocity.
 
@@ -574,14 +578,16 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the matrix of velocities induced at every point by every panel's ring
         # vortex. The effect of every ring
         # vortex on each point will be summed.
-        ring_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
-            points=points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-            strengths=self.vortex_strengths,
-            collapse=True,
+        ring_vortex_influences = (
+            ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+                points=points,
+                back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
+                front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
+                front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
+                back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+                strengths=self.vortex_strengths,
+                collapse=True,
+            )
         )
 
         # Find the matrix of velocities induced at every panel's collocation point by
@@ -592,14 +598,16 @@ class SteadyRingVortexLatticeMethodSolver:
         # strengths to zero, which eliminates
         # their effects. The effect of every horseshoe vortex on each point will be
         # summed.
-        horseshoe_vortex_influences = ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
-            points=points,
-            back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
-            front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
-            front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
-            back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
-            strengths=self.horseshoe_vortex_strengths,
-            collapse=True,
+        horseshoe_vortex_influences = (
+            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+                points=points,
+                back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
+                front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
+                front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
+                back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
+                strengths=self.horseshoe_vortex_strengths,
+                collapse=True,
+            )
         )
 
         # Find the total influence of the vortices, which is the sum of the influence
@@ -614,7 +622,7 @@ class SteadyRingVortexLatticeMethodSolver:
         return solution_velocities
 
     def calculate_near_field_forces_and_moments(self):
-        """ This method finds the the forces and moments calculated from the near field.
+        """This method finds the the forces and moments calculated from the near field.
 
         Citation:
             This method uses logic described on pages 9-11 of "Modeling of

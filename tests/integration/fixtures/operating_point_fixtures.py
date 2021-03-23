@@ -15,7 +15,7 @@ import pterasoftware as ps
 
 
 def make_validation_operating_point():
-    """ This method makes an operating point object for use in tests.
+    """This method makes an operating point object for use in tests.
 
     :return operating_point_fixture: OperatingPoint
         This is an operating point fixture.

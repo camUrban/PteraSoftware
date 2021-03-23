@@ -34,7 +34,7 @@ import pterasoftware as ps
 
 
 def make_origin_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return termination: (,3) ndarray of floats
         This holds the origin's coordinates.
@@ -46,7 +46,7 @@ def make_origin_fixture():
 
 
 def make_termination_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return termination: (,3) ndarray of floats
         This holds the termination's coordinates.
@@ -58,7 +58,7 @@ def make_termination_fixture():
 
 
 def make_strength_fixture():
-    """ This method makes a fixture that holds a value.
+    """This method makes a fixture that holds a value.
 
     :return strength: float
         This is the strength of the vortex. Its units are meters squared per second.
@@ -98,7 +98,7 @@ def make_line_vortex_fixture():
 
 
 def make_infinite_leg_direction_fixture():
-    """ This method makes a direction fixture.
+    """This method makes a direction fixture.
 
     :return direction: (,3) ndarray of floats
         This holds the direction's components.
@@ -110,7 +110,7 @@ def make_infinite_leg_direction_fixture():
 
 
 def make_infinite_leg_length_fixture():
-    """ This method makes a fixture that holds a value.
+    """This method makes a fixture that holds a value.
 
     :return length: float
         This is the length fixture.
@@ -122,7 +122,7 @@ def make_infinite_leg_length_fixture():
 
 
 def make_horseshoe_vortex_fixture():
-    """ This method makes a fixture that is a horseshoe vortex object.
+    """This method makes a fixture that is a horseshoe vortex object.
 
     :return horseshoe_vortex_fixture: HorseshoeVortex
         This is the horseshoe vortex object.
@@ -156,7 +156,7 @@ def make_horseshoe_vortex_fixture():
 
 
 def make_front_left_vertex_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return front_left_vertex: (,3) ndarray of floats
         This holds the fixture's coordinates.
@@ -168,7 +168,7 @@ def make_front_left_vertex_fixture():
 
 
 def make_front_right_vertex_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return front_right_vertex: (,3) ndarray of floats
         This holds the fixture's coordinates.
@@ -180,7 +180,7 @@ def make_front_right_vertex_fixture():
 
 
 def make_back_left_vertex_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return back_left_vertex: (,3) ndarray of floats
         This holds the fixture's coordinates.
@@ -192,7 +192,7 @@ def make_back_left_vertex_fixture():
 
 
 def make_back_right_vertex_fixture():
-    """ This method makes a fixture that holds the coordinates of a position.
+    """This method makes a fixture that holds the coordinates of a position.
 
     :return back_right_vertex: (,3) ndarray of floats
         This holds the fixture's coordinates.
@@ -204,7 +204,7 @@ def make_back_right_vertex_fixture():
 
 
 def make_ring_vortex_fixture():
-    """ This method makes a fixture that is a ring vortex object.
+    """This method makes a fixture that is a ring vortex object.
 
     :return ring_vortex_fixture: RingVortex
         This is the ring vortex object.

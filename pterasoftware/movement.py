@@ -55,7 +55,7 @@ class Movement:
         delta_time=None,
     ):
         """This is the initialization method.
-        
+
         :param airplane_movement: AirplaneMovement
             This object characterizes the movement of the current_airplane.
         :param operating_point_movement: OperatingPointMovement
@@ -177,8 +177,8 @@ class AirplaneMovement:
         z_ref_period=0.0,
         z_ref_spacing="sine",
     ):
-        """ This is the initialization method.
-        
+        """This is the initialization method.
+
         :param base_airplane: Airplane
             This is the first airplane object, from which the others will be created.
         :param wing_movements: list of WingMovement objects
@@ -241,7 +241,7 @@ class AirplaneMovement:
     def generate_airplanes(self, num_steps=10, delta_time=0.1):
         """This method creates the current_airplane object at each time current_step,
         and groups them into a list.
-        
+
         :param num_steps: int, optional
             This is the number of time steps in this movement. The default value is 10.
         :param delta_time: float, optional
@@ -426,7 +426,7 @@ class WingMovement:
         z_le_period=0.0,
         z_le_spacing="sine",
     ):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param base_wing: Wing
             This is the first wing object, from which the others will be created.
@@ -788,7 +788,7 @@ class WingMovement:
 
 
 class WingCrossSectionMovement:
-    """ This is a class used to contain the movement characteristics of a wing cross
+    """This is a class used to contain the movement characteristics of a wing cross
     section.
 
     This class contains the following public methods:
@@ -820,7 +820,7 @@ class WingCrossSectionMovement:
         heaving_spacing="sine",
         custom_heave_function=None,
     ):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param base_wing_cross_section: WingCrossSection
             This is the first wing cross section object, from which the others will
@@ -945,7 +945,7 @@ class WingCrossSectionMovement:
         cross_section_sweep=0.0,
         cross_section_heave=0.0,
     ):
-        """ This method creates the wing cross section objects at each time
+        """This method creates the wing cross section objects at each time
         current_step, and groups them into a list.
 
         :param num_steps: int, optional
@@ -1233,7 +1233,7 @@ class OperatingPointMovement:
         velocity_period=0.0,
         velocity_spacing="sine",
     ):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param base_operating_point: OperatingPoint
             This is the operating point object, from which the others will be created.
@@ -1364,7 +1364,12 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps, endpoint=False,)
+    times = np.linspace(
+        0,
+        total_time,
+        num_steps,
+        endpoint=False,
+    )
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1406,7 +1411,12 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps, endpoint=False,)
+    times = np.linspace(
+        0,
+        total_time,
+        num_steps,
+        endpoint=False,
+    )
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1460,7 +1470,12 @@ def oscillating_customspace(
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(0, total_time, num_steps, endpoint=False,)
+    times = np.linspace(
+        0,
+        total_time,
+        num_steps,
+        endpoint=False,
+    )
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude

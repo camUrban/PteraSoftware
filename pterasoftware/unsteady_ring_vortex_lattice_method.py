@@ -16,10 +16,9 @@ This module contains the following functions:
 import pickle
 
 import numpy as np
+from numba import njit, prange
 
 import pterasoftware as ps
-
-from numba import njit
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -372,7 +371,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 print("\nCalculating streamlines.")
             self.calculate_streamlines()
 
-    # ToDo: Vectorize this method fifth+.
     def initialize_panel_vortices(self):
         """This method calculates the locations every problem's airplane's bound
         vortex vertices, and then initializes
@@ -462,7 +460,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             strength=None,
                         )
 
-    # ToDo: Vectorize this method fifth+.
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
         ndarrays. This facilitates vectorization,
@@ -1168,11 +1165,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ]
         )
 
-        # ToDo: Vectorize this method first.
-
-    # ToDo: Vectorize this method fifth+.
     def calculate_streamlines(self, num_steps=10, delta_time=0.1):
         """Calculates the location of the streamlines coming off the back of the wings.
+
+        This method is vectorized to increase performance.
 
         :param num_steps: int, optional
             This is the integer number of points along each streamline (not including
@@ -1234,10 +1230,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next airplane's wake vortices.
         self.populate_next_airplanes_wake_vortices()
 
-    # ToDo: Vectorize this method fifth+.
     def populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
         """This method populates the locations of the next airplane's wake vortex
         vertices.
+
+        This method is not vectorized but its loops only consume 1.1% of the runtime,
+        so I have kept it as is for increased readability.
 
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
@@ -1469,9 +1467,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
                     )
 
-    # ToDo: Vectorize this method fourth.
     def populate_next_airplanes_wake_vortices(self):
         """This method populates the locations of the next airplane's wake vortices.
+
+        This method is not vectorized but its loops only consume 0.4% of the runtime,
+        so I have kept it as is for increased readability.
 
         :return: None
         """
@@ -1715,11 +1715,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
         return flapping_velocities
 
 
-# ToDo: Document this function.
-@njit
+# # ToDo: Document this function.
+# @njit
+# def old_nb_explicit_cross(a, b):
+#     e = np.zeros_like(a)
+#     e[:, 0] = a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1]
+#     e[:, 1] = a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2]
+#     e[:, 2] = a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
+#     return e
+
+
+# NOTE: better memory access pattern
+@njit(parallel=True, cache=True)
 def nb_explicit_cross(a, b):
-    e = np.zeros_like(a)
-    e[:, 0] = a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1]
-    e[:, 1] = a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2]
-    e[:, 2] = a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
+    e = np.empty(a.shape)
+    for i in prange(e.shape[0]):
+        e[i, 0] = a[i, 1] * b[i, 2] - a[i, 2] * b[i, 1]
+        e[i, 1] = a[i, 2] * b[i, 0] - a[i, 0] * b[i, 2]
+        e[i, 2] = a[i, 0] * b[i, 1] - a[i, 1] * b[i, 0]
     return e

@@ -964,39 +964,39 @@ def calculate_velocity_induced_by_ring_vortices(
     return induced_velocities
 
 
-# ToDo: Document this function.
-@njit
-def old_nb_2d_explicit_norm(vectors):
-    return np.sqrt(
-        (vectors[:, :, 0]) ** 2 + (vectors[:, :, 1]) ** 2 + (vectors[:, :, 2]) ** 2
-    )
-
-
-# ToDo: Document this function.
-@njit
-def old_nb_2d_explicit_cross(a, b):
-    e = np.zeros_like(a)
-    e[:, :, 0] = a[:, :, 1] * b[:, :, 2] - a[:, :, 2] * b[:, :, 1]
-    e[:, :, 1] = a[:, :, 2] * b[:, :, 0] - a[:, :, 0] * b[:, :, 2]
-    e[:, :, 2] = a[:, :, 0] * b[:, :, 1] - a[:, :, 1] * b[:, :, 0]
-    return e
-
-
-@njit
-def nb_subtract(a, b):
-    c = np.empty((a.shape[0], b.shape[0], 3))
-
-    for i in range(a.shape[0]):
-        for j in range(b.shape[0]):
-            for k in range(3):
-                c[i, j, k] = a[i, k] - b[j, k]
-
-    return c
+# # ToDo: Document this function.
+# @njit
+# def old_nb_2d_explicit_norm(vectors):
+#     return np.sqrt(
+#         (vectors[:, :, 0]) ** 2 + (vectors[:, :, 1]) ** 2 + (vectors[:, :, 2]) ** 2
+#     )
+#
+#
+# # ToDo: Document this function.
+# @njit
+# def old_nb_2d_explicit_cross(a, b):
+#     e = np.zeros_like(a)
+#     e[:, :, 0] = a[:, :, 1] * b[:, :, 2] - a[:, :, 2] * b[:, :, 1]
+#     e[:, :, 1] = a[:, :, 2] * b[:, :, 0] - a[:, :, 0] * b[:, :, 2]
+#     e[:, :, 2] = a[:, :, 0] * b[:, :, 1] - a[:, :, 1] * b[:, :, 0]
+#     return e
+#
+#
+# @njit
+# def nb_subtract(a, b):
+#     c = np.empty((a.shape[0], b.shape[0], 3))
+#
+#     for i in range(a.shape[0]):
+#         for j in range(b.shape[0]):
+#             for k in range(3):
+#                 c[i, j, k] = a[i, k] - b[j, k]
+#
+#     return c
 
 
 ########################################################################################
-@njit(parallel=True)
-def subtract(a, b):
+@njit(parallel=True, cache=True)
+def nb_subtract(a, b):
     c = np.empty((a.shape[0], b.shape[0], 3))
     for i in prange(c.shape[0]):
         for j in range(c.shape[1]):
@@ -1005,7 +1005,7 @@ def subtract(a, b):
     return c
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def nb_2d_explicit_norm(vectors):
     res = np.empty((vectors.shape[0], vectors.shape[1]))
     for i in prange(res.shape[0]):
@@ -1017,7 +1017,7 @@ def nb_2d_explicit_norm(vectors):
 
 
 # NOTE: better memory access pattern
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def nb_2d_explicit_cross(a, b):
     e = np.empty(a.shape)
     for i in prange(e.shape[0]):
@@ -1029,14 +1029,14 @@ def nb_2d_explicit_cross(a, b):
 
 
 # NOTE: avoid the slow building of temporary arrays
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def cross_absolute_magnitude(cross):
     return cross[:, :, 0] ** 2 + cross[:, :, 1] ** 2 + cross[:, :, 2] ** 2
 
 
 # NOTE: avoid the slow building of temporary arrays again and multiple pass in memory
 # Warning: do the work in-place
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def discard_singularities(arr):
     for i in prange(arr.shape[0]):
         for j in range(arr.shape[1]):
@@ -1045,7 +1045,7 @@ def discard_singularities(arr):
                     arr[i, j, k] = 0.0
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def compute_k(
     strengths,
     r_1_cross_r_2_absolute_magnitude,
@@ -1061,7 +1061,7 @@ def compute_k(
     )
 
 
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def r_dot_products(b, c):
     assert b.shape == c.shape and b.shape[2] == 3
     n, m = b.shape[0], b.shape[1]
@@ -1079,7 +1079,7 @@ def r_dot_products(b, c):
 
 
 # Compute `np.sum(arr, axis=1)` in parallel.
-@njit(parallel=True)
+@njit(parallel=True, cache=True)
 def collapse_arr(arr):
     assert arr.shape[2] == 3
     n, m = arr.shape[0], arr.shape[1]
@@ -1094,8 +1094,8 @@ def collapse_arr(arr):
 def calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
-    r_1 = subtract(points, origins)
-    r_2 = subtract(points, terminations)
+    r_1 = nb_subtract(points, origins)
+    r_2 = nb_subtract(points, terminations)
     # NOTE: r_0 is computed on the fly by rDotProducts
 
     r_1_cross_r_2 = nb_2d_explicit_cross(r_1, r_2)

@@ -1384,7 +1384,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
 
 
 # ToDo: Document this function.
-@njit
+@njit(cache=True)
 def centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):

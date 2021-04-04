@@ -1094,7 +1094,7 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = ps.geometry.numba_centroid_of_quadrilateral(
             front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
         )
 
@@ -1385,7 +1385,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
 
 # ToDo: Document this function.
 @njit(cache=True)
-def centroid_of_quadrilateral(
+def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
     """This function is used to find the centroid of a quadrilateral.

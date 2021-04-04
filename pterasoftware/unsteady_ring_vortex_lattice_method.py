@@ -990,7 +990,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
-            * nb_explicit_cross(
+            * numba_1d_explicit_cross(
                 velocities_at_ring_vortex_right_leg_centers,
                 self.panel_right_vortex_vectors,
             )
@@ -998,7 +998,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_front_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
-            * nb_explicit_cross(
+            * numba_1d_explicit_cross(
                 velocities_at_ring_vortex_front_leg_centers,
                 self.panel_front_vortex_vectors,
             )
@@ -1006,7 +1006,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_left_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
-            * nb_explicit_cross(
+            * numba_1d_explicit_cross(
                 velocities_at_ring_vortex_left_leg_centers,
                 self.panel_left_vortex_vectors,
             )
@@ -1034,19 +1034,25 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the near field moment in geometry axes on the front leg, left leg,
         # and right leg. Also find the
         # moment on each panel due to the unsteady force.
-        near_field_moments_on_ring_vortex_front_legs_geometry_axes = nb_explicit_cross(
-            self.panel_front_vortex_centers - self.current_airplane.xyz_ref,
-            near_field_forces_on_ring_vortex_front_legs_geometry_axes,
+        near_field_moments_on_ring_vortex_front_legs_geometry_axes = (
+            numba_1d_explicit_cross(
+                self.panel_front_vortex_centers - self.current_airplane.xyz_ref,
+                near_field_forces_on_ring_vortex_front_legs_geometry_axes,
+            )
         )
-        near_field_moments_on_ring_vortex_left_legs_geometry_axes = nb_explicit_cross(
-            self.panel_left_vortex_centers - self.current_airplane.xyz_ref,
-            near_field_forces_on_ring_vortex_left_legs_geometry_axes,
+        near_field_moments_on_ring_vortex_left_legs_geometry_axes = (
+            numba_1d_explicit_cross(
+                self.panel_left_vortex_centers - self.current_airplane.xyz_ref,
+                near_field_forces_on_ring_vortex_left_legs_geometry_axes,
+            )
         )
-        near_field_moments_on_ring_vortex_right_legs_geometry_axes = nb_explicit_cross(
-            self.panel_right_vortex_centers - self.current_airplane.xyz_ref,
-            near_field_forces_on_ring_vortex_right_legs_geometry_axes,
+        near_field_moments_on_ring_vortex_right_legs_geometry_axes = (
+            numba_1d_explicit_cross(
+                self.panel_right_vortex_centers - self.current_airplane.xyz_ref,
+                near_field_forces_on_ring_vortex_right_legs_geometry_axes,
+            )
         )
-        unsteady_near_field_moments_geometry_axes = nb_explicit_cross(
+        unsteady_near_field_moments_geometry_axes = numba_1d_explicit_cross(
             self.panel_collocation_points - self.current_airplane.xyz_ref,
             unsteady_near_field_forces_geometry_axes,
         )
@@ -1715,22 +1721,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         return flapping_velocities
 
 
-# # ToDo: Document this function.
-# @njit
-# def old_nb_explicit_cross(a, b):
-#     e = np.zeros_like(a)
-#     e[:, 0] = a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1]
-#     e[:, 1] = a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2]
-#     e[:, 2] = a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
-#     return e
-
-
-# NOTE: better memory access pattern
+# ToDo: Document this method.
 @njit(parallel=True, cache=True)
-def nb_explicit_cross(a, b):
-    e = np.empty(a.shape)
-    for i in prange(e.shape[0]):
-        e[i, 0] = a[i, 1] * b[i, 2] - a[i, 2] * b[i, 1]
-        e[i, 1] = a[i, 2] * b[i, 0] - a[i, 0] * b[i, 2]
-        e[i, 2] = a[i, 0] * b[i, 1] - a[i, 1] * b[i, 0]
-    return e
+def numba_1d_explicit_cross(vectors_1, vectors_2):
+    """
+
+    :param vectors_1:
+    :param vectors_2:
+    :return:
+    """
+    crosses = np.empty(vectors_1.shape)
+    for i in prange(crosses.shape[0]):
+        crosses[i, 0] = (
+            vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
+        )
+        crosses[i, 1] = (
+            vectors_1[i, 2] * vectors_2[i, 0] - vectors_1[i, 0] * vectors_2[i, 2]
+        )
+        crosses[i, 2] = (
+            vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
+        )
+    return crosses

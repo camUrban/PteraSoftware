@@ -33,11 +33,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
+from numba import njit
+
 import pterasoftware as ps
 
 
 class Airplane:
-    """ This is a class used to contain airplanes.
+    """This is a class used to contain airplanes.
 
     Citation:
         Adapted from:         geometry.Airplane in AeroSandbox
@@ -163,7 +165,7 @@ class Airplane:
 
 
 class Wing:
-    """ This is a class used to contain the wings of an current_airplane.
+    """This is a class used to contain the wings of an current_airplane.
 
     If the wing is symmetric across the XZ plane, just define the right half and
     supply "symmetric=True" in
@@ -328,7 +330,7 @@ class Wing:
 
 
 class WingCrossSection:
-    """ This class is used to contain the cross sections of the wings of an
+    """This class is used to contain the cross sections of the wings of an
     current_airplane.
 
     Citation:
@@ -449,7 +451,7 @@ class WingCrossSection:
 
 
 class Airfoil:
-    """ This class is used to contain the airfoil of a cross section of a wing of an
+    """This class is used to contain the airfoil of a cross section of a wing of an
     current_airplane.
 
     Citation:
@@ -887,7 +889,10 @@ class Airfoil:
         lower_original_coordinates = self.lower_coordinates()
 
         # Generate a cosine-spaced list of points from 0 to 1.
-        cosine_spaced_x_values = cosspace(n_points=n_points_per_side, endpoint=True,)
+        cosine_spaced_x_values = cosspace(
+            n_points=n_points_per_side,
+            endpoint=True,
+        )
 
         # Create interpolated functions for the x and y values of the upper and lower
         # surfaces as a function of the
@@ -995,7 +1000,7 @@ class Airfoil:
 
 
 class Panel:
-    """ This class is used to contain the panels of a wing.
+    """This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
         calculate_collocation_point_location: This method calculates the location of
@@ -1028,7 +1033,7 @@ class Panel:
         is_leading_edge,
         is_trailing_edge,
     ):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param front_right_vertex: 1D ndarray with three elements
             This is an array containing the x, y, and z coordinates of the panel's
@@ -1089,7 +1094,7 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = ps.geometry.numba_centroid_of_quadrilateral(
             front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
         )
 
@@ -1181,12 +1186,12 @@ class Panel:
         normalized_induced_velocity = np.zeros(3)
 
         if self.ring_vortex is not None:
-            normalized_induced_velocity += self.ring_vortex.calculate_normalized_induced_velocity(
-                point=point
+            normalized_induced_velocity += (
+                self.ring_vortex.calculate_normalized_induced_velocity(point=point)
             )
         if self.horseshoe_vortex is not None:
-            normalized_induced_velocity += self.horseshoe_vortex.calculate_normalized_induced_velocity(
-                point=point
+            normalized_induced_velocity += (
+                self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
             )
 
         return normalized_induced_velocity
@@ -1230,9 +1235,12 @@ class Panel:
 
 
 def cosspace(
-    minimum=0.0, maximum=1.0, n_points=50, endpoint=True,
+    minimum=0.0,
+    maximum=1.0,
+    n_points=50,
+    endpoint=True,
 ):
-    """ This function is used to create a ndarray containing a specified number of
+    """This function is used to create a ndarray containing a specified number of
     values between a specified minimum
     and maximum value that are spaced via a cosine function.
 
@@ -1271,7 +1279,7 @@ def cosspace(
 
 
 def reflect_over_xz_plane(input_vector):
-    """ This function is used to flip a the y coordinate of a coordinate vector.
+    """This function is used to flip a the y coordinate of a coordinate vector.
 
     Citation:
         Adapted from:         geometry.reflect_over_xz_plane in AeroSandbox
@@ -1315,7 +1323,7 @@ def reflect_over_xz_plane(input_vector):
 
 
 def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
-    """ This function is used to find the rotation matrix for a given axis and angle.
+    """This function is used to find the rotation matrix for a given axis and angle.
 
     Citation:
         Adapted from:         geometry.angle_axis_rotation_matrix in AeroSandbox
@@ -1375,10 +1383,12 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     return rotation_matrix
 
 
-def centroid_of_quadrilateral(
+# ToDo: Document this function.
+@njit(cache=True)
+def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
-    """ This function is used to find the centroid of a quadrilateral.
+    """This function is used to find the centroid of a quadrilateral.
 
     :param front_left_vertex: 1D ndarray
         This is an array containing the x, y, and z components of the front left
@@ -1396,36 +1406,24 @@ def centroid_of_quadrilateral(
         This is an array containing the x, y, and z components of the centroid of the
         quadrilateral.
     """
-    x_values = np.hstack(
-        (
-            front_left_vertex[0],
-            front_right_vertex[0],
-            back_left_vertex[0],
-            back_right_vertex[0],
-        )
-    )
-    x_average = np.average(x_values)
-
-    y_values = np.hstack(
-        (
-            front_left_vertex[1],
-            front_right_vertex[1],
-            back_left_vertex[1],
-            back_right_vertex[1],
-        )
-    )
-    y_average = np.average(y_values)
-
-    z_values = np.hstack(
-        (
-            front_left_vertex[2],
-            front_right_vertex[2],
-            back_left_vertex[2],
-            back_right_vertex[2],
-        )
-    )
-    z_average = np.average(z_values)
+    x_average = (
+        front_left_vertex[0]
+        + front_right_vertex[0]
+        + back_left_vertex[0]
+        + back_right_vertex[0]
+    ) / 4
+    y_average = (
+        front_left_vertex[1]
+        + front_right_vertex[1]
+        + back_left_vertex[1]
+        + back_right_vertex[1]
+    ) / 4
+    z_average = (
+        front_left_vertex[2]
+        + front_right_vertex[2]
+        + back_left_vertex[2]
+        + back_right_vertex[2]
+    ) / 4
 
     centroid = np.array([x_average, y_average, z_average])
-
     return centroid

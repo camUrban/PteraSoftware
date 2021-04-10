@@ -151,7 +151,9 @@ example_airplane = ps.geometry.Airplane(
                     z_le=1.0,
                     chord=1.5,
                     twist=5.0,  # Give this wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca2412",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca2412",
+                    ),
                 ),
             ],
         ),
@@ -168,7 +170,9 @@ example_airplane = ps.geometry.Airplane(
                 ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
@@ -178,7 +182,9 @@ example_airplane = ps.geometry.Airplane(
                     z_le=1.0,
                     chord=1.0,
                     twist=-5.0,  # Give the tip wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                 ),
             ],
         ),
@@ -441,7 +447,9 @@ del airplane_movement
 del operating_point_movement
 
 # Define the unsteady example problem.
-example_problem = ps.problems.UnsteadyProblem(movement=movement,)
+example_problem = ps.problems.UnsteadyProblem(
+    movement=movement,
+)
 
 # Define a new solver. The available solver objects are the steady horseshoe vortex
 # lattice method solver, the steady
@@ -477,6 +485,8 @@ ps.output.animate(  # Set the unsteady solver to the one we just ran.
     show_delta_pressures=True,
     # Tell the animate function to show the wake vortices. This value defaults to false.
     show_wake_vortices=True,
+    # Set this value to True in order to save the GIF file.
+    keep_file=False,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the

@@ -20,7 +20,7 @@ import pterasoftware as ps
 
 
 class LegacySteadyHorseshoeVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses a steady horseshoe vortex lattice
+    """This is an aerodynamics solver that uses a steady horseshoe vortex lattice
     method. It has not been vectorized for
     speed.
 
@@ -277,8 +277,10 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                         # Calculate the velocity induced at this collocation point by
                         # this vortex if the vortex's
                         # strength was 1.
-                        normalized_induced_velocity_at_collocation_point = vortex_panel.calculate_normalized_induced_velocity(
-                            collocation_panel.collocation_point
+                        normalized_induced_velocity_at_collocation_point = (
+                            vortex_panel.calculate_normalized_induced_velocity(
+                                collocation_panel.collocation_point
+                            )
                         )
 
                         # Find the normal direction of the panel with the collocation
@@ -290,9 +292,11 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                         # Calculate the normal component of the velocity induced at
                         # this collocation point by this
                         # vortex if the vortex's strength was 1.
-                        normal_normalized_induced_velocity_at_collocation_point = np.dot(
-                            normalized_induced_velocity_at_collocation_point,
-                            collocation_panel_normal_direction,
+                        normal_normalized_induced_velocity_at_collocation_point = (
+                            np.dot(
+                                normalized_induced_velocity_at_collocation_point,
+                                collocation_panel_normal_direction,
+                            )
                         )
 
                         # Add this value to the solver's aerodynamic influence
@@ -592,9 +596,10 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
 
                     # Calculate the location of the new point, and add it to the
                     # array of streamline points.
-                    wing.streamline_points[step + 1, spanwise_position, :] = (
+                    wing.streamline_points[
+                        step + 1, spanwise_position, :
+                    ] = last_point + delta_time * self.calculate_solution_velocity(
                         last_point
-                        + delta_time * self.calculate_solution_velocity(last_point)
                     )
 
             # Stack the current wing's streamline point matrix on to the solver's

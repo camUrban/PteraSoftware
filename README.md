@@ -58,6 +58,7 @@ Here are the requirements necessary to run Ptera Software:
 * numpy >= 1.18.5, < 1.19.0
 * pyvista >= 0.25.3, < 1.0.0
 * scipy >= 1.5, < 2.0
+* numba >= 0.53, <1.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -185,6 +186,7 @@ citations can be found in the source code's docstrings where applicable.
 * Ramesh Agarwal
 * Joseph Katz
 * Allen Plotkin
+* Austin Stover
 * AeroSandbox
 * Black
 * Coverage
@@ -193,6 +195,7 @@ citations can be found in the source code's docstrings where applicable.
 * SciPy
 * PyVista
 * MatPlotLib
+* Numba
 * Pre-Commit
 * SetupTools
 * GitIgnore

@@ -8,12 +8,12 @@
 ![MIT License](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![Black Code Style](https://img.shields.io/badge/code%20style-black-black)
 
-This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing flapping wing flight.
+This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing flapping-wing flight.
 
 ## Motivation
 
 In late 2018, I became curious about biological flight. To sate this curiosity, I wanted to computationally simulate
-some flapping wing fliers. I quickly realized I had two options:
+some flapping-wing fliers. I quickly realized I had two options:
 
 1. Spend thousands of dollars on a closed-source CFD program, which would take hours to solve a simple case.
 2. Try to learn someone else's open-source, unsteady solver written in a language I didn't know, and using a framework
@@ -25,7 +25,7 @@ Thankfully, my friend, Peter Sharpe, had just released his own open-source aerod
 blessing, I have used AeroSandbox as a jumping-off point to develop a solver package capable of unsteady simulations.
 
 Through the combined efforts of Peter Sharpe, Suhas Kodali, and me, Ptera Software was born. It is the only easy-to-use,
-open-source, and actively-maintained UVLM package I know capable of analyzing flapping wing flight. Moreover, it's
+open-source, and actively-maintained UVLM package I know capable of analyzing flapping-wing flight. Moreover, it's
 written in Python, is well documented, and is well tested.
 
 With your help, I hope we will increase the open-source community's interest and understanding of biological flight.
@@ -137,13 +137,13 @@ VLM, and an unsteady ring VLM (UVLM). Here are examples of the output you can ex
 
 ## Validation
 
-With the release of version 1.0.0, Ptera Software is now validated against experimental flapping wing data! See the
+With the release of version 1.0.0, Ptera Software is now validated against experimental flapping-wing data! See the
 "validation" directory to run the test case and read a report on the software's accuracy.
 
 ## How to Contribute
 
 As I said before, the primary goal of this project is to increase the open-source community's understanding and
-appreciation for unsteady aerodynamics in general and flapping wing flight in particular. This will only happen through
+appreciation for unsteady aerodynamics in general and flapping-wing flight in particular. This will only happen through
 your participation. Feel free to request features, report bugs and security issues, and provide suggestions. No comment
 is too big or small!
 
@@ -174,7 +174,7 @@ start, this is for you!
 * We should create a command-line interface or GUI.
 * We should try to implement aeroelastic effects in Ptera Software's solvers.
 * Flapping wing controls is both fascinating and complicated. We should try to create a workflow in Ptera Software for
-  controls systems identification for flapping wing vehicles.
+  controls systems identification for flapping-wing vehicles.
 
 ## Credits
 

@@ -1,6 +1,17 @@
-# ToDo: Properly document this script.
-"""
+""" This is a testing case for the unsteady ring vortex lattice method solver with variable, multi-wing geometry.
 
+Note: This case does not currently test the solver's output against a expected output. Instead, it just tests that the
+solver doesn't throw an error.
+
+This module contains the following classes:
+    TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry: This is a class for testing the unsteady ring
+    vortex lattice method solver on variable, multi-wing geometry.
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
 """
 
 import unittest
@@ -8,17 +19,15 @@ import unittest
 from tests.integration.fixtures import solver_fixtures
 
 
-# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
     unittest.TestCase
 ):
-    """This is a class for testing the unsteady ring vortex lattice method solver on
-    multi-wing, variable geometry.
+    """This is a class for testing the unsteady ring vortex lattice method solver on multi-wing, variable geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
         tearDown: This method tears down the test.
-        test_method: This method tests the solver's output.
+        test_method_does_not_throw: This method tests that the solver does not throw any errors.
 
     This class contains the following class attributes:
         None
@@ -46,9 +55,8 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
 
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
-    # ToDo: Properly document this method.
-    def test_method(self):
-        """This method tests the solver's output.
+    def test_method_does_not_throw(self):
+        """This method tests that the solver does not throw any errors.
 
         :return: None
         """

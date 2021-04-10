@@ -1,19 +1,21 @@
-# ToDo: Properly document this module.
 """ This module is a testing case for the steady horseshoe vortex lattice method solver.
 
-Based on an identical XFLR5 testing case, the expected output for this case is:
+Based on an identical XFLR5 testing case, the expected output for the single-wing case is:
     CL:     0.790
     CDi:    0.019
     Cm:     -0.690
 
-Note: The expected output was created using XFLR5's inviscid VLM1 analysis type,
-which is a horseshoe vortex lattice
+Based on an identical XFLR5 testing case, the expected output for the multi-wing case is:
+    CL:     0.524
+    CDi:    0.007
+    Cm:     -0.350
+
+Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a horseshoe vortex lattice
 method solver.
 
 This module contains the following classes:
-    TestSteadyHorseshoeVortexLatticeMethod: This is a class for testing the steady
-    horseshoe vortex lattice method
-                                            solver.
+    TestSteadyHorseshoeVortexLatticeMethod: This is a class for testing the steady horseshoe vortex lattice method
+    solver.
 
 This module contains the following exceptions:
     None
@@ -28,7 +30,6 @@ import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
-# ToDo: Properly document this class.
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the steady horseshoe vortex lattice method solver.
 
@@ -36,6 +37,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         setUp: This method sets up the test.
         tearDown: This method tears down the test.
         test_method: This method tests the solver's output.
+        test_method_multiple_wings: This method tests the solver's output with multi-wing geometry.
 
     This class contains the following class attributes:
         None
@@ -67,7 +69,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         del self.steady_horseshoe_vortex_lattice_method_validation_solver
         del self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver
 
-    # ToDo: Properly document this method.
     def test_method(self):
         """This method tests the solver's output.
 
@@ -111,9 +112,8 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(abs(c_l_error) < allowable_error)
         self.assertTrue(abs(c_m_error) < allowable_error)
 
-    # ToDo: Properly document this method.
     def test_method_multiple_wings(self):
-        """This method tests the solver's output.
+        """This method tests the solver's output with multi-wing geometry.
 
         :return: None
         """

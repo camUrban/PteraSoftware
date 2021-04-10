@@ -47,11 +47,17 @@ def mesh_wing(wing):
     # Get the chordwise coordinates.
     if wing.chordwise_spacing == "uniform":
         nondim_chordwise_coordinates = np.linspace(
-            0, 1, num_chordwise_coordinates, endpoint=True,
+            0,
+            1,
+            num_chordwise_coordinates,
+            endpoint=True,
         )
     elif wing.chordwise_spacing == "cosine":
         nondim_chordwise_coordinates = ps.geometry.cosspace(
-            0, 1, num_chordwise_coordinates, endpoint=True,
+            0,
+            1,
+            num_chordwise_coordinates,
+            endpoint=True,
         )
     else:
         raise Exception("Bad value of wing.chordwise_spacing!")
@@ -333,11 +339,15 @@ def mesh_wing(wing):
         # Get the spanwise coordinates. This is based on the inner cross section.
         if inner_cross_section.spanwise_spacing == "uniform":
             nondim_spanwise_coordinates = np.linspace(
-                0, 1, num_spanwise_coordinates, endpoint=True,
+                0,
+                1,
+                num_spanwise_coordinates,
+                endpoint=True,
             )
         elif inner_cross_section.spanwise_spacing == "cosine":
             nondim_spanwise_coordinates = ps.geometry.cosspace(
-                n_points=num_spanwise_coordinates, endpoint=True,
+                n_points=num_spanwise_coordinates,
+                endpoint=True,
             )
         else:
             raise Exception("Bad value of section.spanwise_spacing!")

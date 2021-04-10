@@ -29,7 +29,7 @@ from tests.integration.fixtures import solver_fixtures
 
 # ToDo: Properly document this class.
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
-    """ This is a class for testing the steady ring vortex lattice method solver.
+    """This is a class for testing the steady ring vortex lattice method solver.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
@@ -44,7 +44,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method sets up the test.
+        """This method sets up the test.
 
         :return: None
         """
@@ -55,7 +55,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method tears down the test.
+        """This method tears down the test.
 
         :return: None
         """
@@ -64,7 +64,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
     # ToDo: Properly document this method.
     def test_method(self):
-        """ This method tests the solver's output.
+        """This method tests the solver's output.
 
         :return: None
         """

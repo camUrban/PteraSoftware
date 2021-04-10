@@ -44,7 +44,7 @@ from tests.integration.fixtures import movement_fixtures
 
 
 def make_steady_validation_problem():
-    """ This function creates a steady problem object to be used as a fixture.
+    """This function creates a steady problem object to be used as a fixture.
 
     :return steady_validation_problem: SteadyProblem
         This is the problem fixture.
@@ -71,7 +71,7 @@ def make_steady_validation_problem():
 
 
 def make_steady_multiple_wing_validation_problem():
-    """ This function creates a steady problem object with multi-wing geometry to be
+    """This function creates a steady problem object with multi-wing geometry to be
     used as a fixture.
 
     :return steady_validation_problem: SteadyProblem
@@ -101,7 +101,7 @@ def make_steady_multiple_wing_validation_problem():
 
 
 def make_unsteady_validation_problem_with_static_geometry():
-    """ This function creates an unsteady problem object with static geometry to be
+    """This function creates an unsteady problem object with static geometry to be
     used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
@@ -124,7 +124,7 @@ def make_unsteady_validation_problem_with_static_geometry():
 
 
 def make_unsteady_validation_problem_with_variable_geometry():
-    """ This function creates an unsteady problem object with variable geometry to be
+    """This function creates an unsteady problem object with variable geometry to be
     used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
@@ -147,7 +147,7 @@ def make_unsteady_validation_problem_with_variable_geometry():
 
 
 def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
-    """ This function creates an unsteady problem object with multi-wing,
+    """This function creates an unsteady problem object with multi-wing,
     static geometry to be used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
@@ -172,7 +172,7 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
 
 
 def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
-    """ This function creates an unsteady problem object with multi-wing, variable
+    """This function creates an unsteady problem object with multi-wing, variable
     geometry to be used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem

@@ -21,7 +21,7 @@ import pterasoftware as ps
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
-    """ This is an aerodynamics solver that uses an unsteady ring vortex lattice
+    """This is an aerodynamics solver that uses an unsteady ring vortex lattice
     method. It has not been vectorized for
     speed.
 
@@ -74,7 +74,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
     """
 
     def __init__(self, unsteady_problem):
-        """ This is the initialization method.
+        """This is the initialization method.
 
         :param unsteady_problem: UnsteadyProblem
             This is the unsteady problem to be solved.
@@ -97,7 +97,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.streamline_points = None
 
     def run(self, verbose=True, prescribed_wake=True):
-        """ This method runs the solver on the unsteady problem.
+        """This method runs the solver on the unsteady problem.
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console and
@@ -197,7 +197,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.calculate_streamlines()
 
     def initialize_panel_vortices(self):
-        """ This method calculates the locations every problem's airplane's bound
+        """This method calculates the locations every problem's airplane's bound
         vortex vertices, and then initializes
         its panels' bound vortices.
 
@@ -264,7 +264,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
 
     def calculate_wing_wing_influences(self):
-        """ This method finds the matrix of wing-wing influence coefficients
+        """This method finds the matrix of wing-wing influence coefficients
         associated with this airplane's geometry.
 
         :return: None
@@ -299,8 +299,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Calculate the velocity induced at this collocation point by
                         # this vortex if the vortex's
                         # strength was 1.
-                        normalized_induced_velocity_at_collocation_point = vortex_panel.calculate_normalized_induced_velocity(
-                            collocation_panel.collocation_point
+                        normalized_induced_velocity_at_collocation_point = (
+                            vortex_panel.calculate_normalized_induced_velocity(
+                                collocation_panel.collocation_point
+                            )
                         )
 
                         # Find the normal direction of the panel with the collocation
@@ -312,9 +314,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Calculate the normal component of the velocity induced at
                         # this collocation point by this
                         # vortex if the vortex's strength was 1.
-                        normal_normalized_induced_velocity_at_collocation_point = np.dot(
-                            normalized_induced_velocity_at_collocation_point,
-                            collocation_panel_normal_direction,
+                        normal_normalized_induced_velocity_at_collocation_point = (
+                            np.dot(
+                                normalized_induced_velocity_at_collocation_point,
+                                collocation_panel_normal_direction,
+                            )
                         )
 
                         # Add this value to the solver's aerodynamic influence
@@ -338,7 +342,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 global_vortex_panel_index = 0
 
     def calculate_freestream_wing_influences(self):
-        """ This method finds the vector of freestream-wing influences associated
+        """This method finds the vector of freestream-wing influences associated
         with the problem at this time step.
 
         Note: This contains the influence due to the freestream and due to any
@@ -406,7 +410,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     global_collocation_panel_index += 1
 
     def calculate_wake_wing_influences(self):
-        """ This method finds the vector of the wake-wing influences associated with
+        """This method finds the vector of the wake-wing influences associated with
         the problem at this time step.
 
         :return: None
@@ -448,8 +452,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # to the total wake velocity at
                         # this collocation point.
                         if wake_ring_vortex is not None:
-                            wake_velocity += wake_ring_vortex.calculate_induced_velocity(
-                                collocation_point
+                            wake_velocity += (
+                                wake_ring_vortex.calculate_induced_velocity(
+                                    collocation_point
+                                )
                             )
 
                 # Calculate the wake influence on this collocation point and add it
@@ -467,7 +473,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 global_collocation_panel_index += 1
 
     def calculate_vortex_strengths(self):
-        """ This method solves for each panel's vortex strength.
+        """This method solves for each panel's vortex strength.
 
         :return: None
         """
@@ -501,7 +507,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 global_panel_index += 1
 
     def calculate_solution_velocity(self, point):
-        """ This method finds the velocity at a given point due to the freestream and
+        """This method finds the velocity at a given point due to the freestream and
         the vortices.
 
         Note: The velocity this method returns does not include the velocity due to
@@ -541,8 +547,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # total velocity induced by vortices.
             for wake_ring_vortex in wake_ring_vortices:
                 if wake_ring_vortex is not None:
-                    velocity_induced_by_vortices += wake_ring_vortex.calculate_induced_velocity(
-                        point
+                    velocity_induced_by_vortices += (
+                        wake_ring_vortex.calculate_induced_velocity(point)
                     )
 
         # Add the velocity induced by the vortices to the freestream velocity. Return
@@ -554,7 +560,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         return solution_velocity
 
     def calculate_near_field_forces_and_moments(self):
-        """ This method finds the the forces and moments calculated from the near field.
+        """This method finds the the forces and moments calculated from the near field.
 
         Citation:
             This method uses logic described on pages 9-11 of "Modeling of
@@ -659,14 +665,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # the velocity due to the freestream,
                         # the problem's vortices, and the flapping at the center of
                         # the right leg center.
-                        velocity_at_right_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.right_leg.center
+                        velocity_at_right_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.right_leg.center
+                            )
                         )
-                        velocity_at_right_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
-                            wing_position=wing_num,
-                            panel_chordwise_position=chordwise_location,
-                            panel_spanwise_position=spanwise_location,
-                            point_name="ring_vortex.right_leg.center",
+                        velocity_at_right_bound_vortex_center += (
+                            self.calculate_flapping_velocity_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name="ring_vortex.right_leg.center",
+                            )
                         )
 
                         # Using the Kutta-Joukowski theorem, calculate the force on
@@ -695,14 +705,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # the velocity due to the freestream,
                         # the problem's vortices, and the flapping at the center of
                         # the front leg center.
-                        velocity_at_front_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.front_leg.center
+                        velocity_at_front_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.front_leg.center
+                            )
                         )
-                        velocity_at_front_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
-                            wing_position=wing_num,
-                            panel_chordwise_position=chordwise_location,
-                            panel_spanwise_position=spanwise_location,
-                            point_name="ring_vortex.front_leg.center",
+                        velocity_at_front_bound_vortex_center += (
+                            self.calculate_flapping_velocity_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name="ring_vortex.front_leg.center",
+                            )
                         )
 
                         # Using the Kutta-Joukowski theorem, calculate the force on
@@ -731,14 +745,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # velocity due to the freestream,
                         # the problem's vortices, and the flapping at the center of
                         # the left leg center.
-                        velocity_at_left_bound_vortex_center = self.calculate_solution_velocity(
-                            panel.ring_vortex.left_leg.center
+                        velocity_at_left_bound_vortex_center = (
+                            self.calculate_solution_velocity(
+                                panel.ring_vortex.left_leg.center
+                            )
                         )
-                        velocity_at_left_bound_vortex_center += self.calculate_flapping_velocity_on_panel(
-                            wing_position=wing_num,
-                            panel_chordwise_position=chordwise_location,
-                            panel_spanwise_position=spanwise_location,
-                            point_name="ring_vortex.left_leg.center",
+                        velocity_at_left_bound_vortex_center += (
+                            self.calculate_flapping_velocity_on_panel(
+                                wing_position=wing_num,
+                                panel_chordwise_position=chordwise_location,
+                                panel_spanwise_position=spanwise_location,
+                                point_name="ring_vortex.left_leg.center",
+                            )
                         )
 
                         # Using the Kutta-Joukowski theorem, calculate the force on
@@ -853,7 +871,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def calculate_streamlines(self, streamline_num_steps=10, streamline_delta_time=0.1):
-        """ This method calculates the location of the streamlines coming off the
+        """This method calculates the location of the streamlines coming off the
         back of the wings.
 
         :param streamline_num_steps: int, optional
@@ -925,7 +943,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
     def populate_next_airplanes_wake(self, prescribed_wake=True):
-        """ This method updates the next time step's airplane's wake.
+        """This method updates the next time step's airplane's wake.
 
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
@@ -945,7 +963,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.populate_next_airplanes_wake_vortices()
 
     def populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
-        """ This method populates the locations of the next airplane's wake vortex
+        """This method populates the locations of the next airplane's wake vortex
         vertices.
 
         :param prescribed_wake: Bool, optional
@@ -1056,8 +1074,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # If the wake is not prescribed, set the velocity at this
                             # vertex to the solution velocity at
                             # this point.
-                            velocity_at_first_row_wake_ring_vortex_vertex = self.calculate_solution_velocity(
-                                wake_ring_vortex_vertex
+                            velocity_at_first_row_wake_ring_vortex_vertex = (
+                                self.calculate_solution_velocity(
+                                    wake_ring_vortex_vertex
+                                )
                             )
 
                         # Update the second row with the interpolated position of the
@@ -1100,9 +1120,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         for spanwise_vertex_position in range(num_spanwise_vertices):
 
                             # Get the wake ring vortex vertex at this position.
-                            wake_ring_vortex_vertex = next_wing.wake_ring_vortex_vertices[
-                                chordwise_vertex_position, spanwise_vertex_position
-                            ]
+                            wake_ring_vortex_vertex = (
+                                next_wing.wake_ring_vortex_vertices[
+                                    chordwise_vertex_position, spanwise_vertex_position
+                                ]
+                            )
 
                             if prescribed_wake:
 
@@ -1116,8 +1138,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # If the wake is not prescribed, set the velocity at
                                 # this vertex to the solution
                                 # velocity at this point.
-                                velocity_at_first_row_wake_vortex_vertex = self.calculate_solution_velocity(
-                                    wake_ring_vortex_vertex
+                                velocity_at_first_row_wake_vortex_vertex = (
+                                    self.calculate_solution_velocity(
+                                        wake_ring_vortex_vertex
+                                    )
                                 )
 
                             # Update the vertex at this point with its interpolated
@@ -1173,7 +1197,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     )
 
     def populate_next_airplanes_wake_vortices(self):
-        """ This method populates the locations of the next airplane's wake vortices.
+        """This method populates the locations of the next airplane's wake vortices.
 
         :return: None
         """
@@ -1289,7 +1313,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
 
     def debug_wake_vortices(self):
-        """ This method prints out the current strength of the problem's vortices.
+        """This method prints out the current strength of the problem's vortices.
 
         :return: None
         """
@@ -1335,7 +1359,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         panel_spanwise_position,
         point_name,
     ):
-        """ This method gets the velocity due to flapping at a point on the panel of
+        """This method gets the velocity due to flapping at a point on the panel of
         the current airplane based its
         current position, and its last position.
 

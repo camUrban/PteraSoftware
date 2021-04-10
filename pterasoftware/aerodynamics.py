@@ -38,8 +38,9 @@ This module contains the following functions:
 """
 
 import numpy as np
-
 import pterasoftware as ps
+
+from numba import njit, prange
 
 
 class LineVortex:
@@ -282,14 +283,14 @@ class HorseshoeVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_right_leg = (
+            self.right_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_finite_leg = self.finite_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_finite_leg = (
+            self.finite_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_left_leg = (
+            self.left_leg.calculate_normalized_induced_velocity(point=point)
         )
 
         # Sum the velocities induced by each leg to get the velocity induced by the
@@ -437,7 +438,7 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = ps.geometry.numba_centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
@@ -458,17 +459,17 @@ class RingVortex:
             units of meters per second.
         """
 
-        normalized_velocity_induced_by_front_leg = self.front_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_front_leg = (
+            self.front_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_left_leg = self.left_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_left_leg = (
+            self.left_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_back_leg = self.back_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_back_leg = (
+            self.back_leg.calculate_normalized_induced_velocity(point=point)
         )
-        normalized_velocity_induced_by_right_leg = self.right_leg.calculate_normalized_induced_velocity(
-            point=point
+        normalized_velocity_induced_by_right_leg = (
+            self.right_leg.calculate_normalized_induced_velocity(point=point)
         )
 
         # Sum the velocities induced by each leg to get the velocity induced by the
@@ -591,141 +592,12 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.centroid_of_quadrilateral(
+        self.center = ps.geometry.numba_centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
             self.back_right_vertex,
         )
-
-
-def calculate_velocity_induced_by_line_vortices(
-    points, origins, terminations, strengths, collapse=True
-):
-    """ This function takes in a group of points, origins, terminations and
-    strengths. At every point, it finds the
-    induced velocity due to every line vortex, which are characterized by the groups
-    of origins, terminations, and
-    strengths.
-
-        This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects'
-        class methods for calculating induced velocity.
-
-        This function uses methodology described on pp. 251-255 of the second edition
-        of "Low-Speed Aerodynamics" by
-        Joseph Katz and Allen Plotkin.
-
-    :param points: 2D ndarray of floats
-        This variable is an ndarray of shape (N x 3), where N is the number of
-        points. Each row contains the x, y, and z
-        float coordinates of that point's position in meters.
-    :param origins: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of line
-        vortices. Each row contains the x,
-        y, and z float coordinates of that line vortex's origin's position in meters.
-    :param terminations: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of line
-        vortices. Each row contains the x,
-        y, and z float coordinates of that line vortex's termination's position in
-        meters.
-    :param strengths: 1D ndarray of floats
-        This variable is an ndarray of shape (, M), where M is the number of line
-        vortices. Each position contains the
-        strength of that line vortex in meters squared per second.
-    :param collapse: bool, optional
-        This variable determines whether or not the user would like the output to be
-        of shape (N x M x 3) or of shape
-        (N x 3). If true, than the effect from every line vortex on a given point
-        will be summed, so the result will be
-        of shape (N x 3), where each row identifies the summed effects on a point. If
-        false, than the effect from every
-        line vortex will remain distinct, and the shape will be (N x M x 3),
-        where each row/column pair identifies the
-        effect on a point by one of the line vortices.
-    :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
-        If collapse is true, the output is the summed effects from every line vortex
-        on a given point. The result will
-        be of shape (N x 3), where each row identifies the effects on a point. If
-        false, than the effect from every line
-        vortex will remain distinct, and the shape will be (N x M x 3), where each
-        row/column pair identifies the effect
-        on one point by one of the line vortices. Either way, the results units are
-        meters per second.
-    """
-
-    # Expand the dimensionality of the points input. It is now of shape (N x 1 x 3).
-    # This will allow numpy to
-    # broadcast the upcoming subtractions.
-    points = np.expand_dims(points, axis=1)
-
-    # Define the vectors from the vortex to the points. r_1 and r_2 now both are of
-    # shape (N x M x 3). Each row/column
-    # pair holds the vector associated with each point/vortex pair.
-    r_1 = points - origins
-    r_2 = points - terminations
-
-    # Define the vector from the vortex origins to the vortex terminations. This is
-    # of shape (N x M x 3).
-    r_0 = r_1 - r_2
-
-    # Calculate the vector cross product. This is of shape (N x M x 3).
-    r_1_cross_r_2 = np.cross(r_1, r_2)
-
-    # Calculate the cross product's absolute magnitude. This is of shape (N x M).
-    r_1_cross_r_2_absolute_magnitude = (
-        r_1_cross_r_2[:, :, 0] ** 2
-        + r_1_cross_r_2[:, :, 1] ** 2
-        + r_1_cross_r_2[:, :, 2] ** 2
-    )
-
-    # Calculate the vector lengths. These are of shape (N x M).
-    r_1_length = np.linalg.norm(r_1, axis=-1)
-    r_2_length = np.linalg.norm(r_2, axis=-1)
-
-    # Define the radius of the line vortices. This is used to get rid of any
-    # singularities.
-    radius = 3.0e-16
-
-    # Set the lengths and the absolute magnitudes to zero, at the places where the
-    # lengths and absolute magnitudes are
-    # less than the vortex radius. This insures that the calculation for the constant
-    # k will produce np.inf or np.nan
-    # values at the locations where there are singularities.
-    r_1_length[r_1_length < radius] = 0
-    r_2_length[r_2_length < radius] = 0
-    r_1_cross_r_2_absolute_magnitude[r_1_cross_r_2_absolute_magnitude < radius] = 0
-
-    # Calculate the vector dot products. This uses numpy's einsum function for speed.
-    r_0_dot_r_1 = np.einsum("ijk,ijk->ij", r_0, r_1)
-    r_0_dot_r_2 = np.einsum("ijk,ijk->ij", r_0, r_2)
-
-    # Calculate k and then the induced velocity, ignoring any divide-by-zero or nan
-    # errors. k is of shape (N x M)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        k = (
-            strengths
-            / (4 * np.pi * r_1_cross_r_2_absolute_magnitude)
-            * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
-        )
-
-        # Set the shape of k to be (N x M x 1) to support numpy broadcasting in the
-        # subsequent multiplication.
-        k = np.expand_dims(k, axis=2)
-
-        # Multiple k by the cross products of r_1 and r_2 to get the non-collapsed
-        # matrix of induced velocities. This is
-        # of shape (M x N x 3).
-        induced_velocities = k * r_1_cross_r_2
-
-    # Set the values of the induced velocity to zero where there are singularities.
-    induced_velocities[np.isinf(induced_velocities)] = 0
-    induced_velocities[np.isnan(induced_velocities)] = 0
-
-    if collapse:
-        induced_velocities = np.sum(induced_velocities, axis=1)
-
-    return induced_velocities
 
 
 def calculate_velocity_induced_by_horseshoe_vortices(
@@ -737,7 +609,7 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     strengths,
     collapse=True,
 ):
-    """ This function takes in a group of points, and the attributes of a group of
+    """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point,
     it finds the induced velocity due to every horseshoe vortex, which are
     characterized by groups of back right
@@ -839,7 +711,7 @@ def calculate_velocity_induced_by_ring_vortices(
     strengths,
     collapse=True,
 ):
-    """ This function takes in a group of points, and the attributes of a group of
+    """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it
     finds the induced velocity due to every ring vortex, which are characterized by
     groups of back right vertices, front
@@ -897,6 +769,25 @@ def calculate_velocity_induced_by_ring_vortices(
         on one point by one of the ring vortices. Either way, the results units are
         meters per second.
     """
+    # num_points = points.shape[0]
+    # num_rings = back_right_vortex_vertices.shape[0]
+    #
+    # if collapse:
+    #     right_leg_velocities = np.empty((num_points, 3))
+    #     front_leg_velocities = np.empty((num_points, 3))
+    #     left_leg_velocities = np.empty((num_points, 3))
+    #     back_leg_velocities = np.empty((num_points, 3))
+    # else:
+    #     right_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     front_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     left_leg_velocities = np.empty((num_points, num_rings, 3))
+    #     back_leg_velocities = np.empty((num_points, num_rings, 3))
+    #
+    # leg_velocities = [right_leg_velocities, front_leg_velocities,
+    #                   left_leg_velocities, back_leg_velocities]
+    #
+    # with multiprocessing.Pool() as pool:
+    #     pool.map()
 
     # Get the velocity induced by each leg of the ring vortex.
     right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
@@ -938,4 +829,210 @@ def calculate_velocity_induced_by_ring_vortices(
     )
 
     # Return the induced velocity.
+    return induced_velocities
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_subtract(vectors_1, vectors_2):
+    """
+
+    :param vectors_1:
+    :param vectors_2:
+    :return diffs:
+    """
+    diffs = np.empty((vectors_1.shape[0], vectors_2.shape[0], 3))
+    for i in prange(diffs.shape[0]):
+        for j in range(diffs.shape[1]):
+            for k in range(3):
+                diffs[i, j, k] = vectors_1[i, k] - vectors_2[j, k]
+    return diffs
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_explicit_norm(vectors):
+    """
+
+    :param vectors:
+    :return norms:
+    """
+    norms = np.empty((vectors.shape[0], vectors.shape[1]))
+    for i in prange(norms.shape[0]):
+        for j in range(norms.shape[1]):
+            norms[i, j] = np.sqrt(
+                vectors[i, j, 0] ** 2 + vectors[i, j, 1] ** 2 + vectors[i, j, 2] ** 2
+            )
+    return norms
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_2d_explicit_cross(vectors_1, vectors_2):
+    """
+
+    :param vectors_1:
+    :param vectors_2:
+    :return crosses:
+    """
+    crosses = np.empty(vectors_1.shape)
+    for i in prange(crosses.shape[0]):
+        for j in range(crosses.shape[1]):
+            crosses[i, j, 0] = (
+                vectors_1[i, j, 1] * vectors_2[i, j, 2]
+                - vectors_1[i, j, 2] * vectors_2[i, j, 1]
+            )
+            crosses[i, j, 1] = (
+                vectors_1[i, j, 2] * vectors_2[i, j, 0]
+                - vectors_1[i, j, 0] * vectors_2[i, j, 2]
+            )
+            crosses[i, j, 2] = (
+                vectors_1[i, j, 0] * vectors_2[i, j, 1]
+                - vectors_1[i, j, 1] * vectors_2[i, j, 0]
+            )
+    return crosses
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_cross_absolute_magnitude(crosses):
+    """
+
+    :param crosses:
+    :return:
+    """
+    return crosses[:, :, 0] ** 2 + crosses[:, :, 1] ** 2 + crosses[:, :, 2] ** 2
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_discard_singularities(induced_velocities):
+    """
+
+    :param induced_velocities:
+    :return:
+    """
+    for i in prange(induced_velocities.shape[0]):
+        for j in range(induced_velocities.shape[1]):
+            for k in range(3):
+                if np.isinf(induced_velocities[i, j, k]) or np.isnan(
+                    induced_velocities[i, j, k]
+                ):
+                    induced_velocities[i, j, k] = 0.0
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_compute_k(
+    strengths,
+    r_3_abs_mag,
+    dot_const_1,
+    r_1_len,
+    dot_const_2,
+    r_2_len,
+):
+    """
+
+    :param strengths:
+    :param r_3_abs_mag:
+    :param dot_const_1:
+    :param r_1_len:
+    :param dot_const_2:
+    :param r_2_len:
+    :return:
+    """
+    return (
+        strengths
+        / (4 * np.pi * r_3_abs_mag)
+        * (dot_const_1 / r_1_len - dot_const_2 / r_2_len)
+    )
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_compute_dot_constants(r_1, r_2):
+    """
+
+    :param r_1:
+    :param r_2:
+    :return:
+    """
+    n, m = r_1.shape[0], r_1.shape[1]
+    dot_const_1 = np.empty((n, m))
+    dot_const_2 = np.empty((n, m))
+    for i in prange(n):
+        for j in range(m):
+            dot_const_1[i, j] = 0.0
+            dot_const_2[i, j] = 0.0
+            for k in range(3):
+                r_0 = r_1[i, j, k] - r_2[i, j, k]
+                dot_const_1[i, j] += r_0 * r_1[i, j, k]
+                dot_const_2[i, j] += r_0 * r_2[i, j, k]
+    return dot_const_1, dot_const_2
+
+
+# ToDo: Document this method.
+@njit(parallel=True, cache=True)
+def numba_collapse(induced_velocities):
+    """
+
+    :param induced_velocities:
+    :return collapses:
+    """
+    n, m = induced_velocities.shape[0], induced_velocities.shape[1]
+    collapses = np.empty((n, 3))
+    for i in prange(n):
+        collapses[i, 0] = np.sum(induced_velocities[i, :, 0])
+        collapses[i, 1] = np.sum(induced_velocities[i, :, 1])
+        collapses[i, 2] = np.sum(induced_velocities[i, :, 2])
+    return collapses
+
+
+# ToDo: Document this method.
+def calculate_velocity_induced_by_line_vortices(
+    points, origins, terminations, strengths, collapse=True
+):
+    """
+
+    :param points:
+    :param origins:
+    :param terminations:
+    :param strengths:
+    :param collapse:
+    :return:
+    """
+    r_1 = numba_subtract(points, origins)
+    r_2 = numba_subtract(points, terminations)
+
+    r_3 = numba_2d_explicit_cross(r_1, r_2)
+
+    r_3_abs_mag = numba_cross_absolute_magnitude(r_3)
+
+    r_1_len = numba_explicit_norm(r_1)
+    r_2_len = numba_explicit_norm(r_2)
+
+    radius = 3.0e-16
+    r_1_len[r_1_len < radius] = 0
+    r_2_len[r_2_len < radius] = 0
+    r_3_abs_mag[r_3_abs_mag < radius] = 0
+
+    dot_const_1, dot_const_2 = numba_compute_dot_constants(r_1, r_2)
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        k = numba_compute_k(
+            strengths,
+            r_3_abs_mag,
+            dot_const_1,
+            r_1_len,
+            dot_const_2,
+            r_2_len,
+        )
+        k = np.expand_dims(k, axis=2)
+        induced_velocities = k * r_3
+
+    numba_discard_singularities(induced_velocities)
+
+    if collapse:
+        induced_velocities = numba_collapse(induced_velocities)
+
     return induced_velocities

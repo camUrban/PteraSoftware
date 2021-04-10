@@ -153,7 +153,9 @@ example_airplane = ps.geometry.Airplane(
                     control_surface_type="asymmetric",
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=10.0,
-                    airfoil=ps.geometry.Airfoil(name="naca2412",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca2412",
+                    ),
                 ),
             ],
         ),
@@ -167,7 +169,9 @@ example_airplane = ps.geometry.Airplane(
                 ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
@@ -177,7 +181,9 @@ example_airplane = ps.geometry.Airplane(
                     chord=1.0,
                     twist=-5.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                 ),
             ],
         ),
@@ -191,7 +197,9 @@ example_airplane = ps.geometry.Airplane(
                 ps.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                 ),
                 # Define the wing's tip wing cross section.
                 ps.geometry.WingCrossSection(
@@ -199,7 +207,9 @@ example_airplane = ps.geometry.Airplane(
                     z_le=2.0,
                     chord=1.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(name="naca0012",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
                 ),
             ],
         ),

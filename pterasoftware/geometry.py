@@ -1,32 +1,25 @@
-""" This module contains useful functions that relate to geometry, and the class
-definitions for different types of
+""" This module contains useful functions that relate to geometry, and the class definitions for different types of
 geometries.
 
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
     Wing: This is a class used to contain the wings of an current_airplane.
-    WingCrossSection: This class is used to contain the cross sections of the wings
-    of an current_airplane.
-    Airfoil: This class is used to contain the airfoil of a cross section of a wing
-    of an current_airplane.
+    WingCrossSection: This class is used to contain the cross sections of the wings of an current_airplane.
+    Airfoil: This class is used to contain the airfoil of a cross section of a wing of an current_airplane.
     Panel: This class is used to contain the panels of a wing.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a ndarray containing a specified number
-    of values between a specified
-              minimum and maximum value that are spaced via a cosine function.
-    sinspace: This function is used to create a ndarray containing a specified number
-    of values between a specified
-              minimum and maximum value that are spaced via a sine function.
-    reflect_over_xz_plane: This function is used to flip a the y coordinate of a
-    coordinate vector.
-    angle_axis_rotation_matrix: This function is used to find the rotation matrix for
-    a given axis and angle.
-    centroid_of_quadrilateral: This function is used to find the centroid of a
-    quadrilateral.
+    cosspace: This function is used to create a ndarray containing a specified number of values between a specified
+    minimum and maximum value that are spaced via a cosine function.
+    sinspace: This function is used to create a ndarray containing a specified number of values between a specified
+    minimum and maximum value that are spaced via a sine function.
+    reflect_over_xz_plane: This function is used to flip a the y coordinate of a coordinate vector.
+    angle_axis_rotation_matrix: This function is used to find the rotation matrix for a given axis and angle.
+    numba_centroid_of_quadrilateral: This function is used to find the centroid of a quadrilateral. It has been
+    optimized for JIT compilation using Numba.
 """
 
 import matplotlib.pyplot as plt
@@ -1383,29 +1376,25 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     return rotation_matrix
 
 
-# ToDo: Document this function.
 @njit(cache=True)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
-    """This function is used to find the centroid of a quadrilateral.
+    """This function is used to find the centroid of a quadrilateral. It has been optimized for JIT compilation using
+    Numba.
 
     :param front_left_vertex: 1D ndarray
-        This is an array containing the x, y, and z components of the front left
-        vertex of the quadrilateral.
+        This is an array containing the x, y, and z components of the front left vertex of the quadrilateral.
     :param front_right_vertex: 1D ndarray
-        This is an array containing the x, y, and z components of the front right
-        vertex of the quadrilateral.
+        This is an array containing the x, y, and z components of the front right vertex of the quadrilateral.
     :param back_left_vertex: 1D ndarray
-        This is an array containing the x, y, and z components of the back left
-        vertex of the quadrilateral.
+        This is an array containing the x, y, and z components of the back left vertex of the quadrilateral.
     :param back_right_vertex: 1D ndarray
-        This is an array containing the x, y, and z components of the back right
-        vertex of the quadrilateral.
+        This is an array containing the x, y, and z components of the back right vertex of the quadrilateral.
     :return: 1D ndarray
-        This is an array containing the x, y, and z components of the centroid of the
-        quadrilateral.
+        This is an array containing the x, y, and z components of the centroid of the quadrilateral.
     """
+
     x_average = (
         front_left_vertex[0]
         + front_right_vertex[0]
@@ -1425,5 +1414,4 @@ def numba_centroid_of_quadrilateral(
         + back_right_vertex[2]
     ) / 4
 
-    centroid = np.array([x_average, y_average, z_average])
-    return centroid
+    return np.array([x_average, y_average, z_average])

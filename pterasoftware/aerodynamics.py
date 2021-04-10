@@ -832,7 +832,7 @@ def calculate_velocity_induced_by_ring_vortices(
     return induced_velocities
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_subtract(vectors_1, vectors_2):
     """
@@ -849,7 +849,7 @@ def numba_subtract(vectors_1, vectors_2):
     return diffs
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_explicit_norm(vectors):
     """
@@ -866,7 +866,7 @@ def numba_explicit_norm(vectors):
     return norms
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_2d_explicit_cross(vectors_1, vectors_2):
     """
@@ -893,7 +893,7 @@ def numba_2d_explicit_cross(vectors_1, vectors_2):
     return crosses
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_cross_absolute_magnitude(crosses):
     """
@@ -904,7 +904,7 @@ def numba_cross_absolute_magnitude(crosses):
     return crosses[:, :, 0] ** 2 + crosses[:, :, 1] ** 2 + crosses[:, :, 2] ** 2
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_discard_singularities(induced_velocities):
     """
@@ -921,7 +921,7 @@ def numba_discard_singularities(induced_velocities):
                     induced_velocities[i, j, k] = 0.0
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_compute_k(
     strengths,
@@ -948,7 +948,7 @@ def numba_compute_k(
     )
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_compute_dot_constants(r_1, r_2):
     """
@@ -971,7 +971,7 @@ def numba_compute_dot_constants(r_1, r_2):
     return dot_const_1, dot_const_2
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_collapse(induced_velocities):
     """
@@ -988,7 +988,7 @@ def numba_collapse(induced_velocities):
     return collapses
 
 
-# ToDo: Document this method.
+# ToDo: Document this function.
 def calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):

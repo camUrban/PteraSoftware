@@ -1,16 +1,15 @@
-""" This module contains the class definition of this package's unsteady ring vortex
-lattice solver.
+""" This module contains the class definition of this package's unsteady ring vortex lattice solver.
 
 This module contains the following classes:
-    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
-    an unsteady ring vortex lattice
-                                           method.
+    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses an unsteady ring vortex lattice
+    method.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    None
+    numba_1d_explicit_cross: This function finds the cross product of two 1D vectors. It has been optimized for JIT
+    compilation and parallel computation using Numba.
 """
 
 import pickle
@@ -26,43 +25,34 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
-        initialize_panel_vortices: This method calculates the locations of an
-        airplane's bound vortex vertices, and then initializes its panels' bound
-        vortices.
-        collapse_geometry: This method converts attributes of the problem's geometry
-        into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
-        calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with this airplane's geometry.
-        calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influences associated with the problem at this time step.
-        calculate_wake_wing_influences: This method finds the vector of the wake-wing
-        influences associated with the problem at this time step.
+        initialize_panel_vortices: This method calculates the locations of an airplane's bound vortex vertices, and then
+        initializes its panels' bound vortices.
+        collapse_geometry: This method converts attributes of the problem's geometry into 1D ndarrays. This facilitates
+        vectorization, which speeds up the solver.
+        calculate_wing_wing_influences: This method finds the matrix of wing-wing influence coefficients associated with
+        this airplane's geometry.
+        calculate_freestream_wing_influences: This method finds the vector of freestream-wing influences associated with
+        the problem at this time step.
+        calculate_wake_wing_influences: This method finds the vector of the wake-wing influences associated with the
+        problem at this time step.
         calculate_vortex_strengths: This method solves for each panel's vortex strength.
-        calculate_solution_velocity: This function takes in a group of points. At
-        every point, it finds the induced velocity due to every vortex and the
-        freestream velocity.
-        calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near field.
-        calculate_streamlines: This method calculates the location of the streamlines
-        coming off the back of the wings.
-        populate_next_airplanes_wake: This method updates the next time step's
-        airplane's wake.
-        populate_next_airplanes_wake_vortex_vertices: This method populates the
-        locations of the next airplane's wake vortex vertices.
-        populate_next_airplanes_wake_vortices: This method populates the locations of
-        the next airplane's wake vortices.
-        calculate_current_flapping_velocities_at_collocation_points: This method gets
-        the velocity due to flapping at all of the current airplane's collocation
-        points.
-        calculate_current_flapping_velocities_at_right_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound
-        ring vortices' right legs.
-        calculate_current_flapping_velocities_at_front_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound
-        ring vortices' front legs.
-        calculate_current_flapping_velocities_at_left_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound ring
-        vortices' left legs.
+        calculate_solution_velocity: This function takes in a group of points. At every point, it finds the induced
+        velocity due to every vortex and the freestream velocity.
+        calculate_near_field_forces_and_moments: This method finds the the forces and moments calculated from the near
+        field.
+        calculate_streamlines: This method calculates the location of the streamlines coming off the back of the wings.
+        populate_next_airplanes_wake: This method updates the next time step's airplane's wake.
+        populate_next_airplanes_wake_vortex_vertices: This method populates the locations of the next airplane's wake
+        vortex vertices.
+        populate_next_airplanes_wake_vortices: This method populates the locations of the next airplane's wake vortices.
+        calculate_current_flapping_velocities_at_collocation_points: This method gets the velocity due to flapping at
+        all of the current airplane's collocation points.
+        calculate_current_flapping_velocities_at_right_leg_centers: This method gets the velocity due to flapping at the
+        centers of the current airplane's bound ring vortices' right legs.
+        calculate_current_flapping_velocities_at_front_leg_centers: This method gets the velocity due to flapping at the
+        centers of the current airplane's bound ring vortices' front legs.
+        calculate_current_flapping_velocities_at_left_leg_centers: This method gets the velocity due to flapping at the
+        centers of the current airplane's bound ring vortices' left legs.
 
     This class contains the following class attributes:
         None
@@ -1724,7 +1714,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 # ToDo: Document this method.
 @njit(parallel=True, cache=True)
 def numba_1d_explicit_cross(vectors_1, vectors_2):
-    """
+    """This function finds the cross product of two 1D vectors. It has been optimized for JIT compilation and parallel
+    computation using Numba.
 
     :param vectors_1:
     :param vectors_2:

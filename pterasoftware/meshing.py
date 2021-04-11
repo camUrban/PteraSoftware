@@ -39,7 +39,7 @@ def mesh_wing(wing):
     num_chordwise_panels = wing.num_chordwise_panels
     num_chordwise_coordinates = num_chordwise_panels + 1
 
-    # Initialize an empty ndarray that will hold the panels of this wing. It
+    # Initialize an empty array that will hold the panels of this wing. It
     # currently has 0 columns and M rows,
     # where M is the number of the wing's chordwise panels.
     panels = np.empty((num_chordwise_panels, 0), dtype=object)
@@ -81,14 +81,14 @@ def mesh_wing(wing):
             (cross_section_xyz_te, wing_cross_section.xyz_te() + wing.xyz_le)
         )
 
-    # Get the quarter chord vectors, which are a L x 3 ndarray of points which are
+    # Get the quarter chord vectors, which are a L x 3 array of points which are
     # the quarter-chord points of cross
     # section, where L is the number of cross sections.
     cross_section_xyz_quarter_chords = cross_section_xyz_le + 0.25 * (
         cross_section_xyz_te - cross_section_xyz_le
     )
 
-    # Get a (L - 1) x 3 ndarray of vectors connecting the cross section quarter chord
+    # Get a (L - 1) x 3 array of vectors connecting the cross section quarter chord
     # points, where L is the number of
     # cross sections.
     section_quarter_chords = (
@@ -98,12 +98,12 @@ def mesh_wing(wing):
 
     # Get directions for transforming 2D airfoil data to 3D:
     #   Project quarter chords onto yz plane and normalize.
-    #   Create a L x 2 ndarray with just the y and z components of the the section
+    #   Create a L x 2 array with just the y and z components of the the section
     #   quarter chord vectors.
     section_quarter_chords_yz = section_quarter_chords[:, 1:]
 
     # Create a list of the magnitudes of each row of the section_quarter_chords_yz
-    # ndarray.
+    # array.
     section_quarter_chords_yz_magnitude_list = np.linalg.norm(
         section_quarter_chords_yz, axis=1
     )
@@ -395,16 +395,16 @@ def mesh_wing(wing):
         # Linearly interpolate between inner and outer cross sections.
         #   This uses the following equation:
         #       f(a, b, i) = i * a + (1 - i) * b
-        #       "a" is an N x 3 ndarray of the coordinates points along the outer
+        #       "a" is an N x 3 array of the coordinates points along the outer
         #       cross section's mean
         #           camber line.
-        #       "b" is an N x 3 ndarray of the coordinates of points along the inner
+        #       "b" is an N x 3 array of the coordinates of points along the inner
         #       cross section's mean
         #           camber line.
         #       "i" is a 1D array (or vector) of length M that holds the
         #       nondimensionalized spanwise panel
         #           spacing from 0 to 1.
-        #       This produces a M x N x 3 ndarray where each slot holds the
+        #       This produces a M x N x 3 array where each slot holds the
         #       coordinates of a point on the
         #           surface between the inner and outer cross sections.
         section_mcl_vertices = (
@@ -438,7 +438,7 @@ def mesh_wing(wing):
             )
         )
 
-        # Initialize an empty ndarray to hold this sections. The matrix is size M x
+        # Initialize an empty array to hold this sections. The matrix is size M x
         # N, where M and N are the number
         # of chordwise and spanwise panels.
         section_panels = np.empty(
@@ -621,16 +621,16 @@ def mesh_wing(wing):
             # Linearly interpolate between inner and outer cross sections.
             #   This uses the following equation:
             #       f(a, b, i) = i * a + (1 - i) * b
-            #       "a" is an N x 3 ndarray of the coordinates points along the outer
+            #       "a" is an N x 3 array of the coordinates points along the outer
             #       cross section's mean
             #           camber line.
-            #       "b" is an N x 3 ndarray of the coordinates of points along the
+            #       "b" is an N x 3 array of the coordinates of points along the
             #       inner cross section's mean
             #           camber line.
             #       "i" is a 1D array (or vector) of length M that holds the
             #       nondimensionalized spanwise panel
             #           spacing from 0 to 1.
-            #       This produces a M x N x 3 ndarray where each slot holds the
+            #       This produces a M x N x 3 array where each slot holds the
             #       coordinates of a point on the
             #           surface between the inner and outer cross sections.
             section_mcl_vertices = (
@@ -670,7 +670,7 @@ def mesh_wing(wing):
                 )
             )
 
-            # Initialize an empty ndarray to hold this sections. The matrix is size M
+            # Initialize an empty array to hold this sections. The matrix is size M
             # x N, where M and N are the
             # number of chordwise and spanwise panels.
             section_panels = np.empty(

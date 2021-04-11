@@ -19,6 +19,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
+
 import pterasoftware as ps
 
 
@@ -100,14 +101,14 @@ def draw(
                 ]
             )
 
-            # Stack this panel's vertices, faces, and scalars with the ndarray of all
+            # Stack this panel's vertices, faces, and scalars with the array of all
             # the vertices, faces, and
             # scalars.
             panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
             panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
             # If the user wants to plot the pressures, add the panel's delta pressure
-            # to the ndarray of scalars.
+            # to the array of scalars.
             if show_delta_pressures:
                 scalar_to_add = panel.delta_pressure
                 scalars = np.hstack((scalars, scalar_to_add))
@@ -291,12 +292,12 @@ def animate(
             )
 
             # If the user wants to plot the pressures, add the panel's delta pressure
-            # to the ndarray of scalars.
+            # to the array of scalars.
             if show_delta_pressures:
                 scalar_to_add = panel.delta_pressure
                 scalars = np.hstack((scalars, scalar_to_add))
 
-            # Stack this panel's vertices, faces, and scalars with the ndarray of all
+            # Stack this panel's vertices, faces, and scalars with the array of all
             # the vertices, faces, and
             # scalars.
             panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
@@ -394,14 +395,14 @@ def animate(
                     ]
                 )
 
-                # Stack this panel's vertices, faces, and scalars with the ndarray of
+                # Stack this panel's vertices, faces, and scalars with the array of
                 # all the vertices, faces, and
                 # scalars.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
                 # If the user wants to plot the pressures, add the panel's delta
-                # pressure to the ndarray of scalars.
+                # pressure to the array of scalars.
                 if show_delta_pressures:
                     scalar_to_add = panel.delta_pressure
                     scalars = np.hstack((scalars, scalar_to_add))
@@ -531,7 +532,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     final_time_step_time = delta_time * (num_steps - 1)
     num_steps_with_results = num_steps - first_results_step
 
-    # Create a 1D ndarray with the time at each time step where results have been
+    # Create a 1D array with the time at each time step where results have been
     # calculated.
     times = np.linspace(
         first_results_time_step_time,
@@ -556,7 +557,6 @@ def plot_results_versus_time(unsteady_solver, testing=False):
 
     # Iterate through the time steps and add the results to their respective matrices.
     for step in range(first_results_step, num_steps):
-
         # Get the airplane from the problem at this step.
         airplane = unsteady_solver.steady_problems[step].airplane
 

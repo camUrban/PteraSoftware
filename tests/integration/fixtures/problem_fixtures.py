@@ -38,9 +38,9 @@ This module contains the following functions:
 """
 
 import pterasoftware as ps
-from tests.integration.fixtures import operating_point_fixtures
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import movement_fixtures
+from tests.integration.fixtures import operating_point_fixtures
 
 
 def make_steady_validation_problem():

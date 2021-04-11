@@ -120,7 +120,7 @@ example_airplane = ps.geometry.Airplane(
                         # own coordinates.
                         name="naca2412",
                         # If you wish to pass in coordinates, set this to a N x 2
-                        # ndarray of the airfoil's coordinates,
+                        # array of the airfoil's coordinates,
                         # where N is the number of coordinates. Treat this as an
                         # immutable, don't edit directly after
                         # initialization. If you wish to load coordinates from the

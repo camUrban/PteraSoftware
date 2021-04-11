@@ -280,7 +280,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # the vortex influence is to be calculated.
         for collocation_panel_wing in self.current_airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -291,7 +291,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.current_airplane.wings:
 
-                    # Convert the 2D ndarray of this wing's panels into a 1D list.
+                    # Convert the 2D array of this wing's panels into a 1D list.
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
@@ -423,7 +423,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the wings.
         for collocation_panel_wing in self.current_airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -491,7 +491,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.current_airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -514,11 +514,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         flapping. The velocity calculated by
         this method is in geometry axes.
 
-        :param point: 1D ndarray of floats
+        :param point: 1D array of floats
             This is the x, y, and z coordinates of the location, in meters,
             where this method will solve for the
             velocity.
-        :return solution_velocity: 1D ndarray of floats
+        :return solution_velocity: 1D array of floats
             This is the x, y, and z components of the velocity, in meters per second,
             where this method will solve for
             the velocity.
@@ -1367,17 +1367,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
             This is the position of the panel's wing in the current_airplane's list
             of wings.
         :param panel_chordwise_position: int
-            This is the chordwise position of the panel in the wing's ndarray of panels.
+            This is the chordwise position of the panel in the wing's array of panels.
         :param panel_spanwise_position: int
-            This is the spanwise position of the panel in the wing's ndarray of panels.
+            This is the spanwise position of the panel in the wing's array of panels.
         :param point_name: string
             This is the name of the point at which to find the velocity due to
             flapping. It should be the name of one of
             the point attributes of this panel (i.e. "ring_vortex.left_leg.center",
             "collocation_point", etc.)
-        :return flapping_velocity: 1D ndarray
+        :return flapping_velocity: 1D array
             This is the flapping velocity at the current time current_step at the
-            given point. It is a (,3) ndarray with
+            given point. It is a (,3) array with
             units of meters per second.
         """
 

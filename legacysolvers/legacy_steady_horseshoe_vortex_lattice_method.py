@@ -258,7 +258,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # the vortex influence is to be calculated.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -269,7 +269,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                 # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.airplane.wings:
 
-                    # Convert the 2D ndarray of this wing's panels into a 1D list.
+                    # Convert the 2D array of this wing's panels into a 1D list.
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
@@ -332,7 +332,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -364,7 +364,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -382,19 +382,19 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
     def calculate_solution_velocity(self, point):
         """Find the velocity at a given point due to the freestream and the vortices.
 
-        :param point: 1D ndarray
+        :param point: 1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the velocity at.
         :return: None
         """
 
-        # Initialize an ndarray to hold the solution velocity.
+        # Initialize an array to hold the solution velocity.
         velocity_induced_by_vortices = np.zeros(3)
 
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -561,7 +561,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Initialize an ndarray to hold the points along the streamline. It is
+            # Initialize an array to hold the points along the streamline. It is
             # shape (M x N x 3), where M is the
             # number of points in the streamline (not including the initial point),
             # N is the number of spanwise panels

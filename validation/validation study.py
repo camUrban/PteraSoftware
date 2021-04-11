@@ -691,7 +691,6 @@ lift_figure.show()
 
 # Delete the extraneous pointers.
 del airplanes
-del steady_problem
 del sim_net_forces_wind_axes
 del step
 

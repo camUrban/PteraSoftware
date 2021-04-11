@@ -83,7 +83,7 @@ class OperatingPoint:
         """This method computes the 3 x 3 rotation matrix for converting from wind
         axes to geometry axes.
 
-        :return rotation_matrix_wind_axes_to_geometry_axes: 3 x 3 ndarray
+        :return rotation_matrix_wind_axes_to_geometry_axes: 3 x 3 array
             This is the rotation matrix to convert wind axes to geometry axes.
         """
 
@@ -126,7 +126,7 @@ class OperatingPoint:
         """This method computes the freestream direction (the direction the wind is
         going to) in geometry axes.
 
-        :return velocity_direction_geometry_axes: 1D ndarray
+        :return velocity_direction_geometry_axes: 1D array
             This is the freestream velocity direction in geometry axes.
         """
 
@@ -141,7 +141,7 @@ class OperatingPoint:
         """This method computes the freestream velocity vector (in the direction the
         wind is going to) in geometry axes.
 
-        :return freestream_velocity_geometry_axes: 1D ndarray
+        :return freestream_velocity_geometry_axes: 1D array
             This is the freestream velocity vector in geometry axes.
         """
 

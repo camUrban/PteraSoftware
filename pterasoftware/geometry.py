@@ -12,9 +12,9 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a ndarray containing a specified number of values between a specified
+    cosspace: This function is used to create a array containing a specified number of values between a specified
     minimum and maximum value that are spaced via a cosine function.
-    sinspace: This function is used to create a ndarray containing a specified number of values between a specified
+    sinspace: This function is used to create a array containing a specified number of values between a specified
     minimum and maximum value that are spaced via a sine function.
     reflect_over_xz_plane: This function is used to flip a the y coordinate of a coordinate vector.
     angle_axis_rotation_matrix: This function is used to find the rotation matrix for a given axis and angle.
@@ -25,7 +25,6 @@ This module contains the following functions:
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
-
 from numba import njit
 
 import pterasoftware as ps
@@ -272,7 +271,7 @@ class Wing:
         self.span = None
         self.calculate_span()
 
-        # Initialize an empty ndarray to hold this wing's wake ring vortices and its
+        # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
@@ -427,8 +426,8 @@ class WingCrossSection:
         """This method calculates the coordinates of the trailing edge of the cross
         section.
 
-        :return xyz_te: ndarray
-            This is a 1D ndarray that contains the coordinates of the cross section's
+        :return xyz_te: array
+            This is a 1D array that contains the coordinates of the cross section's
             trailing edge.
         """
 
@@ -439,7 +438,7 @@ class WingCrossSection:
         # trailing edge coordinates.
         xyz_te = self.xyz_le + rot @ np.array([self.chord, 0.0, 0.0])
 
-        # Return the 1D ndarray that contains the trailing edge's coordinates.
+        # Return the 1D array that contains the trailing edge's coordinates.
         return xyz_te
 
 
@@ -500,8 +499,8 @@ class Airfoil:
             This is the name of the airfoil. It should correspond to the name in the
             airfoils directory unless you are
             passing in your own coordinates. The default is "Untitled Airfoil".
-        :param coordinates: ndarray, optional
-            This is a N x 2 ndarray of the airfoil's coordinates, where N is the
+        :param coordinates: array, optional
+            This is a N x 2 array of the airfoil's coordinates, where N is the
             number of coordinates. Treat this
             as an immutable, don't edit directly after initialization. If you wish to
             load coordinates from the airfoil
@@ -668,16 +667,16 @@ class Airfoil:
             # Trim the text at the return characters.
             trimmed_text = raw_text[raw_text.find("\n") :]
 
-            # Input the coordinates into a 1D ndarray.
+            # Input the coordinates into a 1D array.
             coordinates_1d = np.fromstring(trimmed_text, sep="\n")
 
-            # Check to make sure the number of elements in the ndarray is even.
+            # Check to make sure the number of elements in the array is even.
             assert len(coordinates_1d) % 2 == 0, (
                 "File was found in airfoil database, "
                 "but it could not be read correctly."
             )
 
-            # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the
+            # Reshape the 1D coordinates array into a N x 2 array, where N is the
             # number of rows.
             coordinates = np.reshape(coordinates_1d, (-1, 2))
 
@@ -749,8 +748,8 @@ class Airfoil:
         point so be careful about duplicates if using this method in conjunction with
         self.upper_coordinates.
 
-        :return lower_coordinates: ndarray
-            This is a N x 2 ndarray of x and y coordinates that describe the lower
+        :return lower_coordinates: array
+            This is a N x 2 array of x and y coordinates that describe the lower
             surface of the airfoil, where N
             is the number of points.
         """
@@ -770,8 +769,8 @@ class Airfoil:
         point so be careful about duplicates if using this method in conjunction with
         self.lower_coordinates.
 
-        :return upper_coordinates: ndarray
-            This is a N x 2 ndarray of x and y coordinates that describe the upper
+        :return upper_coordinates: array
+            This is a N x 2 array of x and y coordinates that describe the upper
             surface of the airfoil, where N
             is the number of points.
         """
@@ -785,12 +784,12 @@ class Airfoil:
     def get_downsampled_mcl(self, mcl_fractions):
         """This method returns the mean camber line in a downsampled form.
 
-        :param mcl_fractions: 1D ndarray
-            This is a 1D ndarray that lists the points along the mean camber line (
+        :param mcl_fractions: 1D array
+            This is a 1D array that lists the points along the mean camber line (
             normalized from 0 to 1) at which
             to return the mean camber line coordinates.
-        :return mcl_downsampled: 2D ndarray
-            This is a 2D ndarray that contains the coordinates of the downsampled
+        :return mcl_downsampled: 2D array
+            This is a 2D array that contains the coordinates of the downsampled
             mean camber line.
         """
 
@@ -803,13 +802,13 @@ class Airfoil:
             + np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
         )
 
-        # Create a horizontal 1D ndarray that contains the distance along the mean
+        # Create a horizontal 1D array that contains the distance along the mean
         # camber line of each point.
         mcl_distances_cumulative = np.hstack(
             (0, np.cumsum(mcl_distances_between_points))
         )
 
-        # Normalize the 1D ndarray so that it ranges from 0 to 1.
+        # Normalize the 1D array so that it ranges from 0 to 1.
         mcl_distances_cumulative_normalized = (
             mcl_distances_cumulative / mcl_distances_cumulative[-1]
         )
@@ -1028,16 +1027,16 @@ class Panel:
     ):
         """This is the initialization method.
 
-        :param front_right_vertex: 1D ndarray with three elements
+        :param front_right_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             front right vertex.
-        :param front_left_vertex: 1D ndarray with three elements
+        :param front_left_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             front left vertex.
-        :param back_left_vertex: 1D ndarray with three elements
+        :param back_left_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             back left vertex.
-        :param back_right_vertex: 1D ndarray with three elements
+        :param back_right_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             back right vertex.
         :param is_leading_edge: bool
@@ -1168,10 +1167,10 @@ class Panel:
 
         This method does not include the effect of the panel's wake vortices.
 
-        :param point:  1D ndarray
+        :param point:  1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the induced velocity at.
-        :return: 1D ndarray
+        :return: 1D array
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """
@@ -1196,10 +1195,10 @@ class Panel:
 
         This method does not include the effect of the panel's wake vortices.
 
-        :param point: 1D ndarray
+        :param point: 1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the induced velocity at.
-        :return: 1D ndarray
+        :return: 1D array
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """

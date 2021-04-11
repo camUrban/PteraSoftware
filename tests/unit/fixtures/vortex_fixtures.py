@@ -36,7 +36,7 @@ import pterasoftware as ps
 def make_origin_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return termination: (,3) ndarray of floats
+    :return termination: (,3) array of floats
         This holds the origin's coordinates.
     """
 
@@ -48,7 +48,7 @@ def make_origin_fixture():
 def make_termination_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return termination: (,3) ndarray of floats
+    :return termination: (,3) array of floats
         This holds the termination's coordinates.
     """
 
@@ -100,7 +100,7 @@ def make_line_vortex_fixture():
 def make_infinite_leg_direction_fixture():
     """This method makes a direction fixture.
 
-    :return direction: (,3) ndarray of floats
+    :return direction: (,3) array of floats
         This holds the direction's components.
     """
 
@@ -158,7 +158,7 @@ def make_horseshoe_vortex_fixture():
 def make_front_left_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return front_left_vertex: (,3) ndarray of floats
+    :return front_left_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
 
@@ -170,7 +170,7 @@ def make_front_left_vertex_fixture():
 def make_front_right_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return front_right_vertex: (,3) ndarray of floats
+    :return front_right_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
 
@@ -182,7 +182,7 @@ def make_front_right_vertex_fixture():
 def make_back_left_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return back_left_vertex: (,3) ndarray of floats
+    :return back_left_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
 
@@ -194,7 +194,7 @@ def make_back_left_vertex_fixture():
 def make_back_right_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return back_right_vertex: (,3) ndarray of floats
+    :return back_right_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
 

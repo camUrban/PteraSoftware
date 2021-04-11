@@ -271,10 +271,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert this wing's 2D ndarray of panels into a 1D ndarray.
+            # Convert this wing's 2D array of panels into a 1D array.
             panels = np.ravel(wing.panels)
 
-            # Iterate through the 1D ndarray of this wing's panels.
+            # Iterate through the 1D array of this wing's panels.
             for panel in panels:
 
                 # Update the solver's list of attributes with this panel's attributes.
@@ -308,7 +308,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 # Check if this panel is on the trailing edge.
                 if panel.is_trailing_edge:
                     # If it is, calculate it's streamline seed point and add it to
-                    # the solver's ndarray of seed points.
+                    # the solver's array of seed points.
                     self.seed_points = np.vstack(
                         (
                             self.seed_points,
@@ -360,7 +360,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Take the batch dot product of the freestream velocity with each panel's
         # normal direction. This is now the
-        # problem's 1D ndarray of freestream-wing influence coefficients.
+        # problem's 1D array of freestream-wing influence coefficients.
         self.freestream_wing_influences = np.einsum(
             "ij,j->i", self.panel_normal_directions, self.freestream_velocity
         )
@@ -547,7 +547,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
 
-        # Initialize a ndarray to hold this problem's matrix of streamline points.
+        # Initialize a array to hold this problem's matrix of streamline points.
         self.streamline_points = np.expand_dims(self.seed_points, axis=0)
 
         # Iterate through the streamline steps.

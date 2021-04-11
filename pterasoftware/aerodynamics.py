@@ -9,50 +9,43 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    calculate_velocity_induced_by_line_vortices: This function takes in a group of
-    points, origins, terminations and
-                                                 strengths. At every point, it finds
-                                                 the induced velocity due to every
-                                                 line vortex, which are characterized
-                                                 by the groups of origins,
-                                                 terminations, and strengths.
-    calculate_velocity_induced_by_horseshoe_vortices: This function takes in a group
-    of points, and the attributes of a
-                                                      group of horseshoe vortices. At
-                                                      every point, it finds the induced
-                                                      velocity due to every horseshoe
-                                                      vortex, which are characterized by
-                                                      groups of back right vertices,
-                                                      front right vertices, front left
-                                                      vertices, back left vertices,
-                                                      and strengths.
+    calculate_velocity_induced_by_horseshoe_vortices: This function takes in a group of
+    points, and the attributes of a group of horseshoe vortices. At every point,
+    it finds the induced velocity due to every horseshoe vortex, which are
+    characterized by groups of back right vertices, front right vertices, front left
+    vertices, back left vertices, and strengths.
     calculate_velocity_induced_by_ring_vortices: This function takes in a group of
-    points, and the attributes of a group
-                                                 of ring vortices. At every point,
-                                                 it finds the induced velocity due to
-                                                 every ring vortex, which are
-                                                 characterized by groups of back right
-                                                 vertices, front right vertices,
-                                                 front left vertices, back left
-                                                 vertices, and strengths.
+    points, and the attributes of a group of ring vortices. At every point, it finds
+    the induced velocity due to every ring vortex, which are characterized by groups
+    of back right vertices, front right vertices, front left vertices, back left
+    vertices, and strengths.
+    numba_subtract: This function takes in two arrays, one containing N vectors of 3
+    components, and one containing M vectors of 3 components. The function then
+    calculates and returns a matrix containing the vectors that go from each of the N
+    vectors to each of the M vectors.
+    numba_collapse: This function is a helper for the
+    calculate_velocity_induced_by_line_vortices function. It uses Numba to speed up
+    the summed effects from each of the M line vortices on each of the N points.
+    calculate_velocity_induced_by_line_vortices: This function takes in a group of
+    points, and the attributes of a group of line vortices. At every point, it finds
+    the induced velocity due to every line vortex, which are characterized by groups
+    of origins, terminations, and strengths.
 """
 
 import numpy as np
-import pterasoftware as ps
-
 from numba import njit, prange
+
+import pterasoftware as ps
 
 
 class LineVortex:
     """This class is used to contain line vortices.
 
     This class contains the following public methods:
-        calculate_normalized_induced_velocity: This method calculates the velocity
-        induced at a point by this vortex
-                                               with a unit vortex strength.
-        calculate_induced_velocity: This method calculates the velocity induced at a
-        point by this vortex with its given
-                                    vortex strength.
+        calculate_normalized_induced_velocity: This method calculates the velocity induced at a point by this vortex
+        with a unit vortex strength.
+        calculate_induced_velocity: This method calculates the velocity induced at a point by this vortex with its given
+        vortex strength.
 
     This class contains the following class attributes:
         None
@@ -64,14 +57,12 @@ class LineVortex:
     def __init__(self, origin, termination, strength):
         """This is the initialization method.
 
-        :param origin: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the origin of
-            the line vortex. It's a (3,)
-            ndarray. Its units are meters.
-        :param termination: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the
-            termination of the line vortex. It's a (3,)
-            ndarray. Its units are meters.
+        :param origin: 1D array
+            This is a vector containing the x, y, and z coordinates of the origin of the line vortex. It's a (3,)
+            array. Its units are meters.
+        :param termination: 1D array
+            This is a vector containing the x, y, and z coordinates of the termination of the line vortex. It's a (3,)
+            array. Its units are meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
         """
@@ -80,23 +71,19 @@ class LineVortex:
         self.termination = termination
         self.strength = strength
 
-        # Initialize variables to hold the vector from the vortex's origin to
-        # termination, and the point halfway between
+        # Initialize variables to hold the vector from the vortex's origin to termination, and the point halfway between
         # the origin and termination.
         self.vector = self.termination - self.origin
         self.center = self.origin + 0.5 * self.vector
 
     def calculate_normalized_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this vortex with
-        a unit vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
 
-        :param point: 1D ndarray
-            This parameter is the point where the induced velocity is to be
-            calculated. It's a (3,) ndarray. Its units
+        :param point: 1D array
+            This parameter is the point where the induced velocity is to be calculated. It's a (3,) array. Its units
             are meters.
-        :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (3,) ndarray. Its
+        :return normalized_induced_velocity: 1D array
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (3,) array. Its
             units are meters per second.
         """
 
@@ -108,33 +95,25 @@ class LineVortex:
         return normalized_induced_velocity
 
     def calculate_induced_velocity(self, point, overriding_strength=None):
-        """This method calculates the velocity induced at a point by this vortex with
-        its given vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
-        This method uses methodology described on pp. 251-255 of the second edition
-        of "Low-Speed Aerodynamics" by
+        This method uses methodology described on pp. 251-255 of the second edition of "Low-Speed Aerodynamics" by
         Joseph Katz and Allen Plotkin.
 
-        :param point: 1D ndarray
-            This parameter is the point where the induced velocity is to be
-            calculated. It's a (3,) ndarray. Its units
+        :param point: 1D array
+            This parameter is the point where the induced velocity is to be calculated. It's a (3,) array. Its units
             are meters.
         :param overriding_strength: float
-            This is the magnitude of the vorticity. It's sign is given by the using
-            the right hand rule on the vector
-            from the line vortex's origin to termination. Its units are meters
-            squared per second. It's default value is
-            None. If None, then this method will use the vortex's assigned strength.
-            Otherwise, it will use this
+            This is the magnitude of the vorticity. It's sign is given by the using the right hand rule on the vector
+            from the line vortex's origin to termination. Its units are meters squared per second. It's default value is
+            None. If None, then this method will use the vortex's assigned strength. Otherwise, it will use this
             strength.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (3,) ndarray. Its
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (3,) ndarray. Its
             units are meters per second.
         """
 
-        # If the overriding strength is not None, then calculate the induced velocity
-        # using the overriding value.
+        # If the overriding strength is not None, then calculate the induced velocity using the overriding value.
         # Otherwise, use the object's strength attribute's value.
         if overriding_strength is None:
             strength = self.strength
@@ -181,8 +160,7 @@ class LineVortex:
             * (r_0_dot_r_1 / r_1_length - r_0_dot_r_2 / r_2_length)
         )
 
-        # Calculate the induced velocity components, and combine them into the
-        # induced velocity ndarray.
+        # Calculate the induced velocity components, and combine them into the induced velocity ndarray.
         u = k * r_1_cross_r_2[0]
         v = k * r_1_cross_r_2[1]
         w = k * r_1_cross_r_2[2]
@@ -193,15 +171,12 @@ class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
     This class contains the following public methods:
-        calculate_normalized_induced_velocity: This method calculates the velocity
-        induced at a point by this vortex
-                                               with a unit vortex strength.
-        calculate_induced_velocity: This method calculates the velocity induced at a
-        point by this vortex with its given
-                                    vortex strength.
-        update_strength: This method updates the strength of this horseshoe vortex
-        object, and the strength of its legs
-                         line vortex objects.
+        calculate_normalized_induced_velocity: This method calculates the velocity induced at a point by this vortex
+        with a unit vortex strength.
+        calculate_induced_velocity: This method calculates the velocity induced at a point by this vortex with its given
+        vortex strength.
+        update_strength: This method updates the strength of this horseshoe vortex object, and the strength of its legs
+        line vortex objects.
 
     This class contains the following class attributes:
         None
@@ -221,23 +196,18 @@ class HorseshoeVortex:
         """This is the initialization method.
 
         :param finite_leg_origin: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the origin of
-            the vortex's finite leg. It's a
+            This is a vector containing the x, y, and z coordinates of the origin of the vortex's finite leg. It's a
             (,3) ndarray. It's units are meters.
         :param finite_leg_termination: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the
-            termination of the vortex's finite leg. It's
+            This is a vector containing the x, y, and z coordinates of the termination of the vortex's finite leg. It's
             a (,3) ndarray. It's units are meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
         :param infinite_leg_direction: 1D ndarray
-            This is a unit vector containing the direction that the infinite legs
-            extend towards. It's a (,3) ndarray.
-            It's units are meters. It's default value is the unit vector in the
-            positive x direction.
+            This is a unit vector containing the direction that the infinite legs extend towards. It's a (,3) ndarray.
+            It's units are meters. It's default value is the unit vector in the positive x direction.
         :param infinite_leg_length: float
-            This is the length back to extend the quasi-infinite legs of the
-            horseshoe vortex. It's units are meters.
+            This is the length back to extend the quasi-infinite legs of the horseshoe vortex. It's units are meters.
         """
 
         self.finite_leg_origin = finite_leg_origin
@@ -270,16 +240,13 @@ class HorseshoeVortex:
         )
 
     def calculate_normalized_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this vortex with
-        a unit vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at. It's a
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
             (,3) ndarray with units of meters.
         :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (,3) ndarray with
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
             units of meters per second.
         """
 
@@ -293,8 +260,7 @@ class HorseshoeVortex:
             self.left_leg.calculate_normalized_induced_velocity(point=point)
         )
 
-        # Sum the velocities induced by each leg to get the velocity induced by the
-        # entire horseshoe.
+        # Sum the velocities induced by each leg to get the velocity induced by the entire horseshoe.
         normalized_induced_velocity = (
             normalized_velocity_induced_by_right_leg
             + normalized_velocity_induced_by_finite_leg
@@ -305,16 +271,13 @@ class HorseshoeVortex:
         return normalized_induced_velocity
 
     def calculate_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this vortex with
-        its given vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at. It's a
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
             (,3) ndarray with units of meters.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (,3) ndarray with
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
             units of meters per second.
         """
 
@@ -328,8 +291,7 @@ class HorseshoeVortex:
             point=point
         )
 
-        # Sum the velocities induced by each leg to get the velocity induced by the
-        # entire horseshoe.
+        # Sum the velocities induced by each leg to get the velocity induced by the entire horseshoe.
         induced_velocity = (
             velocity_induced_by_right_leg
             + velocity_induced_by_finite_leg
@@ -340,13 +302,11 @@ class HorseshoeVortex:
         return induced_velocity
 
     def update_strength(self, strength):
-        """This method updates the strength of this horseshoe vortex object, and the
-        strength of its legs line vortex
+        """This method updates the strength of this horseshoe vortex object, and the strength of its legs line vortex
         objects.
 
         :param strength: float
-            This is the strength of this vortex, and of its line vortex legs. Its
-            units are meters squared per second.
+            This is the strength of this vortex, and of its line vortex legs. Its units are meters squared per second.
         :return: None
         """
 
@@ -360,17 +320,13 @@ class RingVortex:
     """This class is used to contain ring vortices.
 
     This class contains the following public methods:
-        calculate_normalized_induced_velocity: This method calculates the velocity
-        induced at a point by this vortex
-                                               with a unit vortex strength.
-        calculate_induced_velocity: This method calculates the velocity induced at a
-        point by this vortex with its given
-                                    vortex strength.
-        update_strength: This method updates the strength of this ring vortex object,
-        and the strength of its
-                         four legs' line vortex objects.
-        update_position: This method updates the position of the ring vortex,
-        and the positions of all its attributes.
+        calculate_normalized_induced_velocity: This method calculates the velocity induced at a point by this vortex
+        with a unit vortex strength.
+        calculate_induced_velocity: This method calculates the velocity induced at a point by this vortex with its given
+        vortex strength.
+        update_strength: This method updates the strength of this ring vortex object, and the strength of its four legs'
+        line vortex objects.
+        update_position: This method updates the position of the ring vortex, and the positions of all its attributes.
 
     This class contains the following class attributes:
         None
@@ -390,20 +346,16 @@ class RingVortex:
         """This is the initialization method.
 
         :param front_left_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            front left point. It's a (,3)
+            This is a vector containing the x, y, and z coordinates of the vortex's front left point. It's a (,3)
             ndarray with units of meters.
         :param front_right_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            front right point. It's a (,3)
+            This is a vector containing the x, y, and z coordinates of the vortex's front right point. It's a (,3)
             ndarray with units of meters.
         :param back_left_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            back left point. It's a (,3)
-            ndarray with units of meters.
+            This is a vector containing the x, y, and z coordinates of the vortex's back left point. It's a (,3) ndarray
+            with units of meters.
         :param back_right_vertex: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            back right point. It's a (,3)
+            This is a vector containing the x, y, and z coordinates of the vortex's back right point. It's a (,3)
             ndarray with units of meters.
         :param strength: float
             This is the strength of the vortex in meters squared per second.
@@ -446,16 +398,13 @@ class RingVortex:
         )
 
     def calculate_normalized_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this vortex with
-        a unit vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with a unit vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at. It's a
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
             (,3) ndarray with units of meters.
         :return normalized_induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (,3) ndarray with
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
             units of meters per second.
         """
 
@@ -472,8 +421,7 @@ class RingVortex:
             self.right_leg.calculate_normalized_induced_velocity(point=point)
         )
 
-        # Sum the velocities induced by each leg to get the velocity induced by the
-        # entire ring vortex.
+        # Sum the velocities induced by each leg to get the velocity induced by the entire ring vortex.
         normalized_induced_velocity = (
             normalized_velocity_induced_by_front_leg
             + normalized_velocity_induced_by_left_leg
@@ -484,16 +432,13 @@ class RingVortex:
         return normalized_induced_velocity
 
     def calculate_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this vortex with
-        its given vortex strength.
+        """This method calculates the velocity induced at a point by this vortex with its given vortex strength.
 
         :param point: 1D ndarray
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at. It's a
+            This is a vector containing the x, y, and z coordinates of the point to find the induced velocity at. It's a
             (,3) ndarray with units of meters.
         :return induced_velocity: 1D ndarray
-            This is a vector containing the x, y, and z components of the induced
-            velocity. It's a (,3) ndarray with
+            This is a vector containing the x, y, and z components of the induced velocity. It's a (,3) ndarray with
             units of meters per second.
         """
 
@@ -510,8 +455,7 @@ class RingVortex:
             point=point
         )
 
-        # Sum the velocities induced by each leg to get the velocity induced by the
-        # entire ring vortex.
+        # Sum the velocities induced by each leg to get the velocity induced by the entire ring vortex.
         induced_velocity = (
             velocity_induced_by_front_leg
             + velocity_induced_by_left_leg
@@ -522,13 +466,11 @@ class RingVortex:
         return induced_velocity
 
     def update_strength(self, strength):
-        """This method updates the strength of this ring vortex object, and the
-        strength of its four legs' line vortex
+        """This method updates the strength of this ring vortex object, and the strength of its four legs' line vortex
         objects.
 
         :param strength: float
-            This is the strength of this vortex, and of its four legs' line vortices.
-            Its units are meters squared per
+            This is the strength of this vortex, and of its four legs' line vortices. Its units are meters squared per
             second.
         :return: None
         """
@@ -542,24 +484,19 @@ class RingVortex:
     def update_position(
         self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
     ):
-        """This method updates the position of the ring vortex, and the positions of
-        all its attributes.
+        """This method updates the position of the ring vortex, and the positions of all its attributes.
 
         :param front_left_vertex: 1D ndarray
-            This is the new position of the x, y, and z coordinates of the front left
-            vertex. It is a (,3) ndarray with
+            This is the new position of the x, y, and z coordinates of the front left vertex. It is a (,3) ndarray with
             units of meters.
         :param front_right_vertex: 1D ndarray
-            This is the new position of the x, y, and z coordinates of the front
-            right vertex. It is a (,3) ndarray with
+            This is the new position of the x, y, and z coordinates of the front right vertex. It is a (,3) ndarray with
             units of meters.
         :param back_left_vertex: 1D ndarray
-            This is the new position of the x, y, and z coordinates of the back left
-            vertex. It is a (,3) ndarray with
+            This is the new position of the x, y, and z coordinates of the back left vertex. It is a (,3) ndarray with
             units of meters.
         :param back_right_vertex: 1D ndarray
-            This is the new position of the x, y, and z coordinates of the back right
-            vertex. It is a (,3) ndarray with
+            This is the new position of the x, y, and z coordinates of the back right vertex. It is a (,3) ndarray with
             units of meters.
         :return: None
         """
@@ -609,64 +546,42 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     strengths,
     collapse=True,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point,
-    it finds the induced velocity due to every horseshoe vortex, which are
-    characterized by groups of back right
-    vertices, front right vertices, front left vertices, back left vertices,
-    and strengths.
+    """This function takes in a group of points, and the attributes of a group of horseshoe vortices. At every point, it
+    finds the induced velocity due to every horseshoe vortex, which are characterized by groups of back right vertices,
+    front right vertices, front left vertices, back left vertices, and strengths.
 
-        This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects'
-        class methods for calculating induced velocity.
+    Note: This method uses vectorization, and therefore is much faster for batch operations than using the vortex
+    objects' class methods for calculating induced velocity.
 
     :param points: 2D ndarray of floats
-        This variable is an ndarray of shape (N x 3), where N is the number of
-        points. Each row contains the x, y, and z
+        This variable is an ndarray of shape (N x 3), where N is the number of points. Each row contains the x, y, and z
         float coordinates of that point's position in meters.
     :param back_right_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the
-        x, y, and z float coordinates of that horseshoe vortex's back right vertex's
-        position in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's back right vertex's position in meters.
     :param front_right_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the
-        x, y, and z float coordinates of that horseshoe vortex's front right vertex's
-        position in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front right vertex's position in meters.
     :param front_left_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the
-        x, y, and z float coordinates of that horseshoe vortex's front left vertex's
-        position in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front left vertex's position in meters.
     :param back_left_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the
-        x, y, and z float coordinates of that horseshoe vortex's front left vertex's
-        position in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of horseshoe vortices. Each row contains the
+        x, y, and z float coordinates of that horseshoe vortex's front left vertex's position in meters.
     :param strengths: 1D ndarray of floats
-        This variable is an ndarray of shape (, M), where M is the number of
-        horseshoe vortices. Each holds the strength
+        This variable is an ndarray of shape (, M), where M is the number of horseshoe vortices. Each holds the strength
         of that horseshoe vortex in meters squared per second.
     :param collapse: bool, optional
-        This variable determines whether or not the user would like the output to be
-        of shape (N x M x 3) or of shape
-        (N x 3). If true, than the effect from every horseshoe vortex on a given
-        point will be summed, so the result
-        will be of shape (N x 3), where each row identifies the summed effects on a
-        point. If false, than the effect
-        from every horseshoe vortex will remain distinct, and the shape will be (N x
-        M x 3), where each row/column pair
+        This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
+        (N x 3). If true, than the effect from every horseshoe vortex on a given point will be summed, so the result
+        will be of shape (N x 3), where each row identifies the summed effects on a point. If false, than the effect
+        from every horseshoe vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair
         identifies the effect on a point by one of the horseshoe vortices.
     :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
-        If collapse is true, the output is the summed effects from every horseshoe
-        vortex on a given point. The result
-        will be of shape (N x 3), where each row identifies the effects on a point.
-        If false, than the effect from every
-        horseshoe vortex will remain distinct, and the shape will be (N x M x 3),
-        where each row/column pair identifies
-        the effect on one point by one of the horseshoe vortices. Either way,
-        the results units are meters per second.
+        If collapse is true, the output is the summed effects from every horseshoe vortex on a given point. The result
+        will be of shape (N x 3), where each row identifies the effects on a point. If false, than the effect from every
+        horseshoe vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies
+        the effect on one point by one of the horseshoe vortices. Either way, the results units are meters per second.
     """
 
     # Get the velocity induced by each leg of the horseshoe vortex.
@@ -692,8 +607,7 @@ def calculate_velocity_induced_by_horseshoe_vortices(
         collapse=collapse,
     )
 
-    # Calculate the total induced velocity by summing the velocities induced by each
-    # leg.
+    # Calculate the total induced velocity by summing the velocities induced by each leg.
     induced_velocities = (
         right_leg_velocities + finite_leg_velocities + left_leg_velocities
     )
@@ -711,84 +625,43 @@ def calculate_velocity_induced_by_ring_vortices(
     strengths,
     collapse=True,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it
-    finds the induced velocity due to every ring vortex, which are characterized by
-    groups of back right vertices, front
+    """This function takes in a group of points, and the attributes of a group of ring vortices. At every point, it
+    finds the induced velocity due to every ring vortex, which are characterized by groups of back right vertices, front
     right vertices, front left vertices, back left vertices, and strengths.
 
-        This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects'
-        class methods for calculating induced velocity.
+    Note: This method uses vectorization, and therefore is much faster for batch operations than using the vortex
+    objects' class methods for calculating induced velocity.
 
     :param points: 2D ndarray of floats
-        This variable is an ndarray of shape (N x 3), where N is the number of
-        points. Each row contains the x, y, and z
+        This variable is an ndarray of shape (N x 3), where N is the number of points. Each row contains the x, y, and z
         float coordinates of that point's position in meters.
     :param back_right_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of ring
-        vortices. Each row contains the x,
-        y, and z float coordinates of that ring vortex's back right vertex's position
-        in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's back right vertex's position in meters.
     :param front_right_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of ring
-        vortices. Each row contains the x,
-        y, and z float coordinates of that ring vortex's front right vertex's
-        position in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front right vertex's position in meters.
     :param front_left_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of ring
-        vortices. Each row contains the x,
-        y, and z float coordinates of that ring vortex's front left vertex's position
-        in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front left vertex's position in meters.
     :param back_left_vortex_vertices: 2D ndarray of floats
-        This variable is an ndarray of shape (M x 3), where M is the number of ring
-        vortices. Each row contains the x,
-        y, and z float coordinates of that ring vortex's front left vertex's position
-        in meters.
+        This variable is an ndarray of shape (M x 3), where M is the number of ring vortices. Each row contains the x,
+        y, and z float coordinates of that ring vortex's front left vertex's position in meters.
     :param strengths: 1D ndarray of floats
-        This variable is an ndarray of shape (, M), where M is the number of ring
-        vortices. Each holds the strength of
+        This variable is an ndarray of shape (, M), where M is the number of ring vortices. Each holds the strength of
         that ring vortex in meters squared per second.
     :param collapse: bool, optional
-        This variable determines whether or not the user would like the output to be
-        of shape (N x M x 3) or of shape
-        (N x 3). If true, than the effect from every ring vortex on a given point
-        will be summed, so the result will be
-        of shape (N x 3), where each row identifies the summed effects on a point. If
-        false, than the effect from every
-        ring vortex will remain distinct, and the shape will be (N x M x 3),
-        where each row/column pair identifies the
+        This variable determines whether or not the user would like the output to be of shape (N x M x 3) or of shape
+        (N x 3). If true, than the effect from every ring vortex on a given point will be summed, so the result will be
+        of shape (N x 3), where each row identifies the summed effects on a point. If false, than the effect from every
+        ring vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the
         effect on a point by one of the ring vortices.
     :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
-        If collapse is true, the output is the summed effects from every ring vortex
-        on a given point. The result will
-        be of shape (N x 3), where each row identifies the effects on a point. If
-        false, than the effect from every ring
-        vortex will remain distinct, and the shape will be (N x M x 3), where each
-        row/column pair identifies the effect
-        on one point by one of the ring vortices. Either way, the results units are
-        meters per second.
+        If collapse is true, the output is the summed effects from every ring vortex on a given point. The result will
+        be of shape (N x 3), where each row identifies the effects on a point. If false, than the effect from every ring
+        vortex will remain distinct, and the shape will be (N x M x 3), where each row/column pair identifies the effect
+        on one point by one of the ring vortices. Either way, the results units are meters per second.
     """
-    # num_points = points.shape[0]
-    # num_rings = back_right_vortex_vertices.shape[0]
-    #
-    # if collapse:
-    #     right_leg_velocities = np.empty((num_points, 3))
-    #     front_leg_velocities = np.empty((num_points, 3))
-    #     left_leg_velocities = np.empty((num_points, 3))
-    #     back_leg_velocities = np.empty((num_points, 3))
-    # else:
-    #     right_leg_velocities = np.empty((num_points, num_rings, 3))
-    #     front_leg_velocities = np.empty((num_points, num_rings, 3))
-    #     left_leg_velocities = np.empty((num_points, num_rings, 3))
-    #     back_leg_velocities = np.empty((num_points, num_rings, 3))
-    #
-    # leg_velocities = [right_leg_velocities, front_leg_velocities,
-    #                   left_leg_velocities, back_leg_velocities]
-    #
-    # with multiprocessing.Pool() as pool:
-    #     pool.map()
-
     # Get the velocity induced by each leg of the ring vortex.
     right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
@@ -819,8 +692,7 @@ def calculate_velocity_induced_by_ring_vortices(
         collapse=collapse,
     )
 
-    # Calculate the total induced velocity by summing the velocities induced by each
-    # leg.
+    # Calculate the total induced velocity by summing the velocities induced by each leg.
     induced_velocities = (
         right_leg_velocities
         + front_leg_velocities
@@ -832,14 +704,27 @@ def calculate_velocity_induced_by_ring_vortices(
     return induced_velocities
 
 
-# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_subtract(vectors_1, vectors_2):
-    """
+    """This function takes in two arrays, one containing N vectors of 3 components,
+    and one containing M vectors of 3 components. The function then calculates and
+    returns a matrix containing the vectors that go from each of the N vectors to
+    each of the M vectors.
 
-    :param vectors_1:
-    :param vectors_2:
-    :return diffs:
+    Note: This function has been optimized for JIT compilation and parallel
+    computation using Numba.
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a
+    response to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
+
+    :param vectors_1: array of size (N x 3)
+        This is the first array of N vectors.
+    :param vectors_2: array of size (M x 3)
+        This is the second array of M vectors.
+    :return crosses: array of size (N x M x 3)
+        This is array of vectors going between each of the N vectors to each of the M
+        vectors.
     """
     diffs = np.empty((vectors_1.shape[0], vectors_2.shape[0], 3))
     for i in prange(diffs.shape[0]):
@@ -853,6 +738,10 @@ def numba_subtract(vectors_1, vectors_2):
 @njit(parallel=True, cache=True)
 def numba_explicit_norm(vectors):
     """
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a
+    response to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
 
     :param vectors:
     :return norms:
@@ -870,6 +759,9 @@ def numba_explicit_norm(vectors):
 @njit(parallel=True, cache=True)
 def numba_2d_explicit_cross(vectors_1, vectors_2):
     """
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a response to a question on Stack
+    Overflow. The original response is here: https://stackoverflow.com/a/66757029/13240504.
 
     :param vectors_1:
     :param vectors_2:
@@ -898,6 +790,9 @@ def numba_2d_explicit_cross(vectors_1, vectors_2):
 def numba_cross_absolute_magnitude(crosses):
     """
 
+    Citation: Some or all of the following code was written by Jérôme Richard as a response to a question on Stack
+    Overflow. The original response is here: https://stackoverflow.com/a/66757029/13240504.
+
     :param crosses:
     :return:
     """
@@ -908,6 +803,9 @@ def numba_cross_absolute_magnitude(crosses):
 @njit(parallel=True, cache=True)
 def numba_discard_singularities(induced_velocities):
     """
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a response to a question on Stack
+    Overflow. The original response is here: https://stackoverflow.com/a/66757029/13240504.
 
     :param induced_velocities:
     :return:
@@ -933,6 +831,9 @@ def numba_compute_k(
 ):
     """
 
+    Citation: Some or all of the following code was written by Jérôme Richard as a response to a question on
+    Stack Overflow. The original response is here: https://stackoverflow.com/a/66757029/13240504.
+
     :param strengths:
     :param r_3_abs_mag:
     :param dot_const_1:
@@ -953,6 +854,9 @@ def numba_compute_k(
 def numba_compute_dot_constants(r_1, r_2):
     """
 
+    Citation: Some or all of the following code was written by Jérôme Richard as a response to a question on Stack
+    Overflow. The original response is here: https://stackoverflow.com/a/66757029/13240504.
+
     :param r_1:
     :param r_2:
     :return:
@@ -971,13 +875,22 @@ def numba_compute_dot_constants(r_1, r_2):
     return dot_const_1, dot_const_2
 
 
-# ToDo: Document this function.
 @njit(parallel=True, cache=True)
 def numba_collapse(induced_velocities):
-    """
+    """This function is a helper for the calculate_velocity_induced_by_line_vortices
+    function. It uses Numba to speed up the summed effects from each of the M line
+    vortices on each of the N points.
 
-    :param induced_velocities:
-    :return collapses:
+    Citation: Some or all of the following code was written by Jérôme Richard as a
+    response to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
+
+    :param induced_velocities: 3D ndarray of floats
+        This matrix contains the velocity induced by every line vortex at every
+        point. The units are meters per second.
+    :return collapses: 2D ndarray of floats
+        This matrix is the total induced velocity at each point due to all of the
+        line vortices. The units are meters per second.
     """
     n, m = induced_velocities.shape[0], induced_velocities.shape[1]
     collapses = np.empty((n, 3))
@@ -988,18 +901,51 @@ def numba_collapse(induced_velocities):
     return collapses
 
 
-# ToDo: Document this function.
 def calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
-    """
+    """This function takes in a group of points, and the attributes of a group of
+    line vortices. At every point, it finds the induced velocity due to every line
+    vortex, which are characterized by groups of origins, terminations, and strengths.
 
-    :param points:
-    :param origins:
-    :param terminations:
-    :param strengths:
-    :param collapse:
-    :return:
+    Note: This function uses methodology described on pp. 251-255 of the second
+    edition of "Low-Speed Aerodynamics" by Joseph Katz and Allen Plotkin.
+
+    Citation: Some of the following code was adapted by Jérôme Richard as a response
+    to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
+
+    :param points: 2D ndarray of floats
+        This variable is an ndarray of shape (N x 3), where N is the number of
+        points. Each row contains the x, y, and z float coordinates of that point's
+        position in meters.
+    :param origins: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of line
+        vortices. Each row contains the x, y, and z float coordinates of that line
+        vortex's origin's position in meters.
+    :param terminations: 2D ndarray of floats
+        This variable is an ndarray of shape (M x 3), where M is the number of line
+        vortices. Each row contains the x, y, and z float coordinates of that line
+        vortex's termination's position in meters.
+    :param strengths: 1D ndarray of floats
+        This variable is an ndarray of shape (, M), where M is the number of line
+        vortices. Each position contains the strength of that line vortex in meters
+        squared per second.
+    :param collapse: bool, optional
+        This variable determines whether or not the user would like the output to be
+        of shape (N x M x 3) or of shape (N x 3). If true, than the effect from every
+        line vortex on a given point will be summed, so the result will be of shape
+        (N x 3), where each row identifies the summed effects on a point. If false,
+        than the effect from every line vortex will remain distinct, and the shape will
+        be (N x M x 3), where each row/column pair identifies the effect on a point by
+        one of the line vortices.
+    :return induced_velocities: either a 2D ndarray of floats or a 3D ndarray of floats
+        If collapse is true, the output is the summed effects from every line vortex
+        on a given point. The result will be of shape (N x 3), where each row
+        identifies the effects on a point. If false, than the effect from every line
+        vortex will remain distinct, and the shape will be (N x M x 3), where each
+        row/column pair identifies the effect on one point by one of the line
+        vortices. Either way, the results units are meters per second.
     """
     r_1 = numba_subtract(points, origins)
     r_2 = numba_subtract(points, terminations)

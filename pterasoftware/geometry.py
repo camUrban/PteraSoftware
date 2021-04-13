@@ -1,38 +1,44 @@
-""" This module contains useful functions that relate to geometry, and the class
-definitions for different types of
-geometries.
+"""This module contains useful functions that relate to geometry, and the class
+definitions for different types of geometries.
 
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
+
     Wing: This is a class used to contain the wings of an current_airplane.
+
     WingCrossSection: This class is used to contain the cross sections of the wings
     of an current_airplane.
+
     Airfoil: This class is used to contain the airfoil of a cross section of a wing
     of an current_airplane.
+
     Panel: This class is used to contain the panels of a wing.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a ndarray containing a specified number
-    of values between a specified
-              minimum and maximum value that are spaced via a cosine function.
-    sinspace: This function is used to create a ndarray containing a specified number
-    of values between a specified
-              minimum and maximum value that are spaced via a sine function.
+    cosspace: This function is used to create a array containing a specified number
+    of values between a specified minimum and maximum value that are spaced via a
+    cosine function.
+
+    sinspace: This function is used to create a array containing a specified number
+    of values between a specified minimum and maximum value that are spaced via a
+    sine function.
+
     reflect_over_xz_plane: This function is used to flip a the y coordinate of a
     coordinate vector.
+
     angle_axis_rotation_matrix: This function is used to find the rotation matrix for
     a given axis and angle.
-    centroid_of_quadrilateral: This function is used to find the centroid of a
-    quadrilateral.
+
+    numba_centroid_of_quadrilateral: This function is used to find the centroid of a
+    quadrilateral. It has been optimized for JIT compilation using Numba.
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
-
 from numba import njit
 
 import pterasoftware as ps
@@ -48,8 +54,7 @@ class Airplane:
 
     This class contains the following public methods:
         set_reference_dimensions_from_wing: This method sets the reference dimensions
-        of the current_airplane from
-                                            measurements obtained from the main wing.
+        of the current_airplane from measurements obtained from the main wing.
 
     This class contains the following class attributes:
         None
@@ -168,9 +173,8 @@ class Wing:
     """This is a class used to contain the wings of an current_airplane.
 
     If the wing is symmetric across the XZ plane, just define the right half and
-    supply "symmetric=True" in
-    the constructor. If the wing is not symmetric across the XZ plane, just define
-    the wing.
+    supply "symmetric=True" in the constructor. If the wing is not symmetric across
+    the XZ plane, just define the wing.
 
     Citation:
         Adapted from:         geometry.Wing in AeroSandbox
@@ -180,6 +184,7 @@ class Wing:
     This class contains the following public methods:
         calculate_wetted_area: This method calculates the wetted area of the wing
         based on the areas of its panels.
+
         calculate_span: This method calculates the span of the wing.
 
     This class contains the following class attributes:
@@ -279,7 +284,7 @@ class Wing:
         self.span = None
         self.calculate_span()
 
-        # Initialize an empty ndarray to hold this wing's wake ring vortices and its
+        # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
@@ -434,8 +439,8 @@ class WingCrossSection:
         """This method calculates the coordinates of the trailing edge of the cross
         section.
 
-        :return xyz_te: ndarray
-            This is a 1D ndarray that contains the coordinates of the cross section's
+        :return xyz_te: array
+            This is a 1D array that contains the coordinates of the cross section's
             trailing edge.
         """
 
@@ -446,7 +451,7 @@ class WingCrossSection:
         # trailing edge coordinates.
         xyz_te = self.xyz_le + rot @ np.array([self.chord, 0.0, 0.0])
 
-        # Return the 1D ndarray that contains the trailing edge's coordinates.
+        # Return the 1D array that contains the trailing edge's coordinates.
         return xyz_te
 
 
@@ -462,28 +467,30 @@ class Airfoil:
     This class contains the following public methods:
         populate_coordinates: This method populates a variable with the coordinates
         of the airfoil.
+
         populate_mcl_coordinates: This method creates a list of the airfoil's mean
-        camber line coordinates. It also
-                                  creates two lists of the vectors needed to go from
-                                  the mcl coordinates to the upper
-                                  and lower surfaces. It also creates list of the
-                                  thicknesses at the x coordinates along
-                                  the mean camber line.
+        camber line coordinates. It also creates two lists of the vectors needed to
+        go from the mcl coordinates to the upper and lower surfaces. It also creates
+        list of the thicknesses at the x coordinates along the mean camber line.
+
         leading_edge_index: This method returns the index of the point along the
         leading edge.
+
         lower_coordinates: This method returns a matrix of x and y coordinates that
-        describe the lower surface of the
-                           airfoil.
+        describe the lower surface of the airfoil.
+
         upper_coordinates: This method returns a matrix of x and y coordinates that
-        describe the upper surface of the
-                           airfoil.
+        describe the upper surface of the airfoil.
+
         get_downsampled_mcl: This method returns the mean camber line in a
         downsampled form.
+
         get_camber_at_chord_fraction: This method returns the camber of the airfoil
         at a given fraction of the chord.
+
         repanel_current_airfoil: This method returns a repaneled version of the
-        airfoil with cosine-spaced coordinates
-                                 on the upper and lower surfaces.
+        airfoil with cosine-spaced coordinates on the upper and lower surfaces.
+
         add_control_surface: This method returns a version of the airfoil with a
         control surface added at a given point.
 
@@ -507,8 +514,8 @@ class Airfoil:
             This is the name of the airfoil. It should correspond to the name in the
             airfoils directory unless you are
             passing in your own coordinates. The default is "Untitled Airfoil".
-        :param coordinates: ndarray, optional
-            This is a N x 2 ndarray of the airfoil's coordinates, where N is the
+        :param coordinates: array, optional
+            This is a N x 2 array of the airfoil's coordinates, where N is the
             number of coordinates. Treat this
             as an immutable, don't edit directly after initialization. If you wish to
             load coordinates from the airfoil
@@ -675,16 +682,16 @@ class Airfoil:
             # Trim the text at the return characters.
             trimmed_text = raw_text[raw_text.find("\n") :]
 
-            # Input the coordinates into a 1D ndarray.
+            # Input the coordinates into a 1D array.
             coordinates_1d = np.fromstring(trimmed_text, sep="\n")
 
-            # Check to make sure the number of elements in the ndarray is even.
+            # Check to make sure the number of elements in the array is even.
             assert len(coordinates_1d) % 2 == 0, (
                 "File was found in airfoil database, "
                 "but it could not be read correctly."
             )
 
-            # Reshape the 1D coordinates ndarray into a N x 2 ndarray, where N is the
+            # Reshape the 1D coordinates array into a N x 2 array, where N is the
             # number of rows.
             coordinates = np.reshape(coordinates_1d, (-1, 2))
 
@@ -756,8 +763,8 @@ class Airfoil:
         point so be careful about duplicates if using this method in conjunction with
         self.upper_coordinates.
 
-        :return lower_coordinates: ndarray
-            This is a N x 2 ndarray of x and y coordinates that describe the lower
+        :return lower_coordinates: array
+            This is a N x 2 array of x and y coordinates that describe the lower
             surface of the airfoil, where N
             is the number of points.
         """
@@ -777,8 +784,8 @@ class Airfoil:
         point so be careful about duplicates if using this method in conjunction with
         self.lower_coordinates.
 
-        :return upper_coordinates: ndarray
-            This is a N x 2 ndarray of x and y coordinates that describe the upper
+        :return upper_coordinates: array
+            This is a N x 2 array of x and y coordinates that describe the upper
             surface of the airfoil, where N
             is the number of points.
         """
@@ -792,12 +799,12 @@ class Airfoil:
     def get_downsampled_mcl(self, mcl_fractions):
         """This method returns the mean camber line in a downsampled form.
 
-        :param mcl_fractions: 1D ndarray
-            This is a 1D ndarray that lists the points along the mean camber line (
+        :param mcl_fractions: 1D array
+            This is a 1D array that lists the points along the mean camber line (
             normalized from 0 to 1) at which
             to return the mean camber line coordinates.
-        :return mcl_downsampled: 2D ndarray
-            This is a 2D ndarray that contains the coordinates of the downsampled
+        :return mcl_downsampled: 2D array
+            This is a 2D array that contains the coordinates of the downsampled
             mean camber line.
         """
 
@@ -810,13 +817,13 @@ class Airfoil:
             + np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
         )
 
-        # Create a horizontal 1D ndarray that contains the distance along the mean
+        # Create a horizontal 1D array that contains the distance along the mean
         # camber line of each point.
         mcl_distances_cumulative = np.hstack(
             (0, np.cumsum(mcl_distances_between_points))
         )
 
-        # Normalize the 1D ndarray so that it ranges from 0 to 1.
+        # Normalize the 1D array so that it ranges from 0 to 1.
         mcl_distances_cumulative_normalized = (
             mcl_distances_cumulative / mcl_distances_cumulative[-1]
         )
@@ -1005,15 +1012,16 @@ class Panel:
     This class contains the following public methods:
         calculate_collocation_point_location: This method calculates the location of
         the collocation point.
+
         calculate_area_and_normal: This method calculates the panel's area and the
         panel's normal unit vector.
+
         calculate_normalized_induced_velocity: This method calculates the velocity
-        induced at a point by this panel's
-                                               vortices, assuming a unit vortex
-                                               strength.
+        induced at a point by this panel's vortices, assuming a unit vortex strength.
+
         calculate_induced_velocity: This method calculates the velocity induced at a
-        point by this panel's vortices with
-                                    their given vortex strengths.
+        point by this panel's vortices with their given vortex strengths.
+
         update_force_moment_and_pressure: This method updates the force, moment,
         and pressure on this panel.
 
@@ -1035,16 +1043,16 @@ class Panel:
     ):
         """This is the initialization method.
 
-        :param front_right_vertex: 1D ndarray with three elements
+        :param front_right_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             front right vertex.
-        :param front_left_vertex: 1D ndarray with three elements
+        :param front_left_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             front left vertex.
-        :param back_left_vertex: 1D ndarray with three elements
+        :param back_left_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             back left vertex.
-        :param back_right_vertex: 1D ndarray with three elements
+        :param back_right_vertex: 1D array with three elements
             This is an array containing the x, y, and z coordinates of the panel's
             back right vertex.
         :param is_leading_edge: bool
@@ -1175,10 +1183,10 @@ class Panel:
 
         This method does not include the effect of the panel's wake vortices.
 
-        :param point:  1D ndarray
+        :param point:  1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the induced velocity at.
-        :return: 1D ndarray
+        :return: 1D array
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """
@@ -1203,10 +1211,10 @@ class Panel:
 
         This method does not include the effect of the panel's wake vortices.
 
-        :param point: 1D ndarray
+        :param point: 1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the induced velocity at.
-        :return: 1D ndarray
+        :return: 1D array
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """
@@ -1240,9 +1248,9 @@ def cosspace(
     n_points=50,
     endpoint=True,
 ):
-    """This function is used to create a ndarray containing a specified number of
-    values between a specified minimum
-    and maximum value that are spaced via a cosine function.
+    """This function is used to create a array containing a specified number of
+    values between a specified minimum and maximum value that are spaced via a cosine
+    function.
 
     Citation:
         Adapted from:         geometry.cosspace in AeroSandbox
@@ -1260,10 +1268,10 @@ def cosspace(
     :param endpoint: bool, optional
         This sets whether or not the maximum value will be included in the output.
         The default is True.
-    :return cosine_spaced_points: 1D ndarray
-        This is a 1D ndarray of the points, ranging from the minimum to the maximum
-        value (inclusive), spaced via a
-        cosine function.
+    :return cosine_spaced_points: 1D array
+
+        This is a 1D array of the points, ranging from the minimum to the maximum
+        value (inclusive), spaced via a cosine function.
     """
 
     # Find the mean and the amplitude of the cosine function.
@@ -1286,12 +1294,12 @@ def reflect_over_xz_plane(input_vector):
         Author:               Peter Sharpe
         Date of Retrieval:    04/28/2020
 
-    :param input_vector: ndarray
-        This can either be a 1D ndarray of three items, a M x 3 2D ndarray, or a M x
-        N x 3 3D ndarray. N and
+    :param input_vector: array
+        This can either be a 1D array of three items, a M x 3 2D array, or a M x
+        N x 3 3D array. N and
         represent arbitrary numbers of rows or columns.
-    :return output vector: ndarray
-        This is a ndarray with each vertex's y variable flipped.
+    :return output vector: array
+        This is a array with each vertex's y variable flipped.
     """
 
     # Initialize the output vector.
@@ -1302,15 +1310,15 @@ def reflect_over_xz_plane(input_vector):
 
     # Characterize the input vector.
     if len(shape) == 1 and shape[0] == 3:
-        # The input vector is a 1D ndarray of 3 items. Flip the vertex's y variable.
+        # The input vector is a 1D array of 3 items. Flip the vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     elif len(shape) == 2 and shape[1] == 3:
-        # The input vector is a 2D ndarray of shape M x 3. Where M is some arbitrary
+        # The input vector is a 2D array of shape M x 3. Where M is some arbitrary
         # number of rows. Flip each
         # vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
     elif len(shape) == 3 and shape[2] == 3:  # 3D MxNx3 vector
-        # The input vector is a 3D ndarray of shape M x N x 3. Where M is some
+        # The input vector is a 3D array of shape M x N x 3. Where M is some
         # arbitrary number of rows, and N is
         # some arbitrary number of columns. Flip each vertex's y variable.
         output_vector = output_vector * np.array([1, -1, 1])
@@ -1333,18 +1341,17 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     For more information on the math behind this method, see:
     https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 
-    :param angle: float or 1D ndarray of 3 angles
+    :param angle: float or 1D array of 3 angles
         This is the angle. Provide it in radians.
-    :param axis: 1D ndarray of 3 elements.
+    :param axis: 1D array of 3 elements.
         This is the axis.
     :param axis_already_normalized: bool, optional
         Set this as True if the axis given is already normalized, which will skip
-        internal normalization and speed up
-        the method. If not, set as False. The default is False.
-    :return rotation matrix: ndarray
+        internal normalization and speed up the method. If not, set as False. The
+        default is False.
+    :return rotation matrix: array
         This is the rotation matrix. If the given angle is a scalar, this will be a 3
-        x 3 ndarray. If the given
-        angle is a vector, this will be a 3 x 3 x N ndarray.
+        x 3 array. If the given angle is a vector, this will be a 3 x 3 x N array.
     """
 
     # Normalize the axis is it is not already normalized.
@@ -1383,29 +1390,30 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     return rotation_matrix
 
 
-# ToDo: Document this function.
 @njit(cache=True)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
-    """This function is used to find the centroid of a quadrilateral.
+    """This function is used to find the centroid of a quadrilateral. It has been
+    optimized for JIT compilation using Numba.
 
-    :param front_left_vertex: 1D ndarray
+    :param front_left_vertex: 1D array of floats
         This is an array containing the x, y, and z components of the front left
         vertex of the quadrilateral.
-    :param front_right_vertex: 1D ndarray
+    :param front_right_vertex: 1D array of floats
         This is an array containing the x, y, and z components of the front right
         vertex of the quadrilateral.
-    :param back_left_vertex: 1D ndarray
+    :param back_left_vertex: 1D array of floats
         This is an array containing the x, y, and z components of the back left
         vertex of the quadrilateral.
-    :param back_right_vertex: 1D ndarray
+    :param back_right_vertex: 1D array of floats
         This is an array containing the x, y, and z components of the back right
         vertex of the quadrilateral.
-    :return: 1D ndarray
+    :return: 1D array of floats
         This is an array containing the x, y, and z components of the centroid of the
         quadrilateral.
     """
+
     x_average = (
         front_left_vertex[0]
         + front_right_vertex[0]
@@ -1425,5 +1433,4 @@ def numba_centroid_of_quadrilateral(
         + back_right_vertex[2]
     ) / 4
 
-    centroid = np.array([x_average, y_average, z_average])
-    return centroid
+    return np.array([x_average, y_average, z_average])

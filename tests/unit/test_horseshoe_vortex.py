@@ -1,7 +1,8 @@
 """ This module contains a class to test horseshoe vortex objects.
 
 This module contains the following classes:
-    TestHorseshoeVortex: This class contains methods for testing horseshoe vortex objects.
+    TestHorseshoeVortex: This class contains methods for testing horseshoe vortex
+    objects.
 
 This module contains the following exceptions:
     None
@@ -19,14 +20,23 @@ import tests.unit.fixtures.vortex_fixtures
 
 
 class TestHorseshoeVortex(unittest.TestCase):
-    """ This class contains methods for testing horseshoe vortex objects.
+    """This class contains methods for testing horseshoe vortex objects.
 
     This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set up the fixtures.
-        tearDown: This method is automatically called before each testing method to tear down the fixtures.
+        setUp: This method is automatically called before each testing method to set
+        up the fixtures.
+
+        tearDown: This method is automatically called before each testing method to
+        tear down the fixtures.
+
         test_class: This method tests the class's instantiation.
-        test_calculate_normalized_induced_velocity: This method tests the calculation of normalized induced velocity.
-        test_calculate_induced_velocity: This method tests the calculation of induced velocity.
+
+        test_calculate_normalized_induced_velocity: This method tests the calculation
+        of normalized induced velocity.
+
+        test_calculate_induced_velocity: This method tests the calculation of induced
+        velocity.
+
         test_update_strength: This method tests the update_strength method.
 
     This class contains the following class attributes:
@@ -37,8 +47,9 @@ class TestHorseshoeVortex(unittest.TestCase):
     """
 
     def setUp(self):
-        """This method is automatically called before each testing method to set up the fixtures.
-        
+        """This method is automatically called before each testing method to set up
+        the fixtures.
+
         :return: None
         """
 
@@ -61,8 +72,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method is automatically called before each testing method to tear down the fixtures.
-        
+        """This method is automatically called before each testing method to tear
+        down the fixtures.
+
         :return: None
         """
 
@@ -75,7 +87,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         del self.infinite_leg_length_fixture
 
     def test_class(self):
-        """ This method tests the class's instantiation.
+        """This method tests the class's instantiation.
 
         :return: None
         """
@@ -141,7 +153,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_calculate_normalized_induced_velocity(self):
-        """ This method tests the calculation of normalized induced velocity.
+        """This method tests the calculation of normalized induced velocity.
 
         :return: None
         """
@@ -195,7 +207,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_calculate_induced_velocity(self):
-        """ This method tests the calculation of induced velocity.
+        """This method tests the calculation of induced velocity.
 
         :return: None
         """
@@ -249,7 +261,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
 
     def test_update_strength(self):
-        """ This method tests the update_strength method.
+        """This method tests the update_strength method.
 
         :return: None
         """

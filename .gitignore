@@ -99,6 +99,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+/venvTest/
+/venvTest3.7/
+/venvTest3.8/
 
 # These are the spyder project setting files to ignore.
 .spyderproject

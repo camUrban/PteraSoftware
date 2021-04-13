@@ -1,16 +1,16 @@
-# ToDo: Properly document this module.
-""" This module is a testing case for the steady ring vortex lattice method solver.
+"""This module is a testing case for the steady ring vortex lattice method solver.
 
 Based on an identical XFLR5 testing case, the expected output for this case is:
     CL:     0.788
     CDi:    0.019
     Cm:     -0.687
 
-Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice method
-solver.
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
+which is a ring vortex lattice method solver.
 
 This module contains the following classes:
-    TestRingHorseshoeVortexLatticeMethod: This is a class for testing the steady ring vortex lattice method solver.
+    TestSteadyRingVortexLatticeMethod: This is a class for testing the steady ring
+    vortex lattice method solver.
 
 This module contains the following exceptions:
     None
@@ -25,13 +25,14 @@ import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
-# ToDo: Properly document this class.
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
-    """ This is a class for testing the steady ring vortex lattice method solver.
+    """This is a class for testing the steady ring vortex lattice method solver.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
+
         tearDown: This method tears down the test.
+
         test_method: This method tests the solver's output.
 
     This class contains the following class attributes:
@@ -42,7 +43,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method sets up the test.
+        """This method sets up the test.
 
         :return: None
         """
@@ -53,16 +54,15 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method tears down the test.
+        """This method tears down the test.
 
         :return: None
         """
 
         del self.steady_ring_vortex_lattice_method_validation_solver
 
-    # ToDo: Properly document this method.
     def test_method(self):
-        """ This method tests the solver's output.
+        """This method tests the solver's output.
 
         :return: None
         """

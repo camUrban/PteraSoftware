@@ -1,4 +1,4 @@
-""" This module creates airplane objects to be used as fixtures.
+"""This module creates airplane objects to be used as fixtures.
 
 This module contains the following classes:
     None
@@ -7,25 +7,29 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    make_steady_validation_airplane: This function creates an airplane object to be used as a fixture for testing steady
-                                     solvers.
-    make_multiple_wing_steady_validation_airplane: This function creates a multi-wing airplane object to be used as a
-                                                   fixture for testing steady solvers.
-    make_asymmetric_unsteady_validation_airplane: This function creates an asymmetric airplane object to be used as a
-                                                  fixture for testing unsteady solvers.
-    make_symmetric_unsteady_validation_airplane: This function creates a symmetric airplane object to be used as a
-                                                 fixture for testing unsteady solvers.
-    make_symmetric_multiple_wing_unsteady_validation_airplane: This function creates a multi-wing, symmetric airplane
-                                                               object to be used as a fixture for testing unsteady
-                                                               solvers.
+    make_steady_validation_airplane: This function creates an airplane object to be
+    used as a fixture for testing steady solvers.
 
+    make_multiple_wing_steady_validation_airplane: This function creates a multi-wing
+    airplane object to be used as a fixture for testing steady solvers.
+
+    make_asymmetric_unsteady_validation_airplane: This function creates an asymmetric
+    airplane object to be used as a fixture for testing unsteady solvers.
+
+    make_symmetric_unsteady_validation_airplane: This function creates a symmetric
+    airplane object to be used as a fixture for testing unsteady solvers.
+
+    make_symmetric_multiple_wing_unsteady_validation_airplane: This function creates
+    a multi-wing, symmetric airplane object to be used as a fixture for testing
+    unsteady solvers.
 """
 
 import pterasoftware as ps
 
 
 def make_steady_validation_airplane():
-    """ This function creates an airplane object to be used as a fixture for testing steady solvers.
+    """This function creates an airplane object to be used as a fixture for testing
+    steady solvers.
 
     :return steady_validation_airplane: Airplane
         This is the airplane fixture.
@@ -55,7 +59,8 @@ def make_steady_validation_airplane():
 
 
 def make_multiple_wing_steady_validation_airplane():
-    """ This function creates a multi-wing airplane object to be used as a fixture for testing steady solvers.
+    """This function creates a multi-wing airplane object to be used as a fixture
+    for testing steady solvers.
 
     :return multiple_wing_steady_validation_airplane: Airplane
         This is the airplane fixture.
@@ -86,7 +91,8 @@ def make_multiple_wing_steady_validation_airplane():
                 x_le=5.0,
                 wing_cross_sections=[
                     ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(name="naca0010"), twist=-5.0,
+                        airfoil=ps.geometry.Airfoil(name="naca0010"),
+                        twist=-5.0,
                     ),
                     ps.geometry.WingCrossSection(
                         x_le=1.0,
@@ -103,7 +109,8 @@ def make_multiple_wing_steady_validation_airplane():
 
 
 def make_asymmetric_unsteady_validation_airplane():
-    """ This function creates an asymmetric airplane object to be used as a fixture for testing unsteady solvers.
+    """This function creates an asymmetric airplane object to be used as a fixture
+    for testing unsteady solvers.
 
     :return asymmetric_unsteady_validation_airplane: Airplane
         This is the airplane fixture.
@@ -138,7 +145,8 @@ def make_asymmetric_unsteady_validation_airplane():
 
 
 def make_symmetric_unsteady_validation_airplane():
-    """ This function creates a symmetric airplane object to be used as a fixture for testing unsteady solvers.
+    """This function creates a symmetric airplane object to be used as a fixture for
+    testing unsteady solvers.
 
     :return symmetric_unsteady_validation_airplane: Airplane
         This is the airplane fixture.
@@ -170,8 +178,8 @@ def make_symmetric_unsteady_validation_airplane():
 
 
 def make_symmetric_multiple_wing_unsteady_validation_airplane():
-    """ This function creates a multi-wing, symmetric airplane object to be used as a fixture for testing unsteady
-    solvers.
+    """This function creates a multi-wing, symmetric airplane object to be used as a
+    fixture for testing unsteady solvers.
 
     :return symmetric_multiple_wing_steady_validation_airplane: Airplane
         This is the airplane fixture.

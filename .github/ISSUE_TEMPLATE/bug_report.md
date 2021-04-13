@@ -1,41 +1,31 @@
 ---
-Name: Bug Report
-
-About: Create a report to help us improve.
-
-Title: "..."
-
-Labels: "..."
-
-Assignees: "..."
+name: Bug report about: Create a report to help us improve title: ''
+labels: ''
+assignees: ''
 
 ---
 
-**Describe the Bug:**
-
+**Describe the bug**
 A clear and concise description of what the bug is.
 
-**To Reproduce:**
-
+**To Reproduce**
 Steps to reproduce the behavior:
-1. "Go to..."
-2. "Click on..."
-3. "Scroll down to..."
-4. "See error..."
 
-**Expected Behavior:**
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
-Provide a clear and concise description of what you expected to happen.
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-**Screenshots:**
-
+**Screenshots**
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
 
- - OS: [e.g. iOS]
- - Version [e.g. v0.1.0]
+- OS: [e.g. iOS]
+- Version [e.g. 22]
 
-**Additional Context:**
-
+**Additional context**
 Add any other context about the problem here.

@@ -1,4 +1,4 @@
-""" This module contains a class to test line vortex objects.
+"""This module contains a class to test line vortex objects.
 
 This module contains the following classes:
     TestLineVortex: This class contains methods for testing line vortex objects.
@@ -19,14 +19,22 @@ import tests.unit.fixtures.vortex_fixtures
 
 
 class TestLineVortex(unittest.TestCase):
-    """ This class contains methods for testing line vortex objects.
+    """This class contains methods for testing line vortex objects.
 
     This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set up the fixtures.
-        tearDown: This method is automatically called before each testing method to tear down the fixtures.
+        setUp: This method is automatically called before each testing method to set
+        up the fixtures.
+
+        tearDown: This method is automatically called before each testing method to
+        tear down the fixtures.
+
         test_class: This method tests the class's instantiation.
-        test_calculate_normalized_induced_velocity: This method tests the calculation of normalized induced velocity.
-        test_calculate_induced_velocity: This method tests the calculation of induced velocity.
+
+        test_calculate_normalized_induced_velocity: This method tests the calculation
+        of normalized induced velocity.
+
+        test_calculate_induced_velocity: This method tests the calculation of induced
+        velocity.
 
     This class contains the following class attributes:
         None
@@ -36,7 +44,8 @@ class TestLineVortex(unittest.TestCase):
     """
 
     def setUp(self):
-        """ This method is automatically called before each testing method to set up the fixtures.
+        """This method is automatically called before each testing method to set up
+        the fixtures.
 
         :return: None
         """
@@ -54,7 +63,8 @@ class TestLineVortex(unittest.TestCase):
         )
 
     def tearDown(self):
-        """ This method is automatically called before each testing method to tear down the fixtures.
+        """This method is automatically called before each testing method to tear
+        down the fixtures.
 
         :return: None
         """
@@ -66,7 +76,7 @@ class TestLineVortex(unittest.TestCase):
         del self.strength_fixture
 
     def test_class(self):
-        """ This method tests the class's instantiation.
+        """This method tests the class's instantiation.
 
         :return:
         """
@@ -94,7 +104,7 @@ class TestLineVortex(unittest.TestCase):
         )
 
     def test_calculate_normalized_induced_velocity(self):
-        """ This method tests the calculation of normalized induced velocity.
+        """This method tests the calculation of normalized induced velocity.
 
         :return: None
         """
@@ -132,7 +142,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Test the velocity is correctly calculated in along a line collinear with the vortex, but off to one side.
+        # Test the velocity is correctly calculated in along a line collinear with
+        # the vortex, but off to one side.
         point_fixture = (
             self.line_vortex_fixture.center + self.line_vortex_fixture.vector
         )
@@ -145,7 +156,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Test the velocity is correctly calculated in along a line collinear with the vortex, but off to the other
+        # Test the velocity is correctly calculated in along a line collinear with
+        # the vortex, but off to the other
         # side.
         point_fixture = (
             self.line_vortex_fixture.center - self.line_vortex_fixture.vector
@@ -162,7 +174,8 @@ class TestLineVortex(unittest.TestCase):
         # Create a point fixture which does not have zero induced velocity on it.
         point_fixture = self.line_vortex_fixture.center + np.array([1, 0, 0])
 
-        # Perform the normalized induced velocity calculation. See the calculate_normalized_induced_velocity method in
+        # Perform the normalized induced velocity calculation. See the
+        # calculate_normalized_induced_velocity method in
         # the LineVortex object in the aerodynamics module for references.
         r_1_fixture = point_fixture - self.line_vortex_fixture.origin
         r_2_fixture = point_fixture - self.line_vortex_fixture.termination
@@ -189,7 +202,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Check that the calculate_normalized_induced_velocity method's calculations produce the expected results.
+        # Check that the calculate_normalized_induced_velocity method's calculations
+        # produce the expected results.
         self.assertTrue(
             np.allclose(
                 self.line_vortex_fixture.calculate_normalized_induced_velocity(
@@ -200,7 +214,7 @@ class TestLineVortex(unittest.TestCase):
         )
 
     def test_calculate_induced_velocity(self):
-        """ This method tests the calculation of induced velocity.
+        """This method tests the calculation of induced velocity.
 
         :return: None
         """
@@ -238,7 +252,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Test the velocity is correctly calculated in along a line collinear with the vortex, but off to one side.
+        # Test the velocity is correctly calculated in along a line collinear with
+        # the vortex, but off to one side.
         point_fixture = (
             self.line_vortex_fixture.center + self.line_vortex_fixture.vector
         )
@@ -251,7 +266,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Test the velocity is correctly calculated in along a line collinear with the vortex, but off to the other
+        # Test the velocity is correctly calculated in along a line collinear with
+        # the vortex, but off to the other
         # side.
         point_fixture = (
             self.line_vortex_fixture.center - self.line_vortex_fixture.vector
@@ -268,7 +284,8 @@ class TestLineVortex(unittest.TestCase):
         # Create a point fixture which does not have zero induced velocity on it.
         point_fixture = self.line_vortex_fixture.center + np.array([1, 0, 0])
 
-        # Perform the induced velocity calculation. See the calculate_induced_velocity method in the LineVortex object
+        # Perform the induced velocity calculation. See the
+        # calculate_induced_velocity method in the LineVortex object
         # in the aerodynamics module for references.
         r_1_fixture = self.line_vortex_fixture.origin - point_fixture
         r_2_fixture = self.line_vortex_fixture.termination - point_fixture
@@ -296,7 +313,8 @@ class TestLineVortex(unittest.TestCase):
             )
         )
 
-        # Check that the calculate_induced_velocity method's calculations produce the expected results.
+        # Check that the calculate_induced_velocity method's calculations produce the
+        # expected results.
         self.assertTrue(
             np.allclose(
                 self.line_vortex_fixture.calculate_induced_velocity(

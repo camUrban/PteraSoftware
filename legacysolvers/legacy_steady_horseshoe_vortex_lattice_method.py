@@ -1,11 +1,10 @@
-""" This module contains the class definition of a depreciated steady horseshoe
+"""This module contains the class definition of a depreciated steady horseshoe
 vortex lattice solver.
 
 This module contains the following classes:
     LegacySteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver
-    that uses a steady horseshoe vortex
-                                                    lattice method. It has not been
-                                                    vectorized for speed.
+    that uses a steady horseshoe vortex lattice method. It has not been vectorized
+    for speed.
 
 This module contains the following exceptions:
     None
@@ -31,20 +30,24 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: Run the solver on the steady problem.
+
         initialize_panel_vortices: This method calculates the locations of the vortex
-        vertices, and then initializes the
-                                   panels' vortices.
+        vertices, and then initializes the panels' vortices.
+
         calculate_wing_wing_influences: Find the matrix of aerodynamic influence
-        coefficients associated with this
-                                        problem's geometry.
+        coefficients associated with this problem's geometry.
+
         calculate_freestream_wing_influences: Find the normal velocity speed at every
-        collocation point without the
-                                              influence of the vortices.
+        collocation point without the influence of the vortices.
+
         calculate_vortex_strengths: Solve for each panels' vortex strength.
+
         calculate_solution_velocity: Find the velocity at a given point due to the
         freestream and the vortices.
+
         calculate_near_field_forces_and_moments: Find the the forces and moments
         calculated from the near field.
+
         calculate_streamlines: Calculates the location of the streamlines coming off
         the back of the wings.
 
@@ -202,8 +205,8 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         initializes the panels' vortices.
 
         Every panel has a horseshoe vortex. The vortex's finite leg runs along the
-        panel's quarter chord from right to
-        left. It's infinite legs point backwards in the positive x direction.
+        panel's quarter chord from right to left. It's infinite legs point backwards
+        in the positive x direction.
 
         :return: None
         """

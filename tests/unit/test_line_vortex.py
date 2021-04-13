@@ -1,4 +1,4 @@
-""" This module contains a class to test line vortex objects.
+"""This module contains a class to test line vortex objects.
 
 This module contains the following classes:
     TestLineVortex: This class contains methods for testing line vortex objects.
@@ -24,11 +24,15 @@ class TestLineVortex(unittest.TestCase):
     This class contains the following public methods:
         setUp: This method is automatically called before each testing method to set
         up the fixtures.
+
         tearDown: This method is automatically called before each testing method to
         tear down the fixtures.
+
         test_class: This method tests the class's instantiation.
+
         test_calculate_normalized_induced_velocity: This method tests the calculation
         of normalized induced velocity.
+
         test_calculate_induced_velocity: This method tests the calculation of induced
         velocity.
 

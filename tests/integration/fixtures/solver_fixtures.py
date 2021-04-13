@@ -1,4 +1,4 @@
-""" This module creates solver objects to be used as fixtures.
+"""This module creates solver objects to be used as fixtures.
 
 This module contains the following classes:
     None
@@ -8,50 +8,31 @@ This module contains the following exceptions:
 
 This module contains the following functions:
     make_steady_horseshoe_vortex_lattice_method_validation_solver: This function
-    creates a solver object using the
-                                                                   horseshoe vortex
-                                                                   lattice method to
-                                                                   be used as a
-                                                                   fixture.
+    creates a solver object using the horseshoe vortex lattice method to be used as a
+    fixture.
+
     make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver: This
-    function creates a solver object
-                                                                                 with
-                                                                                 multi-wing geometry using the
-                                                                                 horseshoe vortex lattice method to be
-                                                                                 used
-                                                                                 as a
-                                                                                 fixture.
+    function creates a solver object with multi-wing geometry using the horseshoe
+    vortex lattice method to be used as a fixture.
+
     make_steady_ring_vortex_lattice_method_validation_solver: This function creates a
-    solver object using the ring
-                                                              vortex lattice method
-                                                              to be used as a fixture.
+    solver object using the ring vortex lattice method to be used as a fixture.
+
     make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry:
-    This function creates a solver
-                                                                                     object with static geometry using
-                                                                                     the unsteady ring vortex lattice
-                                                                                     method to be used as a fixture.
-    make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry
-    : This function creates a solver
-                                                                                       object with variable geometry
-                                                                                       using the unsteady ring vortex
-                                                                                       lattice method to be used as a
-                                                                                       fixture.
-    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry: This function creates
-                                                                                                   a solver object with
-                                                                                                   multi-wing, static
-                                                                                                   geometry using the
-                                                                                                   unsteady ring vortex
-                                                                                                   lattice method to be
-                                                                                                   used as a fixture.
-    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry: This function
-                                                                                                     creates a solver
-                                                                                                     object with
-                                                                                                     multi-wing,
-                                                                                                     variable geometry
-                                                                                                     using the unsteady
-                                                                                                     ring vortex lattice
-                                                                                                     method to be used
-                                                                                                     as a fixture.
+    This function creates a solver object with static geometry using the unsteady
+    ring vortex lattice method to be used as a fixture.
+
+    make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry:
+    This function creates a solver object with variable geometry using the unsteady
+    ring vortex lattice method to be used as a fixture.
+
+    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry:
+    This function creates a solver object with multi-wing, static geometry using the
+    unsteady ring vortex lattice method to be used as a fixture.
+
+    make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry:
+    This function creates a solver object with multi-wing, variable geometry using
+    the unsteady ring vortex lattice method to be used as a fixture.
 """
 
 import pterasoftware as ps
@@ -84,8 +65,7 @@ def make_steady_horseshoe_vortex_lattice_method_validation_solver():
 
 def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver():
     """This function creates a solver object with multi-wing geometry using the
-    horseshoe vortex lattice method to be
-    used as a fixture.
+    horseshoe vortex lattice method to be used as a fixture.
 
     :return steady_horseshoe_vortex_lattice_method_validation_solver:
     SteadyHorseshoeVortexLatticeMethodSolver
@@ -137,8 +117,7 @@ def make_steady_ring_vortex_lattice_method_validation_solver():
 
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry():
     """This function creates a solver object with static geometry using the unsteady
-    ring vortex lattice method to be
-    used as a fixture.
+    ring vortex lattice method to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
     UnsteadyRingVortexLatticeMethodSolver
@@ -166,8 +145,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
 
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry():
     """This function creates a solver object with variable geometry using the
-    unsteady ring vortex lattice method to be
-    used as a fixture.
+    unsteady ring vortex lattice method to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
     UnsteadyRingVortexLatticeMethodSolver
@@ -195,8 +173,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
 
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry():
     """This function creates a solver object with multi-wing, static geometry using
-    the unsteady ring vortex lattice
-    method to be used as a fixture.
+    the unsteady ring vortex lattice method to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
     UnsteadyRingVortexLatticeMethodSolver
@@ -224,8 +201,7 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
 
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry():
     """This function creates a solver object with multi-wing variable geometry using
-    the unsteady ring vortex lattice
-    method to be used as a fixture.
+    the unsteady ring vortex lattice method to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
     UnsteadyRingVortexLatticeMethodSolver

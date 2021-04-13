@@ -1,4 +1,4 @@
-""" This module creates operating point objects to be used as fixtures.
+"""This module creates operating point objects to be used as fixtures.
 
 This module contains the following classes:
     None

@@ -1,5 +1,4 @@
-# ToDo: Properly document this script.
-""" This is a testing case for the unsteady ring vortex lattice method solver with
+"""This is a testing case for the unsteady ring vortex lattice method solver with
 static geometry.
 
 Based on an equivalent XFLR5 testing case, the expected output for this case is:
@@ -8,15 +7,13 @@ Based on an equivalent XFLR5 testing case, the expected output for this case is:
     Cm:     -0.197
 
 Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
-which is a ring vortex lattice method
-solver. The geometry in this case is static. Therefore the results of this unsteady
-solver should converge to be close
-to XFLR5's static result.
+which is a ring vortex lattice method solver. The geometry in this case is static.
+Therefore the results of this unsteady solver should converge to be close to XFLR5's
+static result.
 
 This module contains the following classes:
     TestUnsteadyRingVortexLatticeMethodStaticGeometry: This is a class for testing
-    the unsteady ring vortex lattice
-                                                       method solver on static geometry.
+    the unsteady ring vortex lattice method solver on static geometry.
 
 This module contains the following exceptions:
     None
@@ -30,14 +27,15 @@ import unittest
 from tests.integration.fixtures import solver_fixtures
 
 
-# ToDo: Properly document this class.
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
     """This is a class for testing the unsteady ring vortex lattice method solver on
     static geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
+
         tearDown: This method tears down the test.
+
         test_method: This method tests the solver's output.
 
     This class contains the following class attributes:
@@ -66,7 +64,6 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         del self.unsteady_ring_vortex_lattice_method_validation_solver
 
-    # ToDo: Properly document this method.
     def test_method(self):
         """This method tests the solver's output.
 

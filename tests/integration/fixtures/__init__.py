@@ -1,7 +1,4 @@
-# ToDo: Properly document this module.
-"""
-
-"""
+# ToDo: Document this file.
 
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import movement_fixtures

@@ -1,4 +1,4 @@
-""" This module contains a class to test ring vortex objects.
+"""This module contains a class to test ring vortex objects.
 
 This module contains the following classes:
     None
@@ -24,14 +24,20 @@ class TestRingVortex(unittest.TestCase):
     This class contains the following public methods:
         setUp: This method is automatically called before each testing method to set
         up the fixtures.
+
         tearDown: This method is automatically called before each testing method to
         tear down the fixtures.
+
         test_class: This method tests the class's instantiation.
+
         test_calculate_normalized_induced_velocity: This method tests the calculation
         of normalized induced velocity.
+
         test_calculate_induced_velocity: This method tests the calculation of induced
         velocity.
+
         test_update_strength: This method tests the update_strength method.
+
         test_update_position: This method tests the update_position method.
 
     This class contains the following class attributes:

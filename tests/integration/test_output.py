@@ -1,13 +1,17 @@
-""" This module is a testing case for the output module.
+"""This module is a testing case for the output module.
+
+Note: Most of the tests in this case do not currently test the output against a
+expected output. Instead, they test that the methods to create the output don't throw
+any errors.
 
 This module contains the following classes:
-    None
+    TestOutput: This is a class with functions to test the output module.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    TestOutput: This is a class with functions to test the output module.
+    None
 """
 
 import unittest
@@ -24,12 +28,16 @@ class TestOutput(unittest.TestCase):
     This class contains the following public methods:
         setUp: This method is automatically called before each testing method to set
         up the fixtures.
+
         tearDown: This method is automatically called before each testing method to
         tear down the fixtures.
+
         test_plot_results_versus_time: This method tests the plot_results_versus_time
         method.
+
         test_animate_does_not_throw: This method tests that the animate method does
         not throw any errors.
+
         test_draw_does_not_throw: This method tests that the draw method does not
         throw any errors.
 

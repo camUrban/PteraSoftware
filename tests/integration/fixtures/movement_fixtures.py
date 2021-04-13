@@ -1,4 +1,4 @@
-""" This module creates movement objects to be used as fixtures.
+"""This module creates movement objects to be used as fixtures.
 
 This module contains the following classes:
     None
@@ -8,17 +8,16 @@ This module contains the following exceptions:
 
 This module contains the following functions:
     make_static_validation_movement: This function creates a movement object with
-    static geometry to be used as a
-                                     fixture.
+    static geometry to be used as a fixture.
+
     make_variable_validation_movement: This function creates a movement object with
-    variable geometry to be used as a
-                                       fixture.
+    variable geometry to be used as a fixture.
+
     make_multiple_wing_static_validation_movement: This function creates a movement
-    object with static, multi-wing
-                                                   geometry to be used as a fixture.
+    object with static, multi-wing geometry to be used as a fixture.
+
     make_multiple_wing_variable_validation_movement: This function creates a movement
-    object with variable, multi-wing
-                                                     geometry to be used as a fixture.
+    object with variable, multi-wing geometry to be used as a fixture.
 """
 
 import pterasoftware as ps

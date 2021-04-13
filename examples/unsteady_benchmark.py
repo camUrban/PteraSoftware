@@ -1,3 +1,5 @@
+# ToDo: Document this script.
+
 import pterasoftware as ps
 
 flapping_frequency = 1

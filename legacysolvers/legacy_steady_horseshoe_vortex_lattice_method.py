@@ -1,11 +1,10 @@
-""" This module contains the class definition of a depreciated steady horseshoe
+"""This module contains the class definition of a depreciated steady horseshoe
 vortex lattice solver.
 
 This module contains the following classes:
     LegacySteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver
-    that uses a steady horseshoe vortex
-                                                    lattice method. It has not been
-                                                    vectorized for speed.
+    that uses a steady horseshoe vortex lattice method. It has not been vectorized
+    for speed.
 
 This module contains the following exceptions:
     None
@@ -31,20 +30,24 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: Run the solver on the steady problem.
+
         initialize_panel_vortices: This method calculates the locations of the vortex
-        vertices, and then initializes the
-                                   panels' vortices.
+        vertices, and then initializes the panels' vortices.
+
         calculate_wing_wing_influences: Find the matrix of aerodynamic influence
-        coefficients associated with this
-                                        problem's geometry.
+        coefficients associated with this problem's geometry.
+
         calculate_freestream_wing_influences: Find the normal velocity speed at every
-        collocation point without the
-                                              influence of the vortices.
+        collocation point without the influence of the vortices.
+
         calculate_vortex_strengths: Solve for each panels' vortex strength.
+
         calculate_solution_velocity: Find the velocity at a given point due to the
         freestream and the vortices.
+
         calculate_near_field_forces_and_moments: Find the the forces and moments
         calculated from the near field.
+
         calculate_streamlines: Calculates the location of the streamlines coming off
         the back of the wings.
 
@@ -202,8 +205,8 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         initializes the panels' vortices.
 
         Every panel has a horseshoe vortex. The vortex's finite leg runs along the
-        panel's quarter chord from right to
-        left. It's infinite legs point backwards in the positive x direction.
+        panel's quarter chord from right to left. It's infinite legs point backwards
+        in the positive x direction.
 
         :return: None
         """
@@ -258,7 +261,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # the vortex influence is to be calculated.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -269,7 +272,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
                 # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.airplane.wings:
 
-                    # Convert the 2D ndarray of this wing's panels into a 1D list.
+                    # Convert the 2D array of this wing's panels into a 1D list.
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
@@ -332,7 +335,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -364,7 +367,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -382,19 +385,19 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
     def calculate_solution_velocity(self, point):
         """Find the velocity at a given point due to the freestream and the vortices.
 
-        :param point: 1D ndarray
+        :param point: 1D array
             This is a vector containing the x, y, and z coordinates of the point to
             find the velocity at.
         :return: None
         """
 
-        # Initialize an ndarray to hold the solution velocity.
+        # Initialize an array to hold the solution velocity.
         velocity_induced_by_vortices = np.zeros(3)
 
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -561,7 +564,7 @@ class LegacySteadyHorseshoeVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Initialize an ndarray to hold the points along the streamline. It is
+            # Initialize an array to hold the points along the streamline. It is
             # shape (M x N x 3), where M is the
             # number of points in the streamline (not including the initial point),
             # N is the number of spanwise panels

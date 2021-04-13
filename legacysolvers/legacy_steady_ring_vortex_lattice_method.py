@@ -3,9 +3,7 @@ lattice solver.
 
 This module contains the following classes:
     LegacySteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that
-    uses a steady ring vortex lattice
-                                               method. It has not been vectorized for
-                                               speed.
+    uses a steady ring vortex lattice method. It has not been vectorized for speed.
 
 This module contains the following exceptions:
     None
@@ -21,8 +19,7 @@ import pterasoftware as ps
 
 class LegacySteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses a steady ring vortex lattice method.
-    It has not been vectorized for
-    speed.
+    It has not been vectorized for speed.
 
     Citation:
         Adapted from:         aerodynamics.vlm3.py in AeroSandbox
@@ -31,22 +28,25 @@ class LegacySteadyRingVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: Run the solver on the steady problem.
+
         initialize_panel_vortices: This method calculates the locations of the vortex
-        vertices, and then initializes the
-                                   panels' vortices.
+        vertices, and then initializes the panels' vortices.
+
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with
-                                        this current_airplane's geometry.
+        influence coefficients associated with this current_airplane's geometry.
+
         calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influence coefficients
-                                              associated with this problem.
-        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+        freestream-wing influence coefficients associated with this problem.
+
+        calculate_vortex_strengths: This method solves for each panel's vortex
+        strength.
+
         calculate_solution_velocity: This method finds the velocity at a given point
-        due to both the freestream and the
-                                     vortices.
+        due to both the freestream and the vortices.
+
         calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near
-                                                 field.
+        moments calculated from the near field.
+
         calculate_streamlines: This method calculates the location of the streamlines
         coming off the back of the wings.
 
@@ -309,7 +309,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         # the vortex influence is to be calculated.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -320,7 +320,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
                 # influence on the collocation point is to be calculated.
                 for vortex_panel_wing in self.airplane.wings:
 
-                    # Convert the 2D ndarray of this wing's panels into a 1D list.
+                    # Convert the 2D array of this wing's panels into a 1D list.
                     vortex_panels = np.ravel(vortex_panel_wing.panels)
 
                     # Iterate through the list of panels with the vortices.
@@ -384,7 +384,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for collocation_panel_wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             collocation_panels = np.ravel(collocation_panel_wing.panels)
 
             # Iterate through the list of panels with the collocation points.
@@ -418,7 +418,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -446,24 +446,24 @@ class LegacySteadyRingVortexLatticeMethodSolver:
 
         Note: The velocity calculated by this method is in geometry axes.
 
-        :param point: 1D ndarray of floats
+        :param point: 1D array of floats
             This is the x, y, and z coordinates of the location, in meters,
             where this method will solve for the
             velocity.
-        :return solution_velocity: 1D ndarray of floats
+        :return solution_velocity: 1D array of floats
             This is the x, y, and z components of the velocity, in meters per second,
             where this method will solve for
             the velocity.
         """
 
-        # Initialize a (3,) ndarray of zeros to hold the velocity induced at the
+        # Initialize a (3,) array of zeros to hold the velocity induced at the
         # point due to the vortices.
         velocity_induced_by_vortices = np.zeros(3)
 
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert the 2D ndarray of this wing's panels into a 1D list.
+            # Convert the 2D array of this wing's panels into a 1D list.
             wing_panels = np.ravel(wing.panels)
 
             # Iterate through this list of panels.
@@ -778,7 +778,7 @@ class LegacySteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Initialize an ndarray to hold the points along the streamline. It is
+            # Initialize an array to hold the points along the streamline. It is
             # shape (M x N x 3), where M is the
             # number of points in the streamline (not including the initial point),
             # N is the number of spanwise panels

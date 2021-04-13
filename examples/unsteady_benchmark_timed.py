@@ -1,3 +1,5 @@
+# ToDo: Document this script.
+
 import timeit
 
 import numpy as np

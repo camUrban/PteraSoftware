@@ -108,19 +108,25 @@ for spanwise_loc in range(num_spanwise_sections):
     # Interpolate between the leading edge coordinates to find the x-coordinate of
     # the front left vertex.
     front_left_vertices[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step, leading_coords[:, 1], leading_coords[:, 0],
+        spanwise_loc * spanwise_step,
+        leading_coords[:, 1],
+        leading_coords[:, 0],
     )
 
     # Interpolate between the trailing edge coordinates to find the x-coordinate of
     # the back left vertex.
     back_left_vertices[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step, trailing_coords[:, 1], trailing_coords[:, 0],
+        spanwise_loc * spanwise_step,
+        trailing_coords[:, 1],
+        trailing_coords[:, 0],
     )
 
     # Interpolate between the leading edge coordinates to find the x-coordinate of
     # the front right vertex.
     front_right_vertices[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step, leading_coords[:, 1], leading_coords[:, 0],
+        (spanwise_loc + 1) * spanwise_step,
+        leading_coords[:, 1],
+        leading_coords[:, 0],
     )
 
     # Interpolate between the trailing edge coordinates to find the x-coordinate of
@@ -157,7 +163,9 @@ for i in range(num_spanwise_sections):
         x_le=this_x_le,
         y_le=this_y_le,
         chord=this_chord,
-        airfoil=ps.geometry.Airfoil(name="naca0000",),
+        airfoil=ps.geometry.Airfoil(
+            name="naca0000",
+        ),
         num_spanwise_panels=1,
     )
 
@@ -185,7 +193,9 @@ for i in range(num_spanwise_sections):
             x_le=this_x_le,
             y_le=this_y_le,
             chord=this_chord,
-            airfoil=ps.geometry.Airfoil(name="naca0000",),
+            airfoil=ps.geometry.Airfoil(
+                name="naca0000",
+            ),
             num_spanwise_panels=1,
         )
 
@@ -223,10 +233,10 @@ del first_wing_cross_section_movement
 
 
 def validation_geometry_sweep_function(time):
-    """ This function takes in the time during a flap cycle and returns the flap
-    angle in degrees. It uses the flapping frequency defined in the encompassing
-    script, and is based on a fourth-order Fourier series. The coefficients were
-    calculated by the authors of Yeo et al., 2011.
+    """This function takes in the time during a flap cycle and returns the flap angle
+    in degrees. It uses the flapping frequency defined in the encompassing script,
+    and is based on a fourth-order Fourier series. The coefficients were calculated
+    by the authors of Yeo et al., 2011.
 
     :param time: float or 1D array of floats
         This is a single time or an array of time values at which to calculate the
@@ -264,10 +274,10 @@ def validation_geometry_sweep_function(time):
 
 
 def normalized_validation_geometry_sweep_function_rad(time):
-    """ This function takes in the time during a flap cycle and returns the flap
-    angle in radians. It uses a normalized flapping frequency of 1 Hertz,
-    and is based on a fourth-order Fourier series. The coefficients were calculated
-    by the authors of Yeo et al., 2011.
+    """This function takes in the time during a flap cycle and returns the flap angle
+    in radians. It uses a normalized flapping frequency of 1 Hertz, and is based on a
+    fourth-order Fourier series. The coefficients were calculated by the authors of
+    Yeo et al., 2011.
 
     :param time: float or 1D array of floats
         This is a single time or an array of time values at which to calculate the
@@ -320,8 +330,7 @@ for j in range(1, num_spanwise_sections + 1):
     # movements.
     validation_wing_cross_section_movements.append(this_wing_cross_section_movement)
 
-# Define the wing movement object that contains the wing cross section
-# movements.
+# Define the wing movement object that contains the wing cross section movements.
 validation_main_wing_movement = ps.movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_sections_movements=validation_wing_cross_section_movements,
@@ -332,7 +341,10 @@ del validation_wing_cross_section_movements
 
 # Define the airplane movement that contains the wing movement.
 validation_airplane_movement = ps.movement.AirplaneMovement(
-    base_airplane=validation_airplane, wing_movements=[validation_main_wing_movement,],
+    base_airplane=validation_airplane,
+    wing_movements=[
+        validation_main_wing_movement,
+    ],
 )
 
 # Delete the extraneous pointers.
@@ -341,7 +353,8 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    alpha=validation_alpha, velocity=validation_velocity,
+    alpha=validation_alpha,
+    velocity=validation_velocity,
 )
 
 # Define an operating point movement that contains the operating point.
@@ -382,21 +395,26 @@ del validation_airplane_movement
 del validation_operating_point_movement
 
 # Define the validation problem.
-validation_problem = ps.problems.UnsteadyProblem(movement=validation_movement,)
+validation_problem = ps.problems.UnsteadyProblem(
+    movement=validation_movement,
+)
 
 # Delete the extraneous pointer.
 del validation_movement
 
 # Define the validation solver.
-validation_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-    unsteady_problem=validation_problem,
+validation_solver = (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=validation_problem,
+    )
 )
 
 # Delete the extraneous pointer.
 del validation_problem
 
 # Define the position of the coordinates of interest and the area of their
-# rectangles. These values were extracted by digitizing the figures in Yeo et al., 2011.
+# rectangles. These values were extracted by digitizing the figures in Yeo et al.,
+# 2011.
 blue_trailing_point_coords = [0.060, 0.036]
 blue_trailing_area = 0.072 * 0.024
 blue_middle_point_coords = [0.036, 0.036]
@@ -422,10 +440,8 @@ validation_solver.run(prescribed_wake=True)
 # Call the software’s animate function on the solver. This produces a GIF. The GIF is
 # saved in the same directory as this script. Press "q," after orienting the view,
 # to begin the animation.
-ps.output.animate(
-    # Set the unsteady solver to the one we just ran.
-    unsteady_solver=validation_solver,
-    # Show the pressures in the animation.
+ps.output.animate(  # Set the unsteady solver to the one we just ran.
+    unsteady_solver=validation_solver,  # Show the pressures in the animation.
     show_delta_pressures=True,
     # Set this value to False to hide the wake vortices in the animation.
     show_wake_vortices=True,
@@ -592,11 +608,11 @@ exp_green_leading_lift_forces = exp_green_leading_normal_forces * np.cos(
 
 # Calculate the net experimental lift. This is the sum of all the lift on each of the
 # experimental panels multiplied by two (because the experimental panels only cover
-# one of the symmetric wing halves). Note: this list of lift forces is with respect to
-# the body axes. I will later compare it to the simulated lift in wind axes. This
+# one of the symmetric wing halves). Note: this list of lift forces is with respect
+# to the body axes. I will later compare it to the simulated lift in wind axes. This
 # does not matter because the operating point is at zero angle of attack. If the
-# angle of attack is changed, the experimental lift forces must be rotated to the wind
-# frame before comparison with the simulated lift forces.
+# angle of attack is changed, the experimental lift forces must be rotated to the
+# wind frame before comparison with the simulated lift forces.
 exp_net_lift_forces = 2 * (
     exp_blue_trailing_lift_forces
     + exp_blue_middle_lift_forces
@@ -659,9 +675,15 @@ lift_axes.plot(
 )
 
 # Label the axis, add a title, and add a legend.
-lift_axes.set_xlabel("Normalized Flap Cycle Time",)
-lift_axes.set_ylabel("Lift (N)",)
-lift_axes.set_title("Simulated and Experimental Lift Versus Time",)
+lift_axes.set_xlabel(
+    "Normalized Flap Cycle Time",
+)
+lift_axes.set_ylabel(
+    "Lift (N)",
+)
+lift_axes.set_title(
+    "Simulated and Experimental Lift Versus Time",
+)
 lift_axes.legend()
 
 # Show the figure.
@@ -669,7 +691,6 @@ lift_figure.show()
 
 # Delete the extraneous pointers.
 del airplanes
-del steady_problem
 del sim_net_forces_wind_axes
 del step
 

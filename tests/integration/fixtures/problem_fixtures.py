@@ -1,4 +1,4 @@
-""" This module creates problem objects to be used as fixtures.
+"""This module creates problem objects to be used as fixtures.
 
 This module contains the following classes:
     None
@@ -7,29 +7,35 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    make_steady_validation_problem: This function creates a steady problem object to be used as a fixture.
-    make_steady_multiple_wing_validation_problem: This function creates a steady problem object with multi-wing geometry
-                                                  to be used as a fixture.
-    make_unsteady_validation_problem_with_static_geometry: This function creates an unsteady problem object with static
-                                                           geometry to be used as a fixture.
-    make_unsteady_validation_problem_with_variable_geometry: This function creates an unsteady problem object with
-                                                             variable geometry to be used as a fixture.
-    make_unsteady_validation_problem_with_multiple_wing_static_geometry: This function creates an unsteady problem
-                                                                         object with multi-wing, static geometry to be
-                                                                         used as a fixture.
-    make_unsteady_validation_problem_with_multiple_wing_variable_geometry: This function creates an unsteady problem
-                                                                           object with multi-wing, variable geometry to
-                                                                           be used as a fixture.
+    make_steady_validation_problem: This function creates a steady problem object to
+    be used as a fixture.
+
+    make_steady_multiple_wing_validation_problem: This function creates a steady
+    problem object with multi-wing geometry to be used as a fixture.
+
+    make_unsteady_validation_problem_with_static_geometry: This function creates an
+    unsteady problem object with static geometry to be used as a fixture.
+
+    make_unsteady_validation_problem_with_variable_geometry: This function creates an
+    unsteady problem object with variable geometry to be used as a fixture.
+
+    make_unsteady_validation_problem_with_multiple_wing_static_geometry: This
+    function creates an unsteady problem object with multi-wing, static geometry to
+    be used as a fixture.
+
+    make_unsteady_validation_problem_with_multiple_wing_variable_geometry: This
+    function creates an unsteady problem object with multi-wing, variable geometry to
+    be used as a fixture.
 """
 
 import pterasoftware as ps
-from tests.integration.fixtures import operating_point_fixtures
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import movement_fixtures
+from tests.integration.fixtures import operating_point_fixtures
 
 
 def make_steady_validation_problem():
-    """ This function creates a steady problem object to be used as a fixture.
+    """This function creates a steady problem object to be used as a fixture.
 
     :return steady_validation_problem: SteadyProblem
         This is the problem fixture.
@@ -56,7 +62,8 @@ def make_steady_validation_problem():
 
 
 def make_steady_multiple_wing_validation_problem():
-    """ This function creates a steady problem object with multi-wing geometry to be used as a fixture.
+    """This function creates a steady problem object with multi-wing geometry to be
+    used as a fixture.
 
     :return steady_validation_problem: SteadyProblem
         This is the problem fixture.
@@ -85,7 +92,8 @@ def make_steady_multiple_wing_validation_problem():
 
 
 def make_unsteady_validation_problem_with_static_geometry():
-    """ This function creates an unsteady problem object with static geometry to be used as a fixture.
+    """This function creates an unsteady problem object with static geometry to be
+    used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.
@@ -107,7 +115,8 @@ def make_unsteady_validation_problem_with_static_geometry():
 
 
 def make_unsteady_validation_problem_with_variable_geometry():
-    """ This function creates an unsteady problem object with variable geometry to be used as a fixture.
+    """This function creates an unsteady problem object with variable geometry to be
+    used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.
@@ -129,7 +138,8 @@ def make_unsteady_validation_problem_with_variable_geometry():
 
 
 def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
-    """ This function creates an unsteady problem object with multi-wing, static geometry to be used as a fixture.
+    """This function creates an unsteady problem object with multi-wing,
+    static geometry to be used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.
@@ -153,7 +163,8 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
 
 
 def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
-    """ This function creates an unsteady problem object with multi-wing, variable geometry to be used as a fixture.
+    """This function creates an unsteady problem object with multi-wing, variable
+    geometry to be used as a fixture.
 
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.

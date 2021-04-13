@@ -1,4 +1,4 @@
-""" This module contains the class definition of this package's steady ring vortex
+"""This module contains the class definition of this package's steady ring vortex
 lattice solver.
 
 This module contains the following classes:
@@ -27,26 +27,29 @@ class SteadyRingVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: Run the solver on the steady problem.
+
         initialize_panel_vortices: This method calculates the locations of the vortex
-        vertices, and then initializes the
-                                   panels' vortices.
+        vertices, and then initializes the panels' vortices.
+
         collapse_geometry: This method converts attributes of the problem's geometry
-        into 1D ndarrays. This facilitates
-                           vectorization, which speeds up the solver.
+        into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
+
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with
-                                        this airplane's geometry.
+        influence coefficients associated with this airplane's geometry.
+
         calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influence coefficients
-                                              associated with this problem.
-        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+        freestream-wing influence coefficients associated with this problem.
+
+        calculate_vortex_strengths: This method solves for each panel's vortex
+        strength.
+
         calculate_solution_velocity: This function takes in a group of points. At
-        every point, it finds the induced
-                                     velocity due to every vortex and the freestream
-                                     velocity.
+        every point, it finds the induced velocity due to every vortex and the
+        freestream velocity.
+
         calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near
-                                                 field.
+        moments calculated from the near field.
+
         calculate_streamlines: This method calculates the location of the streamlines
         coming off the back of the wings.
 
@@ -353,10 +356,10 @@ class SteadyRingVortexLatticeMethodSolver:
         # Iterate through the airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert this wing's 2D ndarray of panels into a 1D ndarray.
+            # Convert this wing's 2D array of panels into a 1D array.
             panels = np.ravel(wing.panels)
 
-            # Iterate through the 1D ndarray of this wing's panels.
+            # Iterate through the 1D array of this wing's panels.
             for panel in panels:
 
                 # Update the solver's list of attributes with this panel's attributes.
@@ -416,7 +419,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 # Check if this panel is on the trailing edge.
                 if panel.is_trailing_edge:
                     # If it is, calculate it's streamline seed point and add it to
-                    # the solver's ndarray of seed points.
+                    # the solver's array of seed points.
                     self.seed_points = np.vstack(
                         (
                             self.seed_points,
@@ -517,7 +520,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Take the batch dot product of the freestream velocity with each panel's
         # normal direction. This is now the
-        # problem's 1D ndarray of freestream-wing influence coefficients.
+        # problem's 1D array of freestream-wing influence coefficients.
         self.freestream_wing_influences = np.einsum(
             "ij,j->i", self.panel_normal_directions, self.freestream_velocity
         )
@@ -563,11 +566,11 @@ class SteadyRingVortexLatticeMethodSolver:
         operations than using the vortex objects'
         class methods for calculating induced velocity.
 
-        :param points: 2D ndarray of floats
-            This variable is an ndarray of shape (N x 3), where N is the number of
+        :param points: 2D array of floats
+            This variable is an array of shape (N x 3), where N is the number of
             points. Each row contains the x, y,
             and z float coordinates of that point's position in meters.
-        :return solution_velocities: 2D ndarray of floats
+        :return solution_velocities: 2D array of floats
             The output is the summed effects from every vortex, and from the
             freestream on a given point. The result
             will be of shape (N x 3), where each row identifies the velocity at a
@@ -651,10 +654,10 @@ class SteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.airplane.wings:
 
-            # Convert this wing's 2D ndarray of panels into a 1D ndarray.
+            # Convert this wing's 2D array of panels into a 1D array.
             panels = np.ravel(wing.panels)
 
-            # Iterate through this wing's 1D ndarray panels.
+            # Iterate through this wing's 1D array panels.
             for panel in panels:
 
                 # Check if this panel is on its wing's right edge.
@@ -931,7 +934,7 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-        # Initialize a ndarray to hold this problem's matrix of streamline points.
+        # Initialize a array to hold this problem's matrix of streamline points.
         self.streamline_points = np.expand_dims(self.seed_points, axis=0)
 
         # Iterate through the streamline steps.

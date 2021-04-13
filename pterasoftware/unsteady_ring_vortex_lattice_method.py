@@ -1,16 +1,16 @@
-""" This module contains the class definition of this package's unsteady ring vortex
+"""This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
 This module contains the following classes:
-    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses an
-    unsteady ring vortex lattice method.
+    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
+    an unsteady ring vortex lattice method.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    numba_1d_explicit_cross: This function takes in two arrays, each of which contain N
-    vectors of 3 components. The function then calculates and returns the cross
+    numba_1d_explicit_cross: This function takes in two arrays, each of which contain
+    N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
 """
 
@@ -27,40 +27,57 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
+
         initialize_panel_vortices: This method calculates the locations of an
         airplane's bound vortex vertices, and then initializes its panels' bound
         vortices.
+
         collapse_geometry: This method converts attributes of the problem's geometry
         into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
+
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
         influence coefficients associated with this airplane's geometry.
+
         calculate_freestream_wing_influences: This method finds the vector of
         freestream-wing influences associated with the problem at this time step.
+
         calculate_wake_wing_influences: This method finds the vector of the wake-wing
         influences associated with the problem at this time step.
-        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+
+        calculate_vortex_strengths: This method solves for each panel's vortex
+        strength.
+
         calculate_solution_velocity: This function takes in a group of points. At
         every point, it finds the induced velocity due to every vortex and the
         freestream velocity.
+
         calculate_near_field_forces_and_moments: This method finds the the forces and
         moments calculated from the near field.
+
         calculate_streamlines: This method calculates the location of the streamlines
         coming off the back of the wings.
+
         populate_next_airplanes_wake: This method updates the next time step's
         airplane's wake.
+
         populate_next_airplanes_wake_vortex_vertices: This method populates the
         locations of the next airplane's wake vortex vertices.
+
         populate_next_airplanes_wake_vortices: This method populates the locations of
         the next airplane's wake vortices.
+
         calculate_current_flapping_velocities_at_collocation_points: This method gets
         the velocity due to flapping at all of the current airplane's collocation
         points.
+
         calculate_current_flapping_velocities_at_right_leg_centers: This method gets
         the velocity due to flapping at the centers of the current airplane's bound
         ring vortices' right legs.
+
         calculate_current_flapping_velocities_at_front_leg_centers: This method gets
         the velocity due to flapping at the centers of the current airplane's bound
         ring vortices' front legs.
+
         calculate_current_flapping_velocities_at_left_leg_centers: This method gets
         the velocity due to flapping at the centers of the current airplane's bound
         ring vortices' left legs.
@@ -77,6 +94,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :param unsteady_problem: UnsteadyProblem
             This is the unsteady problem to be solved.
+        :return: None
         """
 
         # Initialize this solution's attributes.
@@ -794,10 +812,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         class methods for calculating induced velocity.
 
         :param points: 2D array of floats
-            This variable is an ndarray of shape (N x 3), where N is the number of
+            This variable is an array of shape (N x 3), where N is the number of
             points. Each row contains the x, y,
             and z float coordinates of that point's position in meters.
-        :return solution_velocities: 2D ndarray of floats
+        :return solution_velocities: 2D array of floats
             The output is the summed effects from every vortex, and from the
             freestream on a given point. The result
             will be of shape (N x 3), where each row identifies the velocity at a
@@ -883,10 +901,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the current_airplane's wings.
         for wing in self.current_airplane.wings:
 
-            # Convert this wing's 2D ndarray of panels into a 1D ndarray.
+            # Convert this wing's 2D array of panels into a 1D array.
             panels = np.ravel(wing.panels)
 
-            # Iterate through this wing's 1D ndarray panels.
+            # Iterate through this wing's 1D array panels.
             for panel in panels:
 
                 # Check if this panel is on its wing's right edge.
@@ -1179,7 +1197,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             It's default value is 0.1 seconds.
         :return: None
         """
-        # Initialize a ndarray to hold this problem's matrix of streamline points.
+        # Initialize a array to hold this problem's matrix of streamline points.
         self.streamline_points = np.expand_dims(self.seed_points, axis=0)
 
         # Iterate through the streamline steps.
@@ -1575,9 +1593,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """This method gets the velocity due to flapping at all of the current
         airplane's collocation points.
 
-        :return flapping_velocities: size (M x 3) ndarray of floats, where M is the
+        :return flapping_velocities: size (M x 3) array of floats, where M is the
         current airplane's number of panels
-            This is an ndarray containing the x, y, and z components of the velocity
+            This is an array containing the x, y, and z components of the velocity
             due to flapping at every one of the current airplane's collocation
             points. Its units are in meters per second. If the current time step is the
             first time step, all the flapping velocities will be zero.
@@ -1603,9 +1621,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """This method gets the velocity due to flapping at the centers of the
         current airplane's bound ring vortices' right legs.
 
-        :return flapping_velocities: size (M x 3) ndarray of floats, where M is the
+        :return flapping_velocities: size (M x 3) array of floats, where M is the
         current airplane's number of panels
-            This is an ndarray containing the x, y, and z components of the velocity
+            This is an array containing the x, y, and z components of the velocity
             due to flapping at every one of the current airplane's bound vortices'
             right legs' centers. Its units are in meters per second. If the current
             time step is the first time step, all the flapping velocities will be zero.
@@ -1633,9 +1651,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """This method gets the velocity due to flapping at the centers of the
         current airplane's bound ring vortices' front legs.
 
-        :return flapping_velocities: size (M x 3) ndarray of floats, where M is the
+        :return flapping_velocities: size (M x 3) array of floats, where M is the
         current airplane's number of panels
-            This is an ndarray containing the x, y, and z components of the velocity
+            This is an array containing the x, y, and z components of the velocity
             due to flapping at every one of the current airplane's bound vortices'
             front legs' centers. Its units are in meters per second. If the current
             time step is the first time step, all the flapping velocities will be zero.
@@ -1663,9 +1681,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """This method gets the velocity due to flapping at the centers of the
         current airplane's bound ring vortices' left legs.
 
-        :return flapping_velocities: size (M x 3) ndarray of floats, where M is the
+        :return flapping_velocities: size (M x 3) array of floats, where M is the
         current airplane's number of panels
-            This is an ndarray containing the x, y, and z components of the velocity
+            This is an array containing the x, y, and z components of the velocity
             due to flapping at every one of the current airplane's bound vortices'
             left legs' centers. Its units are in meters per second. If the current
             time step is the first time step, all the flapping velocities will be zero.
@@ -1703,11 +1721,11 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
     response to a question on Stack Overflow. The original response is here:
     https://stackoverflow.com/a/66757029/13240504.
 
-    :param vectors_1: array of size (N x 3)
+    :param vectors_1: array of floats of size (N x 3)
         This is the first array of N vectors.
-    :param vectors_2: array of size (N x 3)
+    :param vectors_2: array of floats of size (N x 3)
         This is the second array of N vectors.
-    :return crosses: array of size (N x 3)
+    :return crosses: array of floats of size (N x 3)
         This is the cross product of the two inputted vectors at each of the N
         positions.
     """

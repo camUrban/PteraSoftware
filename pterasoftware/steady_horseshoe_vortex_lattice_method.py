@@ -3,8 +3,7 @@ vortex lattice solver.
 
 This module contains the following classes:
     SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that
-    uses a steady horseshoe vortex lattice
-                                              method.
+    uses a steady horseshoe vortex lattice method.
 
 This module contains the following exceptions:
     None
@@ -29,21 +28,24 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
     This class contains the following public methods:
         run: Run the solver on the steady problem.
+
         initialize_panel_vortices: This method calculates the locations of the vortex
-        vertices, and then initializes the
-                                   panels' vortices.
+        vertices, and then initializes the panels' vortices.
+
         collapse_geometry: This method converts attributes of the problem's geometry
-        into 1D ndarrays. This facilitates
-                           vectorization, which speeds up the solver.
+        into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
+
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with
-                                        this airplane's geometry.
+        influence coefficients associated with this airplane's geometry.
+
         calculate_freestream_wing_influences: Find the normal velocity speed at every
-        collocation points without the
-                                              influence of the vortices.
+        collocation points without the influence of the vortices.
+
         calculate_vortex_strengths: Solve for each panels' vortex strengths.
+
         calculate_near_field_forces_and_moments: Find the the forces and moments
         calculated from the near field.
+
         calculate_streamlines: Calculates the location of the streamlines coming off
         the back of the wings.
 

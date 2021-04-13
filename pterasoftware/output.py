@@ -8,10 +8,12 @@ This module contains the following exceptions:
 
 This module contains the following functions:
     draw: Draw the geometry of an airplane object.
+
     animate: Create an animation of a problem's movement.
+
     plot_results_versus_time: This method takes in an unsteady solver object,
-    and plots the geometries' forces, moments,
-                              and coefficients as a function of time.
+    and plots the geometries' forces, moments, and coefficients as a function of
+    time.
 """
 
 import os

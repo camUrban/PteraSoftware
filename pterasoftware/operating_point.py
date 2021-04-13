@@ -25,17 +25,16 @@ class OperatingPoint:
     This class contains the following public methods:
         calculate_dynamic_pressure: This method calculates the freestream dynamic
         pressure of the working fluid.
+
         calculate_rotation_matrix_wind_to_geometry: This method computes the 3 x 3
-        rotation matrix for converting from
-                                                    wind axes to geometry axes.
+        rotation matrix for converting from wind axes to geometry axes.
+
         calculate_freestream_direction_geometry_axes: This method computes the
-        freestream direction (the direction the
-                                                      wind is going to) in geometry
-                                                      axes.
+        freestream direction (the direction the wind is going to) in geometry axes.
+
         calculate_freestream_velocity_geometry_axes: This method computes the
-        freestream velocity vector (in the
-                                                     direction the wind is going to)
-                                                     in geometry axes.
+        freestream velocity vector (in the direction the wind is going to) in
+        geometry axes.
 
     This class contains the following class attributes:
         None

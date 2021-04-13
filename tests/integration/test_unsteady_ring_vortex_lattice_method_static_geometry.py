@@ -1,17 +1,19 @@
-""" This is a testing case for the unsteady ring vortex lattice method solver with static geometry.
+"""This is a testing case for the unsteady ring vortex lattice method solver with
+static geometry.
 
 Based on an equivalent XFLR5 testing case, the expected output for this case is:
     CL:     0.588
     CDi:    0.011
     Cm:     -0.197
 
-Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice method
-solver. The geometry in this case is static. Therefore the results of this unsteady solver should converge to be close
-to XFLR5's static result.
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
+which is a ring vortex lattice method solver. The geometry in this case is static.
+Therefore the results of this unsteady solver should converge to be close to XFLR5's
+static result.
 
 This module contains the following classes:
-    TestUnsteadyRingVortexLatticeMethodStaticGeometry: This is a class for testing the unsteady ring vortex lattice
-    method solver on static geometry.
+    TestUnsteadyRingVortexLatticeMethodStaticGeometry: This is a class for testing
+    the unsteady ring vortex lattice method solver on static geometry.
 
 This module contains the following exceptions:
     None
@@ -26,11 +28,14 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
-    """This is a class for testing the unsteady ring vortex lattice method solver on static geometry.
+    """This is a class for testing the unsteady ring vortex lattice method solver on
+    static geometry.
 
     This class contains the following public methods:
         setUp: This method sets up the test.
+
         tearDown: This method tears down the test.
+
         test_method: This method tests the solver's output.
 
     This class contains the following class attributes:

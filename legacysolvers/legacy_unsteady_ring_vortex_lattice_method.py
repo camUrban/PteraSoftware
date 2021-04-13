@@ -3,8 +3,7 @@ lattice solver.
 
 This module contains the following classes:
     UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
-    an unsteady ring vortex lattice
-                                           method. It has not been vectorized for speed.
+    an unsteady ring vortex lattice method. It has not been vectorized for speed.
 
 This module contains the following exceptions:
     None
@@ -22,49 +21,55 @@ import pterasoftware as ps
 
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice
-    method. It has not been vectorized for
-    speed.
+    method. It has not been vectorized for speed.
 
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
+
         initialize_panel_vortices: This method calculates the locations of an
-        airplane's bound vortex vertices, and then
-                                   initializes its panels' bound vortices.
+        airplane's bound vortex vertices, and then initializes its panels' bound
+        vortices.
+
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influences associated with this
-                                        problem's geometry.
+        influences associated with this problem's geometry.
+
         calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influences associated with
-                                              the problem at this time step.
+        freestream-wing influences associated with the problem at this time step.
+
         calculate_wake_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with
-                                        this airplane's geometry.
-        calculate_vortex_strengths: This method solves for each panel's vortex strength.
+        influence coefficients associated with this airplane's geometry.
+
+        calculate_vortex_strengths: This method solves for each panel's vortex
+        strength.
+
         calculate_solution_velocity: This method finds the velocity at a given point
-        due to the freestream and the
-                                     vortices.
+        due to the freestream and the vortices.
+
         calculate_velocity_influences: This method finds the velocity at a given
-        point due to the vorticity of every
-                                       vortex if their strengths were all set to 1.0
-                                       meters squared per second.
+        point due to the vorticity of every vortex if their strengths were all set to
+        1.0 meters squared per second.
+
         calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near
-                                                 field.
+        moments calculated from the near field.
+
         calculate_streamlines: This method calculates the location of the streamlines
         coming off the back of the wings.
+
         populate_next_airplanes_wake: This method updates the next time step's
         airplane's wake.
+
         populate_next_airplanes_wake_vortex_vertices: This method populates the
-        locations of the next airplane's wake
-                                                      vortex vertices.
+        locations of the next airplane's wake vortex vertices.
+
         populate_next_airplanes_wake_vortices: This method populates the locations of
         the next airplane's wake vortices.
+
         debug_vortices: This method prints out the current strength of the problem's
         vortices.
+
         calculate_flapping_velocity: This method gets the velocity due to flapping at
-        a point on the panel of the
-                                     current airplane based its current position,
-                                     and its last position.
+        a point on the panel of the current airplane based its current position,
+        and its last position.
 
     This class contains the following class attributes:
         None
@@ -101,13 +106,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :param verbose: Bool, optional
             This parameter determines if the solver prints output to the console and
-            opens a visualization. It's default
-            value is True.
+            opens a visualization. It's default value is True.
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
-            false it will use a free-wake,
-            which may be more accurate but will make the solver significantly slower.
-            The default is True.
+            false it will use a free-wake, which may be more accurate but will make
+            the solver significantly slower. The default is True.
         :return: None
         """
 

@@ -233,10 +233,10 @@ del first_wing_cross_section_movement
 
 
 def validation_geometry_sweep_function(time):
-    """This function takes in the time during a flap cycle and returns the flap
-    angle in degrees. It uses the flapping frequency defined in the encompassing
-    script, and is based on a fourth-order Fourier series. The coefficients were
-    calculated by the authors of Yeo et al., 2011.
+    """This function takes in the time during a flap cycle and returns the flap angle
+    in degrees. It uses the flapping frequency defined in the encompassing script,
+    and is based on a fourth-order Fourier series. The coefficients were calculated
+    by the authors of Yeo et al., 2011.
 
     :param time: float or 1D array of floats
         This is a single time or an array of time values at which to calculate the
@@ -274,10 +274,10 @@ def validation_geometry_sweep_function(time):
 
 
 def normalized_validation_geometry_sweep_function_rad(time):
-    """This function takes in the time during a flap cycle and returns the flap
-    angle in radians. It uses a normalized flapping frequency of 1 Hertz,
-    and is based on a fourth-order Fourier series. The coefficients were calculated
-    by the authors of Yeo et al., 2011.
+    """This function takes in the time during a flap cycle and returns the flap angle
+    in radians. It uses a normalized flapping frequency of 1 Hertz, and is based on a
+    fourth-order Fourier series. The coefficients were calculated by the authors of
+    Yeo et al., 2011.
 
     :param time: float or 1D array of floats
         This is a single time or an array of time values at which to calculate the
@@ -330,8 +330,7 @@ for j in range(1, num_spanwise_sections + 1):
     # movements.
     validation_wing_cross_section_movements.append(this_wing_cross_section_movement)
 
-# Define the wing movement object that contains the wing cross section
-# movements.
+# Define the wing movement object that contains the wing cross section movements.
 validation_main_wing_movement = ps.movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_sections_movements=validation_wing_cross_section_movements,
@@ -414,7 +413,8 @@ validation_solver = (
 del validation_problem
 
 # Define the position of the coordinates of interest and the area of their
-# rectangles. These values were extracted by digitizing the figures in Yeo et al., 2011.
+# rectangles. These values were extracted by digitizing the figures in Yeo et al.,
+# 2011.
 blue_trailing_point_coords = [0.060, 0.036]
 blue_trailing_area = 0.072 * 0.024
 blue_middle_point_coords = [0.036, 0.036]
@@ -608,11 +608,11 @@ exp_green_leading_lift_forces = exp_green_leading_normal_forces * np.cos(
 
 # Calculate the net experimental lift. This is the sum of all the lift on each of the
 # experimental panels multiplied by two (because the experimental panels only cover
-# one of the symmetric wing halves). Note: this list of lift forces is with respect to
-# the body axes. I will later compare it to the simulated lift in wind axes. This
+# one of the symmetric wing halves). Note: this list of lift forces is with respect
+# to the body axes. I will later compare it to the simulated lift in wind axes. This
 # does not matter because the operating point is at zero angle of attack. If the
-# angle of attack is changed, the experimental lift forces must be rotated to the wind
-# frame before comparison with the simulated lift forces.
+# angle of attack is changed, the experimental lift forces must be rotated to the
+# wind frame before comparison with the simulated lift forces.
 exp_net_lift_forces = 2 * (
     exp_blue_trailing_lift_forces
     + exp_blue_middle_lift_forces

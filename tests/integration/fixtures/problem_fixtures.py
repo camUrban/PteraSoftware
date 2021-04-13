@@ -1,4 +1,4 @@
-""" This module creates problem objects to be used as fixtures.
+"""This module creates problem objects to be used as fixtures.
 
 This module contains the following classes:
     None
@@ -9,32 +9,23 @@ This module contains the following exceptions:
 This module contains the following functions:
     make_steady_validation_problem: This function creates a steady problem object to
     be used as a fixture.
+
     make_steady_multiple_wing_validation_problem: This function creates a steady
-    problem object with multi-wing geometry
-                                                  to be used as a fixture.
+    problem object with multi-wing geometry to be used as a fixture.
+
     make_unsteady_validation_problem_with_static_geometry: This function creates an
-    unsteady problem object with static
-                                                           geometry to be used as a
-                                                           fixture.
+    unsteady problem object with static geometry to be used as a fixture.
+
     make_unsteady_validation_problem_with_variable_geometry: This function creates an
-    unsteady problem object with
-                                                             variable geometry to be
-                                                             used as a fixture.
+    unsteady problem object with variable geometry to be used as a fixture.
+
     make_unsteady_validation_problem_with_multiple_wing_static_geometry: This
-    function creates an unsteady problem
-                                                                         object with
-                                                                         multi-wing,
-                                                                         static
-                                                                         geometry to be
-                                                                         used as a
-                                                                         fixture.
+    function creates an unsteady problem object with multi-wing, static geometry to
+    be used as a fixture.
+
     make_unsteady_validation_problem_with_multiple_wing_variable_geometry: This
-    function creates an unsteady problem
-                                                                           object
-                                                                           with
-                                                                           multi-wing, variable geometry to
-                                                                           be used as
-                                                                           a fixture.
+    function creates an unsteady problem object with multi-wing, variable geometry to
+    be used as a fixture.
 """
 
 import pterasoftware as ps

@@ -1,22 +1,23 @@
 ---
-
 name: This is a feature request about: ''
-
 labels: ''
-
 assignees: ''
 
 ---
 
-#Problem Statement
+# Problem Statement
+
 Please describe what problem you want fixed with a new feature.
 
-##Proposed Solution
+## Proposed Solution
+
 Please describe the solution you'd like implemented.
 
-##Alternative Solutions
+## Alternative Solutions
+
 Please provide a clear and concise description of any alternative solutions or features 
 you've considered.
 
-##Additional context
+## Additional Context
+
 Please add any other context or screenshots about the feature request here.

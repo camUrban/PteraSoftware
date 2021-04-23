@@ -2,7 +2,8 @@
 
 ## Supported Versions
 
-Due to time constraints, only the most recent version will be updated with security patches.
+Due to time constraints, only the most recent version will be updated with security 
+patches. 
 
 ## Reporting a Vulnerability
 

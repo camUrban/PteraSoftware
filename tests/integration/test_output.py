@@ -13,12 +13,11 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
 import matplotlib.pyplot as plt
 
-import pterasoftware as ps
+import src
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -82,7 +81,7 @@ class TestOutput(unittest.TestCase):
         # Call the plot_results_versus_time method on the solver fixture. The testing
         # flag is set to true, so the
         # figures will not be displayed.
-        ps.output.plot_results_versus_time(
+        src.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, testing=True
         )
 
@@ -99,7 +98,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the animate function on the unsteady solver fixture.
-        ps.output.animate(
+        src.output.animate(
             unsteady_solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
@@ -113,7 +112,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the draw function on the unsteady solver fixture.
-        ps.output.draw(
+        src.output.draw(
             solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,

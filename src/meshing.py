@@ -14,10 +14,10 @@ This module contains the following functions:
     move_panels: This function takes in a problem of the UnsteadyAerodynamicsProblem
     class, and modifies it's panel locations as it time steps through the simulation.
 """
-
 import numpy as np
 
-import pterasoftware as ps
+from . import functions
+from . import panel
 
 
 def mesh_wing(wing):
@@ -51,7 +51,7 @@ def mesh_wing(wing):
             endpoint=True,
         )
     elif wing.chordwise_spacing == "cosine":
-        nondim_chordwise_coordinates = ps.geometry.cosspace(
+        nondim_chordwise_coordinates = functions.cosspace(
             0,
             1,
             num_chordwise_coordinates,
@@ -328,7 +328,7 @@ def mesh_wing(wing):
                 endpoint=True,
             )
         elif inner_cross_section.spanwise_spacing == "cosine":
-            nondim_spanwise_coordinates = ps.geometry.cosspace(
+            nondim_spanwise_coordinates = functions.cosspace(
                 n_points=num_spanwise_coordinates,
                 endpoint=True,
             )
@@ -424,9 +424,7 @@ def mesh_wing(wing):
         # in each slot.
         for chordwise_position in range(num_chordwise_panels):
             for spanwise_position in range(num_spanwise_panels):
-                section_panels[
-                    chordwise_position, spanwise_position
-                ] = ps.geometry.Panel(
+                section_panels[chordwise_position, spanwise_position] = panel.Panel(
                     front_left_vertex=front_inner_vertices[
                         chordwise_position, spanwise_position
                     ],
@@ -645,22 +643,20 @@ def mesh_wing(wing):
                 for spanwise_position in range(num_spanwise_panels):
                     # Reflect the vertices to create the reflected wing for the
                     # symmetric case.
-                    front_inner_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    front_inner_vertices_reflected = functions.reflect_over_xz_plane(
                         front_inner_vertices[chordwise_position, spanwise_position]
                     )
-                    front_outer_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    front_outer_vertices_reflected = functions.reflect_over_xz_plane(
                         front_outer_vertices[chordwise_position, spanwise_position]
                     )
-                    back_inner_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    back_inner_vertices_reflected = functions.reflect_over_xz_plane(
                         back_inner_vertices[chordwise_position, spanwise_position]
                     )
-                    back_outer_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    back_outer_vertices_reflected = functions.reflect_over_xz_plane(
                         back_outer_vertices[chordwise_position, spanwise_position]
                     )
 
-                    section_panels[
-                        chordwise_position, spanwise_position
-                    ] = ps.geometry.Panel(
+                    section_panels[chordwise_position, spanwise_position] = panel.Panel(
                         front_left_vertex=front_outer_vertices_reflected,
                         front_right_vertex=front_inner_vertices_reflected,
                         back_left_vertex=back_outer_vertices_reflected,
@@ -681,17 +677,17 @@ def mesh_wing(wing):
     # populate their local position attributes.
     for chordwise_position in range(wing.num_chordwise_panels):
         for spanwise_position in range(wing.num_spanwise_panels):
-            panel = panels[chordwise_position, spanwise_position]
-            panel.local_chordwise_position = chordwise_position
-            panel.local_spanwise_position = spanwise_position
+            this_panel = panels[chordwise_position, spanwise_position]
+            this_panel.local_chordwise_position = chordwise_position
+            this_panel.local_spanwise_position = spanwise_position
             if spanwise_position == 0:
-                panel.is_left_edge = True
+                this_panel.is_left_edge = True
             else:
-                panel.is_left_edge = False
+                this_panel.is_left_edge = False
             if spanwise_position == wing.num_spanwise_panels - 1:
-                panel.is_right_edge = True
+                this_panel.is_right_edge = True
             else:
-                panel.is_right_edge = False
+                this_panel.is_right_edge = False
 
     # Populate the wing's panels attribute.
     wing.panels = panels

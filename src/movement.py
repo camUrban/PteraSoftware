@@ -32,13 +32,13 @@ This module contains the following functions:
     calculated by inputting a vector of linearly spaced time steps into a custom
     function.
 """
-
 import math
 
 import numpy as np
 from scipy import signal
 
-import pterasoftware as ps
+from . import geometry
+from . import operating_point
 
 
 class Movement:
@@ -372,7 +372,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = ps.geometry.Airplane(
+            this_airplane = geometry.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -753,7 +753,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = ps.geometry.Wing(
+            this_wing = geometry.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -1185,7 +1185,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = ps.geometry.WingCrossSection(
+            this_wing_cross_section = geometry.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
@@ -1324,7 +1324,7 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = ps.operating_point.OperatingPoint(
+            this_operating_point = operating_point.OperatingPoint(
                 density=density, velocity=velocity, alpha=alpha, beta=beta
             )
 

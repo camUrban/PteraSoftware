@@ -1,3 +1,4 @@
+# ToDo: Update this module's documentation.
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
@@ -37,15 +38,14 @@ This package contains the following modules:
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's unsteady ring vortex lattice solver.
 """
-
-from pterasoftware import aerodynamics
-from pterasoftware import airfoils
-from pterasoftware import geometry
-from pterasoftware import meshing
-from pterasoftware import movement
-from pterasoftware import operating_point
-from pterasoftware import output
-from pterasoftware import problems
-from pterasoftware import steady_horseshoe_vortex_lattice_method
-from pterasoftware import steady_ring_vortex_lattice_method
-from pterasoftware import unsteady_ring_vortex_lattice_method
+import src.aerodynamics
+import src.airfoils
+import src.geometry
+import src.meshing
+import src.movement
+import src.operating_point
+import src.output
+import src.problems
+import src.steady_horseshoe_vortex_lattice_method
+import src.steady_ring_vortex_lattice_method
+import src.unsteady_ring_vortex_lattice_method

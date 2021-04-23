@@ -39,10 +39,9 @@ This module contains the following functions:
     make_ring_vortex_fixture: This method makes a fixture that is a ring vortex
     object.
 """
-
 import numpy as np
 
-import pterasoftware as ps
+import src
 
 
 def make_origin_fixture():
@@ -94,7 +93,7 @@ def make_line_vortex_fixture():
     strength_fixture = make_strength_fixture()
 
     # Create the line vortex object.
-    line_vortex_fixture = ps.aerodynamics.LineVortex(
+    line_vortex_fixture = src.aerodynamics.LineVortex(
         origin=origin_fixture,
         termination=termination_fixture,
         strength=strength_fixture,
@@ -148,7 +147,7 @@ def make_horseshoe_vortex_fixture():
     infinite_leg_length_fixture = make_infinite_leg_length_fixture()
 
     # Create the horseshoe vortex object.
-    horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    horseshoe_vortex_fixture = src.aerodynamics.HorseshoeVortex(
         finite_leg_origin=origin_fixture,
         finite_leg_termination=termination_fixture,
         strength=strength_fixture,
@@ -230,7 +229,7 @@ def make_ring_vortex_fixture():
     strength_fixture = make_strength_fixture()
 
     # Create the ring vortex object.
-    ring_vortex_fixture = ps.aerodynamics.RingVortex(
+    ring_vortex_fixture = src.aerodynamics.RingVortex(
         front_left_vertex=front_left_vertex_fixture,
         front_right_vertex=front_right_vertex_fixture,
         back_left_vertex=back_left_vertex_fixture,

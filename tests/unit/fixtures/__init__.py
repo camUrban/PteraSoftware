@@ -1,3 +1,2 @@
 # ToDo: Document this file.
-
-from tests.unit.fixtures import vortex_fixtures
+import tests.unit.fixtures.vortex_fixtures

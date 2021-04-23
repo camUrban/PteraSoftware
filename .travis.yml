@@ -8,7 +8,7 @@ before_install:
   - git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
   - source ./gl-ci-helpers/travis/setup_headless_display.sh
 install:
-  - pip install -r REQUIREMENTS.txt
+  - pip install -r requirements.txt
   - pip install black
   - pip install codecov
   - pip install pre-commit

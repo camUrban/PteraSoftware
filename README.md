@@ -39,14 +39,14 @@ from the Anaconda distribution as it could introduce compatibility issues with P
 There are a few ways to install Ptera Software. If you wish to use this package as a dependency in your own projects,
 simply run:
 
-```pip install PteraSoftware```
+```pip install pterasoftware```
 
 via the command prompt in your project's directory.
 
 If you just want to play around with the software, feel free to fork this repository and open the source code in the IDE
 of your choice. You will then need to run:
 
-```pip install -r REQUIREMENTS.txt```
+```pip install -r requirements.txt```
 
 via the command prompt in your fork's directory.
 

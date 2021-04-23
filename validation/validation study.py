@@ -19,7 +19,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Import Ptera Software
+# Import the source package.
 import src
 
 # Set the given characteristics of the wing in meters.

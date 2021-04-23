@@ -49,15 +49,3 @@ import src.problems
 import src.steady_horseshoe_vortex_lattice_method
 import src.steady_ring_vortex_lattice_method
 import src.unsteady_ring_vortex_lattice_method
-
-# from src import aerodynamics
-# from src import airfoils
-# from src import geometry
-# from src import meshing
-# from src import movement
-# from src import operating_point
-# from src import output
-# from src import problems
-# from src import steady_horseshoe_vortex_lattice_method
-# from src import steady_ring_vortex_lattice_method
-# from src import unsteady_ring_vortex_lattice_method

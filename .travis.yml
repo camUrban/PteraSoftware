@@ -13,5 +13,5 @@ install:
   - pip install codecov
   - pip install pre-commit
 script:
-  - coverage run --source=pterasoftware -m unittest discover -s tests
+  - coverage run --source=src -m unittest discover -s tests
   - codecov

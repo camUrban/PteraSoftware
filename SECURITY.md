@@ -6,4 +6,4 @@ Due to time constraints, only the most recent version will be updated with secur
 
 ## Reporting a Vulnerability
 
-If you find a vulnerability, please notify me via email to camerongurban@gmail.com.
+If you find a vulnerability, please notify me via email at camerongurban@gmail.com.

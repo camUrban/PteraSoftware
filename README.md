@@ -1,5 +1,4 @@
-# Ptera Software
-
+#Ptera Software
 ![Ptera Software Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/PteraSoftwareLogo.jpg)
 
 ![build](https://img.shields.io/travis/camUrban/PteraSoftware/master)
@@ -12,8 +11,7 @@
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing
 flapping-wing flight.
 
-## Motivation
-
+##Motivation
 In late 2018, I became curious about biological flight. To sate this curiosity, I wanted
  to computationally simulate some flapping-wing fliers. I quickly realized I had two
  options:
@@ -37,8 +35,7 @@ well documented, and is well tested.
 With your help, I hope we will increase the open-source community's interest and
 understanding of biological flight.
 
-## How to Install
-
+##How to Install
 First things first, you will need a copy of Python 3.7 or 3.8. Python 3.9 is not yet
 supported due to a dependency issue in VTK. Download Python 3.7 or 3.8 from the official
  Python website. At this time, I do not recommend using a version from the Anaconda
@@ -58,8 +55,7 @@ If you just want to play around with the software, feel free to fork this reposi
 
 via the command prompt in your fork's directory.
 
-### Requirements
-
+###Requirements
 Here are the requirements necessary to run Ptera Software:
 
 * matplotlib >= 3.2.2, < 4.0.0
@@ -68,23 +64,20 @@ Here are the requirements necessary to run Ptera Software:
 * scipy >= 1.5, < 2.0
 * numba >= 0.53, <1.0
 
-### What if I am Having Trouble Getting the Package Up And Running?
-
+###What if I am Having Trouble Getting the Package Up And Running?
 Not to worry! I am working on a video that walks through getting Ptera Software up and
 running. It will include every step, from downloading Python for the first time to
 setting up your IDE to running the software. Feel free to reach out for guidance. You
 can reach me at camerongurban@gmail.com.
 
-## How to Use
-
+##How to Use
 By reading this file, you are already off to a good start! After installing Ptera
 Software in the way that best suits your use case, the next step would be to open the
 "examples" directory and read through each heavily commented script. Each one will give
 you insight into the software's interface. After you finish reading, try running the
 scripts and admiring their pretty output!
 
-## Example Code
-
+##Example Code
 The following code snippet is all that is needed (after running pip install
 pterasoftware) to run the steady horseshoe solver on a custom airplane object.
 
@@ -124,36 +117,30 @@ ps.output.draw(
 )
 ```
 
-## Example Output
-
+##Example Output
 This package currently supports three different solvers, a steady horseshoe vortex
 lattice method (VLM), a steady ring VLM, and an unsteady ring VLM (UVLM). Here are
 examples of the output you can expect to receive from each of them.
 
-### Steady Horseshoe VLM
-
+###Steady Horseshoe VLM
 ![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver%20example%20expected%20output/Draw%20Output.jpg)
 
-### Steady Ring VLM
-
+###Steady Ring VLM
 ![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver%20example%20expected%20output/Draw%20Output.jpg)
 
-### Unsteady Ring VLM
-
+###Unsteady Ring VLM
 ![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Animate%20Output.gif)
 
 ![Example Unsteady Ring VLM Force Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Plot%20Output%201.png)
 
 ![Example Unsteady Ring VLM Moment Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Plot%20Output%203.png)
 
-## Validation
-
-With the release of version 1.0.0, Ptera Software is now validated against experimental
+##Validation
+Since the release of version 1.0.0, Ptera Software is now validated against experimental
 flapping-wing data! See the "validation" directory to run the test case and read a
 report on the software's accuracy.
 
-## How to Contribute
-
+##How to Contribute
 As I said before, the primary goal of this project is to increase the open-source
 community's understanding and appreciation for unsteady aerodynamics in general and
 flapping-wing flight in particular. This will only happen through your participation.
@@ -163,22 +150,19 @@ Feel free to request features, report bugs and security issues, and provide sugg
 Here is a list of changes I would like to make in the coming releases. If you want to
 contribute and don't know where to start, this is for you!
 
-### Testing
-
+###Testing
 * We should make sure that all the integration tests compare output against expected
 results. This means getting rid of all the "test_method_does_not_throw" tests. * We
 should eventually reach and maintain 100% testing coverage.
 
-### Style and Documentation
-
+###Style and Documentation
 * Ideally, we should fix up the style so that the entire repository has an A+ CodeFactor
  Rating.
 * We should fill in any of the "Properly document this..." TODO statements.
 * We should ensure that all files have between 30% and 70% comment lines.
 * We should continue to ensure that all source code is formatted using Black.
 
-### Features
-
+###Features
 * We should create a setup tutorial video and add it to the documentation. This should
 be geared toward a user who doesn't have Python, an IDE, or Ptera Software installed on
 their computer yet.
@@ -192,8 +176,7 @@ by Bruno Roccia, Sergio Preidikman, Julio Massa, and Dean Mook for details.
 workflow in Ptera Software for controls systems identification for flapping-wing
 vehicles.
 
-## Credits
-
+##Credits
 Here is a list of all the people and packages that helped me created Ptera Software in
 no particular order. Specific citations can be found in the source code's docstrings
 where applicable.
@@ -223,8 +206,7 @@ where applicable.
 * SemVer
 * GitFlow
 
-## Notes
-
+##Notes
 To the best of my ability, I am following SemVer conventions in naming my releases. I am
  also using the GitFlow method of branching for this project's development. This means
  that nightly builds will be available on the develop branch. The latest stable releases

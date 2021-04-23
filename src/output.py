@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 
-import pterasoftware as ps
+import src
 
 
 def draw(
@@ -61,7 +61,7 @@ def draw(
     # Get the solver's geometry.
     if isinstance(
         solver,
-        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         airplane = solver.steady_problems[-1].airplane
     else:

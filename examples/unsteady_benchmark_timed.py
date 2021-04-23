@@ -10,45 +10,45 @@ n_execute = 1
 print("\tBenchmarking unsteady solver...")
 
 setup = """
-import pterasoftware as ps
+import src
 
 flapping_frequency = 1
 num_chordwise_panels = 5
 num_spanwise_panels = 20
 
-example_airplane = ps.geometry.Airplane(
+example_airplane = src.geometry.Airplane(
     name="Example Airplane",
     wings=[
-        ps.geometry.Wing(
+        src.geometry.Wing(
             name="Main Wing",
             symmetric=True,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(name="naca0000",),
+                    airfoil=src.geometry.Airfoil(name="naca0000",),
                 ),
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     x_le=0.625,
                     y_le=5.0,
                     chord=0.5,
-                    airfoil=ps.geometry.Airfoil(name="naca0000",),
+                    airfoil=src.geometry.Airfoil(name="naca0000",),
                 ),
             ],
         ),
     ],
 )
 
-upper_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
+upper_wing_root_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
 )
 
-upper_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
+upper_wing_tip_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
     sweeping_amplitude=15.0,
     sweeping_period=1 / flapping_frequency,
@@ -61,7 +61,7 @@ upper_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovemen
     heaving_spacing="sine",
 )
 
-upper_wing_movement = ps.movement.WingMovement(
+upper_wing_movement = src.movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_sections_movements=[
         upper_wing_root_wing_cross_section_movement,
@@ -72,21 +72,21 @@ upper_wing_movement = ps.movement.WingMovement(
 del upper_wing_root_wing_cross_section_movement
 del upper_wing_tip_wing_cross_section_movement
 
-airplane_movement = ps.movement.AirplaneMovement(
+airplane_movement = src.movement.AirplaneMovement(
     base_airplane=example_airplane, wing_movements=[upper_wing_movement],
 )
 
 del upper_wing_movement
 
-example_operating_point = ps.operating_point.OperatingPoint(
+example_operating_point = src.operating_point.OperatingPoint(
     density=1.225, beta=0.0, velocity=10.0, alpha=0.0,
 )
 
-operating_point_movement = ps.movement.OperatingPointMovement(
+operating_point_movement = src.movement.OperatingPointMovement(
     base_operating_point=example_operating_point,
 )
 
-movement = ps.movement.Movement(
+movement = src.movement.Movement(
     airplane_movement=airplane_movement,
     operating_point_movement=operating_point_movement,
 )
@@ -94,9 +94,9 @@ movement = ps.movement.Movement(
 del airplane_movement
 del operating_point_movement
 
-example_problem = ps.problems.UnsteadyProblem(movement=movement, only_final_results=True)
+example_problem = src.problems.UnsteadyProblem(movement=movement, only_final_results=True)
 
-example_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+example_solver = src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     unsteady_problem=example_problem,
 )
 

@@ -1,3 +1,4 @@
+# ToDo: Update this module's documentation.
 """This module contains useful functions that relate to geometry, and the class
 definitions for different types of geometries.
 
@@ -40,9 +41,9 @@ import importlib.resources
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
-from numba import njit
 
-import src
+from . import functions
+from . import meshing
 
 
 class Airplane:
@@ -271,7 +272,7 @@ class Wing:
         # Initialize the the panels attribute. Then mesh the wing, which will
         # populate this attribute.
         self.panels = None
-        src.meshing.mesh_wing(self)
+        meshing.mesh_wing(self)
 
         # Initialize and calculate the wing's wetted area. If the wing is
         # symmetrical, this includes the area of the
@@ -446,7 +447,9 @@ class WingCrossSection:
         """
 
         # Find the rotation matrix given the cross section's twist.
-        rot = angle_axis_rotation_matrix(self.twist * np.pi / 180, np.array([0, 1, 0]))
+        rot = functions.angle_axis_rotation_matrix(
+            self.twist * np.pi / 180, np.array([0, 1, 0])
+        )
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
         # trailing edge coordinates.
@@ -594,7 +597,7 @@ class Airfoil:
 
                     # Make uncambered coordinates.
                     # Generate cosine-spaced points.
-                    x_t = cosspace(n_points=n_points_per_side, endpoint=True)
+                    x_t = functions.cosspace(n_points=n_points_per_side, endpoint=True)
                     y_t = (
                         5
                         * thickness
@@ -893,7 +896,7 @@ class Airfoil:
         lower_original_coordinates = self.lower_coordinates()
 
         # Generate a cosine-spaced list of points from 0 to 1.
-        cosine_spaced_x_values = cosspace(
+        cosine_spaced_x_values = functions.cosspace(
             n_points=n_points_per_side,
             endpoint=True,
         )
@@ -1001,433 +1004,3 @@ class Airfoil:
         plt.ylim(-0.5, 0.5)
         plt.gca().set_aspect("equal", adjustable="box")
         plt.show()
-
-
-class Panel:
-    """This class is used to contain the panels of a wing.
-
-    This class contains the following public methods:
-        calculate_collocation_point_location: This method calculates the location of
-        the collocation point.
-
-        calculate_area_and_normal: This method calculates the panel's area and the
-        panel's normal unit vector.
-
-        calculate_normalized_induced_velocity: This method calculates the velocity
-        induced at a point by this panel's vortices, assuming a unit vortex strength.
-
-        calculate_induced_velocity: This method calculates the velocity induced at a
-        point by this panel's vortices with their given vortex strengths.
-
-        update_force_moment_and_pressure: This method updates the force, moment,
-        and pressure on this panel.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
-
-    def __init__(
-        self,
-        front_right_vertex,
-        front_left_vertex,
-        back_left_vertex,
-        back_right_vertex,
-        is_leading_edge,
-        is_trailing_edge,
-    ):
-        """This is the initialization method.
-
-        :param front_right_vertex: 1D array with three elements
-            This is an array containing the x, y, and z coordinates of the panel's
-            front right vertex.
-        :param front_left_vertex: 1D array with three elements
-            This is an array containing the x, y, and z coordinates of the panel's
-            front left vertex.
-        :param back_left_vertex: 1D array with three elements
-            This is an array containing the x, y, and z coordinates of the panel's
-            back left vertex.
-        :param back_right_vertex: 1D array with three elements
-            This is an array containing the x, y, and z coordinates of the panel's
-            back right vertex.
-        :param is_leading_edge: bool
-            This is true if the panel is a leading edge panel on a wing, and false
-            otherwise.
-        :param is_trailing_edge: bool
-            This is true if the panel is a trailing edge panel on a wing, and false
-            otherwise.
-        """
-
-        # Initialize the attributes.
-        self.front_right_vertex = front_right_vertex
-        self.front_left_vertex = front_left_vertex
-        self.back_left_vertex = back_left_vertex
-        self.back_right_vertex = back_right_vertex
-        self.is_leading_edge = is_leading_edge
-        self.is_trailing_edge = is_trailing_edge
-
-        # Initialize variables to hold attributes that describe the panel's position
-        # in its wing's panel matrix. They
-        # will be populated by the meshing function.
-        self.is_right_edge = None
-        self.is_left_edge = None
-        self.local_chordwise_position = None
-        self.local_spanwise_position = None
-
-        # Initialize a variable to hold the position of the wing (who this panel
-        # belongs to) in the airplane's wing
-        # list. This will be populated by the airplane object.
-        self.wing_position = None
-
-        # Initialize variables to hold the panel's ring and horseshoe vortices. These
-        # will be populated by the solver.
-        self.ring_vortex = None
-        self.horseshoe_vortex = None
-
-        # Initialize a variable to hold the collocation point location and then
-        # populate it.
-        self.collocation_point = None
-        self.calculate_collocation_point_location()
-
-        # Initialize variables to hold the panel area and the panel normal vector at
-        # the collocation point. Then
-        # populate them.
-        self.area = None
-        self.normal_direction = None
-        self.calculate_area_and_normal()
-
-        # Calculate the center of the panel.
-        self.center = src.geometry.numba_centroid_of_quadrilateral(
-            front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
-        )
-
-        # Calculate the front and back leg lengths, then use them to find and
-        # populate the average panel width.
-        front_leg_length = np.linalg.norm(front_left_vertex - front_right_vertex)
-        back_leg_length = np.linalg.norm(back_right_vertex - back_left_vertex)
-        self.width = (front_leg_length + back_leg_length) / 2
-
-        # Initialize two variables that are along the panel's left and right legs at
-        # the quarter chord. These points
-        # are used for all types of solvers, so we will define them here.
-        self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (
-            self.back_right_vertex - self.front_right_vertex
-        )
-        self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (
-            self.back_left_vertex - self.front_left_vertex
-        )
-
-        # Initialize variables to hold attributes of the panel that will be defined
-        # after the solver finds a solution.
-        self.near_field_force_geometry_axes = None
-        self.near_field_moment_geometry_axes = None
-        self.delta_pressure = None
-
-    def calculate_collocation_point_location(self):
-        """This method calculates the location of the collocation point.
-
-        The collocation point is at the panel's three quarter chord point.
-
-        :return: None
-        """
-
-        # Find the location of points three quarters of the way down the left and
-        # right legs of the panel.
-        right_three_quarter_chord_mark = self.front_right_vertex + 0.75 * (
-            self.back_right_vertex - self.front_right_vertex
-        )
-        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * (
-            self.back_left_vertex - self.front_left_vertex
-        )
-
-        # Find the vector between the points three quarters of the way down the left
-        # and right legs of the panel.
-        three_quarter_chord_vector = (
-            left_three_quarter_chord_mark - right_three_quarter_chord_mark
-        )
-
-        # Find the collocation point, which is halfway between the points three
-        # quarters of the way down the left and
-        # right legs of the panel. Then populate the class attribute.
-        self.collocation_point = (
-            right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
-        )
-
-    def calculate_area_and_normal(self):
-        """This method calculates the panel's area and the panel's normal unit vector.
-
-        This method makes the assumption that the panel is planar. This is
-        technically incorrect for wing's with twist
-        but is a good approximation for small panels.
-
-        :return: None
-        """
-
-        # Calculate panel's normal unit vector and its area via its diagonals.
-        first_diagonal = self.front_right_vertex - self.back_left_vertex
-        second_diagonal = self.front_left_vertex - self.back_right_vertex
-        cross_product = np.cross(first_diagonal, second_diagonal)
-        cross_product_magnitude = np.linalg.norm(cross_product)
-        self.normal_direction = cross_product / cross_product_magnitude
-        self.area = cross_product_magnitude / 2
-
-    def calculate_normalized_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this panel's
-        vortices, assuming a unit vortex
-        strength.
-
-        This method does not include the effect of the panel's wake vortices.
-
-        :param point:  1D array
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at.
-        :return: 1D array
-            This is a vector containing the x, y, and z components of the induced
-            velocity.
-        """
-
-        normalized_induced_velocity = np.zeros(3)
-
-        if self.ring_vortex is not None:
-            normalized_induced_velocity += (
-                self.ring_vortex.calculate_normalized_induced_velocity(point=point)
-            )
-        if self.horseshoe_vortex is not None:
-            normalized_induced_velocity += (
-                self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
-            )
-
-        return normalized_induced_velocity
-
-    def calculate_induced_velocity(self, point):
-        """This method calculates the velocity induced at a point by this panel's
-        vortices with their given vortex
-        strengths.
-
-        This method does not include the effect of the panel's wake vortices.
-
-        :param point: 1D array
-            This is a vector containing the x, y, and z coordinates of the point to
-            find the induced velocity at.
-        :return: 1D array
-            This is a vector containing the x, y, and z components of the induced
-            velocity.
-        """
-
-        induced_velocity = np.zeros(3)
-
-        if self.ring_vortex is not None:
-            induced_velocity += self.ring_vortex.calculate_induced_velocity(point=point)
-        if self.horseshoe_vortex is not None:
-            induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(
-                point=point
-            )
-
-        return induced_velocity
-
-    def update_pressure(self):
-        """This method updates the pressure across this panel.
-
-        :return: None
-        """
-
-        self.delta_pressure = (
-            np.dot(self.near_field_force_geometry_axes, self.normal_direction)
-            / self.area
-        )
-
-
-def cosspace(
-    minimum=0.0,
-    maximum=1.0,
-    n_points=50,
-    endpoint=True,
-):
-    """This function is used to create a array containing a specified number of
-    values between a specified minimum and maximum value that are spaced via a cosine
-    function.
-
-    Citation:
-        Adapted from:         geometry.cosspace in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
-
-    :param minimum: float, optional
-        This is the minimum value of the range of numbers you would like spaced. The
-        default is 0.0.
-    :param maximum: float, optional
-        This is the maximum value of the range of numbers you would like spaced. The
-        default is 1.0.
-    :param n_points: int, optional
-        This is the number of points to space. The default is 50.
-    :param endpoint: bool, optional
-        This sets whether or not the maximum value will be included in the output.
-        The default is True.
-    :return cosine_spaced_points: 1D array
-
-        This is a 1D array of the points, ranging from the minimum to the maximum
-        value (inclusive), spaced via a cosine function.
-    """
-
-    # Find the mean and the amplitude of the cosine function.
-    mean = (maximum + minimum) / 2
-    amp = (maximum - minimum) / 2
-
-    # Space the points by applying cosine to the linspace function. Then return the
-    # points.
-    cosine_spaced_points = mean + amp * np.cos(
-        np.linspace(np.pi, 0, n_points, endpoint=endpoint)
-    )
-    return cosine_spaced_points
-
-
-def reflect_over_xz_plane(input_vector):
-    """This function is used to flip a the y coordinate of a coordinate vector.
-
-    Citation:
-        Adapted from:         geometry.reflect_over_xz_plane in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
-
-    :param input_vector: array
-        This can either be a 1D array of three items, a M x 3 2D array, or a M x
-        N x 3 3D array. N and
-        represent arbitrary numbers of rows or columns.
-    :return output vector: array
-        This is a array with each vertex's y variable flipped.
-    """
-
-    # Initialize the output vector.
-    output_vector = input_vector
-
-    # Find the shape of the input vector.
-    shape = np.shape(output_vector)
-
-    # Characterize the input vector.
-    if len(shape) == 1 and shape[0] == 3:
-        # The input vector is a 1D array of 3 items. Flip the vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    elif len(shape) == 2 and shape[1] == 3:
-        # The input vector is a 2D array of shape M x 3. Where M is some arbitrary
-        # number of rows. Flip each
-        # vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    elif len(shape) == 3 and shape[2] == 3:  # 3D MxNx3 vector
-        # The input vector is a 3D array of shape M x N x 3. Where M is some
-        # arbitrary number of rows, and N is
-        # some arbitrary number of columns. Flip each vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    else:
-        # The input vector is an unacceptable shape. Throw an error.
-        raise Exception("Invalid input for reflect_over_xz_plane.")
-
-    # Return the output vector.
-    return output_vector
-
-
-def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
-    """This function is used to find the rotation matrix for a given axis and angle.
-
-    Citation:
-        Adapted from:         geometry.angle_axis_rotation_matrix in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
-
-    For more information on the math behind this method, see:
-    https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-
-    :param angle: float or 1D array of 3 angles
-        This is the angle. Provide it in radians.
-    :param axis: 1D array of 3 elements.
-        This is the axis.
-    :param axis_already_normalized: bool, optional
-        Set this as True if the axis given is already normalized, which will skip
-        internal normalization and speed up the method. If not, set as False. The
-        default is False.
-    :return rotation matrix: array
-        This is the rotation matrix. If the given angle is a scalar, this will be a 3
-        x 3 array. If the given angle is a vector, this will be a 3 x 3 x N array.
-    """
-
-    # Normalize the axis is it is not already normalized.
-    if not axis_already_normalized:
-        axis = axis / np.linalg.norm(axis)
-
-    # Define constants to use when calculating the rotation matrix.
-    sin_theta = np.sin(angle)
-    cos_theta = np.cos(angle)
-    u_x = axis[0]
-    u_y = axis[1]
-    u_z = axis[2]
-
-    # Calculate the rotation matrix.
-    rotation_matrix = np.array(
-        [
-            [
-                cos_theta + u_x ** 2 * (1 - cos_theta),
-                u_x * u_y * (1 - cos_theta) - u_z * sin_theta,
-                u_x * u_z * (1 - cos_theta) + u_y * sin_theta,
-            ],
-            [
-                u_y * u_x * (1 - cos_theta) + u_z * sin_theta,
-                cos_theta + u_y ** 2 * (1 - cos_theta),
-                u_y * u_z * (1 - cos_theta) - u_x * sin_theta,
-            ],
-            [
-                u_z * u_x * (1 - cos_theta) - u_y * sin_theta,
-                u_z * u_y * (1 - cos_theta) + u_x * sin_theta,
-                cos_theta + u_z ** 2 * (1 - cos_theta),
-            ],
-        ]
-    )
-
-    # Return the rotation matrix.
-    return rotation_matrix
-
-
-@njit(cache=True)
-def numba_centroid_of_quadrilateral(
-    front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
-):
-    """This function is used to find the centroid of a quadrilateral. It has been
-    optimized for JIT compilation using Numba.
-
-    :param front_left_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the front left
-        vertex of the quadrilateral.
-    :param front_right_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the front right
-        vertex of the quadrilateral.
-    :param back_left_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the back left
-        vertex of the quadrilateral.
-    :param back_right_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the back right
-        vertex of the quadrilateral.
-    :return: 1D array of floats
-        This is an array containing the x, y, and z components of the centroid of the
-        quadrilateral.
-    """
-
-    x_average = (
-        front_left_vertex[0]
-        + front_right_vertex[0]
-        + back_left_vertex[0]
-        + back_right_vertex[0]
-    ) / 4
-    y_average = (
-        front_left_vertex[1]
-        + front_right_vertex[1]
-        + back_left_vertex[1]
-        + back_right_vertex[1]
-    ) / 4
-    z_average = (
-        front_left_vertex[2]
-        + front_right_vertex[2]
-        + back_left_vertex[2]
-        + back_right_vertex[2]
-    ) / 4
-
-    return np.array([x_average, y_average, z_average])

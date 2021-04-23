@@ -10,7 +10,6 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import numpy as np
 
 

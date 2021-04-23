@@ -15,14 +15,13 @@ This module contains the following functions:
     and plots the geometries' forces, moments, and coefficients as a function of
     time.
 """
-
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
 
-import src
+from . import unsteady_ring_vortex_lattice_method
 
 
 def draw(
@@ -61,7 +60,7 @@ def draw(
     # Get the solver's geometry.
     if isinstance(
         solver,
-        src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         airplane = solver.steady_problems[-1].airplane
     else:

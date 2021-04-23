@@ -13,13 +13,12 @@ This module contains the following functions:
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
 """
-
 import pickle
 
 import numpy as np
 from numba import njit, prange
 
-import src
+from . import aerodynamics
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -471,7 +470,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the panel's ring vortex.
-                        panel.ring_vortex = src.aerodynamics.RingVortex(
+                        panel.ring_vortex = aerodynamics.RingVortex(
                             front_right_vertex=front_right_vortex_vertex,
                             front_left_vertex=front_left_vortex_vertex,
                             back_left_vertex=back_left_vortex_vertex,
@@ -673,7 +672,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex. The answer is normalized because the solver's vortex strength list
         # was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
-        total_influences = src.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+        total_influences = aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -749,7 +748,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Get the wake induced velocities. This is a (M x 3) array with the x,
             # y, and z components of the velocity
             # induced by the entire wake at each of the M panels.
-            wake_induced_velocities = src.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            wake_induced_velocities = aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
                 front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
@@ -827,7 +826,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex. The effect of every ring
         # vortex on each point will be summed.
         ring_vortex_velocities = (
-            src.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -842,7 +841,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex. The effect of every wake ring
         # vortex on each point will be summed.
         wake_ring_vortex_velocities = (
-            src.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=points,
                 back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
                 front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
@@ -1581,7 +1580,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # to the matrix of ring vortices.
                                 next_wing.wake_ring_vortices[
                                     chordwise_vertex_position, spanwise_vertex_position
-                                ] = src.aerodynamics.RingVortex(
+                                ] = aerodynamics.RingVortex(
                                     front_left_vertex=front_left_vertex,
                                     front_right_vertex=front_right_vertex,
                                     back_left_vertex=back_left_vertex,

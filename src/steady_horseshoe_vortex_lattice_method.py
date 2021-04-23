@@ -11,10 +11,9 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import numpy as np
 
-import pterasoftware as ps
+from . import aerodynamics
 
 
 class SteadyHorseshoeVortexLatticeMethodSolver:
@@ -250,7 +249,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Initialize the horseshoe vortex at this panel.
-                    panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
+                    panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
                         finite_leg_origin=front_right_vortex_vertex,
                         finite_leg_termination=front_left_vortex_vertex,
                         strength=None,
@@ -333,7 +332,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # collocation point by every panel's horseshoe
         # vortex.
         induced_velocities = (
-            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -399,7 +398,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Calculate the velocities induced at every panel's bound vortex center.
         induced_velocities = (
-            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=self.panel_bound_vortex_centers,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -559,7 +558,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
             # Find the induced velocities at this row of points.
             induced_velocities = (
-                ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+                aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                     points=last_row_streamline_points,
                     back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                     front_right_vortex_vertices=self.panel_front_right_vortex_vertices,

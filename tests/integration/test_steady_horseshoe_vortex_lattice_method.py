@@ -25,10 +25,9 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
-import pterasoftware as ps
+import src
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -106,7 +105,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        src.output.draw(
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
@@ -151,7 +150,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        ps.output.draw(
+        src.output.draw(
             solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_streamlines=True,

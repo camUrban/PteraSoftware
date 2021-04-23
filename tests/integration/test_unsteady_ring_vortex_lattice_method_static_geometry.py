@@ -21,7 +21,6 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
 from tests.integration.fixtures import solver_fixtures
@@ -97,16 +96,16 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        import pterasoftware as ps
+        import src
 
-        ps.output.animate(
+        src.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             show_delta_pressures=True,
             keep_file=False,
         )
 
-        ps.output.plot_results_versus_time(
+        src.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
         )
 

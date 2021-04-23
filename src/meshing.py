@@ -17,7 +17,7 @@ This module contains the following functions:
 
 import numpy as np
 
-import pterasoftware as ps
+import src
 
 
 def mesh_wing(wing):
@@ -51,7 +51,7 @@ def mesh_wing(wing):
             endpoint=True,
         )
     elif wing.chordwise_spacing == "cosine":
-        nondim_chordwise_coordinates = ps.geometry.cosspace(
+        nondim_chordwise_coordinates = src.geometry.cosspace(
             0,
             1,
             num_chordwise_coordinates,
@@ -328,7 +328,7 @@ def mesh_wing(wing):
                 endpoint=True,
             )
         elif inner_cross_section.spanwise_spacing == "cosine":
-            nondim_spanwise_coordinates = ps.geometry.cosspace(
+            nondim_spanwise_coordinates = src.geometry.cosspace(
                 n_points=num_spanwise_coordinates,
                 endpoint=True,
             )
@@ -426,7 +426,7 @@ def mesh_wing(wing):
             for spanwise_position in range(num_spanwise_panels):
                 section_panels[
                     chordwise_position, spanwise_position
-                ] = ps.geometry.Panel(
+                ] = src.geometry.Panel(
                     front_left_vertex=front_inner_vertices[
                         chordwise_position, spanwise_position
                     ],
@@ -645,22 +645,22 @@ def mesh_wing(wing):
                 for spanwise_position in range(num_spanwise_panels):
                     # Reflect the vertices to create the reflected wing for the
                     # symmetric case.
-                    front_inner_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    front_inner_vertices_reflected = src.geometry.reflect_over_xz_plane(
                         front_inner_vertices[chordwise_position, spanwise_position]
                     )
-                    front_outer_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    front_outer_vertices_reflected = src.geometry.reflect_over_xz_plane(
                         front_outer_vertices[chordwise_position, spanwise_position]
                     )
-                    back_inner_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    back_inner_vertices_reflected = src.geometry.reflect_over_xz_plane(
                         back_inner_vertices[chordwise_position, spanwise_position]
                     )
-                    back_outer_vertices_reflected = ps.geometry.reflect_over_xz_plane(
+                    back_outer_vertices_reflected = src.geometry.reflect_over_xz_plane(
                         back_outer_vertices[chordwise_position, spanwise_position]
                     )
 
                     section_panels[
                         chordwise_position, spanwise_position
-                    ] = ps.geometry.Panel(
+                    ] = src.geometry.Panel(
                         front_left_vertex=front_outer_vertices_reflected,
                         front_right_vertex=front_inner_vertices_reflected,
                         back_left_vertex=back_outer_vertices_reflected,

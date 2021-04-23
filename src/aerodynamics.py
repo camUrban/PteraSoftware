@@ -64,7 +64,7 @@ This module contains the following functions:
 import numpy as np
 from numba import njit, prange
 
-import pterasoftware as ps
+import src
 
 
 class LineVortex:
@@ -426,7 +426,7 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.numba_centroid_of_quadrilateral(
+        self.center = src.geometry.numba_centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
@@ -565,7 +565,7 @@ class RingVortex:
         )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = ps.geometry.numba_centroid_of_quadrilateral(
+        self.center = src.geometry.numba_centroid_of_quadrilateral(
             self.front_left_vertex,
             self.front_right_vertex,
             self.back_left_vertex,
@@ -621,21 +621,23 @@ def calculate_velocity_induced_by_horseshoe_vortices(
     """
 
     # Get the velocity induced by each leg of the horseshoe vortex.
-    right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    right_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_right_vortex_vertices,
         terminations=front_right_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    finite_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
-        points=points,
-        origins=front_right_vortex_vertices,
-        terminations=front_left_vortex_vertices,
-        strengths=strengths,
-        collapse=collapse,
+    finite_leg_velocities = (
+        src.aerodynamics.calculate_velocity_induced_by_line_vortices(
+            points=points,
+            origins=front_right_vortex_vertices,
+            terminations=front_left_vortex_vertices,
+            strengths=strengths,
+            collapse=collapse,
+        )
     )
-    left_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    left_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_left_vortex_vertices,
         terminations=back_left_vortex_vertices,
@@ -699,28 +701,28 @@ def calculate_velocity_induced_by_ring_vortices(
         on one point by one of the ring vortices. Either way, the results units are meters per second.
     """
     # Get the velocity induced by each leg of the ring vortex.
-    right_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    right_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_right_vortex_vertices,
         terminations=front_right_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    front_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    front_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_right_vortex_vertices,
         terminations=front_left_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    left_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    left_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=front_left_vortex_vertices,
         terminations=back_left_vortex_vertices,
         strengths=strengths,
         collapse=collapse,
     )
-    back_leg_velocities = ps.aerodynamics.calculate_velocity_induced_by_line_vortices(
+    back_leg_velocities = src.aerodynamics.calculate_velocity_induced_by_line_vortices(
         points=points,
         origins=back_left_vortex_vertices,
         terminations=back_right_vortex_vertices,

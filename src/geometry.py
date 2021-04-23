@@ -35,13 +35,14 @@ This module contains the following functions:
     numba_centroid_of_quadrilateral: This function is used to find the centroid of a
     quadrilateral. It has been optimized for JIT compilation using Numba.
 """
+import importlib.resources
 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 from numba import njit
 
-import pterasoftware as ps
+import src
 
 
 class Airplane:
@@ -270,7 +271,7 @@ class Wing:
         # Initialize the the panels attribute. Then mesh the wing, which will
         # populate this attribute.
         self.panels = None
-        ps.meshing.mesh_wing(self)
+        src.meshing.mesh_wing(self)
 
         # Initialize and calculate the wing's wetted area. If the wing is
         # symmetrical, this includes the area of the
@@ -669,12 +670,8 @@ class Airfoil:
 
         # Try to read from the airfoil directory.
         try:
-            import importlib.resources
-
             # Import the airfoils package as "airfoils".
-            airfoils = importlib.import_module(
-                name=".airfoils", package="pterasoftware"
-            )
+            airfoils = importlib.import_module(name=".airfoils", package="src")
 
             # Read the text from the airfoil file.
             raw_text = importlib.resources.read_text(airfoils, name + ".dat")
@@ -1102,7 +1099,7 @@ class Panel:
         self.calculate_area_and_normal()
 
         # Calculate the center of the panel.
-        self.center = ps.geometry.numba_centroid_of_quadrilateral(
+        self.center = src.geometry.numba_centroid_of_quadrilateral(
             front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
         )
 

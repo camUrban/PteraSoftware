@@ -3,14 +3,15 @@ vortex lattice method solver on a custom airplane."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
-# install pterasoftware" in your terminal. Then, at the top of your script, you would
-# insert "import pterasoftware as ps".
-import pterasoftware as ps
+# install pterasoftware" in your terminal. Here, I am importing the source directory.
+# However, if you were working on an external project, you should change this to
+# "import pterasoftware as ps".
+import src
 
 # Create an airplane object. Note, I am going to declare every attribute for each
 # class, even most of them have usable default values. This is simply for educational
 # purposes, even though it makes the code much longer than what it needs to be.
-example_airplane = ps.geometry.Airplane(
+example_airplane = src.geometry.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point
@@ -30,7 +31,7 @@ example_airplane = ps.geometry.Airplane(
     b_ref=None,
     c_ref=None,  # All airplane objects have a list of wings.
     wings=[  # Create the first wing object in this airplane.
-        ps.geometry.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
+        src.geometry.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # airplane's reference position. These values all default to 0.0 meters.
@@ -56,7 +57,7 @@ example_airplane = ps.geometry.Airplane(
             # output to be sensible, each wing must have at least two wing cross
             # sections.
             wing_cross_sections=[  # Create a new wing cross section object.
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
@@ -96,7 +97,7 @@ example_airplane = ps.geometry.Airplane(
                     # Set the chord of this cross section to be 1.75 meters. This
                     # value defaults to 1.0 meter.
                     chord=1.75,  # Every wing cross section has an airfoil object.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=src.geometry.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled
                         # Airfoil". This name should correspond to a name in the
                         # airfoil directory or a NACA four series airfoil, unless you
@@ -124,42 +125,42 @@ example_airplane = ps.geometry.Airplane(
                 # Define the next wing cross section. From here on out,
                 # the declarations will not be as commented as the previous. See the
                 # above comments if you have questions.
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     z_le=1.0,
                     chord=1.5,
                     twist=5.0,  # Give this wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=src.geometry.Airfoil(
                         name="naca2412",
                     ),
                 ),
             ],
         ),
         # Define the next wing.
-        ps.geometry.Wing(
+        src.geometry.Wing(
             name="V-Tail",
             x_le=6.75,
             z_le=0.25,
             symmetric=True,
             # Define this wing's root wing cross section.
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=src.geometry.Airfoil(
                         name="naca0012",
                     ),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
-                ps.geometry.WingCrossSection(
+                src.geometry.WingCrossSection(
                     x_le=0.5,
                     y_le=2.0,
                     z_le=1.0,
                     chord=1.0,
                     twist=-5.0,  # Give the tip wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=src.geometry.Airfoil(
                         name="naca0012",
                     ),
                 ),
@@ -170,7 +171,7 @@ example_airplane = ps.geometry.Airplane(
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = ps.operating_point.OperatingPoint(
+example_operating_point = src.operating_point.OperatingPoint(
     # Define the density of the fluid the airplane is flying in. This defaults to
     # 1.225 kilograms per meters cubed.
     density=1.225,
@@ -187,7 +188,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.
-example_problem = ps.problems.SteadyProblem(
+example_problem = src.problems.SteadyProblem(
     # Set this steady problem's airplane object to be the one we just created.
     airplane=example_airplane,
     # Set this steady problem's operating point object ot be the one we just created.
@@ -202,7 +203,7 @@ del example_operating_point
 # Define a new solver. The available solver objects are the steady horseshoe vortex
 # lattice method solver, the steady ring vortex lattice method solver, and the
 # unsteady ring vortex lattice method solver.
-example_solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+example_solver = src.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
     # Solvers just take in one attribute: the problem they are going to solve.
     steady_problem=example_problem
 )
@@ -219,7 +220,7 @@ example_solver.run(
 )
 
 # Call the software's draw function on the solver.
-ps.output.draw(  # Set the solver to the one we just ran.
+src.output.draw(  # Set the solver to the one we just ran.
     solver=example_solver,
     # Tell the draw function to show the pressure's on the aircraft's panels. This
     # value defaults to false.

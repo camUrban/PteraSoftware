@@ -1,16 +1,16 @@
 ---
-
 name: This is a bug report about: ''
-
 labels: ''
-
 assignees: ''
 
 ---
-#Bug Description
+
+# Bug Description
+
 Please provide a clear and concise description of what the bug is.
 
-##Reproduction
+## Reproduction
+
 Please provide the steps to reproduce the behavior.
 
 For example:
@@ -19,17 +19,21 @@ For example:
 3. Scroll down to '....'
 4. See error
 
-##Expected Behavior
+## Expected Behavior
+
 Please provide a clear and concise description of what you expected to happen.
 
-##Screenshots
+## Screenshots
+
 If applicable, add screenshots to help explain your problem.
 
-##Desktop
+## Desktop
+
 Please complete the following information.
 
 - OS: ''
 - Version: ''
 
-##Additional Context
+## Additional Context
+
 Add any other context about the problem here.

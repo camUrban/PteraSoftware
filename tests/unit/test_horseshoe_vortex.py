@@ -10,12 +10,11 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
 import numpy as np
 
-import pterasoftware as ps
+import src
 import tests.unit.fixtures.vortex_fixtures
 
 
@@ -94,16 +93,16 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         # Test that the objects are all of the right type.
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture, ps.aerodynamics.HorseshoeVortex
+            self.horseshoe_vortex_fixture, src.aerodynamics.HorseshoeVortex
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.finite_leg, ps.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.finite_leg, src.aerodynamics.LineVortex
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.left_leg, ps.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.left_leg, src.aerodynamics.LineVortex
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.right_leg, ps.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.right_leg, src.aerodynamics.LineVortex
         )
 
         # Test that the vortex objects' coordinates were correctly set.

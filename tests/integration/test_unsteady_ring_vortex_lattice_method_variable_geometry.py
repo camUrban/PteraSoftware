@@ -14,7 +14,6 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
 from tests.integration.fixtures import solver_fixtures
@@ -64,7 +63,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         :return: None
         """
 
-        import pterasoftware as ps
+        import src
 
         # Run the unsteady solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
@@ -72,13 +71,13 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             prescribed_wake=True,
         )
 
-        ps.output.animate(
+        src.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_delta_pressures=True,
             show_wake_vortices=True,
             keep_file=False,
         )
 
-        ps.output.plot_results_versus_time(
+        src.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
         )

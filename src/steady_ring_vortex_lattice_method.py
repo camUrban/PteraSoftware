@@ -11,10 +11,9 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import numpy as np
 
-import pterasoftware as ps
+from . import aerodynamics
 
 
 class SteadyRingVortexLatticeMethodSolver:
@@ -324,7 +323,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # If the panel is along the trailing edge, initialize its
                         # horseshoe vortex.
-                        panel.horseshoe_vortex = ps.aerodynamics.HorseshoeVortex(
+                        panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
                             finite_leg_origin=back_right_vortex_vertex,
                             finite_leg_termination=back_left_vortex_vertex,
                             strength=None,
@@ -333,7 +332,7 @@ class SteadyRingVortexLatticeMethodSolver:
                         )
 
                     # Initialize the panel's ring vortex.
-                    panel.ring_vortex = ps.aerodynamics.RingVortex(
+                    panel.ring_vortex = aerodynamics.RingVortex(
                         front_right_vertex=front_right_vortex_vertex,
                         front_left_vertex=front_left_vortex_vertex,
                         back_left_vertex=back_left_vortex_vertex,
@@ -465,7 +464,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
         ring_vortex_influences = (
-            ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -486,7 +485,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # calculated. The positions elsewhere
         # will remain zero.
         horseshoe_vortex_influences = (
-            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
@@ -582,7 +581,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # vortex. The effect of every ring
         # vortex on each point will be summed.
         ring_vortex_influences = (
-            ps.aerodynamics.calculate_velocity_induced_by_ring_vortices(
+            aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=points,
                 back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
                 front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
@@ -602,7 +601,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # their effects. The effect of every horseshoe vortex on each point will be
         # summed.
         horseshoe_vortex_influences = (
-            ps.aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
                 points=points,
                 back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,

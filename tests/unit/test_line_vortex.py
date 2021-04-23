@@ -9,12 +9,11 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
-
 import unittest
 
 import numpy as np
 
-import pterasoftware as ps
+import src
 import tests.unit.fixtures.vortex_fixtures
 
 
@@ -82,7 +81,7 @@ class TestLineVortex(unittest.TestCase):
         """
 
         # Test that the object is of the right type.
-        self.assertIsInstance(self.line_vortex_fixture, ps.aerodynamics.LineVortex)
+        self.assertIsInstance(self.line_vortex_fixture, src.aerodynamics.LineVortex)
 
         # Test that the vortex's coordinates were correctly set.
         self.assertTrue(

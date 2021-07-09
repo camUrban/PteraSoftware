@@ -1,4 +1,4 @@
-""" This module contains a class to test horseshoe vortex objects.
+"""This module contains a class to test horseshoe vortex objects.
 
 This module contains the following classes:
     TestHorseshoeVortex: This class contains methods for testing horseshoe vortex

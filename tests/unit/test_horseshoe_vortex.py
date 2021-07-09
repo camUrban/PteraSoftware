@@ -30,12 +30,6 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         test_class: This method tests the class's instantiation.
 
-        test_calculate_normalized_induced_velocity: This method tests the calculation
-        of normalized induced velocity.
-
-        test_calculate_induced_velocity: This method tests the calculation of induced
-        velocity.
-
         test_update_strength: This method tests the update_strength method.
 
     This class contains the following class attributes:
@@ -148,114 +142,6 @@ class TestHorseshoeVortex(unittest.TestCase):
                 self.horseshoe_vortex_fixture.finite_leg_termination
                 + self.horseshoe_vortex_fixture.infinite_leg_direction
                 * self.horseshoe_vortex_fixture.infinite_leg_length,
-            )
-        )
-
-    def test_calculate_normalized_induced_velocity(self):
-        """This method tests the calculation of normalized induced velocity.
-
-        :return: None
-        """
-
-        # Test the velocity is correctly calculated at a point on the finite leg.
-        point_fixture = self.horseshoe_vortex_fixture.finite_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.right_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.left_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-            )
-        )
-
-        # Test the velocity is correctly calculated at a point on the right leg.
-        point_fixture = self.horseshoe_vortex_fixture.right_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.finite_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.left_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-            )
-        )
-
-        # Test the velocity is correctly calculated at a point on the left leg.
-        point_fixture = self.horseshoe_vortex_fixture.left_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.right_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.finite_leg.calculate_normalized_induced_velocity(
-                    point=point_fixture
-                ),
-            )
-        )
-
-    def test_calculate_induced_velocity(self):
-        """This method tests the calculation of induced velocity.
-
-        :return: None
-        """
-
-        # Test the velocity is correctly calculated at a point on the finite leg.
-        point_fixture = self.horseshoe_vortex_fixture.finite_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.right_leg.calculate_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.left_leg.calculate_induced_velocity(
-                    point=point_fixture
-                ),
-            )
-        )
-
-        # Test the velocity is correctly calculated at a point on the right leg.
-        point_fixture = self.horseshoe_vortex_fixture.right_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.finite_leg.calculate_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.left_leg.calculate_induced_velocity(
-                    point=point_fixture
-                ),
-            )
-        )
-
-        # Test the velocity is correctly calculated at a point on the left leg.
-        point_fixture = self.horseshoe_vortex_fixture.left_leg.center
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.calculate_induced_velocity(
-                    point=point_fixture
-                ),
-                self.horseshoe_vortex_fixture.right_leg.calculate_induced_velocity(
-                    point=point_fixture
-                )
-                + self.horseshoe_vortex_fixture.finite_leg.calculate_induced_velocity(
-                    point=point_fixture
-                ),
             )
         )
 

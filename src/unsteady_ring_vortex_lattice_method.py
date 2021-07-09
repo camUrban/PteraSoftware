@@ -164,6 +164,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.wake_ring_vortex_front_left_vertices = None
         self.wake_ring_vortex_back_left_vertices = None
         self.wake_ring_vortex_back_right_vertices = None
+        self.wake_ring_vortex_ages = None
 
     def run(
         self,
@@ -339,6 +340,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
             self.wake_ring_vortex_strengths = np.empty(0)
+            self.wake_ring_vortex_ages = np.empty(0)
             self.wake_ring_vortex_front_right_vertices = np.empty((0, 3))
             self.wake_ring_vortex_front_left_vertices = np.empty((0, 3))
             self.wake_ring_vortex_back_left_vertices = np.empty((0, 3))
@@ -391,19 +393,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def initialize_panel_vortices(self):
         """This method calculates the locations every problem's airplane's bound
-        vortex vertices, and then initializes
-        its panels' bound vortices.
+        vortex vertices, and then initializes its panels' bound vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg
-        is at the panel's quarter chord.
-        The left and right vortex legs run along the panel's left and right legs. If
-        the panel is not along the
-        trailing edge, they extend backwards and meet the back vortex leg at a length
-        of one quarter of the rear
-        panel's chord back from the rear panel's front leg. Otherwise, they extend
-        back backwards and meet the back
-        vortex leg at a length of one quarter of the current panel's chord back from
-        the current panel's back leg.
+        is at the panel's quarter chord. The left and right vortex legs run along the
+        panel's left and right legs. If the panel is not along the trailing edge,
+        they extend backwards and meet the back vortex leg at a length of one quarter
+        of the rear panel's chord back from the rear panel's front leg. Otherwise,
+        they extend back backwards and meet the back vortex leg at a length of one
+        quarter of the current panel's chord back from the current panel's back leg.
 
         :return: None
         """
@@ -432,8 +430,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                         # Define the back left and right vortex vertices based on
-                        # whether the panel is along the
-                        # trailing edge or not.
+                        # whether the panel is along the trailing edge or not.
                         if not panel.is_trailing_edge:
                             next_chordwise_panel = wing.panels[
                                 chordwise_position + 1, spanwise_position
@@ -446,14 +443,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         else:
                             # As these vertices are directly behind the trailing
-                            # edge, they are spaced back from their
-                            # panel's vertex by one quarter the distance traveled
-                            # during a time step. This is to more
-                            # accurately predict drag. More information can be found
-                            # on pages 37-39 of "Modeling of
+                            # edge, they are spaced back from their panel's vertex by
+                            # one quarter the distance traveled during a time step.
+                            # This is to more accurately predict drag. More
+                            # information can be found on pages 37-39 of "Modeling of
                             # aerodynamic forces in flapping flight with the Unsteady
-                            # Vortex Lattice Method" by Thomas
-                            # Lambert.
+                            # Vortex Lattice Method" by Thomas Lambert.
                             back_left_vortex_vertex = (
                                 front_left_vortex_vertex
                                 + (panel.back_left_vertex - panel.front_left_vertex)
@@ -480,8 +475,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
-        ndarrays. This facilitates vectorization,
-        which speeds up the solver.
+        ndarrays. This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
@@ -573,6 +567,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             for wake_ring_vortex in wake_ring_vortices:
                 self.wake_ring_vortex_strengths = np.hstack(
                     (self.wake_ring_vortex_strengths, wake_ring_vortex.strength)
+                )
+                self.wake_ring_vortex_ages = np.hstack(
+                    (self.wake_ring_vortex_ages, wake_ring_vortex.age)
                 )
                 self.wake_ring_vortex_front_right_vertices = np.vstack(
                     (
@@ -668,9 +665,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
 
         # Find the matrix of normalized velocities induced at every panel's
-        # collocation point by every panel's ring
-        # vortex. The answer is normalized because the solver's vortex strength list
-        # was initialized to all ones. This
+        # collocation point by every panel's ring vortex. The answer is normalized
+        # because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
         total_influences = aerodynamics.calculate_velocity_induced_by_ring_vortices(
             points=self.panel_collocation_points,
@@ -683,8 +679,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Take the batch dot product of the normalized velocities with each panel's
-        # normal direction. This is now the
-        # problem's matrix of wing-wing influence coefficients.
+        # normal direction. This is now the problem's matrix of wing-wing influence
+        # coefficients.
         self.current_wing_wing_influences = np.einsum(
             "...k,...k->...",
             total_influences,
@@ -696,8 +692,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         associated with this problem.
 
         Note: This method also includes the influence due to flapping at every
-        collocation point in the freestream-wing
-              influence vector.
+        collocation point in the freestream-wing influence vector.
 
         :return: None
         """
@@ -716,8 +711,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Find the normal components of every panel's flapping velocities at their
-        # collocation points by taking a batch
-        # dot product.
+        # collocation points by taking a batch dot product.
         flapping_influences = np.einsum(
             "ij,ij->i",
             self.panel_normal_directions,
@@ -725,8 +719,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the total current freestream-wing influences by summing the
-        # freestream influences and the
-        # flapping influences.
+        # freestream influences and the flapping influences.
         self.current_freestream_wing_influences = (
             freestream_influences + flapping_influences
         )
@@ -736,8 +729,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         the problem at this time step.
 
         Note: If the current time step is the first time step, no wake has yet been
-        shed, and this method will set the
-              current wake-wing influence vector to all zeros.
+        shed, and this method will set the current wake-wing influence vector to all
+        zeros.
 
         :return: None
         """
@@ -745,9 +738,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Check if this time step is not the first time step.
         if self.current_step > 0:
 
-            # Get the wake induced velocities. This is a (M x 3) array with the x,
-            # y, and z components of the velocity
-            # induced by the entire wake at each of the M panels.
+            # Get the wake induced velocities. This is a (M x 3) array with the x, y,
+            # and z components of the velocity induced by the entire wake at each of
+            # the M panels.
             wake_induced_velocities = aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
@@ -767,8 +760,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         else:
 
             # If this is the first time step, set the current wake-wing influences to
-            # zero everywhere, as there is no
-            # wake yet.
+            # zero everywhere, as there is no wake yet.
             self.current_wake_wing_influences = np.zeros(
                 self.current_airplane.num_panels
             )
@@ -796,35 +788,31 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
-        induced velocity due to every vortex
-        and the freestream velocity.
+        induced velocity due to every vortex and the freestream velocity.
 
         Note: The velocity calculated by this method is in geometry axes. Also,
-        this method assumes that the correct
-              vortex strengths have already been calculated. This method also does
-              not include the velocity due to
-              flapping at any of the points provided, as it has no way of knowing if
-              any of the points lie on panels.
+        this method assumes that the correct vortex strengths have already been
+        calculated. This method also does not include the velocity due to flapping at
+        any of the points provided, as it has no way of knowing if any of the points
+        lie on panels.
 
         This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects'
-        class methods for calculating induced velocity.
+        operations than using the vortex objects' class methods for calculating
+        induced velocity.
 
         :param points: 2D array of floats
             This variable is an array of shape (N x 3), where N is the number of
-            points. Each row contains the x, y,
-            and z float coordinates of that point's position in meters.
+            points. Each row contains the x, y, and z float coordinates of that
+            point's position in meters.
         :return solution_velocities: 2D array of floats
             The output is the summed effects from every vortex, and from the
-            freestream on a given point. The result
-            will be of shape (N x 3), where each row identifies the velocity at a
-            point. The results units are meters
-            per second.
+            freestream on a given point. The result will be of shape (N x 3),
+            where each row identifies the velocity at a point. The results units are
+            meters per second.
         """
 
         # Find the vector of velocities induced at every point by every panel's ring
-        # vortex. The effect of every ring
-        # vortex on each point will be summed.
+        # vortex. The effect of every ring vortex on each point will be summed.
         ring_vortex_velocities = (
             aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=points,
@@ -838,8 +826,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Find the vector of velocities induced at every point by every wake ring
-        # vortex. The effect of every wake ring
-        # vortex on each point will be summed.
+        # vortex. The effect of every wake ring vortex on each point will be summed.
         wake_ring_vortex_velocities = (
             aerodynamics.calculate_velocity_induced_by_ring_vortices(
                 points=points,
@@ -853,13 +840,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Find the total influence of the vortices, which is the sum of the influence
-        # due to the bound ring vortices and
-        # the wake ring vortices.
+        # due to the bound ring vortices and the wake ring vortices.
         total_vortex_velocities = ring_vortex_velocities + wake_ring_vortex_velocities
 
         # Calculate and return the solution velocities, which is the sum of the
-        # velocities induced by the vortices and
-        # freestream at every point.
+        # velocities induced by the vortices and freestream at every point.
         solution_velocities = (
             total_vortex_velocities + self.current_freestream_velocity_geometry_axes
         )
@@ -868,10 +853,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def calculate_near_field_forces_and_moments(self):
         """This method finds the the forces and moments calculated from the near field.
 
-        Citation:
-            This method uses logic described on pages 9-11 of "Modeling of
-            aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
-            Method" by Thomas Lambert.
+        Citation: This method uses logic described on pages 9-11 of "Modeling of
+        aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
+        Method" by Thomas Lambert.
 
         Note: The forces and moments calculated are in geometry axes. The moment is
         about the airplane's reference point, which should be at the center of
@@ -885,8 +869,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         global_panel_position = 0
 
         # Initialize three lists of variables, which will hold the effective strength
-        # of the line vortices comprising
-        # each panel's ring vortex.
+        # of the line vortices comprising each panel's ring vortex.
         effective_right_vortex_line_strengths = np.zeros(
             self.current_airplane.num_panels
         )
@@ -924,9 +907,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     ]
 
                     # Change the effective right vortex line strength from zero to
-                    # the difference between this panel's
-                    # ring vortex's strength, and the ring vortex strength of the
-                    # panel to the right of it.
+                    # the difference between this panel's ring vortex's strength,
+                    # and the ring vortex strength of the panel to the right of it.
                     effective_right_vortex_line_strengths[global_panel_position] = (
                         self.current_vortex_strengths[global_panel_position]
                         - panel_to_right.ring_vortex.strength
@@ -1098,8 +1080,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Increment the global panel position.
             global_panel_position += 1
 
-            # Sum up the near field forces and moments on every panel to find the  #
-            # total force and moment on the geometry.
+        # Sum up the near field forces and moments on every panel to find the total
+        # force and moment on the geometry.
         total_near_field_force_geometry_axes = np.sum(
             near_field_forces_geometry_axes, axis=0
         )
@@ -1229,9 +1211,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
-            false it will use a free-wake,
-            which may be more accurate but will make the solver significantly slower.
-            The default is True.
+            false it will use a free-wake, which may be more accurate but will make
+            the solver significantly slower. The default is True.
         :return: None
         """
 
@@ -1565,6 +1546,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     back_left_vertex=back_left_vertex,
                                     back_right_vertex=back_right_vertex,
                                 )
+
+                                # Also, update the age of this ring vortex.
+                                next_wing.wake_ring_vortices[
+                                    chordwise_vertex_position, spanwise_vertex_position
+                                ].age += self.delta_time
 
                             if chordwise_vertex_position == 0:
                                 # If this is the front of the wake, get the vortex

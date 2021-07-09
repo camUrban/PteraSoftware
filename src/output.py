@@ -53,9 +53,8 @@ def draw(
     :return: None
     """
 
-    # Initialize the plotter and get the plasma color map.
+    # Initialize the plotter.
     plotter = pv.Plotter()
-    color_map = plt.cm.get_cmap("plasma")
 
     # Get the solver's geometry.
     if isinstance(
@@ -82,8 +81,7 @@ def draw(
         for panel in panels:
 
             # Stack this panel's vertices, faces, and scalars. Look through the
-            # PolyData documentation for more
-            # details.
+            # PolyData documentation for more details.
             panel_vertices_to_add = np.vstack(
                 (
                     panel.front_left_vertex,
@@ -103,8 +101,7 @@ def draw(
             )
 
             # Stack this panel's vertices, faces, and scalars with the array of all
-            # the vertices, faces, and
-            # scalars.
+            # the vertices, faces, and scalars.
             panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
             panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
@@ -167,29 +164,53 @@ def draw(
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
-    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
-    # plotter with the pressure scalars.
-    # Otherwise, add the panel surfaces without the pressure scalars.
+    # Check if the user wants to plot pressures.
     if show_delta_pressures:
+
+        # Choose the color map and set its limits based on if the min and max scalars
+        # have the same sign (sequential color map) or if they have different signs
+        # (diverging color map).
+        if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
+            color_map = "speed"
+            c_min = max(np.mean(scalars) - 2 * np.std(scalars), np.min(scalars))
+            c_max = min(np.mean(scalars) + 2 * np.std(scalars), np.max(scalars))
+        else:
+            color_map = "delta"
+            c_min = -2 * np.std(scalars)
+            c_max = 2 * np.std(scalars)
+
+        # Add the panel surfaces to the plotter with the pressure scalars.
         plotter.add_mesh(
             panel_surface,
             show_edges=True,
             cmap=color_map,
             scalars=scalars,
+            clim=([c_min, c_max]),
             smooth_shading=True,
+            show_scalar_bar=False,
+        )
+        plotter.add_scalar_bar(
+            title="Lifting Pressure (Pa)",
+            bold=False,
+            title_font_size=16,
+            label_font_size=14,
+            width=0.5,
+            position_x=0.25,
+            position_y=0.05,
+            n_labels=2,
+            italic=True,
+            fmt="%.1f",
         )
     else:
         plotter.add_mesh(
             panel_surface,
             show_edges=True,
-            cmap=color_map,
             color="#86C552",
             smooth_shading=True,
         )
 
     # Check if the user wants to plot streamlines.
     if show_streamlines:
-
         # Iterate through the spanwise positions in the solver's streamline point
         # matrix.
         for spanwise_position in range(solver.streamline_points.shape[1]):
@@ -214,12 +235,12 @@ def draw(
                             point,
                         ),
                         show_edges=True,
-                        color="#EEEEEF",
+                        color="plum",
                         line_width=2,
                     )
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color="#000000")
+    plotter.set_background(color="black")
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
@@ -252,9 +273,44 @@ def animate(
     for steady_problem in unsteady_solver.steady_problems:
         airplanes.append(steady_problem.airplane)
 
-    # Initialize the plotter and get the plasma color map.
+    # Initialize the plotter and get the color map.
     plotter = pv.Plotter()
-    color_map = plt.cm.get_cmap("plasma", 256)
+
+    # Initialize values to hold the color map choice and its limits.
+    c_min = 0
+    c_max = 0
+    color_map = None
+
+    # Check if the user wants to show pressures.
+    if show_delta_pressures:
+
+        # Initialize an empty array to hold all of the problem's scalars.
+        all_scalars = np.empty(0, dtype=int)
+
+        # Now iterate through all the time steps to get all of the scalars. These
+        # values will be used to configure the color map.
+        for airplane in airplanes:
+            for wing in airplane.wings:
+                panels = np.ravel(wing.panels)
+                for panel in panels:
+                    scalar_to_add = panel.delta_pressure
+                    all_scalars = np.hstack((all_scalars, scalar_to_add))
+
+        # Choose the color map and set its limits based on if the min and max scalars
+        # across all time steps have the same sign (sequential color map) or if they
+        # have different signs (diverging color map).
+        if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
+            color_map = "speed"
+            c_min = max(
+                np.mean(all_scalars) - 2 * np.std(all_scalars), np.min(all_scalars)
+            )
+            c_max = min(
+                np.mean(all_scalars) + 2 * np.std(all_scalars), np.max(all_scalars)
+            )
+        else:
+            color_map = "delta"
+            c_min = -2 * np.std(all_scalars)
+            c_max = 2 * np.std(all_scalars)
 
     # Initialize empty ndarrays to hold the things to plot.
     panel_vertices = np.empty((0, 3), dtype=int)
@@ -318,25 +374,37 @@ def animate(
             panel_surface,
             show_edges=True,
             cmap=color_map,
+            clim=[c_min, c_max],
             scalars=scalars,
             smooth_shading=True,
+            show_scalar_bar=False,
         )
-        # As this is the first step with pressures update the scalar bar range (so it
-        # is not automatically set each frame), and update the scalars after doing so.
+        plotter.add_scalar_bar(
+            title="Lifting Pressure (Pa)",
+            bold=False,
+            title_font_size=16,
+            label_font_size=14,
+            width=0.5,
+            position_x=0.25,
+            position_y=0.05,
+            n_labels=2,
+            italic=True,
+            fmt="%.1f",
+        )
+
+        # Update the scalars is the user wants to show the pressures.
         if show_delta_pressures:
-            plotter.update_scalar_bar_range(clim=[-1000, 1000])
             plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
             panel_surface,
             show_edges=True,
-            cmap=color_map,
             color="#86C552",
             smooth_shading=True,
         )
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color="#000000")
+    plotter.set_background(color="black")
 
     # Print a message to the console on how to set up the window.
     print(
@@ -464,29 +532,40 @@ def animate(
 
         # Check if the user wants to plot pressures and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
-        # surfaces without the pressure scalars.
+        # surfaces to the plotter wit  h the pressure scalars. Otherwise, add the
+        # panel surfaces without the pressure scalars.
         if show_delta_pressures and first_results_step <= current_step:
             plotter.add_mesh(
                 panel_surface,
                 show_edges=True,
                 cmap=color_map,
+                clim=[c_min, c_max],
                 scalars=scalars,
                 smooth_shading=True,
+                show_scalar_bar=False,
             )
+            plotter.add_scalar_bar(
+                title="Lifting Pressure (Pa)",
+                bold=False,
+                title_font_size=16,
+                label_font_size=14,
+                width=0.5,
+                position_x=0.25,
+                position_y=0.05,
+                n_labels=2,
+                italic=True,
+                fmt="%.1f",
+            )
+
             if first_results_step == current_step:
 
-                # If this is the first step with pressures update the scalar bar
-                # range (so it is not automatically set each frame), and update the
-                # scalars after doing so.
+                # If this is the first step with pressures update the scalars.
                 if show_delta_pressures:
-                    plotter.update_scalar_bar_range(clim=[-1000, 1000])
                     plotter.update_scalars(scalars)
         else:
             plotter.add_mesh(
                 panel_surface,
                 show_edges=True,
-                cmap=color_map,
                 color="#86C552",
                 smooth_shading=True,
             )

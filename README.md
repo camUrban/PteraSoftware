@@ -63,10 +63,11 @@ via the command prompt in your fork's directory.
 Here are the requirements necessary to run Ptera Software:
 
 * matplotlib >= 3.2.2, < 4.0.0
-* numpy >= 1.18.5, < 1.19.0
-* pyvista >= 0.25.3, < 1.0.0
+* numpy >= 1.18.5, < 2.0.0
+* pyvista >= 0.29.0, < 1.0.0
 * scipy >= 1.5, < 2.0
 * numba >= 0.53, <1.0
+* cmocean >= 2.0, <3.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -222,10 +223,11 @@ where applicable.
 * Twine
 * SemVer
 * GitFlow
+* Cmocean
 
 ## Notes
 
-To the best of my ability, I am following SemVer conventions in naming my releases. I am
- also using the GitFlow method of branching for this project's development. This means
- that nightly builds will be available on the develop branch. The latest stable releases
-  can be found on the master branch.
+To the best of my ability, I am following SemVer conventions in naming my releases. 
+I am also using the GitFlow method of branching for this project's development. This 
+means that nightly builds will be available on the develop branch. The latest stable 
+releases can be found on the master branch.

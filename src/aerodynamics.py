@@ -268,6 +268,9 @@ class RingVortex:
             self.back_right_vertex,
         )
 
+        # Initialize a variable to hold the age of the ring vortex in seconds.
+        self.age = 0
+
     def update_strength(self, strength):
         """This method updates the strength of this ring vortex object, and the
         strength of its four legs' line vortex objects.

@@ -60,6 +60,8 @@ This module contains the following functions:
     calculate_velocity_induced_by_line_vortices function. It uses Numba to speed up
     the summed effects from each of the M line vortices on each of the N points.
 """
+import math
+
 import numpy as np
 from numba import njit, prange
 
@@ -537,7 +539,8 @@ def calculate_velocity_induced_by_ring_vortices(
     return induced_velocities
 
 
-def calculate_velocity_induced_by_line_vortices(
+# ToDo: Delete this method after testing the new version.
+def old_calculate_velocity_induced_by_line_vortices(
     points, origins, terminations, strengths, collapse=True
 ):
     """This function takes in a group of points, and the attributes of a group of
@@ -618,6 +621,127 @@ def calculate_velocity_induced_by_line_vortices(
         induced_velocities = numba_collapse(induced_velocities)
 
     return induced_velocities
+
+
+def calculate_velocity_induced_by_line_vortices(
+    points,
+    origins,
+    terminations,
+    strengths,
+    collapse=True,
+    ages=None,
+    nu=None,
+):
+    if collapse:
+        return collapsed_velocities_at_points_from_line_vortices(
+            points, origins, terminations, strengths, ages, nu
+        )
+    return expanded_velocities_at_points_from_line_vortices(
+        points, origins, terminations, strengths, ages, nu
+    )
+
+
+@njit(cache=True)
+def collapsed_velocities_at_points_from_line_vortices(
+    points,
+    origins,
+    terminations,
+    strengths,
+    ages=None,
+    nu=None,
+):
+    num_vortices = origins.shape[0]
+    num_points = points.shape[0]
+
+    expanded_velocities = expanded_velocities_at_points_from_line_vortices(
+        points, origins, terminations, strengths, ages, nu
+    )
+
+    velocities = np.zeros((num_points, 3))
+
+    for point_id in range(num_points):
+        for vortex_id in range(num_vortices):
+            velocities[point_id] += expanded_velocities[point_id, vortex_id]
+
+    return velocities
+
+
+@njit(cache=True)
+def expanded_velocities_at_points_from_line_vortices(
+    points,
+    origins,
+    terminations,
+    strengths,
+    ages=None,
+    nu=None,
+):
+    num_vortices = origins.shape[0]
+    num_points = points.shape[0]
+
+    velocities = np.empty((num_points, num_vortices, 3))
+
+    r_0 = np.empty(3)
+    r_1 = np.empty(3)
+    r_2 = np.empty(3)
+    r_3 = np.empty(3)
+
+    lamb = 1.254
+    squire = 0.1
+
+    if ages is None:
+        ages = np.zeros(num_vortices)
+
+    for vortex_id in range(num_vortices):
+        origin = origins[vortex_id]
+        termination = terminations[vortex_id]
+        strength = strengths[vortex_id]
+        age = ages[vortex_id]
+
+        if nu is not None and age > 0:
+            r_c = 2 * math.sqrt(lamb * (nu + squire * strength) * age)
+        else:
+            r_c = 3.0e-16
+
+        for coord_id in range(3):
+            r_0[coord_id] = termination[coord_id] - origin[coord_id]
+
+        r_0_len = math.sqrt(r_0[0] ** 2 + r_0[1] ** 2 + r_0[2] ** 2)
+
+        c_1 = strength / (4 * math.pi)
+        c_2 = r_0_len ** 2 * r_c ** 2
+
+        for point_id in range(num_points):
+            point = points[point_id]
+
+            for coord_id in range(3):
+                r_1[coord_id] = origin[coord_id] - point[coord_id]
+                r_2[coord_id] = termination[coord_id] - point[coord_id]
+
+            r_3[0] = r_1[1] * r_2[2] - r_1[2] * r_2[1]
+            r_3[1] = r_1[2] * r_2[0] - r_1[0] * r_2[2]
+            r_3[2] = r_1[0] * r_2[1] - r_1[1] * r_2[0]
+
+            r_1_len = math.sqrt(r_1[0] ** 2 + r_1[1] ** 2 + r_1[2] ** 2)
+            r_2_len = math.sqrt(r_2[0] ** 2 + r_2[1] ** 2 + r_2[2] ** 2)
+            r_3_len = math.sqrt(r_3[0] ** 2 + r_3[1] ** 2 + r_3[2] ** 2)
+
+            c_3 = r_1[0] * r_2[0] + r_1[1] * r_2[1] + r_1[2] * r_2[2]
+
+            if r_1_len < r_c or r_2_len < r_c or r_3_len ** 2 < r_c:
+                for coord_id in range(3):
+                    velocities[point_id, vortex_id, coord_id] = 0
+            else:
+                c_4 = (
+                    c_1
+                    * (r_1_len + r_2_len)
+                    * (r_1_len * r_2_len - c_3)
+                    / (r_1_len * r_2_len * (r_3_len ** 2 + c_2))
+                )
+
+                for coord_id in range(3):
+                    velocities[point_id, vortex_id, coord_id] = c_4 * r_3[coord_id]
+
+    return velocities
 
 
 @njit(parallel=True, cache=True)

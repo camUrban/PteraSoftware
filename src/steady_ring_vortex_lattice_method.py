@@ -65,7 +65,6 @@ class SteadyRingVortexLatticeMethodSolver:
         :param steady_problem: SteadyProblem
             This is the steady problem to be solved.
         """
-
         # Initialize this solution's attributes.
         self.steady_problem = steady_problem
         self.airplane = self.steady_problem.airplane
@@ -100,12 +99,11 @@ class SteadyRingVortexLatticeMethodSolver:
         self.streamline_points = None
 
         # Initialize variables that will hold data which characterizes this panel's
-        # horseshoe vortex. If the panel does
-        # not have a horseshoe vortex, these values will not be updated. However,
-        # this does not adversely affect the
-        # results, because the default horseshoe vortex strength is zero. The default
-        # coordinates will also be updated
-        # by the collapse geometry method for panels that have a horseshoe vortex.
+        # horseshoe vortex. If the panel does not have a horseshoe vortex,
+        # these values will not be updated. However, this does not adversely affect
+        # the results, because the default horseshoe vortex strength is zero. The
+        # default coordinates will also be updated by the collapse geometry method
+        # for panels that have a horseshoe vortex.
         self.horseshoe_vortex_back_right_vertex = np.zeros(
             (self.airplane.num_panels, 3)
         )
@@ -132,7 +130,6 @@ class SteadyRingVortexLatticeMethodSolver:
             It's default value is True.
         :return: None
         """
-
         # Initialize this problem's panels to have vortices congruent with this
         # solver type.
         if verbose:
@@ -254,27 +251,22 @@ class SteadyRingVortexLatticeMethodSolver:
         initializes the panels' vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg
-        is at the panel's quarter chord.
-        The left and right vortex legs run along the panel's left and right legs. If
-        the panel is not along the trailing
-        edge, they extend backwards and meet the back vortex leg at a the rear
-        panel's quarter chord. Otherwise, they
-        extend back backwards and meet the back vortex leg one quarter chord back
-        from the current panel's back leg.
+        is at the panel's quarter chord. The left and right vortex legs run along the
+        panel's left and right legs. If the panel is not along the trailing edge,
+        they extend backwards and meet the back vortex leg at a the rear panel's
+        quarter chord. Otherwise, they extend back backwards and meet the back vortex
+        leg one quarter chord back from the current panel's back leg.
 
         Panels that are at the trailing edge of a wing have a horseshoe vortex in
-        addition to their ring vortex. The
-        horseshoe vortex's finite leg runs along the ring vortex's back leg but in
-        the opposite direction. It's
-        infinite legs point backwards in the direction of the freestream. The ring
-        vortex and horseshoe vortex have
-        the same strength, so the back leg of the effects of the ring vortex's back
-        leg and the horseshoe vortex's
-        finite leg cancel each other.
+        addition to their ring vortex. The horseshoe vortex's finite leg runs along
+        the ring vortex's back leg but in the opposite direction. It's infinite legs
+        point backwards in the direction of the freestream. The ring vortex and
+        horseshoe vortex have the same strength, so the back leg of the effects of
+        the ring vortex's back leg and the horseshoe vortex's finite leg cancel each
+        other.
 
         :return: None
         """
-
         # Find the freestream direction in geometry axes.
         freestream_direction = (
             self.operating_point.calculate_freestream_direction_geometry_axes()
@@ -284,8 +276,8 @@ class SteadyRingVortexLatticeMethodSolver:
         for wing in self.airplane.wings:
 
             # Find a suitable length for the "infinite" legs of the horseshoe
-            # vortices on this wing. At twenty-times the
-            # wing's span, these legs are essentially infinite.
+            # vortices on this wing. At twenty-times the wing's span, these legs are
+            # essentially infinite.
             infinite_leg_length = wing.span * 20
 
             # Iterate through the wing's chordwise and spanwise positions.
@@ -301,8 +293,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     front_right_vortex_vertex = panel.front_right_vortex_vertex
 
                     # Define the back left and right vortex vertices based on whether
-                    # the panel is along the trailing
-                    # edge or not.
+                    # the panel is along the trailing edge or not.
                     if not panel.is_trailing_edge:
                         next_chordwise_panel = wing.panels[
                             chordwise_position + 1, spanwise_position
@@ -342,12 +333,10 @@ class SteadyRingVortexLatticeMethodSolver:
 
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
-        ndarrays. This facilitates vectorization,
-        which speeds up the solver.
+        ndarrays. This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
-
         # Initialize a variable to hold the global position of the panel as we
         # iterate through them.
         global_panel_position = 0
@@ -428,8 +417,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     )
 
                     # Also, update the attribute lists horseshoe vortex attributes at
-                    # this position with this panel's
-                    # horseshoe vortex attributes
+                    # this position with this panel's horseshoe vortex attributes
                     self.horseshoe_vortex_back_right_vertex[
                         global_panel_position
                     ] = panel.horseshoe_vortex.right_leg.origin
@@ -444,8 +432,8 @@ class SteadyRingVortexLatticeMethodSolver:
                     ] = panel.horseshoe_vortex.left_leg.termination
 
                     # Set the horseshoe vortex strength at this position to 1.0. This
-                    # will be updated after the correct
-                    # vortex strengths are calculated.
+                    # will be updated after the correct vortex strengths are
+                    # calculated.
                     self.horseshoe_vortex_strengths[global_panel_position] = 1.0
 
                 # Increment the global panel position.
@@ -457,53 +445,44 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-
         # Find the matrix of normalized velocities induced at every panel's
-        # collocation point by every panel's ring
-        # vortex. The answer is normalized because the solver's vortex strength list
-        # was initialized to all ones. This
+        # collocation point by every panel's ring vortex. The answer is normalized
+        # because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strength's are calculated.
-        ring_vortex_influences = (
-            aerodynamics.calculate_velocity_induced_by_ring_vortices(
-                points=self.panel_collocation_points,
-                back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-                front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-                front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-                back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-                strengths=self.vortex_strengths,
-                collapse=False,
-            )
+        ring_vortex_influences = aerodynamics.expanded_velocities_from_ring_vortices(
+            points=self.panel_collocation_points,
+            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
+            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
+            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
+            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            strengths=self.vortex_strengths,
         )
 
         # Find the matrix of normalized velocities induced at every panel's
-        # collocation point by every panel's horseshoe
-        # vortex. The answer is normalized because the solver's horseshoe vortex
-        # strength list was initialized to ones
-        # for locations which have horseshoe vortices, and zeros everywhere else. The
-        # strengths at the positions with
-        # horseshoe vortices will be updated once the correct vortex strength's are
-        # calculated. The positions elsewhere
-        # will remain zero.
+        # collocation point by every panel's horseshoe vortex. The answer is
+        # normalized because the solver's horseshoe vortex strength list was
+        # initialized to ones for locations which have horseshoe vortices, and zeros
+        # everywhere else. The strengths at the positions with horseshoe vortices
+        # will be updated once the correct vortex strength's are calculated. The
+        # positions elsewhere will remain zero.
         horseshoe_vortex_influences = (
-            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.expanded_velocities_from_horseshoe_vortices(
                 points=self.panel_collocation_points,
                 back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
                 front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
                 back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
                 strengths=self.horseshoe_vortex_strengths,
-                collapse=False,
             )
         )
 
         # Calculate the total normalized influences, which is the sum of the
-        # influences by the ring vortices and by
-        # the horseshoe vortices.
+        # influences by the ring vortices and by the horseshoe vortices.
         total_influences = ring_vortex_influences + horseshoe_vortex_influences
 
         # Take the batch dot product of the normalized velocities with each panel's
-        # normal direction. This is now the
-        # problem's matrix of wing-wing influence coefficients.
+        # normal direction. This is now the problem's matrix of wing-wing influence
+        # coefficients.
         self.wing_wing_influences = np.einsum(
             "...k,...k->...",
             total_influences,
@@ -516,10 +495,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-
         # Take the batch dot product of the freestream velocity with each panel's
-        # normal direction. This is now the
-        # problem's 1D array of freestream-wing influence coefficients.
+        # normal direction. This is now the problem's 1D array of freestream-wing
+        # influence coefficients.
         self.freestream_wing_influences = np.einsum(
             "ij,j->i", self.panel_normal_directions, self.freestream_velocity
         )
@@ -529,7 +507,6 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-
         # Solve for the strength of each panel's vortex.
         self.vortex_strengths = np.linalg.solve(
             self.wing_wing_influences, -self.freestream_wing_influences
@@ -554,98 +531,83 @@ class SteadyRingVortexLatticeMethodSolver:
 
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
-        induced velocity due to every vortex
-        and the freestream velocity.
+        induced velocity due to every vortex and the freestream velocity.
 
         Note: The velocity calculated by this method is in geometry axes. Also,
-        this method assumes that the correct
-              vortex strengths have already been calculated.
+        this method assumes that the correct vortex strengths have already been
+        calculated.
 
         This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects'
-        class methods for calculating induced velocity.
+        operations than using the vortex objects' class methods for calculating
+        induced velocity.
 
         :param points: 2D array of floats
             This variable is an array of shape (N x 3), where N is the number of
-            points. Each row contains the x, y,
-            and z float coordinates of that point's position in meters.
+            points. Each row contains the x, y, and z float coordinates of that
+            point's position in meters.
         :return solution_velocities: 2D array of floats
             The output is the summed effects from every vortex, and from the
-            freestream on a given point. The result
-            will be of shape (N x 3), where each row identifies the velocity at a
-            point. The results units are meters
-            per second.
+            freestream on a given point. The result will be of shape (N x 3),
+            where each row identifies the velocity at a point. The results units are
+            meters per second.
         """
-
         # Find the matrix of velocities induced at every point by every panel's ring
-        # vortex. The effect of every ring
-        # vortex on each point will be summed.
-        ring_vortex_influences = (
-            aerodynamics.calculate_velocity_induced_by_ring_vortices(
-                points=points,
-                back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-                front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-                front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-                back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-                strengths=self.vortex_strengths,
-                collapse=True,
-            )
+        # vortex. The effect of every ring vortex on each point will be summed.
+        ring_vortex_influences = aerodynamics.collapsed_velocities_from_ring_vortices(
+            points=points,
+            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
+            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
+            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
+            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            strengths=self.vortex_strengths,
         )
 
         # Find the matrix of velocities induced at every panel's collocation point by
-        # every panel's horseshoe
-        # vortex. This can be called in a batch fashion, because every panel has
-        # horseshoe vortex attributes that are
-        # defined. However, panels not on the trailing edge have horseshoe vortex
-        # strengths to zero, which eliminates
-        # their effects. The effect of every horseshoe vortex on each point will be
-        # summed.
+        # every panel's horseshoe vortex. This can be called in a batch fashion,
+        # because every panel has horseshoe vortex attributes that are defined.
+        # However, panels not on the trailing edge have horseshoe vortex strengths to
+        # zero, which eliminates their effects. The effect of every horseshoe vortex
+        # on each point will be summed.
         horseshoe_vortex_influences = (
-            aerodynamics.calculate_velocity_induced_by_horseshoe_vortices(
+            aerodynamics.collapsed_velocities_from_horseshoe_vortices(
                 points=points,
                 back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
                 front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
                 back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
                 strengths=self.horseshoe_vortex_strengths,
-                collapse=True,
             )
         )
 
         # Find the total influence of the vortices, which is the sum of the influence
-        # due to the ring vortices and the
-        # horseshoe vortices.
+        # due to the ring vortices and the horseshoe vortices.
         total_influences = ring_vortex_influences + horseshoe_vortex_influences
 
         # Calculate and return the solution velocities, which is the freestream
-        # velocity added to the velocity induced
-        # by the vortices. This is in geometry axes.
+        # velocity added to the velocity induced by the vortices. This is in geometry
+        # axes.
         solution_velocities = total_influences + self.freestream_velocity
         return solution_velocities
 
     def calculate_near_field_forces_and_moments(self):
         """This method finds the the forces and moments calculated from the near field.
 
-        Citation:
-            This method uses logic described on pages 9-11 of "Modeling of
-            aerodynamic forces in flapping flight with
-            the Unsteady Vortex Lattice Method" by Thomas Lambert.
+        Citation: This method uses logic described on pages 9-11 of "Modeling of
+        aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
+        Method" by Thomas Lambert.
 
         Note: The forces and moments calculated are in geometry axes. The moment is
-        about the airplane's reference
-              point, which should be at the center of gravity. The units are Newtons
-              and Newton-meters.
+        about the airplane's reference point, which should be at the center of
+        gravity. The units are Newtons and Newton-meters.
 
         :return: None
         """
-
         # Initialize a variable to hold the global panel position as the panel's are
         # iterate through.
         global_panel_position = 0
 
         # Initialize three lists of variables, which will hold the effective strength
-        # of the line vortices comprising
-        # each panel's ring vortex.
+        # of the line vortices comprising each panel's ring vortex.
         effective_right_vortex_line_strengths = np.zeros(self.airplane.num_panels)
         effective_front_vortex_line_strengths = np.zeros(self.airplane.num_panels)
         effective_left_vortex_line_strengths = np.zeros(self.airplane.num_panels)
@@ -677,9 +639,8 @@ class SteadyRingVortexLatticeMethodSolver:
                     ]
 
                     # Change the effective right vortex line strength from zero to
-                    # the difference between this panel's
-                    # ring vortex's strength, and the ring vortex strength of the
-                    # panel to the right of it.
+                    # the difference between this panel's ring vortex's strength,
+                    # and the ring vortex strength of the panel to the right of it.
                     effective_right_vortex_line_strengths[global_panel_position] = (
                         self.vortex_strengths[global_panel_position]
                         - panel_to_right.ring_vortex.strength
@@ -702,9 +663,8 @@ class SteadyRingVortexLatticeMethodSolver:
                     ]
 
                     # Change the effective front vortex line strength from zero to
-                    # the difference between this panel's
-                    # ring vortex's strength, and the ring vortex strength of the
-                    # panel in front of it.
+                    # the difference between this panel's ring vortex's strength,
+                    # and the ring vortex strength of the panel in front of it.
                     effective_front_vortex_line_strengths[global_panel_position] = (
                         self.vortex_strengths[global_panel_position]
                         - panel_to_front.ring_vortex.strength
@@ -727,9 +687,8 @@ class SteadyRingVortexLatticeMethodSolver:
                     ]
 
                     # Change the effective left vortex line strength from zero to the
-                    # difference between this panel's
-                    # ring vortex's strength, and the ring vortex strength of the
-                    # panel to the left of it.
+                    # difference between this panel's ring vortex's strength,
+                    # and the ring vortex strength of the panel to the left of it.
                     effective_left_vortex_line_strengths[global_panel_position] = (
                         self.vortex_strengths[global_panel_position]
                         - panel_to_left.ring_vortex.strength
@@ -751,8 +710,8 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # Using the effective line vortex strengths, and the Kutta-Joukowski theorem
-        # to find the near field force in
-        # geometry axes on the front leg, left leg, and right leg.
+        # to find the near field force in geometry axes on the front leg, left leg,
+        # and right leg.
         near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
             self.operating_point.density
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
@@ -844,8 +803,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # Find the total near field force in wind axes from the rotation matrix and
-        # the total near field force in
-        # geometry axes.
+        # the total near field force in geometry axes.
         self.airplane.total_near_field_force_wind_axes = (
             np.transpose(
                 self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
@@ -854,8 +812,7 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # Find the total near field moment in wind axes from the rotation matrix and
-        # the total near field moment in
-        # geometry axes.
+        # the total near field moment in geometry axes.
         self.airplane.total_near_field_moment_wind_axes = (
             np.transpose(
                 self.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
@@ -924,15 +881,14 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :param num_steps: int, optional
             This is the integer number of points along each streamline (not including
-            the initial points). It can be
-            increased for higher fidelity visuals. The default value is 10.
+            the initial points). It can be increased for higher fidelity visuals. The
+            default value is 10.
         :param delta_time: float, optional
             This is the time in seconds between each time current_step It can be
-            decreased for higher fidelity visuals
-            or to make the streamlines shorter. It's default value is 0.1 seconds.
+            decreased for higher fidelity visuals or to make the streamlines shorter.
+            It's default value is 0.1 seconds.
         :return: None
         """
-
         # Initialize a array to hold this problem's matrix of streamline points.
         self.streamline_points = np.expand_dims(self.seed_points, axis=0)
 
@@ -942,8 +898,7 @@ class SteadyRingVortexLatticeMethodSolver:
             last_row_streamline_points = self.streamline_points[-1, :, :]
 
             # Add the freestream velocity to the induced velocity to get the total
-            # velocity at each of the last row of
-            # streamline points.
+            # velocity at each of the last row of streamline points.
             total_velocities = self.calculate_solution_velocity(
                 points=last_row_streamline_points
             )

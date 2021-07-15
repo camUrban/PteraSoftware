@@ -344,8 +344,8 @@ class RingVortex:
 # ToDo: Update this function's documentation.
 @njit(
     cache=True,
-    fastmath=False,
-    parallel=True,
+    fastmath=True,
+    parallel=False,
 )
 def collapsed_velocities_from_horseshoe_vortices(
     points,
@@ -418,8 +418,8 @@ def collapsed_velocities_from_horseshoe_vortices(
 # ToDo: Update this function's documentation.
 @njit(
     cache=True,
-    fastmath=False,
-    parallel=True,
+    fastmath=True,
+    parallel=False,
 )
 def expanded_velocities_from_horseshoe_vortices(
     points,
@@ -492,8 +492,8 @@ def expanded_velocities_from_horseshoe_vortices(
 # ToDo: Update this function's documentation.
 @njit(
     cache=True,
-    fastmath=False,
-    parallel=True,
+    fastmath=True,
+    parallel=False,
 )
 def collapsed_velocities_from_ring_vortices(
     points,
@@ -567,8 +567,8 @@ def collapsed_velocities_from_ring_vortices(
 # ToDo: Update this function's documentation.
 @njit(
     cache=True,
-    fastmath=False,
-    parallel=True,
+    fastmath=True,
+    parallel=False,
 )
 def expanded_velocities_from_ring_vortices(
     points,
@@ -642,7 +642,7 @@ def expanded_velocities_from_ring_vortices(
 # ToDo: Update this function's documentation.
 @njit(
     cache=True,
-    fastmath=False,
+    fastmath=True,
 )
 def collapsed_velocities_from_line_vortices(
     points,

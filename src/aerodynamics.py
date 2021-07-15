@@ -69,6 +69,9 @@ from numba import njit, prange
 from . import functions
 
 
+squire = 10e-4
+
+
 class LineVortex:
     """This class is used to contain line vortices.
 
@@ -354,6 +357,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     front_left_vortex_vertices,
     back_left_vortex_vertices,
     strengths,
+    ages=None,
+    nu=None,
 ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the induced velocity due to every
@@ -384,6 +389,8 @@ def collapsed_velocities_from_horseshoe_vortices(
         This variable is an array of shape (, M), where M is the number of horseshoe
         vortices. Each holds the strength of that horseshoe vortex in meters squared
         per second.
+    :param ages:
+    :param nu:
     :return induced_velocities: either a 2D array of floats or a 3D array of floats
         If collapse is true, the output is the summed effects from every horseshoe
         vortex on a given point. The result will be of shape (N x 3), where each row
@@ -411,6 +418,8 @@ def collapsed_velocities_from_horseshoe_vortices(
             origins=origins_list[i],
             terminations=terminations_list[i],
             strengths=strengths,
+            ages=ages,
+            nu=nu,
         )
     return induced_velocities
 
@@ -428,6 +437,8 @@ def expanded_velocities_from_horseshoe_vortices(
     front_left_vortex_vertices,
     back_left_vortex_vertices,
     strengths,
+    ages=None,
+    nu=None,
 ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the induced velocity due to every
@@ -458,6 +469,8 @@ def expanded_velocities_from_horseshoe_vortices(
         This variable is an array of shape (, M), where M is the number of horseshoe
         vortices. Each holds the strength of that horseshoe vortex in meters squared
         per second.
+    :param ages:
+    :param nu:
     :return induced_velocities: either a 2D array of floats or a 3D array of floats
         If collapse is true, the output is the summed effects from every horseshoe
         vortex on a given point. The result will be of shape (N x 3), where each row
@@ -485,6 +498,8 @@ def expanded_velocities_from_horseshoe_vortices(
             origins=origins_list[i],
             terminations=terminations_list[i],
             strengths=strengths,
+            ages=ages,
+            nu=nu,
         )
     return induced_velocities
 
@@ -502,6 +517,8 @@ def collapsed_velocities_from_ring_vortices(
     front_left_vortex_vertices,
     back_left_vortex_vertices,
     strengths,
+    ages=None,
+    nu=None,
 ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the induced velocity due to every ring
@@ -532,6 +549,8 @@ def collapsed_velocities_from_ring_vortices(
         This variable is an array of shape (, M), where M is the number of ring
         vortices. Each holds the strength of that ring vortex in meters squared per
         second.
+    :param ages:
+    :param nu:
     :return induced_velocities: either a 2D array of floats or a 3D array of floats
         be of shape (N x 3), where each row identifies the effects on a point. If
         false, than the effect from every ring vortex will remain distinct, and the
@@ -560,6 +579,8 @@ def collapsed_velocities_from_ring_vortices(
             origins=origins_list[i],
             terminations=terminations_list[i],
             strengths=strengths,
+            ages=ages,
+            nu=nu,
         )
     return induced_velocities
 
@@ -577,6 +598,8 @@ def expanded_velocities_from_ring_vortices(
     front_left_vortex_vertices,
     back_left_vortex_vertices,
     strengths,
+    ages=None,
+    nu=None,
 ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the induced velocity due to every ring
@@ -607,6 +630,8 @@ def expanded_velocities_from_ring_vortices(
         This variable is an array of shape (, M), where M is the number of ring
         vortices. Each holds the strength of that ring vortex in meters squared per
         second.
+    :param ages:
+    :param nu:
     :return induced_velocities: either a 2D array of floats or a 3D array of floats
         be of shape (N x 3), where each row identifies the effects on a point. If
         false, than the effect from every ring vortex will remain distinct, and the
@@ -635,6 +660,8 @@ def expanded_velocities_from_ring_vortices(
             origins=origins_list[i],
             terminations=terminations_list[i],
             strengths=strengths,
+            ages=ages,
+            nu=nu,
         )
     return induced_velocities
 
@@ -659,10 +686,6 @@ def collapsed_velocities_from_line_vortices(
 
     Note: This function uses methodology described on pp. 251-255 of the second
     edition of "Low-Speed Aerodynamics" by Joseph Katz and Allen Plotkin.
-
-    Citation: Some of the following code was adapted by Jérôme Richard as a response
-    to a question on Stack Overflow. The original response is here:
-    https://stackoverflow.com/a/66757029/13240504.
 
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of
@@ -695,8 +718,7 @@ def collapsed_velocities_from_line_vortices(
 
     velocities = np.zeros((num_points, 3))
 
-    lamb = 1.254
-    squire = 0.1
+    lamb = 1.25643
 
     if ages is None:
         ages = np.zeros(num_vortices)
@@ -708,7 +730,7 @@ def collapsed_velocities_from_line_vortices(
         age = ages[vortex_id]
 
         if nu is not None and age > 0:
-            r_c = 2 * math.sqrt(lamb * (nu + squire * strength) * age)
+            r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
         else:
             r_c = 3.0e-16
 
@@ -779,10 +801,6 @@ def expanded_velocities_from_line_vortices(
     Note: This function uses methodology described on pp. 251-255 of the second
     edition of "Low-Speed Aerodynamics" by Joseph Katz and Allen Plotkin.
 
-    Citation: Some of the following code was adapted by Jérôme Richard as a response
-    to a question on Stack Overflow. The original response is here:
-    https://stackoverflow.com/a/66757029/13240504.
-
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of
         points. Each row contains the x, y, and z float coordinates of that point's
@@ -814,8 +832,7 @@ def expanded_velocities_from_line_vortices(
 
     velocities = np.empty((num_points, num_vortices, 3))
 
-    lamb = 1.254
-    squire = 0.1
+    lamb = 1.25643
 
     if ages is None:
         ages = np.zeros(num_vortices)
@@ -827,7 +844,7 @@ def expanded_velocities_from_line_vortices(
         age = ages[vortex_id]
 
         if nu is not None and age > 0:
-            r_c = 2 * math.sqrt(lamb * (nu + squire * strength) * age)
+            r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
         else:
             r_c = 3.0e-16
 

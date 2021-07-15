@@ -672,6 +672,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
             back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
             strengths=self.current_vortex_strengths,
+            ages=None,
+            nu=self.current_operating_point.nu,
         )
 
         # Take the batch dot product of the normalized velocities with each panel's
@@ -742,6 +744,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 front_left_vortex_vertices=self.wake_ring_vortex_front_left_vertices,
                 back_left_vortex_vertices=self.wake_ring_vortex_back_left_vertices,
                 strengths=self.wake_ring_vortex_strengths,
+                ages=self.wake_ring_vortex_ages,
+                nu=self.current_operating_point.nu,
             )
 
             # Set the current wake-wing influences to the normal component of the
@@ -811,6 +815,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
             back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
             strengths=self.current_vortex_strengths,
+            ages=None,
+            nu=self.current_operating_point.nu,
         )
 
         # Find the vector of velocities induced at every point by every wake ring
@@ -822,6 +828,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             front_left_vortex_vertices=self.wake_ring_vortex_front_left_vertices,
             back_left_vortex_vertices=self.wake_ring_vortex_back_left_vertices,
             strengths=self.wake_ring_vortex_strengths,
+            ages=self.wake_ring_vortex_ages,
+            nu=self.current_operating_point.nu,
         )
 
         # Find the total influence of the vortices, which is the sum of the influence
@@ -1530,9 +1538,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
 
                                 # Also, update the age of this ring vortex.
-                                next_wing.wake_ring_vortices[
-                                    chordwise_vertex_position, spanwise_vertex_position
-                                ].age += self.delta_time
+                                if self.current_step == 0:
+                                    next_wing.wake_ring_vortices[
+                                        chordwise_vertex_position,
+                                        spanwise_vertex_position,
+                                    ].age = self.delta_time
+                                else:
+                                    next_wing.wake_ring_vortices[
+                                        chordwise_vertex_position,
+                                        spanwise_vertex_position,
+                                    ].age += self.delta_time
 
                             if chordwise_vertex_position == 0:
                                 # If this is the front of the wake, get the vortex

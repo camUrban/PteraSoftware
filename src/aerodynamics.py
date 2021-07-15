@@ -69,7 +69,7 @@ from numba import njit, prange
 from . import functions
 
 
-squire = 10e-4
+squire = 1e-4
 
 
 class LineVortex:

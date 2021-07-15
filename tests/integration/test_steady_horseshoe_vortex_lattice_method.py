@@ -89,19 +89,19 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             0
         ]
         c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
-        print(c_di_error)
+
         c_l_expected = 0.790
         c_l_calculated = self.steady_horseshoe_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
             2
         ]
         c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
-        print(c_l_error)
+
         c_m_expected = -0.690
         c_m_calculated = self.steady_horseshoe_vortex_lattice_method_validation_solver.airplane.total_near_field_moment_coefficients_wind_axes[
             1
         ]
         c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
-        print(c_m_error)
+
         # Set the allowable percent error.
         allowable_error = 0.10
 
@@ -134,19 +134,19 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             0
         ]
         c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
-        print(c_di_error)
+
         c_l_expected = 0.524
         c_l_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplane.total_near_field_force_coefficients_wind_axes[
             2
         ]
         c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
-        print(c_l_error)
+
         c_m_expected = -0.350
         c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplane.total_near_field_moment_coefficients_wind_axes[
             1
         ]
         c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
-        print(c_m_error)
+
         # Set the allowable percent error.
         allowable_error = 0.10
 

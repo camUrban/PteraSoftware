@@ -405,7 +405,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(4):
+    for i in prange(3):
         induced_velocities += collapsed_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],
@@ -479,7 +479,7 @@ def expanded_velocities_from_horseshoe_vortices(
     induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(4):
+    for i in prange(3):
         induced_velocities += expanded_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],

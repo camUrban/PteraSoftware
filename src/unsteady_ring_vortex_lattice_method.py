@@ -19,6 +19,7 @@ import pickle
 
 import numpy as np
 from numba import njit, prange
+from tqdm import tqdm
 
 from . import aerodynamics
 
@@ -189,201 +190,242 @@ class UnsteadyRingVortexLatticeMethodSolver:
             but the default value is True for back-compatibility.
         :return: None
         """
-        # Initialize all the airplanes' panels' vortices.
-        if verbose:
-            print("Initializing all airplanes' panel vortices.")
-        self.initialize_panel_vortices()
 
-        # Iterate through the time steps.
-        for step in range(self.num_steps):
+        # ToDo: Document the following code that preprocesses the problem for tqdm.
+        approx_times = np.zeros(self.num_steps + 1)
+        for i in range(1, self.num_steps):
+            num_wing_panels = self.steady_problems[i].airplane.num_panels
 
-            # Save attributes to hold the current step, airplane, and operating point.
-            self.current_step = step
-            self.current_airplane = self.steady_problems[self.current_step].airplane
-            self.current_operating_point = self.steady_problems[
-                self.current_step
-            ].operating_point
-            self.current_freestream_velocity_geometry_axes = (
-                self.current_operating_point.calculate_freestream_velocity_geometry_axes()
-            )
+            num_spanwise_panels = 0
+            for wing in self.steady_problems[i].airplane.wings:
+                num_spanwise_panels += wing.num_spanwise_panels
+
+            num_wake_vortices = i * num_spanwise_panels
+            num_vortices = num_wing_panels + num_wake_vortices
+
+            if i == 1:
+                approx_times[i] = num_vortices * 0.00025 + 1.4
+            elif i == 2:
+                approx_times[i] = num_vortices * 0.00025 + 0.61
+            else:
+                approx_times[i] = num_vortices * 0.00025 + 0.017
+
+        approx_partial_time = np.sum(approx_times)
+        approx_times[0] = 0.0095 * approx_partial_time
+        approx_total_time = np.sum(approx_times)
+
+        # ToDo: Document the following code that implements tqdm.
+        with tqdm(
+            total=approx_total_time,
+            unit="",
+            unit_scale=True,
+            ncols=100,
+            desc="Simulating",
+            disable=verbose,
+            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
+        ) as bar:
+            # Initialize all the airplanes' panels' vortices.
             if verbose:
-                print(
-                    "\nBeginning time step "
-                    + str(self.current_step)
-                    + " out of "
-                    + str(self.num_steps - 1)
-                    + "."
+                print("Initializing all airplanes' panel vortices.")
+            self.initialize_panel_vortices()
+
+            # ToDo: Document the following code that implements tqdm.
+            bar.update(n=approx_times[0])
+
+            # Iterate through the time steps.
+            for step in range(self.num_steps):
+                # Save attributes to hold the current step, airplane, and operating point.
+                self.current_step = step
+                self.current_airplane = self.steady_problems[self.current_step].airplane
+                self.current_operating_point = self.steady_problems[
+                    self.current_step
+                ].operating_point
+                self.current_freestream_velocity_geometry_axes = (
+                    self.current_operating_point.calculate_freestream_velocity_geometry_axes()
+                )
+                if verbose:
+                    print(
+                        "\nBeginning time step "
+                        + str(self.current_step)
+                        + " out of "
+                        + str(self.num_steps - 1)
+                        + "."
+                    )
+
+                # Initialize attributes to hold aerodynamic data that pertains to this
+                # problem.
+                self.current_wing_wing_influences = np.zeros(
+                    (self.current_airplane.num_panels, self.current_airplane.num_panels)
+                )
+                self.vectorized_current_wing_wing_influences = np.zeros(
+                    (self.current_airplane.num_panels, self.current_airplane.num_panels)
+                )
+                self.current_freestream_velocity_geometry_axes = (
+                    self.current_operating_point.calculate_freestream_velocity_geometry_axes()
+                )
+                self.current_freestream_wing_influences = np.zeros(
+                    self.current_airplane.num_panels
+                )
+                self.vectorized_current_freestream_wing_influences = np.zeros(
+                    self.current_airplane.num_panels
+                )
+                self.current_wake_wing_influences = np.zeros(
+                    self.current_airplane.num_panels
+                )
+                self.vectorized_current_wake_wing_influences = np.zeros(
+                    self.current_airplane.num_panels
+                )
+                self.current_vortex_strengths = np.ones(
+                    self.current_airplane.num_panels
+                )
+                self.vectorized_current_vortex_strengths = np.ones(
+                    self.current_airplane.num_panels
                 )
 
-            # Initialize attributes to hold aerodynamic data that pertains to this
-            # problem.
-            self.current_wing_wing_influences = np.zeros(
-                (self.current_airplane.num_panels, self.current_airplane.num_panels)
-            )
-            self.vectorized_current_wing_wing_influences = np.zeros(
-                (self.current_airplane.num_panels, self.current_airplane.num_panels)
-            )
-            self.current_freestream_velocity_geometry_axes = (
-                self.current_operating_point.calculate_freestream_velocity_geometry_axes()
-            )
-            self.current_freestream_wing_influences = np.zeros(
-                self.current_airplane.num_panels
-            )
-            self.vectorized_current_freestream_wing_influences = np.zeros(
-                self.current_airplane.num_panels
-            )
-            self.current_wake_wing_influences = np.zeros(
-                self.current_airplane.num_panels
-            )
-            self.vectorized_current_wake_wing_influences = np.zeros(
-                self.current_airplane.num_panels
-            )
-            self.current_vortex_strengths = np.ones(self.current_airplane.num_panels)
-            self.vectorized_current_vortex_strengths = np.ones(
-                self.current_airplane.num_panels
-            )
+                # Initialize attributes to hold geometric data that pertains to this
+                # problem.
+                self.panels = np.empty(self.current_airplane.num_panels, dtype=object)
+                self.panel_normal_directions = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_areas = np.zeros(self.current_airplane.num_panels)
+                self.panel_centers = np.zeros((self.current_airplane.num_panels, 3))
+                self.panel_collocation_points = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_back_right_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_front_right_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_front_left_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_back_left_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_right_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_right_vortex_vectors = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_front_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_front_vortex_vectors = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_left_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_left_vortex_vectors = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_back_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.panel_back_vortex_vectors = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.seed_points = np.empty((0, 3))
 
-            # Initialize attributes to hold geometric data that pertains to this
-            # problem.
-            self.panels = np.empty(self.current_airplane.num_panels, dtype=object)
-            self.panel_normal_directions = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_areas = np.zeros(self.current_airplane.num_panels)
-            self.panel_centers = np.zeros((self.current_airplane.num_panels, 3))
-            self.panel_collocation_points = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_back_right_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_front_right_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_front_left_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_back_left_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_right_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_right_vortex_vectors = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_front_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_front_vortex_vectors = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_left_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_left_vortex_vectors = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_back_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.panel_back_vortex_vectors = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.seed_points = np.empty((0, 3))
+                # Initialize variables to hold details about this panel's location on its
+                # wing.
+                self.panel_is_trailing_edge = np.zeros(
+                    self.current_airplane.num_panels, dtype=bool
+                )
+                self.panel_is_leading_edge = np.zeros(
+                    self.current_airplane.num_panels, dtype=bool
+                )
+                self.panel_is_left_edge = np.zeros(
+                    self.current_airplane.num_panels, dtype=bool
+                )
+                self.panel_is_right_edge = np.zeros(
+                    self.current_airplane.num_panels, dtype=bool
+                )
 
-            # Initialize variables to hold details about this panel's location on its
-            # wing.
-            self.panel_is_trailing_edge = np.zeros(
-                self.current_airplane.num_panels, dtype=bool
-            )
-            self.panel_is_leading_edge = np.zeros(
-                self.current_airplane.num_panels, dtype=bool
-            )
-            self.panel_is_left_edge = np.zeros(
-                self.current_airplane.num_panels, dtype=bool
-            )
-            self.panel_is_right_edge = np.zeros(
-                self.current_airplane.num_panels, dtype=bool
-            )
+                # Initialize variables to hold details about the last airplane's panels.
+                self.last_panel_collocation_points = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_vortex_strengths = np.zeros(
+                    self.current_airplane.num_panels
+                )
+                self.last_panel_back_right_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_front_right_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_front_left_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_back_left_vortex_vertices = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_right_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_front_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_left_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
+                self.last_panel_back_vortex_centers = np.zeros(
+                    (self.current_airplane.num_panels, 3)
+                )
 
-            # Initialize variables to hold details about the last airplane's panels.
-            self.last_panel_collocation_points = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_vortex_strengths = np.zeros(
-                self.current_airplane.num_panels
-            )
-            self.last_panel_back_right_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_front_right_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_front_left_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_back_left_vortex_vertices = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_right_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_front_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_left_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
-            self.last_panel_back_vortex_centers = np.zeros(
-                (self.current_airplane.num_panels, 3)
-            )
+                self.wake_ring_vortex_strengths = np.empty(0)
+                self.wake_ring_vortex_ages = np.empty(0)
+                self.wake_ring_vortex_front_right_vertices = np.empty((0, 3))
+                self.wake_ring_vortex_front_left_vertices = np.empty((0, 3))
+                self.wake_ring_vortex_back_left_vertices = np.empty((0, 3))
+                self.wake_ring_vortex_back_right_vertices = np.empty((0, 3))
 
-            self.wake_ring_vortex_strengths = np.empty(0)
-            self.wake_ring_vortex_ages = np.empty(0)
-            self.wake_ring_vortex_front_right_vertices = np.empty((0, 3))
-            self.wake_ring_vortex_front_left_vertices = np.empty((0, 3))
-            self.wake_ring_vortex_back_left_vertices = np.empty((0, 3))
-            self.wake_ring_vortex_back_right_vertices = np.empty((0, 3))
-
-            # Collapse this problem's geometry matrices into 1D ndarrays of attributes.
-            if verbose:
-                print("Collapsing geometry.")
-            self.collapse_geometry()
-
-            # Find the matrix of wing-wing influence coefficients associated with
-            # this current_airplane's geometry.
-            if verbose:
-                print("Calculating the wing-wing influences.")
-            self.calculate_wing_wing_influences()
-
-            # Find the vector of freestream-wing influence coefficients associated
-            # with this problem.
-            if verbose:
-                print("Calculating the freestream-wing influences.")
-            self.calculate_freestream_wing_influences()
-
-            # Find the vector of wake-wing influence coefficients associated with
-            # this problem.
-            if verbose:
-                print("Calculating the wake-wing influences.")
-            self.calculate_wake_wing_influences()
-
-            # Solve for each panel's vortex strength.
-            if verbose:
-                print("Calculating vortex strengths.")
-            self.calculate_vortex_strengths()
-
-            # Solve for the near field forces and moments on each panel.
-            if self.current_step >= self.first_results_step:
+                # Collapse this problem's geometry matrices into 1D ndarrays of attributes.
                 if verbose:
-                    print("Calculating near field forces.")
-                self.calculate_near_field_forces_and_moments()
+                    print("Collapsing geometry.")
+                self.collapse_geometry()
 
-            # Solve for the near field forces and moments on each panel.
-            if verbose:
-                print("Shedding wake vortices.")
-            self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
+                # Find the matrix of wing-wing influence coefficients associated with
+                # this current_airplane's geometry.
+                if verbose:
+                    print("Calculating the wing-wing influences.")
+                self.calculate_wing_wing_influences()
+
+                # Find the vector of freestream-wing influence coefficients associated
+                # with this problem.
+                if verbose:
+                    print("Calculating the freestream-wing influences.")
+                self.calculate_freestream_wing_influences()
+
+                # Find the vector of wake-wing influence coefficients associated with
+                # this problem.
+                if verbose:
+                    print("Calculating the wake-wing influences.")
+                self.calculate_wake_wing_influences()
+
+                # Solve for each panel's vortex strength.
+                if verbose:
+                    print("Calculating vortex strengths.")
+                self.calculate_vortex_strengths()
+
+                # Solve for the near field forces and moments on each panel.
+                if self.current_step >= self.first_results_step:
+                    if verbose:
+                        print("Calculating near field forces.")
+                    self.calculate_near_field_forces_and_moments()
+
+                # Solve for the near field forces and moments on each panel.
+                if verbose:
+                    print("Shedding wake vortices.")
+                self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
+
+                # ToDo: Document the following code that implements tqdm.
+                bar.update(n=approx_times[step + 1])
 
         # Solve for the location of the streamlines if requested.
         if calculate_streamlines:

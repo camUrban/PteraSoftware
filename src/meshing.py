@@ -451,16 +451,32 @@ def mesh_wing(wing):
 
         # Handle symmetry.
         if wing.symmetric:
-            # Define the airfoils at each cross section.
-            inner_airfoil = inner_cross_section.airfoil.add_control_surface(
-                deflection=-inner_cross_section.control_surface_deflection,
-                hinge_point=inner_cross_section.control_surface_hinge_point,
-            )
-            outer_airfoil = outer_cross_section.airfoil.add_control_surface(
-                deflection=-inner_cross_section.control_surface_deflection,
-                # The inner cross section dictates control surface deflections.
-                hinge_point=inner_cross_section.control_surface_hinge_point,
-            )
+            # The inner airfoil control surface type dictates this section's control
+            # surface type.
+            if inner_cross_section.control_surface_type == "symmetric":
+                # Define the airfoils at each cross section with flap-like control
+                # surfaces.
+                inner_airfoil = inner_cross_section.airfoil.add_control_surface(
+                    deflection=inner_cross_section.control_surface_deflection,
+                    hinge_point=inner_cross_section.control_surface_hinge_point,
+                )
+                outer_airfoil = outer_cross_section.airfoil.add_control_surface(
+                    deflection=inner_cross_section.control_surface_deflection,
+                    # The inner cross section dictates control surface deflections.
+                    hinge_point=inner_cross_section.control_surface_hinge_point,
+                )
+            else:
+                # Define the airfoils at each cross section with aileron-like control
+                # surfaces.
+                inner_airfoil = inner_cross_section.airfoil.add_control_surface(
+                    deflection=-inner_cross_section.control_surface_deflection,
+                    hinge_point=inner_cross_section.control_surface_hinge_point,
+                )
+                outer_airfoil = outer_cross_section.airfoil.add_control_surface(
+                    deflection=-inner_cross_section.control_surface_deflection,
+                    # The inner cross section dictates control surface deflections.
+                    hinge_point=inner_cross_section.control_surface_hinge_point,
+                )
 
             # Make the mean camber lines for each cross section. First index is point
             # number, second index is xyz.

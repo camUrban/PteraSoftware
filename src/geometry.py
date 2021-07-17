@@ -437,6 +437,14 @@ class WingCrossSection:
                 "zero meters!"
             )
 
+        # Catch bad values of the control surface type.
+        if self.control_surface_type != "symmetric":
+            if self.control_surface_type != "asymmetric":
+                raise Exception(
+                    "The control surface type of this wing cross section needs to be "
+                    "either symmetric or asymmetric!"
+                )
+
     def xyz_te(self):
         """This method calculates the coordinates of the trailing edge of the cross
         section.

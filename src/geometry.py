@@ -266,6 +266,14 @@ class Wing:
         if self.symmetric:
             self.num_spanwise_panels *= 2
 
+        if self.symmetric:
+            if self.wing_cross_sections[0].y_le != 0:
+                raise Exception(
+                    "This wing is symmetric but its first wing cross section isn't on "
+                    "the XZ plane! This isn't allowed. Set the first wing cross "
+                    "section's y_le value to zero."
+                )
+
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 

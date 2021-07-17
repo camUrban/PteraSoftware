@@ -411,7 +411,7 @@ del example_problem
 example_solver.run(
     # Tell the example solver to print solver status and output to the console. The
     # "verbose" attribute defaults to true.
-    verbose=True,
+    verbose=False,
     # Use a prescribed wake model. This is faster, but may be slightly less accurate.
     # The free wake model is not yet stable.
     prescribed_wake=True,

@@ -204,14 +204,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
             num_vortices = num_wing_panels + num_wake_vortices
 
             if i == 1:
-                approx_times[i] = num_vortices * 0.00025 + 1.4
+                approx_times[i] = num_vortices * 70
             elif i == 2:
-                approx_times[i] = num_vortices * 0.00025 + 0.61
+                approx_times[i] = num_vortices * 30
             else:
-                approx_times[i] = num_vortices * 0.00025 + 0.017
+                approx_times[i] = num_vortices * 3
 
         approx_partial_time = np.sum(approx_times)
-        approx_times[0] = 0.0095 * approx_partial_time
+        approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
 
         # ToDo: Document the following code that implements tqdm.

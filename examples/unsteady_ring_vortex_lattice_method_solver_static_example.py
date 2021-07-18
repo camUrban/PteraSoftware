@@ -413,7 +413,6 @@ example_solver.run(
     # "verbose" attribute defaults to true.
     verbose=False,
     # Use a prescribed wake model. This is faster, but may be slightly less accurate.
-    # The free wake model is not yet stable.
     prescribed_wake=True,
 )
 

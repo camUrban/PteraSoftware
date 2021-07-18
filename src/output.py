@@ -820,7 +820,7 @@ def print_steady_results(steady_solver):
     :return:
     """
     # Print out the total forces and moments.
-    print("\n\nForces in Wind Axes:")
+    print("Forces in Wind Axes:")
     print(
         "\tInduced Drag:\t\t\t",
         np.round(steady_solver.airplane.total_near_field_force_wind_axes[0], 3),

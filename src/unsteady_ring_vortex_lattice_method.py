@@ -3,7 +3,6 @@
 lattice solver.
 
 This module contains the following classes:
-
     UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
     an unsteady ring vortex lattice method.
 
@@ -11,12 +10,12 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-
     numba_1d_explicit_cross: This function takes in two arrays, each of which contain
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
 """
 import pickle
+import logging
 
 import numpy as np
 from numba import njit, prange
@@ -170,15 +169,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def run(
         self,
-        verbose=True,
+        logging_level="Warning",
         prescribed_wake=True,
         calculate_streamlines=True,
     ):
         """This method runs the solver on the unsteady problem.
 
-        :param verbose: Bool, optional
-            This parameter determines if the solver prints output to the console and
-            opens a visualization. Its default value is True.
+        :param logging_level: str, optional
+            This parameter determines the detail of information that the solver's
+            logger will output while running. The options are, in order of detail and
+            severity, "Debug", "Info", "Warning", "Error", "Critical". The default
+            value is "Warning".
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
             false it will use a free-wake, which may be more accurate but will make
@@ -190,6 +191,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
             but the default value is True for back-compatibility.
         :return: None
         """
+        # Configure the problem's logger.
+        logging_level_value = functions.convert_logging_level_name_to_value(
+            logging_level
+        )
+        logging.basicConfig(level=logging_level_value)
 
         # ToDo: Document the following code that preprocesses the problem for tqdm.
         approx_times = np.zeros(self.num_steps + 1)
@@ -221,12 +227,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
             unit_scale=True,
             ncols=100,
             desc="Simulating",
-            disable=verbose,
+            disable=logging_level_value < logging.WARNING,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
         ) as bar:
             # Initialize all the airplanes' panels' vortices.
-            if verbose:
-                print("Initializing all airplanes' panel vortices.")
+            logging.info("Initializing all airplanes' panel vortices.")
             self.initialize_panel_vortices()
 
             # ToDo: Document the following code that implements tqdm.
@@ -243,14 +248,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_freestream_velocity_geometry_axes = (
                     self.current_operating_point.calculate_freestream_velocity_geometry_axes()
                 )
-                if verbose:
-                    print(
-                        "\nBeginning time step "
-                        + str(self.current_step)
-                        + " out of "
-                        + str(self.num_steps - 1)
-                        + "."
-                    )
+                logging.info(
+                    "Beginning time step "
+                    + str(self.current_step)
+                    + " out of "
+                    + str(self.num_steps - 1)
+                    + "."
+                )
 
                 # Initialize attributes to hold aerodynamic data that pertains to this
                 # problem.
@@ -386,42 +390,35 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.wake_ring_vortex_back_right_vertices = np.empty((0, 3))
 
                 # Collapse this problem's geometry matrices into 1D ndarrays of attributes.
-                if verbose:
-                    print("Collapsing geometry.")
+                logging.info("Collapsing the geometry.")
                 self.collapse_geometry()
 
                 # Find the matrix of wing-wing influence coefficients associated with
                 # this current_airplane's geometry.
-                if verbose:
-                    print("Calculating the wing-wing influences.")
+                logging.info("Calculating the wing-wing influences.")
                 self.calculate_wing_wing_influences()
 
                 # Find the vector of freestream-wing influence coefficients associated
                 # with this problem.
-                if verbose:
-                    print("Calculating the freestream-wing influences.")
+                logging.info("Calculating the freestream-wing influences.")
                 self.calculate_freestream_wing_influences()
 
                 # Find the vector of wake-wing influence coefficients associated with
                 # this problem.
-                if verbose:
-                    print("Calculating the wake-wing influences.")
+                logging.info("Calculating the wake-wing influences.")
                 self.calculate_wake_wing_influences()
 
                 # Solve for each panel's vortex strength.
-                if verbose:
-                    print("Calculating vortex strengths.")
+                logging.info("Calculating vortex strengths.")
                 self.calculate_vortex_strengths()
 
                 # Solve for the near field forces and moments on each panel.
                 if self.current_step >= self.first_results_step:
-                    if verbose:
-                        print("Calculating near field forces.")
+                    logging.info("Calculating near field forces.")
                     self.calculate_near_field_forces_and_moments()
 
                 # Solve for the near field forces and moments on each panel.
-                if verbose:
-                    print("Shedding wake vortices.")
+                logging.info("Shedding wake vortices.")
                 self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
 
                 # ToDo: Document the following code that implements tqdm.
@@ -429,8 +426,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Solve for the location of the streamlines if requested.
         if calculate_streamlines:
-            if verbose:
-                print("\nCalculating streamlines.")
+            logging.info("Calculating streamlines.")
             functions.calculate_streamlines(self)
 
     def initialize_panel_vortices(self):

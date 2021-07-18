@@ -11,6 +11,8 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+import logging
+
 import numpy as np
 
 from . import aerodynamics
@@ -89,50 +91,51 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.seed_points = np.empty((0, 3))
         self.streamline_points = None
 
-    def run(self, verbose=True):
+    def run(self, logging_level="Warning"):
         """Run the solver on the steady problem.
 
-        :param verbose: Bool, optional
-            This parameter determines if the solver prints output to the console.
-            It's default value is True.
+        :param logging_level: str, optional
+            This parameter determines the detail of information that the solver's
+            logger will output while running. The options are, in order of detail and
+            severity, "Debug", "Info", "Warning", "Error", "Critical". The default
+            value is "Warning".
         :return: None
         """
+        # Configure the problem's logger.
+        logging_level_value = functions.convert_logging_level_name_to_value(
+            logging_level
+        )
+        logging.basicConfig(level=logging_level_value)
+
         # Initialize this problem's panels to have vortices congruent with this
         # solver type.
-        if verbose:
-            print("Initializing panel vortices.")
+        logging.info("Initializing the panel vortices.")
         self.initialize_panel_vortices()
 
         # Collapse this problem's geometry matrices into 1D ndarrays of attributes.
-        if verbose:
-            print("Collapsing geometry.")
+        logging.info("Collapsing the geometry.")
         self.collapse_geometry()
 
         # Find the matrix of aerodynamic influence coefficients associated with this
         # problem's geometry.
-        if verbose:
-            print("\nCalculating the wing-wing influences.")
+        logging.info("Calculating the wing-wing influences.")
         self.calculate_wing_wing_influences()
 
         # Find the normal freestream speed at every collocation points without
         # vortices.
-        if verbose:
-            print("\nCalculating the freestream-wing influences.")
+        logging.info("Calculating the freestream-wing influences.")
         self.calculate_freestream_wing_influences()
 
         # Solve for each panel's vortex strengths.
-        if verbose:
-            print("\nCalculating vortex strengths.")
+        logging.info("Calculating the vortex strengths.")
         self.calculate_vortex_strengths()
 
         # Solve for the near field forces and moments on each panel.
-        if verbose:
-            print("\nCalculating near field forces.")
+        logging.info("Calculating the near field forces.")
         self.calculate_near_field_forces_and_moments()
 
         # Solve for the location of the streamlines coming off the back of the wings.
-        if verbose:
-            print("\nCalculating streamlines.")
+        logging.info("Calculating streamlines.")
         functions.calculate_streamlines(self)
 
     def initialize_panel_vortices(self):

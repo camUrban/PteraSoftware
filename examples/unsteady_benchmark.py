@@ -105,7 +105,6 @@ example_solver = (
 del example_problem
 
 example_solver.run(
-    verbose=True,
     prescribed_wake=True,
     calculate_streamlines=False,
 )

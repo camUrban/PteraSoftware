@@ -214,9 +214,10 @@ del example_problem
 
 # Run the example solver.
 example_solver.run(
-    # Tell the example solver to print solver status and output to the console. The
-    # "verbose" attribute defaults to true.
-    verbose=True,
+    # This parameter determines the detail of information that the solver's logger
+    # will output while running. The options are, in order of detail and severity,
+    # "Debug", "Info", "Warning", "Error", "Critical". The default value is "Warning".
+    logging_level="Warning",
 )
 
 # Call this function from the output module to print the results.

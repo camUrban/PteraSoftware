@@ -1,4 +1,6 @@
 # ToDo: Properly document this module
+import logging
+
 import numpy as np
 from numba import njit
 
@@ -30,7 +32,6 @@ def cosspace(
         This sets whether or not the maximum value will be included in the output.
         The default is True.
     :return cosine_spaced_points: 1D array
-
         This is a 1D array of the points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
     """
@@ -241,3 +242,23 @@ def calculate_streamlines(solver, num_steps=10, delta_time=0.1):
                 np.expand_dims(new_row_streamline_points, axis=0),
             )
         )
+
+
+# ToDo: Update this function's documentation.
+def convert_logging_level_name_to_value(name):
+    """
+
+    :param name:
+    :return:
+    """
+    logging_levels = {
+        "Debug": logging.DEBUG,
+        "Info": logging.INFO,
+        "Warning": logging.WARNING,
+        "Error": logging.ERROR,
+        "Critical": logging.CRITICAL,
+    }
+    try:
+        return logging_levels[name]
+    except KeyError:
+        raise Exception("The name of the logging level provided is not a valid option.")

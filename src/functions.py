@@ -195,3 +195,49 @@ def numba_centroid_of_quadrilateral(
     ) / 4
 
     return np.array([x_average, y_average, z_average])
+
+
+def calculate_streamlines(solver, num_steps=10, delta_time=0.1):
+    """Calculates the location of the streamlines coming off the back of the wings.
+
+    This method is vectorized to increase performance.
+
+    :param solver: Solver
+        This is the solver object for which to calculate the streamlines.
+    :param num_steps: int, optional
+        This is the integer number of points along each streamline (not including the
+        initial points). It can be increased for higher fidelity visuals. The default
+        value is 10.
+    :param delta_time: float, optional
+        This is the time in seconds between each time current_step It can be
+        decreased for higher fidelity visuals or to make the streamlines shorter.
+        It's default value is 0.1 seconds.
+    :return: None
+    """
+    # Initialize a array to hold this solver's matrix of streamline points.
+    solver.streamline_points = np.expand_dims(solver.seed_points, axis=0)
+
+    # Iterate through the streamline steps.
+    for step in range(num_steps):
+        # Get the last row of streamline points.
+        last_row_streamline_points = solver.streamline_points[-1, :, :]
+
+        # Add the freestream velocity to the induced velocity to get the total
+        # velocity at each of the last row of streamline points.
+        total_velocities = solver.calculate_solution_velocity(
+            points=last_row_streamline_points
+        )
+
+        # Interpolate the positions on a new row of streamline points.
+        new_row_streamline_points = (
+            last_row_streamline_points + total_velocities * delta_time
+        )
+
+        # Stack the new row of streamline points to the bottom of the matrix of
+        # streamline points.
+        solver.streamline_points = np.vstack(
+            (
+                solver.streamline_points,
+                np.expand_dims(new_row_streamline_points, axis=0),
+            )
+        )

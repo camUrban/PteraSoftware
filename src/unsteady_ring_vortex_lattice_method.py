@@ -1,3 +1,4 @@
+# ToDo: Update this module's documentation.
 """This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
@@ -22,6 +23,7 @@ from numba import njit, prange
 from tqdm import tqdm
 
 from . import aerodynamics
+from . import functions
 
 
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -55,9 +57,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         calculate_near_field_forces_and_moments: This method finds the the forces and
         moments calculated from the near field.
-
-        calculate_streamlines: This method calculates the location of the streamlines
-        coming off the back of the wings.
 
         populate_next_airplanes_wake: This method updates the next time step's
         airplane's wake.
@@ -431,7 +430,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if calculate_streamlines:
             if verbose:
                 print("\nCalculating streamlines.")
-            self.calculate_streamlines()
+            functions.calculate_streamlines(self)
 
     def initialize_panel_vortices(self):
         """This method calculates the locations every problem's airplane's bound
@@ -1196,49 +1195,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 yawing_moment_coefficient,
             ]
         )
-
-    def calculate_streamlines(self, num_steps=10, delta_time=0.1):
-        """Calculates the location of the streamlines coming off the back of the wings.
-
-        This method is vectorized to increase performance.
-
-        :param num_steps: int, optional
-            This is the integer number of points along each streamline (not including
-            the initial points). It can be increased for higher fidelity visuals. The
-            default value is 10.
-        :param delta_time: float, optional
-            This is the time in seconds between each time current_step It can be
-            decreased for higher fidelity visuals or to make the streamlines shorter.
-            It's default value is 0.1 seconds.
-        :return: None
-        """
-        # Initialize a array to hold this problem's matrix of streamline points.
-        self.streamline_points = np.expand_dims(self.seed_points, axis=0)
-
-        # Iterate through the streamline steps.
-        for step in range(num_steps):
-            # Get the last row of streamline points.
-            last_row_streamline_points = self.streamline_points[-1, :, :]
-
-            # Add the freestream velocity to the induced velocity to get the total
-            # velocity at each of the last row of streamline points.
-            total_velocities = self.calculate_solution_velocity(
-                points=last_row_streamline_points
-            )
-
-            # Interpolate the positions on a new row of streamline points.
-            new_row_streamline_points = (
-                last_row_streamline_points + total_velocities * delta_time
-            )
-
-            # Stack the new row of streamline points to the bottom of the matrix of
-            # streamline points.
-            self.streamline_points = np.vstack(
-                (
-                    self.streamline_points,
-                    np.expand_dims(new_row_streamline_points, axis=0),
-                )
-            )
 
     def populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplane's wake.

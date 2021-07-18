@@ -89,12 +89,12 @@ def mesh_wing(wing):
         - wing_cross_section_xyz_quarter_chords[:-1, :]
     )
 
-    """Get directions for transforming 2D airfoil data to 3D by the following steps. 
-    
-    Project quarter chords onto YZ plane and normalize. 
-    
-    Create a L x 2 array with just the y and z components of this wing section's 
-    quarter chord vectors."""
+    # Get directions for transforming 2D airfoil data to 3D by the following steps.
+    #
+    # Project quarter chords onto YZ plane and normalize.
+    #
+    # Create a L x 2 array with just the y and z components of this wing section's
+    # quarter chord vectors.
     wing_section_quarter_chords_yz = wing_section_quarter_chords[:, 1:]
 
     # Create a list of the magnitudes of each row of the wing_section_quarter_chords_yz
@@ -415,22 +415,22 @@ def mesh_wing(wing):
             nondim_spanwise_coordinates_row_vector, 2
         )
 
-        """Linearly interpolate between inner and outer wing cross sections. This uses the 
-        following equation. 
-        
-        f(a, b, i) = i * a + (1 - i) * b 
-        
-        "a" is an N x 3 array of the coordinates points along the outer wing cross 
-        section's mean camber line. 
-        
-        "b" is an N x 3 array of the coordinates of points along the inner wing cross 
-        section's mean camber line. 
-        
-        "i" is a 1D array (or vector) of length M that holds the nondimensionalized 
-        spanwise panel spacing from 0 to 1. 
-        
-        This produces a M x N x 3 array where each slot holds the coordinates of a 
-        point on the surface between the inner and outer wing cross sections."""
+        # Linearly interpolate between inner and outer wing cross sections. This uses
+        # the following equation:
+        #
+        # f(a, b, i) = i * a + (1 - i) * b
+        #
+        # "a" is an N x 3 array of the coordinates points along the outer wing cross
+        # section's mean camber line.
+        #
+        # "b" is an N x 3 array of the coordinates of points along the inner wing
+        # cross section's mean camber line.
+        #
+        # "i" is a 1D array (or vector) of length M that holds the nondimensionalized
+        # spanwise panel spacing from 0 to 1.
+        #
+        # This produces a M x N x 3 array where each slot holds the coordinates of a
+        # point on the surface between the inner and outer wing cross sections.
         wing_section_mcl_vertices = (
             reversed_nondim_spanwise_coordinates_matrix
             * inner_wing_cross_section_mcl_matrix
@@ -656,22 +656,23 @@ def mesh_wing(wing):
                 nondim_spanwise_coordinates_row_vector, 2
             )
 
-            """Linearly interpolate between inner and outer wing cross sections. This 
-            uses the following equation. 
-
-            f(a, b, i) = i * a + (1 - i) * b 
-
-            "a" is an N x 3 array of the coordinates points along the outer wing cross 
-            section's mean camber line. 
-
-            "b" is an N x 3 array of the coordinates of points along the inner wing 
-            cross section's mean camber line. 
-
-            "i" is a 1D array (or vector) of length M that holds the nondimensionalized 
-            spanwise panel spacing from 0 to 1. 
-
-            This produces a M x N x 3 array where each slot holds the coordinates of a 
-            point on the surface between the inner and outer wing cross sections."""
+            # Linearly interpolate between inner and outer wing cross sections. This
+            # uses the following equation.
+            #
+            # f(a, b, i) = i * a + (1 - i) * b
+            #
+            # "a" is an N x 3 array of the coordinates points along the outer wing
+            # cross section's mean camber line.
+            #
+            # "b" is an N x 3 array of the coordinates of points along the inner wing
+            # cross section's mean camber line.
+            #
+            # "i" is a 1D array (or vector) of length M that holds the
+            # nondimensionalized spanwise panel spacing from 0 to 1.
+            #
+            # This produces a M x N x 3 array where each slot holds the coordinates
+            # of a point on the surface between the inner and outer wing cross
+            # sections.
             wing_section_mcl_vertices = (
                 reversed_nondim_spanwise_coordinates_matrix
                 * inner_wing_cross_section_mcl_matrix

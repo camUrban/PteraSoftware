@@ -70,6 +70,7 @@ from . import functions
 
 
 squire = 1e-4
+lamb = 1.25643
 
 
 class LineVortex:
@@ -718,8 +719,6 @@ def collapsed_velocities_from_line_vortices(
 
     velocities = np.zeros((num_points, 3))
 
-    lamb = 1.25643
-
     if ages is None:
         ages = np.zeros(num_vortices)
 
@@ -831,8 +830,6 @@ def expanded_velocities_from_line_vortices(
     num_points = points.shape[0]
 
     velocities = np.empty((num_points, num_vortices, 3))
-
-    lamb = 1.25643
 
     if ages is None:
         ages = np.zeros(num_vortices)

@@ -1501,9 +1501,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             next_airplane = self.steady_problems[self.current_step + 1].airplane
 
             # Iterate through the copy of the current airplane's wing positions.
-            for wing_num in range(len(self.current_airplane.wings)):
+            for wing_num, this_wing in enumerate(self.current_airplane.wings):
 
-                this_wing = self.current_airplane.wings[wing_num]
                 next_wing = next_airplane.wings[wing_num]
 
                 # Get the next wing's matrix of wake ring vortex vertices.

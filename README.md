@@ -68,6 +68,7 @@ Here are the requirements necessary to run Ptera Software:
 * scipy >= 1.5, < 2.0
 * numba >= 0.53, <1.0
 * cmocean >= 2.0, <3.0
+* tqdm >= 4.0, < 5.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -224,6 +225,7 @@ where applicable.
 * SemVer
 * GitFlow
 * Cmocean
+* tqdm
 
 ## Notes
 

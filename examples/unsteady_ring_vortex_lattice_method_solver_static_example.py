@@ -348,6 +348,10 @@ example_operating_point = src.operating_point.OperatingPoint(
     # Define the angle of attack the airplane is experiencing. This defaults to 5.0
     # degrees.
     alpha=1.0,
+    # Define the kinematic viscosity of the air in meters squared per second. This
+    # defaults to 15.06e-6 meters squared per second, which corresponds to an air
+    # temperature of 20 degrees Celsius.
+    nu=15.06e-6,
 )
 
 # Define the operating point's movement. The operating point's velocity can change
@@ -407,9 +411,8 @@ del example_problem
 example_solver.run(
     # Tell the example solver to print solver status and output to the console. The
     # "verbose" attribute defaults to true.
-    verbose=True,
+    verbose=False,
     # Use a prescribed wake model. This is faster, but may be slightly less accurate.
-    # The free wake model is not yet stable.
     prescribed_wake=True,
 )
 

@@ -42,7 +42,14 @@ class OperatingPoint:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, density=1.225, velocity=10.0, alpha=5.0, beta=0.0):
+    def __init__(
+        self,
+        density=1.225,
+        velocity=10.0,
+        alpha=5.0,
+        beta=0.0,
+        nu=15.06e-6,
+    ):
         """This is the initialization method.
 
         :param density: float, optional
@@ -58,13 +65,20 @@ class OperatingPoint:
         :param beta: float, optional
             This parameter is the sideslip angle. The units are degrees. The default
             value is 0.0.
+        :param nu: float, optional
+            This parameter is the air's kinematic viscosity. The units are meters
+            squared per second. This parameter is only used in the unsteady ring
+            vortex lattice method's vortex core growth model. The default value is
+            15.06e-6 meters squared per second, which corresponds to air's kinematic
+            viscosity at 20 degrees Celsius [source:
+            https://www.engineeringtoolbox.com].
         """
 
-        # Initialize the attributes.
         self.density = density
         self.velocity = velocity
         self.alpha = alpha
         self.beta = beta
+        self.nu = nu
 
     def calculate_dynamic_pressure(self):
         """This method calculates the freestream dynamic pressure of the working fluid.

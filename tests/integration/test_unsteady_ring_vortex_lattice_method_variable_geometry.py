@@ -67,7 +67,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         # Run the unsteady solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            verbose=True,
+            verbose=False,
             prescribed_wake=True,
         )
 

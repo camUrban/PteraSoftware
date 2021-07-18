@@ -104,7 +104,7 @@ del example_problem
 """
 statement = """
 example_solver.run(
-    verbose=True, prescribed_wake=True, calculate_streamlines=False,
+    prescribed_wake=True, calculate_streamlines=False,
 )
 """
 

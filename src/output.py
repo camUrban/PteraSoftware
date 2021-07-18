@@ -810,3 +810,84 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     # Show the plot.
     if not testing:
         moment_coefficients_figure.show()
+
+
+# ToDo: Document this method.
+def print_steady_results(steady_solver):
+    """
+
+    :param steady_solver:
+    :return:
+    """
+    # Print out the total forces and moments.
+    print("\n\nForces in Wind Axes:")
+    print(
+        "\tInduced Drag:\t\t\t",
+        np.round(steady_solver.airplane.total_near_field_force_wind_axes[0], 3),
+        " N",
+    )
+    print(
+        "\tSide Force:\t\t\t\t",
+        np.round(steady_solver.airplane.total_near_field_force_wind_axes[1], 3),
+        " N",
+    )
+    print(
+        "\tLift:\t\t\t\t\t",
+        np.round(steady_solver.airplane.total_near_field_force_wind_axes[2], 3),
+        " N",
+    )
+    print("\nMoments in Wind Axes:")
+    print(
+        "\tRolling Moment:\t\t\t",
+        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[0], 3),
+        " Nm",
+    )
+    print(
+        "\tPitching Moment:\t\t",
+        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[1], 3),
+        " Nm",
+    )
+    print(
+        "\tYawing Moment:\t\t\t",
+        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[2], 3),
+        " Nm",
+    )
+
+    # Print out the coefficients.
+    print("\nCoefficients in Wind Axes:")
+    print(
+        "\tCDi:\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[0], 3
+        ),
+    )
+    print(
+        "\tCY:\t\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[1], 3
+        ),
+    )
+    print(
+        "\tCL:\t\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[2], 3
+        ),
+    )
+    print(
+        "\tCl:\t\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[0], 3
+        ),
+    )
+    print(
+        "\tCm:\t\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[1], 3
+        ),
+    )
+    print(
+        "\tCn:\t\t\t\t\t\t",
+        np.round(
+            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[2], 3
+        ),
+    )

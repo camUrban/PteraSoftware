@@ -367,8 +367,8 @@ def animate(
     panel_surface = pv.PolyData(panel_vertices, panel_faces)
 
     # Check if the user wants to plot pressures. If so, add the panel surfaces to the
-    # plotter with the pressure scalars.
-    # Otherwise, add the panel surfaces without the pressure scalars.
+    # plotter with the pressure scalars. Otherwise, add the panel surfaces without
+    # the pressure scalars.
     if show_delta_pressures and first_results_step == 0:
         plotter.add_mesh(
             panel_surface,
@@ -465,8 +465,7 @@ def animate(
                 )
 
                 # Stack this panel's vertices, faces, and scalars with the array of
-                # all the vertices, faces, and
-                # scalars.
+                # all the vertices, faces, and scalars.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
@@ -486,8 +485,7 @@ def animate(
                 wake_ring_vortex_faces = np.empty(0, dtype=int)
                 current_wake_ring_vortex_num = 0
 
-                # Iterate through the unraveled array of wake vortices for the given
-                # wing.
+                # Loop through the unraveled array of wake vortices for the given wing.
                 for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
                     wake_ring_vortex_vertices_to_add = np.vstack(
                         (

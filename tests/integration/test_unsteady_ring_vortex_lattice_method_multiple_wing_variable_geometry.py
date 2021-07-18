@@ -68,7 +68,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            verbose=True,
+            verbose=False,
             prescribed_wake=True,
         )
 

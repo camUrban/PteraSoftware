@@ -345,9 +345,7 @@ class AirplaneMovement:
         wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
         # Iterate through the wing movement locations.
-        for wing_movement_location in range(len(self.wing_movements)):
-            # Get the wing movement.
-            wing_movement = self.wing_movements[wing_movement_location]
+        for wing_movement_location, wing_movement in enumerate(self.wing_movements):
 
             # Generate this wing's vector of other wing's based on its movement.
             this_wings_list_of_wings = np.array(
@@ -602,15 +600,10 @@ class WingMovement:
         last_wing_cross_section_time_histories = None
 
         # Iterate through the wing cross section movement locations.
-        for wing_cross_section_movement_location in range(
-            len(self.wing_cross_section_movements)
-        ):
-
-            # Get the wing cross section movement.
-            wing_cross_section_movement = self.wing_cross_section_movements[
-                wing_cross_section_movement_location
-            ]
-
+        for (
+            wing_cross_section_movement_location,
+            wing_cross_section_movement,
+        ) in enumerate(self.wing_cross_section_movements):
             wing_is_vertical = False
 
             # Check if this is this wing's root cross section.

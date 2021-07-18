@@ -98,10 +98,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         # Initialize this solution's attributes.
-        self.num_steps = unsteady_problem.num_steps
-        self.delta_time = unsteady_problem.delta_time
-        self.steady_problems = unsteady_problem.steady_problems
-        self.first_results_step = unsteady_problem.first_results_step
+        self.unsteady_problem = unsteady_problem
+        self.num_steps = self.unsteady_problem.num_steps
+        self.delta_time = self.unsteady_problem.delta_time
+        self.steady_problems = self.unsteady_problem.steady_problems
+        self.first_results_step = self.unsteady_problem.first_results_step
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.current_step = None

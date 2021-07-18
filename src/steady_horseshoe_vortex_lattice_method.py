@@ -62,8 +62,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
         # Initialize this solution's attributes.
-        self.airplane = steady_problem.airplane
-        self.operating_point = steady_problem.operating_point
+        self.steady_problem = steady_problem
+        self.airplane = self.steady_problem.airplane
+        self.operating_point = self.steady_problem.operating_point
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.wing_wing_influences = np.zeros(
@@ -133,84 +134,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         if verbose:
             print("\nCalculating streamlines.")
         functions.calculate_streamlines(self)
-
-        # Print out the total forces.
-        if verbose:
-            print("\n\nForces in Wind Axes:")
-            print(
-                "\tInduced Drag:\t\t\t",
-                np.round(self.airplane.total_near_field_force_wind_axes[0], 3),
-                " N",
-            )
-            print(
-                "\tSide Force:\t\t\t\t",
-                np.round(self.airplane.total_near_field_force_wind_axes[1], 3),
-                " N",
-            )
-            print(
-                "\tLift:\t\t\t\t\t",
-                np.round(self.airplane.total_near_field_force_wind_axes[2], 3),
-                " N",
-            )
-
-        # Print out the total moments.
-        if verbose:
-            print("\nMoments in Wind Axes:")
-            print(
-                "\tRolling Moment:\t\t\t",
-                np.round(self.airplane.total_near_field_moment_wind_axes[0], 3),
-                " Nm",
-            )
-            print(
-                "\tPitching Moment:\t\t",
-                np.round(self.airplane.total_near_field_moment_wind_axes[1], 3),
-                " Nm",
-            )
-            print(
-                "\tYawing Moment:\t\t\t",
-                np.round(self.airplane.total_near_field_moment_wind_axes[2], 3),
-                " Nm",
-            )
-
-        # Print out the coefficients.
-        if verbose:
-            print("\nCoefficients in Wind Axes:")
-            print(
-                "\tCDi:\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_force_coefficients_wind_axes[0], 3
-                ),
-            )
-            print(
-                "\tCY:\t\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_force_coefficients_wind_axes[1], 3
-                ),
-            )
-            print(
-                "\tCL:\t\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_force_coefficients_wind_axes[2], 3
-                ),
-            )
-            print(
-                "\tCl:\t\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_moment_coefficients_wind_axes[0], 3
-                ),
-            )
-            print(
-                "\tCm:\t\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_moment_coefficients_wind_axes[1], 3
-                ),
-            )
-            print(
-                "\tCn:\t\t\t\t\t\t",
-                np.round(
-                    self.airplane.total_near_field_moment_coefficients_wind_axes[2], 3
-                ),
-            )
 
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then

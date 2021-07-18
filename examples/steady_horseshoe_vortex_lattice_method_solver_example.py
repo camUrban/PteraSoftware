@@ -219,6 +219,9 @@ example_solver.run(
     verbose=True,
 )
 
+# Call this function from the output module to print the results.
+src.output.print_steady_results(steady_solver=example_solver)
+
 # Call the software's draw function on the solver.
 src.output.draw(  # Set the solver to the one we just ran.
     solver=example_solver,

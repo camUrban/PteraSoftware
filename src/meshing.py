@@ -1,3 +1,4 @@
+# ToDo: Update this module's documentation.
 """This module contains useful functions for creating meshes.
 
 This module contains the following classes:
@@ -217,31 +218,9 @@ def mesh_wing(wing):
 
     # Get the scaling factor (airfoils at dihedral breaks need to be "taller" to
     # compensate).
-    wing_cross_section_scaling_factors = np.ones(num_wing_cross_sections)
-
-    # ToDo: Document the following algorithm.
-    for i in range(num_wing_cross_sections):
-        if i == 0:
-            if wing.symmetric:
-                first_chord_norm = wing_section_quarter_chords_proj_yz_norm[0]
-                mirrored_first_chord_norm = first_chord_norm * np.array([1, 1, -1])
-
-                product = first_chord_norm * mirrored_first_chord_norm
-                collapsed_product = np.sum(product)
-                this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
-            else:
-                this_scaling_factor = 1
-        elif i == num_wing_cross_sections - 1:
-            this_scaling_factor = 1
-        else:
-            this_chord_norm = wing_section_quarter_chords_proj_yz_norm[i - 1, :]
-            next_chord_norm = wing_section_quarter_chords_proj_yz_norm[i, :]
-
-            product = this_chord_norm * next_chord_norm
-            collapsed_product = np.sum(product)
-            this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
-
-        wing_cross_section_scaling_factors[i] = this_scaling_factor
+    wing_cross_section_scaling_factors = get_wing_cross_section_scaling_factors(
+        wing.symmetric, wing_section_quarter_chords_proj_yz_norm
+    )
 
     # Make the panels for each wing section.
     for wing_section_num in range(num_wing_sections):
@@ -301,6 +280,30 @@ def mesh_wing(wing):
             outer_wing_cross_section_mcl_nondim[:, 0], 1
         )
 
+        # Define number of spanwise points and panels. This is based on the inner
+        # wing cross section.
+        num_spanwise_panels = inner_wing_cross_section.num_spanwise_panels
+        num_spanwise_coordinates = num_spanwise_panels + 1
+
+        # Get the spanwise coordinates. This is based on the inner wing cross section.
+        if inner_wing_cross_section.spanwise_spacing == "uniform":
+            nondim_spanwise_coordinates = np.linspace(
+                0,
+                1,
+                num_spanwise_coordinates,
+                endpoint=True,
+            )
+        elif inner_wing_cross_section.spanwise_spacing == "cosine":
+            nondim_spanwise_coordinates = functions.cosspace(
+                n_points=num_spanwise_coordinates,
+                endpoint=True,
+            )
+        else:
+            raise Exception(
+                "This wing cross section's spanwise_spacing variable is invalid!"
+            )
+
+        # ToDo: Break.
         # Convert the inner wing cross section's non dimensional local back airfoil frame
         # coordinates to meshed wing coordinates.
         inner_wing_cross_section_mcl_local_back = (
@@ -350,29 +353,6 @@ def mesh_wing(wing):
             + outer_wing_cross_section_mcl_local_back
             + outer_wing_cross_section_mcl_local_up
         )
-
-        # Define number of spanwise points and panels. This is based on the inner
-        # wing cross section.
-        num_spanwise_panels = inner_wing_cross_section.num_spanwise_panels
-        num_spanwise_coordinates = num_spanwise_panels + 1
-
-        # Get the spanwise coordinates. This is based on the inner wing cross section.
-        if inner_wing_cross_section.spanwise_spacing == "uniform":
-            nondim_spanwise_coordinates = np.linspace(
-                0,
-                1,
-                num_spanwise_coordinates,
-                endpoint=True,
-            )
-        elif inner_wing_cross_section.spanwise_spacing == "cosine":
-            nondim_spanwise_coordinates = functions.cosspace(
-                n_points=num_spanwise_coordinates,
-                endpoint=True,
-            )
-        else:
-            raise Exception(
-                "This wing cross section's spanwise_spacing variable is invalid!"
-            )
 
         # Make section_mcl_coordinates: M x N x 3 array of mean camberline
         # coordinates. The first index is chordwise point number, second index is
@@ -442,6 +422,7 @@ def mesh_wing(wing):
         front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
         back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
         back_outer_vertices = wing_section_mcl_vertices[1:, 1:, :]
+        # ToDo: Break.
 
         # Compute a matrix that is M x N, where M and N are the number of chordwise
         # and spanwise panels. The values are either 1 if the panel at that location
@@ -563,6 +544,7 @@ def mesh_wing(wing):
                 np.expand_dims(outer_wing_cross_section_mcl_nondim[:, 0], 1)
             )
 
+            # ToDo: Break.
             # Convert the inner wing cross section's non dimensional local back
             # airfoil frame coordinates to meshed wing coordinates.
             inner_wing_cross_section_mcl_local_back = (
@@ -685,6 +667,7 @@ def mesh_wing(wing):
             front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
             back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
             back_outer_vertices = wing_section_mcl_vertices[1:, 1:, :]
+            # ToDo: Break.
 
             # Compute a matrix that is M x N, where M and N are the number of
             # chordwise and spanwise panels. The values are either 1 if the panel at
@@ -773,3 +756,46 @@ def mesh_wing(wing):
 
     # Populate the wing's panels attribute.
     wing.panels = panels
+
+
+# ToDo: Document the following function.
+def get_wing_cross_section_scaling_factors(
+    symmetric, wing_section_quarter_chords_proj_yz_norm
+):
+    """Get the scaling factors (airfoils at dihedral breaks need to be "taller" to
+    compensate).
+
+    :param symmetric:
+    :param wing_section_quarter_chords_proj_yz_norm:
+    :return:
+    """
+    num_wing_cross_sections = len(wing_section_quarter_chords_proj_yz_norm) + 1
+
+    # Get the scaling factor (airfoils at dihedral breaks need to be "taller" to
+    # compensate).
+    wing_cross_section_scaling_factors = np.ones(num_wing_cross_sections)
+
+    for i in range(num_wing_cross_sections):
+        if i == 0:
+            if symmetric:
+                first_chord_norm = wing_section_quarter_chords_proj_yz_norm[0]
+                mirrored_first_chord_norm = first_chord_norm * np.array([1, 1, -1])
+
+                product = first_chord_norm * mirrored_first_chord_norm
+                collapsed_product = np.sum(product)
+                this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
+            else:
+                this_scaling_factor = 1
+        elif i == num_wing_cross_sections - 1:
+            this_scaling_factor = 1
+        else:
+            this_chord_norm = wing_section_quarter_chords_proj_yz_norm[i - 1, :]
+            next_chord_norm = wing_section_quarter_chords_proj_yz_norm[i, :]
+
+            product = this_chord_norm * next_chord_norm
+            collapsed_product = np.sum(product)
+            this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
+
+        wing_cross_section_scaling_factors[i] = this_scaling_factor
+
+    return wing_cross_section_scaling_factors

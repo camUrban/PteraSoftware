@@ -42,9 +42,9 @@ def mesh_wing(wing):
     else:
         chordwise_coordinates = functions.cosspace(0, 1, num_chordwise_coordinates)
 
-    # Initialize two empty 0 x 3 ndarrays to hold the corners of each wing cross
-    # section. They will eventually be L x 3 ndarrays, where L is number of wing
-    # cross sections.
+    # Initialize two empty 0 x 3 arrays to hold the corners of each wing cross
+    # section. They will eventually be L x 3 arrays, where L is number of wing cross
+    # sections.
     wing_cross_sections_leading_edges = np.empty((0, 3))
     wing_cross_sections_trailing_edges = np.empty((0, 3))
 
@@ -162,7 +162,7 @@ def mesh_wing(wing):
 
     # Initialize an empty array that will hold the panels of this wing. It currently
     # has 0 columns and M rows, where M is the number of the wing's chordwise panels.
-    panels = np.empty((num_chordwise_panels, 0), dtype=object)
+    wing_panels = np.empty((num_chordwise_panels, 0), dtype=object)
 
     # Make the panels for each wing section.
     for wing_section_num in range(num_wing_sections):
@@ -191,12 +191,7 @@ def mesh_wing(wing):
 
         # Get the transposed mean camber line coordinates for the inner and outer
         # wing cross sections.
-        [
-            transpose_inner_mcl_up_vector,
-            transpose_inner_mcl_back_vector,
-            transpose_outer_mcl_up_vector,
-            transpose_outer_mcl_back_vector,
-        ] = get_transposed_mcl_coordinates(
+        transpose_mcl_vectors = get_transpose_mcl_vectors(
             inner_airfoil, outer_airfoil, chordwise_coordinates
         )
 
@@ -224,10 +219,7 @@ def mesh_wing(wing):
             wing_cross_sections_chord_lengths,
             wing_cross_sections_scaling_factors,
             wing_cross_sections_leading_edges,
-            transpose_inner_mcl_back_vector,
-            transpose_inner_mcl_up_vector,
-            transpose_outer_mcl_back_vector,
-            transpose_outer_mcl_up_vector,
+            transpose_mcl_vectors,
             spanwise_coordinates,
         )
 
@@ -251,42 +243,21 @@ def mesh_wing(wing):
             )
         )
 
-        # Initialize an empty array to hold this wing section's panels. The matrix is
-        # size M x N, where M and N are the number of chordwise and spanwise panels.
-        wing_section_panels = np.empty(
-            (num_chordwise_panels, num_spanwise_panels), dtype=object
+        # Get this wing section's panels.
+        wing_section_panels = get_wing_section_panels(
+            num_chordwise_panels=num_chordwise_panels,
+            num_spanwise_panels=num_spanwise_panels,
+            front_left_vertices=front_inner_vertices,
+            front_right_vertices=front_outer_vertices,
+            back_left_vertices=back_inner_vertices,
+            back_right_vertices=back_outer_vertices,
+            is_trailing_edge=wing_section_is_trailing_edge,
+            is_leading_edge=wing_section_is_leading_edge,
         )
-
-        # Loop through the empty panels matrix and create a new panel object in each
-        # slot.
-        for chordwise_position in range(num_chordwise_panels):
-            for spanwise_position in range(num_spanwise_panels):
-                wing_section_panels[
-                    chordwise_position, spanwise_position
-                ] = panel.Panel(
-                    front_left_vertex=front_inner_vertices[
-                        chordwise_position, spanwise_position
-                    ],
-                    front_right_vertex=front_outer_vertices[
-                        chordwise_position, spanwise_position
-                    ],
-                    back_left_vertex=back_inner_vertices[
-                        chordwise_position, spanwise_position
-                    ],
-                    back_right_vertex=back_outer_vertices[
-                        chordwise_position, spanwise_position
-                    ],
-                    is_trailing_edge=wing_section_is_trailing_edge[
-                        chordwise_position, spanwise_position
-                    ],
-                    is_leading_edge=wing_section_is_leading_edge[
-                        chordwise_position, spanwise_position
-                    ],
-                )
 
         # This wing section's panel matrix is stacked horizontally, to the right of the
         # wing's panel matrix.
-        panels = np.hstack((panels, wing_section_panels))
+        wing_panels = np.hstack((wing_panels, wing_section_panels))
 
         # Handle symmetry.
         if wing.symmetric:
@@ -322,12 +293,7 @@ def mesh_wing(wing):
 
             # Get the transposed mean camber line coordinates for the inner and outer
             # wing cross sections.
-            [
-                transpose_inner_mcl_up_vector,
-                transpose_inner_mcl_back_vector,
-                transpose_outer_mcl_up_vector,
-                transpose_outer_mcl_back_vector,
-            ] = get_transposed_mcl_coordinates(
+            transpose_mcl_vectors = get_transpose_mcl_vectors(
                 inner_airfoil, outer_airfoil, chordwise_coordinates
             )
 
@@ -344,10 +310,7 @@ def mesh_wing(wing):
                 wing_cross_sections_chord_lengths,
                 wing_cross_sections_scaling_factors,
                 wing_cross_sections_leading_edges,
-                transpose_inner_mcl_back_vector,
-                transpose_inner_mcl_up_vector,
-                transpose_outer_mcl_back_vector,
-                transpose_outer_mcl_up_vector,
+                transpose_mcl_vectors,
                 spanwise_coordinates,
             )
 
@@ -375,56 +338,41 @@ def mesh_wing(wing):
                 )
             )
 
-            # Initialize an empty array to hold this wing section's panels. The
-            # matrix is size M x N, where M and N are the number of chordwise and
-            # spanwise panels.
-            wing_section_panels = np.empty(
-                (num_chordwise_panels, num_spanwise_panels), dtype=object
+            # Reflect the vertices across the XZ plane.
+            front_inner_vertices_reflected = functions.reflect_over_xz_plane(
+                front_inner_vertices
+            )
+            front_outer_vertices_reflected = functions.reflect_over_xz_plane(
+                front_outer_vertices
+            )
+            back_inner_vertices_reflected = functions.reflect_over_xz_plane(
+                back_inner_vertices
+            )
+            back_outer_vertices_reflected = functions.reflect_over_xz_plane(
+                back_outer_vertices
             )
 
-            # Loop through the empty panels matrix and create a new panel object in
-            # each slot.
-            for chordwise_position in range(num_chordwise_panels):
-                for spanwise_position in range(num_spanwise_panels):
-                    # Reflect the vertices to create the reflected wing for the
-                    # symmetric case.
-                    front_inner_vertices_reflected = functions.reflect_over_xz_plane(
-                        front_inner_vertices[chordwise_position, spanwise_position]
-                    )
-                    front_outer_vertices_reflected = functions.reflect_over_xz_plane(
-                        front_outer_vertices[chordwise_position, spanwise_position]
-                    )
-                    back_inner_vertices_reflected = functions.reflect_over_xz_plane(
-                        back_inner_vertices[chordwise_position, spanwise_position]
-                    )
-                    back_outer_vertices_reflected = functions.reflect_over_xz_plane(
-                        back_outer_vertices[chordwise_position, spanwise_position]
-                    )
-
-                    wing_section_panels[
-                        chordwise_position, spanwise_position
-                    ] = panel.Panel(
-                        front_left_vertex=front_outer_vertices_reflected,
-                        front_right_vertex=front_inner_vertices_reflected,
-                        back_left_vertex=back_outer_vertices_reflected,
-                        back_right_vertex=back_inner_vertices_reflected,
-                        is_trailing_edge=wing_section_is_trailing_edge[
-                            chordwise_position, spanwise_position
-                        ],
-                        is_leading_edge=wing_section_is_leading_edge[
-                            chordwise_position, spanwise_position
-                        ],
-                    )
+            # Get the reflected wing section's panels.
+            wing_section_panels = get_wing_section_panels(
+                num_chordwise_panels=num_chordwise_panels,
+                num_spanwise_panels=num_spanwise_panels,
+                front_left_vertices=front_outer_vertices_reflected,
+                front_right_vertices=front_inner_vertices_reflected,
+                back_left_vertices=back_outer_vertices_reflected,
+                back_right_vertices=back_inner_vertices_reflected,
+                is_trailing_edge=wing_section_is_trailing_edge,
+                is_leading_edge=wing_section_is_leading_edge,
+            )
 
             # This wing section's panel matrix is stacked horizontally, to the left
             # of the wing's panel matrix.
-            panels = np.hstack((np.flip(wing_section_panels, axis=1), panels))
+            wing_panels = np.hstack((np.flip(wing_section_panels, axis=1), wing_panels))
 
     # Iterate through the panels and populate their left and right edge flags. Also
     # populate their local position attributes.
     for chordwise_position in range(wing.num_chordwise_panels):
         for spanwise_position in range(wing.num_spanwise_panels):
-            this_panel = panels[chordwise_position, spanwise_position]
+            this_panel = wing_panels[chordwise_position, spanwise_position]
             this_panel.local_chordwise_position = chordwise_position
             this_panel.local_spanwise_position = spanwise_position
             if spanwise_position == 0:
@@ -437,7 +385,7 @@ def mesh_wing(wing):
                 this_panel.is_right_edge = False
 
     # Populate the wing's panels attribute.
-    wing.panels = panels
+    wing.panels = wing_panels
 
 
 # ToDo: Document the following function.
@@ -491,27 +439,28 @@ def get_panel_vertices(
     wing_cross_sections_chord_lengths,
     wing_cross_sections_scaling_factors,
     wing_cross_sections_leading_edges,
-    transpose_inner_mcl_back_vector,
-    transpose_inner_mcl_up_vector,
-    transpose_outer_mcl_back_vector,
-    transpose_outer_mcl_up_vector,
+    transpose_mcl_vectors,
     spanwise_coordinates,
 ):
     """
 
     :param inner_wing_cross_section_num:
     :param wing_cross_sections_local_back_unit_vectors:
-    :param transpose_inner_mcl_back_vector:
-    :param wing_cross_sections_chord_lengths:
     :param wing_cross_sections_local_up_unit_vectors:
-    :param transpose_inner_mcl_up_vector:
+    :param wing_cross_sections_chord_lengths:
     :param wing_cross_sections_scaling_factors:
-    :param transpose_outer_mcl_back_vector:
-    :param transpose_outer_mcl_up_vector:
     :param wing_cross_sections_leading_edges:
+    :param transpose_mcl_vectors:
     :param spanwise_coordinates:
     :return:
     """
+    [
+        transpose_inner_mcl_up_vector,
+        transpose_inner_mcl_back_vector,
+        transpose_outer_mcl_up_vector,
+        transpose_outer_mcl_back_vector,
+    ] = transpose_mcl_vectors[:]
+
     # Convert the inner wing cross section's non dimensional local back airfoil frame
     # coordinates to meshed wing coordinates.
     inner_wing_cross_section_mcl_local_back = (
@@ -700,7 +649,7 @@ def get_normalized_projected_quarter_chords(
 
 
 # ToDo: Document this function.
-def get_transposed_mcl_coordinates(inner_airfoil, outer_airfoil, chordwise_coordinates):
+def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinates):
     """
 
     :param inner_airfoil:
@@ -735,3 +684,58 @@ def get_transposed_mcl_coordinates(inner_airfoil, outer_airfoil, chordwise_coord
         transpose_outer_mcl_up_vector,
         transpose_outer_mcl_back_vector,
     ]
+
+
+# ToDo: Document this function.
+def get_wing_section_panels(
+    num_chordwise_panels,
+    num_spanwise_panels,
+    front_left_vertices,
+    front_right_vertices,
+    back_left_vertices,
+    back_right_vertices,
+    is_trailing_edge,
+    is_leading_edge,
+):
+    """
+
+    :param num_chordwise_panels:
+    :param num_spanwise_panels:
+    :param front_left_vertices:
+    :param front_right_vertices:
+    :param back_left_vertices:
+    :param back_right_vertices:
+    :param is_trailing_edge:
+    :param is_leading_edge:
+    :return:
+    """
+    # Initialize an empty array to hold the wing section's panels. The matrix is
+    # size M x N, where M and N are the number of chordwise and spanwise panels.
+    wing_section_panels = np.empty(
+        (num_chordwise_panels, num_spanwise_panels), dtype=object
+    )
+
+    # Loop through the empty panels matrix and create a new panel object in each
+    # slot.
+    for chordwise_position in range(num_chordwise_panels):
+        for spanwise_position in range(num_spanwise_panels):
+            wing_section_panels[chordwise_position, spanwise_position] = panel.Panel(
+                front_left_vertex=front_left_vertices[
+                    chordwise_position, spanwise_position
+                ],
+                front_right_vertex=front_right_vertices[
+                    chordwise_position, spanwise_position
+                ],
+                back_left_vertex=back_left_vertices[
+                    chordwise_position, spanwise_position
+                ],
+                back_right_vertex=back_right_vertices[
+                    chordwise_position, spanwise_position
+                ],
+                is_trailing_edge=is_trailing_edge[
+                    chordwise_position, spanwise_position
+                ],
+                is_leading_edge=is_leading_edge[chordwise_position, spanwise_position],
+            )
+
+    return wing_section_panels

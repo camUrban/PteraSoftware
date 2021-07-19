@@ -242,7 +242,9 @@ class Wing:
         self.x_le = x_le
         self.y_le = y_le
         self.z_le = z_le
-        self.xyz_le = np.array([float(self.x_le), float(self.y_le), float(self.z_le)])
+        self.leading_edge = np.array(
+            [float(self.x_le), float(self.y_le), float(self.z_le)]
+        )
 
         # If wing_cross_sections is set to None, set it to an empty list.
         if wing_cross_sections is None:
@@ -330,8 +332,8 @@ class Wing:
         # Calculate the span (y-distance between the root and the tip) of the entire
         # wing.
         span = (
-            self.wing_cross_sections[-1].xyz_le[1]
-            - self.wing_cross_sections[0].xyz_le[1]
+            self.wing_cross_sections[-1].leading_edge[1]
+            - self.wing_cross_sections[0].leading_edge[1]
         )
 
         # If the wing is symmetric, multiply the span by two.
@@ -433,7 +435,7 @@ class WingCrossSection:
         self.control_surface_deflection = float(control_surface_deflection)
         self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
-        self.xyz_le = np.array([x_le, y_le, z_le])
+        self.leading_edge = np.array([x_le, y_le, z_le])
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
@@ -447,26 +449,28 @@ class WingCrossSection:
         if self.spanwise_spacing not in ["cosine", "uniform"]:
             raise Exception("Invalid value of spanwise_spacing!")
 
-    def xyz_te(self):
+    def trailing_edge(self):
         """This method calculates the coordinates of the trailing edge of the cross
         section.
 
-        :return xyz_te: array
+        :return trailing_edge: array
             This is a 1D array that contains the coordinates of the cross section's
             trailing edge.
         """
 
         # Find the rotation matrix given the cross section's twist.
-        rot = functions.angle_axis_rotation_matrix(
+        rotation_matrix = functions.angle_axis_rotation_matrix(
             self.twist * np.pi / 180, np.array([0, 1, 0])
         )
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
         # trailing edge coordinates.
-        xyz_te = self.xyz_le + rot @ np.array([self.chord, 0.0, 0.0])
+        trailing_edge = self.leading_edge + rotation_matrix @ np.array(
+            [self.chord, 0.0, 0.0]
+        )
 
         # Return the 1D array that contains the trailing edge's coordinates.
-        return xyz_te
+        return trailing_edge
 
 
 class Airfoil:
@@ -605,9 +609,8 @@ class Airfoil:
                     # Set the number of points per side.
                     n_points_per_side = 100
 
-                    # Make uncambered coordinates.
-                    # Generate cosine-spaced points.
-                    x_t = functions.cosspace(n_points=n_points_per_side, endpoint=True)
+                    # Make uncambered coordinates and generate cosine-spaced points.
+                    x_t = functions.cosspace(0, 1, n_points_per_side)
                     y_t = (
                         5
                         * thickness
@@ -906,10 +909,7 @@ class Airfoil:
         lower_original_coordinates = self.lower_coordinates()
 
         # Generate a cosine-spaced list of points from 0 to 1.
-        cosine_spaced_x_values = functions.cosspace(
-            n_points=n_points_per_side,
-            endpoint=True,
-        )
+        cosine_spaced_x_values = functions.cosspace(0, 1, n_points_per_side)
 
         # Create interpolated functions for the x and y values of the upper and lower
         # surfaces as a function of the

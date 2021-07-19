@@ -260,3 +260,117 @@ def convert_logging_level_name_to_value(name):
         return logging_levels[name]
     except KeyError:
         raise Exception("The name of the logging level provided is not a valid option.")
+
+
+# ToDo: Update this function's documentation.
+def process_steady_solver_forces(
+    steady_solver, near_field_forces_geometry_axes, near_field_moments_geometry_axes
+):
+    """
+
+    :param steady_solver:
+    :param near_field_forces_geometry_axes:
+    :param near_field_moments_geometry_axes:
+    :return:
+    """
+    # Initialize a variable to hold the global panel position.
+    global_panel_position = 0
+
+    # Iterate through this solver's panels.
+    for panel in steady_solver.panels:
+        # Update the force and moment on this panel.
+        panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
+            global_panel_position, :
+        ]
+        panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
+            global_panel_position, :
+        ]
+
+        # Update the pressure on this panel.
+        panel.update_pressure()
+
+        # Increment the global panel position.
+        global_panel_position += 1
+
+    # Sum up the near field forces and moments on every panel to find the total
+    # force and moment on the geometry.
+    total_near_field_force_geometry_axes = np.sum(
+        near_field_forces_geometry_axes, axis=0
+    )
+    total_near_field_moment_geometry_axes = np.sum(
+        near_field_moments_geometry_axes, axis=0
+    )
+
+    # Find the total near field force in wind axes from the rotation matrix and
+    # the total near field force in geometry axes.
+    steady_solver.airplane.total_near_field_force_wind_axes = (
+        np.transpose(
+            steady_solver.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        )
+        @ total_near_field_force_geometry_axes
+    )
+
+    # Find the total near field moment in wind axes from the rotation matrix and
+    # the total near field moment in geometry axes.
+    steady_solver.airplane.total_near_field_moment_wind_axes = (
+        np.transpose(
+            steady_solver.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        )
+        @ total_near_field_moment_geometry_axes
+    )
+
+    # Calculate the current_airplane's induced drag coefficient
+    induced_drag_coefficient = (
+        -steady_solver.airplane.total_near_field_force_wind_axes[0]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's side force coefficient.
+    side_force_coefficient = (
+        steady_solver.airplane.total_near_field_force_wind_axes[1]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's lift coefficient.
+    lift_coefficient = (
+        -steady_solver.airplane.total_near_field_force_wind_axes[2]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's rolling moment coefficient.
+    rolling_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[0]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.b_ref
+    )
+
+    # Calculate the current_airplane's pitching moment coefficient.
+    pitching_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[1]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.c_ref
+    )
+
+    # Calculate the current_airplane's yawing moment coefficient.
+    yawing_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[2]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.b_ref
+    )
+
+    steady_solver.airplane.total_near_field_force_coefficients_wind_axes = np.array(
+        [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
+    )
+    steady_solver.airplane.total_near_field_moment_coefficients_wind_axes = np.array(
+        [
+            rolling_moment_coefficient,
+            pitching_moment_coefficient,
+            yawing_moment_coefficient,
+        ]
+    )

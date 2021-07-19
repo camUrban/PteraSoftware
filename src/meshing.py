@@ -303,126 +303,26 @@ def mesh_wing(wing):
                 "This wing cross section's spanwise_spacing variable is invalid!"
             )
 
-        # ToDo: Break.
-        # Convert the inner wing cross section's non dimensional local back airfoil frame
-        # coordinates to meshed wing coordinates.
-        inner_wing_cross_section_mcl_local_back = (
-            wing_cross_section_local_back_norm[inner_wing_cross_section_num, :]
-            * inner_wing_cross_section_mcl_nondim_local_back_column_vector
-            * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
+        # Get the panel vertices.
+        [
+            front_inner_vertices,
+            front_outer_vertices,
+            back_inner_vertices,
+            back_outer_vertices,
+        ] = get_panel_vertices(
+            wing_cross_section_local_back_norm,
+            inner_wing_cross_section_num,
+            inner_wing_cross_section_mcl_nondim_local_back_column_vector,
+            wing_cross_section_chord_lengths,
+            wing_cross_section_local_up,
+            inner_wing_cross_section_mcl_nondim_local_up_column_vector,
+            wing_cross_section_scaling_factors,
+            outer_wing_cross_section_num,
+            outer_wing_cross_section_mcl_nondim_local_back_column_vector,
+            outer_wing_cross_section_mcl_nondim_local_up_column_vector,
+            wing_cross_section_xyz_le,
+            nondim_spanwise_coordinates,
         )
-
-        # Convert the inner wing cross section's non dimensional local up airfoil frame
-        # coordinates to meshed wing coordinates.
-        inner_wing_cross_section_mcl_local_up = (
-            wing_cross_section_local_up[inner_wing_cross_section_num, :]
-            * inner_wing_cross_section_mcl_nondim_local_up_column_vector
-            * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
-            * wing_cross_section_scaling_factors[inner_wing_cross_section_num]
-        )
-
-        # Convert the outer wing cross section's non dimensional local back airfoil frame
-        # coordinates to meshed wing coordinates.
-        outer_wing_cross_section_mcl_local_back = (
-            wing_cross_section_local_back_norm[outer_wing_cross_section_num, :]
-            * outer_wing_cross_section_mcl_nondim_local_back_column_vector
-            * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
-        )
-
-        # Convert the outer wing cross section's non dimensional local up airfoil frame
-        # coordinates to meshed wing coordinates.
-        outer_wing_cross_section_mcl_local_up = (
-            wing_cross_section_local_up[outer_wing_cross_section_num, :]
-            * outer_wing_cross_section_mcl_nondim_local_up_column_vector
-            * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
-            * wing_cross_section_scaling_factors[outer_wing_cross_section_num]
-        )
-
-        # Convert the inner wing cross section's meshed wing coordinates to absolute
-        # coordinates. This is size M x 3, where M is the number of chordwise points.
-        inner_wing_cross_section_mcl = (
-            wing_cross_section_xyz_le[inner_wing_cross_section_num, :]
-            + inner_wing_cross_section_mcl_local_back
-            + inner_wing_cross_section_mcl_local_up
-        )
-
-        # Convert the outer wing cross section's meshed wing coordinates to absolute
-        # coordinates. This is size M x 3, where M is the number of chordwise points.
-        outer_wing_cross_section_mcl = (
-            wing_cross_section_xyz_le[outer_wing_cross_section_num, :]
-            + outer_wing_cross_section_mcl_local_back
-            + outer_wing_cross_section_mcl_local_up
-        )
-
-        # Make section_mcl_coordinates: M x N x 3 array of mean camberline
-        # coordinates. The first index is chordwise point number, second index is
-        # spanwise point number, third is the x, y, and z coordinates. M is the
-        # number of chordwise points. N is the number of spanwise points. Put a
-        # reversed version (from 1 to 0) of the non dimensional spanwise coordinates
-        # in a row vector. This is size 1 x N, where N is the number of spanwise
-        # points.
-        reversed_nondim_spanwise_coordinates_row_vector = np.expand_dims(
-            (1 - nondim_spanwise_coordinates), 0
-        )
-
-        # Convert the reversed non dimensional spanwise coordinate row vector (from 1
-        # to 0) to a matrix. This is size 1 x N x 1, where N is the number of
-        # spanwise points.
-        reversed_nondim_spanwise_coordinates_matrix = np.expand_dims(
-            reversed_nondim_spanwise_coordinates_row_vector, 2
-        )
-
-        # Convert the inner and outer wing cross section's mean camberline coordinates
-        # column vectors to matrices. These are size M x 1 x 3, where M is the number
-        # of chordwise points.
-        inner_wing_cross_section_mcl_matrix = np.expand_dims(
-            inner_wing_cross_section_mcl, 1
-        )
-        outer_wing_cross_section_mcl_matrix = np.expand_dims(
-            outer_wing_cross_section_mcl, 1
-        )
-
-        # Put the non dimensional spanwise coordinates (from 0 to 1) in a row vector.
-        # This is size 1 x N, where N is the number of spanwise points.
-        nondim_spanwise_coordinates_row_vector = np.expand_dims(
-            nondim_spanwise_coordinates, 0
-        )
-
-        # Convert the non dimensional spanwise coordinate row vector (from to 0 to 1)
-        # to a matrix. This is size 1 x N x 1, where N is the number of spanwise
-        # points.
-        nondim_spanwise_coordinates_matrix = np.expand_dims(
-            nondim_spanwise_coordinates_row_vector, 2
-        )
-
-        # Linearly interpolate between inner and outer wing cross sections. This uses
-        # the following equation:
-        #
-        # f(a, b, i) = i * a + (1 - i) * b
-        #
-        # "a" is an N x 3 array of the coordinates points along the outer wing cross
-        # section's mean camber line.
-        #
-        # "b" is an N x 3 array of the coordinates of points along the inner wing
-        # cross section's mean camber line.
-        #
-        # "i" is a 1D array (or vector) of length M that holds the nondimensionalized
-        # spanwise panel spacing from 0 to 1.
-        #
-        # This produces a M x N x 3 array where each slot holds the coordinates of a
-        # point on the surface between the inner and outer wing cross sections.
-        wing_section_mcl_vertices = (
-            reversed_nondim_spanwise_coordinates_matrix
-            * inner_wing_cross_section_mcl_matrix
-            + nondim_spanwise_coordinates_matrix * outer_wing_cross_section_mcl_matrix
-        )
-
-        # Compute the corners of each panel.
-        front_inner_vertices = wing_section_mcl_vertices[:-1, :-1, :]
-        front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
-        back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
-        back_outer_vertices = wing_section_mcl_vertices[1:, 1:, :]
-        # ToDo: Break.
 
         # Compute a matrix that is M x N, where M and N are the number of chordwise
         # and spanwise panels. The values are either 1 if the panel at that location
@@ -544,130 +444,26 @@ def mesh_wing(wing):
                 np.expand_dims(outer_wing_cross_section_mcl_nondim[:, 0], 1)
             )
 
-            # ToDo: Break.
-            # Convert the inner wing cross section's non dimensional local back
-            # airfoil frame coordinates to meshed wing coordinates.
-            inner_wing_cross_section_mcl_local_back = (
-                wing_cross_section_local_back_norm[inner_wing_cross_section_num, :]
-                * inner_wing_cross_section_mcl_nondim_local_back_column_vector
-                * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
+            # Get the panel vertices.
+            [
+                front_inner_vertices,
+                front_outer_vertices,
+                back_inner_vertices,
+                back_outer_vertices,
+            ] = get_panel_vertices(
+                wing_cross_section_local_back_norm,
+                inner_wing_cross_section_num,
+                inner_wing_cross_section_mcl_nondim_local_back_column_vector,
+                wing_cross_section_chord_lengths,
+                wing_cross_section_local_up,
+                inner_wing_cross_section_mcl_nondim_local_up_column_vector,
+                wing_cross_section_scaling_factors,
+                outer_wing_cross_section_num,
+                outer_wing_cross_section_mcl_nondim_local_back_column_vector,
+                outer_wing_cross_section_mcl_nondim_local_up_column_vector,
+                wing_cross_section_xyz_le,
+                nondim_spanwise_coordinates,
             )
-
-            # Convert the inner wing cross section's non dimensional local up airfoil
-            # frame coordinates to meshed wing coordinates.
-            inner_wing_cross_section_mcl_local_up = (
-                wing_cross_section_local_up[inner_wing_cross_section_num, :]
-                * inner_wing_cross_section_mcl_nondim_local_up_column_vector
-                * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
-                * wing_cross_section_scaling_factors[inner_wing_cross_section_num]
-            )
-
-            # Convert the outer wing cross section's non dimensional local back
-            # airfoil frame coordinates to meshed wing coordinates.
-            outer_wing_cross_section_mcl_local_back = (
-                wing_cross_section_local_back_norm[outer_wing_cross_section_num, :]
-                * outer_wing_cross_section_mcl_nondim_local_back_column_vector
-                * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
-            )
-
-            # Convert the outer wing cross section's non dimensional local up airfoil
-            # frame coordinates to meshed wing coordinates.
-            outer_wing_cross_section_mcl_local_up = (
-                wing_cross_section_local_up[outer_wing_cross_section_num, :]
-                * outer_wing_cross_section_mcl_nondim_local_up_column_vector
-                * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
-                * wing_cross_section_scaling_factors[outer_wing_cross_section_num]
-            )
-
-            # Convert the inner wing cross section's meshed wing coordinates to
-            # absolute coordinates. This is size M x 3, where M is the number of
-            # chordwise points.
-            inner_wing_cross_section_mcl = (
-                wing_cross_section_xyz_le[inner_wing_cross_section_num, :]
-                + inner_wing_cross_section_mcl_local_back
-                + inner_wing_cross_section_mcl_local_up
-            )
-
-            # Convert the outer wing cross section's meshed wing coordinates to
-            # absolute coordinates. This is size M x 3, where M is the number of
-            # chordwise points.
-            outer_wing_cross_section_mcl = (
-                wing_cross_section_xyz_le[outer_wing_cross_section_num, :]
-                + outer_wing_cross_section_mcl_local_back
-                + outer_wing_cross_section_mcl_local_up
-            )
-
-            # Make section_mcl_coordinates: M x N x 3 array of mean camberline
-            # coordinates. First index is chordwise point number, second index is
-            # spanwise point number, third are the x, y, and z coordinates. M is the
-            # number of chordwise points. N is the number of spanwise points. Put a
-            # reversed version (from 1 to 0) of the non dimensional spanwise
-            # coordinates in a row vector. This is size 1 x N, where N is the number
-            # of spanwise points.
-            reversed_nondim_spanwise_coordinates_row_vector = np.expand_dims(
-                (1 - nondim_spanwise_coordinates), 0
-            )
-
-            # Convert the reversed non dimensional spanwise coordinate row vector (
-            # from 1 to 0) to a matrix. This is size 1 x N x 1, where N is the number
-            # of spanwise points.
-            reversed_nondim_spanwise_coordinates_matrix = np.expand_dims(
-                reversed_nondim_spanwise_coordinates_row_vector, 2
-            )
-
-            # Convert the inner and outer wing cross section's mean camberline coordinates
-            # column vectors to matrices. These are size M x 1 x 3, where M is the
-            # number of chordwise points.
-            inner_wing_cross_section_mcl_matrix = np.expand_dims(
-                inner_wing_cross_section_mcl, 1
-            )
-            outer_wing_cross_section_mcl_matrix = np.expand_dims(
-                outer_wing_cross_section_mcl, 1
-            )
-
-            # Put the non dimensional spanwise coordinates (from 0 to 1) in a row
-            # vector. This is size 1 x N, where N is the number of spanwise points.
-            nondim_spanwise_coordinates_row_vector = np.expand_dims(
-                nondim_spanwise_coordinates, 0
-            )
-
-            # Convert the non dimensional spanwise coordinate row vector (from to 0
-            # to 1) to a matrix. This is size 1 x N x 1, where N is the number of
-            # spanwise points.
-            nondim_spanwise_coordinates_matrix = np.expand_dims(
-                nondim_spanwise_coordinates_row_vector, 2
-            )
-
-            # Linearly interpolate between inner and outer wing cross sections. This
-            # uses the following equation.
-            #
-            # f(a, b, i) = i * a + (1 - i) * b
-            #
-            # "a" is an N x 3 array of the coordinates points along the outer wing
-            # cross section's mean camber line.
-            #
-            # "b" is an N x 3 array of the coordinates of points along the inner wing
-            # cross section's mean camber line.
-            #
-            # "i" is a 1D array (or vector) of length M that holds the
-            # nondimensionalized spanwise panel spacing from 0 to 1.
-            #
-            # This produces a M x N x 3 array where each slot holds the coordinates
-            # of a point on the surface between the inner and outer wing cross
-            # sections.
-            wing_section_mcl_vertices = (
-                reversed_nondim_spanwise_coordinates_matrix
-                * inner_wing_cross_section_mcl_matrix
-                + nondim_spanwise_coordinates_matrix
-                * outer_wing_cross_section_mcl_matrix
-            )
-
-            # Compute the corners of each panel.
-            front_inner_vertices = wing_section_mcl_vertices[:-1, :-1, :]
-            front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
-            back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
-            back_outer_vertices = wing_section_mcl_vertices[1:, 1:, :]
-            # ToDo: Break.
 
             # Compute a matrix that is M x N, where M and N are the number of
             # chordwise and spanwise panels. The values are either 1 if the panel at
@@ -799,3 +595,161 @@ def get_wing_cross_section_scaling_factors(
         wing_cross_section_scaling_factors[i] = this_scaling_factor
 
     return wing_cross_section_scaling_factors
+
+
+# ToDo: Document the following function.
+def get_panel_vertices(
+    wing_cross_section_local_back_norm,
+    inner_wing_cross_section_num,
+    inner_wing_cross_section_mcl_nondim_local_back_column_vector,
+    wing_cross_section_chord_lengths,
+    wing_cross_section_local_up,
+    inner_wing_cross_section_mcl_nondim_local_up_column_vector,
+    wing_cross_section_scaling_factors,
+    outer_wing_cross_section_num,
+    outer_wing_cross_section_mcl_nondim_local_back_column_vector,
+    outer_wing_cross_section_mcl_nondim_local_up_column_vector,
+    wing_cross_section_xyz_le,
+    nondim_spanwise_coordinates,
+):
+    """
+
+    :param wing_cross_section_local_back_norm:
+    :param inner_wing_cross_section_num:
+    :param inner_wing_cross_section_mcl_nondim_local_back_column_vector:
+    :param wing_cross_section_chord_lengths:
+    :param wing_cross_section_local_up:
+    :param inner_wing_cross_section_mcl_nondim_local_up_column_vector:
+    :param wing_cross_section_scaling_factors:
+    :param outer_wing_cross_section_num:
+    :param outer_wing_cross_section_mcl_nondim_local_back_column_vector:
+    :param outer_wing_cross_section_mcl_nondim_local_up_column_vector:
+    :param wing_cross_section_xyz_le:
+    :param nondim_spanwise_coordinates:
+    :return:
+    """
+    # Convert the inner wing cross section's non dimensional local back airfoil frame
+    # coordinates to meshed wing coordinates.
+    inner_wing_cross_section_mcl_local_back = (
+        wing_cross_section_local_back_norm[inner_wing_cross_section_num, :]
+        * inner_wing_cross_section_mcl_nondim_local_back_column_vector
+        * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
+    )
+
+    # Convert the inner wing cross section's non dimensional local up airfoil frame
+    # coordinates to meshed wing coordinates.
+    inner_wing_cross_section_mcl_local_up = (
+        wing_cross_section_local_up[inner_wing_cross_section_num, :]
+        * inner_wing_cross_section_mcl_nondim_local_up_column_vector
+        * wing_cross_section_chord_lengths[inner_wing_cross_section_num]
+        * wing_cross_section_scaling_factors[inner_wing_cross_section_num]
+    )
+
+    # Convert the outer wing cross section's non dimensional local back airfoil frame
+    # coordinates to meshed wing coordinates.
+    outer_wing_cross_section_mcl_local_back = (
+        wing_cross_section_local_back_norm[outer_wing_cross_section_num, :]
+        * outer_wing_cross_section_mcl_nondim_local_back_column_vector
+        * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
+    )
+
+    # Convert the outer wing cross section's non dimensional local up airfoil frame
+    # coordinates to meshed wing coordinates.
+    outer_wing_cross_section_mcl_local_up = (
+        wing_cross_section_local_up[outer_wing_cross_section_num, :]
+        * outer_wing_cross_section_mcl_nondim_local_up_column_vector
+        * wing_cross_section_chord_lengths[outer_wing_cross_section_num]
+        * wing_cross_section_scaling_factors[outer_wing_cross_section_num]
+    )
+
+    # Convert the inner wing cross section's meshed wing coordinates to absolute
+    # coordinates. This is size M x 3, where M is the number of chordwise points.
+    inner_wing_cross_section_mcl = (
+        wing_cross_section_xyz_le[inner_wing_cross_section_num, :]
+        + inner_wing_cross_section_mcl_local_back
+        + inner_wing_cross_section_mcl_local_up
+    )
+
+    # Convert the outer wing cross section's meshed wing coordinates to absolute
+    # coordinates. This is size M x 3, where M is the number of chordwise points.
+    outer_wing_cross_section_mcl = (
+        wing_cross_section_xyz_le[outer_wing_cross_section_num, :]
+        + outer_wing_cross_section_mcl_local_back
+        + outer_wing_cross_section_mcl_local_up
+    )
+
+    # Make section_mcl_coordinates: M x N x 3 array of mean camberline
+    # coordinates. The first index is chordwise point number, second index is
+    # spanwise point number, third is the x, y, and z coordinates. M is the
+    # number of chordwise points. N is the number of spanwise points. Put a
+    # reversed version (from 1 to 0) of the non dimensional spanwise coordinates
+    # in a row vector. This is size 1 x N, where N is the number of spanwise
+    # points.
+    reversed_nondim_spanwise_coordinates_row_vector = np.expand_dims(
+        (1 - nondim_spanwise_coordinates), 0
+    )
+
+    # Convert the reversed non dimensional spanwise coordinate row vector (from 1
+    # to 0) to a matrix. This is size 1 x N x 1, where N is the number of
+    # spanwise points.
+    reversed_nondim_spanwise_coordinates_matrix = np.expand_dims(
+        reversed_nondim_spanwise_coordinates_row_vector, 2
+    )
+
+    # Convert the inner and outer wing cross section's mean camberline coordinates
+    # column vectors to matrices. These are size M x 1 x 3, where M is the number
+    # of chordwise points.
+    inner_wing_cross_section_mcl_matrix = np.expand_dims(
+        inner_wing_cross_section_mcl, 1
+    )
+    outer_wing_cross_section_mcl_matrix = np.expand_dims(
+        outer_wing_cross_section_mcl, 1
+    )
+
+    # Put the non dimensional spanwise coordinates (from 0 to 1) in a row vector.
+    # This is size 1 x N, where N is the number of spanwise points.
+    nondim_spanwise_coordinates_row_vector = np.expand_dims(
+        nondim_spanwise_coordinates, 0
+    )
+
+    # Convert the non dimensional spanwise coordinate row vector (from to 0 to 1)
+    # to a matrix. This is size 1 x N x 1, where N is the number of spanwise
+    # points.
+    nondim_spanwise_coordinates_matrix = np.expand_dims(
+        nondim_spanwise_coordinates_row_vector, 2
+    )
+
+    # Linearly interpolate between inner and outer wing cross sections. This uses
+    # the following equation:
+    #
+    # f(a, b, i) = i * a + (1 - i) * b
+    #
+    # "a" is an N x 3 array of the coordinates points along the outer wing cross
+    # section's mean camber line.
+    #
+    # "b" is an N x 3 array of the coordinates of points along the inner wing
+    # cross section's mean camber line.
+    #
+    # "i" is a 1D array (or vector) of length M that holds the nondimensionalized
+    # spanwise panel spacing from 0 to 1.
+    #
+    # This produces a M x N x 3 array where each slot holds the coordinates of a
+    # point on the surface between the inner and outer wing cross sections.
+    wing_section_mcl_vertices = (
+        reversed_nondim_spanwise_coordinates_matrix
+        * inner_wing_cross_section_mcl_matrix
+        + nondim_spanwise_coordinates_matrix * outer_wing_cross_section_mcl_matrix
+    )
+
+    # Compute the corners of each panel.
+    front_inner_vertices = wing_section_mcl_vertices[:-1, :-1, :]
+    front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
+    back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
+    back_outer_vertices = wing_section_mcl_vertices[1:, 1:, :]
+
+    return [
+        front_inner_vertices,
+        front_outer_vertices,
+        back_inner_vertices,
+        back_outer_vertices,
+    ]

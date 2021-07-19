@@ -1357,7 +1357,6 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     :return values: 1D array of floats
         This is the resulting vector of sinusoidally spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1367,12 +1366,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1402,7 +1396,6 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     :return values: 1D array of floats
         This is the resulting vector of uniformly spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1412,12 +1405,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1457,7 +1445,6 @@ def oscillating_customspace(
     :return values: 1D array of floats
         This is the resulting vector of custom spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1467,12 +1454,7 @@ def oscillating_customspace(
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude

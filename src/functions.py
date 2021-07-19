@@ -6,8 +6,8 @@ from numba import njit
 
 
 def cosspace(
-    minimum=0.0,
-    maximum=1.0,
+    minimum,
+    maximum,
     n_points=50,
     endpoint=True,
 ):
@@ -20,12 +20,10 @@ def cosspace(
         Author:               Peter Sharpe
         Date of Retrieval:    04/28/2020
 
-    :param minimum: float, optional
-        This is the minimum value of the range of numbers you would like spaced. The
-        default is 0.0.
-    :param maximum: float, optional
-        This is the maximum value of the range of numbers you would like spaced. The
-        default is 1.0.
+    :param minimum: float
+        This is the minimum value of the range of numbers you would like spaced.
+    :param maximum: float
+        This is the maximum value of the range of numbers you would like spaced.
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
     :param endpoint: bool, optional

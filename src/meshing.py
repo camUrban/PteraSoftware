@@ -42,21 +42,9 @@ def mesh_wing(wing):
 
     # Get the chordwise coordinates.
     if wing.chordwise_spacing == "uniform":
-        nondim_chordwise_coordinates = np.linspace(
-            0,
-            1,
-            num_chordwise_coordinates,
-            endpoint=True,
-        )
-    elif wing.chordwise_spacing == "cosine":
-        nondim_chordwise_coordinates = functions.cosspace(
-            0,
-            1,
-            num_chordwise_coordinates,
-            endpoint=True,
-        )
+        chordwise_coordinates = np.linspace(0, 1, num_chordwise_coordinates)
     else:
-        raise Exception("Bad value of wing.chordwise_spacing!")
+        chordwise_coordinates = functions.cosspace(0, 1, num_chordwise_coordinates)
 
     # Initialize two empty 0 x 3 ndarrays to hold the corners of each wing cross
     # section. They will eventually be L x 3 ndarrays, where L is number of wing
@@ -251,10 +239,10 @@ def mesh_wing(wing):
         # Make the mean camber lines for each wing cross section. First index is point
         # number, second index is xyz.
         inner_wing_cross_section_mcl_nondim = inner_airfoil.get_downsampled_mcl(
-            nondim_chordwise_coordinates
+            chordwise_coordinates
         )
         outer_wing_cross_section_mcl_nondim = outer_airfoil.get_downsampled_mcl(
-            nondim_chordwise_coordinates
+            chordwise_coordinates
         )
 
         # Put the inner wing cross section's local up airfoil frame coordinates in a
@@ -287,21 +275,9 @@ def mesh_wing(wing):
 
         # Get the spanwise coordinates. This is based on the inner wing cross section.
         if inner_wing_cross_section.spanwise_spacing == "uniform":
-            nondim_spanwise_coordinates = np.linspace(
-                0,
-                1,
-                num_spanwise_coordinates,
-                endpoint=True,
-            )
-        elif inner_wing_cross_section.spanwise_spacing == "cosine":
-            nondim_spanwise_coordinates = functions.cosspace(
-                n_points=num_spanwise_coordinates,
-                endpoint=True,
-            )
+            spanwise_coordinates = np.linspace(0, 1, num_spanwise_coordinates)
         else:
-            raise Exception(
-                "This wing cross section's spanwise_spacing variable is invalid!"
-            )
+            spanwise_coordinates = functions.cosspace(0, 1, num_spanwise_coordinates)
 
         # Get the panel vertices.
         [
@@ -321,7 +297,7 @@ def mesh_wing(wing):
             outer_wing_cross_section_mcl_nondim_local_back_column_vector,
             outer_wing_cross_section_mcl_nondim_local_up_column_vector,
             wing_cross_section_xyz_le,
-            nondim_spanwise_coordinates,
+            spanwise_coordinates,
         )
 
         # Compute a matrix that is M x N, where M and N are the number of chordwise
@@ -414,10 +390,10 @@ def mesh_wing(wing):
             # Make the mean camber lines for each wing cross section. First index is
             # point number, second index is xyz.
             inner_wing_cross_section_mcl_nondim = inner_airfoil.get_downsampled_mcl(
-                nondim_chordwise_coordinates
+                chordwise_coordinates
             )
             outer_wing_cross_section_mcl_nondim = outer_airfoil.get_downsampled_mcl(
-                nondim_chordwise_coordinates
+                chordwise_coordinates
             )
 
             # Put the inner wing cross section's local up airfoil frame coordinates
@@ -462,7 +438,7 @@ def mesh_wing(wing):
                 outer_wing_cross_section_mcl_nondim_local_back_column_vector,
                 outer_wing_cross_section_mcl_nondim_local_up_column_vector,
                 wing_cross_section_xyz_le,
-                nondim_spanwise_coordinates,
+                spanwise_coordinates,
             )
 
             # Compute a matrix that is M x N, where M and N are the number of

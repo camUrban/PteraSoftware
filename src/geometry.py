@@ -237,7 +237,6 @@ class Wing:
             be set to "cosine" or "uniform".
             Cosine is highly recommended. The default is cosine.
         """
-
         # Initialize the name and the position of the wing's leading edge.
         self.name = name
         self.x_le = x_le
@@ -255,10 +254,13 @@ class Wing:
         self.num_chordwise_panels = num_chordwise_panels
         self.chordwise_spacing = chordwise_spacing
 
+        # Catch invalid values of chordwise_spacing.
+        if self.chordwise_spacing not in ["cosine", "uniform"]:
+            raise Exception("Invalid value of chordwise_spacing!")
+
         # Find the number of spanwise panels on the wing by adding each cross
-        # section's number of spanwise panels.
-        # Exclude the last cross section's number of spanwise panels as this is
-        # irrelevant. If the wing is symmetric,
+        # section's number of spanwise panels. Exclude the last cross section's
+        # number of spanwise panels as this is irrelevant. If the wing is symmetric,
         # multiple the summation by two.
         self.num_spanwise_panels = 0
         for cross_section in self.wing_cross_sections[:-1]:
@@ -266,13 +268,8 @@ class Wing:
         if self.symmetric:
             self.num_spanwise_panels *= 2
 
-        if self.symmetric:
-            if self.wing_cross_sections[0].y_le != 0:
-                raise Exception(
-                    "This wing is symmetric but its first wing cross section isn't on "
-                    "the XZ plane! This isn't allowed. Set the first wing cross "
-                    "section's y_le value to zero."
-                )
+        if self.symmetric and self.wing_cross_sections[0].y_le != 0:
+            raise Exception("Symmetric wing with root wing cross section off XZ plane!")
 
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
@@ -440,18 +437,15 @@ class WingCrossSection:
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
-            raise Exception(
-                "The chord length of this wing cross section needs to be greater than "
-                "zero meters!"
-            )
+            raise Exception("Invalid value of chord")
 
-        # Catch bad values of the control surface type.
-        if self.control_surface_type != "symmetric":
-            if self.control_surface_type != "asymmetric":
-                raise Exception(
-                    "The control surface type of this wing cross section needs to be "
-                    "either symmetric or asymmetric!"
-                )
+        # Catch invalid values of control_surface_type.
+        if self.control_surface_type not in ["symmetric", "asymmetric"]:
+            raise Exception("Invalid value of control_surface_type")
+
+        # Catch invalid values of spanwise_spacing.
+        if self.spanwise_spacing not in ["cosine", "uniform"]:
+            raise Exception("Invalid value of spanwise_spacing!")
 
     def xyz_te(self):
         """This method calculates the coordinates of the trailing edge of the cross
@@ -715,10 +709,10 @@ class Airfoil:
             self.coordinates = coordinates
             return
 
+        # If the airfoil was not a NACA 4-series and was not found in the
+        # database, throw an error.
         except FileNotFoundError:
-            # If the airfoil was not a NACA 4-series and was not found in the
-            # database, throw an error.
-            raise Exception("File was not found in airfoil database.")
+            raise Exception("Airfoil not in database!")
 
     def populate_mcl_coordinates(self):
         """This method creates a list of the airfoil's mean camber line coordinates.
@@ -961,10 +955,7 @@ class Airfoil:
         # Insure that the airfoil's deflection is not too high, which increases the
         # risk of self intersection.
         if deflection > 90 or deflection < -90:
-            raise Exception(
-                "The deflection of this airfoil is too high! Limit it to -90 degrees "
-                "to 90 degrees."
-            )
+            raise Exception("Invalid value for deflection!")
 
         # Make the rotation matrix for the given angle.
         sin_theta = np.sin(np.radians(-deflection))

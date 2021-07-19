@@ -65,107 +65,25 @@ def draw(
     else:
         airplane = solver.airplane
 
-    # Initialize empty ndarrays to hold the things to plot.
-    panel_vertices = np.empty((0, 3), dtype=int)
-    panel_faces = np.empty(0, dtype=int)
-    scalars = np.empty(0, dtype=int)
+    # Get the panel surfaces.
+    panel_surfaces = get_panel_surfaces(airplane)
 
-    # Initialize a variable to keep track of how many panels have been added thus far.
-    current_panel_num = 0
-
-    # Increment through the current airplane's wings.
-    for wing in airplane.wings:
-
-        # Unravel the wing's panel matrix and iterate through it.
-        panels = np.ravel(wing.panels)
-        for panel in panels:
-
-            # Stack this panel's vertices, faces, and scalars. Look through the
-            # PolyData documentation for more details.
-            panel_vertices_to_add = np.vstack(
-                (
-                    panel.front_left_vertex,
-                    panel.front_right_vertex,
-                    panel.back_right_vertex,
-                    panel.back_left_vertex,
-                )
-            )
-            panel_face_to_add = np.array(
-                [
-                    4,
-                    (current_panel_num * 4),
-                    (current_panel_num * 4) + 1,
-                    (current_panel_num * 4) + 2,
-                    (current_panel_num * 4) + 3,
-                ]
-            )
-
-            # Stack this panel's vertices, faces, and scalars with the array of all
-            # the vertices, faces, and scalars.
-            panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-            panel_faces = np.hstack((panel_faces, panel_face_to_add))
-
-            # If the user wants to plot the pressures, add the panel's delta pressure
-            # to the array of scalars.
-            if show_delta_pressures:
-                scalar_to_add = panel.delta_pressure
-                scalars = np.hstack((scalars, scalar_to_add))
-
-            # Update the number of previous panels.
-            current_panel_num += 1
-
-        # Check if the user wants to show the wake vortices.
-        if show_wake_vortices:
-
-            wake_ring_vortex_vertices = np.empty((0, 3), dtype=int)
-            wake_ring_vortex_faces = np.empty(0, dtype=int)
-            current_wake_ring_vortex_num = 0
-
-            # Iterate through the unraveled array of wake vortices for the given wing.
-            for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-                wake_ring_vortex_vertices_to_add = np.vstack(
-                    (
-                        wake_ring_vortex.front_left_vertex,
-                        wake_ring_vortex.front_right_vertex,
-                        wake_ring_vortex.back_right_vertex,
-                        wake_ring_vortex.back_left_vertex,
-                    )
-                )
-                wake_ring_vortex_face_to_add = np.array(
-                    [
-                        4,
-                        (current_wake_ring_vortex_num * 4),
-                        (current_wake_ring_vortex_num * 4) + 1,
-                        (current_wake_ring_vortex_num * 4) + 2,
-                        (current_wake_ring_vortex_num * 4) + 3,
-                    ]
-                )
-
-                wake_ring_vortex_vertices = np.vstack(
-                    (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
-                )
-                wake_ring_vortex_faces = np.hstack(
-                    (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
-                )
-
-                current_wake_ring_vortex_num += 1
-
-            wake_ring_vortex_surface = pv.PolyData(
-                wake_ring_vortex_vertices, wake_ring_vortex_faces
-            )
-
-            plotter.add_mesh(
-                wake_ring_vortex_surface,
-                show_edges=True,
-                smooth_shading=True,
-                color="white",
-            )
-
-    # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surface = pv.PolyData(panel_vertices, panel_faces)
+    # If the user wants to show the wake ring vortices, then get their surfaces and
+    # plot them.
+    if show_wake_vortices:
+        wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(airplane)
+        plotter.add_mesh(
+            wake_ring_vortex_surfaces,
+            show_edges=True,
+            smooth_shading=True,
+            color="white",
+        )
 
     # Check if the user wants to plot pressures.
     if show_delta_pressures:
+
+        # Get the scalars
+        scalars = get_scalars(airplane)
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
@@ -181,7 +99,7 @@ def draw(
 
         # Add the panel surfaces to the plotter with the pressure scalars.
         plotter.add_mesh(
-            panel_surface,
+            panel_surfaces,
             show_edges=True,
             cmap=color_map,
             scalars=scalars,
@@ -203,7 +121,7 @@ def draw(
         )
     else:
         plotter.add_mesh(
-            panel_surface,
+            panel_surfaces,
             show_edges=True,
             color="#86C552",
             smooth_shading=True,
@@ -290,11 +208,8 @@ def animate(
         # Now iterate through all the time steps to get all of the scalars. These
         # values will be used to configure the color map.
         for airplane in airplanes:
-            for wing in airplane.wings:
-                panels = np.ravel(wing.panels)
-                for panel in panels:
-                    scalar_to_add = panel.delta_pressure
-                    all_scalars = np.hstack((all_scalars, scalar_to_add))
+            scalars_to_add = get_scalars(airplane)
+            all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
         # across all time steps have the same sign (sequential color map) or if they
@@ -312,66 +227,16 @@ def animate(
             c_min = -2 * np.std(all_scalars)
             c_max = 2 * np.std(all_scalars)
 
-    # Initialize empty ndarrays to hold the things to plot.
-    panel_vertices = np.empty((0, 3), dtype=int)
-    panel_faces = np.empty(0, dtype=int)
-    scalars = np.empty(0, dtype=int)
-
-    # Initialize a variable to keep track of how many panels have been added thus far.
-    current_panel_num = 0
-
-    # Increment through the current airplane's wings.
-    for wing in airplanes[0].wings:
-
-        # Unravel the wing's panel matrix and iterate through it.
-        panels = np.ravel(wing.panels)
-        for panel in panels:
-
-            # Stack this panel's vertices, faces, and scalars. Look through the
-            # PolyData documentation for more
-            # details.
-            panel_vertices_to_add = np.vstack(
-                (
-                    panel.front_left_vertex,
-                    panel.front_right_vertex,
-                    panel.back_right_vertex,
-                    panel.back_left_vertex,
-                )
-            )
-            panel_face_to_add = np.array(
-                [
-                    4,
-                    (current_panel_num * 4),
-                    (current_panel_num * 4) + 1,
-                    (current_panel_num * 4) + 2,
-                    (current_panel_num * 4) + 3,
-                ]
-            )
-
-            # If the user wants to plot the pressures, add the panel's delta pressure
-            # to the array of scalars.
-            if show_delta_pressures:
-                scalar_to_add = panel.delta_pressure
-                scalars = np.hstack((scalars, scalar_to_add))
-
-            # Stack this panel's vertices, faces, and scalars with the array of all
-            # the vertices, faces, and
-            # scalars.
-            panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-            panel_faces = np.hstack((panel_faces, panel_face_to_add))
-
-            # Update the number of previous panels.
-            current_panel_num += 1
-
     # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surface = pv.PolyData(panel_vertices, panel_faces)
+    panel_surfaces = get_panel_surfaces(airplanes[0])
 
     # Check if the user wants to plot pressures. If so, add the panel surfaces to the
     # plotter with the pressure scalars. Otherwise, add the panel surfaces without
     # the pressure scalars.
     if show_delta_pressures and first_results_step == 0:
+        scalars = get_scalars(airplanes[0])
         plotter.add_mesh(
-            panel_surface,
+            panel_surfaces,
             show_edges=True,
             cmap=color_map,
             clim=[c_min, c_max],
@@ -393,11 +258,10 @@ def animate(
         )
 
         # Update the scalars is the user wants to show the pressures.
-        if show_delta_pressures:
-            plotter.update_scalars(scalars)
+        plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
-            panel_surface,
+            panel_surfaces,
             show_edges=True,
             color="#86C552",
             smooth_shading=True,
@@ -427,114 +291,28 @@ def animate(
         # Clear the plotter.
         plotter.clear()
 
-        # Initialize empty ndarrays to hold the things to plot.
-        panel_vertices = np.empty((0, 3), dtype=int)
-        panel_faces = np.empty(0, dtype=int)
-        scalars = np.empty(0, dtype=int)
+        # Get the panel surfaces.
+        panel_surfaces = get_panel_surfaces(airplane)
 
-        # Initialize a variable to keep track of how many panels have been added thus
-        # far.
-        current_panel_num = 0
-
-        # Increment through the current airplane's wings.
-        for wing in airplane.wings:
-
-            # Unravel the wing's panel matrix and iterate through it.
-            panels = np.ravel(wing.panels)
-            for panel in panels:
-
-                # Stack this panel's vertices, faces, and scalars. Look through the
-                # PolyData documentation for more
-                # details.
-                panel_vertices_to_add = np.vstack(
-                    (
-                        panel.front_left_vertex,
-                        panel.front_right_vertex,
-                        panel.back_right_vertex,
-                        panel.back_left_vertex,
-                    )
-                )
-                panel_face_to_add = np.array(
-                    [
-                        4,
-                        (current_panel_num * 4),
-                        (current_panel_num * 4) + 1,
-                        (current_panel_num * 4) + 2,
-                        (current_panel_num * 4) + 3,
-                    ]
-                )
-
-                # Stack this panel's vertices, faces, and scalars with the array of
-                # all the vertices, faces, and scalars.
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
-
-                # If the user wants to plot the pressures, add the panel's delta
-                # pressure to the array of scalars.
-                if show_delta_pressures:
-                    scalar_to_add = panel.delta_pressure
-                    scalars = np.hstack((scalars, scalar_to_add))
-
-                # Update the number of previous panels.
-                current_panel_num += 1
-
-            # Check if the user wants to show the wake vortices.
-            if show_wake_vortices:
-
-                wake_ring_vortex_vertices = np.empty((0, 3), dtype=int)
-                wake_ring_vortex_faces = np.empty(0, dtype=int)
-                current_wake_ring_vortex_num = 0
-
-                # Loop through the unraveled array of wake vortices for the given wing.
-                for wake_ring_vortex in np.ravel(wing.wake_ring_vortices):
-                    wake_ring_vortex_vertices_to_add = np.vstack(
-                        (
-                            wake_ring_vortex.front_left_vertex,
-                            wake_ring_vortex.front_right_vertex,
-                            wake_ring_vortex.back_right_vertex,
-                            wake_ring_vortex.back_left_vertex,
-                        )
-                    )
-                    wake_ring_vortex_face_to_add = np.array(
-                        [
-                            4,
-                            (current_wake_ring_vortex_num * 4),
-                            (current_wake_ring_vortex_num * 4) + 1,
-                            (current_wake_ring_vortex_num * 4) + 2,
-                            (current_wake_ring_vortex_num * 4) + 3,
-                        ]
-                    )
-
-                    wake_ring_vortex_vertices = np.vstack(
-                        (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
-                    )
-                    wake_ring_vortex_faces = np.hstack(
-                        (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
-                    )
-
-                    current_wake_ring_vortex_num += 1
-
-                wake_ring_vortex_surface = pv.PolyData(
-                    wake_ring_vortex_vertices, wake_ring_vortex_faces
-                )
-
-                plotter.add_mesh(
-                    wake_ring_vortex_surface,
-                    show_edges=True,
-                    smooth_shading=True,
-                    color="white",
-                )
-
-        # Initialize the panel surfaces and add the meshes to the plotter.
-        panel_surface = pv.PolyData(panel_vertices, panel_faces)
+        # If the user wants to show the wake ring vortices, then get their surfaces and
+        # plot them.
+        if show_wake_vortices:
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(airplane)
+            plotter.add_mesh(
+                wake_ring_vortex_surfaces,
+                show_edges=True,
+                smooth_shading=True,
+                color="white",
+            )
 
         # Check if the user wants to plot pressures and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
         # surfaces to the plotter wit  h the pressure scalars. Otherwise, add the
         # panel surfaces without the pressure scalars.
         if show_delta_pressures and first_results_step <= current_step:
+            scalars = get_scalars(airplane)
             plotter.add_mesh(
-                panel_surface,
+                panel_surfaces,
                 show_edges=True,
                 cmap=color_map,
                 clim=[c_min, c_max],
@@ -556,13 +334,10 @@ def animate(
             )
 
             if first_results_step == current_step:
-
-                # If this is the first step with pressures update the scalars.
-                if show_delta_pressures:
-                    plotter.update_scalars(scalars)
+                plotter.update_scalars(scalars)
         else:
             plotter.add_mesh(
-                panel_surface,
+                panel_surfaces,
                 show_edges=True,
                 color="#86C552",
                 smooth_shading=True,
@@ -891,3 +666,144 @@ def print_steady_results(steady_solver):
             steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[2], 3
         ),
     )
+
+
+# ToDo: Document this method.
+def get_panel_surfaces(
+    airplane,
+):
+    """
+
+    :param airplane:
+    :return:
+    """
+    # Initialize empty arrays to hold the panel vertices and faces.
+    panel_vertices = np.empty((0, 3), dtype=int)
+    panel_faces = np.empty(0, dtype=int)
+
+    # Initialize a variable to keep track of how many panels have been added thus far.
+    panel_num = 0
+
+    # Increment through the airplane's wings.
+    for wing in airplane.wings:
+
+        # Unravel the wing's panel matrix and iterate through it.
+        panels = np.ravel(wing.panels)
+        for panel in panels:
+
+            # Stack this panel's vertices and faces. Look through the PolyData
+            # documentation for more details.
+            panel_vertices_to_add = np.vstack(
+                (
+                    panel.front_left_vertex,
+                    panel.front_right_vertex,
+                    panel.back_right_vertex,
+                    panel.back_left_vertex,
+                )
+            )
+            panel_face_to_add = np.array(
+                [
+                    4,
+                    (panel_num * 4),
+                    (panel_num * 4) + 1,
+                    (panel_num * 4) + 2,
+                    (panel_num * 4) + 3,
+                ]
+            )
+
+            # Stack this panel's vertices and faces with the array of all the
+            # vertices and faces.
+            panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+            panel_faces = np.hstack((panel_faces, panel_face_to_add))
+
+            # Update the number of previous panels.
+            panel_num += 1
+
+    # Return the panel surfaces.
+    return pv.PolyData(panel_vertices, panel_faces)
+
+
+# ToDo: Document this method.
+def get_wake_ring_vortex_surfaces(
+    airplane,
+):
+    """
+
+    :param airplane:
+    :return:
+    """
+    # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
+    wake_ring_vortex_vertices = np.empty((0, 3), dtype=int)
+    wake_ring_vortex_faces = np.empty(0, dtype=int)
+
+    # Initialize a variable to keep track of how many wake ring vortices have been
+    # added thus far.
+    wake_ring_vortex_num = 0
+
+    # Increment through the airplane's wings.
+    for wing in airplane.wings:
+
+        # Unravel the wing's matrix of wake ring vortices and iterate through it.
+        wake_ring_vortices = np.ravel(wing.wake_ring_vortices)
+        for wake_ring_vortex in wake_ring_vortices:
+
+            # Stack this wake ring vortex's vertices and faces, and scalars. Look
+            # through the PolyData documentation for more details.
+            wake_ring_vortex_vertices_to_add = np.vstack(
+                (
+                    wake_ring_vortex.front_left_vertex,
+                    wake_ring_vortex.front_right_vertex,
+                    wake_ring_vortex.back_right_vertex,
+                    wake_ring_vortex.back_left_vertex,
+                )
+            )
+            wake_ring_vortex_face_to_add = np.array(
+                [
+                    4,
+                    (wake_ring_vortex_num * 4),
+                    (wake_ring_vortex_num * 4) + 1,
+                    (wake_ring_vortex_num * 4) + 2,
+                    (wake_ring_vortex_num * 4) + 3,
+                ]
+            )
+
+            # Stack this wake ring vortex's vertices and faces.
+            wake_ring_vortex_vertices = np.vstack(
+                (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
+            )
+            wake_ring_vortex_faces = np.hstack(
+                (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
+            )
+
+            # Increment the wake ring vortex counter.
+            wake_ring_vortex_num += 1
+
+    # Return the vortex surfaces.
+    return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
+
+
+# ToDo: Document this method.
+def get_scalars(
+    airplane,
+):
+    """
+
+    :param airplane:
+    :return:
+    """
+    # Initialize an empty array to hold the scalars.
+    scalars = np.empty(0, dtype=int)
+
+    # Increment through the airplane's wings.
+    for wing in airplane.wings:
+
+        # Unravel the wing's panel matrix and iterate through it.
+        panels = np.ravel(wing.panels)
+        for panel in panels:
+
+            # Stack this panel's scalars.
+            scalar_to_add = panel.delta_pressure
+            scalars = np.hstack((scalars, scalar_to_add))
+
+    # Return the resulting 1D array of scalars.
+    return scalars

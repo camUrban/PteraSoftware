@@ -41,9 +41,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
         influence coefficients associated with this airplane's geometry.
 
-        calculate_freestream_wing_influences: Find the normal velocity speed at every
-        collocation points without the influence of the vortices.
-
         calculate_vortex_strengths: Solve for each panels' vortex strengths.
 
         calculate_near_field_forces_and_moments: Find the the forces and moments
@@ -124,7 +121,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Find the normal freestream speed at every collocation points without
         # vortices.
         logging.info("Calculating the freestream-wing influences.")
-        self.calculate_freestream_wing_influences()
+        functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each panel's vortex strengths.
         logging.info("Calculating the vortex strengths.")
@@ -266,19 +263,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             "...k,...k->...",
             induced_velocities,
             np.expand_dims(self.panel_normal_directions, axis=1),
-        )
-
-    def calculate_freestream_wing_influences(self):
-        """This method finds the vector of freestream-wing influence coefficients
-        associated with this problem.
-
-        :return: None
-        """
-        # Take the batch dot product of the freestream velocity with each panel's
-        # normal direction. This is now the problem's 1D array of freestream-wing
-        # influence coefficients.
-        self.freestream_wing_influences = np.einsum(
-            "ij,j->i", self.panel_normal_directions, self.freestream_velocity
         )
 
     def calculate_vortex_strengths(self):

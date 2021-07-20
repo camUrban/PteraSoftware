@@ -38,9 +38,6 @@ class SteadyRingVortexLatticeMethodSolver:
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
         influence coefficients associated with this airplane's geometry.
 
-        calculate_freestream_wing_influences: This method finds the vector of
-        freestream-wing influence coefficients associated with this problem.
-
         calculate_vortex_strengths: This method solves for each panel's vortex
         strength.
 
@@ -158,7 +155,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the vector of freestream-wing influence coefficients associated with
         # this problem.
         logging.info("Calculating the freestream-wing influences.")
-        self.calculate_freestream_wing_influences()
+        functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each panel's vortex strength.
         logging.info("Calculating vortex strengths.")
@@ -284,6 +281,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 )
 
                 if panel.is_trailing_edge:
+
                     # Also, update the attribute lists horseshoe vortex attributes at
                     # this position with this panel's horseshoe vortex attributes
                     self.horseshoe_vortex_back_right_vertex[
@@ -355,19 +353,6 @@ class SteadyRingVortexLatticeMethodSolver:
             "...k,...k->...",
             total_influences,
             np.expand_dims(self.panel_normal_directions, axis=1),
-        )
-
-    def calculate_freestream_wing_influences(self):
-        """This method finds the vector of freestream-wing influence coefficients
-        associated with this problem.
-
-        :return: None
-        """
-        # Take the batch dot product of the freestream velocity with each panel's
-        # normal direction. This is now the problem's 1D array of freestream-wing
-        # influence coefficients.
-        self.freestream_wing_influences = np.einsum(
-            "ij,j->i", self.panel_normal_directions, self.freestream_velocity
         )
 
     def calculate_vortex_strengths(self):

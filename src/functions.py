@@ -443,3 +443,19 @@ def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, p
                 + 0.5 * (panel.back_right_vertex - panel.back_left_vertex),
             )
         )
+
+
+def calculate_steady_freestream_wing_influences(steady_solver):
+    """This method finds the vector of freestream-wing influence coefficients
+    associated with this problem.
+
+    :return: None
+    """
+    # Take the batch dot product of the freestream velocity with each panel's
+    # normal direction. This is now the problem's 1D array of freestream-wing
+    # influence coefficients.
+    steady_solver.freestream_wing_influences = np.einsum(
+        "ij,j->i",
+        steady_solver.panel_normal_directions,
+        steady_solver.freestream_velocity,
+    )

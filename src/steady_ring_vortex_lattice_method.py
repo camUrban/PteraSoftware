@@ -83,6 +83,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.vortex_strengths = np.ones(self.airplane.num_panels)
         self.panel_normal_directions = np.zeros((self.airplane.num_panels, 3))
         self.panel_areas = np.zeros(self.airplane.num_panels)
+        self.panel_centers = np.zeros((self.airplane.num_panels, 3))
         self.panel_collocation_points = np.zeros((self.airplane.num_panels, 3))
         self.panel_back_right_vortex_vertices = np.zeros((self.airplane.num_panels, 3))
         self.panel_front_right_vortex_vertices = np.zeros((self.airplane.num_panels, 3))
@@ -276,71 +277,13 @@ class SteadyRingVortexLatticeMethodSolver:
             for panel in panels:
 
                 # Update the solver's list of attributes with this panel's attributes.
-                self.panels[global_panel_position] = panel
-                self.panel_normal_directions[
-                    global_panel_position, :
-                ] = panel.normal_direction
-                self.panel_areas[global_panel_position] = panel.area
-                self.panel_collocation_points[
-                    global_panel_position, :
-                ] = panel.collocation_point
-                self.panel_back_right_vortex_vertices[
-                    global_panel_position, :
-                ] = panel.ring_vortex.right_leg.origin
-                self.panel_front_right_vortex_vertices[
-                    global_panel_position, :
-                ] = panel.ring_vortex.right_leg.termination
-                self.panel_front_left_vortex_vertices[
-                    global_panel_position, :
-                ] = panel.ring_vortex.left_leg.origin
-                self.panel_back_left_vortex_vertices[
-                    global_panel_position, :
-                ] = panel.ring_vortex.left_leg.termination
-                self.panel_right_vortex_centers[
-                    global_panel_position, :
-                ] = panel.ring_vortex.right_leg.center
-                self.panel_right_vortex_vectors[
-                    global_panel_position, :
-                ] = panel.ring_vortex.right_leg.vector
-                self.panel_front_vortex_centers[
-                    global_panel_position, :
-                ] = panel.ring_vortex.front_leg.center
-                self.panel_front_vortex_vectors[
-                    global_panel_position, :
-                ] = panel.ring_vortex.front_leg.vector
-                self.panel_left_vortex_centers[
-                    global_panel_position, :
-                ] = panel.ring_vortex.left_leg.center
-                self.panel_left_vortex_vectors[
-                    global_panel_position, :
-                ] = panel.ring_vortex.left_leg.vector
-                self.panel_back_vortex_centers[
-                    global_panel_position, :
-                ] = panel.ring_vortex.back_leg.center
-                self.panel_back_vortex_vectors[
-                    global_panel_position, :
-                ] = panel.ring_vortex.back_leg.vector
-                self.panel_is_trailing_edge[
-                    global_panel_position
-                ] = panel.is_trailing_edge
-                self.panel_is_leading_edge[
-                    global_panel_position
-                ] = panel.is_leading_edge
-                self.panel_is_right_edge[global_panel_position] = panel.is_right_edge
-                self.panel_is_left_edge[global_panel_position] = panel.is_left_edge
+                functions.update_ring_vortex_solvers_panel_attributes(
+                    solver=self,
+                    global_panel_position=global_panel_position,
+                    panel=panel,
+                )
 
-                # Check if this panel is on the trailing edge.
                 if panel.is_trailing_edge:
-                    # If it is, calculate it's streamline seed point and add it to
-                    # the solver's array of seed points.
-                    self.seed_points = np.vstack(
-                        (
-                            self.seed_points,
-                            panel.back_left_vertex
-                            + 0.5 * (panel.back_right_vertex - panel.back_left_vertex),
-                        )
-                    )
-
                     # Also, update the attribute lists horseshoe vortex attributes at
                     # this position with this panel's horseshoe vortex attributes
                     self.horseshoe_vortex_back_right_vertex[

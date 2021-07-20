@@ -374,3 +374,72 @@ def process_steady_solver_forces(
             yawing_moment_coefficient,
         ]
     )
+
+
+# ToDo: Update this function's documentation.
+def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, panel):
+    """
+
+    :param solver:
+    :param global_panel_position:
+    :param panel:
+    :return:
+    """
+    # Update the solver's list of attributes with this panel's attributes.
+    solver.panels[global_panel_position] = panel
+    solver.panel_normal_directions[global_panel_position, :] = panel.normal_direction
+    solver.panel_areas[global_panel_position] = panel.area
+    solver.panel_centers[global_panel_position] = panel.center
+    solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
+    solver.panel_back_right_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.origin
+    solver.panel_front_right_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.termination
+    solver.panel_front_left_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.origin
+    solver.panel_back_left_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.termination
+    solver.panel_right_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.center
+    solver.panel_right_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.vector
+    solver.panel_front_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.front_leg.center
+    solver.panel_front_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.front_leg.vector
+    solver.panel_left_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.center
+    solver.panel_left_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.vector
+    solver.panel_back_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.back_leg.center
+    solver.panel_back_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.back_leg.vector
+    solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
+    solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
+    solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
+    solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
+
+    # Check if this panel is on the trailing edge.
+    if panel.is_trailing_edge:
+        # If it is, calculate it's streamline seed point and add it to
+        # the solver's array of seed points.
+        solver.seed_points = np.vstack(
+            (
+                solver.seed_points,
+                panel.back_left_vertex
+                + 0.5 * (panel.back_right_vertex - panel.back_left_vertex),
+            )
+        )

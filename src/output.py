@@ -62,22 +62,24 @@ def draw(
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         airplane = solver.steady_problems[-1].airplane
+        last_step = solver.num_steps - 1
+
+        # If the user wants to show the wake ring vortices, then get their surfaces and
+        # plot them.
+        if show_wake_vortices:
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(solver, last_step)
+            plotter.add_mesh(
+                wake_ring_vortex_surfaces,
+                show_edges=True,
+                smooth_shading=True,
+                color="white",
+            )
+
     else:
         airplane = solver.airplane
 
     # Get the panel surfaces.
     panel_surfaces = get_panel_surfaces(airplane)
-
-    # If the user wants to show the wake ring vortices, then get their surfaces and
-    # plot them.
-    if show_wake_vortices:
-        wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(airplane)
-        plotter.add_mesh(
-            wake_ring_vortex_surfaces,
-            show_edges=True,
-            smooth_shading=True,
-            color="white",
-        )
 
     # Check if the user wants to plot pressures.
     if show_delta_pressures:
@@ -297,7 +299,9 @@ def animate(
         # If the user wants to show the wake ring vortices, then get their surfaces and
         # plot them.
         if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(airplane)
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
+                unsteady_solver, current_step
+            )
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
@@ -724,7 +728,7 @@ def get_panel_surfaces(
 
 
 # ToDo: Document this method.
-def get_wake_ring_vortex_surfaces(
+def old_get_wake_ring_vortex_surfaces(
     airplane,
 ):
     """
@@ -777,6 +781,74 @@ def get_wake_ring_vortex_surfaces(
 
             # Increment the wake ring vortex counter.
             wake_ring_vortex_num += 1
+
+    # Return the vortex surfaces.
+    return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
+
+
+# ToDo: Document this method.
+def get_wake_ring_vortex_surfaces(solver, step):
+    num_wake_ring_vortices = solver.num_wake_ring_vortices_list[step]
+    wake_ring_vortex_front_right_vertices = (
+        solver.wake_ring_vortex_front_right_vertices_list[step]
+    )
+    wake_ring_vortex_front_left_vertices = (
+        solver.wake_ring_vortex_front_left_vertices_list[step]
+    )
+    wake_ring_vortex_back_left_vertices = (
+        solver.wake_ring_vortex_back_left_vertices_list[step]
+    )
+    wake_ring_vortex_back_right_vertices = (
+        solver.wake_ring_vortex_back_right_vertices_list[step]
+    )
+
+    # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
+    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=int)
+    wake_ring_vortex_faces = np.zeros(0, dtype=int)
+
+    for wake_ring_vortex_num in range(num_wake_ring_vortices):
+
+        this_front_right_vertex = wake_ring_vortex_front_right_vertices[
+            wake_ring_vortex_num
+        ]
+        this_front_left_vertex = wake_ring_vortex_front_left_vertices[
+            wake_ring_vortex_num
+        ]
+        this_back_left_vertex = wake_ring_vortex_back_left_vertices[
+            wake_ring_vortex_num
+        ]
+        this_back_right_vertex = wake_ring_vortex_back_right_vertices[
+            wake_ring_vortex_num
+        ]
+
+        wake_ring_vortex_vertices_to_add = np.vstack(
+            (
+                this_front_left_vertex,
+                this_front_right_vertex,
+                this_back_right_vertex,
+                this_back_left_vertex,
+            )
+        )
+        wake_ring_vortex_face_to_add = np.array(
+            [
+                4,
+                (wake_ring_vortex_num * 4),
+                (wake_ring_vortex_num * 4) + 1,
+                (wake_ring_vortex_num * 4) + 2,
+                (wake_ring_vortex_num * 4) + 3,
+            ]
+        )
+
+        # Stack this wake ring vortex's vertices and faces.
+        wake_ring_vortex_vertices = np.vstack(
+            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
+        )
+        wake_ring_vortex_faces = np.hstack(
+            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
+        )
+
+        # Increment the wake ring vortex counter.
+        wake_ring_vortex_num += 1
 
     # Return the vortex surfaces.
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)

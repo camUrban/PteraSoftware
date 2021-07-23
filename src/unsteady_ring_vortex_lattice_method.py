@@ -14,7 +14,6 @@ This module contains the following functions:
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
 """
-import pickle
 import logging
 
 import numpy as np
@@ -158,14 +157,25 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.last_panel_left_vortex_centers = None
         self.last_panel_back_vortex_centers = None
 
-        # Initialize variables to hold aerodynamic data that pertains to this
-        # problem's wake.
-        self.wake_ring_vortex_strengths = None
-        self.wake_ring_vortex_front_right_vertices = None
-        self.wake_ring_vortex_front_left_vertices = None
-        self.wake_ring_vortex_back_left_vertices = None
-        self.wake_ring_vortex_back_right_vertices = None
-        self.wake_ring_vortex_ages = None
+        # Initialize lists to store aerodynamic data about the wake at each time
+        # step. These attributes are used by several functions in the output module
+        # to animate the wake.
+        self.num_wake_ring_vortices_list = []
+        self.wake_ring_vortex_strengths_list = []
+        self.wake_ring_vortex_ages_list = []
+        self.wake_ring_vortex_front_right_vertices_list = []
+        self.wake_ring_vortex_front_left_vertices_list = []
+        self.wake_ring_vortex_back_left_vertices_list = []
+        self.wake_ring_vortex_back_right_vertices_list = []
+
+        # Initialize variables to hold aerodynamic data that pertains to the wake at
+        # the current time step.
+        self.current_wake_ring_vortex_strengths = None
+        self.current_wake_ring_vortex_front_right_vertices = None
+        self.current_wake_ring_vortex_front_left_vertices = None
+        self.current_wake_ring_vortex_back_left_vertices = None
+        self.current_wake_ring_vortex_back_right_vertices = None
+        self.current_wake_ring_vortex_ages = None
 
     def run(
         self,
@@ -197,24 +207,66 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         logging.basicConfig(level=logging_level_value)
 
+        # ToDo: Document this addition.
+        for step in range(self.num_steps):
+            this_problem = self.steady_problems[step]
+            this_airplane = this_problem.airplane
+            these_wings = this_airplane.wings
+
+            this_num_spanwise_panels = 0
+            for this_wing in these_wings:
+                this_num_spanwise_panels += this_wing.num_spanwise_panels
+
+            self.num_wake_ring_vortices_list.append(step * this_num_spanwise_panels)
+
+        for step in range(self.num_steps):
+            this_num_wake_ring_vortices = self.num_wake_ring_vortices_list[step]
+
+            this_wake_ring_vortex_strengths = np.zeros(this_num_wake_ring_vortices)
+            this_wake_ring_vortex_ages = np.zeros(this_num_wake_ring_vortices)
+            this_wake_ring_vortex_front_right_vertices = np.zeros(
+                (this_num_wake_ring_vortices, 3)
+            )
+            this_wake_ring_vortex_front_left_vertices = np.zeros(
+                (this_num_wake_ring_vortices, 3)
+            )
+            this_wake_ring_vortex_back_left_vertices = np.zeros(
+                (this_num_wake_ring_vortices, 3)
+            )
+            this_wake_ring_vortex_back_right_vertices = np.zeros(
+                (this_num_wake_ring_vortices, 3)
+            )
+
+            self.wake_ring_vortex_strengths_list.append(this_wake_ring_vortex_strengths)
+            self.wake_ring_vortex_ages_list.append(this_wake_ring_vortex_ages)
+            self.wake_ring_vortex_front_right_vertices_list.append(
+                this_wake_ring_vortex_front_right_vertices
+            )
+            self.wake_ring_vortex_front_left_vertices_list.append(
+                this_wake_ring_vortex_front_left_vertices
+            )
+            self.wake_ring_vortex_back_left_vertices_list.append(
+                this_wake_ring_vortex_back_left_vertices
+            )
+            self.wake_ring_vortex_back_right_vertices_list.append(
+                this_wake_ring_vortex_back_right_vertices
+            )
+
         # ToDo: Document the following code that preprocesses the problem for tqdm.
         approx_times = np.zeros(self.num_steps + 1)
         for step in range(1, self.num_steps):
             this_problem = self.steady_problems[step]
             this_airplane = this_problem.airplane
-            these_wings = this_airplane.wings
 
             num_wing_panels = this_airplane.num_panels
-
-            num_spanwise_panels = 0
-            for this_wing in these_wings:
-                num_spanwise_panels += this_wing.num_spanwise_panels
-
             num_wing_ring_vortices = num_wing_panels
-            num_wake_ring_vortices = step * num_spanwise_panels
+
+            num_wake_ring_vortices = self.num_wake_ring_vortices_list[step]
 
             num_ring_vortices = num_wing_ring_vortices + num_wake_ring_vortices
 
+            # The following constant multipliers were determined empirically. Thus
+            # far, they seem to provide for adequately smooth progress bar updating.
             if step == 1:
                 approx_times[step] = num_ring_vortices * 70
             elif step == 2:
@@ -226,7 +278,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
 
-        # ToDo: Document the following code that implements tqdm.
+        # Unless the logging level is at or above Warning, run the simulation with a
+        # progress bar.
         with tqdm(
             total=approx_total_time,
             unit="",
@@ -240,7 +293,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             logging.info("Initializing all airplanes' panel vortices.")
             self.initialize_panel_vortices()
 
-            # ToDo: Document the following code that implements tqdm.
+            # Update the progress bar based on the initialization step's predicted
+            # approximate, relative computing time.
             bar.update(n=approx_times[0])
 
             # Iterate through the time steps.
@@ -388,24 +442,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     (self.current_airplane.num_panels, 3)
                 )
 
-                num_wake_ring_vortices = 0
-                for wing in self.current_airplane.wings:
-                    num_wake_ring_vortices += wing.num_spanwise_panels
-                num_wake_ring_vortices *= self.current_step
-
-                self.wake_ring_vortex_strengths = np.zeros(num_wake_ring_vortices)
-                self.wake_ring_vortex_ages = np.zeros(num_wake_ring_vortices)
-                self.wake_ring_vortex_front_right_vertices = np.zeros(
-                    (num_wake_ring_vortices, 3)
+                # ToDo: Document this addition.
+                self.current_wake_ring_vortex_strengths = (
+                    self.wake_ring_vortex_strengths_list[step]
                 )
-                self.wake_ring_vortex_front_left_vertices = np.zeros(
-                    (num_wake_ring_vortices, 3)
+                self.current_wake_ring_vortex_ages = self.wake_ring_vortex_ages_list[
+                    step
+                ]
+                self.current_wake_ring_vortex_front_right_vertices = (
+                    self.wake_ring_vortex_front_right_vertices_list[step]
                 )
-                self.wake_ring_vortex_back_left_vertices = np.zeros(
-                    (num_wake_ring_vortices, 3)
+                self.current_wake_ring_vortex_front_left_vertices = (
+                    self.wake_ring_vortex_front_left_vertices_list[step]
                 )
-                self.wake_ring_vortex_back_right_vertices = np.zeros(
-                    (num_wake_ring_vortices, 3)
+                self.current_wake_ring_vortex_back_left_vertices = (
+                    self.wake_ring_vortex_back_left_vertices_list[step]
+                )
+                self.current_wake_ring_vortex_back_right_vertices = (
+                    self.wake_ring_vortex_back_right_vertices_list[step]
                 )
 
                 # Collapse this problem's geometry matrices into 1D arrays of
@@ -441,7 +495,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 logging.info("Shedding wake vortices.")
                 self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
 
-                # ToDo: Document the following code that implements tqdm.
+                # Update the progress bar based on this step's predicted approximate,
+                # relative computing time.
                 bar.update(n=approx_times[step + 1])
 
         # Solve for the location of the streamlines if requested.
@@ -562,22 +617,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 global_panel_position += 1
 
             for wake_ring_vortex in wake_ring_vortices:
-                self.wake_ring_vortex_strengths[
+                self.current_wake_ring_vortex_strengths[
                     global_wake_ring_vortex_position
                 ] = wake_ring_vortex.strength
-                self.wake_ring_vortex_ages[
+                self.current_wake_ring_vortex_ages[
                     global_wake_ring_vortex_position
                 ] = wake_ring_vortex.age
-                self.wake_ring_vortex_front_right_vertices[
+                self.current_wake_ring_vortex_front_right_vertices[
                     global_wake_ring_vortex_position, :
                 ] = wake_ring_vortex.front_right_vertex
-                self.wake_ring_vortex_front_left_vertices[
+                self.current_wake_ring_vortex_front_left_vertices[
                     global_wake_ring_vortex_position, :
                 ] = wake_ring_vortex.front_left_vertex
-                self.wake_ring_vortex_back_left_vertices[
+                self.current_wake_ring_vortex_back_left_vertices[
                     global_wake_ring_vortex_position, :
                 ] = wake_ring_vortex.back_left_vertex
-                self.wake_ring_vortex_back_right_vertices[
+                self.current_wake_ring_vortex_back_right_vertices[
                     global_wake_ring_vortex_position, :
                 ] = wake_ring_vortex.back_right_vertex
 
@@ -728,12 +783,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # the M panels.
             velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
                 points=self.panel_collocation_points,
-                back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
-                front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
-                front_left_vortex_vertices=self.wake_ring_vortex_front_left_vertices,
-                back_left_vortex_vertices=self.wake_ring_vortex_back_left_vertices,
-                strengths=self.wake_ring_vortex_strengths,
-                ages=self.wake_ring_vortex_ages,
+                back_right_vortex_vertices=self.current_wake_ring_vortex_back_right_vertices,
+                front_right_vortex_vertices=self.current_wake_ring_vortex_front_right_vertices,
+                front_left_vortex_vertices=self.current_wake_ring_vortex_front_left_vertices,
+                back_left_vortex_vertices=self.current_wake_ring_vortex_back_left_vertices,
+                strengths=self.current_wake_ring_vortex_strengths,
+                ages=self.current_wake_ring_vortex_ages,
                 nu=self.current_operating_point.nu,
             )
 
@@ -812,12 +867,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex. The effect of every wake ring vortex on each point will be summed.
         velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
             points=points,
-            back_right_vortex_vertices=self.wake_ring_vortex_back_right_vertices,
-            front_right_vortex_vertices=self.wake_ring_vortex_front_right_vertices,
-            front_left_vortex_vertices=self.wake_ring_vortex_front_left_vertices,
-            back_left_vortex_vertices=self.wake_ring_vortex_back_left_vertices,
-            strengths=self.wake_ring_vortex_strengths,
-            ages=self.wake_ring_vortex_ages,
+            back_right_vortex_vertices=self.current_wake_ring_vortex_back_right_vertices,
+            front_right_vortex_vertices=self.current_wake_ring_vortex_front_right_vertices,
+            front_left_vortex_vertices=self.current_wake_ring_vortex_front_left_vertices,
+            back_left_vortex_vertices=self.current_wake_ring_vortex_back_left_vertices,
+            strengths=self.current_wake_ring_vortex_strengths,
+            ages=self.current_wake_ring_vortex_ages,
             nu=self.current_operating_point.nu,
         )
 
@@ -1414,15 +1469,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_wing.wake_ring_vortex_vertices
                 )
 
-                # Get the wake ring vortices from the this wing copy object.
-                this_wing_wake_ring_vortices_copy = pickle.loads(
-                    pickle.dumps(
-                        self.current_airplane.wings[wing_num].wake_ring_vortices
-                    )
-                )
-                # this_wing_wake_ring_vortices_copy = self.current_airplane.wings[
-                #     wing_num
-                # ].wake_ring_vortices
+                this_wing_wake_ring_vortices = self.current_airplane.wings[
+                    wing_num
+                ].wake_ring_vortices
 
                 # Find the number of chordwise and spanwise vertices in the next
                 # wing's matrix of wake ring vortex vertices.
@@ -1437,7 +1486,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Stack the new matrix on top of the copy of this wing's matrix and
                 # assign it to the next wing.
                 next_wing.wake_ring_vortices = np.vstack(
-                    (new_row_of_wake_ring_vortices, this_wing_wake_ring_vortices_copy)
+                    (new_row_of_wake_ring_vortices, this_wing_wake_ring_vortices)
                 )
 
                 # Iterate through the vertex positions.

@@ -225,7 +225,7 @@ where applicable.
 * SemVer
 * GitFlow
 * Cmocean
-* tqdm
+* Tqdm
 
 ## Notes
 

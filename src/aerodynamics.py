@@ -321,7 +321,6 @@ class RingVortex:
         )
 
 
-# ToDo: Update this function's documentation.
 @njit(cache=True, fastmath=True, parallel=True)
 def collapsed_velocities_from_horseshoe_vortices(
     points,
@@ -334,9 +333,13 @@ def collapsed_velocities_from_horseshoe_vortices(
     nu=0.0,
 ):
     """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point, it finds the induced velocity due to every
-    horseshoe vortex, which are characterized by groups of back right vertices,
-    front right vertices, front left vertices, back left vertices, and strengths.
+    horseshoe vortices. At every point, it finds the cumulative induced velocity due
+    to all of the horseshoe vortices.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
 
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
@@ -362,15 +365,20 @@ def collapsed_velocities_from_horseshoe_vortices(
         This variable is an array of shape (, M), where M is the number of horseshoe
         vortices. Each holds the strength of that horseshoe vortex in meters squared
         per second.
-    :param ages:
-    :param nu:
-    :return induced_velocities: either a 2D array of floats or a 3D array of floats
-        If collapse is true, the output is the summed effects from every horseshoe
-        vortex on a given point. The result will be of shape (N x 3), where each row
-        identifies the effects on a point. If false, than the effect from every
-        horseshoe vortex will remain distinct, and the shape will be (N x M x 3),
-        where each row/column pair identifies the effect on one point by one of the
-        horseshoe vortices. Either way, the results units are meters per second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that horseshoe vortex in seconds.
+        This is only relevant for vortices that have been shed into the wake. The
+        default value is None. If the age of a specific vortex is 0.0 seconds,
+        then the vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x 3), and it holds the cumulative induced
+        velocity at each of the N points due to all of the horseshoe vortices. The
+        units are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -397,7 +405,6 @@ def collapsed_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-# ToDo: Update this function's documentation.
 @njit(cache=True, fastmath=True, parallel=True)
 def expanded_velocities_from_horseshoe_vortices(
     points,
@@ -410,9 +417,13 @@ def expanded_velocities_from_horseshoe_vortices(
     nu=0.0,
 ):
     """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point, it finds the induced velocity due to every
-    horseshoe vortex, which are characterized by groups of back right vertices,
-    front right vertices, front left vertices, back left vertices, and strengths.
+    horseshoe vortices. At every point, it finds the induced velocity due to each
+    horseshoe vortex.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
 
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
@@ -438,15 +449,20 @@ def expanded_velocities_from_horseshoe_vortices(
         This variable is an array of shape (, M), where M is the number of horseshoe
         vortices. Each holds the strength of that horseshoe vortex in meters squared
         per second.
-    :param ages:
-    :param nu:
-    :return induced_velocities: either a 2D array of floats or a 3D array of floats
-        If collapse is true, the output is the summed effects from every horseshoe
-        vortex on a given point. The result will be of shape (N x 3), where each row
-        identifies the effects on a point. If false, than the effect from every
-        horseshoe vortex will remain distinct, and the shape will be (N x M x 3),
-        where each row/column pair identifies the effect on one point by one of the
-        horseshoe vortices. Either way, the results units are meters per second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that horseshoe vortex in seconds.
+        This is only relevant for vortices that have been shed into the wake. The
+        default value is None. If the age of a specific vortex is 0.0 seconds,
+        then the vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x M x 3), where each row/column pair identifies
+        the velocity induced at one point by one of the horseshoe vortices. The units
+        are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -473,7 +489,6 @@ def expanded_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-# ToDo: Update this function's documentation.
 @njit(cache=True, fastmath=True, parallel=True)
 def collapsed_velocities_from_ring_vortices(
     points,
@@ -486,9 +501,13 @@ def collapsed_velocities_from_ring_vortices(
     nu=0.0,
 ):
     """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it finds the induced velocity due to every ring
-    vortex, which are characterized by groups of back right vertices, front right
-    vertices, front left vertices, back left vertices, and strengths.
+    ring vortices. At every point, it finds the cumulative induced velocity due to
+    all of the ring vortices.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
 
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
@@ -514,14 +533,20 @@ def collapsed_velocities_from_ring_vortices(
         This variable is an array of shape (, M), where M is the number of ring
         vortices. Each holds the strength of that ring vortex in meters squared per
         second.
-    :param ages:
-    :param nu:
-    :return induced_velocities: either a 2D array of floats or a 3D array of floats
-        be of shape (N x 3), where each row identifies the effects on a point. If
-        false, than the effect from every ring vortex will remain distinct, and the
-        shape will be (N x M x 3), where each row/column pair identifies the effect
-        on one point by one of the ring vortices. Either way, the results units are
-        meters per second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that ring vortex in seconds. This
+        is only relevant for vortices that have been shed into the wake. The default
+        value is None. If the age of a specific vortex is 0.0 seconds, then the
+        vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x 3), and it holds the cumulative induced
+        velocity at each of the N points due to all of the ring vortices. The units
+        are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -550,7 +575,6 @@ def collapsed_velocities_from_ring_vortices(
     return induced_velocities
 
 
-# ToDo: Update this function's documentation.
 @njit(cache=True, fastmath=True, parallel=True)
 def expanded_velocities_from_ring_vortices(
     points,
@@ -563,9 +587,13 @@ def expanded_velocities_from_ring_vortices(
     nu=0.0,
 ):
     """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it finds the induced velocity due to every ring
-    vortex, which are characterized by groups of back right vertices, front right
-    vertices, front left vertices, back left vertices, and strengths.
+    ring vortices. At every point, it finds the induced velocity due to each ring
+    vortex.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
 
     :param points: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
@@ -591,13 +619,19 @@ def expanded_velocities_from_ring_vortices(
         This variable is an array of shape (, M), where M is the number of ring
         vortices. Each holds the strength of that ring vortex in meters squared per
         second.
-    :param ages:
-    :param nu:
-    :return induced_velocities: either a 2D array of floats or a 3D array of floats
-        be of shape (N x 3), where each row identifies the effects on a point. If
-        false, than the effect from every ring vortex will remain distinct, and the
-        shape will be (N x M x 3), where each row/column pair identifies the effect
-        on one point by one of the ring vortices. Either way, the results units are
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that ring vortex in seconds. This
+        is only relevant for vortices that have been shed into the wake. The default
+        value is None. If the age of a specific vortex is 0.0 seconds, then the
+        vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 3D array of floats
+        This is an array of shape (N x M x 3), where each row/column pair identifies
+        the velocity induced at one point by one of the ring vortices. The units are
         meters per second.
     """
     origins_list = [

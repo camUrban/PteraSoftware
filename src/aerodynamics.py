@@ -43,9 +43,23 @@ from numba import njit, prange
 from . import functions
 
 
-# ToDo: Document these constants.
-squire = 1e-4
+# Set the value of Squire's parameter that will be used by the induced velocity
+# functions. Squire's parameter relates to the size of the vortex cores and the rate
+# at which they grow. The value of this parameter is slightly controversial. It
+# dramatically affect the stability of the result. I'm using this value, as cited for
+# use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
+# Modeling of Rotor Wakes" (Ananthan and Leishman, 2004). It is unitless.
+squire = 10 ** -4
+
+# Set the value of Lamb's constant that will be used by the induced velocity
+# functions. Lamb's constant relates to the size of the vortex cores and the rate at
+# which they grow. The value of this parameter is well agreed upon, and published in
+# "Extended Unsteady Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al.,
+# 2016). It is unitless.
 lamb = 1.25643
+
+# Set the value of the local machine error. This will be used to fix removable
+# discontinuities in the induced velocity functions.
 eps = np.finfo(float).eps
 
 

@@ -11,6 +11,19 @@ This module contains the following functions:
     mesh_wing: This function takes in an object of the Wing class and creates a
     quadrilateral mesh of its geometry, and then populates the object's panels with
     the mesh data.
+
+    get_wing_cross_section_scaling_factors: Get the scaling factors for each wing
+    cross section. These factors allow the cross sections to intersect correctly at
+    dihedral breaks.
+
+    get_transpose_mcl_vectors: This function takes in the inner and outer airfoils of
+    a wing cross section and its chordwise coordinates. It returns a list of four
+    vectors column vectors. They are, in order, the inner airfoil's local up
+    direction, the inner airfoil's local back direction, the outer airfoil's local up
+    direction, and the outer airfoil's local back direction.
+
+    get_wing_section_panels: This function takes in arrays panel attributes and
+    returns a 2D array of panel objects.
 """
 import numpy as np
 
@@ -245,8 +258,6 @@ def mesh_wing(wing):
 
         # Get this wing section's panels.
         wing_section_panels = get_wing_section_panels(
-            num_chordwise_panels=num_chordwise_panels,
-            num_spanwise_panels=num_spanwise_panels,
             front_left_vertices=front_inner_vertices,
             front_right_vertices=front_outer_vertices,
             back_left_vertices=back_inner_vertices,
@@ -354,8 +365,6 @@ def mesh_wing(wing):
 
             # Get the reflected wing section's panels.
             wing_section_panels = get_wing_section_panels(
-                num_chordwise_panels=num_chordwise_panels,
-                num_spanwise_panels=num_spanwise_panels,
                 front_left_vertices=front_outer_vertices_reflected,
                 front_right_vertices=front_inner_vertices_reflected,
                 back_left_vertices=back_outer_vertices_reflected,
@@ -388,12 +397,11 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
-# ToDo: Document the following function.
 def get_wing_cross_section_scaling_factors(
     symmetric, wing_section_quarter_chords_proj_yz_norm
 ):
-    """Get the scaling factors (airfoils at dihedral breaks need to be "taller" to
-    compensate).
+    """Get the scaling factors for each wing cross section. These factors allow the
+    cross sections to intersect correctly at dihedral breaks.
 
     :param symmetric:
     :param wing_section_quarter_chords_proj_yz_norm:
@@ -648,14 +656,25 @@ def get_normalized_projected_quarter_chords(
     return normalized_projected_quarter_chords
 
 
-# ToDo: Document this function.
 def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinates):
-    """
+    """This function takes in the inner and outer airfoils of a wing cross section
+    and its chordwise coordinates. It returns a list of four vectors column vectors.
+    They are, in order, the inner airfoil's local up direction, the inner airfoil's
+    local back direction, the outer airfoil's local up direction, and the outer
+    airfoil's local back direction.
 
-    :param inner_airfoil:
+    :param inner_airfoil: Airfoil
+        This is the wing cross section's inner airfoil object.
     :param outer_airfoil:
-    :param chordwise_coordinates:
-    :return:
+        This is the wing cross section's inner airfoil object.
+    :param chordwise_coordinates: 1D array of floats
+        This is a 1D array of the normalized chordwise coordinates where we'd like to
+        sample each airfoil's mean camber line.
+    :return: list of 4 (2x1) arrays
+        This is a list of four vectors column vectors. They are, in order, the inner
+        airfoil's local up direction, the inner airfoil's local back direction,
+        the outer airfoil's local up direction, and the outer airfoil's local back
+        direction.
     """
     # Make the mean camber lines for each wing cross section. First index is
     # point number, second index is the coordinates in the airfoil frame.
@@ -686,10 +705,7 @@ def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinate
     ]
 
 
-# ToDo: Document this function.
 def get_wing_section_panels(
-    num_chordwise_panels,
-    num_spanwise_panels,
     front_left_vertices,
     front_right_vertices,
     back_left_vertices,
@@ -697,29 +713,46 @@ def get_wing_section_panels(
     is_trailing_edge,
     is_leading_edge,
 ):
-    """
+    """This function takes in arrays panel attributes and returns a 2D array of panel
+    objects.
 
-    :param num_chordwise_panels:
-    :param num_spanwise_panels:
-    :param front_left_vertices:
-    :param front_right_vertices:
-    :param back_left_vertices:
-    :param back_right_vertices:
-    :param is_trailing_edge:
-    :param is_leading_edge:
-    :return:
+    :param front_left_vertices: array of floats
+        This is 3D array of size (MxNx3), where M is the number of chordwise panels,
+        N is the number of spanwise panels, and the last dimension contains the x, y,
+        and z coordinates of each panel's front left vertex.
+    :param front_right_vertices: array of floats
+        This is 3D array of size (MxNx3), where M is the number of chordwise panels,
+        N is the number of spanwise panels, and the last dimension contains the x, y,
+        and z coordinates of each panel's front right vertex.
+    :param back_left_vertices: array of floats
+        This is 3D array of size (MxNx3), where M is the number of chordwise panels,
+        N is the number of spanwise panels, and the last dimension contains the x, y,
+        and z coordinates of each panel's back left vertex.
+    :param back_right_vertices: array of floats
+        This is 3D array of size (MxNx3), where M is the number of chordwise panels,
+        N is the number of spanwise panels, and the last dimension contains the x, y,
+        and z coordinates of each panel's back right vertex.
+    :param is_trailing_edge: 2D array of Booleans
+        This is 2D array of True or False values that correspond to if the panel in
+        each location is on the trailing edge of the wing.
+    :param is_leading_edge: 2D array of Booleans
+        This is 2D array of True or False values that correspond to if the panel in
+        each location is on the trailing edge of the wing.
+    :return panel_array: 2D array of Panels
+        This is a 2D array of panel objects with the requested attributes.
     """
+    num_chordwise_panels = front_left_vertices.shape[0]
+    num_spanwise_panels = front_left_vertices.shape[1]
+
     # Initialize an empty array to hold the wing section's panels. The matrix is
     # size M x N, where M and N are the number of chordwise and spanwise panels.
-    wing_section_panels = np.empty(
-        (num_chordwise_panels, num_spanwise_panels), dtype=object
-    )
+    panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
     # Loop through the empty panels matrix and create a new panel object in each
     # slot.
     for chordwise_position in range(num_chordwise_panels):
         for spanwise_position in range(num_spanwise_panels):
-            wing_section_panels[chordwise_position, spanwise_position] = panel.Panel(
+            panels[chordwise_position, spanwise_position] = panel.Panel(
                 front_left_vertex=front_left_vertices[
                     chordwise_position, spanwise_position
                 ],
@@ -738,4 +771,4 @@ def get_wing_section_panels(
                 is_leading_edge=is_leading_edge[chordwise_position, spanwise_position],
             )
 
-    return wing_section_panels
+    return panels

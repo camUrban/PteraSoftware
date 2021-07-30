@@ -1,5 +1,5 @@
 # ToDo: Properly document this module
-"""
+"""This module contains functions used by other modules in the src package.
 
 """
 import logging

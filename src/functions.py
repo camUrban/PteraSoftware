@@ -1,8 +1,11 @@
 # ToDo: Properly document this module
+"""
+
+"""
 import logging
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 def cosspace(
@@ -459,3 +462,38 @@ def calculate_steady_freestream_wing_influences(steady_solver):
         steady_solver.panel_normal_directions,
         steady_solver.freestream_velocity,
     )
+
+
+@njit(parallel=True, cache=True, fastmath=True)
+def numba_1d_explicit_cross(vectors_1, vectors_2):
+    """This function takes in two arrays, each of which contain N vectors of 3
+    components. The function then calculates and returns the cross product of the two
+    vectors at each position.
+
+    Note: This function has been optimized for JIT compilation and parallel
+    computation using Numba.
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a
+    response to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
+
+    :param vectors_1: array of floats of size (N x 3)
+        This is the first array of N vectors.
+    :param vectors_2: array of floats of size (N x 3)
+        This is the second array of N vectors.
+    :return crosses: array of floats of size (N x 3)
+        This is the cross product of the two inputted vectors at each of the N
+        positions.
+    """
+    crosses = np.zeros(vectors_1.shape)
+    for i in prange(crosses.shape[0]):
+        crosses[i, 0] = (
+            vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
+        )
+        crosses[i, 1] = (
+            vectors_1[i, 2] * vectors_2[i, 0] - vectors_1[i, 0] * vectors_2[i, 2]
+        )
+        crosses[i, 2] = (
+            vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
+        )
+    return crosses

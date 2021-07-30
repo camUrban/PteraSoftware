@@ -1,4 +1,3 @@
-# ToDo: Update this module's documentation.
 """This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
@@ -10,14 +9,11 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    numba_1d_explicit_cross: This function takes in two arrays, each of which contain
-    N vectors of 3 components. The function then calculates and returns the cross
-    product of the two vectors at each position.
+    None
 """
 import logging
 
 import numpy as np
-from numba import njit, prange
 from tqdm import tqdm
 
 from . import aerodynamics
@@ -95,7 +91,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             This is the unsteady problem to be solved.
         :return: None
         """
-        # Initialize this solution's attributes.
         self.unsteady_problem = unsteady_problem
         self.num_steps = self.unsteady_problem.num_steps
         self.delta_time = self.unsteady_problem.delta_time
@@ -108,13 +103,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_operating_point = None
         self.current_freestream_velocity_geometry_axes = None
         self.current_wing_wing_influences = None
-        self.vectorized_current_wing_wing_influences = None
         self.current_freestream_wing_influences = None
-        self.vectorized_current_freestream_wing_influences = None
         self.current_wake_wing_influences = None
-        self.vectorized_current_wake_wing_influences = None
         self.current_vortex_strengths = None
-        self.vectorized_current_vortex_strengths = None
         self.streamline_points = None
 
         # Initialize attributes to hold geometric data that pertains to this problem.
@@ -207,21 +198,26 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         logging.basicConfig(level=logging_level_value)
 
-        # ToDo: Document this addition.
+        # The following loop iterates through the steps to populate currently empty
+        # attributes with lists of pre-allocated arrays. During the simulation,
+        # these arrays will be filled with data that describe the wake. Using this
+        # method eliminates the need for computationally expensive on-the-fly
+        # allocation and object copying.
         for step in range(self.num_steps):
             this_problem = self.steady_problems[step]
             this_airplane = this_problem.airplane
             these_wings = this_airplane.wings
 
+            # Iterate through the wings to get the total number of spanwise panels.
             this_num_spanwise_panels = 0
             for this_wing in these_wings:
                 this_num_spanwise_panels += this_wing.num_spanwise_panels
 
-            self.num_wake_ring_vortices_list.append(step * this_num_spanwise_panels)
+            # The number of wake vortices is the step number multiplied by the number
+            # of spanwise panels. This works because the first step number is zero.
+            this_num_wake_ring_vortices = step * this_num_spanwise_panels
 
-        for step in range(self.num_steps):
-            this_num_wake_ring_vortices = self.num_wake_ring_vortices_list[step]
-
+            # Allocate the arrays for this step.
             this_wake_ring_vortex_strengths = np.zeros(this_num_wake_ring_vortices)
             this_wake_ring_vortex_ages = np.zeros(this_num_wake_ring_vortices)
             this_wake_ring_vortex_front_right_vertices = np.zeros(
@@ -237,6 +233,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 (this_num_wake_ring_vortices, 3)
             )
 
+            # Append this step's arrays to the list of arrays.
+            self.num_wake_ring_vortices_list.append(this_num_wake_ring_vortices)
             self.wake_ring_vortex_strengths_list.append(this_wake_ring_vortex_strengths)
             self.wake_ring_vortex_ages_list.append(this_wake_ring_vortex_ages)
             self.wake_ring_vortex_front_right_vertices_list.append(
@@ -252,7 +250,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 this_wake_ring_vortex_back_right_vertices
             )
 
-        # ToDo: Document the following code that preprocesses the problem for tqdm.
+        # The following loop attempts to predict how much time each step will take,
+        # relative to the other steps. This data will be used to generate estimates
+        # of how much longer a simulation will take, and create a smoothly advancing
+        # progress bar.
+
+        # Initialize list that will hold the approximate, relative times. This has
+        # one more element than the number of steps, because I will also use the
+        # progress bar during the problem initialization.
         approx_times = np.zeros(self.num_steps + 1)
         for step in range(1, self.num_steps):
             this_problem = self.steady_problems[step]
@@ -321,28 +326,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_wing_wing_influences = np.zeros(
                     (self.current_airplane.num_panels, self.current_airplane.num_panels)
                 )
-                self.vectorized_current_wing_wing_influences = np.zeros(
-                    (self.current_airplane.num_panels, self.current_airplane.num_panels)
-                )
                 self.current_freestream_velocity_geometry_axes = (
                     self.current_operating_point.calculate_freestream_velocity_geometry_axes()
                 )
                 self.current_freestream_wing_influences = np.zeros(
                     self.current_airplane.num_panels
                 )
-                self.vectorized_current_freestream_wing_influences = np.zeros(
-                    self.current_airplane.num_panels
-                )
                 self.current_wake_wing_influences = np.zeros(
                     self.current_airplane.num_panels
                 )
-                self.vectorized_current_wake_wing_influences = np.zeros(
-                    self.current_airplane.num_panels
-                )
                 self.current_vortex_strengths = np.ones(
-                    self.current_airplane.num_panels
-                )
-                self.vectorized_current_vortex_strengths = np.ones(
                     self.current_airplane.num_panels
                 )
 
@@ -442,7 +435,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     (self.current_airplane.num_panels, 3)
                 )
 
-                # ToDo: Document this addition.
+                # Get the pre-allocated (but still all zero) arrays of wake
+                # information that are associated with this time step.
                 self.current_wake_ring_vortex_strengths = (
                     self.wake_ring_vortex_strengths_list[step]
                 )
@@ -1023,7 +1017,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
-            * numba_1d_explicit_cross(
+            * functions.numba_1d_explicit_cross(
                 velocities_at_ring_vortex_right_leg_centers,
                 self.panel_right_vortex_vectors,
             )
@@ -1031,7 +1025,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_front_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
-            * numba_1d_explicit_cross(
+            * functions.numba_1d_explicit_cross(
                 velocities_at_ring_vortex_front_leg_centers,
                 self.panel_front_vortex_vectors,
             )
@@ -1039,7 +1033,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         near_field_forces_on_ring_vortex_left_legs_geometry_axes = (
             self.current_operating_point.density
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
-            * numba_1d_explicit_cross(
+            * functions.numba_1d_explicit_cross(
                 velocities_at_ring_vortex_left_leg_centers,
                 self.panel_left_vortex_vectors,
             )
@@ -1066,24 +1060,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the near field moment in geometry axes on the front leg, left leg,
         # and right leg. Also find the moment on each panel due to the unsteady force.
         near_field_moments_on_ring_vortex_front_legs_geometry_axes = (
-            numba_1d_explicit_cross(
+            functions.numba_1d_explicit_cross(
                 self.panel_front_vortex_centers - self.current_airplane.xyz_ref,
                 near_field_forces_on_ring_vortex_front_legs_geometry_axes,
             )
         )
         near_field_moments_on_ring_vortex_left_legs_geometry_axes = (
-            numba_1d_explicit_cross(
+            functions.numba_1d_explicit_cross(
                 self.panel_left_vortex_centers - self.current_airplane.xyz_ref,
                 near_field_forces_on_ring_vortex_left_legs_geometry_axes,
             )
         )
         near_field_moments_on_ring_vortex_right_legs_geometry_axes = (
-            numba_1d_explicit_cross(
+            functions.numba_1d_explicit_cross(
                 self.panel_right_vortex_centers - self.current_airplane.xyz_ref,
                 near_field_forces_on_ring_vortex_right_legs_geometry_axes,
             )
         )
-        unsteady_near_field_moments_geometry_axes = numba_1d_explicit_cross(
+        unsteady_near_field_moments_geometry_axes = functions.numba_1d_explicit_cross(
             self.panel_collocation_points - self.current_airplane.xyz_ref,
             unsteady_near_field_forces_geometry_axes,
         )
@@ -1685,38 +1679,3 @@ class UnsteadyRingVortexLatticeMethodSolver:
             these_left_leg_centers - last_left_leg_centers
         ) / self.delta_time
         return flapping_velocities
-
-
-@njit(parallel=True, cache=True)
-def numba_1d_explicit_cross(vectors_1, vectors_2):
-    """This function takes in two arrays, each of which contain N vectors of 3
-    components. The function then calculates and returns the cross product of the two
-    vectors at each position.
-
-    Note: This function has been optimized for JIT compilation and parallel
-    computation using Numba.
-
-    Citation: Some or all of the following code was written by Jérôme Richard as a
-    response to a question on Stack Overflow. The original response is here:
-    https://stackoverflow.com/a/66757029/13240504.
-
-    :param vectors_1: array of floats of size (N x 3)
-        This is the first array of N vectors.
-    :param vectors_2: array of floats of size (N x 3)
-        This is the second array of N vectors.
-    :return crosses: array of floats of size (N x 3)
-        This is the cross product of the two inputted vectors at each of the N
-        positions.
-    """
-    crosses = np.zeros(vectors_1.shape)
-    for i in prange(crosses.shape[0]):
-        crosses[i, 0] = (
-            vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
-        )
-        crosses[i, 1] = (
-            vectors_1[i, 2] * vectors_2[i, 0] - vectors_1[i, 0] * vectors_2[i, 2]
-        )
-        crosses[i, 2] = (
-            vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
-        )
-    return crosses

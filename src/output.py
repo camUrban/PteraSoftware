@@ -1,3 +1,4 @@
+# ToDo: Update this module's documentation.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -14,6 +15,13 @@ This module contains the following functions:
     plot_results_versus_time: This method takes in an unsteady solver object,
     and plots the geometries' forces, moments, and coefficients as a function of
     time.
+
+    get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
+    surface of wake ring vortices at a given time step.
+
+    get_scalars: This function gets the delta pressure values from an airplane object,
+    and puts them into a 1D array to be used as scalars for display by other output
+    methods.
 """
 import os
 
@@ -727,8 +735,18 @@ def get_panel_surfaces(
     return pv.PolyData(panel_vertices, panel_faces)
 
 
-# ToDo: Document this method.
 def get_wake_ring_vortex_surfaces(solver, step):
+    """This function returns the PolyData object for the surface of wake ring
+    vortices at a given time step.
+
+    :param solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the unsteady solver with the wake.
+    :param step: int
+        This is the step number at which to look at the wake.
+    :return: PolyData
+        This is the PolyData object of the wake surface that can be displayed by
+        other output methods.
+    """
     num_wake_ring_vortices = solver.num_wake_ring_vortices_list[step]
     wake_ring_vortex_front_right_vertices = (
         solver.wake_ring_vortex_front_right_vertices_list[step]
@@ -795,14 +813,16 @@ def get_wake_ring_vortex_surfaces(solver, step):
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
-# ToDo: Document this method.
 def get_scalars(
     airplane,
 ):
-    """
+    """This function gets the delta pressure values from an airplane object, and puts
+    them into a 1D array to be used as scalars for display by other output methods.
 
-    :param airplane:
-    :return:
+    :param airplane: Airplane
+        This is the airplane object with the scalars we are collecting.
+    :return scalars: 1D array of ints
+        This is the 1D array of integers for each panel's delta pressure values.
     """
     # Initialize an empty array to hold the scalars.
     scalars = np.empty(0, dtype=int)

@@ -1,11 +1,16 @@
 # ToDo: Properly document this module
+"""This module contains functions used by other modules in the src package.
+
+"""
+import logging
+
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 def cosspace(
-    minimum=0.0,
-    maximum=1.0,
+    minimum,
+    maximum,
     n_points=50,
     endpoint=True,
 ):
@@ -18,19 +23,16 @@ def cosspace(
         Author:               Peter Sharpe
         Date of Retrieval:    04/28/2020
 
-    :param minimum: float, optional
-        This is the minimum value of the range of numbers you would like spaced. The
-        default is 0.0.
-    :param maximum: float, optional
-        This is the maximum value of the range of numbers you would like spaced. The
-        default is 1.0.
+    :param minimum: float
+        This is the minimum value of the range of numbers you would like spaced.
+    :param maximum: float
+        This is the maximum value of the range of numbers you would like spaced.
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
     :param endpoint: bool, optional
         This sets whether or not the maximum value will be included in the output.
         The default is True.
     :return cosine_spaced_points: 1D array
-
         This is a 1D array of the points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
     """
@@ -195,3 +197,306 @@ def numba_centroid_of_quadrilateral(
     ) / 4
 
     return np.array([x_average, y_average, z_average])
+
+
+def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
+    """Calculates the location of the streamlines coming off the back of the wings.
+
+    This method is vectorized to increase performance.
+
+    :param solver: Solver
+        This is the solver object for which to calculate the streamlines.
+    :param num_steps: int, optional
+        This is the integer number of points along each streamline (not including the
+        initial points). It can be increased for higher fidelity visuals. The default
+        value is 25.
+    :param delta_time: float, optional
+        This is the time in seconds between each time current_step It can be
+        decreased for higher fidelity visuals or to make the streamlines shorter.
+        It's default value is 0.02 seconds.
+    :return: None
+    """
+    # Initialize a array to hold this solver's matrix of streamline points.
+    solver.streamline_points = np.expand_dims(solver.seed_points, axis=0)
+
+    # Iterate through the streamline steps.
+    for step in range(num_steps):
+        # Get the last row of streamline points.
+        last_row_streamline_points = solver.streamline_points[-1, :, :]
+
+        # Add the freestream velocity to the induced velocity to get the total
+        # velocity at each of the last row of streamline points.
+        total_velocities = solver.calculate_solution_velocity(
+            points=last_row_streamline_points
+        )
+
+        # Interpolate the positions on a new row of streamline points.
+        new_row_streamline_points = (
+            last_row_streamline_points + total_velocities * delta_time
+        )
+
+        # Stack the new row of streamline points to the bottom of the matrix of
+        # streamline points.
+        solver.streamline_points = np.vstack(
+            (
+                solver.streamline_points,
+                np.expand_dims(new_row_streamline_points, axis=0),
+            )
+        )
+
+
+def convert_logging_level_name_to_value(name):
+    """This function takes in a string that represents the the logging level and
+    returns the integer that can be used to set the logger to this level.
+
+    :param name: str
+        This is the string representation of the logging level. The options are
+        "Debug", "Info", "Warning", "Error", and "Critical".
+    :return: int
+        This is the integer value that can used to set the appropriate logging level.
+    """
+    logging_levels = {
+        "Debug": logging.DEBUG,
+        "Info": logging.INFO,
+        "Warning": logging.WARNING,
+        "Error": logging.ERROR,
+        "Critical": logging.CRITICAL,
+    }
+    try:
+        return logging_levels[name]
+    except KeyError:
+        raise Exception("The name of the logging level provided is not a valid option.")
+
+
+# ToDo: Update this function's documentation.
+def process_steady_solver_forces(
+    steady_solver, near_field_forces_geometry_axes, near_field_moments_geometry_axes
+):
+    """
+
+    :param steady_solver:
+    :param near_field_forces_geometry_axes:
+    :param near_field_moments_geometry_axes:
+    :return:
+    """
+    # Initialize a variable to hold the global panel position.
+    global_panel_position = 0
+
+    # Iterate through this solver's panels.
+    for panel in steady_solver.panels:
+        # Update the force and moment on this panel.
+        panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
+            global_panel_position, :
+        ]
+        panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
+            global_panel_position, :
+        ]
+
+        # Update the pressure on this panel.
+        panel.update_pressure()
+
+        # Increment the global panel position.
+        global_panel_position += 1
+
+    # Sum up the near field forces and moments on every panel to find the total
+    # force and moment on the geometry.
+    total_near_field_force_geometry_axes = np.sum(
+        near_field_forces_geometry_axes, axis=0
+    )
+    total_near_field_moment_geometry_axes = np.sum(
+        near_field_moments_geometry_axes, axis=0
+    )
+
+    # Find the total near field force in wind axes from the rotation matrix and
+    # the total near field force in geometry axes.
+    steady_solver.airplane.total_near_field_force_wind_axes = (
+        np.transpose(
+            steady_solver.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        )
+        @ total_near_field_force_geometry_axes
+    )
+
+    # Find the total near field moment in wind axes from the rotation matrix and
+    # the total near field moment in geometry axes.
+    steady_solver.airplane.total_near_field_moment_wind_axes = (
+        np.transpose(
+            steady_solver.operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        )
+        @ total_near_field_moment_geometry_axes
+    )
+
+    # Calculate the current_airplane's induced drag coefficient
+    induced_drag_coefficient = (
+        -steady_solver.airplane.total_near_field_force_wind_axes[0]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's side force coefficient.
+    side_force_coefficient = (
+        steady_solver.airplane.total_near_field_force_wind_axes[1]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's lift coefficient.
+    lift_coefficient = (
+        -steady_solver.airplane.total_near_field_force_wind_axes[2]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+    )
+
+    # Calculate the current_airplane's rolling moment coefficient.
+    rolling_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[0]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.b_ref
+    )
+
+    # Calculate the current_airplane's pitching moment coefficient.
+    pitching_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[1]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.c_ref
+    )
+
+    # Calculate the current_airplane's yawing moment coefficient.
+    yawing_moment_coefficient = (
+        steady_solver.airplane.total_near_field_moment_wind_axes[2]
+        / steady_solver.operating_point.calculate_dynamic_pressure()
+        / steady_solver.airplane.s_ref
+        / steady_solver.airplane.b_ref
+    )
+
+    steady_solver.airplane.total_near_field_force_coefficients_wind_axes = np.array(
+        [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
+    )
+    steady_solver.airplane.total_near_field_moment_coefficients_wind_axes = np.array(
+        [
+            rolling_moment_coefficient,
+            pitching_moment_coefficient,
+            yawing_moment_coefficient,
+        ]
+    )
+
+
+# ToDo: Update this function's documentation.
+def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, panel):
+    """
+
+    :param solver:
+    :param global_panel_position:
+    :param panel:
+    :return:
+    """
+    # Update the solver's list of attributes with this panel's attributes.
+    solver.panels[global_panel_position] = panel
+    solver.panel_normal_directions[global_panel_position, :] = panel.normal_direction
+    solver.panel_areas[global_panel_position] = panel.area
+    solver.panel_centers[global_panel_position] = panel.center
+    solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
+    solver.panel_back_right_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.origin
+    solver.panel_front_right_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.termination
+    solver.panel_front_left_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.origin
+    solver.panel_back_left_vortex_vertices[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.termination
+    solver.panel_right_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.center
+    solver.panel_right_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.right_leg.vector
+    solver.panel_front_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.front_leg.center
+    solver.panel_front_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.front_leg.vector
+    solver.panel_left_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.center
+    solver.panel_left_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.left_leg.vector
+    solver.panel_back_vortex_centers[
+        global_panel_position, :
+    ] = panel.ring_vortex.back_leg.center
+    solver.panel_back_vortex_vectors[
+        global_panel_position, :
+    ] = panel.ring_vortex.back_leg.vector
+    solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
+    solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
+    solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
+    solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
+
+    # Check if this panel is on the trailing edge.
+    if panel.is_trailing_edge:
+        # If it is, calculate it's streamline seed point and add it to
+        # the solver's array of seed points.
+        solver.seed_points = np.vstack(
+            (
+                solver.seed_points,
+                panel.back_left_vertex
+                + 0.5 * (panel.back_right_vertex - panel.back_left_vertex),
+            )
+        )
+
+
+def calculate_steady_freestream_wing_influences(steady_solver):
+    """This method finds the vector of freestream-wing influence coefficients
+    associated with this problem.
+
+    :return: None
+    """
+    # Take the batch dot product of the freestream velocity with each panel's
+    # normal direction. This is now the problem's 1D array of freestream-wing
+    # influence coefficients.
+    steady_solver.freestream_wing_influences = np.einsum(
+        "ij,j->i",
+        steady_solver.panel_normal_directions,
+        steady_solver.freestream_velocity,
+    )
+
+
+@njit(parallel=True, cache=True, fastmath=True)
+def numba_1d_explicit_cross(vectors_1, vectors_2):
+    """This function takes in two arrays, each of which contain N vectors of 3
+    components. The function then calculates and returns the cross product of the two
+    vectors at each position.
+
+    Note: This function has been optimized for JIT compilation and parallel
+    computation using Numba.
+
+    Citation: Some or all of the following code was written by Jérôme Richard as a
+    response to a question on Stack Overflow. The original response is here:
+    https://stackoverflow.com/a/66757029/13240504.
+
+    :param vectors_1: array of floats of size (N x 3)
+        This is the first array of N vectors.
+    :param vectors_2: array of floats of size (N x 3)
+        This is the second array of N vectors.
+    :return crosses: array of floats of size (N x 3)
+        This is the cross product of the two inputted vectors at each of the N
+        positions.
+    """
+    crosses = np.zeros(vectors_1.shape)
+    for i in prange(crosses.shape[0]):
+        crosses[i, 0] = (
+            vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
+        )
+        crosses[i, 1] = (
+            vectors_1[i, 2] * vectors_2[i, 0] - vectors_1[i, 0] * vectors_2[i, 2]
+        )
+        crosses[i, 2] = (
+            vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
+        )
+    return crosses

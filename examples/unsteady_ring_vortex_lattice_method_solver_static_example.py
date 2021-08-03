@@ -375,14 +375,16 @@ operating_point_movement = src.movement.OperatingPointMovement(
 movement = src.movement.Movement(  # Add the airplane movement.
     airplane_movement=airplane_movement,  # Add the operating point movement.
     operating_point_movement=operating_point_movement,
-    # Add the number of time steps. I've nondimensionalized the number of steps and
-    # the time in between them, in order to have the wake ring vortices and the bound
-    # ring vortices have the same area, and to have the wake ring vortex sheet extend
-    # back to be approximately ten times the chord length of the main wing.
-    num_steps=example_airplane.wings[0].num_chordwise_panels * 20,
-    delta_time=example_airplane.c_ref
-    / example_airplane.wings[0].num_chordwise_panels
-    / example_operating_point.velocity,
+    # Leave the number of time steps and the length of each time step unspecified.
+    # The solver will automatically set the length of the time steps so that the wake
+    # ring vortices and the bound ring vortices have the approximately the same area.
+    # The solver will also determine if the geometry is static or not. If it is
+    # static, the number of steps will be set such that the wake extends ten chord
+    # lengths back from the main wing. If the geometry isn't static, the number of
+    # steps will be set such that three periods of the slowest movement oscillation
+    # complete.
+    num_steps=None,
+    delta_time=None,
 )
 
 # Delete the extraneous airplane and operating point movement objects, as these are
@@ -409,9 +411,10 @@ del example_problem
 
 # Run the example solver.
 example_solver.run(
-    # Tell the example solver to print solver status and output to the console. The
-    # "verbose" attribute defaults to true.
-    verbose=False,
+    # This parameter determines the detail of information that the solver's logger
+    # will output while running. The options are, in order of detail and severity,
+    # "Debug", "Info", "Warning", "Error", "Critical". The default value is "Warning".
+    logging_level="Warning",
     # Use a prescribed wake model. This is faster, but may be slightly less accurate.
     prescribed_wake=True,
 )

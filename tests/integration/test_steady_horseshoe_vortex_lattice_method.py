@@ -81,7 +81,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         """
 
         # Run the solver.
-        self.steady_horseshoe_vortex_lattice_method_validation_solver.run(verbose=True)
+        self.steady_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.019
@@ -124,9 +124,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         """
 
         # Run the solver.
-        self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run(
-            verbose=True
-        )
+        self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.007

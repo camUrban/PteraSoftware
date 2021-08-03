@@ -345,9 +345,7 @@ class AirplaneMovement:
         wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
         # Iterate through the wing movement locations.
-        for wing_movement_location in range(len(self.wing_movements)):
-            # Get the wing movement.
-            wing_movement = self.wing_movements[wing_movement_location]
+        for wing_movement_location, wing_movement in enumerate(self.wing_movements):
 
             # Generate this wing's vector of other wing's based on its movement.
             this_wings_list_of_wings = np.array(
@@ -602,15 +600,10 @@ class WingMovement:
         last_wing_cross_section_time_histories = None
 
         # Iterate through the wing cross section movement locations.
-        for wing_cross_section_movement_location in range(
-            len(self.wing_cross_section_movements)
-        ):
-
-            # Get the wing cross section movement.
-            wing_cross_section_movement = self.wing_cross_section_movements[
-                wing_cross_section_movement_location
-            ]
-
+        for (
+            wing_cross_section_movement_location,
+            wing_cross_section_movement,
+        ) in enumerate(self.wing_cross_section_movements):
             wing_is_vertical = False
 
             # Check if this is this wing's root cross section.
@@ -1364,7 +1357,6 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     :return values: 1D array of floats
         This is the resulting vector of sinusoidally spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1374,12 +1366,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1409,7 +1396,6 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     :return values: 1D array of floats
         This is the resulting vector of uniformly spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1419,12 +1405,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude
@@ -1464,7 +1445,6 @@ def oscillating_customspace(
     :return values: 1D array of floats
         This is the resulting vector of custom spaced values
     """
-
     # If either the amplitude or the period are 0, return a vector with length equal
     # to the number of steps, and all the values equal to the base value.
     if amplitude == 0 or period == 0:
@@ -1474,12 +1454,7 @@ def oscillating_customspace(
     total_time = num_steps * delta_time
 
     # Get the time at each time step.
-    times = np.linspace(
-        0,
-        total_time,
-        num_steps,
-        endpoint=False,
-    )
+    times = np.linspace(0, total_time, num_steps, endpoint=False)
 
     # Convert the function characteristics into classic wave function constants.
     a = amplitude

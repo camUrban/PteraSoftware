@@ -1,4 +1,6 @@
-# ToDo: Document this script.
+"""This script is used to benchmark the speed of the unsteady solver with a typical
+use case. This script doesn't have any expected output images in the docs directory.
+Do not commit any changes to this file."""
 
 import timeit
 

@@ -31,6 +31,47 @@ import pyvista as pv
 
 from . import unsteady_ring_vortex_lattice_method
 
+sequential_color_map = "speed"
+diverging_color_map = "delta"
+wake_vortex_color = "white"
+panel_color = "chartreuse"
+streamline_color = "orchid"
+plotter_background_color = "black"
+figure_background_color = "black"
+figure_text_color = "white"
+
+# For the figure lines, use the "Prism" qualitative color map from
+# carto.com/carto-colors.
+prism = [
+    "#5F4690",
+    "#1D6996",
+    "#38A6A5",
+    "#0F8554",
+    "#73AF48",
+    "#EDAD08",
+    "#E17C05",
+    "#CC503E",
+    "#94346E",
+    "#6F4070",
+    "#994E95",
+    "#666666",
+]
+[
+    drag_color,
+    side_color,
+    lift_color,
+    roll_color,
+    pitch_color,
+    yaw_color,
+] = prism[3:9]
+
+# Set the number of markers and the marker size for the results plots.
+num_markers = 6
+marker_size = 8
+
+# Calculate the normalized spacing between the markers for the results plots.
+marker_spacing = 1.0 / num_markers
+
 
 def draw(
     solver,
@@ -80,7 +121,7 @@ def draw(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
                 smooth_shading=True,
-                color="white",
+                color=wake_vortex_color,
             )
 
     else:
@@ -99,11 +140,11 @@ def draw(
         # have the same sign (sequential color map) or if they have different signs
         # (diverging color map).
         if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
-            color_map = "speed"
+            color_map = sequential_color_map
             c_min = max(np.mean(scalars) - 2 * np.std(scalars), np.min(scalars))
             c_max = min(np.mean(scalars) + 2 * np.std(scalars), np.max(scalars))
         else:
-            color_map = "delta"
+            color_map = diverging_color_map
             c_min = -2 * np.std(scalars)
             c_max = 2 * np.std(scalars)
 
@@ -133,7 +174,7 @@ def draw(
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
-            color="#86C552",
+            color=panel_color,
             smooth_shading=True,
         )
 
@@ -163,12 +204,12 @@ def draw(
                             point,
                         ),
                         show_edges=True,
-                        color="plum",
+                        color=streamline_color,
                         line_width=2,
                     )
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color="black")
+    plotter.set_background(color=plotter_background_color)
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
@@ -225,7 +266,7 @@ def animate(
         # across all time steps have the same sign (sequential color map) or if they
         # have different signs (diverging color map).
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
-            color_map = "speed"
+            color_map = sequential_color_map
             c_min = max(
                 np.mean(all_scalars) - 2 * np.std(all_scalars), np.min(all_scalars)
             )
@@ -233,7 +274,7 @@ def animate(
                 np.mean(all_scalars) + 2 * np.std(all_scalars), np.max(all_scalars)
             )
         else:
-            color_map = "delta"
+            color_map = diverging_color_map
             c_min = -2 * np.std(all_scalars)
             c_max = 2 * np.std(all_scalars)
 
@@ -273,12 +314,12 @@ def animate(
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
-            color="#86C552",
+            color=panel_color,
             smooth_shading=True,
         )
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color="black")
+    plotter.set_background(color=plotter_background_color)
 
     # Print a message to the console on how to set up the window.
     print(
@@ -314,7 +355,7 @@ def animate(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
                 smooth_shading=True,
-                color="white",
+                color=wake_vortex_color,
             )
 
         # Check if the user wants to plot pressures and this step is equal to or
@@ -351,7 +392,7 @@ def animate(
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,
-                color="#86C552",
+                color=panel_color,
                 smooth_shading=True,
             )
 
@@ -372,8 +413,7 @@ def animate(
 
 def plot_results_versus_time(unsteady_solver, testing=False):
     """This method takes in an unsteady solver object, and plots the geometries'
-    forces, moments, and coefficients as a
-    function of time.
+    forces, moments, and coefficients as a function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose resulting forces, moments, and coefficients
@@ -444,31 +484,60 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     # Initialize the plot.
     force_figure, force_axes = plt.subplots()
 
+    # Remove the top and right spines.
+    force_axes.spines.right.set_visible(False)
+    force_axes.spines.top.set_visible(False)
+    force_axes.spines.bottom.set_color(figure_text_color)
+    force_axes.spines.left.set_color(figure_text_color)
+    force_axes.xaxis.label.set_color(figure_text_color)
+    force_axes.yaxis.label.set_color(figure_text_color)
+    force_axes.tick_params(axis="x", colors=figure_text_color)
+    force_axes.tick_params(axis="y", colors=figure_text_color)
+
     # Add each of the three components of the force.
     force_axes.plot(
         times,
         total_near_field_force_wind_axes[0],
-        label="Induced Drag",
-        color="#000000",
+        label="$\it{Induced\ Drag}$",
+        color=drag_color,
+        marker=".",
+        markevery=(marker_spacing * 2 / 3, marker_spacing),
+        markersize=marker_size,
     )
     force_axes.plot(
-        times, total_near_field_force_wind_axes[1], label="Side Force", color="#86C552"
+        times,
+        total_near_field_force_wind_axes[1],
+        label="$\it{Side\ Force}$",
+        color=side_color,
+        marker=".",
+        markevery=(marker_spacing * 2 / 3, marker_spacing),
+        markersize=marker_size,
     )
     force_axes.plot(
-        times, total_near_field_force_wind_axes[2], label="Lift", color="#E62128"
+        times,
+        total_near_field_force_wind_axes[2],
+        label="$\it{Lift}$",
+        color=lift_color,
+        marker=".",
+        markevery=(marker_spacing * 2 / 3, marker_spacing),
+        markersize=marker_size,
     )
 
     # Name the axis labels and the title.
-    force_axes.set_xlabel("Time (s)", color="#000000")
-    force_axes.set_ylabel("Force (N)", color="#000000")
-    force_axes.set_title("Total Forces in Wind Axes versus Time", color="#000000")
+    force_axes.set_xlabel("$\it{Time\ (s)}$", color=figure_text_color)
+    force_axes.set_ylabel("$\it{Force\ (N)}$", color=figure_text_color)
+    force_axes.set_title("$\it{Forces\ vs.\ Time}$", color=figure_text_color)
 
     # Set the plot's background color.
-    force_figure.patch.set_facecolor("#EEEEEF")
-    force_axes.set_facecolor("#EEEEEF")
+    force_figure.patch.set_facecolor(figure_background_color)
+    force_axes.set_facecolor(figure_background_color)
 
     # Add a legend.
-    force_axes.legend(facecolor="#EEEEEF")
+    force_axes.legend(
+        facecolor=figure_background_color,
+        edgecolor=figure_background_color,
+        labelcolor=figure_text_color,
+    )
 
     # Show the plot.
     if not testing:
@@ -478,39 +547,65 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     # Initialize the plot.
     force_coefficients_figure, force_coefficients_axes = plt.subplots()
 
+    # Remove the top and right spines.
+    force_coefficients_axes.spines.right.set_visible(False)
+    force_coefficients_axes.spines.top.set_visible(False)
+    force_coefficients_axes.spines.bottom.set_color(figure_text_color)
+    force_coefficients_axes.spines.left.set_color(figure_text_color)
+    force_coefficients_axes.xaxis.label.set_color(figure_text_color)
+    force_coefficients_axes.yaxis.label.set_color(figure_text_color)
+    force_coefficients_axes.tick_params(axis="x", colors=figure_text_color)
+    force_coefficients_axes.tick_params(axis="y", colors=figure_text_color)
+
     # Add each of the three force coefficients.
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[0],
-        label="Coefficient of Induced Drag",
-        color="#000000",
+        label="$\it{Induced\ Drag}$",
+        color=drag_color,
+        marker=".",
+        markevery=(marker_spacing * 0 / 3, marker_spacing),
+        markersize=marker_size,
     )
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[1],
-        label="Coefficient of Side Force",
-        color="#86C552",
+        label="$\it{Side\ Force}$",
+        color=side_color,
+        marker=".",
+        markevery=(marker_spacing * 1 / 3, marker_spacing),
+        markersize=marker_size,
     )
     force_coefficients_axes.plot(
         times,
         total_near_field_force_coefficients_wind_axes[2],
-        label="Coefficient of Lift",
-        color="#E62128",
+        label="$\it{Lift}$",
+        color=lift_color,
+        marker=".",
+        markevery=(marker_spacing * 0 / 3, marker_spacing),
+        markersize=marker_size,
     )
 
     # Name the axis labels and the title.
-    force_coefficients_axes.set_xlabel("Time (s)", color="#000000")
-    force_coefficients_axes.set_ylabel("Dimensionless", color="#000000")
+    force_coefficients_axes.set_xlabel("$\it{Time\ (s)}$", color=figure_text_color)
+    force_coefficients_axes.set_ylabel(
+        "$\it{Coefficient\ (Unitless)}$", color=figure_text_color
+    )
     force_coefficients_axes.set_title(
-        "Total Force Coefficients in Wind Axes versus Time", color="#000000"
+        "$\it{Force\ Coefficients\ vs.\ Time}$",
+        color=figure_text_color,
     )
 
     # Set the plot's background color.
-    force_coefficients_figure.patch.set_facecolor("#EEEEEF")
-    force_coefficients_axes.set_facecolor("#EEEEEF")
+    force_coefficients_figure.patch.set_facecolor(figure_background_color)
+    force_coefficients_axes.set_facecolor(figure_background_color)
 
     # Add a legend.
-    force_coefficients_axes.legend(facecolor="#EEEEEF")
+    force_coefficients_axes.legend(
+        facecolor=figure_background_color,
+        edgecolor=figure_background_color,
+        labelcolor=figure_text_color,
+    )
 
     # Show the plot.
     if not testing:
@@ -520,37 +615,60 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     # Initialize the plot.
     moment_figure, moment_axes = plt.subplots()
 
+    # Remove the top and right spines.
+    moment_axes.spines.right.set_visible(False)
+    moment_axes.spines.top.set_visible(False)
+    moment_axes.spines.bottom.set_color(figure_text_color)
+    moment_axes.spines.left.set_color(figure_text_color)
+    moment_axes.xaxis.label.set_color(figure_text_color)
+    moment_axes.yaxis.label.set_color(figure_text_color)
+    moment_axes.tick_params(axis="x", colors=figure_text_color)
+    moment_axes.tick_params(axis="y", colors=figure_text_color)
+
     # Add each of the three components of the moment.
     moment_axes.plot(
         times,
         total_near_field_moment_wind_axes[0],
-        label="Rolling Moment",
-        color="#000000",
+        label="$\it{Roll}$",
+        color=roll_color,
+        marker=".",
+        markevery=(marker_spacing * 0 / 3, marker_spacing),
+        markersize=marker_size,
     )
     moment_axes.plot(
         times,
         total_near_field_moment_wind_axes[1],
-        label="Pitching Moment",
-        color="#86C552",
+        label="$\it{Pitch}$",
+        color=pitch_color,
+        marker=".",
+        markevery=(marker_spacing * 1 / 3, marker_spacing),
+        markersize=marker_size,
     )
     moment_axes.plot(
         times,
         total_near_field_moment_wind_axes[2],
-        label="Yawing Moment",
-        color="#E62128",
+        label="$\it{Yaw}$",
+        color=yaw_color,
+        marker=".",
+        markevery=(marker_spacing * 2 / 3, marker_spacing),
+        markersize=marker_size,
     )
 
     # Name the axis labels and the title.
-    moment_axes.set_xlabel("Time (s)", color="#000000")
-    moment_axes.set_ylabel("Moment (Nm)", color="#000000")
-    moment_axes.set_title("Total Moments in Wind Axes versus Time", color="#000000")
+    moment_axes.set_xlabel("$\it{Time\ (s)}$", color=figure_text_color)
+    moment_axes.set_ylabel("$\it{Moment\ (N\ m)}$", color=figure_text_color)
+    moment_axes.set_title("$\it{Moments\ vs.\ Time}$", color=figure_text_color)
 
     # Set the plot's background color.
-    moment_figure.patch.set_facecolor("#EEEEEF")
-    moment_axes.set_facecolor("#EEEEEF")
+    moment_figure.patch.set_facecolor(figure_background_color)
+    moment_axes.set_facecolor(figure_background_color)
 
     # Add a legend.
-    moment_axes.legend(facecolor="#EEEEEF")
+    moment_axes.legend(
+        facecolor=figure_background_color,
+        edgecolor=figure_background_color,
+        labelcolor=figure_text_color,
+    )
 
     # Show the plot.
     if not testing:
@@ -560,39 +678,69 @@ def plot_results_versus_time(unsteady_solver, testing=False):
     # Initialize the plot.
     moment_coefficients_figure, moment_coefficients_axes = plt.subplots()
 
+    # Remove the top and right spines.
+    moment_coefficients_axes.spines.right.set_visible(False)
+    moment_coefficients_axes.spines.top.set_visible(False)
+    moment_coefficients_axes.spines.bottom.set_color(figure_text_color)
+    moment_coefficients_axes.spines.left.set_color(figure_text_color)
+    moment_coefficients_axes.xaxis.label.set_color(figure_text_color)
+    moment_coefficients_axes.yaxis.label.set_color(figure_text_color)
+    moment_coefficients_axes.tick_params(axis="x", colors=figure_text_color)
+    moment_coefficients_axes.tick_params(axis="y", colors=figure_text_color)
+
     # Add each of the three moment coefficients.
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[0],
-        label="Coefficient of Rolling Moment",
-        color="#000000",
+        label="$\it{Roll}$",
+        color=roll_color,
+        marker=".",
+        markevery=(marker_spacing * 0 / 3, marker_spacing),
+        markersize=marker_size,
     )
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[1],
-        label="Coefficient of Pitching Moment",
-        color="#86C552",
+        label="$\it{Pitch}$",
+        color=pitch_color,
+        marker=".",
+        markevery=(marker_spacing * 1 / 3, marker_spacing),
+        markersize=marker_size,
     )
     moment_coefficients_axes.plot(
         times,
         total_near_field_moment_coefficients_wind_axes[2],
-        label="Coefficient of Yawing Moment",
-        color="#E62128",
+        label="$\it{Yaw}$",
+        color=yaw_color,
+        marker=".",
+        markevery=(marker_spacing * 2 / 3, marker_spacing),
+        markersize=marker_size,
     )
 
     # Name the axis labels and the title.
-    moment_coefficients_axes.set_xlabel("Time (s)", color="#000000")
-    moment_coefficients_axes.set_ylabel("Dimensionless", color="#000000")
+    moment_coefficients_axes.set_xlabel(
+        "$\it{Time\ (s)}$",
+        color=figure_text_color,
+    )
+    moment_coefficients_axes.set_ylabel(
+        "$\it{Coefficient\ (Unitless)}$",
+        color=figure_text_color,
+    )
     moment_coefficients_axes.set_title(
-        "Total Moment Coefficients in Wind Axes versus Time", color="#000000"
+        "$\it{Moment\ Coefficients\ vs.\ Time}$",
+        color=figure_text_color,
     )
 
     # Set the plot's background color.
-    moment_coefficients_figure.patch.set_facecolor("#EEEEEF")
-    moment_coefficients_axes.set_facecolor("#EEEEEF")
+    moment_coefficients_figure.patch.set_facecolor(figure_background_color)
+    moment_coefficients_axes.set_facecolor(figure_background_color)
 
     # Add a legend.
-    moment_coefficients_axes.legend(facecolor="#EEEEEF")
+    moment_coefficients_axes.legend(
+        facecolor=figure_background_color,
+        edgecolor=figure_background_color,
+        labelcolor=figure_text_color,
+    )
 
     # Show the plot.
     if not testing:

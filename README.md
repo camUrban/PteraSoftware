@@ -29,10 +29,10 @@ Thankfully, my friend, Peter Sharpe, had just released his own open-source aerod
 solver: AeroSandbox. With his blessing, I have used AeroSandbox as a jumping-off point
 to develop a solver package capable of unsteady simulations.
 
-Through the combined efforts of Peter Sharpe, Suhas Kodali, and me, Ptera Software was
-born. It is the only easy-to-use, open-source, and actively-maintained UVLM package I
-know capable of analyzing flapping-wing flight. Moreover, it's written in Python, is
-well documented, and is well tested.
+Through the combined efforts of Peter Sharpe, Suhas Kodali, and me, Ptera Software 
+was born. It is an easy-to-use, open-source, and actively-maintained UVLM package 
+capable of analyzing flapping-wing flight. Moreover, it's written in Python, is well 
+documented, tested, and validated.
 
 With your help, I hope we will increase the open-source community's interest and
 understanding of biological flight.
@@ -63,10 +63,12 @@ via the command prompt in your fork's directory.
 Here are the requirements necessary to run Ptera Software:
 
 * matplotlib >= 3.2.2, < 4.0.0
-* numpy >= 1.18.5, < 1.19.0
-* pyvista >= 0.25.3, < 1.0.0
+* numpy >= 1.18.5, < 2.0.0
+* pyvista >= 0.29.0, < 1.0.0
 * scipy >= 1.5, < 2.0
 * numba >= 0.53, <1.0
+* cmocean >= 2.0, <3.0
+* tqdm >= 4.0, < 5.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -166,13 +168,12 @@ contribute and don't know where to start, this is for you!
 ### Testing
 
 * We should make sure that all the integration tests compare output against expected
-results. This means getting rid of all the "test_method_does_not_throw" tests. * We
-should eventually reach and maintain 100% testing coverage.
+results. This means getting rid of all the "test_method_does_not_throw" tests.
+* We should maintain the repository's testing coverage to be at least 80%.
 
 ### Style and Documentation
 
-* Ideally, we should fix up the style so that the entire repository has an A+ CodeFactor
- Rating.
+* Maintain the repository's A CodeFactor Rating.
 * We should fill in any of the "Properly document this..." TODO statements.
 * We should ensure that all files have between 30% and 70% comment lines.
 * We should continue to ensure that all source code is formatted using Black.
@@ -182,10 +183,9 @@ should eventually reach and maintain 100% testing coverage.
 * We should create a setup tutorial video and add it to the documentation. This should
 be geared toward a user who doesn't have Python, an IDE, or Ptera Software installed on
 their computer yet.
-* We should create a conda-forge package to increase our number of potential users.
-* We should implement a leading-edge separation model to account for flow separation.
-See "Modified Unsteady Vortex-Lattice Method to Study Flapping Wings in Hover Flight."
-by Bruno Roccia, Sergio Preidikman, Julio Massa, and Dean Mook for details.
+* We should implement a leading-edge model to account for flow separation. See 
+  "Modified Unsteady Vortex-Lattice Method to Study Flapping Wings in Hover Flight." 
+  by Bruno Roccia, Sergio Preidikman, Julio Massa, and Dean Mook for details.
 * We should create a command-line interface or GUI.
 * We should try to implement aeroelastic effects in Ptera Software's solvers.
 * Flapping wing controls is both fascinating and complicated. We should try to create a
@@ -222,10 +222,12 @@ where applicable.
 * Twine
 * SemVer
 * GitFlow
+* Cmocean
+* Tqdm
 
 ## Notes
 
-To the best of my ability, I am following SemVer conventions in naming my releases. I am
- also using the GitFlow method of branching for this project's development. This means
- that nightly builds will be available on the develop branch. The latest stable releases
-  can be found on the master branch.
+To the best of my ability, I am following SemVer conventions in naming my releases. 
+I am also using the GitFlow method of branching for this project's development. This 
+means that nightly builds will be available on the develop branch. The latest stable 
+releases can be found on the master branch.

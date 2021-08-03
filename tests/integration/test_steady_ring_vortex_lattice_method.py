@@ -67,7 +67,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         """
 
         # Run the solver.
-        self.steady_ring_vortex_lattice_method_validation_solver.run(verbose=True)
+        self.steady_ring_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.019

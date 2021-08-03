@@ -71,7 +71,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            verbose=True, prescribed_wake=True
+            prescribed_wake=True
         )
 
         # Calculate the percent errors of the output.

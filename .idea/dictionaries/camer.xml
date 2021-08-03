@@ -8,6 +8,7 @@
       <w>aiaa</w>
       <w>albatros</w>
       <w>ames</w>
+      <w>ananthan</w>
       <w>arctan</w>
       <w>asmvp</w>
       <w>autobuild</w>
@@ -21,8 +22,11 @@
       <w>bleriot</w>
       <w>camberline</w>
       <w>cambre</w>
+      <w>carto</w>
       <w>chordwise</w>
+      <w>cmocean</w>
       <w>coanda</w>
+      <w>coolwarm</w>
       <w>cosspace</w>
       <w>curtiss</w>
       <w>customspace</w>
@@ -37,6 +41,7 @@
       <w>downwashes</w>
       <w>drela</w>
       <w>dsma</w>
+      <w>dtype</w>
       <w>einsum</w>
       <w>eppler</w>
       <w>fage</w>
@@ -66,7 +71,9 @@
       <w>kutta</w>
       <w>lachassgne</w>
       <w>legacysolvers</w>
+      <w>leishman</w>
       <w>liii</w>
+      <w>linalg</w>
       <w>linspace</w>
       <w>lissaman</w>
       <w>marsden</w>
@@ -93,6 +100,7 @@
       <w>pfalz</w>
       <w>plotkin</w>
       <w>prandtl</w>
+      <w>prange</w>
       <w>preidikman</w>
       <w>proj</w>
       <w>propfan</w>
@@ -110,6 +118,7 @@
       <w>roncz</w>
       <w>royer</w>
       <w>rutan</w>
+      <w>savart</w>
       <w>scipy</w>
       <w>semispan</w>
       <w>sexualized</w>
@@ -122,9 +131,11 @@
       <w>stover</w>
       <w>suhas</w>
       <w>supercritical</w>
+      <w>tqdm</w>
       <w>tsagi</w>
       <w>uiuc</w>
       <w>uncambered</w>
+      <w>unitless</w>
       <w>usnps</w>
       <w>uvlm</w>
       <w>vectorize</w>

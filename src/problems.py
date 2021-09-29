@@ -27,17 +27,17 @@ class SteadyProblem:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, airplane, operating_point):
+    def __init__(self, airplanes, operating_point):
         """This is the initialization method.
 
-        :param airplane: Airplane
-            This is the current_airplane object for this problem.
+        :param airplanes: list of Airplane objects
+            This is a list of the airplane objects for this problem.
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         """
 
         # Initialize the problem's attributes.
-        self.airplane = airplane
+        self.airplanes = airplanes
         self.operating_point = operating_point
 
 
@@ -71,8 +71,8 @@ class UnsteadyProblem:
         self.delta_time = movement.delta_time
         self.only_final_results = only_final_results
 
-        # If the user only wants the results for the final cycle, find the first
-        # time step index where the solver should start calculating results. Otherwise,
+        # If the user only wants the results for the final cycle, find the first time
+        # step index where the solver should start calculating results. Otherwise,
         # set the first time step index to 0.
         if self.only_final_results:
             self.max_period = movement.get_max_period()
@@ -96,13 +96,14 @@ class UnsteadyProblem:
 
         # Iterate through the problem's time steps.
         for step in range(self.num_steps):
-            # Get the airplane and operating point object at this time step.
-            this_airplane = movement.airplanes[step]
+            # Get the airplane objects and the operating point object associated with
+            # this time step.
+            these_airplanes = movement.airplanes[step]
             this_operating_point = movement.operating_points[step]
 
             # Initialize the steady problem object at this time step.
             this_steady_problem = SteadyProblem(
-                airplane=this_airplane, operating_point=this_operating_point
+                airplanes=these_airplanes, operating_point=this_operating_point
             )
 
             # Append this steady problem to the list of steady problems.

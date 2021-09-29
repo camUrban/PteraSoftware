@@ -58,15 +58,16 @@ class Movement:
 
     def __init__(
         self,
-        airplane_movement,
+        airplane_movements,
         operating_point_movement,
         num_steps=None,
         delta_time=None,
     ):
         """This is the initialization method.
 
-        :param airplane_movement: AirplaneMovement
-            This object characterizes the movement of the current_airplane.
+        :param airplane_movements: list of AirplaneMovement objects
+            This is a list of objects which characterize the movement of
+            each airplane in the problem.
         :param operating_point_movement: OperatingPointMovement
             This object characterizes the movement of the the operating point.
         :param num_steps: int, optional
@@ -85,22 +86,28 @@ class Movement:
         """
 
         # Initialize the class attributes.
-        self.airplane_movement = airplane_movement
+        self.airplane_movements = airplane_movements
         self.operating_point_movement = operating_point_movement
 
         # Calculate default num_steps and delta_time values if the user hasn't passed
         # one in.
         if delta_time is None:
-            # The default time step length is that which sheds ring vortices off the
-            # main wing that have roughly the same chord length as the panels on the
-            # main wing. This is based on the base airplane's reference chord length,
-            # its main wing's number of chordwise panels, and its base operating
-            # point's velocity.
-            delta_time = (
-                self.airplane_movement.base_airplane.c_ref
-                / self.airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                / self.operating_point_movement.base_operating_point.velocity
-            )
+            delta_times = []
+            for airplane_movement in self.airplane_movements:
+
+                # For a given airplane object, the ideal time step length is that
+                # which sheds ring vortices off the main wing that have roughly the
+                # same chord length as the panels on the main wing. This is based on
+                # the base airplane's reference chord length, its main wing's number
+                # of chordwise panels, and its base operating point's velocity.
+                delta_times.append(
+                    airplane_movement.base_airplane.c_ref
+                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
+                    / operating_point_movement.base_operating_point.velocity
+                )
+
+            # Set the delta time to be the average of the airplanes' ideal delta times.
+            delta_time = sum(delta_times) / len(delta_times)
         if num_steps is None:
 
             # Get the maximum period of any of this movement's sub-movements.
@@ -108,9 +115,16 @@ class Movement:
 
             if max_period == 0:
 
+                # Find the value of the largest reference chord length of all the
+                # airplanes in this problem.
+                c_refs = []
+                for airplane_movement in self.airplane_movements:
+                    c_refs.append(airplane_movement.base_airplane.c_ref)
+                max_c_ref = max(c_refs)
+
                 # If the movement is static, then set the number of time steps such
                 # that the wake extends back by 10 reference chord lengths.
-                wake_length = 10 * self.airplane_movement.base_airplane.c_ref
+                wake_length = 10 * max_c_ref
                 panel_length = (
                     delta_time
                     * self.operating_point_movement.base_operating_point.velocity
@@ -129,11 +143,19 @@ class Movement:
         self.num_steps = num_steps
         self.delta_time = delta_time
 
-        # Generate a list of the airplanes and operating points that are the steps
-        # through this movement object.
-        self.airplanes = airplane_movement.generate_airplanes(
-            num_steps=self.num_steps, delta_time=self.delta_time
-        )
+        # Generate a list of lists of airplane objects that are the steps through the
+        # movement of each of this problem's base airplanes. The first index
+        # identifies the base airplane and the second index identifies the time step.
+        self.airplanes = []
+        for airplane_movement in self.airplane_movements:
+            self.airplanes.append(
+                airplane_movement.generate_airplanes(
+                    num_steps=self.num_steps, delta_time=self.delta_time
+                )
+            )
+
+        # Generate a lists of operating point objects that are the steps through the
+        # movement of this problem's operating point.
         self.operating_points = operating_point_movement.generate_operating_points(
             num_steps=self.num_steps, delta_time=self.delta_time
         )
@@ -146,11 +168,19 @@ class Movement:
             The longest period in seconds.
         """
 
+        # Iterate through the airplane movements and find the one with the largest
+        # max period.
+        max_airplane_periods = []
+        for airplane_movement in self.airplane_movements:
+            max_airplane_periods.append(airplane_movement.get_max_period())
+        max_airplane_period = max(max_airplane_periods)
+
+        # The global max period is the maximum of the max airplane period and the max
+        # operating point period.
         max_period = max(
-            self.airplane_movement.get_max_period(),
+            max_airplane_period,
             self.operating_point_movement.get_max_period(),
         )
-
         return max_period
 
 

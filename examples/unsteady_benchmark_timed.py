@@ -98,14 +98,14 @@ del operating_point_movement
 
 example_problem = src.problems.UnsteadyProblem(movement=movement, only_final_results=True)
 
-example_solver = src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+unsteady_solver = src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     unsteady_problem=example_problem,
 )
 
 del example_problem
 """
 statement = """
-example_solver.run(
+unsteady_solver.run(
     prescribed_wake=True, calculate_streamlines=False,
 )
 """

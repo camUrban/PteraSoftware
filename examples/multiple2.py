@@ -7,27 +7,22 @@ steady = True
 
 lead_airplane = src.geometry.Airplane(
     name="Lead Airplane",
-    x_ref=0.0,
-    y_ref=0.0,
-    z_ref=0.0,
     wings=[
         src.geometry.Wing(
             name="Main Wing",
-            symmetric=True,
-            num_chordwise_panels=6,
+            symmetric=False,
+            num_chordwise_panels=2,
             chordwise_spacing="uniform",
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
-                    num_spanwise_panels=8,
-                    spanwise_spacing="cosine",
-                    chord=1.75,
+                    y_le=-1.0,
+                    num_spanwise_panels=2,
+                    spanwise_spacing="uniform",
+                    chord=1.0,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    x_le=0.75,
-                    y_le=6.0,
-                    z_le=1.0,
-                    chord=1.5,
+                    y_le=1.0,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
             ],
@@ -37,27 +32,23 @@ lead_airplane = src.geometry.Airplane(
 
 right_airplane = src.geometry.Airplane(
     name="Right Airplane",
-    x_ref=-15.0,
-    y_ref=10.0,
-    z_ref=0.0,
+    x_ref=-10.0,
     wings=[
         src.geometry.Wing(
+            x_le=-10,
             name="Main Wing",
-            symmetric=True,
-            num_chordwise_panels=6,
+            symmetric=False,
+            num_chordwise_panels=2,
             chordwise_spacing="uniform",
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
-                    num_spanwise_panels=8,
-                    spanwise_spacing="cosine",
-                    chord=1.75,
+                    y_le=-1.0,
+                    num_spanwise_panels=2,
+                    spanwise_spacing="uniform",
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    x_le=0.75,
-                    y_le=6.0,
-                    z_le=1.0,
-                    chord=1.5,
+                    y_le=1.0,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
             ],
@@ -68,7 +59,7 @@ right_airplane = src.geometry.Airplane(
 example_operating_point = src.operating_point.OperatingPoint(
     density=1.225,
     velocity=10.0,
-    alpha=5.0,
+    alpha=0.0,
     nu=15.06e-6,
 )
 
@@ -80,12 +71,13 @@ if steady:
         ),
     )
 
+    src.output.draw(solver=steady_solver)
+
     steady_solver.run()
 
-    src.output.draw(
-        solver=steady_solver,
-        show_delta_pressures=True,
-    )
+    src.output.print_steady_results(steady_solver=steady_solver)
+
+    src.output.draw(solver=steady_solver, show_delta_pressures=True)
 else:
     lead_airplane_main_wing_root_wing_cross_section_movement = (
         src.movement.WingCrossSectionMovement(

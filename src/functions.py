@@ -356,7 +356,7 @@ def process_steady_solver_forces(
     # by each by summing up the contribution's from its panels.
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
         for wing in airplane.wings:
-            for panel in wing.panels:
+            for panel in np.ravel(wing.panels):
                 total_near_field_forces_geometry_axes[
                     airplane_num, :
                 ] += panel.near_field_force_geometry_axes

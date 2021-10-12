@@ -3,7 +3,7 @@ lattice method solver on a custom airplane with variable geometry."""
 
 import src
 
-steady = False
+steady = True
 
 example_airplane = src.geometry.Airplane(
     name="Example Airplane",
@@ -125,7 +125,7 @@ example_operating_point = src.operating_point.OperatingPoint(
 
 if steady:
     steady_problem = src.problems.SteadyProblem(
-        airplane=example_airplane, operating_point=example_operating_point
+        airplanes=[example_airplane], operating_point=example_operating_point
     )
 
     steady_solver = src.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(

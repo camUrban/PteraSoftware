@@ -13,7 +13,7 @@ This package contains the following modules:
 
     aerodynamics.py: This module contains vortex class definitions.
 
-    functions.py: This module contains functions used by other modules in the src
+    functions.py: This module contains functions shared by other modules in the src
     package.
 
     geometry.py: This module contains useful functions that relate to geometry,

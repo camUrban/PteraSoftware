@@ -3,7 +3,7 @@ lattice method solver on a custom airplane with variable geometry."""
 
 import src
 
-steady = False
+steady = True
 
 lead_airplane = src.geometry.Airplane(
     name="Lead Airplane",
@@ -73,25 +73,19 @@ example_operating_point = src.operating_point.OperatingPoint(
 )
 
 if steady:
-    # steady_problem = src.problems.SteadyProblem(
-    #     airplane=example_airplane, operating_point=example_operating_point
-    # )
-    #
-    # steady_solver = src.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-    #     steady_problem=steady_problem,
-    # )
-    #
-    # del steady_problem
-    #
-    # steady_solver.run(
-    #     logging_level="Warning",
-    # )
-    #
-    # src.output.draw(
-    #     solver=steady_solver,
-    #     show_delta_pressures=True,
-    # )
-    pass
+    steady_solver = src.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+        steady_problem=src.problems.SteadyProblem(
+            airplanes=[lead_airplane, right_airplane],
+            operating_point=example_operating_point,
+        ),
+    )
+
+    steady_solver.run()
+
+    src.output.draw(
+        solver=steady_solver,
+        show_delta_pressures=True,
+    )
 else:
     lead_airplane_main_wing_root_wing_cross_section_movement = (
         src.movement.WingCrossSectionMovement(

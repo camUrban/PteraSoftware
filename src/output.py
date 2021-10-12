@@ -19,9 +19,9 @@ This module contains the following functions:
     get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
     surface of wake ring vortices at a given time step.
 
-    get_scalars: This function gets the delta pressure values from an airplane object,
-    and puts them into a 1D array to be used as scalars for display by other output
-    methods.
+    get_scalars: This function gets the delta pressure values from a problem's
+    airplane objects, and puts them into a 1D array to be used as scalars for display
+    by other output methods.
 """
 import os
 
@@ -110,7 +110,7 @@ def draw(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
-        airplane = solver.steady_problems[-1].airplane
+        airplanes = solver.steady_problems[-1].airplanes
         last_step = solver.num_steps - 1
 
         # If the user wants to show the wake ring vortices, then get their surfaces and
@@ -125,16 +125,16 @@ def draw(
             )
 
     else:
-        airplane = solver.airplane
+        airplanes = solver.airplanes
 
     # Get the panel surfaces.
-    panel_surfaces = get_panel_surfaces(airplane)
+    panel_surfaces = get_panel_surfaces(airplanes)
 
     # Check if the user wants to plot pressures.
     if show_delta_pressures:
 
         # Get the scalars
-        scalars = get_scalars(airplane)
+        scalars = get_scalars(airplanes)
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
@@ -754,89 +754,93 @@ def print_steady_results(steady_solver):
     :param steady_solver:
     :return:
     """
-    # Print out the total forces and moments.
-    print("Forces in Wind Axes:")
-    print(
-        "\tInduced Drag:\t\t\t",
-        np.round(steady_solver.airplane.total_near_field_force_wind_axes[0], 3),
-        " N",
-    )
-    print(
-        "\tSide Force:\t\t\t\t",
-        np.round(steady_solver.airplane.total_near_field_force_wind_axes[1], 3),
-        " N",
-    )
-    print(
-        "\tLift:\t\t\t\t\t",
-        np.round(steady_solver.airplane.total_near_field_force_wind_axes[2], 3),
-        " N",
-    )
-    print("\nMoments in Wind Axes:")
-    print(
-        "\tRolling Moment:\t\t\t",
-        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[0], 3),
-        " Nm",
-    )
-    print(
-        "\tPitching Moment:\t\t",
-        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[1], 3),
-        " Nm",
-    )
-    print(
-        "\tYawing Moment:\t\t\t",
-        np.round(steady_solver.airplane.total_near_field_moment_wind_axes[2], 3),
-        " Nm",
-    )
 
-    # Print out the coefficients.
-    print("\nCoefficients in Wind Axes:")
-    print(
-        "\tCDi:\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[0], 3
-        ),
-    )
-    print(
-        "\tCY:\t\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[1], 3
-        ),
-    )
-    print(
-        "\tCL:\t\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_force_coefficients_wind_axes[2], 3
-        ),
-    )
-    print(
-        "\tCl:\t\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[0], 3
-        ),
-    )
-    print(
-        "\tCm:\t\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[1], 3
-        ),
-    )
-    print(
-        "\tCn:\t\t\t\t\t\t",
-        np.round(
-            steady_solver.airplane.total_near_field_moment_coefficients_wind_axes[2], 3
-        ),
-    )
+    for airplane_num, airplane in enumerate(steady_solver.airplanes):
+        print("Airplane ", airplane_num + 1, ":", sep="")
+        # Print out the total forces and moments.
+        print("\tForces in Wind Axes:")
+        print(
+            "\t\tInduced Drag:\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[0], 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tSide Force:\t\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[1], 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tLift:\t\t\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[2], 3),
+            " N",
+            sep="",
+        )
+        print("\n\tMoments in Wind Axes:")
+        print(
+            "\t\tRolling Moment:\t\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[0], 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tPitching Moment:\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[1], 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tYawing Moment:\t\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[2], 3),
+            " Nm",
+            sep="",
+        )
+
+        # Print out the coefficients.
+        print("\n\tCoefficients in Wind Axes:")
+        print(
+            "\t\tCDi:\t\t\t\t\t",
+            np.round(airplane.total_near_field_force_coefficients_wind_axes[0], 3),
+            sep="",
+        )
+        print(
+            "\t\tCY:\t\t\t\t\t\t",
+            np.round(airplane.total_near_field_force_coefficients_wind_axes[1], 3),
+            sep="",
+        )
+        print(
+            "\t\tCL:\t\t\t\t\t\t",
+            np.round(airplane.total_near_field_force_coefficients_wind_axes[2], 3),
+            sep="",
+        )
+        print(
+            "\t\tCl:\t\t\t\t\t\t",
+            np.round(airplane.total_near_field_moment_coefficients_wind_axes[0], 3),
+            sep="",
+        )
+        print(
+            "\t\tCm:\t\t\t\t\t\t",
+            np.round(airplane.total_near_field_moment_coefficients_wind_axes[1], 3),
+            sep="",
+        )
+        print(
+            "\t\tCn:\t\t\t\t\t\t",
+            np.round(airplane.total_near_field_moment_coefficients_wind_axes[2], 3),
+            sep="",
+        )
 
 
 # ToDo: Document this method.
 def get_panel_surfaces(
-    airplane,
+    airplanes,
 ):
     """
 
-    :param airplane:
+    :param airplanes:
     :return:
     """
+
     # Initialize empty arrays to hold the panel vertices and faces.
     panel_vertices = np.empty((0, 3), dtype=int)
     panel_faces = np.empty(0, dtype=int)
@@ -844,40 +848,41 @@ def get_panel_surfaces(
     # Initialize a variable to keep track of how many panels have been added thus far.
     panel_num = 0
 
-    # Increment through the airplane's wings.
-    for wing in airplane.wings:
+    # Increment through the airplanes' wings.
+    for airplane in airplanes:
+        for wing in airplane.wings:
 
-        # Unravel the wing's panel matrix and iterate through it.
-        panels = np.ravel(wing.panels)
-        for panel in panels:
+            # Unravel the wing's panel matrix and iterate through it.
+            panels = np.ravel(wing.panels)
+            for panel in panels:
 
-            # Stack this panel's vertices and faces. Look through the PolyData
-            # documentation for more details.
-            panel_vertices_to_add = np.vstack(
-                (
-                    panel.front_left_vertex,
-                    panel.front_right_vertex,
-                    panel.back_right_vertex,
-                    panel.back_left_vertex,
+                # Stack this panel's vertices and faces. Look through the PolyData
+                # documentation for more details.
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
                 )
-            )
-            panel_face_to_add = np.array(
-                [
-                    4,
-                    (panel_num * 4),
-                    (panel_num * 4) + 1,
-                    (panel_num * 4) + 2,
-                    (panel_num * 4) + 3,
-                ]
-            )
+                panel_face_to_add = np.array(
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
 
-            # Stack this panel's vertices and faces with the array of all the
-            # vertices and faces.
-            panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-            panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                # Stack this panel's vertices and faces with the array of all the
+                # vertices and faces.
+                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
-            # Update the number of previous panels.
-            panel_num += 1
+                # Update the number of previous panels.
+                panel_num += 1
 
     # Return the panel surfaces.
     return pv.PolyData(panel_vertices, panel_faces)
@@ -962,29 +967,32 @@ def get_wake_ring_vortex_surfaces(solver, step):
 
 
 def get_scalars(
-    airplane,
+    airplanes,
 ):
-    """This function gets the delta pressure values from an airplane object, and puts
-    them into a 1D array to be used as scalars for display by other output methods.
+    """This function gets the delta pressure values from a problem's airplane
+    objects, and puts them into a 1D array to be used as scalars for display by other
+    output methods.
 
-    :param airplane: Airplane
-        This is the airplane object with the scalars we are collecting.
+    :param airplanes: list of Airplane objects
+        This is the list of airplane objects with the scalars we are collecting.
     :return scalars: 1D array of ints
         This is the 1D array of integers for each panel's delta pressure values.
     """
+
     # Initialize an empty array to hold the scalars.
     scalars = np.empty(0, dtype=int)
 
-    # Increment through the airplane's wings.
-    for wing in airplane.wings:
+    # Increment through the airplanes' wings.
+    for airplane in airplanes:
+        for wing in airplane.wings:
 
-        # Unravel the wing's panel matrix and iterate through it.
-        panels = np.ravel(wing.panels)
-        for panel in panels:
+            # Unravel the wing's panel matrix and iterate through it.
+            panels = np.ravel(wing.panels)
+            for panel in panels:
 
-            # Stack this panel's scalars.
-            scalar_to_add = panel.delta_pressure
-            scalars = np.hstack((scalars, scalar_to_add))
+                # Stack this panel's scalars.
+                scalar_to_add = panel.delta_pressure
+                scalars = np.hstack((scalars, scalar_to_add))
 
     # Return the resulting 1D array of scalars.
     return scalars

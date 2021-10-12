@@ -43,12 +43,7 @@ import numpy as np
 from numba import njit, prange
 
 
-def cosspace(
-    minimum,
-    maximum,
-    n_points=50,
-    endpoint=True,
-):
+def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create a array containing a specified number of
     values between a specified minimum and maximum value that are spaced via a cosine
     function.

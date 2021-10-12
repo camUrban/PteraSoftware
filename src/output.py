@@ -830,6 +830,11 @@ def print_steady_results(steady_solver):
             sep="",
         )
 
+        # If there's more airplane's whose results are going to be printed, print new
+        # line to separate them.
+        if (airplane_num + 1) < steady_solver.num_airplanes:
+            print("")
+
 
 # ToDo: Document this method.
 def get_panel_surfaces(

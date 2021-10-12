@@ -49,7 +49,7 @@ def make_steady_validation_problem():
 
     # Create the problem fixture.
     steady_validation_problem = src.problems.SteadyProblem(
-        airplane=steady_validation_airplane,
+        airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
 
@@ -79,7 +79,7 @@ def make_steady_multiple_wing_validation_problem():
 
     # Create the problem fixture.
     steady_validation_problem = src.problems.SteadyProblem(
-        airplane=steady_validation_airplane,
+        airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
 

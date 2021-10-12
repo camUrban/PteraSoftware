@@ -1084,7 +1084,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_airplanes.total_near_field_force_wind_axes = 0
         # (
         #     np.transpose(
-        #         self.current_operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        #         self.current_operating_point.calculate_rotation_matrix_wind_to_geometry()
         #     )
         #     @ total_near_field_force_geometry_axes
         # )
@@ -1094,7 +1094,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_airplanes.total_near_field_moment_wind_axes = 0
         # (
         #     np.transpose(
-        #         self.current_operating_point.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+        #         self.current_operating_point.calculate_rotation_matrix_wind_to_geometry()
         #     )
         #     @ total_near_field_moment_geometry_axes
         # )

@@ -91,7 +91,7 @@ class OperatingPoint:
         dynamic_pressure = 0.5 * self.density * self.velocity ** 2
         return dynamic_pressure
 
-    def calculate_rotation_matrix_wind_axes_to_geometry_axes(self):
+    def calculate_rotation_matrix_wind_to_geometry(self):
         """This method computes the 3 x 3 rotation matrix for converting from wind
         axes to geometry axes.
 
@@ -113,16 +113,12 @@ class OperatingPoint:
         )
 
         # Flip the axes because in geometry axes x is downstream by convention,
-        # while in wind axes x is upstream by
-        # convention. Same with z being up/down respectively.
+        # while in wind axes x is upstream by convention. Same with z being up/down
+        # respectively.
         axes_flip = np.array(
             [
                 [-1, 0, 0],
-                [
-                    0,
-                    1,
-                    0,
-                ],
+                [0, 1, 0],
                 [0, 0, -1],
             ]
         )
@@ -144,7 +140,7 @@ class OperatingPoint:
 
         velocity_direction_wind_axes = np.array([-1, 0, 0])
         velocity_direction_geometry_axes = (
-            self.calculate_rotation_matrix_wind_axes_to_geometry_axes()
+            self.calculate_rotation_matrix_wind_to_geometry()
             @ velocity_direction_wind_axes
         )
         return velocity_direction_geometry_axes

@@ -7,8 +7,9 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    reflect_over_xz_plane: This function is used to flip a the y coordinate of a
-    coordinate vector.
+    cosspace: This function is used to create a array containing a specified number
+    of values between a specified minimum and maximum value that are spaced via a
+    cosine function.
 
     angle_axis_rotation_matrix: This function is used to find the rotation matrix for
     a given axis and angle.
@@ -77,50 +78,6 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
         np.linspace(np.pi, 0, n_points, endpoint=endpoint)
     )
     return cosine_spaced_points
-
-
-def reflect_over_xz_plane(input_vector):
-    """This function is used to flip a the y coordinate of a coordinate vector.
-
-    Citation:
-        Adapted from:         geometry.reflect_over_xz_plane in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
-
-    :param input_vector: array
-        This can either be a 1D array of three items, a M x 3 2D array, or a M x
-        N x 3 3D array. N and
-        represent arbitrary numbers of rows or columns.
-    :return output vector: array
-        This is a array with each vertex's y variable flipped.
-    """
-
-    # Initialize the output vector.
-    output_vector = input_vector
-
-    # Find the shape of the input vector.
-    shape = np.shape(output_vector)
-
-    # Characterize the input vector.
-    if len(shape) == 1 and shape[0] == 3:
-        # The input vector is a 1D array of 3 items. Flip the vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    elif len(shape) == 2 and shape[1] == 3:
-        # The input vector is a 2D array of shape M x 3. Where M is some arbitrary
-        # number of rows. Flip each
-        # vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    elif len(shape) == 3 and shape[2] == 3:  # 3D MxNx3 vector
-        # The input vector is a 3D array of shape M x N x 3. Where M is some
-        # arbitrary number of rows, and N is
-        # some arbitrary number of columns. Flip each vertex's y variable.
-        output_vector = output_vector * np.array([1, -1, 1])
-    else:
-        # The input vector is an unacceptable shape. Throw an error.
-        raise Exception("Invalid input for reflect_over_xz_plane.")
-
-    # Return the output vector.
-    return output_vector
 
 
 def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):

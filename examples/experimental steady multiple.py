@@ -4,8 +4,9 @@ experimental setup) flying in formation."""
 
 import src
 
-horseshoe_vortex_method = False
+horseshoe_vortex_method = True
 
+alpha = 15
 x_spacing = 0.5
 y_spacing = 0.5
 
@@ -18,18 +19,18 @@ experimental_lead_airplane = src.geometry.Airplane(
             chordwise_spacing="uniform",
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
@@ -52,18 +53,18 @@ experimental_right_airplane = src.geometry.Airplane(
             y_le=y_spacing,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
@@ -86,18 +87,18 @@ experimental_left_airplane = src.geometry.Airplane(
             y_le=-y_spacing,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
                 ),
                 src.geometry.WingCrossSection(
-                    twist=45,
+                    twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),

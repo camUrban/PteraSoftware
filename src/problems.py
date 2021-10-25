@@ -2,7 +2,6 @@
 
 This module contains the following classes:
     SteadyProblem: This is a class for steady aerodynamics problems.
-
     UnsteadyProblem: This is a class for unsteady aerodynamics problems.
 
 This module contains the following exceptions:
@@ -35,7 +34,6 @@ class SteadyProblem:
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         """
-
         # Initialize the problem's attributes.
         self.airplanes = airplanes
         self.operating_point = operating_point
@@ -65,7 +63,6 @@ class UnsteadyProblem:
             and pressures for the final complete cycle (of the movement with the
             longest period), which increases speed. The default value is False.
         """
-
         # Initialize the class attributes.
         self.num_steps = movement.num_steps
         self.delta_time = movement.delta_time
@@ -95,11 +92,16 @@ class UnsteadyProblem:
         self.steady_problems = []
 
         # Iterate through the problem's time steps.
-        for step in range(self.num_steps):
+        for step_id in range(self.num_steps):
+
             # Get the airplane objects and the operating point object associated with
-            # this time step.
-            these_airplanes = movement.airplanes[step]
-            this_operating_point = movement.operating_points[step]
+            # this time step. This will be a list of the airplane snapshots associated
+            # with each base airplane at this particular time step.
+            these_airplanes = []
+            for base_airplane_id in range(len(movement.airplanes)):
+                these_airplanes.append(movement.airplanes[base_airplane_id][step_id])
+
+            this_operating_point = movement.operating_points[step_id]
 
             # Initialize the steady problem object at this time step.
             this_steady_problem = SteadyProblem(

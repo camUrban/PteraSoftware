@@ -275,7 +275,6 @@ def process_steady_solver_forces(
         units are Newton-meters.
     :return:
     """
-
     # Find this operating point's dynamic pressure. The units are Pascals.
     dynamic_pressure = steady_solver.operating_point.calculate_dynamic_pressure()
 
@@ -384,7 +383,9 @@ def process_steady_solver_forces(
         )
 
 
-def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, panel):
+def update_ring_vortex_solvers_panel_attributes(
+    solver, global_panel_position, panel, airplane
+):
     """This function populates a ring vortex solver's attributes with the attributes
     of a given panel.
 
@@ -397,6 +398,8 @@ def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, p
     :param panel: Panel
         This is the panel object whose attributes will be used to update the solver's
         attributes.
+    :param airplane: Airplane
+        This is the Airplane object to which the Panel object belongs.
     :return:
     """
 
@@ -446,6 +449,7 @@ def update_ring_vortex_solvers_panel_attributes(solver, global_panel_position, p
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
+    solver.panel_moment_references[global_panel_position, :] = airplane.xyz_ref
 
     # Check if this panel is on the trailing edge. If it is, calculate it's
     # streamline seed point and add it to the solver's # array of seed points.

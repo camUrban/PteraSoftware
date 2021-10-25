@@ -280,6 +280,7 @@ class SteadyRingVortexLatticeMethodSolver:
                         solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
+                        airplane=airplane,
                     )
 
                     if panel.is_trailing_edge:
@@ -299,9 +300,6 @@ class SteadyRingVortexLatticeMethodSolver:
                         self.horseshoe_vortex_back_left_vertex[
                             global_panel_position
                         ] = panel.horseshoe_vortex.left_leg.termination
-                        self.panel_moment_references[
-                            global_panel_position, :
-                        ] = airplane.xyz_ref
 
                         # Set the horseshoe vortex strength at this position to 1.0.
                         # This will be updated after the correct vortex strengths are

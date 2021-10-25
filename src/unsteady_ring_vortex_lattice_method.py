@@ -26,15 +26,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
     This class contains the following public methods:
         run: This method runs the solver on the unsteady problem.
 
-        initialize_panel_vortices: This method calculates the locations of an
-        airplane's bound vortex vertices, and then initializes its panels' bound
+        initialize_panel_vortices: This method calculates the locations of the
+        airplanes' bound vortex vertices, and then initializes their panels' bound
         vortices.
 
         collapse_geometry: This method converts attributes of the problem's geometry
         into 1D ndarrays. This facilitates vectorization, which speeds up the solver.
 
         calculate_wing_wing_influences: This method finds the matrix of wing-wing
-        influence coefficients associated with this airplane's geometry.
+        influence coefficients associated with the airplanes' geometries.
 
         calculate_freestream_wing_influences: This method finds the vector of
         freestream-wing influences associated with the problem at this time step.
@@ -53,28 +53,28 @@ class UnsteadyRingVortexLatticeMethodSolver:
         moments calculated from the near field.
 
         populate_next_airplanes_wake: This method updates the next time step's
-        airplane's wake.
+        airplanes' wakes.
 
         populate_next_airplanes_wake_vortex_vertices: This method populates the
-        locations of the next airplane's wake vortex vertices.
+        locations of the next airplanes' wake vortex vertices.
 
         populate_next_airplanes_wake_vortices: This method populates the locations of
-        the next airplane's wake vortices.
+        the next airplanes' wake vortices.
 
         calculate_current_flapping_velocities_at_collocation_points: This method gets
-        the velocity due to flapping at all of the current airplane's collocation
+        the velocity due to flapping at all of the current airplanes' collocation
         points.
 
         calculate_current_flapping_velocities_at_right_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound
+        the velocity due to flapping at the centers of the current airplanes' bound
         ring vortices' right legs.
 
         calculate_current_flapping_velocities_at_front_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound
+        the velocity due to flapping at the centers of the current airplanes' bound
         ring vortices' front legs.
 
         calculate_current_flapping_velocities_at_left_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplane's bound
+        the velocity due to flapping at the centers of the current airplanes' bound
         ring vortices' left legs.
 
     This class contains the following class attributes:
@@ -96,6 +96,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.delta_time = self.unsteady_problem.delta_time
         self.steady_problems = self.unsteady_problem.steady_problems
         self.first_results_step = self.unsteady_problem.first_results_step
+        self.num_airplanes = len(self.steady_problems[0].airplanes)
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.current_step = None
@@ -107,6 +108,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_wake_wing_influences = None
         self.current_vortex_strengths = None
         self.streamline_points = None
+        self.num_airplanes = None
 
         # Initialize attributes to hold geometric data that pertains to this problem.
         self.panels = None
@@ -126,6 +128,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.panel_left_vortex_vectors = None
         self.panel_back_vortex_centers = None
         self.panel_back_vortex_vectors = None
+        self.panel_moment_references = None
         self.seed_points = None
 
         # Initialize variables to hold aerodynamic data that pertains details about
@@ -167,8 +170,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_wake_ring_vortex_back_left_vertices = None
         self.current_wake_ring_vortex_back_right_vertices = None
         self.current_wake_ring_vortex_ages = None
-
-        self.num_panels = 0
+        self.current_num_panels = None
 
     def run(
         self,
@@ -209,6 +211,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             this_problem = self.steady_problems[step]
             these_airplanes = this_problem.airplanes
 
+            # Loop through this step's airplanes to create a list of their wings.
             these_wings = []
             for airplane in these_airplanes:
                 these_wings.append(airplane.wings)
@@ -269,14 +272,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             this_problem = self.steady_problems[step]
             these_airplanes = this_problem.airplanes
 
+            # Iterate through this step's airplanes to get the total number of wing
+            # panels.
             num_wing_panels = 0
             for airplane in these_airplanes:
-                num_wing_panels += airplane.num_panels
+                num_wing_panels += airplane.current_num_panels
 
+            # Calculate the total number of vortices analyzed during this step.
             num_wing_ring_vortices = num_wing_panels
-
             num_wake_ring_vortices = self.num_wake_ring_vortices_list[step]
-
             num_ring_vortices = num_wing_ring_vortices + num_wake_ring_vortices
 
             # The following constant multipliers were determined empirically. Thus
@@ -303,6 +307,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             disable=logging_level_value < logging.WARNING,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
         ) as bar:
+
             # Initialize all the airplanes' panels' vortices.
             logging.info("Initializing all airplanes' panel vortices.")
             self.initialize_panel_vortices()
@@ -313,7 +318,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Iterate through the time steps.
             for step in range(self.num_steps):
-                # Save attributes to hold the current step, airplane, and operating point.
+
+                # Save attributes to hold the current step, airplane, and operating
+                # point.
                 self.current_step = step
                 self.current_airplanes = self.steady_problems[
                     self.current_step
@@ -332,68 +339,95 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     + "."
                 )
 
+                # Calculate the number of panels for this time step.
+                self.current_num_panels = 0
                 for airplane in self.current_airplanes:
-                    self.num_panels += airplane.num_panels
+                    self.current_num_panels += airplane.current_num_panels
 
                 # Initialize attributes to hold aerodynamic data that pertains to this
                 # problem.
                 self.current_wing_wing_influences = np.zeros(
-                    (self.num_panels, self.num_panels)
+                    (self.current_num_panels, self.current_num_panels)
                 )
                 self.current_freestream_velocity_geometry_axes = (
                     self.current_operating_point.calculate_freestream_velocity_geometry_axes()
                 )
-                self.current_freestream_wing_influences = np.zeros(self.num_panels)
-                self.current_wake_wing_influences = np.zeros(self.num_panels)
-                self.current_vortex_strengths = np.ones(self.num_panels)
+                self.current_freestream_wing_influences = np.zeros(
+                    self.current_num_panels
+                )
+                self.current_wake_wing_influences = np.zeros(self.current_num_panels)
+                self.current_vortex_strengths = np.ones(self.current_num_panels)
 
                 # Initialize attributes to hold geometric data that pertains to this
                 # problem.
-                self.panels = np.empty(self.num_panels, dtype=object)
-                self.panel_normal_directions = np.zeros((self.num_panels, 3))
-                self.panel_areas = np.zeros(self.num_panels)
-                self.panel_centers = np.zeros((self.num_panels, 3))
-                self.panel_collocation_points = np.zeros((self.num_panels, 3))
-                self.panel_back_right_vortex_vertices = np.zeros((self.num_panels, 3))
-                self.panel_front_right_vortex_vertices = np.zeros((self.num_panels, 3))
-                self.panel_front_left_vortex_vertices = np.zeros((self.num_panels, 3))
-                self.panel_back_left_vortex_vertices = np.zeros((self.num_panels, 3))
-                self.panel_right_vortex_centers = np.zeros((self.num_panels, 3))
-                self.panel_right_vortex_vectors = np.zeros((self.num_panels, 3))
-                self.panel_front_vortex_centers = np.zeros((self.num_panels, 3))
-                self.panel_front_vortex_vectors = np.zeros((self.num_panels, 3))
-                self.panel_left_vortex_centers = np.zeros((self.num_panels, 3))
-                self.panel_left_vortex_vectors = np.zeros((self.num_panels, 3))
-                self.panel_back_vortex_centers = np.zeros((self.num_panels, 3))
-                self.panel_back_vortex_vectors = np.zeros((self.num_panels, 3))
+                self.panels = np.empty(self.current_num_panels, dtype=object)
+                self.panel_normal_directions = np.zeros((self.current_num_panels, 3))
+                self.panel_areas = np.zeros(self.current_num_panels)
+                self.panel_centers = np.zeros((self.current_num_panels, 3))
+                self.panel_collocation_points = np.zeros((self.current_num_panels, 3))
+                self.panel_back_right_vortex_vertices = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.panel_front_right_vortex_vertices = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.panel_front_left_vortex_vertices = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.panel_back_left_vortex_vertices = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.panel_right_vortex_centers = np.zeros((self.current_num_panels, 3))
+                self.panel_right_vortex_vectors = np.zeros((self.current_num_panels, 3))
+                self.panel_front_vortex_centers = np.zeros((self.current_num_panels, 3))
+                self.panel_front_vortex_vectors = np.zeros((self.current_num_panels, 3))
+                self.panel_left_vortex_centers = np.zeros((self.current_num_panels, 3))
+                self.panel_left_vortex_vectors = np.zeros((self.current_num_panels, 3))
+                self.panel_back_vortex_centers = np.zeros((self.current_num_panels, 3))
+                self.panel_back_vortex_vectors = np.zeros((self.current_num_panels, 3))
                 self.seed_points = np.zeros((0, 3))
 
                 # Initialize variables to hold details about each panel's location on
                 # its wing.
-                self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
+                self.panel_is_trailing_edge = np.zeros(
+                    self.current_num_panels, dtype=bool
+                )
+                self.panel_is_leading_edge = np.zeros(
+                    self.current_num_panels, dtype=bool
+                )
+                self.panel_is_left_edge = np.zeros(self.current_num_panels, dtype=bool)
+                self.panel_is_right_edge = np.zeros(self.current_num_panels, dtype=bool)
 
-                # Initialize variables to hold details about the last airplane's panels.
-                self.last_panel_collocation_points = np.zeros((self.num_panels, 3))
-                self.last_panel_vortex_strengths = np.zeros(self.num_panels)
+                # Initialize variables to hold details about the last time step's
+                # airplanes' panels.
+                self.last_panel_collocation_points = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.last_panel_vortex_strengths = np.zeros(self.current_num_panels)
                 self.last_panel_back_right_vortex_vertices = np.zeros(
-                    (self.num_panels, 3)
+                    (self.current_num_panels, 3)
                 )
                 self.last_panel_front_right_vortex_vertices = np.zeros(
-                    (self.num_panels, 3)
+                    (self.current_num_panels, 3)
                 )
                 self.last_panel_front_left_vortex_vertices = np.zeros(
-                    (self.num_panels, 3)
+                    (self.current_num_panels, 3)
                 )
                 self.last_panel_back_left_vortex_vertices = np.zeros(
-                    (self.num_panels, 3)
+                    (self.current_num_panels, 3)
                 )
-                self.last_panel_right_vortex_centers = np.zeros((self.num_panels, 3))
-                self.last_panel_front_vortex_centers = np.zeros((self.num_panels, 3))
-                self.last_panel_left_vortex_centers = np.zeros((self.num_panels, 3))
-                self.last_panel_back_vortex_centers = np.zeros((self.num_panels, 3))
+                self.last_panel_right_vortex_centers = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.last_panel_front_vortex_centers = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.last_panel_left_vortex_centers = np.zeros(
+                    (self.current_num_panels, 3)
+                )
+                self.last_panel_back_vortex_centers = np.zeros(
+                    (self.current_num_panels, 3)
+                )
 
                 # Get the pre-allocated (but still all zero) arrays of wake
                 # information that are associated with this time step.
@@ -422,7 +456,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.collapse_geometry()
 
                 # Find the matrix of wing-wing influence coefficients associated with
-                # this current_airplane's geometry.
+                # the airplanes' geometries.
                 logging.info("Calculating the wing-wing influences.")
                 self.calculate_wing_wing_influences()
 
@@ -459,8 +493,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             functions.calculate_streamlines(self)
 
     def initialize_panel_vortices(self):
-        """This method calculates the locations every problem's airplanes' bound
-        vortex vertices, and then initializes their panels' bound vortices.
+        """This method calculates the locations of the airplanes' bound vortex
+        vertices, and then initializes their panels' bound vortices.
 
         Every panel has a ring vortex, which is a quadrangle whose front vortex leg
         is at the panel's quarter chord. The left and right vortex legs run along the
@@ -480,10 +514,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 steady_problem.operating_point.calculate_freestream_velocity_geometry_axes()
             )
 
-            # Iterate through this problem's airplanes.
+            # Iterate through this problem's airplanes' wings.
             for airplane in steady_problem.airplanes:
-
-                # Iterate through this airplane's wings.
                 for wing in airplane.wings:
 
                     # Iterate through the wing's chordwise and spanwise positions.
@@ -556,10 +588,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         global_panel_position = 0
         global_wake_ring_vortex_position = 0
 
-        # Iterate through the current step's airplanes.
+        # Iterate through the current step's airplanes' wings.
         for airplane in self.current_airplanes:
-
-            # Iterate through each airplane's wing.
             for wing in airplane:
 
                 # Convert this wing's 2D array of panels into a 1D array.
@@ -574,6 +604,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
+                        airplane=airplane,
                     )
 
                     # Increment the global panel position.
@@ -609,10 +640,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             last_airplanes = self.steady_problems[self.current_step - 1].airplanes
 
-            # Iterate through the last step's airplanes.
+            # Iterate through the last step's airplanes' wings.
             for last_airplane in last_airplanes:
-
-                # Iterate through the airplane's wings.
                 for wing in last_airplane.wings:
 
                     # Convert this wing's 2D array of panels into a 1D array.
@@ -659,7 +688,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influence coefficients
-        associated with the airplanes' geometry.
+        associated with the airplanes' geometries.
 
         :return: None
         """
@@ -760,7 +789,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # If this is the first time step, set the current wake-wing influences to
             # zero everywhere, as there is no wake yet.
-            self.current_wake_wing_influences = np.zeros(self.num_panels)
+            self.current_wake_wing_influences = np.zeros(self.current_num_panels)
 
     def calculate_vortex_strengths(self):
         """This method solves for each panel's vortex strength.
@@ -800,7 +829,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             This variable is an array of shape (N x 3), where N is the number of
             points. Each row contains the x, y, and z float coordinates of that
             point's position in meters.
-        :return solution_velocities: 2D array of floats
+        :return: 2D array of floats
             The output is the summed effects from every vortex, and from the
             freestream on a given point. The result will be of shape (N x 3),
             where each row identifies the velocity at a point. The results units are
@@ -836,12 +865,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # due to the bound ring vortices and the wake ring vortices.
         total_vortex_velocities = velocities_from_wings + velocities_from_wake
 
-        # Calculate and return the solution velocities, which is the sum of the
-        # velocities induced by the vortices and freestream at every point.
-        solution_velocities = (
-            total_vortex_velocities + self.current_freestream_velocity_geometry_axes
-        )
-        return solution_velocities
+        # Calculate and return the the sum of the velocities induced by the vortices
+        # and freestream at every point.
+        return total_vortex_velocities + self.current_freestream_velocity_geometry_axes
 
     def calculate_near_field_forces_and_moments(self):
         """This method finds the the forces and moments calculated from the near field.
@@ -862,14 +888,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize three lists of variables, which will hold the effective strength
         # of the line vortices comprising each panel's ring vortex.
-        effective_right_vortex_line_strengths = np.zeros(self.num_panels)
-        effective_front_vortex_line_strengths = np.zeros(self.num_panels)
-        effective_left_vortex_line_strengths = np.zeros(self.num_panels)
+        effective_right_vortex_line_strengths = np.zeros(self.current_num_panels)
+        effective_front_vortex_line_strengths = np.zeros(self.current_num_panels)
+        effective_left_vortex_line_strengths = np.zeros(self.current_num_panels)
 
-        # Iterate through each of this step's airplanes.
+        # Iterate through each of this step's airplanes' wings.
         for airplane in self.current_airplanes:
-
-            # Iterate through the each of the airplane's wings.
             for wing in airplane.wings:
 
                 # Convert this wing's 2D array of panels into a 1D array.
@@ -1020,24 +1044,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # and right leg. Also find the moment on each panel due to the unsteady force.
         near_field_moments_on_ring_vortex_front_legs_geometry_axes = (
             functions.numba_1d_explicit_cross(
-                self.panel_front_vortex_centers - self.current_airplanes.xyz_ref,
+                self.panel_front_vortex_centers - self.panel_moment_references,
                 near_field_forces_on_ring_vortex_front_legs_geometry_axes,
             )
         )
         near_field_moments_on_ring_vortex_left_legs_geometry_axes = (
             functions.numba_1d_explicit_cross(
-                self.panel_left_vortex_centers - self.current_airplanes.xyz_ref,
+                self.panel_left_vortex_centers - self.panel_moment_references,
                 near_field_forces_on_ring_vortex_left_legs_geometry_axes,
             )
         )
         near_field_moments_on_ring_vortex_right_legs_geometry_axes = (
             functions.numba_1d_explicit_cross(
-                self.panel_right_vortex_centers - self.current_airplanes.xyz_ref,
+                self.panel_right_vortex_centers - self.panel_moment_references,
                 near_field_forces_on_ring_vortex_right_legs_geometry_axes,
             )
         )
         unsteady_near_field_moments_geometry_axes = functions.numba_1d_explicit_cross(
-            self.panel_collocation_points - self.current_airplanes.xyz_ref,
+            self.panel_collocation_points - self.panel_moment_references,
             unsteady_near_field_forces_geometry_axes,
         )
 
@@ -1055,6 +1079,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Iterate through this solver's panels.
         for panel in self.panels:
+
             # Update the force and moment on this panel.
             panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
                 global_panel_position, :
@@ -1180,7 +1205,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.populate_next_airplanes_wake_vortices()
 
     def populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
-        """This method populates the locations of the next step's airplanes' wake vortex
+        """This method populates the locations of the next airplanes' wake vortex
         vertices.
 
         This method is not vectorized but its loops only consume 1.1% of the runtime,
@@ -1195,7 +1220,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Check if this is not the last step.
         if self.current_step < self.num_steps - 1:
 
-            # Get the next airplane objects and the current airplane's number of wings.
+            # Get the next airplane objects and the current airplanes' combined
+            # number of wings.
             next_airplanes = self.steady_problems[self.current_step + 1].airplanes
             num_wings = len(self.current_airplanes.wings)
 
@@ -1424,8 +1450,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
 
     def populate_next_airplanes_wake_vortices(self):
-        """This method populates the locations of the next step's airplanes' wake
-        vortices.
+        """This method populates the locations of the next airplanes' wake vortices.
 
         This method is not vectorized but its loops only consume 0.4% of the runtime,
         so I have kept it as is for increased readability.
@@ -1576,7 +1601,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self.current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            flapping_velocities = np.zeros((self.num_panels, 3))
+            flapping_velocities = np.zeros((self.current_num_panels, 3))
             return flapping_velocities
 
         # Get the current airplane's collocation points, and the last airplane's
@@ -1604,7 +1629,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self.current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            flapping_velocities = np.zeros((self.num_panels, 3))
+            flapping_velocities = np.zeros((self.current_num_panels, 3))
             return flapping_velocities
 
         # Get the current airplanes' bound vortices' right legs' centers, and the
@@ -1634,7 +1659,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self.current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            flapping_velocities = np.zeros((self.num_panels, 3))
+            flapping_velocities = np.zeros((self.current_num_panels, 3))
             return flapping_velocities
 
         # Get the current airplanes' bound vortices' front legs' centers, and the
@@ -1664,7 +1689,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self.current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            flapping_velocities = np.zeros((self.num_panels, 3))
+            flapping_velocities = np.zeros((self.current_num_panels, 3))
             return flapping_velocities
 
         # Get the current airplanes' bound vortices' left legs' centers, and the last

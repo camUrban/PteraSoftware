@@ -4,7 +4,7 @@ experimental setup) flying in formation."""
 
 import src
 
-horseshoe_vortex_method = True
+horseshoe_vortex_method = False
 
 alpha = 15
 x_spacing = 0.5

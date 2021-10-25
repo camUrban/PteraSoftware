@@ -94,14 +94,12 @@ def draw(
         The default value is False.
     :param show_streamlines: bool, optional
         Set this variable to true to show the streamlines emanating from the back of
-        the wings. The default value is
-        False.
+        the wings. The default value is False.
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is False.
     :return: None
     """
-
     # Initialize the plotter.
     plotter = pv.Plotter()
 
@@ -234,7 +232,6 @@ def animate(
         default value is true.
     :return: None
     """
-
     first_results_step = unsteady_solver.first_results_step
 
     # Get this solver's problem's airplanes.

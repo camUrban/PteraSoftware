@@ -84,7 +84,6 @@ class Movement:
             chord length, its main wing's number of chordwise panels, and its base
             operating point's velocity.
         """
-
         # Initialize the class attributes.
         self.airplane_movements = airplane_movements
         self.operating_point_movement = operating_point_movement
@@ -164,10 +163,9 @@ class Movement:
         """This method returns the longest period of any of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
 
-        :return max_period: float
+        :return: float
             The longest period in seconds.
         """
-
         # Iterate through the airplane movements and find the one with the largest
         # max period.
         max_airplane_periods = []
@@ -177,11 +175,10 @@ class Movement:
 
         # The global max period is the maximum of the max airplane period and the max
         # operating point period.
-        max_period = max(
+        return max(
             max_airplane_period,
             self.operating_point_movement.get_max_period(),
         )
-        return max_period
 
 
 class AirplaneMovement:
@@ -437,8 +434,8 @@ class WingMovement:
     """This is a class used to contain the movement characteristics of a wing.
 
     This class contains the following public methods:
-        generate_wings: This method creates the wing object at each time
-        current_step, and groups them into a list.
+        generate_wings: This method creates the wing object at each time step,
+        and groups them into a list.
 
         get_max_period: This method returns the longest period of any of this
         movement object's sub-movement objects, sub-sub-movement objects, etc.
@@ -470,46 +467,35 @@ class WingMovement:
             This is the first wing object, from which the others will be created.
         :param wing_cross_sections_movements: list of WingCrossSectionMovement objects
             This is a list of the WingCrossSectionMovement objects associated with
-            each of the base wing's cross
-            sections.
+            each of the base wing's cross sections.
         :param x_le_amplitude: float, optional
             This is the amplitude of the wing's change in its x reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param x_le_period: float, optional
             This is the period of the wing's change in its x reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param x_le_spacing: string, optional
             This value determines the spacing of the wing's change in its x reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         :param y_le_amplitude: float, optional
             This is the amplitude of the wing's change in its y reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param y_le_period: float, optional
             This is the period of the wing's change in its y reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param y_le_spacing: string, optional
             This value determines the spacing of the wing's change in its y reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         :param z_le_amplitude: float, optional
             This is the amplitude of the wing's change in its z reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param z_le_period: float, optional
             This is the period of the wing's change in its z reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param z_le_spacing: string, optional
             This value determines the spacing of the wing's change in its z reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         """
-
         # Initialize the class attributes.
         self.base_wing = base_wing
         self.wing_cross_section_movements = wing_cross_sections_movements
@@ -539,7 +525,6 @@ class WingMovement:
             This is the list of Wing objects that is associated with this
             WingMovement object.
         """
-
         # Check the x_le spacing value.
         if self.x_le_spacing == "sine":
 
@@ -619,8 +604,7 @@ class WingMovement:
             raise Exception("Bad value of z_le_spacing!")
 
         # Create an empty array that will hold each of the wing's wing cross
-        # section's vector of other wing cross
-        # section's based its movement.
+        # section's vector of other wing cross section's based its movement.
         wing_cross_sections = np.empty(
             (len(self.wing_cross_section_movements), num_steps), dtype=object
         )
@@ -660,8 +644,8 @@ class WingMovement:
                 assert first_wing_cross_section_movement_heaving_period == 0
 
                 # Set the variables relating this wing cross section to the inner
-                # wing cross section to zero because
-                # this is the innermost wing cross section
+                # wing cross section to zero because this is the innermost wing cross
+                # section
                 wing_cross_section_span = 0.0
                 base_wing_cross_section_sweep = 0.0
                 base_wing_cross_section_heave = 0.0
@@ -679,15 +663,13 @@ class WingMovement:
                 this_z_le = this_base_wing_cross_section.z_le
 
                 # Initialize variables to hold the inner wing cross section's time
-                # histories of its leading edge
-                # coordinates.
+                # histories of its leading edge coordinates.
                 last_x_les = []
                 last_y_les = []
                 last_z_les = []
 
                 # Iterate through the inner wing cross section's time history and
-                # populate the leading edge coordinate
-                # variables.
+                # populate the leading edge coordinate variables.
                 for last_wing_cross_section in last_wing_cross_section_time_histories:
                     last_x_les.append(last_wing_cross_section.x_le)
                     last_y_les.append(last_wing_cross_section.y_le)
@@ -702,9 +684,9 @@ class WingMovement:
                 )
 
                 try:
+
                     # Find the base sweep angle of this wing cross section compared
-                    # to the inner wing cross section at
-                    # the first time step.
+                    # to the inner wing cross section at the first time step.
                     base_wing_cross_section_sweep = (
                         np.arctan(
                             (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
@@ -717,9 +699,9 @@ class WingMovement:
                     wing_is_vertical = True
 
                 try:
+
                     # Find the base heave angle of this wing cross section compared
-                    # to the inner wing cross section at
-                    # the first time step.
+                    # to the inner wing cross section at the first time step.
                     base_wing_cross_section_heave = (
                         np.arctan(
                             (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
@@ -769,6 +751,7 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
+
             # Get the reference position at this time step.
             x_le = x_le_list[step]
             y_le = y_le_list[step]
@@ -794,8 +777,8 @@ class WingMovement:
         return wings
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """This method returns the longest period of any of this movement object's
+        sub-movement objects, sub-sub-movement objects, etc.
 
         :return max_period: float
             The longest period in seconds.
@@ -1384,7 +1367,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
         This is the number of time steps to iterate through.
     :param delta_time: float
         This is the change in time between each time step.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of sinusoidally spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1405,8 +1388,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     k = base_value
 
     # Calculate and return the values.
-    values = a * np.sin(b * (times - h)) + k
-    return values
+    return a * np.sin(b * (times - h)) + k
 
 
 def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
@@ -1423,7 +1405,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
         This is the number of time steps to iterate through.
     :param delta_time: float
         This is the change in time between each time step.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of uniformly spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1444,8 +1426,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     k = base_value
 
     # Calculate and return the values.
-    values = a * signal.sawtooth((b * times + h), 0.5) + k
-    return values
+    return a * signal.sawtooth((b * times + h), 0.5) + k
 
 
 def oscillating_customspace(
@@ -1472,7 +1453,7 @@ def oscillating_customspace(
         units, an internal period of 3 units, amplitude is set to 4 units and period
         is set to 5 units. The result will have a net amplitude of 8 units and a net
         period of 15 units.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of custom spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1493,5 +1474,4 @@ def oscillating_customspace(
     k = base_value
 
     # Calculate and return the values.
-    values = a * custom_function(b * (times - h)) + k
-    return values
+    return a * custom_function(b * (times - h)) + k

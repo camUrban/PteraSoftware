@@ -14,7 +14,7 @@ import unittest
 
 import numpy as np
 
-import src
+import src.pterasoftware
 import tests.unit.fixtures.vortex_fixtures
 
 
@@ -87,16 +87,20 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         # Test that the objects are all of the right type.
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture, src.aerodynamics.HorseshoeVortex
+            self.horseshoe_vortex_fixture,
+            src.pterasoftware.aerodynamics.HorseshoeVortex,
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.finite_leg, src.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.finite_leg,
+            src.pterasoftware.aerodynamics.LineVortex,
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.left_leg, src.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.left_leg,
+            src.pterasoftware.aerodynamics.LineVortex,
         )
         self.assertIsInstance(
-            self.horseshoe_vortex_fixture.right_leg, src.aerodynamics.LineVortex
+            self.horseshoe_vortex_fixture.right_leg,
+            src.pterasoftware.aerodynamics.LineVortex,
         )
 
         # Test that the vortex objects' coordinates were correctly set.

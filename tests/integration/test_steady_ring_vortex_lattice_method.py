@@ -20,7 +20,7 @@ This module contains the following functions:
 """
 import unittest
 
-import src
+import src.pterasoftware
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -91,7 +91,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         # Set the allowable percent error.
         allowable_error = 0.10
 
-        src.output.draw(
+        src.pterasoftware.output.draw(
             solver=self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,

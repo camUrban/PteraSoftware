@@ -35,7 +35,6 @@ class SteadyProblem:
         :param operating_point: OperatingPoint
             This is the operating point object for this problem.
         """
-
         # Initialize the problem's attributes.
         self.airplane = airplane
         self.operating_point = operating_point
@@ -65,7 +64,6 @@ class UnsteadyProblem:
             and pressures for the final complete cycle (of the movement with the
             longest period), which increases speed. The default value is False.
         """
-
         # Initialize the class attributes.
         self.num_steps = movement.num_steps
         self.delta_time = movement.delta_time

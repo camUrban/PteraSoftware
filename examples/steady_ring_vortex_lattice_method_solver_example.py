@@ -1,17 +1,16 @@
 """This is script is an example of how to run Ptera Software's steady ring vortex
 lattice method solver on a custom airplane."""
-
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
 # install pterasoftware" in your terminal. Here, I am importing the source directory.
 # However, if you were working on an external project, you should change this to
 # "import pterasoftware as ps".
-import src
+import src.pterasoftware
 
 # Create an airplane object. Note, I am going to declare every attribute for each
 # class, even most of them have usable default values. This is simply for educational
 # purposes, even though it makes the code much longer than what it needs to be.
-example_airplane = src.geometry.Airplane(
+example_airplane = src.pterasoftware.geometry.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point
@@ -29,9 +28,9 @@ example_airplane = src.geometry.Airplane(
     # wetted area of the wing's mean-camberline surface.
     s_ref=None,
     b_ref=None,
-    c_ref=None,  # All airplane objects have a list of wings.
-    wings=[  # Create the first wing object in this airplane.
-        src.geometry.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
+    c_ref=None,
+    wings=[
+        src.pterasoftware.geometry.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # airplane's reference position. These values all default to 0.0 meters.
@@ -56,8 +55,8 @@ example_airplane = src.geometry.Airplane(
             # Every wing has a list of wing cross sections. In order for the geometry
             # output to be sensible, each wing must have at least two wing cross
             # sections.
-            wing_cross_sections=[  # Create a new wing cross section object.
-                src.geometry.WingCrossSection(
+            wing_cross_sections=[
+                src.pterasoftware.geometry.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
@@ -97,8 +96,8 @@ example_airplane = src.geometry.Airplane(
                     spanwise_spacing="cosine",
                     # Set the chord of this cross section to be 1.75 meters. This
                     # value defaults to 1.0 meter.
-                    chord=1.5,  # Every wing cross section has an airfoil object.
-                    airfoil=src.geometry.Airfoil(
+                    chord=1.5,
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled
                         # Airfoil". This name should correspond to a name in the
                         # airfoil directory or a NACA four series airfoil, unless you
@@ -126,7 +125,7 @@ example_airplane = src.geometry.Airplane(
                 # Define the next wing cross section. From here on out,
                 # the declarations will not be as commented as the previous. See the
                 # above comments if you have questions.
-                src.geometry.WingCrossSection(
+                src.pterasoftware.geometry.WingCrossSection(
                     x_le=1.5,
                     y_le=6.0,
                     z_le=0.5,
@@ -134,61 +133,61 @@ example_airplane = src.geometry.Airplane(
                     control_surface_type="asymmetric",
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=10.0,
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         name="naca2412",
                     ),
                 ),
             ],
         ),
         # Define the next wing.
-        src.geometry.Wing(
+        src.pterasoftware.geometry.Wing(
             name="Horizontal Stabilizer",
             x_le=6.75,
             z_le=0.25,
-            symmetric=True,  # Define this wing's root wing cross section.
+            symmetric=True,
             wing_cross_sections=[
-                src.geometry.WingCrossSection(
+                src.pterasoftware.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         name="naca0012",
                     ),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
-                src.geometry.WingCrossSection(
+                src.pterasoftware.geometry.WingCrossSection(
                     x_le=0.5,
                     y_le=2.0,
                     chord=1.0,
                     twist=-5.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         name="naca0012",
                     ),
                 ),
             ],
         ),
         # Define the next wing.
-        src.geometry.Wing(
+        src.pterasoftware.geometry.Wing(
             name="Vertical Stabilizer",
             x_le=6.75,
             z_le=0.5,
-            symmetric=False,  # Define this wing's root wing cross section.
+            symmetric=False,
             wing_cross_sections=[
-                src.geometry.WingCrossSection(
+                src.pterasoftware.geometry.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         name="naca0012",
                     ),
                 ),
                 # Define the wing's tip wing cross section.
-                src.geometry.WingCrossSection(
+                src.pterasoftware.geometry.WingCrossSection(
                     x_le=0.5,
                     z_le=2.0,
                     chord=1.0,
                     # Give the tip wing cross section an airfoil.
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=src.pterasoftware.geometry.Airfoil(
                         name="naca0012",
                     ),
                 ),
@@ -199,7 +198,7 @@ example_airplane = src.geometry.Airplane(
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = src.operating_point.OperatingPoint(
+example_operating_point = src.pterasoftware.operating_point.OperatingPoint(
     # Define the density of the fluid the airplane is flying in. This defaults to
     # 1.225 kilograms per meters cubed.
     density=1.225,
@@ -216,7 +215,7 @@ example_operating_point = src.operating_point.OperatingPoint(
 
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.
-example_problem = src.problems.SteadyProblem(
+example_problem = src.pterasoftware.problems.SteadyProblem(
     # Set this steady problem's airplane object to be the one we just created.
     airplane=example_airplane,
     # Set this steady problem's operating point object ot be the one we just created.
@@ -231,7 +230,7 @@ del example_operating_point
 # Define a new solver. The available solver objects are the steady horseshoe vortex
 # lattice method solver, the steady ring vortex lattice method solver, and the
 # unsteady ring vortex lattice method solver.
-example_solver = src.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+example_solver = src.pterasoftware.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
     # Solvers just take in one attribute: the problem they are going to solve.
     steady_problem=example_problem
 )
@@ -249,10 +248,10 @@ example_solver.run(
 )
 
 # Call this function from the output module to print the results.
-src.output.print_steady_results(steady_solver=example_solver)
+src.pterasoftware.output.print_steady_results(steady_solver=example_solver)
 
 # Call the software's draw function on the solver.
-src.output.draw(  # Set the solver to the one we just ran.
+src.pterasoftware.output.draw(
     solver=example_solver,
     # Tell the draw function to show the pressure's on the aircraft's panels. This
     # value defaults to false.

@@ -1,5 +1,5 @@
 # ToDo: Properly document this module
-"""This module contains functions used by other modules in the src package.
+"""This module contains functions used by other modules in the pterasoftware package.
 
 """
 import logging
@@ -36,7 +36,6 @@ def cosspace(
         This is a 1D array of the points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
     """
-
     # Find the mean and the amplitude of the cosine function.
     mean = (maximum + minimum) / 2
     amp = (maximum - minimum) / 2
@@ -64,7 +63,6 @@ def reflect_over_xz_plane(input_vector):
     :return output vector: array
         This is a array with each vertex's y variable flipped.
     """
-
     # Initialize the output vector.
     output_vector = input_vector
 
@@ -116,7 +114,6 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
         This is the rotation matrix. If the given angle is a scalar, this will be a 3
         x 3 array. If the given angle is a vector, this will be a 3 x 3 x N array.
     """
-
     # Normalize the axis is it is not already normalized.
     if not axis_already_normalized:
         axis = axis / np.linalg.norm(axis)
@@ -176,7 +173,6 @@ def numba_centroid_of_quadrilateral(
         This is an array containing the x, y, and z components of the centroid of the
         quadrilateral.
     """
-
     x_average = (
         front_left_vertex[0]
         + front_right_vertex[0]

@@ -19,8 +19,7 @@ This module contains the following functions:
     make_multiple_wing_variable_validation_movement: This function creates a movement
     object with variable, multi-wing geometry to be used as a fixture.
 """
-
-import src
+import src.pterasoftware
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import operating_point_fixtures
 
@@ -43,7 +42,7 @@ def make_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # root wing cross section.
     unsteady_validation_root_wing_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0]
@@ -53,7 +52,7 @@ def make_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's tip
     # wing cross section.
     unsteady_validation_tip_wing_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1],
@@ -61,7 +60,7 @@ def make_static_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's wing.
-    unsteady_validation_wing_movement = src.movement.WingMovement(
+    unsteady_validation_wing_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_sections_movements=[
             unsteady_validation_root_wing_cross_section_movement,
@@ -74,7 +73,7 @@ def make_static_validation_movement():
     del unsteady_validation_tip_wing_cross_section_movement
 
     # Create an airplane movement object associated with this airplane.
-    unsteady_validation_airplane_movement = src.movement.AirplaneMovement(
+    unsteady_validation_airplane_movement = src.pterasoftware.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
         wing_movements=[unsteady_validation_wing_movement],
     )
@@ -84,15 +83,17 @@ def make_static_validation_movement():
     del unsteady_validation_wing_movement
 
     # Create an operating point movement object associated with this operating point.
-    unsteady_validation_operating_point_movement = src.movement.OperatingPointMovement(
-        base_operating_point=unsteady_validation_operating_point
+    unsteady_validation_operating_point_movement = (
+        src.pterasoftware.movement.OperatingPointMovement(
+            base_operating_point=unsteady_validation_operating_point
+        )
     )
 
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_operating_point
 
     # Create a movement object associated with this airplane and operating point.
-    unsteady_validation_movement = src.movement.Movement(
+    unsteady_validation_movement = src.pterasoftware.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=None,
@@ -125,7 +126,7 @@ def make_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # root wing cross section.
     unsteady_validation_root_wing_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0],
@@ -135,7 +136,7 @@ def make_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's tip
     # wing cross section.
     unsteady_validation_tip_wing_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1],
@@ -152,7 +153,7 @@ def make_variable_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's wing.
-    unsteady_validation_wing_movement = src.movement.WingMovement(
+    unsteady_validation_wing_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_sections_movements=[
             unsteady_validation_root_wing_cross_section_movement,
@@ -165,7 +166,7 @@ def make_variable_validation_movement():
     del unsteady_validation_tip_wing_cross_section_movement
 
     # Create an airplane movement object associated with this airplane.
-    unsteady_validation_airplane_movement = src.movement.AirplaneMovement(
+    unsteady_validation_airplane_movement = src.pterasoftware.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
         wing_movements=[
             unsteady_validation_wing_movement,
@@ -177,15 +178,17 @@ def make_variable_validation_movement():
     del unsteady_validation_wing_movement
 
     # Create an operating point movement object associated with this operating point.
-    unsteady_validation_operating_point_movement = src.movement.OperatingPointMovement(
-        base_operating_point=unsteady_validation_operating_point,
+    unsteady_validation_operating_point_movement = (
+        src.pterasoftware.movement.OperatingPointMovement(
+            base_operating_point=unsteady_validation_operating_point,
+        )
     )
 
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_operating_point
 
     # Create a movement object associated with this airplane and operating point.
-    unsteady_validation_movement = src.movement.Movement(
+    unsteady_validation_movement = src.pterasoftware.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
     )
@@ -217,7 +220,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # main wing's root wing cross section.
     unsteady_validation_main_wing_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0]
@@ -227,7 +230,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # main wing's tip wing cross section.
     unsteady_validation_main_wing_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1],
@@ -237,7 +240,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's root wing cross section.
     unsteady_validation_hstab_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
             ].wing_cross_sections[0]
@@ -247,7 +250,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's tip wing cross section.
     unsteady_validation_hstab_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
             ].wing_cross_sections[1],
@@ -257,7 +260,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's root wing cross section.
     unsteady_validation_vstab_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
             ].wing_cross_sections[0]
@@ -267,7 +270,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's tip wing cross section.
     unsteady_validation_vstab_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
             ].wing_cross_sections[1],
@@ -275,7 +278,7 @@ def make_multiple_wing_static_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's main wing.
-    unsteady_validation_main_wing_movement = src.movement.WingMovement(
+    unsteady_validation_main_wing_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_sections_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
@@ -285,7 +288,7 @@ def make_multiple_wing_static_validation_movement():
 
     # Create a wing movement object associated with this airplane's horizontal
     # stabilizer.
-    unsteady_validation_hstab_movement = src.movement.WingMovement(
+    unsteady_validation_hstab_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
         wing_cross_sections_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
@@ -294,7 +297,7 @@ def make_multiple_wing_static_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's vertical stabilizer.
-    unsteady_validation_vstab_movement = src.movement.WingMovement(
+    unsteady_validation_vstab_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
         wing_cross_sections_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
@@ -311,7 +314,7 @@ def make_multiple_wing_static_validation_movement():
     del unsteady_validation_vstab_tip_cross_section_movement
 
     # Create an airplane movement object associated with this airplane.
-    unsteady_validation_airplane_movement = src.movement.AirplaneMovement(
+    unsteady_validation_airplane_movement = src.pterasoftware.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
         wing_movements=[
             unsteady_validation_main_wing_movement,
@@ -327,15 +330,17 @@ def make_multiple_wing_static_validation_movement():
     del unsteady_validation_vstab_movement
 
     # Create an operating point movement object associated with this operating point.
-    unsteady_validation_operating_point_movement = src.movement.OperatingPointMovement(
-        base_operating_point=unsteady_validation_operating_point
+    unsteady_validation_operating_point_movement = (
+        src.pterasoftware.movement.OperatingPointMovement(
+            base_operating_point=unsteady_validation_operating_point
+        )
     )
 
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_operating_point
 
     # Create a movement object associated with this airplane and operating point.
-    unsteady_validation_movement = src.movement.Movement(
+    unsteady_validation_movement = src.pterasoftware.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=8,
@@ -369,7 +374,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # main wing's root wing cross section.
     unsteady_validation_main_wing_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[0],
@@ -379,7 +384,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # main wing's tip wing cross section.
     unsteady_validation_main_wing_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
             ].wing_cross_sections[1],
@@ -398,7 +403,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's root wing cross section.
     unsteady_validation_hstab_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
             ].wing_cross_sections[0]
@@ -408,7 +413,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # horizontal stabilizer's tip wing cross section.
     unsteady_validation_hstab_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
             ].wing_cross_sections[1],
@@ -418,7 +423,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's root wing cross section.
     unsteady_validation_vstab_root_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
             ].wing_cross_sections[0]
@@ -428,7 +433,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing cross section movement object associated with this airplane's
     # vertical stabilizer's tip wing cross section.
     unsteady_validation_vstab_tip_cross_section_movement = (
-        src.movement.WingCrossSectionMovement(
+        src.pterasoftware.movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
             ].wing_cross_sections[1],
@@ -436,7 +441,7 @@ def make_multiple_wing_variable_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's main wing.
-    unsteady_validation_main_wing_movement = src.movement.WingMovement(
+    unsteady_validation_main_wing_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
         wing_cross_sections_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
@@ -446,7 +451,7 @@ def make_multiple_wing_variable_validation_movement():
 
     # Create a wing movement object associated with this airplane's horizontal
     # stabilizer.
-    unsteady_validation_hstab_movement = src.movement.WingMovement(
+    unsteady_validation_hstab_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
         wing_cross_sections_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
@@ -455,7 +460,7 @@ def make_multiple_wing_variable_validation_movement():
     )
 
     # Create a wing movement object associated with this airplane's vertical stabilizer.
-    unsteady_validation_vstab_movement = src.movement.WingMovement(
+    unsteady_validation_vstab_movement = src.pterasoftware.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
         wing_cross_sections_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
@@ -472,7 +477,7 @@ def make_multiple_wing_variable_validation_movement():
     del unsteady_validation_vstab_tip_cross_section_movement
 
     # Create an airplane movement object associated with this airplane.
-    unsteady_validation_airplane_movement = src.movement.AirplaneMovement(
+    unsteady_validation_airplane_movement = src.pterasoftware.movement.AirplaneMovement(
         base_airplane=unsteady_validation_airplane,
         wing_movements=[
             unsteady_validation_main_wing_movement,
@@ -488,15 +493,17 @@ def make_multiple_wing_variable_validation_movement():
     del unsteady_validation_vstab_movement
 
     # Create an operating point movement object associated with this operating point.
-    unsteady_validation_operating_point_movement = src.movement.OperatingPointMovement(
-        base_operating_point=unsteady_validation_operating_point
+    unsteady_validation_operating_point_movement = (
+        src.pterasoftware.movement.OperatingPointMovement(
+            base_operating_point=unsteady_validation_operating_point
+        )
     )
 
     # Delete the now extraneous constructing fixtures.
     del unsteady_validation_operating_point
 
     # Create a movement object associated with this airplane and operating point.
-    unsteady_validation_movement = src.movement.Movement(
+    unsteady_validation_movement = src.pterasoftware.movement.Movement(
         airplane_movement=unsteady_validation_airplane_movement,
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=20,

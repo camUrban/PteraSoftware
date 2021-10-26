@@ -13,8 +13,8 @@ This package contains the following modules:
 
     aerodynamics.py: This module contains vortex class definitions.
 
-    functions.py: This module contains functions used by other modules in the src
-    package.
+    functions.py: This module contains functions used by other modules in the
+    pterasoftware package.
 
     geometry.py: This module contains useful functions that relate to geometry,
     and the class definitions for different types of geometries.
@@ -41,14 +41,14 @@ This package contains the following modules:
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's unsteady ring vortex lattice solver.
 """
-import src.aerodynamics
-import src.airfoils
-import src.geometry
-import src.meshing
-import src.movement
-import src.operating_point
-import src.output
-import src.problems
-import src.steady_horseshoe_vortex_lattice_method
-import src.steady_ring_vortex_lattice_method
-import src.unsteady_ring_vortex_lattice_method
+import src.pterasoftware.aerodynamics
+import src.pterasoftware.airfoils
+import src.pterasoftware.geometry
+import src.pterasoftware.meshing
+import src.pterasoftware.movement
+import src.pterasoftware.operating_point
+import src.pterasoftware.output
+import src.pterasoftware.problems
+import src.pterasoftware.steady_horseshoe_vortex_lattice_method
+import src.pterasoftware.steady_ring_vortex_lattice_method
+import src.pterasoftware.unsteady_ring_vortex_lattice_method

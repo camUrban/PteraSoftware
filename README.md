@@ -62,13 +62,13 @@ via the command prompt in your fork's directory.
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.2.2, < 4.0.0
-* numpy >= 1.18.5, < 2.0.0
-* pyvista >= 0.29.0, < 1.0.0
-* scipy >= 1.5, < 2.0
-* numba >= 0.53, <1.0
-* cmocean >= 2.0, <3.0
-* tqdm >= 4.0, < 5.0
+*matplotlib >= 3.2.2, < 4.0.0
+*numpy >= 1.18.5, <= 1.20.0
+*pyvista >= 0.29.0, < 1.0.0
+*scipy >= 1.5.0, < 2.0.0
+*numba >= 0.53, < 1.0
+*cmocean >= 2.0, < 3.0
+*tqdm >= 4.0.0, < 5.0.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 

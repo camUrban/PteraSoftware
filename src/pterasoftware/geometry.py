@@ -686,8 +686,11 @@ class Airfoil:
 
         # Try to read from the airfoil directory.
         try:
+
             # Import the airfoils package as "airfoils".
-            airfoils = importlib.import_module(name=".airfoils", package="src")
+            airfoils = importlib.import_module(
+                name=".airfoils", package="src.pterasoftware"
+            )
 
             # Read the text from the airfoil file.
             raw_text = importlib.resources.read_text(airfoils, name + ".dat")

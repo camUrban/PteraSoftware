@@ -27,8 +27,7 @@ This module contains the following functions:
     function creates an unsteady problem object with multi-wing, variable geometry to
     be used as a fixture.
 """
-
-import src
+import src.pterasoftware
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import movement_fixtures
 from tests.integration.fixtures import operating_point_fixtures
@@ -48,7 +47,7 @@ def make_steady_validation_problem():
     )
 
     # Create the problem fixture.
-    steady_validation_problem = src.problems.SteadyProblem(
+    steady_validation_problem = src.pterasoftware.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -68,7 +67,6 @@ def make_steady_multiple_wing_validation_problem():
     :return steady_validation_problem: SteadyProblem
         This is the problem fixture.
     """
-
     # Create the constructing fixtures.
     steady_validation_airplane = (
         airplane_fixtures.make_multiple_wing_steady_validation_airplane()
@@ -78,7 +76,7 @@ def make_steady_multiple_wing_validation_problem():
     )
 
     # Create the problem fixture.
-    steady_validation_problem = src.problems.SteadyProblem(
+    steady_validation_problem = src.pterasoftware.problems.SteadyProblem(
         airplane=steady_validation_airplane,
         operating_point=steady_validation_operating_point,
     )
@@ -103,7 +101,7 @@ def make_unsteady_validation_problem_with_static_geometry():
     unsteady_validation_movement = movement_fixtures.make_static_validation_movement()
 
     # Create the problem fixture.
-    unsteady_validation_problem = src.problems.UnsteadyProblem(
+    unsteady_validation_problem = src.pterasoftware.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -126,7 +124,7 @@ def make_unsteady_validation_problem_with_variable_geometry():
     unsteady_validation_movement = movement_fixtures.make_variable_validation_movement()
 
     # Create the problem fixture.
-    unsteady_validation_problem = src.problems.UnsteadyProblem(
+    unsteady_validation_problem = src.pterasoftware.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -144,14 +142,13 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.
     """
-
     # Create the constructing fixture.
     unsteady_validation_movement = (
         movement_fixtures.make_multiple_wing_static_validation_movement()
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = src.problems.UnsteadyProblem(
+    unsteady_validation_problem = src.pterasoftware.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 
@@ -176,7 +173,7 @@ def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
     )
 
     # Create the problem fixture.
-    unsteady_validation_problem = src.problems.UnsteadyProblem(
+    unsteady_validation_problem = src.pterasoftware.problems.UnsteadyProblem(
         movement=unsteady_validation_movement
     )
 

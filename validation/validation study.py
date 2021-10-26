@@ -11,7 +11,6 @@ WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 20
 More information can be found in my accompanying report: "Validating an Open-Source
 UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
-
 # Import Python’s math package.
 import math
 
@@ -20,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Import the source package.
-import src
+import src.pterasoftware
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -159,11 +158,11 @@ for i in range(num_spanwise_sections):
     this_chord = this_x_te - this_x_le
 
     # Define this wing cross section object.
-    this_wing_cross_section = src.geometry.WingCrossSection(
+    this_wing_cross_section = src.pterasoftware.geometry.WingCrossSection(
         x_le=this_x_le,
         y_le=this_y_le,
         chord=this_chord,
-        airfoil=src.geometry.Airfoil(
+        airfoil=src.pterasoftware.geometry.Airfoil(
             name="naca0000",
         ),
         num_spanwise_panels=1,
@@ -189,11 +188,11 @@ for i in range(num_spanwise_sections):
         this_chord = this_x_te - this_x_le
 
         # Define this wing cross section object.
-        this_wing_cross_section = src.geometry.WingCrossSection(
+        this_wing_cross_section = src.pterasoftware.geometry.WingCrossSection(
             x_le=this_x_le,
             y_le=this_y_le,
             chord=this_chord,
-            airfoil=src.geometry.Airfoil(
+            airfoil=src.pterasoftware.geometry.Airfoil(
                 name="naca0000",
             ),
             num_spanwise_panels=1,
@@ -203,9 +202,9 @@ for i in range(num_spanwise_sections):
         validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
 # Define the validation airplane object.
-validation_airplane = src.geometry.Airplane(
+validation_airplane = src.pterasoftware.geometry.Airplane(
     wings=[
-        src.geometry.Wing(
+        src.pterasoftware.geometry.Wing(
             symmetric=True,
             wing_cross_sections=validation_airplane_wing_cross_sections,
             chordwise_spacing=chordwise_spacing,
@@ -221,7 +220,7 @@ del validation_airplane_wing_cross_sections
 validation_wing_cross_section_movements = []
 
 # Define the first wing cross section movement, which is stationary.
-first_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
+first_wing_cross_section_movement = src.pterasoftware.movement.WingCrossSectionMovement(
     base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[0],
 )
 
@@ -318,12 +317,14 @@ for j in range(1, num_spanwise_sections + 1):
     # Define the wing cross section movement for this wing cross section. The
     # amplitude and period are both set to one because the true amplitude and period
     # are already accounted for in the custom sweep function.
-    this_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
-        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j],
-        sweeping_amplitude=1,
-        sweeping_period=1,
-        sweeping_spacing="custom",
-        custom_sweep_function=validation_geometry_sweep_function,
+    this_wing_cross_section_movement = (
+        src.pterasoftware.movement.WingCrossSectionMovement(
+            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j],
+            sweeping_amplitude=1,
+            sweeping_period=1,
+            sweeping_spacing="custom",
+            custom_sweep_function=validation_geometry_sweep_function,
+        )
     )
 
     # Append this wing cross section movement to the list of wing cross section
@@ -331,7 +332,7 @@ for j in range(1, num_spanwise_sections + 1):
     validation_wing_cross_section_movements.append(this_wing_cross_section_movement)
 
 # Define the wing movement object that contains the wing cross section movements.
-validation_main_wing_movement = src.movement.WingMovement(
+validation_main_wing_movement = src.pterasoftware.movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_sections_movements=validation_wing_cross_section_movements,
 )
@@ -340,7 +341,7 @@ validation_main_wing_movement = src.movement.WingMovement(
 del validation_wing_cross_section_movements
 
 # Define the airplane movement that contains the wing movement.
-validation_airplane_movement = src.movement.AirplaneMovement(
+validation_airplane_movement = src.pterasoftware.movement.AirplaneMovement(
     base_airplane=validation_airplane,
     wing_movements=[
         validation_main_wing_movement,
@@ -352,13 +353,13 @@ del validation_airplane
 del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
-validation_operating_point = src.operating_point.OperatingPoint(
+validation_operating_point = src.pterasoftware.operating_point.OperatingPoint(
     alpha=validation_alpha,
     velocity=validation_velocity,
 )
 
 # Define an operating point movement that contains the operating point.
-validation_operating_point_movement = src.movement.OperatingPointMovement(
+validation_operating_point_movement = src.pterasoftware.movement.OperatingPointMovement(
     base_operating_point=validation_operating_point,
 )
 
@@ -383,7 +384,7 @@ validation_num_steps = math.ceil(
 )
 
 # Define the overall movement.
-validation_movement = src.movement.Movement(
+validation_movement = src.pterasoftware.movement.Movement(
     airplane_movement=validation_airplane_movement,
     operating_point_movement=validation_operating_point_movement,
     num_steps=validation_num_steps,
@@ -395,7 +396,7 @@ del validation_airplane_movement
 del validation_operating_point_movement
 
 # Define the validation problem.
-validation_problem = src.problems.UnsteadyProblem(
+validation_problem = src.pterasoftware.problems.UnsteadyProblem(
     movement=validation_movement,
 )
 
@@ -403,10 +404,8 @@ validation_problem = src.problems.UnsteadyProblem(
 del validation_movement
 
 # Define the validation solver.
-validation_solver = (
-    src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=validation_problem,
-    )
+validation_solver = src.pterasoftware.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_problem=validation_problem,
 )
 
 # Delete the extraneous pointer.
@@ -440,8 +439,10 @@ validation_solver.run(prescribed_wake=True)
 # Call the software’s animate function on the solver. This produces a GIF. The GIF is
 # saved in the same directory as this script. Press "q," after orienting the view,
 # to begin the animation.
-src.output.animate(  # Set the unsteady solver to the one we just ran.
-    unsteady_solver=validation_solver,  # Show the pressures in the animation.
+src.pterasoftware.output.animate(
+    # Set the unsteady solver to the one we just ran.
+    unsteady_solver=validation_solver,
+    # Show the pressures in the animation.
     show_delta_pressures=True,
     # Set this value to False to hide the wake vortices in the animation.
     show_wake_vortices=True,

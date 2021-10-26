@@ -73,7 +73,6 @@ class OperatingPoint:
             viscosity at 20 degrees Celsius [source:
             https://www.engineeringtoolbox.com].
         """
-
         self.density = density
         self.velocity = velocity
         self.alpha = alpha
@@ -83,22 +82,19 @@ class OperatingPoint:
     def calculate_dynamic_pressure(self):
         """This method calculates the freestream dynamic pressure of the working fluid.
 
-        :return dynamic_pressure: float
+        :return: float
             This is the freestream dynamic pressure. Its units are pascals.
         """
-
         # Calculate and return the freestream dynamic pressure
-        dynamic_pressure = 0.5 * self.density * self.velocity ** 2
-        return dynamic_pressure
+        return 0.5 * self.density * self.velocity ** 2
 
     def calculate_rotation_matrix_wind_axes_to_geometry_axes(self):
         """This method computes the 3 x 3 rotation matrix for converting from wind
         axes to geometry axes.
 
-        :return rotation_matrix_wind_axes_to_geometry_axes: 3 x 3 array
+        :return: 3 x 3 array
             This is the rotation matrix to convert wind axes to geometry axes.
         """
-
         sin_alpha = np.sin(np.radians(self.alpha))
         cos_alpha = np.cos(np.radians(self.alpha))
         sin_beta = np.sin(np.radians(self.beta))
@@ -113,8 +109,8 @@ class OperatingPoint:
         )
 
         # Flip the axes because in geometry axes x is downstream by convention,
-        # while in wind axes x is upstream by
-        # convention. Same with z being up/down respectively.
+        # while in wind axes x is upstream by convention. Same with z being up/down
+        # respectively.
         axes_flip = np.array(
             [
                 [-1, 0, 0],
@@ -129,35 +125,26 @@ class OperatingPoint:
 
         # Calculate and return the rotation matrix to convert wind axes to geometry
         # axes.
-        rotation_matrix_wind_axes_to_geometry_axes = (
-            axes_flip @ alpha_rotation @ beta_rotation @ eye
-        )
-        return rotation_matrix_wind_axes_to_geometry_axes
+        return axes_flip @ alpha_rotation @ beta_rotation @ eye
 
     def calculate_freestream_direction_geometry_axes(self):
         """This method computes the freestream direction (the direction the wind is
         going to) in geometry axes.
 
-        :return velocity_direction_geometry_axes: 1D array
+        :return: 1D array
             This is the freestream velocity direction in geometry axes.
         """
-
         velocity_direction_wind_axes = np.array([-1, 0, 0])
-        velocity_direction_geometry_axes = (
+        return (
             self.calculate_rotation_matrix_wind_axes_to_geometry_axes()
             @ velocity_direction_wind_axes
         )
-        return velocity_direction_geometry_axes
 
     def calculate_freestream_velocity_geometry_axes(self):
         """This method computes the freestream velocity vector (in the direction the
         wind is going to) in geometry axes.
 
-        :return freestream_velocity_geometry_axes: 1D array
+        :return: 1D array
             This is the freestream velocity vector in geometry axes.
         """
-
-        freestream_velocity_geometry_axes = (
-            self.calculate_freestream_direction_geometry_axes() * self.velocity
-        )
-        return freestream_velocity_geometry_axes
+        return self.calculate_freestream_direction_geometry_axes() * self.velocity

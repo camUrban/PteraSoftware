@@ -689,7 +689,8 @@ class Airfoil:
 
             # Import the airfoils package as "airfoils".
             airfoils = importlib.import_module(
-                name=".airfoils", package="src.pterasoftware"
+                name=".airfoils",
+                package="pterasoftware",
             )
 
             # Read the text from the airfoil file.

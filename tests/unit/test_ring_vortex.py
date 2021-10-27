@@ -13,7 +13,7 @@ import unittest
 
 import numpy as np
 
-import src.pterasoftware
+import pterasoftware as ps
 import tests.unit.fixtures.vortex_fixtures
 
 
@@ -89,22 +89,20 @@ class TestRingVortex(unittest.TestCase):
         """
 
         # Test that the objects are all of the right type.
-        self.assertIsInstance(
-            self.ring_vortex_fixture, src.pterasoftware.aerodynamics.RingVortex
-        )
+        self.assertIsInstance(self.ring_vortex_fixture, ps.aerodynamics.RingVortex)
         self.assertIsInstance(
             self.ring_vortex_fixture.front_leg,
-            src.pterasoftware.aerodynamics.LineVortex,
+            ps.aerodynamics.LineVortex,
         )
         self.assertIsInstance(
-            self.ring_vortex_fixture.left_leg, src.pterasoftware.aerodynamics.LineVortex
+            self.ring_vortex_fixture.left_leg, ps.aerodynamics.LineVortex
         )
         self.assertIsInstance(
-            self.ring_vortex_fixture.back_leg, src.pterasoftware.aerodynamics.LineVortex
+            self.ring_vortex_fixture.back_leg, ps.aerodynamics.LineVortex
         )
         self.assertIsInstance(
             self.ring_vortex_fixture.right_leg,
-            src.pterasoftware.aerodynamics.LineVortex,
+            ps.aerodynamics.LineVortex,
         )
 
         # Test that the vortex objects' coordinates were correctly set.

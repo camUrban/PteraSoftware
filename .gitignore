@@ -129,5 +129,9 @@ cython_debug/
 # This is the pre-commit configuration file to ignore.
 .pre-commit-config.yaml
 
-# This is a folder created by testing to ignore.
+# These are folders created by testing to ignore.
 /tests/_trial_temp/
+/tests/integration/_trial_temp/
+/tests/integration/fixtures/_trial_temp/
+/tests/unit/_trial_temp/
+/tests/unit/fixtures/_trial_temp/

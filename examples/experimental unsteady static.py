@@ -1,7 +1,6 @@
 """This is script is an example of running Ptera Software's steady ring vortex
 lattice method solver on an airplane with geometry similar to the NMT experimental
 setup. """
-
 import src
 
 this_airplane = src.geometry.Airplane(

@@ -17,7 +17,7 @@ This module contains the following functions:
 """
 import unittest
 
-import src.pterasoftware
+import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -70,7 +70,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
             prescribed_wake=True,
         )
 
-        src.pterasoftware.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             show_delta_pressures=True,

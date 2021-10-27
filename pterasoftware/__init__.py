@@ -41,14 +41,14 @@ This package contains the following modules:
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's unsteady ring vortex lattice solver.
 """
-import src.pterasoftware.aerodynamics
-import src.pterasoftware.airfoils
-import src.pterasoftware.geometry
-import src.pterasoftware.meshing
-import src.pterasoftware.movement
-import src.pterasoftware.operating_point
-import src.pterasoftware.output
-import src.pterasoftware.problems
-import src.pterasoftware.steady_horseshoe_vortex_lattice_method
-import src.pterasoftware.steady_ring_vortex_lattice_method
-import src.pterasoftware.unsteady_ring_vortex_lattice_method
+import pterasoftware.aerodynamics
+import pterasoftware.airfoils
+import pterasoftware.geometry
+import pterasoftware.meshing
+import pterasoftware.movement
+import pterasoftware.operating_point
+import pterasoftware.output
+import pterasoftware.problems
+import pterasoftware.steady_horseshoe_vortex_lattice_method
+import pterasoftware.steady_ring_vortex_lattice_method
+import pterasoftware.unsteady_ring_vortex_lattice_method

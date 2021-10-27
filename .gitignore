@@ -1,9 +1,8 @@
 # This is the .gitignore file.
-
 # Citation:
-#   Adapted From: Python.gitignore in the github/gitignore repository
-#   Author: github
-#   Date Retrieved: 05/08/2020
+# Adapted From: Python.gitignore in the github/gitignore repository
+# Author: github
+# Date Retrieved: 05/08/2020
 
 # These are the byte-compiled, optimized, and DLL files to ignore.
 __pycache__/
@@ -32,9 +31,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# PyInstaller:
-#   Usually these files are written by a python script from a template before PyInstaller builds the exe, so as to
-#   inject date/other infos into it.
+# PyInstaller: Usually these files are written by a python script from a template
+# before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -130,3 +128,10 @@ cython_debug/
 
 # This is the pre-commit configuration file to ignore.
 .pre-commit-config.yaml
+
+# These are folders created by testing to ignore.
+/tests/_trial_temp/
+/tests/integration/_trial_temp/
+/tests/integration/fixtures/_trial_temp/
+/tests/unit/_trial_temp/
+/tests/unit/fixtures/_trial_temp/

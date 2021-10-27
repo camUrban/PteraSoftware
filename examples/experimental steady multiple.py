@@ -1,7 +1,6 @@
 """This is script is an example of running Ptera Software's steady ring vortex
 lattice method solver on three airplanes (with geometry similar to the NMT
 experimental setup) flying in formation."""
-
 import src
 
 horseshoe_vortex_method = False

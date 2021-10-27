@@ -383,6 +383,137 @@ def process_steady_solver_forces(
         )
 
 
+def process_unsteady_solver_forces(
+    unsteady_solver, near_field_forces_geometry_axes, near_field_moments_geometry_axes
+):
+    """This function uses the forces and moments a solver has found on its panels to
+    find the forces, moments, and associated coefficients on each airplane in the
+    solver.
+
+    :param unsteady_solver: UnsteadySolver
+        This is the solver whose forces will be processed.
+    :param near_field_forces_geometry_axes: Nx3 array of floats
+        This is an array of the near field forces in geometry axes on each of the
+        solver's panels. The array is size Nx3, where N is the number of panels. The
+        units are Newtons.
+    :param near_field_moments_geometry_axes: Nx3 array of floats
+        This is an array of the near field moments in geometry axes on each of the
+        solver's panels. The array is size Nx3, where N is the number of panels. The
+        units are Newton-meters.
+    :return:
+    """
+    operating_point = unsteady_solver.current_operating_point
+
+    # Find this operating point's dynamic pressure. The units are Pascals.
+    dynamic_pressure = operating_point.calculate_dynamic_pressure()
+
+    # Find the rotation matrix that will be used to convert the geometry frame values
+    # to wind frame values.
+    rotation_matrix = np.transpose(
+        operating_point.calculate_rotation_matrix_wind_to_geometry()
+    )
+
+    # Iterate through this solver's panels.
+    for panel_num, panel in enumerate(unsteady_solver.panels):
+
+        # Update the force and moment on this panel.
+        panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
+            panel_num, :
+        ]
+        panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
+            panel_num, :
+        ]
+
+        # Update the pressure on this panel.
+        panel.update_pressure()
+
+    # Initialize arrays to hold each airplane's total force and moment in geometry
+    # axes.
+    total_near_field_forces_geometry_axes = np.zeros((unsteady_solver.num_airplanes, 3))
+    total_near_field_moments_geometry_axes = np.zeros(
+        (unsteady_solver.num_airplanes, 3)
+    )
+
+    # Iterate through each airplane and find the total force and moment experienced
+    # by each by summing up the contribution's from its panels.
+    for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
+        for wing in airplane.wings:
+            for panel in np.ravel(wing.panels):
+                total_near_field_forces_geometry_axes[
+                    airplane_num, :
+                ] += panel.near_field_force_geometry_axes
+                total_near_field_moments_geometry_axes[
+                    airplane_num, :
+                ] += panel.near_field_moment_geometry_axes
+
+    # For each airplane, find the total force and moment it experiences in wind axes
+    # from the rotation matrix and the total force and moment it experiences in
+    # geometry axes.
+    for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
+        airplane.total_near_field_force_wind_axes = (
+            rotation_matrix @ total_near_field_forces_geometry_axes[airplane_num]
+        )
+        airplane.total_near_field_moment_wind_axes = (
+            rotation_matrix @ total_near_field_moments_geometry_axes[airplane_num]
+        )
+
+    # Iterate through the airplanes and calculate each one's coefficients.
+    for airplane in unsteady_solver.current_airplanes:
+
+        # Calculate this airplane's force coefficients.
+        induced_drag_coefficient = (
+            -airplane.total_near_field_force_wind_axes[0]
+            / dynamic_pressure
+            / airplane.s_ref
+        )
+        side_force_coefficient = (
+            airplane.total_near_field_force_wind_axes[1]
+            / dynamic_pressure
+            / airplane.s_ref
+        )
+        lift_coefficient = (
+            -airplane.total_near_field_force_wind_axes[2]
+            / dynamic_pressure
+            / airplane.s_ref
+        )
+
+        # Calculate this airplane's moment coefficients.
+        rolling_moment_coefficient = (
+            airplane.total_near_field_moment_wind_axes[0]
+            / dynamic_pressure
+            / airplane.s_ref
+            / airplane.b_ref
+        )
+        pitching_moment_coefficient = (
+            airplane.total_near_field_moment_wind_axes[1]
+            / dynamic_pressure
+            / airplane.s_ref
+            / airplane.c_ref
+        )
+        yawing_moment_coefficient = (
+            airplane.total_near_field_moment_wind_axes[2]
+            / dynamic_pressure
+            / airplane.s_ref
+            / airplane.b_ref
+        )
+
+        # Populate this airplane's force and moment coefficient attributes.
+        airplane.total_near_field_force_coefficients_wind_axes = np.array(
+            [
+                induced_drag_coefficient,
+                side_force_coefficient,
+                lift_coefficient,
+            ]
+        )
+        airplane.total_near_field_moment_coefficients_wind_axes = np.array(
+            [
+                rolling_moment_coefficient,
+                pitching_moment_coefficient,
+                yawing_moment_coefficient,
+            ]
+        )
+
+
 def update_ring_vortex_solvers_panel_attributes(
     solver, global_panel_position, panel, airplane
 ):

@@ -13,7 +13,7 @@ import unittest
 
 import numpy as np
 
-import src.pterasoftware
+import pterasoftware as ps
 import tests.unit.fixtures.vortex_fixtures
 
 
@@ -75,9 +75,7 @@ class TestLineVortex(unittest.TestCase):
         """
 
         # Test that the object is of the right type.
-        self.assertIsInstance(
-            self.line_vortex_fixture, src.pterasoftware.aerodynamics.LineVortex
-        )
+        self.assertIsInstance(self.line_vortex_fixture, ps.aerodynamics.LineVortex)
 
         # Test that the vortex's coordinates were correctly set.
         self.assertTrue(

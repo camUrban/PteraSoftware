@@ -1,1 +1,3 @@
-recursive-include src *
+recursive-include pterasoftware *
+recursive-exclude pterasoftware/__pycache__ *
+recursive-exclude pterasoftware/airfoils/__pycache__ *

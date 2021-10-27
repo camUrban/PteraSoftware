@@ -17,7 +17,7 @@ import unittest
 
 import matplotlib.pyplot as plt
 
-import src.pterasoftware
+import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -81,7 +81,7 @@ class TestOutput(unittest.TestCase):
         # Call the plot_results_versus_time method on the solver fixture. The testing
         # flag is set to true, so the
         # figures will not be displayed.
-        src.pterasoftware.output.plot_results_versus_time(
+        ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, testing=True
         )
 
@@ -98,7 +98,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the animate function on the unsteady solver fixture.
-        src.pterasoftware.output.animate(
+        ps.output.animate(
             unsteady_solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,
@@ -112,7 +112,7 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the draw function on the unsteady solver fixture.
-        src.pterasoftware.output.draw(
+        ps.output.draw(
             solver=self.unsteady_solver,
             show_delta_pressures=False,
             show_wake_vortices=False,

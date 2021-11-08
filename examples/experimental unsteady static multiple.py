@@ -3,7 +3,7 @@ lattice method solver on an airplane with geometry similar to the NMT experiment
 setup. """
 import src
 
-alpha = 10
+alpha = 0
 x_spacing = 0.5
 y_spacing = 0.5
 
@@ -229,10 +229,3 @@ src.output.draw(
 
 src.output.plot_results_versus_time(unsteady_solver=this_solver, testing=False)
 src.output.print_unsteady_results(unsteady_solver=this_solver)
-
-# src.output.animate(
-#     unsteady_solver=this_solver,
-#     show_delta_pressures=True,
-#     show_wake_vortices=True,
-#     keep_file=True,
-# )

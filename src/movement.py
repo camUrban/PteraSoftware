@@ -61,6 +61,7 @@ class Movement:
         airplane_movements,
         operating_point_movement,
         num_steps=None,
+        num_cycles=None,
         delta_time=None,
     ):
         """This is the initialization method.
@@ -72,10 +73,18 @@ class Movement:
             This object characterizes the movement of the the operating point.
         :param num_steps: int, optional
             This integer is the number of time steps of the unsteady simulation. If
-            not given a value, this method will calculate one such that the
-            simulation will cover three cycles of the maximum period movement. If the
-            movement is static, it will default to the number of time steps such that
-            the wake extends back by 10 reference chord lengths.
+            not given a value, and the movement is dynamic, this method will
+            calculate one such that the simulation will cover some number of cycles
+            of the maximum period movement. The number of cycles defaults to three,
+            but can be changed with the num_cycles parameter. If not given a value,
+            and the movement is static, the number of steps will default to the
+            number of time steps such that the wake extends back by 10 reference
+            chord lengths.
+        :param num_cycles: int, optional
+            This integer is the number of cycles of the maximum period movement used
+            to calculate a non-populated num_steps parameter. This parameter is only
+            used if the num_steps parameter is None, and the movement isn't static.
+            The default value is None.
         :param delta_time: float, optional
             This float is the time, in seconds, between each time current_step. If
             not given a value, this method will calculate one such the ring vortices
@@ -84,9 +93,23 @@ class Movement:
             chord length, its main wing's number of chordwise panels, and its base
             operating point's velocity.
         """
+
         # Initialize the class attributes.
         self.airplane_movements = airplane_movements
         self.operating_point_movement = operating_point_movement
+
+        # If the number of cycles were specified, make sure that the number of steps
+        # isn't also specified and that the movement isn't static.
+        if num_cycles is not None:
+            if num_steps is not None or self.get_max_period() == 0:
+                raise Exception(
+                    "Only specify the number of cycles if you haven't specified the "
+                    "number of steps and the movement isn't static!"
+                )
+            else:
+                self.num_cycles = num_cycles
+        else:
+            self.num_cycles = None
 
         # Calculate default num_steps and delta_time values if the user hasn't passed
         # one in.
@@ -107,6 +130,7 @@ class Movement:
 
             # Set the delta time to be the average of the airplanes' ideal delta times.
             delta_time = sum(delta_times) / len(delta_times)
+
         if num_steps is None:
 
             # Get the maximum period of any of this movement's sub-movements.
@@ -131,13 +155,14 @@ class Movement:
                 num_steps = math.ceil(wake_length / panel_length)
             else:
 
-                # The default number of cycles of the movement with the maximum period
-                # over which to simulate is three.
-                default_num_cycles = 3
+                # If the user didn't specify the number of cycles of the movement
+                # with the maximum period over which to simulate, set it to three.
+                if self.num_cycles is None:
+                    self.num_cycles = 3
 
-                # The default number of time steps is that simulates at least 3 (the
-                # default number) cycles of the movement with the maximum period.
-                num_steps = math.ceil(default_num_cycles * max_period / delta_time)
+                # The default number of time steps is that simulates some number of
+                # cycles of the movement with the maximum period.
+                num_steps = math.ceil(self.num_cycles * max_period / delta_time)
 
         self.num_steps = num_steps
         self.delta_time = delta_time

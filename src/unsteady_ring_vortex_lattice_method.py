@@ -303,7 +303,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             unit_scale=True,
             ncols=100,
             desc="Simulating",
-            disable=logging_level_value < logging.WARNING,
+            disable=logging_level_value != logging.WARNING,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
         ) as bar:
 

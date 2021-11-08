@@ -5,7 +5,7 @@ import src
 
 horseshoe_vortex_method = False
 
-alpha = 15
+alpha = 0
 x_spacing = 0.5
 y_spacing = 0.5
 

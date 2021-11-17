@@ -3,7 +3,12 @@ lattice method solver on an airplane with geometry similar to the NMT experiment
 setup. """
 import src
 
-alpha = 0
+wake_state = True
+num_flaps = 2
+num_chord = 4
+num_span = 4
+
+alpha = 5
 x_spacing = 0.5
 y_spacing = 0.5
 
@@ -14,23 +19,27 @@ lead_airplane = src.geometry.Airplane(
             name="Main Wing",
             symmetric=True,
             chordwise_spacing="uniform",
+            num_chordwise_panels=num_chord,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -48,23 +57,27 @@ right_airplane = src.geometry.Airplane(
             chordwise_spacing="uniform",
             x_le=x_spacing,
             y_le=y_spacing,
+            num_chordwise_panels=num_chord,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -82,23 +95,27 @@ left_airplane = src.geometry.Airplane(
             chordwise_spacing="uniform",
             x_le=x_spacing,
             y_le=-y_spacing,
+            num_chordwise_panels=num_chord,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -195,7 +212,7 @@ this_movement = src.movement.Movement(
         left_airplane_movement,
     ],
     operating_point_movement=this_operating_point_movement,
-    num_steps=100,
+    num_cycles=num_flaps,
 )
 
 del lead_airplane_movement
@@ -205,7 +222,7 @@ del this_operating_point_movement
 
 this_problem = src.problems.UnsteadyProblem(
     movement=this_movement,
-    only_final_results=True,
+    only_final_results=False,
 )
 
 this_solver = (
@@ -217,15 +234,23 @@ this_solver = (
 del this_problem
 
 this_solver.run(
-    prescribed_wake=False,
+    prescribed_wake=wake_state,
     calculate_streamlines=False,
 )
 
-src.output.draw(
-    solver=this_solver,
-    show_delta_pressures=True,
-    show_wake_vortices=True,
-)
+# src.output.draw(
+#     solver=this_solver,
+#     show_delta_pressures=True,
+#     show_wake_vortices=True,
+# )
 
 src.output.plot_results_versus_time(unsteady_solver=this_solver, testing=False)
+
 src.output.print_unsteady_results(unsteady_solver=this_solver)
+
+src.output.animate(
+    unsteady_solver=this_solver,
+    show_delta_pressures=True,
+    show_wake_vortices=True,
+    keep_file=True,
+)

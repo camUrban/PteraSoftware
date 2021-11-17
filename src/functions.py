@@ -41,7 +41,7 @@ This module contains the following functions:
 import logging
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
@@ -140,7 +140,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     return rotation_matrix
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
@@ -610,7 +610,7 @@ def calculate_steady_freestream_wing_influences(steady_solver):
     )
 
 
-@njit(parallel=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def numba_1d_explicit_cross(vectors_1, vectors_2):
     """This function takes in two arrays, each of which contain N vectors of 3
     components. The function then calculates and returns the cross product of the two
@@ -632,7 +632,7 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
         positions.
     """
     crosses = np.zeros(vectors_1.shape)
-    for i in prange(crosses.shape[0]):
+    for i in range(crosses.shape[0]):
         crosses[i, 0] = (
             vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
         )

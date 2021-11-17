@@ -373,7 +373,7 @@ operating_point_movement = src.movement.OperatingPointMovement(
 # Define the movement object. This contains the airplane movement and the operating
 # point movement.
 movement = src.movement.Movement(  # Add the airplane movement.
-    airplane_movement=airplane_movement,  # Add the operating point movement.
+    airplane_movements=[airplane_movement],  # Add the operating point movement.
     operating_point_movement=operating_point_movement,
     # Leave the number of time steps and the length of each time step unspecified.
     # The solver will automatically set the length of the time steps so that the wake

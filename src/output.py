@@ -234,10 +234,12 @@ def animate(
     """
     first_results_step = unsteady_solver.first_results_step
 
-    # Get this solver's problem's airplanes.
-    airplanes = []
+    # Get this solver's problems' airplanes. This will become a list of lists,
+    # with the first index being the time step and the second index identifying each
+    # of the solver's airplanes at that time step.
+    step_airplanes = []
     for steady_problem in unsteady_solver.steady_problems:
-        airplanes.append(steady_problem.airplane)
+        step_airplanes.append(steady_problem.airplanes)
 
     # Initialize the plotter and get the color map.
     plotter = pv.Plotter()
@@ -253,10 +255,10 @@ def animate(
         # Initialize an empty array to hold all of the problem's scalars.
         all_scalars = np.empty(0, dtype=int)
 
-        # Now iterate through all the time steps to get all of the scalars. These
-        # values will be used to configure the color map.
-        for airplane in airplanes:
-            scalars_to_add = get_scalars(airplane)
+        # Now iterate through each time step and gather all of the scalars for its
+        # list of airplanes. These values will be used to configure the color map.
+        for airplanes in step_airplanes:
+            scalars_to_add = get_scalars(airplanes)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
@@ -276,13 +278,13 @@ def animate(
             c_max = 2 * np.std(all_scalars)
 
     # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surfaces = get_panel_surfaces(airplanes[0])
+    panel_surfaces = get_panel_surfaces(step_airplanes[0])
 
     # Check if the user wants to plot pressures. If so, add the panel surfaces to the
     # plotter with the pressure scalars. Otherwise, add the panel surfaces without
     # the pressure scalars.
     if show_delta_pressures and first_results_step == 0:
-        scalars = get_scalars(airplanes[0])
+        scalars = get_scalars(step_airplanes[0])
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
@@ -333,14 +335,14 @@ def animate(
     # Initialize a variable to keep track of which step we are on.
     current_step = 1
 
-    # Begin to iterate through all the other airplanes.
-    for airplane in airplanes[1:]:
+    # Begin to iterate through all the other steps' airplanes.
+    for airplanes in step_airplanes[1:]:
 
         # Clear the plotter.
         plotter.clear()
 
         # Get the panel surfaces.
-        panel_surfaces = get_panel_surfaces(airplane)
+        panel_surfaces = get_panel_surfaces(airplanes)
 
         # If the user wants to show the wake ring vortices, then get their surfaces and
         # plot them.
@@ -360,7 +362,7 @@ def animate(
         # surfaces to the plotter wit  h the pressure scalars. Otherwise, add the
         # panel surfaces without the pressure scalars.
         if show_delta_pressures and first_results_step <= current_step:
-            scalars = get_scalars(airplane)
+            scalars = get_scalars(airplanes)
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,

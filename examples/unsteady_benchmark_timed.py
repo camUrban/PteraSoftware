@@ -89,7 +89,7 @@ operating_point_movement = src.movement.OperatingPointMovement(
 )
 
 movement = src.movement.Movement(
-    airplane_movement=airplane_movement,
+    airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
 )
 

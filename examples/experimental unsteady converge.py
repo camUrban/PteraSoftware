@@ -34,7 +34,6 @@ all_mean_forces = np.zeros(
         len(num_flaps_list),
         len(num_chord_list),
         3,
-        3,
     )
 )
 all_mean_moments = np.zeros(
@@ -42,7 +41,6 @@ all_mean_moments = np.zeros(
         len(wake_state_list),
         len(num_flaps_list),
         len(num_chord_list),
-        3,
         3,
     )
 )
@@ -119,82 +117,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                     ),
                 ],
             )
-            right_airplane = src.geometry.Airplane(
-                name="Right Airplane",
-                x_ref=x_spacing,
-                y_ref=y_spacing,
-                wings=[
-                    src.geometry.Wing(
-                        name="Main Wing",
-                        symmetric=True,
-                        chordwise_spacing="uniform",
-                        x_le=x_spacing,
-                        y_le=y_spacing,
-                        num_chordwise_panels=num_chord,
-                        wing_cross_sections=[
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                chord=0.1094,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                                num_spanwise_panels=root_to_mid_num_span,
-                                spanwise_spacing="uniform",
-                            ),
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                y_le=0.2275,
-                                chord=0.1094,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                                num_spanwise_panels=mid_to_tip_num_span,
-                                spanwise_spacing="uniform",
-                            ),
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                y_le=0.350,
-                                chord=0.0219,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                            ),
-                        ],
-                    ),
-                ],
-            )
-            left_airplane = src.geometry.Airplane(
-                name="Left Airplane",
-                x_ref=x_spacing,
-                y_ref=-y_spacing,
-                wings=[
-                    src.geometry.Wing(
-                        name="Main Wing",
-                        symmetric=True,
-                        chordwise_spacing="uniform",
-                        x_le=x_spacing,
-                        y_le=-y_spacing,
-                        num_chordwise_panels=num_chord,
-                        wing_cross_sections=[
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                chord=0.1094,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                                num_spanwise_panels=root_to_mid_num_span,
-                                spanwise_spacing="uniform",
-                            ),
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                y_le=0.2275,
-                                chord=0.1094,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                                num_spanwise_panels=mid_to_tip_num_span,
-                                spanwise_spacing="uniform",
-                            ),
-                            src.geometry.WingCrossSection(
-                                twist=alpha,
-                                y_le=0.350,
-                                chord=0.0219,
-                                airfoil=src.geometry.Airfoil(name="naca0012"),
-                            ),
-                        ],
-                    ),
-                ],
-            )
 
             lead_airplane_movement = src.movement.AirplaneMovement(
                 base_airplane=lead_airplane,
@@ -227,78 +149,12 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                     )
                 ],
             )
-            right_airplane_movement = src.movement.AirplaneMovement(
-                base_airplane=right_airplane,
-                wing_movements=[
-                    src.movement.WingMovement(
-                        base_wing=right_airplane.wings[0],
-                        wing_cross_sections_movements=[
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=right_airplane.wings[
-                                    0
-                                ].wing_cross_sections[0],
-                            ),
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=right_airplane.wings[
-                                    0
-                                ].wing_cross_sections[1],
-                                sweeping_amplitude=15.0,
-                                sweeping_period=1,
-                                sweeping_spacing="sine",
-                            ),
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=right_airplane.wings[
-                                    0
-                                ].wing_cross_sections[2],
-                                sweeping_amplitude=15.0,
-                                sweeping_period=1,
-                                sweeping_spacing="sine",
-                            ),
-                        ],
-                    )
-                ],
-            )
-            left_airplane_movement = src.movement.AirplaneMovement(
-                base_airplane=left_airplane,
-                wing_movements=[
-                    src.movement.WingMovement(
-                        base_wing=left_airplane.wings[0],
-                        wing_cross_sections_movements=[
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=left_airplane.wings[
-                                    0
-                                ].wing_cross_sections[0],
-                            ),
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=left_airplane.wings[
-                                    0
-                                ].wing_cross_sections[1],
-                                sweeping_amplitude=15.0,
-                                sweeping_period=1,
-                                sweeping_spacing="sine",
-                            ),
-                            src.movement.WingCrossSectionMovement(
-                                base_wing_cross_section=left_airplane.wings[
-                                    0
-                                ].wing_cross_sections[2],
-                                sweeping_amplitude=15.0,
-                                sweeping_period=1,
-                                sweeping_spacing="sine",
-                            ),
-                        ],
-                    )
-                ],
-            )
 
             del lead_airplane
-            del right_airplane
-            del left_airplane
 
             this_movement = src.movement.Movement(
                 airplane_movements=[
                     lead_airplane_movement,
-                    right_airplane_movement,
-                    left_airplane_movement,
                 ],
                 operating_point_movement=this_operating_point_movement,
                 num_steps=None,
@@ -307,8 +163,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
             )
 
             del lead_airplane_movement
-            del right_airplane_movement
-            del left_airplane_movement
 
             this_problem = src.problems.UnsteadyProblem(
                 movement=this_movement,
@@ -337,54 +191,49 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
 
             first_results_step = this_solver.first_results_step
             num_steps = this_solver.num_steps
-            num_airplanes = this_solver.num_airplanes
             num_results_steps = num_steps - first_results_step
 
-            total_forces = np.zeros((num_airplanes, 3, num_results_steps))
-            total_moments = np.zeros((num_airplanes, 3, num_results_steps))
+            total_forces = np.zeros((3, num_results_steps))
+            total_moments = np.zeros((3, num_results_steps))
 
-            mean_forces = np.zeros((num_airplanes, 3))
-            mean_moments = np.zeros((num_airplanes, 3))
+            mean_forces = np.zeros(3)
+            mean_moments = np.zeros(3)
 
             results_step = 0
             for step in range(first_results_step, num_steps):
-                airplanes = this_solver.steady_problems[step].airplanes
-                for airplane_id, airplane in enumerate(airplanes):
-                    total_forces[
-                        airplane_id, :, results_step
-                    ] = airplane.total_near_field_force_wind_axes
-                    total_moments[
-                        airplane_id, :, results_step
-                    ] = airplane.total_near_field_moment_wind_axes
+                airplane = this_solver.steady_problems[step].airplanes[0]
+                total_forces[
+                    :, results_step
+                ] = airplane.total_near_field_force_wind_axes
+                total_moments[
+                    :, results_step
+                ] = airplane.total_near_field_moment_wind_axes
                 results_step += 1
 
             del results_step
             del step
-            del airplanes
-            del airplane_id
             del airplane
 
-            for airplane_id in range(num_airplanes):
-                this_induced_drag = np.mean(total_forces[airplane_id, 0, :])
-                this_side_force = np.mean(total_forces[airplane_id, 1, :])
-                this_lift = np.mean(total_forces[airplane_id, 2, :])
-                this_rolling_moment = np.mean(total_moments[airplane_id, 0, :])
-                this_pitching_moment = np.mean(total_moments[airplane_id, 1, :])
-                this_yawing_moment = np.mean(total_moments[airplane_id, 2, :])
+            this_induced_drag = np.mean(total_forces[0, :])
+            this_side_force = np.mean(total_forces[1, :])
+            this_lift = np.mean(total_forces[2, :])
+            this_rolling_moment = np.mean(total_moments[0, :])
+            this_pitching_moment = np.mean(total_moments[1, :])
+            this_yawing_moment = np.mean(total_moments[2, :])
 
-                mean_forces[airplane_id, 0] = this_induced_drag
-                mean_forces[airplane_id, 1] = this_side_force
-                mean_forces[airplane_id, 2] = this_lift
-                mean_moments[airplane_id, 0] = this_rolling_moment
-                mean_moments[airplane_id, 1] = this_pitching_moment
-                mean_moments[airplane_id, 2] = this_yawing_moment
+            mean_forces[0] = this_induced_drag
+            mean_forces[1] = this_side_force
+            mean_forces[2] = this_lift
+            mean_moments[0] = this_rolling_moment
+            mean_moments[1] = this_pitching_moment
+            mean_moments[2] = this_yawing_moment
 
-                del this_induced_drag
-                del this_side_force
-                del this_lift
-                del this_rolling_moment
-                del this_pitching_moment
-                del this_yawing_moment
+            del this_induced_drag
+            del this_side_force
+            del this_lift
+            del this_rolling_moment
+            del this_pitching_moment
+            del this_yawing_moment
 
             del total_forces
             del total_moments
@@ -506,8 +355,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
             del num_results_steps
             del num_steps
             del first_results_step
-            del airplane_id
-            del num_airplanes
             del iter_start
             del iter_stop
             del iter_time

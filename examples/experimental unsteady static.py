@@ -3,6 +3,22 @@ lattice method solver on an airplane with geometry similar to the NMT experiment
 setup. """
 import src
 
+num_chord = 10
+
+root_to_mid_span = 0.2275
+root_chord = 0.1094
+mid_to_tip_span = 0.350 - 0.2275
+tip_chord = 0.0219
+
+root_to_mid_chord = root_chord
+mid_to_tip_chord = (root_chord + tip_chord) / 2
+
+root_to_mid_panel_chord = root_to_mid_chord / num_chord
+mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
+
+root_to_mid_num_span = round(root_to_mid_span / (5 * root_to_mid_panel_chord))
+mid_to_tip_num_span = round(mid_to_tip_span / (5 * mid_to_tip_panel_chord))
+
 this_airplane = src.geometry.Airplane(
     name="Experimental Airplane",
     wings=[
@@ -10,15 +26,20 @@ this_airplane = src.geometry.Airplane(
             name="Main Wing",
             symmetric=True,
             chordwise_spacing="uniform",
+            num_chordwise_panels=num_chord,
             wing_cross_sections=[
                 src.geometry.WingCrossSection(
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=root_to_mid_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
+                    num_spanwise_panels=mid_to_tip_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     x_le=0.0875,
@@ -57,6 +78,14 @@ this_airplane_movement = src.movement.AirplaneMovement(
                     sweeping_period=1,
                     sweeping_spacing="sine",
                 ),
+                src.movement.WingCrossSectionMovement(
+                    base_wing_cross_section=this_airplane.wings[0].wing_cross_sections[
+                        2
+                    ],
+                    sweeping_amplitude=15.0,
+                    sweeping_period=1,
+                    sweeping_spacing="sine",
+                ),
             ],
         )
     ],
@@ -69,13 +98,14 @@ this_operating_point_movement = src.movement.OperatingPointMovement(
 this_movement = src.movement.Movement(
     airplane_movements=[this_airplane_movement],
     operating_point_movement=this_operating_point_movement,
+    num_cycles=2,
 )
 
 del this_airplane_movement
 del this_operating_point_movement
 
 this_problem = src.problems.UnsteadyProblem(
-    movement=this_movement, only_final_results=True
+    movement=this_movement, only_final_results=False
 )
 
 this_solver = (

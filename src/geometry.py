@@ -304,8 +304,7 @@ class Wing:
         """This method calculates the calculate_span of the wing.
 
         This method also updates the class's span attribute. If the wing is
-        symmetrical, it includes the length of the
-        mirrored half.
+        symmetrical, it includes the length of the mirrored half.
 
         :return: None
         """

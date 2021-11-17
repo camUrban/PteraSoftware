@@ -1,8 +1,8 @@
 """This is script is an example of running Ptera Software's steady ring vortex
 lattice method solver on an airplane with geometry similar to the NMT experimental
 setup. """
-
 import src
+import time
 
 experimental_airplane = src.geometry.Airplane(
     name="Experimental Airplane",
@@ -56,8 +56,15 @@ del experimental_problem
 
 experimental_solver.run()
 
-src.output.print_steady_results(steady_solver=experimental_solver)
+start = time.time()
+for i in range(50):
+    print("\t", i)
+    experimental_solver.run()
+stop = time.time()
+print((stop - start) / 50)
 
-src.output.draw(
-    solver=experimental_solver, show_delta_pressures=True, show_streamlines=True
-)
+# src.output.print_steady_results(steady_solver=experimental_solver)
+#
+# src.output.draw(
+#     solver=experimental_solver, show_delta_pressures=True, show_streamlines=True
+# )

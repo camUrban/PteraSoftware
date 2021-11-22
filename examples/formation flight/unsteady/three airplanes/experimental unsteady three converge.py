@@ -14,7 +14,7 @@ alpha = 5
 x_spacing = 0.5
 y_spacing = 0.5
 
-min_num_flaps = 2
+min_num_flaps = 1
 max_num_flaps = 4
 min_num_chord = 11
 max_num_chord = 11

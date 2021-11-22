@@ -5,7 +5,7 @@ import src
 
 wake_state = True
 num_cycles = 2
-num_chord = 5
+num_chord = 11
 
 speed = 1.0
 alpha = 5

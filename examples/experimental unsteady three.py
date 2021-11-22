@@ -4,13 +4,28 @@ setup. """
 import src
 
 wake_state = True
-num_flaps = 2
-num_chord = 4
-num_span = 4
+num_cycles = 2
+num_chord = 5
 
+speed = 1.0
 alpha = 5
 x_spacing = 0.5
 y_spacing = 0.5
+period = x_spacing / speed
+
+root_to_mid_span = 0.2275
+root_chord = 0.1094
+mid_to_tip_span = 0.350 - 0.2275
+tip_chord = 0.0219
+
+root_to_mid_chord = root_chord
+mid_to_tip_chord = (root_chord + tip_chord) / 2
+
+root_to_mid_panel_chord = root_to_mid_chord / num_chord
+mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
+
+root_to_mid_num_span = round(root_to_mid_span / (5 * root_to_mid_panel_chord))
+mid_to_tip_num_span = round(mid_to_tip_span / (5 * mid_to_tip_panel_chord))
 
 lead_airplane = src.geometry.Airplane(
     name="Lead Airplane",
@@ -25,21 +40,22 @@ lead_airplane = src.geometry.Airplane(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=root_to_mid_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=mid_to_tip_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -63,21 +79,22 @@ right_airplane = src.geometry.Airplane(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=root_to_mid_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=mid_to_tip_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -101,21 +118,22 @@ left_airplane = src.geometry.Airplane(
                     twist=alpha,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=root_to_mid_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.2275,
                     chord=0.1094,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
+                    num_spanwise_panels=mid_to_tip_num_span,
+                    spanwise_spacing="uniform",
                 ),
                 src.geometry.WingCrossSection(
                     twist=alpha,
                     y_le=0.350,
                     chord=0.0219,
                     airfoil=src.geometry.Airfoil(name="naca0012"),
-                    num_spanwise_panels=num_span,
                 ),
             ],
         ),
@@ -124,7 +142,7 @@ left_airplane = src.geometry.Airplane(
 
 this_operating_point = src.operating_point.OperatingPoint(
     density=1.225,
-    velocity=1.0,
+    velocity=speed,
     alpha=0.0,
     nu=15.06e-6,
 )
@@ -145,7 +163,15 @@ lead_airplane_movement = src.movement.AirplaneMovement(
                         1
                     ],
                     sweeping_amplitude=15.0,
-                    sweeping_period=1,
+                    sweeping_period=period,
+                    sweeping_spacing="sine",
+                ),
+                src.movement.WingCrossSectionMovement(
+                    base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
+                        2
+                    ],
+                    sweeping_amplitude=15.0,
+                    sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
             ],
@@ -169,7 +195,15 @@ right_airplane_movement = src.movement.AirplaneMovement(
                         1
                     ],
                     sweeping_amplitude=15.0,
-                    sweeping_period=1,
+                    sweeping_period=period,
+                    sweeping_spacing="sine",
+                ),
+                src.movement.WingCrossSectionMovement(
+                    base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
+                        2
+                    ],
+                    sweeping_amplitude=15.0,
+                    sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
             ],
@@ -193,7 +227,15 @@ left_airplane_movement = src.movement.AirplaneMovement(
                         1
                     ],
                     sweeping_amplitude=15.0,
-                    sweeping_period=1,
+                    sweeping_period=period,
+                    sweeping_spacing="sine",
+                ),
+                src.movement.WingCrossSectionMovement(
+                    base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
+                        2
+                    ],
+                    sweeping_amplitude=15.0,
+                    sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
             ],
@@ -212,7 +254,7 @@ this_movement = src.movement.Movement(
         left_airplane_movement,
     ],
     operating_point_movement=this_operating_point_movement,
-    num_cycles=num_flaps,
+    num_cycles=num_cycles,
 )
 
 del lead_airplane_movement

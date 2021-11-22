@@ -3,7 +3,15 @@ lattice method solver on an airplane with geometry similar to the NMT experiment
 setup. """
 import src
 
-num_chord = 10
+wake_state = True
+num_cycles = 2
+num_chord = 11
+
+speed = 1.0
+alpha = 5
+x_spacing = 0.5
+y_spacing = 0.5
+period = x_spacing / speed
 
 root_to_mid_span = 0.2275
 root_chord = 0.1094
@@ -54,7 +62,7 @@ this_airplane = src.geometry.Airplane(
 
 this_operating_point = src.operating_point.OperatingPoint(
     density=1.225,
-    velocity=1.0,
+    velocity=speed,
     alpha=5.0,
     nu=15.06e-6,
 )
@@ -75,7 +83,7 @@ this_airplane_movement = src.movement.AirplaneMovement(
                         1
                     ],
                     sweeping_amplitude=15.0,
-                    sweeping_period=1,
+                    sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
@@ -83,7 +91,7 @@ this_airplane_movement = src.movement.AirplaneMovement(
                         2
                     ],
                     sweeping_amplitude=15.0,
-                    sweeping_period=1,
+                    sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
             ],
@@ -98,7 +106,7 @@ this_operating_point_movement = src.movement.OperatingPointMovement(
 this_movement = src.movement.Movement(
     airplane_movements=[this_airplane_movement],
     operating_point_movement=this_operating_point_movement,
-    num_cycles=2,
+    num_cycles=num_cycles,
 )
 
 del this_airplane_movement
@@ -117,7 +125,7 @@ this_solver = (
 del this_problem
 
 this_solver.run(
-    prescribed_wake=True,
+    prescribed_wake=wake_state,
     calculate_streamlines=False,
 )
 

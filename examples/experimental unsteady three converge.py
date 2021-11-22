@@ -16,8 +16,8 @@ y_spacing = 0.5
 
 min_num_flaps = 2
 max_num_flaps = 4
-min_num_chord = 10
-max_num_chord = 15
+min_num_chord = 11
+max_num_chord = 11
 
 wake_state_list = [True, False]
 num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]

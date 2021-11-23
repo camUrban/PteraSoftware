@@ -2,7 +2,6 @@
 lattice method solver on an airplane with geometry similar to the NMT experimental
 setup. """
 import time
-import gc
 
 import numpy as np
 
@@ -10,9 +9,12 @@ import src
 
 start_time = time.time()
 
+aspect_ratio = 5
+speed = 1.0
 alpha = 5
 x_spacing = 0.5
 y_spacing = 0.5
+period = x_spacing / speed
 
 min_num_flaps = 2
 max_num_flaps = 4
@@ -22,11 +24,6 @@ max_num_chord = 15
 wake_state_list = [True, False]
 num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]
 num_chord_list = [i for i in range(min_num_chord, max_num_chord + 1)]
-
-del min_num_flaps
-del max_num_flaps
-del min_num_chord
-del max_num_chord
 
 all_mean_forces = np.zeros(
     (
@@ -50,7 +47,7 @@ num_iterations = len(wake_state_list) * len(num_flaps_list) * len(num_chord_list
 
 this_operating_point = src.operating_point.OperatingPoint(
     density=1.225,
-    velocity=1.0,
+    velocity=speed,
     alpha=0.0,
     nu=15.06e-6,
 )
@@ -79,9 +76,11 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
             mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
 
             root_to_mid_num_span = round(
-                root_to_mid_span / (5 * root_to_mid_panel_chord)
+                root_to_mid_span / (aspect_ratio * root_to_mid_panel_chord)
             )
-            mid_to_tip_num_span = round(mid_to_tip_span / (5 * mid_to_tip_panel_chord))
+            mid_to_tip_num_span = round(
+                mid_to_tip_span / (aspect_ratio * mid_to_tip_panel_chord)
+            )
 
             lead_airplane = src.geometry.Airplane(
                 name="Lead Airplane",
@@ -134,7 +133,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                                     0
                                 ].wing_cross_sections[1],
                                 sweeping_amplitude=15.0,
-                                sweeping_period=1,
+                                sweeping_period=period,
                                 sweeping_spacing="sine",
                             ),
                             src.movement.WingCrossSectionMovement(
@@ -142,7 +141,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                                     0
                                 ].wing_cross_sections[2],
                                 sweeping_amplitude=15.0,
-                                sweeping_period=1,
+                                sweeping_period=period,
                                 sweeping_spacing="sine",
                             ),
                         ],
@@ -210,10 +209,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                 ] = airplane.total_near_field_moment_wind_axes
                 results_step += 1
 
-            del results_step
-            del step
-            del airplane
-
             this_induced_drag = np.mean(total_forces[0, :])
             this_side_force = np.mean(total_forces[1, :])
             this_lift = np.mean(total_forces[2, :])
@@ -227,16 +222,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
             mean_moments[0] = this_rolling_moment
             mean_moments[1] = this_pitching_moment
             mean_moments[2] = this_yawing_moment
-
-            del this_induced_drag
-            del this_side_force
-            del this_lift
-            del this_rolling_moment
-            del this_pitching_moment
-            del this_yawing_moment
-
-            del total_forces
-            del total_moments
 
             all_mean_forces[wake_state_id, num_flaps_id, num_chord_id] = mean_forces
             all_mean_moments[wake_state_id, num_flaps_id, num_chord_id] = mean_moments
@@ -352,20 +337,6 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                     sep="",
                 )
 
-            del num_results_steps
-            del num_steps
-            del first_results_step
-            del iter_start
-            del iter_stop
-            del iter_time
-            del mean_forces
-            del mean_moments
-            del max_wake_percent_error
-            del max_flap_percent_error
-            del max_chord_percent_error
-            del max_percent_error
-            del this_solver
-            gc.collect()
             iteration += 1
 
 stop_time = time.time()

@@ -27,8 +27,8 @@ mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
 root_to_mid_num_span = round(root_to_mid_span / (5 * root_to_mid_panel_chord))
 mid_to_tip_num_span = round(mid_to_tip_span / (5 * mid_to_tip_panel_chord))
 
-lead_airplane = src.geometry.Airplane(
-    name="Lead Airplane",
+airplane_1 = src.geometry.Airplane(
+    name="Airplane 1",
     wings=[
         src.geometry.Wing(
             name="Main Wing",
@@ -62,8 +62,8 @@ lead_airplane = src.geometry.Airplane(
     ],
 )
 
-mid_right_airplane = src.geometry.Airplane(
-    name="Middle Right Airplane",
+airplane_right_2 = src.geometry.Airplane(
+    name="Airplane Right 2",
     x_ref=x_spacing,
     y_ref=y_spacing,
     wings=[
@@ -101,8 +101,8 @@ mid_right_airplane = src.geometry.Airplane(
     ],
 )
 
-mid_left_airplane = src.geometry.Airplane(
-    name="Middle Left Airplane",
+airplane_left_2 = src.geometry.Airplane(
+    name="Airplane Left 2",
     x_ref=x_spacing,
     y_ref=-y_spacing,
     wings=[
@@ -140,8 +140,8 @@ mid_left_airplane = src.geometry.Airplane(
     ],
 )
 
-tail_right_airplane = src.geometry.Airplane(
-    name="Tail Right Airplane",
+airplane_right_3 = src.geometry.Airplane(
+    name="Airplane Right 3",
     x_ref=2 * x_spacing,
     y_ref=2 * y_spacing,
     wings=[
@@ -179,8 +179,8 @@ tail_right_airplane = src.geometry.Airplane(
     ],
 )
 
-tail_left_airplane = src.geometry.Airplane(
-    name="Tail Left Airplane",
+airplane_left_3 = src.geometry.Airplane(
+    name="Airplane Left 3",
     x_ref=2 * x_spacing,
     y_ref=-2 * y_spacing,
     wings=[
@@ -225,29 +225,23 @@ this_operating_point = src.operating_point.OperatingPoint(
     nu=15.06e-6,
 )
 
-lead_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=lead_airplane,
+airplane_1_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_1,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=lead_airplane.wings[0],
+            base_wing=airplane_1.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
-                        0
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
-                        1
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
                     sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
-                        2
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
                     sweeping_period=period,
                     sweeping_spacing="sine",
@@ -257,19 +251,19 @@ lead_airplane_movement = src.movement.AirplaneMovement(
     ],
 )
 
-mid_right_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=mid_right_airplane,
+airplane_right_2_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_right_2,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=mid_right_airplane.wings[0],
+            base_wing=airplane_right_2.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_2.wings[
                         0
                     ].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_2.wings[
                         0
                     ].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
@@ -277,7 +271,7 @@ mid_right_airplane_movement = src.movement.AirplaneMovement(
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_2.wings[
                         0
                     ].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
@@ -289,19 +283,19 @@ mid_right_airplane_movement = src.movement.AirplaneMovement(
     ],
 )
 
-mid_left_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=mid_left_airplane,
+airplane_left_2_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_left_2,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=mid_left_airplane.wings[0],
+            base_wing=airplane_left_2.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_2.wings[
                         0
                     ].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_2.wings[
                         0
                     ].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
@@ -309,7 +303,7 @@ mid_left_airplane_movement = src.movement.AirplaneMovement(
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=mid_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_2.wings[
                         0
                     ].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
@@ -321,19 +315,19 @@ mid_left_airplane_movement = src.movement.AirplaneMovement(
     ],
 )
 
-tail_right_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=tail_right_airplane,
+airplane_right_3_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_right_3,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=tail_right_airplane.wings[0],
+            base_wing=airplane_right_3.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_3.wings[
                         0
                     ].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_3.wings[
                         0
                     ].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
@@ -341,7 +335,7 @@ tail_right_airplane_movement = src.movement.AirplaneMovement(
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_right_airplane.wings[
+                    base_wing_cross_section=airplane_right_3.wings[
                         0
                     ].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
@@ -353,19 +347,19 @@ tail_right_airplane_movement = src.movement.AirplaneMovement(
     ],
 )
 
-tail_left_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=tail_left_airplane,
+airplane_left_3_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_left_3,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=tail_left_airplane.wings[0],
+            base_wing=airplane_left_3.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_3.wings[
                         0
                     ].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_3.wings[
                         0
                     ].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
@@ -373,7 +367,7 @@ tail_left_airplane_movement = src.movement.AirplaneMovement(
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=tail_left_airplane.wings[
+                    base_wing_cross_section=airplane_left_3.wings[
                         0
                     ].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
@@ -391,26 +385,26 @@ this_operating_point_movement = src.movement.OperatingPointMovement(
 
 this_movement = src.movement.Movement(
     airplane_movements=[
-        lead_airplane_movement,
-        mid_right_airplane_movement,
-        mid_left_airplane_movement,
-        tail_right_airplane_movement,
-        tail_left_airplane_movement,
+        airplane_1_movement,
+        airplane_right_2_movement,
+        airplane_left_2_movement,
+        airplane_right_3_movement,
+        airplane_left_3_movement,
     ],
     operating_point_movement=this_operating_point_movement,
     num_cycles=num_cycles,
 )
 
-del lead_airplane_movement
-del mid_right_airplane_movement
-del mid_left_airplane_movement
-del tail_right_airplane_movement
-del tail_left_airplane_movement
+del airplane_1_movement
+del airplane_right_2_movement
+del airplane_left_2_movement
+del airplane_right_3_movement
+del airplane_left_3_movement
 del this_operating_point_movement
 
 this_problem = src.problems.UnsteadyProblem(
     movement=this_movement,
-    only_final_results=False,
+    only_final_results=True,
 )
 
 this_solver = (
@@ -432,13 +426,11 @@ src.output.draw(
     show_wake_vortices=True,
 )
 
-# src.output.plot_results_versus_time(unsteady_solver=this_solver, testing=False)
-
 src.output.print_unsteady_results(unsteady_solver=this_solver)
 
 src.output.animate(
     unsteady_solver=this_solver,
     show_delta_pressures=True,
     show_wake_vortices=True,
-    keep_file=True,
+    keep_file=False,
 )

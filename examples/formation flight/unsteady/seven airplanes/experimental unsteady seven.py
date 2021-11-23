@@ -4,7 +4,7 @@ setup. """
 import src
 
 wake_state = True
-num_cycles = 2
+num_flaps = 2
 num_chord = 4
 
 speed = 1.0
@@ -536,7 +536,7 @@ this_movement = src.movement.Movement(
         airplane_left_4_movement,
     ],
     operating_point_movement=this_operating_point_movement,
-    num_cycles=num_cycles,
+    num_cycles=num_flaps,
 )
 
 del airplane_1_movement

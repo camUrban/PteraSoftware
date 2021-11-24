@@ -27,8 +27,8 @@ mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
 root_to_mid_num_span = round(root_to_mid_span / (5 * root_to_mid_panel_chord))
 mid_to_tip_num_span = round(mid_to_tip_span / (5 * mid_to_tip_panel_chord))
 
-this_airplane = src.geometry.Airplane(
-    name="Experimental Airplane",
+airplane_1 = src.geometry.Airplane(
+    name="Airplane 1",
     wings=[
         src.geometry.Wing(
             name="Main Wing",
@@ -67,29 +67,23 @@ this_operating_point = src.operating_point.OperatingPoint(
     nu=15.06e-6,
 )
 
-this_airplane_movement = src.movement.AirplaneMovement(
-    base_airplane=this_airplane,
+airplane_1_movement = src.movement.AirplaneMovement(
+    base_airplane=airplane_1,
     wing_movements=[
         src.movement.WingMovement(
-            base_wing=this_airplane.wings[0],
+            base_wing=airplane_1.wings[0],
             wing_cross_sections_movements=[
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=this_airplane.wings[0].wing_cross_sections[
-                        0
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[0],
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=this_airplane.wings[0].wing_cross_sections[
-                        1
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
                     sweeping_period=period,
                     sweeping_spacing="sine",
                 ),
                 src.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=this_airplane.wings[0].wing_cross_sections[
-                        2
-                    ],
+                    base_wing_cross_section=airplane_1.wings[0].wing_cross_sections[2],
                     sweeping_amplitude=15.0,
                     sweeping_period=period,
                     sweeping_spacing="sine",
@@ -104,12 +98,12 @@ this_operating_point_movement = src.movement.OperatingPointMovement(
 )
 
 this_movement = src.movement.Movement(
-    airplane_movements=[this_airplane_movement],
+    airplane_movements=[airplane_1_movement],
     operating_point_movement=this_operating_point_movement,
     num_cycles=num_cycles,
 )
 
-del this_airplane_movement
+del airplane_1_movement
 del this_operating_point_movement
 
 this_problem = src.problems.UnsteadyProblem(

@@ -384,7 +384,7 @@ validation_num_steps = math.ceil(
 
 # Define the overall movement.
 validation_movement = src.movement.Movement(
-    airplane_movement=validation_airplane_movement,
+    airplane_movements=[validation_airplane_movement],
     operating_point_movement=validation_operating_point_movement,
     num_steps=validation_num_steps,
     delta_time=validation_delta_time,
@@ -440,12 +440,12 @@ validation_solver.run(prescribed_wake=True)
 # Call the software’s animate function on the solver. This produces a GIF. The GIF is
 # saved in the same directory as this script. Press "q," after orienting the view,
 # to begin the animation.
-src.output.animate(  # Set the unsteady solver to the one we just ran.
-    unsteady_solver=validation_solver,  # Show the pressures in the animation.
-    show_delta_pressures=True,
-    # Set this value to False to hide the wake vortices in the animation.
-    show_wake_vortices=True,
-)
+# src.output.animate(  # Set the unsteady solver to the one we just ran.
+#     unsteady_solver=validation_solver,  # Show the pressures in the animation.
+#     show_delta_pressures=True,
+#     # Set this value to False to hide the wake vortices in the animation.
+#     show_wake_vortices=True,
+# )
 
 # Create a variable to hold the time in seconds at each of the simulation’s time steps.
 times = np.linspace(
@@ -628,7 +628,7 @@ exp_net_lift_forces = 2 * (
 # Get this solver’s problem’s airplanes.
 airplanes = []
 for steady_problem in validation_solver.steady_problems:
-    airplanes.append(steady_problem.airplane)
+    airplanes.append(steady_problem.airplanes[0])
 
 # Initialize matrices to hold the forces and moments at each time step.
 sim_net_forces_wind_axes = np.zeros((3, validation_num_steps))
@@ -702,6 +702,13 @@ lift_absolute_errors = np.abs(
     final_flap_sim_net_lift_forces_wind_axes - exp_net_lift_forces
 )
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
+
+sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes ** 2))
+exp_lift_rms = math.sqrt(np.mean(exp_net_lift_forces ** 2))
+lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
+print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
+print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
+print("Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N")
 
 # Print the MAE.
 print(

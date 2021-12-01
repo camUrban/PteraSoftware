@@ -4,18 +4,31 @@ setup. """
 import time
 
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 import src
 
 start_time = time.time()
 
-convergence = 1.0
-
-num_airplanes = 3
+# Known Converged Values (Prescribed Wake, 0.5%, 0 deg):
+#   1 Airplane:
+#       2, 8
+#   3 Airplanes:
+#       3, 11
+#   5 Airplanes:
+#       3, 11
+convergence = 0.5
+num_airplanes = 1
+min_num_flaps = 1
+max_num_flaps = 6
+min_num_chord = 2
+max_num_chord = 12
+wake_state = True
 
 aspect_ratio = 5.0
 speed = 1.0
-alpha = 0.0
+alpha = 5.0
 x_spacing = 0.5
 y_spacing = 0.5
 root_to_mid_span = 0.2275
@@ -28,12 +41,7 @@ period = x_spacing / speed
 root_to_mid_chord = root_chord
 mid_to_tip_chord = (root_chord + tip_chord) / 2
 
-min_num_flaps = 2
-max_num_flaps = 4
-min_num_chord = 6
-max_num_chord = 9
-
-wake_state_list = [True, False]
+wake_state_list = [wake_state]
 num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]
 num_chord_list = [i for i in range(min_num_chord, max_num_chord + 1)]
 
@@ -48,8 +56,7 @@ iter_times = np.zeros((len(wake_state_list), len(num_flaps_list), len(num_chord_
 iteration = 0
 num_iterations = len(wake_state_list) * len(num_flaps_list) * len(num_chord_list)
 
-max_rmspe = None
-max_non_wake_rmspe = None
+converged = None
 wake_state = None
 num_flaps = None
 num_chord = None
@@ -57,6 +64,11 @@ iter_time = None
 wake_state_id = None
 num_flaps_id = None
 num_chord_id = None
+single_wake = None
+single_flap = None
+single_chord = None
+wake_saturated = None
+this_solver = None
 
 this_operating_point = src.operating_point.OperatingPoint(
     velocity=speed,
@@ -126,7 +138,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                                     chord=root_chord,
                                     airfoil=src.geometry.Airfoil(name="naca0012"),
                                     num_spanwise_panels=root_to_mid_num_span,
-                                    spanwise_spacing="uniform",
+                                    spanwise_spacing="cosine",
                                 ),
                                 src.geometry.WingCrossSection(
                                     twist=alpha,
@@ -134,7 +146,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                                     chord=root_chord,
                                     airfoil=src.geometry.Airfoil(name="naca0012"),
                                     num_spanwise_panels=mid_to_tip_num_span,
-                                    spanwise_spacing="uniform",
+                                    spanwise_spacing="cosine",
                                 ),
                                 src.geometry.WingCrossSection(
                                     twist=alpha,
@@ -239,137 +251,118 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                     ] = airplane.total_near_field_moment_wind_axes
                 results_step += 1
 
-            rms_drag = np.mean(total_forces[:, 0, :] ** 2) ** 0.5
-            rms_lift = np.mean(total_forces[:, 2, :] ** 2) ** 0.5
+            these_s_drags = total_forces[:, 0, :] ** 2
+            these_s_lifts = total_forces[:, 2, :] ** 2
 
-            rms_drags[wake_state_id, num_flaps_id, num_chord_id] = rms_drag
-            rms_lifts[wake_state_id, num_flaps_id, num_chord_id] = rms_lift
+            these_ms_drags = np.mean(these_s_drags, axis=-1)
+            these_ms_lifts = np.mean(these_s_lifts, axis=-1)
 
-            max_wake_rmspe = np.inf
-            max_flap_rmspe = np.inf
-            max_chord_rmspe = np.inf
+            these_rms_drags = these_ms_drags ** 0.5
+            these_rms_lifts = these_ms_lifts ** 0.5
+
+            rms_drags[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_drags
+            rms_lifts[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_lifts
+
+            max_wake_rmspc = np.inf
+            max_flap_rmspc = np.inf
+            max_chord_rmspc = np.inf
 
             if wake_state_id > 0:
                 last_wake_rms_lifts = rms_lifts[
-                    wake_state_id - 1, num_flaps_id, num_chord_id
+                    wake_state_id - 1, num_flaps_id, num_chord_id, :
                 ]
                 last_wake_rms_drags = rms_drags[
-                    wake_state_id - 1, num_flaps_id, num_chord_id
+                    wake_state_id - 1, num_flaps_id, num_chord_id, :
                 ]
-                wake_lift_rmspes = 100 * np.abs(
-                    (rms_lift - last_wake_rms_lifts) / rms_lift
+                wake_lift_rmspcs = 100 * np.abs(
+                    (these_rms_lifts - last_wake_rms_lifts) / last_wake_rms_lifts
                 )
-                wake_drag_rmspes = 100 * np.abs(
-                    (rms_drag - last_wake_rms_drags) / rms_drag
+                wake_drag_rmspcs = 100 * np.abs(
+                    (these_rms_drags - last_wake_rms_drags) / last_wake_rms_drags
                 )
-                max_wake_lift_rmspe = np.max(wake_lift_rmspes)
-                max_wake_drag_rmspe = np.max(wake_drag_rmspes)
-                max_wake_rmspe = max(max_wake_lift_rmspe, max_wake_drag_rmspe)
+                max_wake_lift_rmspc = np.max(wake_lift_rmspcs)
+                max_wake_drag_rmspc = np.max(wake_drag_rmspcs)
+                max_wake_rmspc = max(max_wake_lift_rmspc, max_wake_drag_rmspc)
 
                 print(
-                    "\t\t\t\tMax Wake RMSPE: ",
-                    round(max_wake_rmspe, 2),
+                    "\t\t\t\tMax Wake RMSPC: ",
+                    round(max_wake_rmspc, 2),
                     "%",
                     sep="",
                 )
             else:
-                print("\t\t\t\tMax Wake RMSPE:", max_wake_rmspe)
+                print("\t\t\t\tMax Wake RMSPC:", max_wake_rmspc)
 
             if num_flaps_id > 0:
                 last_flap_rms_lifts = rms_lifts[
-                    wake_state_id, num_flaps_id - 1, num_chord_id
+                    wake_state_id, num_flaps_id - 1, num_chord_id, :
                 ]
                 last_flap_rms_drags = rms_drags[
-                    wake_state_id, num_flaps_id - 1, num_chord_id
+                    wake_state_id, num_flaps_id - 1, num_chord_id, :
                 ]
-                flap_lift_rmspes = 100 * np.abs(
-                    (rms_lift - last_flap_rms_lifts) / rms_lift
+                flap_lift_rmspcs = 100 * np.abs(
+                    (these_rms_lifts - last_flap_rms_lifts) / last_flap_rms_lifts
                 )
-                flap_drag_rmspes = 100 * np.abs(
-                    (rms_drag - last_flap_rms_drags) / rms_drag
+                flap_drag_rmspcs = 100 * np.abs(
+                    (these_rms_drags - last_flap_rms_drags) / last_flap_rms_drags
                 )
-                max_flap_lift_rmspe = np.max(flap_lift_rmspes)
-                max_flap_drag_rmspe = np.max(flap_drag_rmspes)
-                max_flap_rmspe = max(max_flap_lift_rmspe, max_flap_drag_rmspe)
+                max_flap_lift_rmspc = np.max(flap_lift_rmspcs)
+                max_flap_drag_rmspc = np.max(flap_drag_rmspcs)
+                max_flap_rmspc = max(max_flap_lift_rmspc, max_flap_drag_rmspc)
 
                 print(
-                    "\t\t\t\tMax Flap RMSPE: ",
-                    round(max_flap_rmspe, 2),
+                    "\t\t\t\tMax Flap RMSPC: ",
+                    round(max_flap_rmspc, 2),
                     "%",
                     sep="",
                 )
             else:
-                print("\t\t\t\tMax Flap RMSPE:", max_flap_rmspe)
+                print("\t\t\t\tMax Flap RMSPC:", max_flap_rmspc)
 
             if num_chord_id > 0:
                 last_chord_rms_lifts = rms_lifts[
-                    wake_state_id, num_flaps_id, num_chord_id - 1
+                    wake_state_id, num_flaps_id, num_chord_id - 1, :
                 ]
                 last_chord_rms_drags = rms_drags[
-                    wake_state_id, num_flaps_id, num_chord_id - 1
+                    wake_state_id, num_flaps_id, num_chord_id - 1, :
                 ]
-                chord_lift_rmspes = 100 * np.abs(
-                    (rms_lift - last_chord_rms_lifts) / rms_lift
+                chord_lift_rmspcs = 100 * np.abs(
+                    (these_rms_lifts - last_chord_rms_lifts) / last_chord_rms_lifts
                 )
-                chord_drag_rmspes = 100 * np.abs(
-                    (rms_drag - last_chord_rms_drags) / rms_drag
+                chord_drag_rmspcs = 100 * np.abs(
+                    (these_rms_drags - last_chord_rms_drags) / last_chord_rms_drags
                 )
-                max_chord_lift_rmspe = np.max(chord_lift_rmspes)
-                max_chord_drag_rmspe = np.max(chord_drag_rmspes)
-                max_chord_rmspe = max(max_chord_lift_rmspe, max_chord_drag_rmspe)
+                max_chord_lift_rmspc = np.max(chord_lift_rmspcs)
+                max_chord_drag_rmspc = np.max(chord_drag_rmspcs)
+                max_chord_rmspc = max(max_chord_lift_rmspc, max_chord_drag_rmspc)
 
                 print(
-                    "\t\t\t\tMax Chord RMSPE: ",
-                    round(max_chord_rmspe, 2),
+                    "\t\t\t\tMax Chord RMSPC: ",
+                    round(max_chord_rmspc, 2),
                     "%",
                     sep="",
                 )
             else:
-                print("\t\t\t\tMax Chord RMSPE:", max_chord_rmspe)
+                print("\t\t\t\tMax Chord RMSPC:", max_chord_rmspc)
 
-            max_rmspe = max(
-                max_wake_rmspe,
-                max_flap_rmspe,
-                max_chord_rmspe,
-            )
-            max_non_wake_rmspe = max(
-                max_flap_rmspe,
-                max_chord_rmspe,
-            )
+            single_wake = len(wake_state_list) == 1
+            single_flap = len(num_flaps_list) == 1
+            single_chord = len(num_chord_list) == 1
 
-            if max_rmspe == np.inf:
-                print(
-                    "\t\t\t\t\tMax RMSPE: ",
-                    max_rmspe,
-                    sep="",
-                )
-            else:
-                print(
-                    "\t\t\t\t\tMax RMSPE: ",
-                    round(max_rmspe, 2),
-                    "%",
-                    sep="",
-                )
+            wake_converged = max_wake_rmspc < convergence
+            flap_converged = max_flap_rmspc < convergence
+            chord_converged = max_chord_rmspc < convergence
 
-            if max_non_wake_rmspe == np.inf:
-                print(
-                    "\t\t\t\t\tMax Non-Wake RMSPE: ",
-                    max_non_wake_rmspe,
-                    sep="",
-                )
-            else:
-                print(
-                    "\t\t\t\t\tMax Non-Wake RMSPE: ",
-                    round(max_non_wake_rmspe, 2),
-                    "%",
-                    sep="",
-                )
+            wake_passed = wake_converged or single_wake
+            flap_passed = flap_converged or single_flap
+            chord_passed = chord_converged or single_chord
+
+            wake_saturated = wake_state is False
 
             converged = False
-
-            if max_rmspe < convergence:
+            if wake_passed and flap_passed and chord_passed:
                 converged = True
-            elif max_non_wake_rmspe < convergence and wake_state is False:
+            elif wake_saturated and flap_passed and chord_passed:
                 converged = True
 
             if converged:
@@ -381,28 +374,182 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
         continue
     break
 
-if max_rmspe < convergence or (
-    max_non_wake_rmspe < convergence and wake_state is False
-):
-    if max_rmspe < convergence:
-        converged_wake_state = True
-        this_iter_time = iter_times[
-            wake_state_id - 1, num_flaps_id - 1, num_chord_id - 1
-        ]
-    else:
-        converged_wake_state = False
-        this_iter_time = iter_times[wake_state_id, num_flaps_id - 1, num_chord_id - 1]
+plot_wake_state_id = len(wake_state_list) - 1
+plot_num_flaps_id = len(num_flaps_list) - 1
+plot_num_chord_id = len(num_chord_list) - 1
 
-    converged_num_flaps = num_flaps - 1
-    converged_num_chord = num_chord - 1
-
+if converged:
     print("\nThe simulation found a converged solution:")
+
+    if single_wake and wake_saturated:
+        converged_wake_state_id = wake_state_list.index(False)
+    elif single_wake:
+        print("\tWarning: Wake state convergence not checked.")
+        converged_wake_state_id = wake_state_id
+    elif wake_saturated:
+        converged_wake_state_id = wake_state_list.index(False)
+    else:
+        converged_wake_state_id = wake_state_id - 1
+
+    if single_flap:
+        print("\tWarning: Flap number convergence not checked.")
+        converged_num_flaps_id = num_flaps_id
+    else:
+        converged_num_flaps_id = num_flaps_id - 1
+
+    if single_chord:
+        print("\tWarning: Chordwise panel number convergence not checked.")
+        converged_num_chord_id = num_chord_id
+    else:
+        converged_num_chord_id = num_chord_id - 1
+
+    converged_wake_state = wake_state_list[converged_wake_state_id]
+    converged_num_flaps = num_flaps_list[converged_num_flaps_id]
+    converged_num_chord = num_chord_list[converged_num_chord_id]
+    this_iter_time = iter_times[
+        converged_wake_state_id,
+        converged_num_flaps_id,
+        converged_num_chord_id,
+    ]
+
+    plot_wake_state_id = converged_wake_state_id
+    plot_num_flaps_id = converged_num_flaps_id
+    plot_num_chord_id = converged_num_chord_id
+
     print("\tPrescribed wake:\t", converged_wake_state, sep="")
     print("\tNumber of flaps:\t", converged_num_flaps, sep="")
     print("\tNumber of chordwise panels:\t", converged_num_chord, sep="")
     print("\tSimulation time:\t", this_iter_time, " s", sep="")
 else:
     print("\nThe simulation could not find a converged solution.")
+
+if not single_chord:
+    lift_figure, lift_axes = plt.subplots()
+    drag_figure, drag_axes = plt.subplots()
+
+    row = None
+    for airplane_id in range(num_airplanes):
+        if airplane_id == 0:
+            row = 1
+        elif airplane_id % 2 == 0:
+            row += 1
+        else:
+            continue
+
+        these_rms_lifts = rms_lifts[
+            plot_wake_state_id,
+            plot_num_flaps_id,
+            : (plot_num_chord_id + 2),
+            airplane_id,
+        ]
+        these_rms_drags = rms_drags[
+            plot_wake_state_id,
+            plot_num_flaps_id,
+            : (plot_num_chord_id + 2),
+            airplane_id,
+        ]
+
+        lift_axes.plot(
+            num_chord_list[: (plot_num_chord_id + 2)],
+            these_rms_lifts,
+            label="Row " + str(row),
+            marker="o",
+            linestyle="--",
+        )
+        drag_axes.plot(
+            num_chord_list[: (plot_num_chord_id + 2)],
+            these_rms_drags,
+            label="Row " + str(row),
+            marker="o",
+            linestyle="--",
+        )
+
+    lift_axes.set_xlabel("Number of Chordwise Panels")
+    drag_axes.set_xlabel("Number of Chordwise Panels")
+
+    lift_axes.set_ylabel("RMS Lift (N)")
+    drag_axes.set_ylabel("RMS Drag (N)")
+
+    lift_axes.set_title("Number of Chordwise Panels\nLift Convergence")
+    drag_axes.set_title("Number of Chordwise Panels\nDrag Convergence")
+
+    lift_axes.yaxis.set_major_formatter(FormatStrFormatter("%.4f"))
+    drag_axes.yaxis.set_major_formatter(FormatStrFormatter("%.4f"))
+
+    lift_axes.set_ylim(bottom=0, top=0.0625)
+    drag_axes.set_ylim(bottom=0, top=0.0250)
+
+    lift_axes.legend(loc="lower left")
+    drag_axes.legend(loc="lower left")
+
+    lift_figure.show()
+    drag_figure.show()
+
+if not single_flap:
+    lift_figure, lift_axes = plt.subplots()
+    drag_figure, drag_axes = plt.subplots()
+
+    row = None
+    for airplane_id in range(num_airplanes):
+        if airplane_id == 0:
+            row = 1
+        elif airplane_id % 2 == 0:
+            row += 1
+        else:
+            continue
+
+        these_rms_lifts = rms_lifts[
+            plot_wake_state_id,
+            : (plot_num_flaps_id + 2),
+            plot_num_chord_id,
+            airplane_id,
+        ]
+        these_rms_drags = rms_drags[
+            plot_wake_state_id,
+            : (plot_num_flaps_id + 2),
+            plot_num_chord_id,
+            airplane_id,
+        ]
+
+        lift_axes.plot(
+            num_flaps_list[: (plot_num_flaps_id + 2)],
+            these_rms_lifts,
+            label="Row " + str(row),
+            marker="o",
+            linestyle="--",
+        )
+        drag_axes.plot(
+            num_flaps_list[: (plot_num_flaps_id + 2)],
+            these_rms_drags,
+            label="Row " + str(row),
+            marker="o",
+            linestyle="--",
+        )
+
+    lift_axes.set_xlabel("Number of Flap Cycles")
+    drag_axes.set_xlabel("Number of Flap Cycles")
+
+    lift_axes.set_ylabel("RMS Lift (N)")
+    drag_axes.set_ylabel("RMS Drag (N)")
+
+    lift_axes.set_title("Number of Flap Cycles\nLift Convergence")
+    drag_axes.set_title("Number of Flap Cycles\nDrag Convergence")
+
+    lift_axes.yaxis.set_major_formatter(FormatStrFormatter("%.4f"))
+    drag_axes.yaxis.set_major_formatter(FormatStrFormatter("%.4f"))
+
+    lift_axes.set_ylim(bottom=0, top=0.0625)
+    drag_axes.set_ylim(bottom=0, top=0.0250)
+
+    lift_axes.legend(loc="lower left")
+    drag_axes.legend(loc="lower left")
+
+    lift_figure.show()
+    drag_figure.show()
+
+np.save("rms_lifts", rms_lifts)
+np.save("rms_drags", rms_drags)
+np.save("iter_times", iter_times)
 
 stop_time = time.time()
 elapsed_time = round(stop_time - start_time)

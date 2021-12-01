@@ -1128,8 +1128,11 @@ def get_scalars(
             panels = np.ravel(wing.panels)
             for panel in panels:
 
-                # Stack this panel's scalars.
-                scalar_to_add = panel.delta_pressure
+                # Stack this panel's scalars. The scalar is the pressure on the panel
+                # with the sign flipped because we are interested in plotting the
+                # lifting pressure (higher pressure on the lower surface means
+                # there's a positive lifting pressure).
+                scalar_to_add = -panel.delta_pressure
                 scalars = np.hstack((scalars, scalar_to_add))
 
     # Return the resulting 1D array of scalars.

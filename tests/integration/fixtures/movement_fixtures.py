@@ -93,7 +93,7 @@ def make_static_validation_movement():
 
     # Create a movement object associated with this airplane and operating point.
     unsteady_validation_movement = src.movement.Movement(
-        airplane_movement=unsteady_validation_airplane_movement,
+        airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=None,
         delta_time=None,
@@ -186,7 +186,7 @@ def make_variable_validation_movement():
 
     # Create a movement object associated with this airplane and operating point.
     unsteady_validation_movement = src.movement.Movement(
-        airplane_movement=unsteady_validation_airplane_movement,
+        airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
     )
 
@@ -336,7 +336,7 @@ def make_multiple_wing_static_validation_movement():
 
     # Create a movement object associated with this airplane and operating point.
     unsteady_validation_movement = src.movement.Movement(
-        airplane_movement=unsteady_validation_airplane_movement,
+        airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=8,
         delta_time=1 / 8 / 10,
@@ -497,7 +497,7 @@ def make_multiple_wing_variable_validation_movement():
 
     # Create a movement object associated with this airplane and operating point.
     unsteady_validation_movement = src.movement.Movement(
-        airplane_movement=unsteady_validation_airplane_movement,
+        airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
         num_steps=20,
         delta_time=1 / 8 / 10,

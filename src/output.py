@@ -8,7 +8,7 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    draw: Draw the geometry of an airplane object.
+    draw: Draw the geometry of the airplanes in a solver object.
 
     animate: Create an animation of a problem's movement.
 
@@ -65,6 +65,18 @@ prism = [
     yaw_color,
 ] = prism[3:9]
 
+# Set constants for the color maps, scalar bars, and text boxes.
+color_map_num_sig = 3
+bar_title_font_size = 20
+bar_label_font_size = 14
+bar_width = 0.5
+bar_position_x = 0.25
+bar_position_y = 0.05
+bar_n_labels = 2
+text_max_position = (0.85, 0.075)
+text_min_position = (0.85, 0.05)
+text_font_size = 7
+
 # Set the number of markers and the marker size for the results plots.
 num_markers = 6
 marker_size = 8
@@ -79,7 +91,7 @@ def draw(
     show_streamlines=False,
     show_wake_vortices=False,
 ):
-    """Draw the geometry of an airplane object.
+    """Draw the geometry of the airplanes in a solver object.
 
     Citation:
         Adapted from:         vlm3.draw in AeroSandbox
@@ -91,7 +103,8 @@ def draw(
         This is the solver object whose geometry and attributes are to be plotted.
     :param show_delta_pressures: bool, optional
         Set this variable to true to show the change in pressure across the panels.
-        The default value is False.
+        See the src.panel.update_pressure() method for more details on the pressure
+        value. The default value is false.
     :param show_streamlines: bool, optional
         Set this variable to true to show the streamlines emanating from the back of
         the wings. The default value is False.
@@ -139,34 +152,48 @@ def draw(
         # (diverging color map).
         if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
             color_map = sequential_color_map
-            c_min = max(np.mean(scalars) - 2 * np.std(scalars), np.min(scalars))
-            c_max = min(np.mean(scalars) + 2 * np.std(scalars), np.max(scalars))
+            c_min = max(
+                np.mean(scalars) - color_map_num_sig * np.std(scalars), np.min(scalars)
+            )
+            c_max = min(
+                np.mean(scalars) + color_map_num_sig * np.std(scalars), np.max(scalars)
+            )
         else:
             color_map = diverging_color_map
-            c_min = -2 * np.std(scalars)
-            c_max = 2 * np.std(scalars)
+            c_min = -color_map_num_sig * np.std(scalars)
+            c_max = color_map_num_sig * np.std(scalars)
 
         # Add the panel surfaces to the plotter with the pressure scalars.
+        scalar_bar_args = dict(
+            title="Normal Pressure (Pa)",
+            title_font_size=bar_title_font_size,
+            label_font_size=bar_label_font_size,
+            width=bar_width,
+            position_x=bar_position_x,
+            position_y=bar_position_y,
+            n_labels=bar_n_labels,
+            fmt="%.1f",
+        )
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
             cmap=color_map,
+            clim=[c_min, c_max],
             scalars=scalars,
-            clim=([c_min, c_max]),
             smooth_shading=True,
-            show_scalar_bar=False,
+            scalar_bar_args=scalar_bar_args,
         )
-        plotter.add_scalar_bar(
-            title="Lifting Pressure (Pa)",
-            bold=False,
-            title_font_size=16,
-            label_font_size=14,
-            width=0.5,
-            position_x=0.25,
-            position_y=0.05,
-            n_labels=2,
-            italic=True,
-            fmt="%.1f",
+        plotter.add_text(
+            text="Max: " + str(round(max(scalars), 1)) + " Pa",
+            position=text_max_position,
+            font_size=text_font_size,
+            viewport=True,
+        )
+        plotter.add_text(
+            text="Min: " + str(round(min(scalars), 1)) + " Pa",
+            position=text_min_position,
+            font_size=text_font_size,
+            viewport=True,
         )
     else:
         plotter.add_mesh(
@@ -223,7 +250,8 @@ def animate(
         This is the solver object whose geometry is to be animated.
     :param show_delta_pressures: bool, optional
         Set this variable to true to show the change in pressure across the panels.
-        The default value is false.
+        See the src.panel.update_pressure() method for more details on the pressure
+        value. The default value is false.
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is false.
@@ -249,11 +277,11 @@ def animate(
     c_max = 0
     color_map = None
 
+    # Initialize an empty array to hold all of the problem's scalars.
+    all_scalars = np.empty(0, dtype=int)
+
     # Check if the user wants to show pressures.
     if show_delta_pressures:
-
-        # Initialize an empty array to hold all of the problem's scalars.
-        all_scalars = np.empty(0, dtype=int)
 
         # Now iterate through each time step and gather all of the scalars for its
         # list of airplanes. These values will be used to configure the color map.
@@ -267,15 +295,17 @@ def animate(
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
             color_map = sequential_color_map
             c_min = max(
-                np.mean(all_scalars) - 2 * np.std(all_scalars), np.min(all_scalars)
+                np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
+                np.min(all_scalars),
             )
             c_max = min(
-                np.mean(all_scalars) + 2 * np.std(all_scalars), np.max(all_scalars)
+                np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
+                np.max(all_scalars),
             )
         else:
             color_map = diverging_color_map
-            c_min = -2 * np.std(all_scalars)
-            c_max = 2 * np.std(all_scalars)
+            c_min = -color_map_num_sig * np.std(all_scalars)
+            c_max = color_map_num_sig * np.std(all_scalars)
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surfaces = get_panel_surfaces(step_airplanes[0])
@@ -285,6 +315,18 @@ def animate(
     # the pressure scalars.
     if show_delta_pressures and first_results_step == 0:
         scalars = get_scalars(step_airplanes[0])
+
+        # Add the panel surfaces to the plotter with the pressure scalars.
+        scalar_bar_args = dict(
+            title="Normal Pressure (Pa)",
+            title_font_size=bar_title_font_size,
+            label_font_size=bar_label_font_size,
+            width=bar_width,
+            position_x=bar_position_x,
+            position_y=bar_position_y,
+            n_labels=bar_n_labels,
+            fmt="%.1f",
+        )
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
@@ -292,19 +334,19 @@ def animate(
             clim=[c_min, c_max],
             scalars=scalars,
             smooth_shading=True,
-            show_scalar_bar=False,
+            scalar_bar_args=scalar_bar_args,
         )
-        plotter.add_scalar_bar(
-            title="Lifting Pressure (Pa)",
-            bold=False,
-            title_font_size=16,
-            label_font_size=14,
-            width=0.5,
-            position_x=0.25,
-            position_y=0.05,
-            n_labels=2,
-            italic=True,
-            fmt="%.1f",
+        plotter.add_text(
+            text="Max: " + str(round(max(all_scalars), 1)) + " Pa",
+            position=text_max_position,
+            font_size=text_font_size,
+            viewport=True,
+        )
+        plotter.add_text(
+            text="Min: " + str(round(min(all_scalars), 1)) + " Pa",
+            position=text_min_position,
+            font_size=text_font_size,
+            viewport=True,
         )
 
         # Update the scalars is the user wants to show the pressures.
@@ -344,8 +386,8 @@ def animate(
         # Get the panel surfaces.
         panel_surfaces = get_panel_surfaces(airplanes)
 
-        # If the user wants to show the wake ring vortices, then get their surfaces and
-        # plot them.
+        # If the user wants to show the wake ring vortices, then get their surfaces
+        # and plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
@@ -359,10 +401,21 @@ def animate(
 
         # Check if the user wants to plot pressures and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter wit  h the pressure scalars. Otherwise, add the
-        # panel surfaces without the pressure scalars.
+        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
+        # surfaces without the pressure scalars.
         if show_delta_pressures and first_results_step <= current_step:
             scalars = get_scalars(airplanes)
+            # Add the panel surfaces to the plotter with the pressure scalars.
+            scalar_bar_args = dict(
+                title="Normal Pressure (Pa)",
+                title_font_size=bar_title_font_size,
+                label_font_size=bar_label_font_size,
+                width=bar_width,
+                position_x=bar_position_x,
+                position_y=bar_position_y,
+                n_labels=bar_n_labels,
+                fmt="%.1f",
+            )
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,
@@ -370,19 +423,19 @@ def animate(
                 clim=[c_min, c_max],
                 scalars=scalars,
                 smooth_shading=True,
-                show_scalar_bar=False,
+                scalar_bar_args=scalar_bar_args,
             )
-            plotter.add_scalar_bar(
-                title="Lifting Pressure (Pa)",
-                bold=False,
-                title_font_size=16,
-                label_font_size=14,
-                width=0.5,
-                position_x=0.25,
-                position_y=0.05,
-                n_labels=2,
-                italic=True,
-                fmt="%.1f",
+            plotter.add_text(
+                text="Max: " + str(round(max(all_scalars), 1)) + " Pa",
+                position=text_max_position,
+                font_size=text_font_size,
+                viewport=True,
+            )
+            plotter.add_text(
+                text="Min: " + str(round(min(all_scalars), 1)) + " Pa",
+                position=text_min_position,
+                font_size=text_font_size,
+                viewport=True,
             )
 
             if first_results_step == current_step:
@@ -1128,12 +1181,10 @@ def get_scalars(
             panels = np.ravel(wing.panels)
             for panel in panels:
 
-                # Stack this panel's scalars. The scalar is the pressure on the panel
-                # with the sign flipped because we are interested in plotting the
-                # lifting pressure (higher pressure on the lower surface means
-                # there's a positive lifting pressure).
-                scalar_to_add = -panel.delta_pressure
-                scalars = np.hstack((scalars, scalar_to_add))
+                # Stack this panel's scalars. The scalar is the pressure on the
+                # panel. See the src.panel.update_pressure() method for more details
+                # on the pressure value.
+                scalars = np.hstack((scalars, panel.delta_pressure))
 
     # Return the resulting 1D array of scalars.
     return scalars

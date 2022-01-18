@@ -2,37 +2,36 @@
 It is useful for profiling the unsteady solver, which cannot be done with
 unsteady_benchmark_timed.py. This script doesn't have any expected output images in
 the docs directory. Do not commit any changes to this file."""
-
-import src
+import pterasoftware as ps
 
 flapping_frequency = 1
 num_chordwise_panels = 5
 num_spanwise_panels = 20
 
-example_airplane = src.geometry.Airplane(
+example_airplane = ps.geometry.Airplane(
     name="Example Airplane",
     wings=[
-        src.geometry.Wing(
+        ps.geometry.Wing(
             name="Main Wing",
             symmetric=True,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[
-                src.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     chord=1.75,
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=ps.geometry.Airfoil(
                         name="naca0000",
                     ),
                 ),
-                src.geometry.WingCrossSection(
+                ps.geometry.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     x_le=0.625,
                     y_le=5.0,
                     chord=0.5,
-                    airfoil=src.geometry.Airfoil(
+                    airfoil=ps.geometry.Airfoil(
                         name="naca0000",
                     ),
                 ),
@@ -41,11 +40,11 @@ example_airplane = src.geometry.Airplane(
     ],
 )
 
-upper_wing_root_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
+upper_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
 )
 
-upper_wing_tip_wing_cross_section_movement = src.movement.WingCrossSectionMovement(
+upper_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
     sweeping_amplitude=15.0,
     sweeping_period=1 / flapping_frequency,
@@ -58,7 +57,7 @@ upper_wing_tip_wing_cross_section_movement = src.movement.WingCrossSectionMoveme
     heaving_spacing="sine",
 )
 
-upper_wing_movement = src.movement.WingMovement(
+upper_wing_movement = ps.movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_sections_movements=[
         upper_wing_root_wing_cross_section_movement,
@@ -69,25 +68,25 @@ upper_wing_movement = src.movement.WingMovement(
 del upper_wing_root_wing_cross_section_movement
 del upper_wing_tip_wing_cross_section_movement
 
-airplane_movement = src.movement.AirplaneMovement(
+airplane_movement = ps.movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[upper_wing_movement],
 )
 
 del upper_wing_movement
 
-example_operating_point = src.operating_point.OperatingPoint(
+example_operating_point = ps.operating_point.OperatingPoint(
     density=1.225,
     beta=0.0,
     velocity=10.0,
     alpha=0.0,
 )
 
-operating_point_movement = src.movement.OperatingPointMovement(
+operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=example_operating_point,
 )
 
-movement = src.movement.Movement(
+movement = ps.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
 )
@@ -95,12 +94,12 @@ movement = src.movement.Movement(
 del airplane_movement
 del operating_point_movement
 
-example_problem = src.problems.UnsteadyProblem(
+example_problem = ps.problems.UnsteadyProblem(
     movement=movement, only_final_results=True
 )
 
 example_solver = (
-    src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_problem=example_problem,
     )
 )

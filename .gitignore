@@ -98,6 +98,7 @@ venv.bak/
 /venvTest/
 /venvTest3.7/
 /venvTest3.8/
+/venvTest3.9/
 
 # These are the spyder project setting files to ignore.
 .spyderproject
@@ -125,9 +126,6 @@ cython_debug/
 
 # This is a folder full of random tests to ignore.
 /testing_in_development/
-
-# This is the pre-commit configuration file to ignore.
-.pre-commit-config.yaml
 
 # These are folders created by testing to ignore.
 /tests/_trial_temp/

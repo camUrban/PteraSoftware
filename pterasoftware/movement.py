@@ -58,23 +58,33 @@ class Movement:
 
     def __init__(
         self,
-        airplane_movement,
+        airplane_movements,
         operating_point_movement,
         num_steps=None,
+        num_cycles=None,
         delta_time=None,
     ):
         """This is the initialization method.
 
-        :param airplane_movement: AirplaneMovement
-            This object characterizes the movement of the current_airplane.
+        :param airplane_movements: list of AirplaneMovement objects
+            This is a list of objects which characterize the movement of
+            each airplane in the problem.
         :param operating_point_movement: OperatingPointMovement
             This object characterizes the movement of the the operating point.
         :param num_steps: int, optional
             This integer is the number of time steps of the unsteady simulation. If
-            not given a value, this method will calculate one such that the
-            simulation will cover three cycles of the maximum period movement. If the
-            movement is static, it will default to the number of time steps such that
-            the wake extends back by 10 reference chord lengths.
+            not given a value, and the movement is dynamic, this method will
+            calculate one such that the simulation will cover some number of cycles
+            of the maximum period movement. The number of cycles defaults to three,
+            but can be changed with the num_cycles parameter. If not given a value,
+            and the movement is static, the number of steps will default to the
+            number of time steps such that the wake extends back by 10 reference
+            chord lengths.
+        :param num_cycles: int, optional
+            This integer is the number of cycles of the maximum period movement used
+            to calculate a non-populated num_steps parameter. This parameter is only
+            used if the num_steps parameter is None, and the movement isn't static.
+            The default value is None.
         :param delta_time: float, optional
             This float is the time, in seconds, between each time current_step. If
             not given a value, this method will calculate one such the ring vortices
@@ -85,22 +95,42 @@ class Movement:
         """
 
         # Initialize the class attributes.
-        self.airplane_movement = airplane_movement
+        self.airplane_movements = airplane_movements
         self.operating_point_movement = operating_point_movement
+
+        # If the number of cycles were specified, make sure that the number of steps
+        # isn't also specified and that the movement isn't static.
+        if num_cycles is not None:
+            if num_steps is not None or self.get_max_period() == 0:
+                raise Exception(
+                    "Only specify the number of cycles if you haven't specified the "
+                    "number of steps and the movement isn't static!"
+                )
+            else:
+                self.num_cycles = num_cycles
+        else:
+            self.num_cycles = None
 
         # Calculate default num_steps and delta_time values if the user hasn't passed
         # one in.
         if delta_time is None:
-            # The default time step length is that which sheds ring vortices off the
-            # main wing that have roughly the same chord length as the panels on the
-            # main wing. This is based on the base airplane's reference chord length,
-            # its main wing's number of chordwise panels, and its base operating
-            # point's velocity.
-            delta_time = (
-                self.airplane_movement.base_airplane.c_ref
-                / self.airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                / self.operating_point_movement.base_operating_point.velocity
-            )
+            delta_times = []
+            for airplane_movement in self.airplane_movements:
+
+                # For a given airplane object, the ideal time step length is that
+                # which sheds ring vortices off the main wing that have roughly the
+                # same chord length as the panels on the main wing. This is based on
+                # the base airplane's reference chord length, its main wing's number
+                # of chordwise panels, and its base operating point's velocity.
+                delta_times.append(
+                    airplane_movement.base_airplane.c_ref
+                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
+                    / operating_point_movement.base_operating_point.velocity
+                )
+
+            # Set the delta time to be the average of the airplanes' ideal delta times.
+            delta_time = sum(delta_times) / len(delta_times)
+
         if num_steps is None:
 
             # Get the maximum period of any of this movement's sub-movements.
@@ -108,9 +138,16 @@ class Movement:
 
             if max_period == 0:
 
+                # Find the value of the largest reference chord length of all the
+                # airplanes in this problem.
+                c_refs = []
+                for airplane_movement in self.airplane_movements:
+                    c_refs.append(airplane_movement.base_airplane.c_ref)
+                max_c_ref = max(c_refs)
+
                 # If the movement is static, then set the number of time steps such
                 # that the wake extends back by 10 reference chord lengths.
-                wake_length = 10 * self.airplane_movement.base_airplane.c_ref
+                wake_length = 10 * max_c_ref
                 panel_length = (
                     delta_time
                     * self.operating_point_movement.base_operating_point.velocity
@@ -118,22 +155,31 @@ class Movement:
                 num_steps = math.ceil(wake_length / panel_length)
             else:
 
-                # The default number of cycles of the movement with the maximum period
-                # over which to simulate is three.
-                default_num_cycles = 3
+                # If the user didn't specify the number of cycles of the movement
+                # with the maximum period over which to simulate, set it to three.
+                if self.num_cycles is None:
+                    self.num_cycles = 3
 
-                # The default number of time steps is that simulates at least 3 (the
-                # default number) cycles of the movement with the maximum period.
-                num_steps = math.ceil(default_num_cycles * max_period / delta_time)
+                # The default number of time steps is that simulates some number of
+                # cycles of the movement with the maximum period.
+                num_steps = math.ceil(self.num_cycles * max_period / delta_time)
 
         self.num_steps = num_steps
         self.delta_time = delta_time
 
-        # Generate a list of the airplanes and operating points that are the steps
-        # through this movement object.
-        self.airplanes = airplane_movement.generate_airplanes(
-            num_steps=self.num_steps, delta_time=self.delta_time
-        )
+        # Generate a list of lists of airplane objects that are the steps through the
+        # movement of each of this problem's base airplanes. The first index
+        # identifies the base airplane and the second index identifies the time step.
+        self.airplanes = []
+        for airplane_movement in self.airplane_movements:
+            self.airplanes.append(
+                airplane_movement.generate_airplanes(
+                    num_steps=self.num_steps, delta_time=self.delta_time
+                )
+            )
+
+        # Generate a lists of operating point objects that are the steps through the
+        # movement of this problem's operating point.
         self.operating_points = operating_point_movement.generate_operating_points(
             num_steps=self.num_steps, delta_time=self.delta_time
         )
@@ -142,16 +188,22 @@ class Movement:
         """This method returns the longest period of any of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
 
-        :return max_period: float
+        :return: float
             The longest period in seconds.
         """
+        # Iterate through the airplane movements and find the one with the largest
+        # max period.
+        max_airplane_periods = []
+        for airplane_movement in self.airplane_movements:
+            max_airplane_periods.append(airplane_movement.get_max_period())
+        max_airplane_period = max(max_airplane_periods)
 
-        max_period = max(
-            self.airplane_movement.get_max_period(),
+        # The global max period is the maximum of the max airplane period and the max
+        # operating point period.
+        return max(
+            max_airplane_period,
             self.operating_point_movement.get_max_period(),
         )
-
-        return max_period
 
 
 class AirplaneMovement:
@@ -407,8 +459,8 @@ class WingMovement:
     """This is a class used to contain the movement characteristics of a wing.
 
     This class contains the following public methods:
-        generate_wings: This method creates the wing object at each time
-        current_step, and groups them into a list.
+        generate_wings: This method creates the wing object at each time step,
+        and groups them into a list.
 
         get_max_period: This method returns the longest period of any of this
         movement object's sub-movement objects, sub-sub-movement objects, etc.
@@ -440,46 +492,35 @@ class WingMovement:
             This is the first wing object, from which the others will be created.
         :param wing_cross_sections_movements: list of WingCrossSectionMovement objects
             This is a list of the WingCrossSectionMovement objects associated with
-            each of the base wing's cross
-            sections.
+            each of the base wing's cross sections.
         :param x_le_amplitude: float, optional
             This is the amplitude of the wing's change in its x reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param x_le_period: float, optional
             This is the period of the wing's change in its x reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param x_le_spacing: string, optional
             This value determines the spacing of the wing's change in its x reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         :param y_le_amplitude: float, optional
             This is the amplitude of the wing's change in its y reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param y_le_period: float, optional
             This is the period of the wing's change in its y reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param y_le_spacing: string, optional
             This value determines the spacing of the wing's change in its y reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         :param z_le_amplitude: float, optional
             This is the amplitude of the wing's change in its z reference point. Its
-            units are meters and its
-            default value is 0 meters.
+            units are meters and its default value is 0 meters.
         :param z_le_period: float, optional
             This is the period of the wing's change in its z reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param z_le_spacing: string, optional
             This value determines the spacing of the wing's change in its z reference
-            point. The options are "sine",
-            and "uniform". The default value is "sine".
+            point. The options are "sine", and "uniform". The default value is "sine".
         """
-
         # Initialize the class attributes.
         self.base_wing = base_wing
         self.wing_cross_section_movements = wing_cross_sections_movements
@@ -509,7 +550,6 @@ class WingMovement:
             This is the list of Wing objects that is associated with this
             WingMovement object.
         """
-
         # Check the x_le spacing value.
         if self.x_le_spacing == "sine":
 
@@ -589,8 +629,7 @@ class WingMovement:
             raise Exception("Bad value of z_le_spacing!")
 
         # Create an empty array that will hold each of the wing's wing cross
-        # section's vector of other wing cross
-        # section's based its movement.
+        # section's vector of other wing cross section's based its movement.
         wing_cross_sections = np.empty(
             (len(self.wing_cross_section_movements), num_steps), dtype=object
         )
@@ -630,8 +669,8 @@ class WingMovement:
                 assert first_wing_cross_section_movement_heaving_period == 0
 
                 # Set the variables relating this wing cross section to the inner
-                # wing cross section to zero because
-                # this is the innermost wing cross section
+                # wing cross section to zero because this is the innermost wing cross
+                # section
                 wing_cross_section_span = 0.0
                 base_wing_cross_section_sweep = 0.0
                 base_wing_cross_section_heave = 0.0
@@ -649,15 +688,13 @@ class WingMovement:
                 this_z_le = this_base_wing_cross_section.z_le
 
                 # Initialize variables to hold the inner wing cross section's time
-                # histories of its leading edge
-                # coordinates.
+                # histories of its leading edge coordinates.
                 last_x_les = []
                 last_y_les = []
                 last_z_les = []
 
                 # Iterate through the inner wing cross section's time history and
-                # populate the leading edge coordinate
-                # variables.
+                # populate the leading edge coordinate variables.
                 for last_wing_cross_section in last_wing_cross_section_time_histories:
                     last_x_les.append(last_wing_cross_section.x_le)
                     last_y_les.append(last_wing_cross_section.y_le)
@@ -672,9 +709,9 @@ class WingMovement:
                 )
 
                 try:
+
                     # Find the base sweep angle of this wing cross section compared
-                    # to the inner wing cross section at
-                    # the first time step.
+                    # to the inner wing cross section at the first time step.
                     base_wing_cross_section_sweep = (
                         np.arctan(
                             (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
@@ -687,9 +724,9 @@ class WingMovement:
                     wing_is_vertical = True
 
                 try:
+
                     # Find the base heave angle of this wing cross section compared
-                    # to the inner wing cross section at
-                    # the first time step.
+                    # to the inner wing cross section at the first time step.
                     base_wing_cross_section_heave = (
                         np.arctan(
                             (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
@@ -739,6 +776,7 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
+
             # Get the reference position at this time step.
             x_le = x_le_list[step]
             y_le = y_le_list[step]
@@ -764,8 +802,8 @@ class WingMovement:
         return wings
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """This method returns the longest period of any of this movement object's
+        sub-movement objects, sub-sub-movement objects, etc.
 
         :return max_period: float
             The longest period in seconds.
@@ -1354,7 +1392,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
         This is the number of time steps to iterate through.
     :param delta_time: float
         This is the change in time between each time step.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of sinusoidally spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1375,8 +1413,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     k = base_value
 
     # Calculate and return the values.
-    values = a * np.sin(b * (times - h)) + k
-    return values
+    return a * np.sin(b * (times - h)) + k
 
 
 def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
@@ -1393,7 +1430,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
         This is the number of time steps to iterate through.
     :param delta_time: float
         This is the change in time between each time step.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of uniformly spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1414,8 +1451,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     k = base_value
 
     # Calculate and return the values.
-    values = a * signal.sawtooth((b * times + h), 0.5) + k
-    return values
+    return a * signal.sawtooth((b * times + h), 0.5) + k
 
 
 def oscillating_customspace(
@@ -1442,7 +1478,7 @@ def oscillating_customspace(
         units, an internal period of 3 units, amplitude is set to 4 units and period
         is set to 5 units. The result will have a net amplitude of 8 units and a net
         period of 15 units.
-    :return values: 1D array of floats
+    :return: 1D array of floats
         This is the resulting vector of custom spaced values
     """
     # If either the amplitude or the period are 0, return a vector with length equal
@@ -1463,5 +1499,4 @@ def oscillating_customspace(
     k = base_value
 
     # Calculate and return the values.
-    values = a * custom_function(b * (times - h)) + k
-    return values
+    return a * custom_function(b * (times - h)) + k

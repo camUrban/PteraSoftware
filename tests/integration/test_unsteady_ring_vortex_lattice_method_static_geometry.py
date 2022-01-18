@@ -75,23 +75,20 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             prescribed_wake=True
         )
 
+        this_solver = self.unsteady_ring_vortex_lattice_method_validation_solver
+        this_airplane = this_solver.current_airplanes[0]
+
         # Calculate the percent errors of the output.
         c_di_expected = 0.011
-        c_di_calculated = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplane.total_near_field_force_coefficients_wind_axes[
-            0
-        ]
+        c_di_calculated = this_airplane.total_near_field_force_coefficients_wind_axes[0]
         c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
 
         c_l_expected = 0.588
-        c_l_calculated = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplane.total_near_field_force_coefficients_wind_axes[
-            2
-        ]
+        c_l_calculated = this_airplane.total_near_field_force_coefficients_wind_axes[2]
         c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
 
         c_m_expected = -0.197
-        c_m_calculated = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplane.total_near_field_moment_coefficients_wind_axes[
-            1
-        ]
+        c_m_calculated = this_airplane.total_near_field_moment_coefficients_wind_axes[1]
         c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
 
         # Set the allowable percent error.

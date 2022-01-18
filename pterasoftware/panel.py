@@ -1,4 +1,14 @@
-# ToDo: Properly document this module.
+"""This module contains the Panel class.
+
+This module contains the following classes:
+    Panel: This class is used to contain the panels of a wing.
+
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    None
+"""
 import numpy as np
 
 from . import functions
@@ -160,8 +170,8 @@ class Panel:
         """This method calculates the panel's area and the panel's normal unit vector.
 
         This method makes the assumption that the panel is planar. This is
-        technically incorrect for wing's with twist
-        but is a good approximation for small panels.
+        technically incorrect for wing's with twist but is a good approximation for
+        small panels.
 
         :return: None
         """
@@ -230,6 +240,12 @@ class Panel:
 
     def update_pressure(self):
         """This method updates the pressure across this panel.
+
+        Note: The pressure is derived by taking the dot product of the force on the
+        panel (in geometry axes) with its normal vector (also in geometry axes). For
+        example, the panel of a wing with a symmetric airfoil at zero angle of attack
+        will have a normal vector pointing in the negative z-direction. In this case,
+        a positive pressure would indicate lift.
 
         :return: None
         """

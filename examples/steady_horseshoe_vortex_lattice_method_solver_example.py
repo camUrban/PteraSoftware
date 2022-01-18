@@ -1,10 +1,9 @@
 """This is script is an example of how to run Ptera Software's steady horseshoe
 vortex lattice method solver on a custom airplane."""
+
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
-# install pterasoftware" in your terminal. Here, I am importing the source directory.
-# However, if you were working on an external project, you should change this to
-# "import pterasoftware as ps".
+# install pterasoftware" in your terminal.
 import pterasoftware as ps
 
 # Create an airplane object. Note, I am going to declare every attribute for each

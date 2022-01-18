@@ -216,8 +216,8 @@ example_operating_point = ps.operating_point.OperatingPoint(
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.
 example_problem = ps.problems.SteadyProblem(
-    # Set this steady problem's airplane object to be the one we just created.
-    airplane=example_airplane,
+    # Set this steady problem's list of airplane objects to be the one we just created.
+    airplanes=[example_airplane],
     # Set this steady problem's operating point object ot be the one we just created.
     operating_point=example_operating_point,
 )

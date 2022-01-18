@@ -1,13 +1,13 @@
 """This is script is an example of running Ptera Software's steady ring vortex
 lattice method solver on an airplane with geometry similar to the NMT experimental
-setup. """
+setup."""
 import time
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-import src
+import pterasoftware as ps
 
 start_time = time.time()
 
@@ -70,11 +70,11 @@ single_chord = None
 wake_saturated = None
 this_solver = None
 
-this_operating_point = src.operating_point.OperatingPoint(
+this_operating_point = ps.operating_point.OperatingPoint(
     velocity=speed,
     alpha=0.0,
 )
-this_operating_point_movement = src.movement.OperatingPointMovement(
+this_operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=this_operating_point,
 )
 del this_operating_point
@@ -120,12 +120,12 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
 
                 offset = row - 1
 
-                this_airplane = src.geometry.Airplane(
+                this_airplane = ps.geometry.Airplane(
                     name=this_name,
                     x_ref=offset * x_spacing,
                     y_ref=offset_sign * offset * y_spacing,
                     wings=[
-                        src.geometry.Wing(
+                        ps.geometry.Wing(
                             name="Main Wing",
                             symmetric=True,
                             chordwise_spacing="uniform",
@@ -133,44 +133,44 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                             y_le=offset_sign * offset * y_spacing,
                             num_chordwise_panels=num_chord,
                             wing_cross_sections=[
-                                src.geometry.WingCrossSection(
+                                ps.geometry.WingCrossSection(
                                     twist=alpha,
                                     chord=root_chord,
-                                    airfoil=src.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
                                     num_spanwise_panels=root_to_mid_num_span,
                                     spanwise_spacing="cosine",
                                 ),
-                                src.geometry.WingCrossSection(
+                                ps.geometry.WingCrossSection(
                                     twist=alpha,
                                     y_le=root_to_mid_span,
                                     chord=root_chord,
-                                    airfoil=src.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
                                     num_spanwise_panels=mid_to_tip_num_span,
                                     spanwise_spacing="cosine",
                                 ),
-                                src.geometry.WingCrossSection(
+                                ps.geometry.WingCrossSection(
                                     twist=alpha,
                                     y_le=root_to_mid_span + mid_to_tip_span,
                                     chord=tip_chord,
-                                    airfoil=src.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
                                 ),
                             ],
                         ),
                     ],
                 )
 
-                this_airplane_movement = src.movement.AirplaneMovement(
+                this_airplane_movement = ps.movement.AirplaneMovement(
                     base_airplane=this_airplane,
                     wing_movements=[
-                        src.movement.WingMovement(
+                        ps.movement.WingMovement(
                             base_wing=this_airplane.wings[0],
                             wing_cross_sections_movements=[
-                                src.movement.WingCrossSectionMovement(
+                                ps.movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
                                     ].wing_cross_sections[0],
                                 ),
-                                src.movement.WingCrossSectionMovement(
+                                ps.movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
                                     ].wing_cross_sections[1],
@@ -178,7 +178,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                                     sweeping_period=period,
                                     sweeping_spacing="sine",
                                 ),
-                                src.movement.WingCrossSectionMovement(
+                                ps.movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
                                     ].wing_cross_sections[2],
@@ -196,7 +196,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
                 del this_airplane
                 del this_airplane_movement
 
-            this_movement = src.movement.Movement(
+            this_movement = ps.movement.Movement(
                 airplane_movements=these_airplane_movements,
                 operating_point_movement=this_operating_point_movement,
                 num_steps=None,
@@ -206,14 +206,14 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
 
             del these_airplane_movements
 
-            this_problem = src.problems.UnsteadyProblem(
+            this_problem = ps.problems.UnsteadyProblem(
                 movement=this_movement,
                 only_final_results=True,
             )
 
             del this_movement
 
-            this_solver = src.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            this_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                 unsteady_problem=this_problem,
             )
 

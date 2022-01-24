@@ -47,7 +47,7 @@ tip_inset = 0.005
 # The origin is the trailing edge root point. The positive spanwise axis extends from
 # root to tip and the positive chordwise axis from trailing edge to leading edge. The
 # coordinates are in millimeters.
-planform_coords = np.genfromtxt("Extracted Planform Coordinates.csv", delimiter=",")
+planform_coords = np.genfromtxt("extracted_planform_coordinates.csv", delimiter=",")
 
 # Convert the coordinates to meters.
 planform_coords = planform_coords / 1000
@@ -472,31 +472,31 @@ normalized_times = np.linspace(0, 1, 100, endpoint=False)
 # pressure units used are inAq and time units are normalized flap cycle times from 0
 # to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    "Blue Trailing Point Experimental Pressures.csv", delimiter=","
+    "blue_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    "Blue Middle Point Experimental Pressures.csv", delimiter=","
+    "blue_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    "Blue Leading Point Experimental Pressures.csv", delimiter=","
+    "blue_leading_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    "Orange Trailing Point Experimental Pressures.csv", delimiter=","
+    "orange_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    "Orange Middle Point Experimental Pressures.csv", delimiter=","
+    "orange_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    "Orange Leading Point Experimental Pressures.csv", delimiter=","
+    "orange_leading_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    "Green Trailing Point Experimental Pressures.csv", delimiter=","
+    "green_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    "Green Middle Point Experimental Pressures.csv", delimiter=","
+    "green_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    "Green Leading Point Experimental Pressures.csv", delimiter=","
+    "green_leading_point_experimental_pressures.csv", delimiter=","
 )
 
 # Interpolate the experimental pressure data to ensure that they all reference the

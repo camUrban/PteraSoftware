@@ -1,6 +1,4 @@
-"""This is script is an example of running Ptera Software's steady ring vortex
-lattice method solver on an airplane with geometry similar to the NMT experimental
-setup."""
+# ToDo: Document this script.
 import time
 
 import numpy as np
@@ -11,7 +9,7 @@ import pterasoftware as ps
 
 start_time = time.time()
 
-# Known Converged Values (Prescribed Wake, 0.5%, 0 deg):
+# Known Converged Values (prescribed wake, 0.5% convergence, 0 degrees angle of attack):
 #   1 Airplane:
 #       2, 8
 #   3 Airplanes:
@@ -24,7 +22,7 @@ min_num_flaps = 1
 max_num_flaps = 6
 min_num_chord = 2
 max_num_chord = 12
-wake_state = True
+prescribed_wake = True
 
 aspect_ratio = 5.0
 speed = 1.0
@@ -41,7 +39,7 @@ period = x_spacing / speed
 root_to_mid_chord = root_chord
 mid_to_tip_chord = (root_chord + tip_chord) / 2
 
-wake_state_list = [wake_state]
+wake_state_list = [prescribed_wake]
 num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]
 num_chord_list = [i for i in range(min_num_chord, max_num_chord + 1)]
 
@@ -57,7 +55,7 @@ iteration = 0
 num_iterations = len(wake_state_list) * len(num_flaps_list) * len(num_chord_list)
 
 converged = None
-wake_state = None
+prescribed_wake = None
 num_flaps = None
 num_chord = None
 iter_time = None
@@ -79,8 +77,8 @@ this_operating_point_movement = ps.movement.OperatingPointMovement(
 )
 del this_operating_point
 
-for wake_state_id, wake_state in enumerate(wake_state_list):
-    print("Prescribed Wake:", wake_state)
+for wake_state_id, prescribed_wake in enumerate(wake_state_list):
+    print("Prescribed Wake:", prescribed_wake)
     for num_flaps_id, num_flaps in enumerate(num_flaps_list):
         print("\tNumber of flaps:", num_flaps)
         for num_chord_id, num_chord in enumerate(num_chord_list):
@@ -223,7 +221,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
 
             this_solver.run(
                 logging_level="Critical",
-                prescribed_wake=wake_state,
+                prescribed_wake=prescribed_wake,
                 calculate_streamlines=False,
             )
 
@@ -357,7 +355,7 @@ for wake_state_id, wake_state in enumerate(wake_state_list):
             flap_passed = flap_converged or single_flap
             chord_passed = chord_converged or single_chord
 
-            wake_saturated = wake_state is False
+            wake_saturated = prescribed_wake is False
 
             converged = False
             if wake_passed and flap_passed and chord_passed:

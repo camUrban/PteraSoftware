@@ -434,7 +434,7 @@ ps.output.animate(  # Set the unsteady solver to the one we just ran.
     # false.
     show_wake_vortices=True,
     # Set this value to True in order to save the GIF file.
-    keep_file=False,
+    keep_file=True,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the

@@ -1,6 +1,7 @@
+# ToDo: Document this script.
 import pterasoftware as ps
 
-# Known Converged Values (Prescribed Wake, 0.5%, 0 deg):
+# Known Converged Values (prescribed wake, 0.5% convergence, 0 degrees angle of attack):
 #   1 Airplane:
 #       2, 8
 #   3 Airplanes:
@@ -10,7 +11,7 @@ import pterasoftware as ps
 num_airplanes = 5
 num_flaps = 3
 num_chord = 11
-wake_state = False
+prescribed_wake = False
 
 aspect_ratio = 5.0
 speed = 1.0
@@ -36,7 +37,7 @@ this_operating_point_movement = ps.movement.OperatingPointMovement(
 )
 del this_operating_point
 
-print("Prescribed Wake:", wake_state)
+print("Prescribed Wake:", prescribed_wake)
 print("Number of flaps:", num_flaps)
 print("Number of chordwise panels:", num_chord)
 
@@ -171,7 +172,7 @@ this_solver = (
 del this_problem
 
 this_solver.run(
-    prescribed_wake=wake_state,
+    prescribed_wake=prescribed_wake,
     calculate_streamlines=False,
 )
 

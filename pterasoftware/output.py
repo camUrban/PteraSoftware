@@ -269,8 +269,9 @@ def animate(
     for steady_problem in unsteady_solver.steady_problems:
         step_airplanes.append(steady_problem.airplanes)
 
-    # Initialize the plotter and get the color map.
-    plotter = pv.Plotter()
+    # Initialize the plotter and get the color map. Also, turn off the lighting to avoid
+    # making the scalar bar jittery.
+    plotter = pv.Plotter(lighting="none")
 
     # Initialize values to hold the color map choice and its limits.
     c_min = 0

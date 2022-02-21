@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's steady horseshoe
-vortex lattice method solver on a custom airplane."""
+vortex lattice method solver on a custom airplane. """
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
@@ -14,8 +14,10 @@ example_airplane = ps.geometry.Airplane(
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point
     # around about which the solver will calculate the moments on the airplane. These
-    # three values default to 0.0 meters. Note that every input and output of this
-    # program is in SI units.
+    # three values default to 0.0 meters. This and every input and output of this
+    # program is in SI units. Note: these values are relative to the global
+    # coordinate system fixed front left corner of the first airplane's first wing's
+    # root wing cross section.
     x_ref=0.0,
     y_ref=0.0,
     z_ref=0.0,
@@ -32,17 +34,20 @@ example_airplane = ps.geometry.Airplane(
         ps.geometry.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
-            # airplane's reference position. These values all default to 0.0 meters.
+            # global coordinate system fixed front left corner of the first
+            # airplane's first wing's root wing cross section. These values all
+            # default to 0.0 meters.
             x_le=0.0,
             y_le=0.0,
             z_le=0.0,
             # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across the y-z plane. Note that the geometry coordinates
-            # are defined as such: If you were riding in the airplane, the positive x
-            # direction would point behind you, the positive y direction would point
-            # out of your right wing, and the positive z direction would point
-            # upwards, out of your chair. These directions form a right-handed
-            # coordinate system. The default value of "symmetric" is false.
+            # be reflected across plane of this wing's root wing cross section. Note
+            # that the geometry coordinates are defined as such: If you were riding
+            # in the airplane, the positive x direction would point behind you,
+            # the positive y direction would point out of your right wing, and the
+            # positive z direction would point upwards, out of your chair. These
+            # directions form a right-handed coordinate system. The default value of
+            # "symmetric" is false.
             symmetric=True,
             # Define the number of chordwise panels on the wing, and the spacing
             # between them. The number of chordwise panels defaults to 8 panels. The

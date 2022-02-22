@@ -1,4 +1,3 @@
-# ToDo: Update this module's documentation.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -13,8 +12,17 @@ This module contains the following functions:
     animate: Create an animation of a problem's movement.
 
     plot_results_versus_time: This method takes in an unsteady solver object,
-    and plots the geometries' forces, moments, and coefficients as a function of
-    time.
+    and plots the geometries' forces, moments, force coefficients, and moment
+    coefficients as a function of time.
+
+    print_steady_results: This function prints the forces, moments,
+    force coefficients, and moment coefficients calculated by a steady solver.
+
+    print_unsteady_results: This function prints the averages of the forces, moments,
+    force coefficients, and moment coefficients calculated by a unsteady solver.
+
+    get_panel_surfaces: This function returns a PolyData representation of the wing
+    panel surfaces associated with all the airplanes in a given list.
 
     get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
     surface of wake ring vortices at a given time step.
@@ -31,6 +39,7 @@ import pyvista as pv
 
 from . import unsteady_ring_vortex_lattice_method
 
+# Define the color and colormaps used by the visualization functions.
 sequential_color_map = "speed"
 diverging_color_map = "delta"
 wake_vortex_color = "white"
@@ -113,6 +122,7 @@ def draw(
         The default value is False.
     :return: None
     """
+
     # Initialize the plotter.
     plotter = pv.Plotter()
 
@@ -244,7 +254,7 @@ def animate(
     show_wake_vortices=False,
     keep_file=True,
 ):
-    """Create an animation of a solver's geometry.
+    """Create an animation of a solver's geometries.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry is to be animated.
@@ -260,6 +270,7 @@ def animate(
         default value is true.
     :return: None
     """
+
     first_results_step = unsteady_solver.first_results_step
 
     # Get this solver's problems' airplanes. This will become a list of lists,
@@ -466,7 +477,7 @@ def animate(
 
 def plot_results_versus_time(unsteady_solver, testing=False):
     """This method takes in an unsteady solver object, and plots the geometries'
-    forces, moments, and coefficients as a function of time.
+    forces, moments, force coefficients, and moment coefficients as a function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose resulting forces, moments, and coefficients
@@ -761,18 +772,20 @@ def plot_results_versus_time(unsteady_solver, testing=False):
             moment_coefficients_figure.show()
 
 
-# ToDo: Document this method.
 def print_steady_results(steady_solver):
-    """
+    """This function prints the forces, moments, force coefficients, and moment
+    coefficients calculated by a steady solver.
 
-    :param steady_solver:
-    :return:
+    :param steady_solver: SteadyHorseshoeVortexLatticeMethodSolver or
+    SteadyRingVortexLatticeMethodSolver
+        This is the solver object with the results to be printed.
+    :return: None
     """
 
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
         print("Airplane ", airplane.name, ":", sep="")
 
-        # Print out the total forces and moments.
+        # Print out this airplane's forces.
         print("\tForces in Wind Axes:")
         print(
             "\t\tInduced Drag:\t\t\t",
@@ -792,6 +805,8 @@ def print_steady_results(steady_solver):
             " N",
             sep="",
         )
+
+        # Print out this airplane's moments.
         print("\n\tMoments in Wind Axes:")
         print(
             "\t\tRolling Moment:\t\t\t",
@@ -812,8 +827,8 @@ def print_steady_results(steady_solver):
             sep="",
         )
 
-        # Print out the coefficients.
-        print("\n\tCoefficients in Wind Axes:")
+        # Print out this airplane's force coefficients.
+        print("\n\tForce Coefficients in Wind Axes:")
         print(
             "\t\tCDi:\t\t\t\t\t",
             np.round(airplane.total_near_field_force_coefficients_wind_axes[0], 3),
@@ -829,6 +844,9 @@ def print_steady_results(steady_solver):
             np.round(airplane.total_near_field_force_coefficients_wind_axes[2], 3),
             sep="",
         )
+
+        # Print out this airplane's moment coefficients.
+        print("\n\tMoment Coefficients in Wind Axes:")
         print(
             "\t\tCl:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_moment_coefficients_wind_axes[0], 3),
@@ -845,18 +863,22 @@ def print_steady_results(steady_solver):
             sep="",
         )
 
-        # If there's more airplane's whose results are going to be printed, print new
-        # line to separate them.
+        # If the results from more airplanes are going to be printed, print new line
+        # to separate them.
         if (airplane_num + 1) < steady_solver.num_airplanes:
             print("")
 
 
-# ToDo: Document this method.
 def print_unsteady_results(unsteady_solver):
-    """
+    """This function prints the averages of the forces, moments, force coefficients,
+    and moment coefficients calculated by a unsteady solver.
 
-    :param unsteady_solver:
-    :return:
+    Note: This method averages the values for every time step that calculated
+    results. Therefore, the averages are not necessarily the final-cycle averages.
+
+    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver or
+        This is the solver object with the results to be printed.
+    :return: None
     """
 
     first_results_step = unsteady_solver.first_results_step
@@ -867,8 +889,8 @@ def print_unsteady_results(unsteady_solver):
     num_airplanes = unsteady_solver.num_airplanes
     num_steps_with_results = num_steps - first_results_step
 
-    # Initialize matrices to hold the forces, moments, and coefficients at each time
-    # step which has results.
+    # Initialize matrices to hold the forces, moments, and coefficients at each of
+    # the time steps that has results.
     total_near_field_force_wind_axes = np.zeros(
         (num_airplanes, 3, num_steps_with_results)
     )
@@ -885,7 +907,8 @@ def print_unsteady_results(unsteady_solver):
     # Initialize a variable to track position in the results arrays.
     results_step = 0
 
-    # Iterate through the time steps and add the results to their respective matrices.
+    # Iterate through the time steps with results and add the results to their
+    # respective matrices.
     for step in range(first_results_step, num_steps):
 
         # Get the airplanes from the problem at this step.
@@ -908,9 +931,12 @@ def print_unsteady_results(unsteady_solver):
 
         results_step += 1
 
+    # For each airplane object, calculate and print the average force, moment,
+    # force coefficient, and moment coefficient values.
     for airplane_id, airplane in enumerate(
         unsteady_solver.steady_problems[0].airplanes
     ):
+        # Calculate the average values.
         this_induced_drag = np.mean(total_near_field_force_wind_axes[airplane_id, 0, :])
         this_side_force = np.mean(total_near_field_force_wind_axes[airplane_id, 1, :])
         this_lift = np.mean(total_near_field_force_wind_axes[airplane_id, 2, :])
@@ -944,7 +970,7 @@ def print_unsteady_results(unsteady_solver):
 
         print(airplane.name, ":", sep="")
 
-        # Print out the total forces and moments.
+        # Print out this airplane's average forces.
         print("\tAverage Forces in Wind Axes:")
         print(
             "\t\tInduced Drag:\t\t\t",
@@ -964,6 +990,8 @@ def print_unsteady_results(unsteady_solver):
             " N",
             sep="",
         )
+
+        # Print out this airplane's average moments.
         print("\n\tAverage Moments in Wind Axes:")
         print(
             "\t\tRolling Moment:\t\t\t",
@@ -984,8 +1012,8 @@ def print_unsteady_results(unsteady_solver):
             sep="",
         )
 
-        # Print out the coefficients.
-        print("\n\tAverage Coefficients in Wind Axes:")
+        # Print out this airplane's average force coefficients.
+        print("\n\tAverage Force Coefficients in Wind Axes:")
         print(
             "\t\tCDi:\t\t\t\t\t",
             np.round(this_induced_drag_coefficient, 3),
@@ -1001,6 +1029,9 @@ def print_unsteady_results(unsteady_solver):
             np.round(this_lift_coefficient, 3),
             sep="",
         )
+
+        # Print out this airplane's average moment coefficients.
+        print("\n\tAverage Moment Coefficients in Wind Axes:")
         print(
             "\t\tCl:\t\t\t\t\t\t",
             np.round(this_rolling_coefficient, 3),
@@ -1017,20 +1048,22 @@ def print_unsteady_results(unsteady_solver):
             sep="",
         )
 
-        # If there's more airplane's whose results are going to be printed, print new
-        # line to separate them.
+        # If the results from more airplanes are going to be printed, print new line
+        # to separate them.
         if (airplane_id + 1) < num_airplanes:
             print("")
 
 
-# ToDo: Document this method.
 def get_panel_surfaces(
     airplanes,
 ):
-    """
+    """This function returns a PolyData representation of the wing panel surfaces
+    associated with all the airplanes in a given list.
 
-    :param airplanes:
-    :return:
+    :param airplanes: list of Airplane objects
+        This is a list of airplane objects whose wing panel surfaces will be returned.
+    :return: pv.PolyData
+        This is a PolyData representation of the airplanes' wing panel surfaces.
     """
 
     # Initialize empty arrays to hold the panel vertices and faces.

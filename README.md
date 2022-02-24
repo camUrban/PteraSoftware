@@ -1,6 +1,7 @@
-# Ptera Software
 
-![Ptera Software Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/PteraSoftwareLogo.jpg)
+![Logo](docs/logo.png)
+
+***
 
 ![build](https://img.shields.io/travis/camUrban/PteraSoftware/master)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/master)
@@ -8,6 +9,10 @@
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
+
+***
+
+![Intro](docs/background.webp)
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing
 flapping-wing flight.

@@ -11,6 +11,10 @@ This module contains the following functions:
 
     animate: Create an animation of a problem's movement.
 
+    animate_frames: This function creates an animation of the solver's geometries but
+    it saves each time step as a separate PNG, instead of compiling them as frames in
+    a GIF.
+
     plot_results_versus_time: This method takes in an unsteady solver object,
     and plots the geometries' forces, moments, force coefficients, and moment
     coefficients as a function of time.
@@ -473,6 +477,184 @@ def animate(
     # Delete the file if requested.
     if not keep_file:
         os.remove("animation.gif")
+
+
+def animate_frames(
+    unsteady_solver,
+    show_delta_pressures=False,
+    show_wake_vortices=False,
+):
+    """This function creates an animation of the solver's geometries but it saves
+    each time step as a separate PNG, instead of compiling them as frames in a GIF.
+
+    Note: By uploading the images to an online tool (such as
+    https://ezgif.com/webp-maker/), the frames can be compiled into an animated,
+    transparent WebP file. This technique was used to create the first simulation
+    image shown in README.md.
+
+    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver object whose geometry is to be animated.
+    :param show_delta_pressures: bool, optional
+        Set this variable to true to show the change in pressure across the panels.
+        See the src.panel.update_pressure() method for more details on the pressure
+        value. The default value is false.
+    :param show_wake_vortices: bool, optional
+        Set this variable to true to show the airplane object's wake ring vortices.
+        The default value is false.
+    :return: None
+    """
+
+    first_results_step = unsteady_solver.first_results_step
+
+    # Get this solver's problems' airplanes. This will become a list of lists,
+    # with the first index being the time step and the second index identifying each
+    # of the solver's airplanes at that time step.
+    step_airplanes = []
+    for steady_problem in unsteady_solver.steady_problems:
+        step_airplanes.append(steady_problem.airplanes)
+
+    # Initialize the plotter and get the color map. Also, turn off the lighting to avoid
+    # making the scalar bar jittery.
+    plotter = pv.Plotter(lighting="none")
+    pv.rcParams["transparent_background"] = True
+
+    # Initialize values to hold the color map choice and its limits.
+    c_min = 0
+    c_max = 0
+    color_map = None
+
+    # Initialize an empty array to hold all of the problem's scalars.
+    all_scalars = np.empty(0, dtype=int)
+
+    # Check if the user wants to show pressures.
+    if show_delta_pressures:
+
+        # Now iterate through each time step and gather all of the scalars for its
+        # list of airplanes. These values will be used to configure the color map.
+        for airplanes in step_airplanes:
+            scalars_to_add = get_scalars(airplanes)
+            all_scalars = np.hstack((all_scalars, scalars_to_add))
+
+        # Choose the color map and set its limits based on if the min and max scalars
+        # across all time steps have the same sign (sequential color map) or if they
+        # have different signs (diverging color map).
+        if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
+            color_map = sequential_color_map
+            c_min = max(
+                np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
+                np.min(all_scalars),
+            )
+            c_max = min(
+                np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
+                np.max(all_scalars),
+            )
+        else:
+            color_map = diverging_color_map
+            c_min = -color_map_num_sig * np.std(all_scalars)
+            c_max = color_map_num_sig * np.std(all_scalars)
+
+    # Initialize the panel surfaces and add the meshes to the plotter.
+    panel_surfaces = get_panel_surfaces(step_airplanes[0])
+
+    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
+    # plotter with the pressure scalars. Otherwise, add the panel surfaces without
+    # the pressure scalars.
+    if show_delta_pressures and first_results_step == 0:
+        scalars = get_scalars(step_airplanes[0])
+
+        # Add the panel surfaces to the plotter with the pressure scalars.
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            cmap=color_map,
+            clim=[c_min, c_max],
+            scalars=scalars,
+            smooth_shading=True,
+            show_scalar_bar=False,
+        )
+
+        # Update the scalars is the user wants to show the pressures.
+        plotter.update_scalars(scalars)
+    else:
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=panel_color,
+            smooth_shading=True,
+        )
+
+    # Print a message to the console on how to set up the window.
+    print(
+        'Orient the view, then press "q" to close the window and produce the '
+        "animation."
+    )
+
+    # Set up the camera and close the window.
+    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+
+    plotter.screenshot(filename="0", transparent_background=True)
+
+    # Initialize a variable to keep track of which step we are on.
+    current_step = 1
+
+    # Begin to iterate through all the other steps' airplanes.
+    for airplanes in step_airplanes[1:]:
+
+        # Clear the plotter.
+        plotter.clear()
+
+        # Get the panel surfaces.
+        panel_surfaces = get_panel_surfaces(airplanes)
+
+        # If the user wants to show the wake ring vortices, then get their surfaces
+        # and plot them.
+        if show_wake_vortices:
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
+                unsteady_solver, current_step
+            )
+            plotter.add_mesh(
+                wake_ring_vortex_surfaces,
+                show_edges=True,
+                smooth_shading=True,
+                color=wake_vortex_color,
+            )
+
+        # Check if the user wants to plot pressures and this step is equal to or
+        # greater than the first step with calculated results. If so, add the panel
+        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
+        # surfaces without the pressure scalars.
+        if show_delta_pressures and first_results_step <= current_step:
+            scalars = get_scalars(airplanes)
+
+            # Add the panel surfaces to the plotter with the pressure scalars.
+            plotter.add_mesh(
+                panel_surfaces,
+                show_edges=True,
+                cmap=color_map,
+                clim=[c_min, c_max],
+                scalars=scalars,
+                smooth_shading=True,
+                show_scalar_bar=False,
+            )
+
+            if first_results_step == current_step:
+                plotter.update_scalars(scalars)
+        else:
+            plotter.add_mesh(
+                panel_surfaces,
+                show_edges=True,
+                color=panel_color,
+                smooth_shading=True,
+            )
+
+        plotter.screenshot(filename=str(current_step), transparent_background=True)
+        plotter.clear()
+
+        # Increment the step number tracker.
+        current_step += 1
+
+    # Close the animation and delete the plotter.
+    plotter.close()
 
 
 def plot_results_versus_time(unsteady_solver, testing=False):

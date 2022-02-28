@@ -11,10 +11,6 @@ This module contains the following functions:
 
     animate: Create an animation of a problem's movement.
 
-    animate_frames: This function creates an animation of the solver's geometries but
-    it saves each time step as a separate PNG, instead of compiling them as frames in
-    a GIF.
-
     plot_results_versus_time: This method takes in an unsteady solver object,
     and plots the geometries' forces, moments, force coefficients, and moment
     coefficients as a function of time.
@@ -40,6 +36,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
+import webp
 
 from . import unsteady_ring_vortex_lattice_method
 
@@ -130,7 +127,7 @@ def draw(
     """
 
     # Initialize the plotter.
-    plotter = pv.Plotter()
+    plotter = pv.Plotter(lighting=None)
 
     # Get the solver's geometry.
     if isinstance(
@@ -299,7 +296,7 @@ def animate(
 
     # Initialize the plotter and get the color map. Also, turn off the lighting to avoid
     # making the scalar bar jittery.
-    plotter = pv.Plotter(lighting="none")
+    plotter = pv.Plotter(lighting=None)
 
     # Initialize values to hold the color map choice and its limits.
     c_min = 0
@@ -408,8 +405,16 @@ def animate(
     # Set up the camera and close the window.
     plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
-    # Open a gif.
-    plotter.open_gif("animation.gif")
+    # Start a list which will hold a webp image of each frame.
+    images = [
+        webp.Image.fromarray(
+            plotter.screenshot(
+                transparent_background=True,
+                return_img=True,
+                window_size=None,
+            )
+        )
+    ]
 
     # Initialize a variable to keep track of which step we are on.
     current_step = 1
@@ -486,206 +491,32 @@ def animate(
                 smooth_shading=False,
             )
 
-        # Write the current frame to the plotter.
-        plotter.write_frame()
-        plotter.clear()
+        # Append a webp image of this frame to the list of frame images.
+        images.append(
+            webp.Image.fromarray(
+                plotter.screenshot(
+                    filename=None,
+                    transparent_background=True,
+                    return_img=True,
+                    window_size=None,
+                )
+            )
+        )
 
         # Increment the step number tracker.
         current_step += 1
 
     # Close the animation and delete the plotter.
     plotter.close()
+
+    this_fps = round(1 / unsteady_solver.delta_time)
+
+    # Convert the list of webp images to a webp animation.
+    webp.save_images(images, "animate.webp", fps=this_fps, lossless=False, quality=50)
 
     # Delete the file if requested.
     if not keep_file:
-        os.remove("animation.gif")
-
-
-def animate_frames(
-    unsteady_solver,
-    scalar_type=None,
-    show_wake_vortices=False,
-):
-    """This function creates an animation of the solver's geometries but it saves
-    each time step as a separate PNG, instead of compiling them as frames in a GIF.
-
-    Note: By uploading the images to an online tool (such as
-    https://ezgif.com/webp-maker/), the frames can be compiled into an animated,
-    transparent WebP file. This technique was used to create the first simulation
-    image shown in README.md.
-
-    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-        This is the solver object whose geometry is to be animated.
-    :param scalar_type: str or None, optional
-        This variable determines which values will be used to color the wing panels,
-        if any. The default value is None, which gives colors all wing panels
-        uniformly. Acceptable alternatives are "induced drag", "side force",
-        and "lift", which respectively use each panel's induced drag, side force,
-        or lift coefficient.
-    :param show_wake_vortices: bool, optional
-        Set this variable to true to show the airplane object's wake ring vortices.
-        The default value is false.
-    :return: None
-    """
-
-    first_results_step = unsteady_solver.first_results_step
-
-    # Check if the user wants to show scalars on the wing panels.
-    show_scalars = False
-    if (
-        scalar_type == "induced drag"
-        or scalar_type == "side force"
-        or scalar_type == "lift"
-    ):
-        show_scalars = True
-
-    # Get this solver's problems' airplanes. This will become a list of lists,
-    # with the first index being the time step and the second index identifying each
-    # of the solver's airplanes at that time step.
-    step_airplanes = []
-    for steady_problem in unsteady_solver.steady_problems:
-        step_airplanes.append(steady_problem.airplanes)
-
-    # Initialize the plotter and get the color map. Also, turn off the lighting to avoid
-    # making the scalar bar jittery.
-    plotter = pv.Plotter(lighting="none")
-    pv.rcParams["transparent_background"] = True
-
-    # Initialize values to hold the color map choice and its limits.
-    c_min = 0
-    c_max = 0
-    color_map = None
-
-    # Initialize an empty array to hold all of the problem's scalars.
-    all_scalars = np.empty(0, dtype=int)
-
-    # Configure the color map if the user wants to show scalars.
-    if show_scalars:
-
-        # Now iterate through each time step and gather all of the scalars for its
-        # list of airplanes. These values will be used to configure the color map.
-        for airplanes in step_airplanes:
-            scalars_to_add = get_scalars(airplanes, scalar_type)
-            all_scalars = np.hstack((all_scalars, scalars_to_add))
-
-        # Choose the color map and set its limits based on if the min and max scalars
-        # across all time steps have the same sign (sequential color map) or if they
-        # have different signs (diverging color map).
-        if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
-            color_map = sequential_color_map
-            c_min = max(
-                np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
-                np.min(all_scalars),
-            )
-            c_max = min(
-                np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
-                np.max(all_scalars),
-            )
-        else:
-            color_map = diverging_color_map
-            c_min = -color_map_num_sig * np.std(all_scalars)
-            c_max = color_map_num_sig * np.std(all_scalars)
-
-    # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surfaces = get_panel_surfaces(step_airplanes[0])
-
-    # Check if the user wants to plot scalars. If so, add the panel surfaces to the
-    # plotter with the scalars.
-    if show_scalars and first_results_step == 0:
-        scalars = get_scalars(step_airplanes[0], scalar_type)
-
-        # Add the panel surfaces to the plotter with the scalars.
-        plotter.add_mesh(
-            panel_surfaces,
-            show_edges=True,
-            cmap=color_map,
-            clim=[c_min, c_max],
-            scalars=scalars,
-            smooth_shading=False,
-            show_scalar_bar=False,
-        )
-
-        # Update the scalars is the user wants to show.
-        plotter.update_scalars(scalars)
-    else:
-        plotter.add_mesh(
-            panel_surfaces,
-            show_edges=True,
-            color=panel_color,
-            smooth_shading=False,
-        )
-
-    # Print a message to the console on how to set up the window.
-    print(
-        'Orient the view, then press "q" to close the window and produce the '
-        "animation."
-    )
-
-    # Set up the camera and close the window.
-    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
-
-    plotter.screenshot(filename="0", transparent_background=True)
-
-    # Initialize a variable to keep track of which step we are on.
-    current_step = 1
-
-    # Begin to iterate through all the other steps' airplanes.
-    for airplanes in step_airplanes[1:]:
-
-        # Clear the plotter.
-        plotter.clear()
-
-        # Get the panel surfaces.
-        panel_surfaces = get_panel_surfaces(airplanes)
-
-        # If the user wants to show the wake ring vortices, then get their surfaces
-        # and plot them.
-        if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
-                unsteady_solver, current_step
-            )
-            plotter.add_mesh(
-                wake_ring_vortex_surfaces,
-                show_edges=True,
-                smooth_shading=False,
-                color=wake_vortex_color,
-            )
-
-        # Check if the user wants to plot scalars and this step is equal to or
-        # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter with the scalars.
-        if show_scalars and first_results_step <= current_step:
-            scalars = get_scalars(airplanes, scalar_type)
-
-            # Add the panel surfaces to the plotter with the scalars.
-            plotter.add_mesh(
-                panel_surfaces,
-                show_edges=True,
-                cmap=color_map,
-                clim=[c_min, c_max],
-                scalars=scalars,
-                smooth_shading=False,
-                show_scalar_bar=False,
-            )
-
-            if first_results_step == current_step:
-                plotter.update_scalars(scalars)
-        else:
-            plotter.add_mesh(
-                panel_surfaces,
-                show_edges=True,
-                color=panel_color,
-                smooth_shading=False,
-            )
-
-        plotter.screenshot(filename=str(current_step), transparent_background=True)
-        plotter.clear()
-
-        # Increment the step number tracker.
-        current_step += 1
-
-    # Close the animation and delete the plotter.
-    plotter.close()
+        os.remove("animate.webp")
 
 
 def plot_results_versus_time(unsteady_solver, testing=False):

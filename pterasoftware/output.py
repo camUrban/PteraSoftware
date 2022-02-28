@@ -147,7 +147,7 @@ def draw(
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
-                smooth_shading=True,
+                smooth_shading=False,
                 color=wake_vortex_color,
             )
     else:
@@ -204,7 +204,7 @@ def draw(
             cmap=color_map,
             clim=[c_min, c_max],
             scalars=scalars,
-            smooth_shading=True,
+            smooth_shading=False,
             scalar_bar_args=scalar_bar_args,
         )
         plotter.add_text(
@@ -224,7 +224,7 @@ def draw(
             panel_surfaces,
             show_edges=True,
             color=panel_color,
-            smooth_shading=True,
+            smooth_shading=False,
         )
 
     # Check if the user wants to plot streamlines.
@@ -255,11 +255,11 @@ def draw(
                         show_edges=True,
                         color=streamline_color,
                         line_width=2,
+                        smooth_shading=False,
                     )
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color=plotter_background_color)
-    plotter.add_camera_orientation_widget()
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
@@ -370,7 +370,7 @@ def animate(
             cmap=color_map,
             clim=[c_min, c_max],
             scalars=scalars,
-            smooth_shading=True,
+            smooth_shading=False,
             scalar_bar_args=scalar_bar_args,
         )
         plotter.add_text(
@@ -393,7 +393,7 @@ def animate(
             panel_surfaces,
             show_edges=True,
             color=panel_color,
-            smooth_shading=True,
+            smooth_shading=False,
         )
 
     # Set the plotter background color and show the plotter.
@@ -406,8 +406,7 @@ def animate(
     )
 
     # Set up the camera and close the window.
-    plotter.add_camera_orientation_widget()
-    plotter.show(cpos=(1, 1, 1), full_screen=False, auto_close=False)
+    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
     # Open a gif.
     plotter.open_gif("animation.gif")
@@ -433,7 +432,7 @@ def animate(
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
-                smooth_shading=True,
+                smooth_shading=False,
                 color=wake_vortex_color,
             )
 
@@ -461,7 +460,7 @@ def animate(
                 cmap=color_map,
                 clim=[c_min, c_max],
                 scalars=scalars,
-                smooth_shading=True,
+                smooth_shading=False,
                 scalar_bar_args=scalar_bar_args,
             )
             plotter.add_text(
@@ -484,7 +483,7 @@ def animate(
                 panel_surfaces,
                 show_edges=True,
                 color=panel_color,
-                smooth_shading=True,
+                smooth_shading=False,
             )
 
         # Write the current frame to the plotter.
@@ -602,7 +601,7 @@ def animate_frames(
             cmap=color_map,
             clim=[c_min, c_max],
             scalars=scalars,
-            smooth_shading=True,
+            smooth_shading=False,
             show_scalar_bar=False,
         )
 
@@ -613,7 +612,7 @@ def animate_frames(
             panel_surfaces,
             show_edges=True,
             color=panel_color,
-            smooth_shading=True,
+            smooth_shading=False,
         )
 
     # Print a message to the console on how to set up the window.
@@ -623,7 +622,6 @@ def animate_frames(
     )
 
     # Set up the camera and close the window.
-    plotter.add_camera_orientation_widget()
     plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
     plotter.screenshot(filename="0", transparent_background=True)
@@ -649,7 +647,7 @@ def animate_frames(
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
-                smooth_shading=True,
+                smooth_shading=False,
                 color=wake_vortex_color,
             )
 
@@ -666,7 +664,7 @@ def animate_frames(
                 cmap=color_map,
                 clim=[c_min, c_max],
                 scalars=scalars,
-                smooth_shading=True,
+                smooth_shading=False,
                 show_scalar_bar=False,
             )
 
@@ -677,7 +675,7 @@ def animate_frames(
                 panel_surfaces,
                 show_edges=True,
                 color=panel_color,
-                smooth_shading=True,
+                smooth_shading=False,
             )
 
         plotter.screenshot(filename=str(current_step), transparent_background=True)
@@ -826,7 +824,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 0],
-            label="$\it{Induced\ Drag}$",
+            label="Induced Drag",
             color=drag_color,
             marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
@@ -835,7 +833,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 1],
-            label="$\it{Side\ Force}$",
+            label="Side Force",
             color=side_color,
             marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
@@ -844,7 +842,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 2],
-            label="$\it{Lift}$",
+            label="Lift",
             color=lift_color,
             marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
@@ -853,7 +851,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 0],
-            label="$\it{Induced\ Drag}$",
+            label="Induced Drag",
             color=drag_color,
             marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
@@ -862,7 +860,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 1],
-            label="$\it{Side\ Force}$",
+            label="Side Force",
             color=side_color,
             marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
@@ -871,7 +869,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 2],
-            label="$\it{Lift}$",
+            label="Lift",
             color=lift_color,
             marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
@@ -880,7 +878,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 0],
-            label="$\it{Roll}$",
+            label="Roll",
             color=roll_color,
             marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
@@ -889,7 +887,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 1],
-            label="$\it{Pitch}$",
+            label="Pitch",
             color=pitch_color,
             marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
@@ -898,7 +896,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 2],
-            label="$\it{Yaw}$",
+            label="Yaw",
             color=yaw_color,
             marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
@@ -907,7 +905,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 0],
-            label="$\it{Roll}$",
+            label="Roll",
             color=roll_color,
             marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
@@ -916,7 +914,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 1],
-            label="$\it{Pitch}$",
+            label="Pitch",
             color=pitch_color,
             marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
@@ -925,7 +923,7 @@ def plot_results_versus_time(unsteady_solver, testing=False):
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 2],
-            label="$\it{Yaw}$",
+            label="Yaw",
             color=yaw_color,
             marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
@@ -934,27 +932,23 @@ def plot_results_versus_time(unsteady_solver, testing=False):
 
         # Find and format this airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
-        airplane_name_split = airplane_name.split(" ")
-        title_prefix = "$\it{"
-        for sub in airplane_name_split:
-            title_prefix += sub + "\ "
-        force_title = title_prefix + "Forces\ vs.\ Time}$"
-        force_coefficient_title = title_prefix + "Force\ Coefficients\ vs.\ Time}$"
-        moment_title = title_prefix + "Moments\ vs.\ Time}$"
-        moment_coefficient_title = title_prefix + "Moment\ Coefficients\ vs.\ Time}$"
+        force_title = airplane_name + " Forces vs. Time"
+        force_coefficient_title = airplane_name + " Force Coefficients vs. Time"
+        moment_title = airplane_name + " Moments vs. Time"
+        moment_coefficient_title = airplane_name + " Moment Coefficients vs. Time"
 
         # Name the plots' axis labels and titles.
-        force_axes.set_xlabel("$\it{Time\ (s)}$", color=text_color)
-        force_axes.set_ylabel("$\it{Force\ (N)}$", color=text_color)
+        force_axes.set_xlabel("Time (s)", color=text_color)
+        force_axes.set_ylabel("Force (N)", color=text_color)
         force_axes.set_title(force_title, color=text_color)
-        force_coefficients_axes.set_xlabel("$\it{Time\ (s)}$", color=text_color)
-        force_coefficients_axes.set_ylabel("$\it{Coefficient$", color=text_color)
+        force_coefficients_axes.set_xlabel("Time (s)", color=text_color)
+        force_coefficients_axes.set_ylabel("Coefficient", color=text_color)
         force_coefficients_axes.set_title(force_coefficient_title, color=text_color)
-        moment_axes.set_xlabel("$\it{Time\ (s)}$", color=text_color)
-        moment_axes.set_ylabel("$\it{Moment\ (N\ m)}$", color=text_color)
+        moment_axes.set_xlabel("Time (s)", color=text_color)
+        moment_axes.set_ylabel("Moment (N m)", color=text_color)
         moment_axes.set_title(moment_title, color=text_color)
-        moment_coefficients_axes.set_xlabel("$\it{Time\ (s)}$", color=text_color)
-        moment_coefficients_axes.set_ylabel("$\it{Coefficient$", color=text_color)
+        moment_coefficients_axes.set_xlabel("Time (s)", color=text_color)
+        moment_coefficients_axes.set_ylabel("Coefficient", color=text_color)
         moment_coefficients_axes.set_title(moment_coefficient_title, color=text_color)
 
         # Format the plots' legends.

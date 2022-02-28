@@ -100,7 +100,7 @@ class TestOutput(unittest.TestCase):
         # Call the animate function on the unsteady solver fixture.
         ps.output.animate(
             unsteady_solver=self.unsteady_solver,
-            show_delta_pressures=False,
+            scalar_type=None,
             show_wake_vortices=False,
             keep_file=False,
         )
@@ -114,7 +114,7 @@ class TestOutput(unittest.TestCase):
         # Call the draw function on the unsteady solver fixture.
         ps.output.draw(
             solver=self.unsteady_solver,
-            show_delta_pressures=False,
+            scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
         )

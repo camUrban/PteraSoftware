@@ -308,7 +308,7 @@ solver.run(
 # after orienting the view, to begin the animation.
 ps.output.animate(
     unsteady_solver=solver,
-    show_delta_pressures=True,
+    scalar_type="lift",
     show_wake_vortices=True,
     keep_file=True,
 )

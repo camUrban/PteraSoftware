@@ -257,9 +257,10 @@ ps.output.print_steady_results(steady_solver=example_solver)
 # Call the software's draw function on the solver.
 ps.output.draw(
     solver=example_solver,
-    # Tell the draw function to show the pressure's on the aircraft's panels. This
-    # value defaults to false.
-    show_delta_pressures=True,
+    # Tell the draw function to color the aircraft's wing panels with the local
+    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
+    # "side force", or "lift".
+    scalar_type="lift",
     # Tell the draw function to show the calculated streamlines. This value defaults
     # to false.
     show_streamlines=True,

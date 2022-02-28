@@ -31,9 +31,9 @@ This module contains the following functions:
     get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
     surface of wake ring vortices at a given time step.
 
-    get_scalars: This function gets the delta pressure values from a problem's
-    airplane objects, and puts them into a 1D array to be used as scalars for display
-    by other output methods.
+    get_scalars: This function gets the coefficient values from a problem's airplane
+    objects, and puts them into a 1D array to be used as scalars for display by other
+    output methods.
 """
 import os
 
@@ -100,7 +100,7 @@ marker_spacing = 1.0 / num_markers
 
 def draw(
     solver,
-    show_delta_pressures=False,
+    scalar_type=None,
     show_streamlines=False,
     show_wake_vortices=False,
 ):
@@ -114,10 +114,12 @@ def draw(
     :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
     SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry and attributes are to be plotted.
-    :param show_delta_pressures: bool, optional
-        Set this variable to true to show the change in pressure across the panels.
-        See the src.panel.update_pressure() method for more details on the pressure
-        value. The default value is false.
+    :param scalar_type: str or None, optional
+        This variable determines which values will be used to color the wing panels,
+        if any. The default value is None, which gives colors all wing panels
+        uniformly. Acceptable alternatives are "induced drag", "side force",
+        and "lift", which respectively use each panel's induced drag, side force,
+        or lift coefficient.
     :param show_streamlines: bool, optional
         Set this variable to true to show the streamlines emanating from the back of
         the wings. The default value is False.
@@ -148,18 +150,26 @@ def draw(
                 smooth_shading=True,
                 color=wake_vortex_color,
             )
-
     else:
         airplanes = solver.airplanes
+
+    # Check if the user wants to show scalars on the wing panels.
+    show_scalars = False
+    if (
+        scalar_type == "induced drag"
+        or scalar_type == "side force"
+        or scalar_type == "lift"
+    ):
+        show_scalars = True
 
     # Get the panel surfaces.
     panel_surfaces = get_panel_surfaces(airplanes)
 
-    # Check if the user wants to plot pressures.
-    if show_delta_pressures:
+    # Check if the user wants to plot any scalars.
+    if show_scalars:
 
         # Get the scalars
-        scalars = get_scalars(airplanes)
+        scalars = get_scalars(airplanes, scalar_type)
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
@@ -177,16 +187,16 @@ def draw(
             c_min = -color_map_num_sig * np.std(scalars)
             c_max = color_map_num_sig * np.std(scalars)
 
-        # Add the panel surfaces to the plotter with the pressure scalars.
+        # Add the panel surfaces to the plotter with the scalars.
         scalar_bar_args = dict(
-            title="Normal Pressure (Pa)",
+            title=scalar_type.title() + " Coefficient",
             title_font_size=bar_title_font_size,
             label_font_size=bar_label_font_size,
             width=bar_width,
             position_x=bar_position_x,
             position_y=bar_position_y,
             n_labels=bar_n_labels,
-            fmt="%.1f",
+            fmt="%.2f",
         )
         plotter.add_mesh(
             panel_surfaces,
@@ -198,13 +208,13 @@ def draw(
             scalar_bar_args=scalar_bar_args,
         )
         plotter.add_text(
-            text="Max: " + str(round(max(scalars), 1)) + " Pa",
+            text="Max: " + str(round(max(scalars), 2)),
             position=text_max_position,
             font_size=text_font_size,
             viewport=True,
         )
         plotter.add_text(
-            text="Min: " + str(round(min(scalars), 1)) + " Pa",
+            text="Min: " + str(round(min(scalars), 2)),
             position=text_min_position,
             font_size=text_font_size,
             viewport=True,
@@ -249,12 +259,13 @@ def draw(
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color=plotter_background_color)
+    plotter.add_camera_orientation_widget()
     plotter.show(cpos=(-1, -1, 1), full_screen=False)
 
 
 def animate(
     unsteady_solver,
-    show_delta_pressures=False,
+    scalar_type=None,
     show_wake_vortices=False,
     keep_file=True,
 ):
@@ -262,10 +273,12 @@ def animate(
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry is to be animated.
-    :param show_delta_pressures: bool, optional
-        Set this variable to true to show the change in pressure across the panels.
-        See the src.panel.update_pressure() method for more details on the pressure
-        value. The default value is false.
+    :param scalar_type: str or None, optional
+        This variable determines which values will be used to color the wing panels,
+        if any. The default value is None, which gives colors all wing panels
+        uniformly. Acceptable alternatives are "induced drag", "side force",
+        and "lift", which respectively use each panel's induced drag, side force,
+        or lift coefficient.
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is false.
@@ -293,16 +306,25 @@ def animate(
     c_max = 0
     color_map = None
 
+    # Check if the user wants to show scalars on the wing panels.
+    show_scalars = False
+    if (
+        scalar_type == "induced drag"
+        or scalar_type == "side force"
+        or scalar_type == "lift"
+    ):
+        show_scalars = True
+
     # Initialize an empty array to hold all of the problem's scalars.
     all_scalars = np.empty(0, dtype=int)
 
-    # Check if the user wants to show pressures.
-    if show_delta_pressures:
+    # Check if the user wants to show scalars on the wing panels.
+    if show_scalars:
 
         # Now iterate through each time step and gather all of the scalars for its
         # list of airplanes. These values will be used to configure the color map.
         for airplanes in step_airplanes:
-            scalars_to_add = get_scalars(airplanes)
+            scalars_to_add = get_scalars(airplanes, scalar_type)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
@@ -326,22 +348,21 @@ def animate(
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surfaces = get_panel_surfaces(step_airplanes[0])
 
-    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
-    # plotter with the pressure scalars. Otherwise, add the panel surfaces without
-    # the pressure scalars.
-    if show_delta_pressures and first_results_step == 0:
-        scalars = get_scalars(step_airplanes[0])
+    # Check if the user wants to show any scalars. If so, add the panel surfaces to
+    # the plotter with these scalars.
+    if show_scalars and first_results_step == 0:
+        scalars = get_scalars(step_airplanes[0], scalar_type)
 
-        # Add the panel surfaces to the plotter with the pressure scalars.
+        # Add the panel surfaces to the plotter with the scalars.
         scalar_bar_args = dict(
-            title="Normal Pressure (Pa)",
+            title=scalar_type.title() + " Coefficient",
             title_font_size=bar_title_font_size,
             label_font_size=bar_label_font_size,
             width=bar_width,
             position_x=bar_position_x,
             position_y=bar_position_y,
             n_labels=bar_n_labels,
-            fmt="%.1f",
+            fmt="%.2f",
         )
         plotter.add_mesh(
             panel_surfaces,
@@ -353,19 +374,19 @@ def animate(
             scalar_bar_args=scalar_bar_args,
         )
         plotter.add_text(
-            text="Max: " + str(round(max(all_scalars), 1)) + " Pa",
+            text="Max: " + str(round(max(all_scalars), 2)),
             position=text_max_position,
             font_size=text_font_size,
             viewport=True,
         )
         plotter.add_text(
-            text="Min: " + str(round(min(all_scalars), 1)) + " Pa",
+            text="Min: " + str(round(min(all_scalars), 2)),
             position=text_min_position,
             font_size=text_font_size,
             viewport=True,
         )
 
-        # Update the scalars is the user wants to show the pressures.
+        # Update the scalars is the user wants to show.
         plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
@@ -385,7 +406,8 @@ def animate(
     )
 
     # Set up the camera and close the window.
-    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+    plotter.add_camera_orientation_widget()
+    plotter.show(cpos=(1, 1, 1), full_screen=False, auto_close=False)
 
     # Open a gif.
     plotter.open_gif("animation.gif")
@@ -415,22 +437,23 @@ def animate(
                 color=wake_vortex_color,
             )
 
-        # Check if the user wants to plot pressures and this step is equal to or
+        # Check if the user wants to plot scalars and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
-        # surfaces without the pressure scalars.
-        if show_delta_pressures and first_results_step <= current_step:
-            scalars = get_scalars(airplanes)
-            # Add the panel surfaces to the plotter with the pressure scalars.
+        # surfaces to the plotter with the scalars.
+        if show_scalars and first_results_step <= current_step:
+
+            scalars = get_scalars(airplanes, scalar_type)
+
+            # Add the panel surfaces to the plotter with the scalars.
             scalar_bar_args = dict(
-                title="Normal Pressure (Pa)",
+                title=scalar_type.title() + " Coefficient",
                 title_font_size=bar_title_font_size,
                 label_font_size=bar_label_font_size,
                 width=bar_width,
                 position_x=bar_position_x,
                 position_y=bar_position_y,
                 n_labels=bar_n_labels,
-                fmt="%.1f",
+                fmt="%.2f",
             )
             plotter.add_mesh(
                 panel_surfaces,
@@ -442,13 +465,13 @@ def animate(
                 scalar_bar_args=scalar_bar_args,
             )
             plotter.add_text(
-                text="Max: " + str(round(max(all_scalars), 1)) + " Pa",
+                text="Max: " + str(round(max(all_scalars), 2)),
                 position=text_max_position,
                 font_size=text_font_size,
                 viewport=True,
             )
             plotter.add_text(
-                text="Min: " + str(round(min(all_scalars), 1)) + " Pa",
+                text="Min: " + str(round(min(all_scalars), 2)),
                 position=text_min_position,
                 font_size=text_font_size,
                 viewport=True,
@@ -481,7 +504,7 @@ def animate(
 
 def animate_frames(
     unsteady_solver,
-    show_delta_pressures=False,
+    scalar_type=None,
     show_wake_vortices=False,
 ):
     """This function creates an animation of the solver's geometries but it saves
@@ -494,10 +517,12 @@ def animate_frames(
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose geometry is to be animated.
-    :param show_delta_pressures: bool, optional
-        Set this variable to true to show the change in pressure across the panels.
-        See the src.panel.update_pressure() method for more details on the pressure
-        value. The default value is false.
+    :param scalar_type: str or None, optional
+        This variable determines which values will be used to color the wing panels,
+        if any. The default value is None, which gives colors all wing panels
+        uniformly. Acceptable alternatives are "induced drag", "side force",
+        and "lift", which respectively use each panel's induced drag, side force,
+        or lift coefficient.
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is false.
@@ -505,6 +530,15 @@ def animate_frames(
     """
 
     first_results_step = unsteady_solver.first_results_step
+
+    # Check if the user wants to show scalars on the wing panels.
+    show_scalars = False
+    if (
+        scalar_type == "induced drag"
+        or scalar_type == "side force"
+        or scalar_type == "lift"
+    ):
+        show_scalars = True
 
     # Get this solver's problems' airplanes. This will become a list of lists,
     # with the first index being the time step and the second index identifying each
@@ -526,13 +560,13 @@ def animate_frames(
     # Initialize an empty array to hold all of the problem's scalars.
     all_scalars = np.empty(0, dtype=int)
 
-    # Check if the user wants to show pressures.
-    if show_delta_pressures:
+    # Configure the color map if the user wants to show scalars.
+    if show_scalars:
 
         # Now iterate through each time step and gather all of the scalars for its
         # list of airplanes. These values will be used to configure the color map.
         for airplanes in step_airplanes:
-            scalars_to_add = get_scalars(airplanes)
+            scalars_to_add = get_scalars(airplanes, scalar_type)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
@@ -556,13 +590,12 @@ def animate_frames(
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surfaces = get_panel_surfaces(step_airplanes[0])
 
-    # Check if the user wants to plot pressures. If so, add the panel surfaces to the
-    # plotter with the pressure scalars. Otherwise, add the panel surfaces without
-    # the pressure scalars.
-    if show_delta_pressures and first_results_step == 0:
-        scalars = get_scalars(step_airplanes[0])
+    # Check if the user wants to plot scalars. If so, add the panel surfaces to the
+    # plotter with the scalars.
+    if show_scalars and first_results_step == 0:
+        scalars = get_scalars(step_airplanes[0], scalar_type)
 
-        # Add the panel surfaces to the plotter with the pressure scalars.
+        # Add the panel surfaces to the plotter with the scalars.
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
@@ -573,7 +606,7 @@ def animate_frames(
             show_scalar_bar=False,
         )
 
-        # Update the scalars is the user wants to show the pressures.
+        # Update the scalars is the user wants to show.
         plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
@@ -590,6 +623,7 @@ def animate_frames(
     )
 
     # Set up the camera and close the window.
+    plotter.add_camera_orientation_widget()
     plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
     plotter.screenshot(filename="0", transparent_background=True)
@@ -619,14 +653,13 @@ def animate_frames(
                 color=wake_vortex_color,
             )
 
-        # Check if the user wants to plot pressures and this step is equal to or
+        # Check if the user wants to plot scalars and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter with the pressure scalars. Otherwise, add the panel
-        # surfaces without the pressure scalars.
-        if show_delta_pressures and first_results_step <= current_step:
-            scalars = get_scalars(airplanes)
+        # surfaces to the plotter with the scalars.
+        if show_scalars and first_results_step <= current_step:
+            scalars = get_scalars(airplanes, scalar_type)
 
-            # Add the panel surfaces to the plotter with the pressure scalars.
+            # Add the panel surfaces to the plotter with the scalars.
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,
@@ -1375,15 +1408,20 @@ def get_wake_ring_vortex_surfaces(solver, step):
 
 def get_scalars(
     airplanes,
+    scalar_type,
 ):
-    """This function gets the delta pressure values from a problem's airplane
-    objects, and puts them into a 1D array to be used as scalars for display by other
-    output methods.
+    """This function gets the coefficient values from a problem's airplane objects,
+    and puts them into a 1D array to be used as scalars for display by other output
+    methods.
 
     :param airplanes: list of Airplane objects
         This is the list of airplane objects with the scalars we are collecting.
+    :param scalar_type: str
+        This variable determines which scalar values will be returned. Acceptable
+        inputs are "induced drag", "side force", and "lift", which respectively
+        return each panel's induced drag, side force, or lift coefficient.
     :return scalars: 1D array of ints
-        This is the 1D array of integers for each panel's delta pressure values.
+        This is the 1D array of integers for each panel's coefficient value.
     """
 
     # Initialize an empty array to hold the scalars.
@@ -1397,10 +1435,13 @@ def get_scalars(
             panels = np.ravel(wing.panels)
             for panel in panels:
 
-                # Stack this panel's scalars. The scalar is the pressure on the
-                # panel. See the src.panel.update_pressure() method for more details
-                # on the pressure value.
-                scalars = np.hstack((scalars, panel.delta_pressure))
+                # Stack this panel's scalars.
+                if scalar_type == "induced drag":
+                    scalars = np.hstack((scalars, panel.induced_drag_coefficient))
+                if scalar_type == "side force":
+                    scalars = np.hstack((scalars, panel.side_force_coefficient))
+                if scalar_type == "lift":
+                    scalars = np.hstack((scalars, panel.lift_coefficient))
 
     # Return the resulting 1D array of scalars.
     return scalars

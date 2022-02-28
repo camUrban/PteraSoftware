@@ -97,7 +97,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
-            show_delta_pressures=True,
+            scalar_type="lift",
             keep_file=False,
         )
 

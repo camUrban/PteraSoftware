@@ -439,9 +439,10 @@ example_solver.run(
 ps.output.draw(
     # Set the solver to the one we just ran.
     solver=example_solver,
-    # Tell the draw function to show the pressure's on the aircraft's panels. This
-    # value defaults to false.
-    show_delta_pressures=True,
+    # Tell the draw function to color the aircraft's wing panels with the local lift
+    # coefficient. The valid arguments for this parameter are None, "induced drag",
+    # "side force", or "lift".
+    scalar_type="lift",
     # Tell the draw function to show the calculated streamlines. This value defaults
     # to false.
     show_streamlines=True,
@@ -456,9 +457,10 @@ ps.output.draw(
 ps.output.animate(
     # Set the unsteady solver to the one we just ran.
     unsteady_solver=example_solver,
-    # Tell the animate function to show the pressure's on the aircraft's panels. This
-    # value defaults to false.
-    show_delta_pressures=True,
+    # Tell the animate function to color the aircraft's wing panels with the local
+    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
+    # "side force", or "lift".
+    scalar_type="lift",
     # Tell the animate function to show the wake vortices. This value defaults to
     # false.
     show_wake_vortices=True,

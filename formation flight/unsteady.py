@@ -182,7 +182,7 @@ ps.output.print_unsteady_results(unsteady_solver=this_solver)
 
 # ps.output.animate(
 #     unsteady_solver=this_solver,
-#     show_delta_pressures=True,
+#     scalar_type="lift",
 #     show_wake_vortices=True,
 #     keep_file=True,
 # )

@@ -310,7 +310,7 @@ ps.output.animate(
     unsteady_solver=solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    keep_file=True,
+    keep_file=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

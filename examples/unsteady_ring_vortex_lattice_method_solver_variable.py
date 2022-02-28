@@ -452,17 +452,7 @@ ps.output.animate(
     # false.
     show_wake_vortices=True,
     # Set this value to True in order to save the GIF file.
-    keep_file=True,
-)
-
-# Call the software's plotting function on the solver. This produces graphs of the
-# output forces and moments with respect to time.
-ps.output.plot_results_versus_time(
-    # Set the unsteady solver to the one we just ran.
-    unsteady_solver=example_solver,
-    # Set the testing attribute to False, which is the default value. This is only
-    # used by the output testing modules.
-    testing=False,
+    keep_file=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

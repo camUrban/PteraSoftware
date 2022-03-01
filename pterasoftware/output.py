@@ -1,3 +1,4 @@
+# ToDo: Update this script's documentation.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -166,55 +167,38 @@ def draw(
     if show_scalars:
 
         # Get the scalars
-        scalars = get_scalars(airplanes, scalar_type)
+        these_scalars = get_scalars(airplanes, scalar_type)
+        min_scalar = round(max(these_scalars), 2)
+        max_scalar = round(max(these_scalars), 2)
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
         # (diverging color map).
-        if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
+        if np.sign(np.min(these_scalars)) == np.sign(np.max(these_scalars)):
             color_map = sequential_color_map
             c_min = max(
-                np.mean(scalars) - color_map_num_sig * np.std(scalars), np.min(scalars)
+                np.mean(these_scalars) - color_map_num_sig * np.std(these_scalars),
+                np.min(these_scalars),
             )
             c_max = min(
-                np.mean(scalars) + color_map_num_sig * np.std(scalars), np.max(scalars)
+                np.mean(these_scalars) + color_map_num_sig * np.std(these_scalars),
+                np.max(these_scalars),
             )
         else:
             color_map = diverging_color_map
-            c_min = -color_map_num_sig * np.std(scalars)
-            c_max = color_map_num_sig * np.std(scalars)
+            c_min = -color_map_num_sig * np.std(these_scalars)
+            c_max = color_map_num_sig * np.std(these_scalars)
 
-        # Add the panel surfaces to the plotter with the scalars.
-        scalar_bar_args = dict(
-            title=scalar_type.title() + " Coefficient",
-            title_font_size=bar_title_font_size,
-            label_font_size=bar_label_font_size,
-            width=bar_width,
-            position_x=bar_position_x,
-            position_y=bar_position_y,
-            n_labels=bar_n_labels,
-            fmt="%.2f",
-        )
-        plotter.add_mesh(
+        plot_scalars(
+            plotter,
+            these_scalars,
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            c_min,
+            c_max,
             panel_surfaces,
-            show_edges=True,
-            cmap=color_map,
-            clim=[c_min, c_max],
-            scalars=scalars,
-            smooth_shading=False,
-            scalar_bar_args=scalar_bar_args,
-        )
-        plotter.add_text(
-            text="Max: " + str(round(max(scalars), 2)),
-            position=text_max_position,
-            font_size=text_font_size,
-            viewport=True,
-        )
-        plotter.add_text(
-            text="Min: " + str(round(min(scalars), 2)),
-            position=text_min_position,
-            font_size=text_font_size,
-            viewport=True,
         )
     else:
         plotter.add_mesh(
@@ -312,8 +296,10 @@ def animate(
     ):
         show_scalars = True
 
-    # Initialize an empty array to hold all of the problem's scalars.
+    # Initialize an variables to hold the problems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=int)
+    min_scalar = None
+    max_scalar = None
 
     # Check if the user wants to show scalars on the wing panels.
     if show_scalars:
@@ -341,6 +327,9 @@ def animate(
             color_map = diverging_color_map
             c_min = -color_map_num_sig * np.std(all_scalars)
             c_max = color_map_num_sig * np.std(all_scalars)
+
+        min_scalar = round(max(all_scalars), 2)
+        max_scalar = round(max(all_scalars), 2)
 
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surfaces = get_panel_surfaces(step_airplanes[0])
@@ -446,43 +435,19 @@ def animate(
         # surfaces to the plotter with the scalars.
         if show_scalars and first_results_step <= current_step:
 
-            scalars = get_scalars(airplanes, scalar_type)
+            these_scalars = get_scalars(airplanes, scalar_type)
 
-            # Add the panel surfaces to the plotter with the scalars.
-            scalar_bar_args = dict(
-                title=scalar_type.title() + " Coefficient",
-                title_font_size=bar_title_font_size,
-                label_font_size=bar_label_font_size,
-                width=bar_width,
-                position_x=bar_position_x,
-                position_y=bar_position_y,
-                n_labels=bar_n_labels,
-                fmt="%.2f",
-            )
-            plotter.add_mesh(
+            plot_scalars(
+                plotter,
+                these_scalars,
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                c_min,
+                c_max,
                 panel_surfaces,
-                show_edges=True,
-                cmap=color_map,
-                clim=[c_min, c_max],
-                scalars=scalars,
-                smooth_shading=False,
-                scalar_bar_args=scalar_bar_args,
             )
-            plotter.add_text(
-                text="Max: " + str(round(max(all_scalars), 2)),
-                position=text_max_position,
-                font_size=text_font_size,
-                viewport=True,
-            )
-            plotter.add_text(
-                text="Min: " + str(round(min(all_scalars), 2)),
-                position=text_min_position,
-                font_size=text_font_size,
-                viewport=True,
-            )
-
-            if first_results_step == current_step:
-                plotter.update_scalars(scalars)
         else:
             plotter.add_mesh(
                 panel_surfaces,
@@ -1270,3 +1235,49 @@ def get_scalars(
 
     # Return the resulting 1D array of scalars.
     return scalars
+
+
+# ToDo: Update this function's documentation.
+def plot_scalars(
+    plotter,
+    these_scalars,
+    scalar_type,
+    min_scalar,
+    max_scalar,
+    color_map,
+    c_min,
+    c_max,
+    panel_surfaces,
+):
+    scalar_bar_args = dict(
+        title=scalar_type.title() + " Coefficient",
+        title_font_size=bar_title_font_size,
+        label_font_size=bar_label_font_size,
+        width=bar_width,
+        position_x=bar_position_x,
+        position_y=bar_position_y,
+        n_labels=bar_n_labels,
+        fmt="%.2f",
+    )
+    plotter.add_mesh(
+        panel_surfaces,
+        show_edges=True,
+        cmap=color_map,
+        clim=[c_min, c_max],
+        scalars=these_scalars,
+        smooth_shading=False,
+        scalar_bar_args=scalar_bar_args,
+    )
+    plotter.add_text(
+        text="Max: " + str(max_scalar),
+        position=text_max_position,
+        font_size=text_font_size,
+        viewport=True,
+    )
+    plotter.add_text(
+        text="Min: " + str(min_scalar),
+        position=text_min_position,
+        font_size=text_font_size,
+        viewport=True,
+    )
+    plotter.update_scalars(these_scalars)

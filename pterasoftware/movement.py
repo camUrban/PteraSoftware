@@ -106,8 +106,7 @@ class Movement:
                     "Only specify the number of cycles if you haven't specified the "
                     "number of steps and the movement isn't static!"
                 )
-            else:
-                self.num_cycles = num_cycles
+            self.num_cycles = num_cycles
         else:
             self.num_cycles = None
 

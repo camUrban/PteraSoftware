@@ -337,43 +337,19 @@ def animate(
     # Check if the user wants to show any scalars. If so, add the panel surfaces to
     # the plotter with these scalars.
     if show_scalars and first_results_step == 0:
-        scalars = get_scalars(step_airplanes[0], scalar_type)
+        these_scalars = get_scalars(step_airplanes[0], scalar_type)
 
-        # Add the panel surfaces to the plotter with the scalars.
-        scalar_bar_args = dict(
-            title=scalar_type.title() + " Coefficient",
-            title_font_size=bar_title_font_size,
-            label_font_size=bar_label_font_size,
-            width=bar_width,
-            position_x=bar_position_x,
-            position_y=bar_position_y,
-            n_labels=bar_n_labels,
-            fmt="%.2f",
-        )
-        plotter.add_mesh(
+        plot_scalars(
+            plotter,
+            these_scalars,
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            c_min,
+            c_max,
             panel_surfaces,
-            show_edges=True,
-            cmap=color_map,
-            clim=[c_min, c_max],
-            scalars=scalars,
-            smooth_shading=False,
-            scalar_bar_args=scalar_bar_args,
         )
-        plotter.add_text(
-            text="Max: " + str(round(max(all_scalars), 2)),
-            position=text_max_position,
-            font_size=text_font_size,
-            viewport=True,
-        )
-        plotter.add_text(
-            text="Min: " + str(round(min(all_scalars), 2)),
-            position=text_min_position,
-            font_size=text_font_size,
-            viewport=True,
-        )
-
-        # Update the scalars is the user wants to show.
-        plotter.update_scalars(scalars)
     else:
         plotter.add_mesh(
             panel_surfaces,

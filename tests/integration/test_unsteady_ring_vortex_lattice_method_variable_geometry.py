@@ -72,9 +72,11 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             scalar_type="lift",
             show_wake_vortices=True,
-            keep_file=False,
+            save=False,
         )
 
         ps.output.plot_results_versus_time(
-            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
+            show=False,
+            save=False,
         )

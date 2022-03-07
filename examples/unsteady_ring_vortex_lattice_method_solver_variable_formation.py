@@ -310,7 +310,10 @@ ps.output.animate(
     unsteady_solver=solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    keep_file=False,
+    # The the animate function to not save the animation as file. This way,
+    # the animation will still be displayed but not saved. This value defaults to
+    # false.
+    save=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

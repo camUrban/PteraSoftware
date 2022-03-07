@@ -98,11 +98,13 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
             scalar_type="lift",
-            keep_file=False,
+            save=False,
         )
 
         ps.output.plot_results_versus_time(
-            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver
+            unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
+            show=False,
+            save=False,
         )
 
         # Assert that the percent errors are less than the allowable error.

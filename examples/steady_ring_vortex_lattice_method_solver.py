@@ -267,6 +267,9 @@ ps.output.draw(
     # Tell the draw function to not show any wake vortices. As this is a steady
     # solver, no vortices have been shed into the wake. This value defaults to false.
     show_wake_vortices=False,
+    # The the draw function to not save the drawing as an image file. This way,
+    # the drawing will still be displayed but not saved. This value defaults to false.
+    save=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

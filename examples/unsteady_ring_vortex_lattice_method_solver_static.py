@@ -449,6 +449,9 @@ ps.output.draw(
     # Tell the draw function to not show the wake vortices. This value defaults to
     # false.
     show_wake_vortices=False,
+    # The the draw function to not save the drawing as an image file. This way,
+    # the drawing will still be displayed but not saved. This value defaults to false.
+    save=False,
 )
 
 # Call the software's animate function on the solver. This produces a GIF of the wake
@@ -464,8 +467,10 @@ ps.output.animate(
     # Tell the animate function to show the wake vortices. This value defaults to
     # false.
     show_wake_vortices=True,
-    # Set this value to True in order to save the GIF file.
-    keep_file=False,
+    # The the animate function to not save the animation as file. This way,
+    # the animation will still be displayed but not saved. This value defaults to
+    # false.
+    save=False,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the
@@ -473,9 +478,13 @@ ps.output.animate(
 ps.output.plot_results_versus_time(
     # Set the unsteady solver to the one we just ran.
     unsteady_solver=example_solver,
-    # Set the testing attribute to False, which is the default value. This is only
-    # used by the output testing modules.
-    testing=False,
+    # Set the show attribute to True, which is the default value. With this set to
+    # show, some IDEs (such as PyCharm in "Scientific Mode") will display the plots
+    # in a sidebar. Other IDEs may not display the plots, in which case you should
+    # set the save attribute to True, and open the files after they've been saved to
+    # the current directory.
+    show=True,
+    save=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

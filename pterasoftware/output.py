@@ -32,7 +32,6 @@ This module contains the following functions:
     objects, and puts them into a 1D array to be used as scalars for display by other
     output methods.
 """
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,8 +47,8 @@ wake_vortex_color = "white"
 panel_color = "chartreuse"
 streamline_color = "orchid"
 plotter_background_color = "black"
-figure_background_color = "black"
-text_color = "white"
+figure_background_color = "None"
+text_color = "#818181"
 
 # For the figure lines, use the "Prism" qualitative color map from
 # carto.com/carto-colors.
@@ -101,6 +100,7 @@ def draw(
     scalar_type=None,
     show_streamlines=False,
     show_wake_vortices=False,
+    save=False,
 ):
     """Draw the geometry of the airplanes in a solver object.
 
@@ -124,6 +124,9 @@ def draw(
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is False.
+    :param save: bool, optional
+        Set this variable to True to save the image as a WebP. The default value is
+        False.
     :return: None
     """
 
@@ -239,16 +242,35 @@ def draw(
                         smooth_shading=False,
                     )
 
-    # Set the plotter background color and show the plotter.
+    # Set the plotter's background color and camera position. Then show the plotter
+    # so the user can adjust the camera position and window. When the user closes the
+    # window, the plotter object won't be closed so that it can be saved as an image
+    # if the user wants.
     plotter.set_background(color=plotter_background_color)
-    plotter.show(cpos=(-1, -1, 1), full_screen=False)
+    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+
+    # If the user wants to save the image, take a screenshot, convert it into an
+    # image object, and save it as a WebP.
+    if save:
+        image = webp.Image.fromarray(
+            plotter.screenshot(
+                filename=None,
+                transparent_background=True,
+                return_img=True,
+                window_size=None,
+            )
+        )
+        webp.save_image(img=image, file_path="Draw.webp", lossless=False, quality=50)
+
+    # Close all the plotters.
+    pv.close_all()
 
 
 def animate(
     unsteady_solver,
     scalar_type=None,
     show_wake_vortices=False,
-    keep_file=True,
+    save=False,
 ):
     """Create an animation of a solver's geometries.
 
@@ -263,9 +285,9 @@ def animate(
     :param show_wake_vortices: bool, optional
         Set this variable to true to show the airplane object's wake ring vortices.
         The default value is false.
-    :param keep_file: bool, optional
-        Set this variable to false in order to not save the resulting GIF. The
-        default value is true.
+    :param save: bool, optional
+        Set this variable to True in order to save the resulting WebP animation. The
+        default value is False.
     :return: None
     """
 
@@ -367,10 +389,11 @@ def animate(
         "animation."
     )
 
-    # Set up the camera and close the window.
+    # Show the plotter so the user can set up the camera. Then, they will close the
+    # window, but the plotter object will stay open off screen.
     plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
-    # Start a list which will hold a webp image of each frame.
+    # Start a list which will hold a WebP image of each frame.
     images = [
         webp.Image.fromarray(
             plotter.screenshot(
@@ -432,45 +455,50 @@ def animate(
                 smooth_shading=False,
             )
 
-        # Append a webp image of this frame to the list of frame images.
-        images.append(
-            webp.Image.fromarray(
-                plotter.screenshot(
-                    filename=None,
-                    transparent_background=True,
-                    return_img=True,
-                    window_size=None,
+        # Append a WebP image of this frame to the list of frame images if the user
+        # wants to save an animation.
+        if save:
+            images.append(
+                webp.Image.fromarray(
+                    plotter.screenshot(
+                        filename=None,
+                        transparent_background=True,
+                        return_img=True,
+                        window_size=None,
+                    )
                 )
             )
-        )
 
         # Increment the step number tracker.
         current_step += 1
 
-    # Close the animation and delete the plotter.
-    plotter.close()
+    # If the user wants to save the file, save the list of images as an animated WebP.
+    if save:
+        this_fps = round(1 / unsteady_solver.delta_time)
 
-    this_fps = round(1 / unsteady_solver.delta_time)
+        # Convert the list of WebP images to a WebP animation.
+        webp.save_images(
+            images, "Animate.webp", fps=this_fps, lossless=False, quality=50
+        )
 
-    # Convert the list of webp images to a webp animation.
-    webp.save_images(images, "animate.webp", fps=this_fps, lossless=False, quality=50)
-
-    # Delete the file if requested.
-    if not keep_file:
-        os.remove("animate.webp")
+    # Close all the plotters.
+    pv.close_all()
 
 
-def plot_results_versus_time(unsteady_solver, testing=False):
+def plot_results_versus_time(unsteady_solver, show=True, save=False):
     """This method takes in an unsteady solver object, and plots the geometries'
     forces, moments, force coefficients, and moment coefficients as a function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose resulting forces, moments, and coefficients
         are to be plotted.
-    :param testing: bool, Optional
-        This boolean determines if the plots will be shown. If true, no plots will be
-        shown. It is useful for testing, where the user wants to know that the plots
-        were created without having to show them. It's default value is false.
+    :param show: bool, Optional
+        This boolean determines if the plots will be shown. If False, no plots will be
+        shown, which is useful for testing when the user wants to know that the plots
+        were created without having to show them. It's default value is True.
+    :param save: bool, Optional
+        This boolean determines if the plots will be saved as WebP images. The
+        default value is False.
     :return: None
     """
 
@@ -745,12 +773,23 @@ def plot_results_versus_time(unsteady_solver, testing=False):
             labelcolor=text_color,
         )
 
-        # Show this airplane's plots, if not testing.
-        if not testing:
+        # Save the figures as PNGs if the user wants to do so.
+        if save:
+            force_figure.savefig(airplane_name + " Forces.png")
+            force_coefficients_figure.savefig(airplane_name + " Force Coefficients.png")
+            moment_figure.savefig(airplane_name + " Moments.png")
+            moment_coefficients_figure.savefig(
+                airplane_name + " Moment Coefficients.png"
+            )
+
+        # If the user wants to show the plots, do so.
+        if show:
             force_figure.show()
             force_coefficients_figure.show()
             moment_figure.show()
             moment_coefficients_figure.show()
+        else:
+            plt.close("all")
 
 
 def print_steady_results(steady_solver):
@@ -1234,6 +1273,7 @@ def plot_scalars(
         position_y=bar_position_y,
         n_labels=bar_n_labels,
         fmt="%.2f",
+        color=text_color,
     )
     plotter.add_mesh(
         panel_surfaces,
@@ -1249,11 +1289,13 @@ def plot_scalars(
         position=text_max_position,
         font_size=text_font_size,
         viewport=True,
+        color=text_color,
     )
     plotter.add_text(
         text="Min: " + str(min_scalar),
         position=text_min_position,
         font_size=text_font_size,
         viewport=True,
+        color=text_color,
     )
     plotter.update_scalars(these_scalars)

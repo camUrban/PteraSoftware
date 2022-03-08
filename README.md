@@ -1,4 +1,4 @@
-![Logo](docs/Logo.png)
+![Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/Logo.png)
 
 ***
 
@@ -11,7 +11,7 @@
 
 ***
 
-![Example Unsteady Formation Flight](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20formation/Animate.webp)
+![Example Unsteady Formation Flight](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20formation/Animate.webp)
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing
 flapping-wing flight.
@@ -139,19 +139,19 @@ examples of the output you can expect to receive from each of them.
 
 ### Steady Horseshoe VLM
 
-![Example Steady Horseshoe VLM Output](docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver/Draw.webp)
+![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Steady Ring VLM
 
-![Example Steady Ring VLM Output](docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver/Draw.webp)
+![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Unsteady Ring VLM
 
-![Example Unsteady Ring VLM Animation Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Animate.webp)
+![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Animate.webp)
 
-![Example Unsteady Ring VLM Force Coefficient Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Force%20Coefficients.png)
+![Example Unsteady Ring VLM Force Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Force%20Coefficients.png)
 
-![Example Unsteady Ring VLM Moment Coefficient Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Moment%20Coefficients.png)
+![Example Unsteady Ring VLM Moment Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Moment%20Coefficients.png)
 
 ## Validation
 

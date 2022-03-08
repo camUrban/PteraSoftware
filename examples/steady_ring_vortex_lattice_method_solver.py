@@ -1,10 +1,9 @@
 """This is script is an example of how to run Ptera Software's steady ring vortex
-lattice method solver on a custom airplane."""
+lattice method solver on a custom airplane. """
+
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
-# install pterasoftware" in your terminal. Here, I am importing the source directory.
-# However, if you were working on an external project, you should change this to
-# "import pterasoftware as ps".
+# install pterasoftware" in your terminal.
 import pterasoftware as ps
 
 # Create an airplane object. Note, I am going to declare every attribute for each
@@ -15,8 +14,10 @@ example_airplane = ps.geometry.Airplane(
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point
     # around about which the solver will calculate the moments on the airplane. These
-    # three values default to 0.0 meters. Note that every input and output of this
-    # program is in SI units.
+    # three values default to 0.0 meters. This and every input and output of this
+    # program is in SI units. Note: these values are relative to the global
+    # coordinate system fixed front left corner of the first airplane's first wing's
+    # root wing cross section.
     x_ref=0.0,
     y_ref=0.0,
     z_ref=0.0,
@@ -33,17 +34,20 @@ example_airplane = ps.geometry.Airplane(
         ps.geometry.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
-            # airplane's reference position. These values all default to 0.0 meters.
+            # global coordinate system fixed front left corner of the first
+            # airplane's first wing's root wing cross section. These values all
+            # default to 0.0 meters.
             x_le=0.0,
             y_le=0.0,
             z_le=0.0,
             # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across the y-z plane. Note that the geometry coordinates
-            # are defined as such: If you were riding in the airplane, the positive x
-            # direction would point behind you, the positive y direction would point
-            # out of your right wing, and the positive z direction would point
-            # upwards, out of your chair. These directions form a right-handed
-            # coordinate system. The default value of "symmetric" is false.
+            # be reflected across plane of this wing's root wing cross section. Note
+            # that the geometry coordinates are defined as such: If you were riding
+            # in the airplane, the positive x direction would point behind you,
+            # the positive y direction would point out of your right wing, and the
+            # positive z direction would point upwards, out of your chair. These
+            # directions form a right-handed coordinate system. The default value of
+            # "symmetric" is false.
             symmetric=True,
             # Define the number of chordwise panels on the wing, and the spacing
             # between them. The number of chordwise panels defaults to 8 panels. The
@@ -253,15 +257,19 @@ ps.output.print_steady_results(steady_solver=example_solver)
 # Call the software's draw function on the solver.
 ps.output.draw(
     solver=example_solver,
-    # Tell the draw function to show the pressure's on the aircraft's panels. This
-    # value defaults to false.
-    show_delta_pressures=True,
+    # Tell the draw function to color the aircraft's wing panels with the local
+    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
+    # "side force", or "lift".
+    scalar_type="lift",
     # Tell the draw function to show the calculated streamlines. This value defaults
     # to false.
     show_streamlines=True,
     # Tell the draw function to not show any wake vortices. As this is a steady
     # solver, no vortices have been shed into the wake. This value defaults to false.
     show_wake_vortices=False,
+    # The the draw function to not save the drawing as an image file. This way,
+    # the drawing will still be displayed but not saved. This value defaults to false.
+    save=False,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

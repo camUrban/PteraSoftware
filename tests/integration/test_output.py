@@ -15,8 +15,6 @@ This module contains the following functions:
 """
 import unittest
 
-import matplotlib.pyplot as plt
-
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
@@ -69,27 +67,18 @@ class TestOutput(unittest.TestCase):
         # Delete the constructing fixtures.
         del self.unsteady_solver
 
-    def test_plot_results_versus_time(self):
-        """This method tests the plot_results_versus_time method.
+    def test_plot_results_versus_time_does_not_throw(self):
+        """This method tests that the plot_results_versus_time method doesn't throw
+        any errors.
 
         :return: None
         """
 
-        # Get the number of matplotlib figures before running the test.
-        num_figs_before = plt.gcf().number
-
-        # Call the plot_results_versus_time method on the solver fixture. The testing
-        # flag is set to true, so the
-        # figures will not be displayed.
+        # Call the plot_results_versus_time method on the solver fixture. The show
+        # flag is set to False, so the figures will not be displayed.
         ps.output.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver, testing=True
+            unsteady_solver=self.unsteady_solver, show=False
         )
-
-        # Get the number of matplotlib figures after running the test.
-        num_figs_after = plt.gcf().number
-
-        # Test that the method call produced four more figures.
-        self.assertEqual(num_figs_before + 4, num_figs_after)
 
     def test_animate_does_not_throw(self):
         """This method tests that the animate method does not throw any errors.
@@ -100,9 +89,9 @@ class TestOutput(unittest.TestCase):
         # Call the animate function on the unsteady solver fixture.
         ps.output.animate(
             unsteady_solver=self.unsteady_solver,
-            show_delta_pressures=False,
+            scalar_type=None,
             show_wake_vortices=False,
-            keep_file=False,
+            save=False,
         )
 
     def test_draw_does_not_throw(self):
@@ -114,7 +103,7 @@ class TestOutput(unittest.TestCase):
         # Call the draw function on the unsteady solver fixture.
         ps.output.draw(
             solver=self.unsteady_solver,
-            show_delta_pressures=False,
+            scalar_type=None,
             show_wake_vortices=False,
             show_streamlines=False,
         )

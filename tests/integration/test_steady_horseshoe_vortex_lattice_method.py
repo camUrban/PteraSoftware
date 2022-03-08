@@ -114,7 +114,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
-            show_delta_pressures=True,
+            scalar_type="side force",
         )
 
         # Assert that the percent errors are less than the allowable error.
@@ -161,7 +161,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         ps.output.draw(
             solver=self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver,
-            show_delta_pressures=True,
+            scalar_type="induced drag",
             show_streamlines=True,
             show_wake_vortices=False,
         )

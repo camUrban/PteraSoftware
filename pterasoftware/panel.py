@@ -30,8 +30,7 @@ class Panel:
         calculate_induced_velocity: This method calculates the velocity induced at a
         point by this panel's vortices with their given vortex strengths.
 
-        update_force_moment_and_pressure: This method updates the force, moment,
-        and pressure on this panel.
+        update_coefficients: This method updates the panel's force coefficients.
 
     This class contains the following class attributes:
         None
@@ -134,7 +133,11 @@ class Panel:
         # after the solver finds a solution.
         self.near_field_force_geometry_axes = None
         self.near_field_moment_geometry_axes = None
-        self.delta_pressure = None
+        self.near_field_force_wind_axes = None
+        self.near_field_moment_wind_axes = None
+        self.induced_drag_coefficient = None
+        self.side_force_coefficient = None
+        self.lift_coefficient = None
 
     def calculate_collocation_point_location(self):
         """This method calculates the location of the collocation point.
@@ -238,19 +241,16 @@ class Panel:
 
         return induced_velocity
 
-    def update_pressure(self):
-        """This method updates the pressure across this panel.
-
-        Note: The pressure is derived by taking the dot product of the force on the
-        panel (in geometry axes) with its normal vector (also in geometry axes). For
-        example, the panel of a wing with a symmetric airfoil at zero angle of attack
-        will have a normal vector pointing in the negative z-direction. In this case,
-        a positive pressure would indicate lift.
+    def update_coefficients(self, dynamic_pressure):
+        """This method updates the panel's force coefficients.
 
         :return: None
         """
 
-        self.delta_pressure = (
-            np.dot(self.near_field_force_geometry_axes, self.normal_direction)
-            / self.area
-        )
+        induced_drag = -self.near_field_force_wind_axes[0]
+        side_force = self.near_field_force_wind_axes[1]
+        lift = -self.near_field_force_wind_axes[2]
+
+        self.induced_drag_coefficient = induced_drag / self.area / dynamic_pressure
+        self.side_force_coefficient = side_force / self.area / dynamic_pressure
+        self.lift_coefficient = lift / self.area / dynamic_pressure

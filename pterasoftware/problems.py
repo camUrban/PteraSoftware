@@ -98,8 +98,8 @@ class UnsteadyProblem:
             # this time step. This will be a list of the airplane snapshots associated
             # with each base airplane at this particular time step.
             these_airplanes = []
-            for base_airplane_id in range(len(movement.airplanes)):
-                these_airplanes.append(movement.airplanes[base_airplane_id][step_id])
+            for this_base_airplane in movement.airplanes:
+                these_airplanes.append(this_base_airplane[step_id])
 
             this_operating_point = movement.operating_points[step_id]
 

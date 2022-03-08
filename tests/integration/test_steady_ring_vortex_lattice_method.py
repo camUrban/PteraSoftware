@@ -101,7 +101,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
             solver=self.steady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
-            show_delta_pressures=True,
+            scalar_type="lift",
         )
 
         # Assert that the percent errors are less than the allowable error.

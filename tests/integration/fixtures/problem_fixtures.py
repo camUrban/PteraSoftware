@@ -48,7 +48,7 @@ def make_steady_validation_problem():
 
     # Create the problem fixture.
     steady_validation_problem = ps.problems.SteadyProblem(
-        airplane=steady_validation_airplane,
+        airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
 
@@ -67,6 +67,7 @@ def make_steady_multiple_wing_validation_problem():
     :return steady_validation_problem: SteadyProblem
         This is the problem fixture.
     """
+
     # Create the constructing fixtures.
     steady_validation_airplane = (
         airplane_fixtures.make_multiple_wing_steady_validation_airplane()
@@ -77,7 +78,7 @@ def make_steady_multiple_wing_validation_problem():
 
     # Create the problem fixture.
     steady_validation_problem = ps.problems.SteadyProblem(
-        airplane=steady_validation_airplane,
+        airplanes=[steady_validation_airplane],
         operating_point=steady_validation_operating_point,
     )
 
@@ -142,6 +143,7 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
     :return unsteady_validation_problem: UnsteadyProblem
         This is the problem fixture.
     """
+
     # Create the constructing fixture.
     unsteady_validation_movement = (
         movement_fixtures.make_multiple_wing_static_validation_movement()

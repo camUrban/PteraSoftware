@@ -1,4 +1,3 @@
-
 ![Logo](docs/Logo.png)
 
 ***
@@ -73,7 +72,8 @@ Here are the requirements necessary to run Ptera Software:
 * scipy >= 1.7.0, < 2.0.0
 * numba >= 0.55.0, < 1.0.0
 * cmocean >= 2.0.0, < 3.0.0
-* tqdm >= 4.62.0, < 5.0.0
+* tqdm >= 4.63.0, < 5.0.0
+* webp >= 0.1.3, < 1.0.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -229,6 +229,7 @@ where applicable.
 * GitFlow
 * Cmocean
 * Tqdm
+* WebP
 
 ## Notes
 

@@ -1,4 +1,3 @@
-# ToDo: Update this module's documentation.
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
@@ -13,21 +12,23 @@ This package contains the following modules:
 
     aerodynamics.py: This module contains vortex class definitions.
 
-    functions.py: This module contains functions used by other modules in the
-    pterasoftware package.
+    functions.py: This module contains functions shared by other modules in the src
+    package.
 
-    geometry.py: This module contains useful functions that relate to geometry,
-    and the class definitions for different types of geometries.
+    geometry.py: This module contains useful class definitions for different types of
+    geometries.
 
     meshing.py: This module contains useful functions for creating meshes.
+
+    movement.py: This module contains the class definitions for the problem's movement.
+
+    operating_point.py: This module contains the class definition for the problem's
+    operating point.
 
     output.py: This module contains useful functions for visualizing solutions to
     problems.
 
-    movement.py: This module contains the class definitions for the problem's movement.
-
-    current_operating_point.py: This module contains the class definition for the
-    problem's operating point.
+    panel.py: This module contains the Panel class.
 
     problems.py: This module contains the class definitions for different types of
     problems.
@@ -39,15 +40,16 @@ This package contains the following modules:
     of this package's steady ring vortex lattice solver.
 
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's unsteady ring vortex lattice solver.
-"""
+    of this package's unsteady ring vortex lattice solver."""
 import pterasoftware.aerodynamics
 import pterasoftware.airfoils
+import pterasoftware.functions
 import pterasoftware.geometry
 import pterasoftware.meshing
 import pterasoftware.movement
 import pterasoftware.operating_point
 import pterasoftware.output
+import pterasoftware.panel
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method

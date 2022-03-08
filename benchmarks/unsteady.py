@@ -1,16 +1,7 @@
-"""This script is used to benchmark the speed of the unsteady solver with a typical
-use case. This script doesn't have any expected output images in the docs directory.
-Do not commit any changes to this file."""
-import timeit
-
-import numpy as np
-
-n_repeat = 3
-n_execute = 1
-
-print("\tBenchmarking unsteady solver...")
-
-setup = """
+"""This script is a single-run version of simulation in unsteady_timed.py.
+It is useful for profiling the unsteady solver, which cannot be done with
+unsteady_timed.py. This script doesn't have any expected output images in
+the docs directory. Do not commit any changes to this file."""
 import pterasoftware as ps
 
 flapping_frequency = 1
@@ -30,7 +21,9 @@ example_airplane = ps.geometry.Airplane(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(name="naca0000",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0000",
+                    ),
                 ),
                 ps.geometry.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
@@ -38,7 +31,9 @@ example_airplane = ps.geometry.Airplane(
                     x_le=0.625,
                     y_le=5.0,
                     chord=0.5,
-                    airfoil=ps.geometry.Airfoil(name="naca0000",),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0000",
+                    ),
                 ),
             ],
         ),
@@ -74,13 +69,17 @@ del upper_wing_root_wing_cross_section_movement
 del upper_wing_tip_wing_cross_section_movement
 
 airplane_movement = ps.movement.AirplaneMovement(
-    base_airplane=example_airplane, wing_movements=[upper_wing_movement],
+    base_airplane=example_airplane,
+    wing_movements=[upper_wing_movement],
 )
 
 del upper_wing_movement
 
 example_operating_point = ps.operating_point.OperatingPoint(
-    density=1.225, beta=0.0, velocity=10.0, alpha=0.0,
+    density=1.225,
+    beta=0.0,
+    velocity=10.0,
+    alpha=0.0,
 )
 
 operating_point_movement = ps.movement.OperatingPointMovement(
@@ -88,28 +87,26 @@ operating_point_movement = ps.movement.OperatingPointMovement(
 )
 
 movement = ps.movement.Movement(
-    airplane_movement=airplane_movement,
+    airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
 )
 
 del airplane_movement
 del operating_point_movement
 
-example_problem = ps.problems.UnsteadyProblem(movement=movement, only_final_results=True)
+example_problem = ps.problems.UnsteadyProblem(
+    movement=movement, only_final_results=True
+)
 
-example_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-    unsteady_problem=example_problem,
+example_solver = (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=example_problem,
+    )
 )
 
 del example_problem
-"""
-statement = """
-example_solver.run(
-    prescribed_wake=True, calculate_streamlines=False,
-)
-"""
 
-times = timeit.repeat(repeat=n_repeat, stmt=statement, setup=setup, number=n_execute)
-best_time = min(times) / n_execute
-best_time_pretty = np.format_float_scientific(best_time, 2)
-print("\t\tAverage Time per Loop: " + best_time_pretty + " s")
+example_solver.run(
+    prescribed_wake=True,
+    calculate_streamlines=False,
+)

@@ -1,6 +1,7 @@
-# Ptera Software
 
-![Ptera Software Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/PteraSoftwareLogo.jpg)
+![Logo](docs/Logo.png)
+
+***
 
 ![build](https://img.shields.io/travis/camUrban/PteraSoftware/master)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/master)
@@ -8,6 +9,10 @@
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
+
+***
+
+![Example Unsteady Formation Flight](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20formation/Animate.webp)
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing
 flapping-wing flight.
@@ -62,13 +67,13 @@ via the command prompt in your fork's directory.
 
 Here are the requirements necessary to run Ptera Software:
 
-*matplotlib >= 3.2.2, < 4.0.0
-*numpy >= 1.18.5, <= 1.20.0
-*pyvista >= 0.29.0, < 1.0.0
-*scipy >= 1.5.0, < 2.0.0
-*numba >= 0.53, < 1.0
-*cmocean >= 2.0, < 3.0
-*tqdm >= 4.0.0, < 5.0.0
+* matplotlib >= 3.5.0, < 4.0.0
+* numpy >= 1.21.0, < 1.22.0
+* pyvista >= 0.33.0, < 1.0.0
+* scipy >= 1.7.0, < 2.0.0
+* numba >= 0.55.0, < 1.0.0
+* cmocean >= 2.0.0, < 3.0.0
+* tqdm >= 4.62.0, < 5.0.0
 
 ### What if I am Having Trouble Getting the Package Up And Running?
 
@@ -134,19 +139,19 @@ examples of the output you can expect to receive from each of them.
 
 ### Steady Horseshoe VLM
 
-![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver%20example%20expected%20output/Draw%20Output.jpg)
+![Example Steady Horseshoe VLM Output](docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Steady Ring VLM
 
-![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver%20example%20expected%20output/Draw%20Output.jpg)
+![Example Steady Ring VLM Output](docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Unsteady Ring VLM
 
-![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Animate%20Output.gif)
+![Example Unsteady Ring VLM Animation Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Animate.webp)
 
-![Example Unsteady Ring VLM Force Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Plot%20Output%201.png)
+![Example Unsteady Ring VLM Force Coefficient Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Force%20Coefficients.png)
 
-![Example Unsteady Ring VLM Moment Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20example%20expected%20output/Plot%20Output%203.png)
+![Example Unsteady Ring VLM Moment Coefficient Output](docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Moment%20Coefficients.png)
 
 ## Validation
 
@@ -206,7 +211,7 @@ where applicable.
 * Austin Stover
 * AeroSandbox
 * Black
-* Coverage
+* Codecov
 * Travis CI
 * NumPy
 * SciPy

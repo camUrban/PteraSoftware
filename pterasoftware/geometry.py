@@ -1,6 +1,4 @@
-# ToDo: Update this module's documentation.
-"""This module contains useful functions that relate to geometry, and the class
-definitions for different types of geometries.
+"""This module contains useful class definitions for different types of geometries.
 
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
@@ -13,28 +11,11 @@ This module contains the following classes:
     Airfoil: This class is used to contain the airfoil of a cross section of a wing
     of an current_airplane.
 
-    Panel: This class is used to contain the panels of a wing.
-
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a array containing a specified number
-    of values between a specified minimum and maximum value that are spaced via a
-    cosine function.
-
-    sinspace: This function is used to create a array containing a specified number
-    of values between a specified minimum and maximum value that are spaced via a
-    sine function.
-
-    reflect_over_xz_plane: This function is used to flip a the y coordinate of a
-    coordinate vector.
-
-    angle_axis_rotation_matrix: This function is used to find the rotation matrix for
-    a given axis and angle.
-
-    numba_centroid_of_quadrilateral: This function is used to find the centroid of a
-    quadrilateral. It has been optimized for JIT compilation using Numba.
+    None
 """
 import importlib.resources
 
@@ -323,8 +304,7 @@ class Wing:
         """This method calculates the calculate_span of the wing.
 
         This method also updates the class's span attribute. If the wing is
-        symmetrical, it includes the length of the
-        mirrored half.
+        symmetrical, it includes the length of the mirrored half.
 
         :return: None
         """

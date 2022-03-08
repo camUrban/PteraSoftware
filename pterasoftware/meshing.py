@@ -350,18 +350,17 @@ def mesh_wing(wing):
             )
 
             # Reflect the vertices across the XZ plane.
-            front_inner_vertices_reflected = functions.reflect_over_xz_plane(
-                front_inner_vertices
-            )
-            front_outer_vertices_reflected = functions.reflect_over_xz_plane(
-                front_outer_vertices
-            )
-            back_inner_vertices_reflected = functions.reflect_over_xz_plane(
-                back_inner_vertices
-            )
-            back_outer_vertices_reflected = functions.reflect_over_xz_plane(
-                back_outer_vertices
-            )
+            front_inner_vertices_reflected = front_inner_vertices * np.array([1, -1, 1])
+            front_outer_vertices_reflected = front_outer_vertices * np.array([1, -1, 1])
+            back_inner_vertices_reflected = back_inner_vertices * np.array([1, -1, 1])
+            back_outer_vertices_reflected = back_outer_vertices * np.array([1, -1, 1])
+
+            # Shift the reflected vertices to account for the wing's leading edge
+            # position.
+            front_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            front_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            back_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            back_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
 
             # Get the reflected wing section's panels.
             wing_section_panels = get_wing_section_panels(

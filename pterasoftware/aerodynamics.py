@@ -38,7 +38,7 @@ This module contains the following functions:
 import math
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 from . import functions
 
@@ -335,7 +335,7 @@ class RingVortex:
         )
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def collapsed_velocities_from_horseshoe_vortices(
     points,
     back_right_vortex_vertices,
@@ -407,7 +407,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(3):
+    for i in range(3):
         induced_velocities += collapsed_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],
@@ -419,7 +419,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def expanded_velocities_from_horseshoe_vortices(
     points,
     back_right_vortex_vertices,
@@ -491,7 +491,7 @@ def expanded_velocities_from_horseshoe_vortices(
     induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(3):
+    for i in range(3):
         induced_velocities += expanded_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],
@@ -503,7 +503,7 @@ def expanded_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def collapsed_velocities_from_ring_vortices(
     points,
     back_right_vortex_vertices,
@@ -577,7 +577,7 @@ def collapsed_velocities_from_ring_vortices(
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(4):
+    for i in range(4):
         induced_velocities += collapsed_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],
@@ -589,7 +589,7 @@ def collapsed_velocities_from_ring_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def expanded_velocities_from_ring_vortices(
     points,
     back_right_vortex_vertices,
@@ -663,7 +663,7 @@ def expanded_velocities_from_ring_vortices(
     induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
-    for i in prange(4):
+    for i in range(4):
         induced_velocities += expanded_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],
@@ -809,7 +809,7 @@ def collapsed_velocities_from_line_vortices(
     return velocities
 
 
-@njit(cache=True, fastmath=False)
+@njit(cache=True, fastmath=True)
 def expanded_velocities_from_line_vortices(
     points,
     origins,
@@ -871,7 +871,7 @@ def expanded_velocities_from_line_vortices(
     num_points = points.shape[0]
 
     # Initialize an empty array, which we will fill with the induced velocities.
-    velocities = np.empty((num_points, num_vortices, 3))
+    velocities = np.zeros((num_points, num_vortices, 3))
 
     # If the user didn't specify any ages, set the age of each vortex to 0.0 seconds.
     if ages is None:
@@ -928,9 +928,7 @@ def expanded_velocities_from_line_vortices(
             # case, set the velocity components to their true values, which are 0.0
             # meters per second.
             if r_1 < eps or r_2 < eps or r_3 ** 2 < eps:
-                velocities[point_id, vortex_id, 0] = 0.0
-                velocities[point_id, vortex_id, 1] = 0.0
-                velocities[point_id, vortex_id, 2] = 0.0
+                continue
             else:
                 c_4 = (
                     c_1

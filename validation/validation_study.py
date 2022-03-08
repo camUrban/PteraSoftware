@@ -11,6 +11,7 @@ WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 20
 More information can be found in my accompanying report: "Validating an Open-Source
 UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
+
 # Import Python’s math package.
 import math
 
@@ -46,7 +47,7 @@ tip_inset = 0.005
 # The origin is the trailing edge root point. The positive spanwise axis extends from
 # root to tip and the positive chordwise axis from trailing edge to leading edge. The
 # coordinates are in millimeters.
-planform_coords = np.genfromtxt("Extracted Planform Coordinates.csv", delimiter=",")
+planform_coords = np.genfromtxt("extracted_planform_coordinates.csv", delimiter=",")
 
 # Convert the coordinates to meters.
 planform_coords = planform_coords / 1000
@@ -162,7 +163,9 @@ for i in range(num_spanwise_sections):
         x_le=this_x_le,
         y_le=this_y_le,
         chord=this_chord,
-        airfoil=ps.geometry.Airfoil(name="naca0000"),
+        airfoil=ps.geometry.Airfoil(
+            name="naca0000",
+        ),
         num_spanwise_panels=1,
     )
 
@@ -190,7 +193,9 @@ for i in range(num_spanwise_sections):
             x_le=this_x_le,
             y_le=this_y_le,
             chord=this_chord,
-            airfoil=ps.geometry.Airfoil(name="naca0000"),
+            airfoil=ps.geometry.Airfoil(
+                name="naca0000",
+            ),
             num_spanwise_panels=1,
         )
 
@@ -294,7 +299,7 @@ def normalized_validation_geometry_sweep_function_rad(time):
     b_4 = -3.60e-6
 
     # Calculate and return the flap angle(s).
-    flap_angle = (
+    flap_angle = -(
         a_0
         + a_1 * np.cos(1 * time)
         + b_1 * np.sin(1 * time)
@@ -357,6 +362,12 @@ validation_operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=validation_operating_point,
 )
 
+# Calculate the wind-to-geometry rotation matrix, which will later be used to convert
+# the experimental pressure-based-lift measurements to wind axes.
+wind_to_geometry_rotation_matrix = (
+    validation_operating_point.calculate_rotation_matrix_wind_to_geometry()
+)
+
 # Delete the extraneous pointer.
 del validation_operating_point
 
@@ -379,7 +390,7 @@ validation_num_steps = math.ceil(
 
 # Define the overall movement.
 validation_movement = ps.movement.Movement(
-    airplane_movement=validation_airplane_movement,
+    airplane_movements=[validation_airplane_movement],
     operating_point_movement=validation_operating_point_movement,
     num_steps=validation_num_steps,
     delta_time=validation_delta_time,
@@ -435,14 +446,11 @@ validation_solver.run(prescribed_wake=True)
 # Call the software’s animate function on the solver. This produces a GIF. The GIF is
 # saved in the same directory as this script. Press "q," after orienting the view,
 # to begin the animation.
-ps.output.animate(
-    # Set the unsteady solver to the one we just ran.
-    unsteady_solver=validation_solver,
-    # Show the pressures in the animation.
-    show_delta_pressures=True,
-    # Set this value to False to hide the wake vortices in the animation.
-    show_wake_vortices=True,
-)
+# ps.output.animate(
+#     unsteady_solver=validation_solver,
+#     scalar_type="lift",
+#     show_wake_vortices=True,
+# )
 
 # Create a variable to hold the time in seconds at each of the simulation’s time steps.
 times = np.linspace(
@@ -469,31 +477,31 @@ normalized_times = np.linspace(0, 1, 100, endpoint=False)
 # pressure units used are inAq and time units are normalized flap cycle times from 0
 # to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    "Blue Trailing Point Experimental Pressures.csv", delimiter=","
+    "blue_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    "Blue Middle Point Experimental Pressures.csv", delimiter=","
+    "blue_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    "Blue Leading Point Experimental Pressures.csv", delimiter=","
+    "blue_leading_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    "Orange Trailing Point Experimental Pressures.csv", delimiter=","
+    "orange_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    "Orange Middle Point Experimental Pressures.csv", delimiter=","
+    "orange_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    "Orange Leading Point Experimental Pressures.csv", delimiter=","
+    "orange_leading_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    "Green Trailing Point Experimental Pressures.csv", delimiter=","
+    "green_trailing_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    "Green Middle Point Experimental Pressures.csv", delimiter=","
+    "green_middle_point_experimental_pressures.csv", delimiter=","
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    "Green Leading Point Experimental Pressures.csv", delimiter=","
+    "green_leading_point_experimental_pressures.csv", delimiter=","
 )
 
 # Interpolate the experimental pressure data to ensure that they all reference the
@@ -606,11 +614,8 @@ exp_green_leading_lift_forces = exp_green_leading_normal_forces * np.cos(
 # Calculate the net experimental lift. This is the sum of all the lift on each of the
 # experimental panels multiplied by two (because the experimental panels only cover
 # one of the symmetric wing halves). Note: this list of lift forces is with respect
-# to the body axes. I will later compare it to the simulated lift in wind axes. This
-# does not matter because the operating point is at zero angle of attack. If the
-# angle of attack is changed, the experimental lift forces must be rotated to the
-# wind frame before comparison with the simulated lift forces.
-exp_net_lift_forces = 2 * (
+# to the geometry axes.
+exp_lifts_geometry_axes = 2 * (
     exp_blue_trailing_lift_forces
     + exp_blue_middle_lift_forces
     + exp_blue_leading_lift_forces
@@ -622,10 +627,21 @@ exp_net_lift_forces = 2 * (
     + exp_green_leading_lift_forces
 )
 
+# Initialize an array to hold the frame shifted lift forces.
+exp_lifts_wind_axes = np.zeros(exp_lifts_geometry_axes.size)
+
+# To compare the experimental lift to the simulated lift, use the rotation matrix to
+# shift the experimental lift to the wind frame.
+for lift_id, lift_geometry_axes in enumerate(exp_lifts_geometry_axes):
+    exp_force_geometry_axes = np.array([0, 0, lift_geometry_axes])
+    exp_force_wind_axes = wind_to_geometry_rotation_matrix @ exp_force_geometry_axes
+    exp_lift_wind_axes = exp_force_wind_axes[2]
+    exp_lifts_wind_axes[lift_id] = exp_lift_wind_axes
+
 # Get this solver’s problem’s airplanes.
 airplanes = []
 for steady_problem in validation_solver.steady_problems:
-    airplanes.append(steady_problem.airplane)
+    airplanes.append(steady_problem.airplanes[0])
 
 # Initialize matrices to hold the forces and moments at each time step.
 sim_net_forces_wind_axes = np.zeros((3, validation_num_steps))
@@ -665,7 +681,7 @@ lift_axes.plot(
 # Plot the experimental lift forces.
 lift_axes.plot(
     normalized_times,
-    exp_net_lift_forces,
+    exp_lifts_wind_axes,
     label="Experimental",
     color="#E62128",
     linestyle="dashed",
@@ -696,9 +712,16 @@ del step
 # and simulated lifts time histories are discretized so that they they are with
 # respect to the same time scale.
 lift_absolute_errors = np.abs(
-    final_flap_sim_net_lift_forces_wind_axes - exp_net_lift_forces
+    final_flap_sim_net_lift_forces_wind_axes - exp_lifts_wind_axes
 )
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
+
+sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes ** 2))
+exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes ** 2))
+lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
+print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
+print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
+print("Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N")
 
 # Print the MAE.
 print(
@@ -706,7 +729,11 @@ print(
 )
 
 # Calculate the experimental root mean square (RMS) lift.
-exp_rms_lift = np.sqrt(np.mean(np.power(exp_net_lift_forces, 2)))
+exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts_wind_axes, 2)))
 
 # Print the experimental RMS lift.
 print("Experimental RMS Lift: " + str(np.round(exp_rms_lift, 4)) + " N")
+
+ps.output.animate(
+    unsteady_solver=validation_solver, show_wake_vortices=True, scalar_type="lift"
+)

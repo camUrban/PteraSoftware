@@ -287,16 +287,20 @@ def process_steady_solver_forces(
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
 
-        # Update the force and moment on this panel.
-        panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
-            panel_num, :
-        ]
-        panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
-            panel_num, :
-        ]
+        # Get this panel's near field forces and moments in geometry axes and wind axes.
+        this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
+        this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
+        this_force_wind_axes = rotation_matrix @ this_force_geometry_axes
+        this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
 
-        # Update the pressure on this panel.
-        panel.update_pressure()
+        # Update the force and moment on this panel.
+        panel.near_field_force_geometry_axes = this_force_geometry_axes
+        panel.near_field_moment_geometry_axes = this_moment_geometry_axes
+        panel.near_field_force_wind_axes = this_force_wind_axes
+        panel.near_field_moment_wind_axes = this_moment_wind_axes
+
+        # Update the force coefficients this panel.
+        panel.update_coefficients(dynamic_pressure)
 
     # Initialize arrays to hold each airplane's total force and moment in geometry
     # axes.
@@ -416,23 +420,25 @@ def process_unsteady_solver_forces(
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
 
+        # Get this panel's near field forces and moments in geometry axes and wind axes.
+        this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
+        this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
+        this_force_wind_axes = rotation_matrix @ this_force_geometry_axes
+        this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
+
         # Update the force and moment on this panel.
-        panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
-            panel_num, :
-        ]
-        panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
-            panel_num, :
-        ]
+        panel.near_field_force_geometry_axes = this_force_geometry_axes
+        panel.near_field_moment_geometry_axes = this_moment_geometry_axes
+        panel.near_field_force_wind_axes = this_force_wind_axes
+        panel.near_field_moment_wind_axes = this_moment_wind_axes
 
-        # Update the pressure on this panel.
-        panel.update_pressure()
+        # Update the force coefficients on this panel.
+        panel.update_coefficients(dynamic_pressure=dynamic_pressure)
 
-    # Initialize arrays to hold each airplane's total force and moment in geometry
-    # axes.
-    total_near_field_forces_geometry_axes = np.zeros((unsteady_solver.num_airplanes, 3))
-    total_near_field_moments_geometry_axes = np.zeros(
-        (unsteady_solver.num_airplanes, 3)
-    )
+    # Initialize arrays for each airplane's total force and moment in geometry axes.
+    num_airplanes = unsteady_solver.num_airplanes
+    total_near_field_forces_geometry_axes = np.zeros((num_airplanes, 3))
+    total_near_field_moments_geometry_axes = np.zeros((num_airplanes, 3))
 
     # Iterate through each airplane and find the total force and moment experienced
     # by each by summing up the contribution's from its panels.

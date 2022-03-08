@@ -61,21 +61,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         populate_next_airplanes_wake_vortices: This method populates the locations of
         the next airplanes' wake vortices.
 
-        calculate_current_flapping_velocities_at_collocation_points: This method gets
-        the velocity due to flapping at all of the current airplanes' collocation
-        points.
+        calculate_current_flapping_velocities_at_collocation_points: This method
+        finds the apparent flow velocity due to flapping at the centers of the
+        current airplanes' collocation points.
 
-        calculate_current_flapping_velocities_at_right_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplanes' bound
-        ring vortices' right legs.
+        calculate_current_flapping_velocities_at_right_leg_centers: This method finds
+        the apparent flow velocity due to flapping at the centers of the current
+        airplanes' bound ring vortices' right legs.
 
-        calculate_current_flapping_velocities_at_front_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplanes' bound
-        ring vortices' front legs.
+        calculate_current_flapping_velocities_at_front_leg_centers: This method finds
+        the apparent flow velocity due to flapping at the centers of the current
+        airplanes' bound ring vortices' front legs.
 
-        calculate_current_flapping_velocities_at_left_leg_centers: This method gets
-        the velocity due to flapping at the centers of the current airplanes' bound
-        ring vortices' left legs.
+        calculate_current_flapping_velocities_at_left_leg_centers: This method finds
+        the apparent flow velocity due to flapping at the centers of the current
+        airplanes' bound ring vortices' left legs.
 
     This class contains the following class attributes:
         None
@@ -1057,117 +1057,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             near_field_forces_geometry_axes=near_field_forces_geometry_axes,
             near_field_moments_geometry_axes=near_field_moments_geometry_axes,
         )
-        # # Initialize a variable to hold the global panel position.
-        # global_panel_position = 0
-        #
-        # # Iterate through this solver's panels.
-        # for panel in self.panels:
-        #
-        #     # Update the force and moment on this panel.
-        #     panel.near_field_force_geometry_axes = near_field_forces_geometry_axes[
-        #         global_panel_position, :
-        #     ]
-        #     panel.near_field_moment_geometry_axes = near_field_moments_geometry_axes[
-        #         global_panel_position, :
-        #     ]
-        #
-        #     # Update the pressure on this panel.
-        #     panel.update_pressure()
-        #
-        #     # Increment the global panel position.
-        #     global_panel_position += 1
-        #
-        # # Sum up the near field forces and moments on every panel to find the total
-        # # force and moment on the geometry.
-        # total_near_field_force_geometry_axes = np.sum(
-        #     near_field_forces_geometry_axes, axis=0
-        # )
-        # total_near_field_moment_geometry_axes = np.sum(
-        #     near_field_moments_geometry_axes, axis=0
-        # )
-        #
-        # # ToDo: Fix the next block of code by separating forces by airplane.
-        # # Find the total near field force in wind axes from the rotation matrix and
-        # # the total near field force in geometry axes.
-        # # self.current_airplanes.total_near_field_force_wind_axes = 0
-        # # (
-        # #     np.transpose(
-        # #         self.current_operating_point.calculate_rotation_matrix_wind_to_geometry()
-        # #     )
-        # #     @ total_near_field_force_geometry_axes
-        # # )
-        #
-        # # Find the total near field moment in wind axes from the rotation matrix and
-        # # the total near field moment in geometry axes.
-        # # self.current_airplanes.total_near_field_moment_wind_axes = 0
-        # # (
-        # #     np.transpose(
-        # #         self.current_operating_point.calculate_rotation_matrix_wind_to_geometry()
-        # #     )
-        # #     @ total_near_field_moment_geometry_axes
-        # # )
-        #
-        # # Calculate the current_airplane's induced drag coefficient
-        # induced_drag_coefficient = 0
-        # # (
-        # #     -self.current_airplanes.total_near_field_force_wind_axes[0]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # # )
-        #
-        # # Calculate the current_airplane's side force coefficient.
-        # side_force_coefficient = 0
-        # # (
-        # #     self.current_airplanes.total_near_field_force_wind_axes[1]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # # )
-        #
-        # # Calculate the current_airplane's lift coefficient.
-        # lift_coefficient = 0
-        # # (
-        # #     -self.current_airplanes.total_near_field_force_wind_axes[2]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # # )
-        #
-        # # Calculate the current_airplane's rolling moment coefficient.
-        # rolling_moment_coefficient = 0
-        # # (
-        # #     self.current_airplanes.total_near_field_moment_wind_axes[0]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # #     / self.current_airplanes.b_ref
-        # # )
-        #
-        # # Calculate the current_airplane's pitching moment coefficient.
-        # pitching_moment_coefficient = 0
-        # # (
-        # #     self.current_airplanes.total_near_field_moment_wind_axes[1]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # #     / self.current_airplanes.c_ref
-        # # )
-        #
-        # # Calculate the current_airplane's yawing moment coefficient.
-        # yawing_moment_coefficient = 0
-        # # (
-        # #     self.current_airplanes.total_near_field_moment_wind_axes[2]
-        # #     / self.current_operating_point.calculate_dynamic_pressure()
-        # #     / self.current_airplanes.s_ref
-        # #     / self.current_airplanes.b_ref
-        # # )
-        #
-        # # self.current_airplanes.total_near_field_force_coefficients_wind_axes = np.array(
-        # #     [induced_drag_coefficient, side_force_coefficient, lift_coefficient]
-        # # )
-        # # self.current_airplanes.total_near_field_moment_coefficients_wind_axes = np.array(
-        # #     [
-        # #         rolling_moment_coefficient,
-        # #         pitching_moment_coefficient,
-        # #         yawing_moment_coefficient,
-        # #     ]
-        # # )
 
     def populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplanes' wakes.
@@ -1578,8 +1467,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
 
     def calculate_current_flapping_velocities_at_collocation_points(self):
-        """This method gets the velocity due to flapping at all of the current
-        airplanes' collocation points.
+        """This method finds the apparent flow velocity due to flapping at the
+        centers of the current airplanes' collocation points.
+
+        Note: The apparent flow velocity due to flapping is opposite the direction of
+        the wing's motion.
 
         :return: size (M x 3) array of floats, where M is the current airplanes'
         number of panels
@@ -1601,11 +1493,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         last_collocations = self.last_panel_collocation_points
 
         # Calculate and return the flapping velocities.
-        return (these_collocations - last_collocations) / self.delta_time
+        return -(these_collocations - last_collocations) / self.delta_time
 
     def calculate_current_flapping_velocities_at_right_leg_centers(self):
-        """This method gets the velocity due to flapping at the centers of the
-        current airplanes' bound ring vortices' right legs.
+        """This method finds the apparent flow velocity due to flapping at the
+        centers of the current airplanes' bound ring vortices' right legs.
+
+        Note: The apparent flow velocity due to flapping is opposite the direction of
+        the wing's motion.
 
         :return: size (M x 3) array of floats, where M is the current airplanes'
         number of panels
@@ -1627,11 +1522,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         last_right_leg_centers = self.last_panel_right_vortex_centers
 
         # Calculate and return the flapping velocities.
-        return (these_right_leg_centers - last_right_leg_centers) / self.delta_time
+        return -(these_right_leg_centers - last_right_leg_centers) / self.delta_time
 
     def calculate_current_flapping_velocities_at_front_leg_centers(self):
-        """This method gets the velocity due to flapping at the centers of the
-        current airplanes' bound ring vortices' front legs.
+        """This method finds the apparent flow velocity due to flapping at the
+        centers of the current airplanes' bound ring vortices' front legs.
+
+        Note: The apparent flow velocity due to flapping is opposite the direction of
+        the wing's motion.
 
         :return: size (M x 3) array of floats, where M is the current airplanes'
         number of panels
@@ -1653,11 +1551,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         last_front_leg_centers = self.last_panel_front_vortex_centers
 
         # Calculate and return the flapping velocities.
-        return (these_front_leg_centers - last_front_leg_centers) / self.delta_time
+        return -(these_front_leg_centers - last_front_leg_centers) / self.delta_time
 
     def calculate_current_flapping_velocities_at_left_leg_centers(self):
-        """This method gets the velocity due to flapping at the centers of the
-        current airplanes' bound ring vortices' left legs.
+        """This method finds the apparent flow velocity due to flapping at the
+        centers of the current airplanes' bound ring vortices' left legs.
+
+        Note: The apparent flow velocity due to flapping is opposite the direction of
+        the wing's motion.
 
         :return: size (M x 3) array of floats, where M is the current airplanes'
         number of panels
@@ -1679,4 +1580,4 @@ class UnsteadyRingVortexLatticeMethodSolver:
         last_left_leg_centers = self.last_panel_left_vortex_centers
 
         # Calculate and return the flapping velocities.
-        return (these_left_leg_centers - last_left_leg_centers) / self.delta_time
+        return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time

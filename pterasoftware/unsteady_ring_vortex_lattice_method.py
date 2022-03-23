@@ -45,25 +45,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
         calculate_vortex_strengths: This method solves for each panel's vortex
         strength.
 
-        calculate_solution_velocity: This function takes in a group of points. At
-        every point, it finds the induced velocity due to every vortex and the
-        freestream velocity.
+        calculate_solution_velocity: This function takes in a group of points. At every point, it finds the induced
+        velocity due to every vortex and the freestream velocity.
 
-        calculate_near_field_forces_and_moments: This method finds the the forces and
-        moments calculated from the near field.
+        calculate_near_field_forces_and_moments: This method finds the forces and moments calculated from the near
+        field.
 
-        populate_next_airplanes_wake: This method updates the next time step's
-        airplanes' wakes.
+        populate_next_airplanes_wake: This method updates the next time step's airplanes' wakes.
 
-        populate_next_airplanes_wake_vortex_vertices: This method populates the
-        locations of the next airplanes' wake vortex vertices.
+        populate_next_airplanes_wake_vortex_vertices: This method populates the locations of the next airplanes' wake
+        vortex vertices.
 
-        populate_next_airplanes_wake_vortices: This method populates the locations of
-        the next airplanes' wake vortices.
+        populate_next_airplanes_wake_vortices: This method populates the locations of the next airplanes' wake
+        vortices.
 
-        calculate_current_flapping_velocities_at_collocation_points: This method
-        finds the apparent flow velocity due to flapping at the centers of the
-        current airplanes' collocation points.
+        calculate_current_flapping_velocities_at_collocation_points: This method finds the apparent flow velocity due
+        to flapping at the centers of the current airplanes' collocation points.
 
         calculate_current_flapping_velocities_at_right_leg_centers: This method finds
         the apparent flow velocity due to flapping at the centers of the current

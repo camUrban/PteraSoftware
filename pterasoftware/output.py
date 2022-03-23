@@ -12,26 +12,23 @@ This module contains the following functions:
 
     animate: Create an animation of a problem's movement.
 
-    plot_results_versus_time: This method takes in an unsteady solver object,
-    and plots the geometries' forces, moments, force coefficients, and moment
-    coefficients as a function of time.
+    plot_results_versus_time: This method takes in an unsteady solver object, and plots the geometries' forces,
+    moments, force coefficients, and moment coefficients as a function of time.
 
-    print_steady_results: This function prints the forces, moments,
-    force coefficients, and moment coefficients calculated by a steady solver.
+    print_steady_results: This function prints the forces, moments, force coefficients, and moment coefficients
+    calculated by a steady solver.
 
-    print_unsteady_results: This function prints the averages of the forces, moments,
-    force coefficients, and moment coefficients calculated by a unsteady solver.
+    print_unsteady_results: This function prints the averages of the forces, moments, force coefficients, and moment
+    coefficients calculated by an unsteady solver.
 
-    get_panel_surfaces: This function returns a PolyData representation of the wing
-    panel surfaces associated with all the airplanes in a given list.
+    get_panel_surfaces: This function returns a PolyData representation of the wing panel surfaces associated with
+    all the airplanes in a given list.
 
-    get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
-    surface of wake ring vortices at a given time step.
+    get_wake_ring_vortex_surfaces: This function returns the PolyData object for the surface of wake ring vortices at
+    a given time step.
 
-    get_scalars: This function gets the coefficient values from a problem's airplane
-    objects, and puts them into a 1D array to be used as scalars for display by other
-    output methods.
-"""
+    get_scalars: This function gets the coefficient values from a problem's airplane objects, and puts them into a 1D
+    array to be used as scalars for display by other output methods. """
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,8 +47,7 @@ plotter_background_color = "black"
 figure_background_color = "None"
 text_color = "#818181"
 
-# For the figure lines, use the "Prism" qualitative color map from
-# carto.com/carto-colors.
+# For the figure lines, use the "Prism" qualitative color map from carto.com/carto-colors.
 prism = [
     "#5F4690",
     "#1D6996",
@@ -318,7 +314,7 @@ def animate(
     ):
         show_scalars = True
 
-    # Initialize an variables to hold the problems' scalars and their attributes.
+    # Initialize variables to hold the problems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=int)
     min_scalar = None
     max_scalar = None
@@ -326,15 +322,14 @@ def animate(
     # Check if the user wants to show scalars on the wing panels.
     if show_scalars:
 
-        # Now iterate through each time step and gather all of the scalars for its
-        # list of airplanes. These values will be used to configure the color map.
+        # Now iterate through each time step and gather all the scalars for its list of airplanes. These values will
+        # be used to configure the color map.
         for airplanes in step_airplanes:
             scalars_to_add = get_scalars(airplanes, scalar_type)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
-        # Choose the color map and set its limits based on if the min and max scalars
-        # across all time steps have the same sign (sequential color map) or if they
-        # have different signs (diverging color map).
+        # Choose the color map and set its limits based on if the min and max scalars across all time steps have the
+        # same sign (sequential color map) or if they have different signs (diverging color map).
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
             color_map = sequential_color_map
             c_min = max(
@@ -356,8 +351,7 @@ def animate(
     # Initialize the panel surfaces and add the meshes to the plotter.
     panel_surfaces = get_panel_surfaces(step_airplanes[0])
 
-    # Check if the user wants to show any scalars. If so, add the panel surfaces to
-    # the plotter with these scalars.
+    # Check if the user wants to show any scalars. If so, add the panel surfaces to the plotter with these scalars.
     if show_scalars and first_results_step == 0:
         these_scalars = get_scalars(step_airplanes[0], scalar_type)
 
@@ -385,12 +379,11 @@ def animate(
 
     # Print a message to the console on how to set up the window.
     print(
-        'Orient the view, then press "q" to close the window and produce the '
-        "animation."
+        'Orient the view, then press "q" to close the window and produce the animation.'
     )
 
-    # Show the plotter so the user can set up the camera. Then, they will close the
-    # window, but the plotter object will stay open off screen.
+    # Show the plotter so the user can set up the camera. Then, they will close the window, but the plotter object
+    # will stay open off-screen.
     plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
     # Start a list which will hold a WebP image of each frame.
@@ -416,8 +409,7 @@ def animate(
         # Get the panel surfaces.
         panel_surfaces = get_panel_surfaces(airplanes)
 
-        # If the user wants to show the wake ring vortices, then get their surfaces
-        # and plot them.
+        # If the user wants to show the wake ring vortices, then get their surfaces and plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
@@ -429,9 +421,8 @@ def animate(
                 color=wake_vortex_color,
             )
 
-        # Check if the user wants to plot scalars and this step is equal to or
-        # greater than the first step with calculated results. If so, add the panel
-        # surfaces to the plotter with the scalars.
+        # Check if the user wants to plot scalars and this step is equal to or greater than the first step with
+        # calculated results. If so, add the panel surfaces to the plotter with the scalars.
         if show_scalars and first_results_step <= current_step:
 
             these_scalars = get_scalars(airplanes, scalar_type)
@@ -455,8 +446,7 @@ def animate(
                 smooth_shading=False,
             )
 
-        # Append a WebP image of this frame to the list of frame images if the user
-        # wants to save an animation.
+        # Append a WebP image of this frame to the list of frame images if the user wants to save an animation.
         if save:
             images.append(
                 webp.Image.fromarray(
@@ -486,8 +476,8 @@ def animate(
 
 
 def plot_results_versus_time(unsteady_solver, show=True, save=False):
-    """This method takes in an unsteady solver object, and plots the geometries'
-    forces, moments, force coefficients, and moment coefficients as a function of time.
+    """This method takes in an unsteady solver object, and plots the geometries' forces, moments, force coefficients,
+    and moment coefficients as a function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
         This is the solver object whose resulting forces, moments, and coefficients
@@ -890,11 +880,11 @@ def print_steady_results(steady_solver):
 
 
 def print_unsteady_results(unsteady_solver):
-    """This function prints the averages of the forces, moments, force coefficients,
-    and moment coefficients calculated by a unsteady solver.
+    """This function prints the averages of the forces, moments, force coefficients, and moment coefficients
+    calculated by an unsteady solver.
 
-    Note: This method averages the values for every time step that calculated
-    results. Therefore, the averages are not necessarily the final-cycle averages.
+    Note: This method averages the values for every time step that calculated results. Therefore, the averages are
+    not necessarily the final-cycle averages.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver or
         This is the solver object with the results to be printed.

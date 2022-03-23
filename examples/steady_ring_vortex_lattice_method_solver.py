@@ -102,27 +102,22 @@ example_airplane = ps.geometry.Airplane(
                     # value defaults to 1.0 meter.
                     chord=1.5,
                     airfoil=ps.geometry.Airfoil(
-                        # Give the airfoil a name. This defaults to "Untitled
-                        # Airfoil". This name should correspond to a name in the
-                        # airfoil directory or a NACA four series airfoil, unless you
-                        # are passing in your own coordinates.
+                        # Give the airfoil a name. This defaults to "Untitled Airfoil". This name should correspond
+                        # to a name in the airfoil directory or a NACA four series airfoil, unless you are passing in
+                        # your own coordinates.
                         name="naca2412",
-                        # If you wish to pass in coordinates, set this to a N x 2
-                        # array of the airfoil's coordinates, where N is the number
-                        # of coordinates. Treat this as an immutable, don't edit
-                        # directly after initialization. If you wish to load
-                        # coordinates from the airfoil directory, leave this as None.
-                        # The default is None. Make sure that any airfoil coordinates
-                        # used range in x from 0 to 1.
+                        # If you wish to pass in coordinates, set this to an N x 2 array of the airfoil's
+                        # coordinates, where N is the number of coordinates. Treat this as an immutable, don't edit
+                        # directly after initialization. If you wish to load coordinates from the airfoil directory,
+                        # leave this as None. The default is None. Make sure that any airfoil coordinates used range
+                        # in x from 0 to 1.
                         coordinates=None,
-                        # This is the variable that determines whether or not you
-                        # would like to repanel the airfoil coordinates. This applies
-                        # to coordinates passed in by the user or to the directory
-                        # coordinates. It is highly recommended to set this to True.
-                        # The default is True.
+                        # This is the variable that determines whether you would like to repanel the airfoil
+                        # coordinates. This applies to coordinates passed in by the user or to the directory
+                        # coordinates. I highly recommended setting this to True. The default is True.
                         repanel=True,
-                        # This is number of points to use if repaneling the airfoil.
-                        # It is ignored if the repanel is False. The default is 400.
+                        # This is number of points to use if repaneling the airfoil. It is ignored if the repanel is
+                        # False. The default is 400.
                         n_points_per_side=400,
                     ),
                 ),
@@ -257,20 +252,17 @@ ps.output.print_steady_results(steady_solver=example_solver)
 # Call the software's draw function on the solver.
 ps.output.draw(
     solver=example_solver,
-    # Tell the draw function to color the aircraft's wing panels with the local
-    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
-    # "side force", or "lift".
+    # Tell the draw function to color the aircraft's wing panels with the local lift coefficient. The valid arguments
+    # for this parameter are None, "induced drag", "side force", or "lift".
     scalar_type="lift",
-    # Tell the draw function to show the calculated streamlines. This value defaults
-    # to false.
+    # Tell the draw function to show the calculated streamlines. This value defaults to false.
     show_streamlines=True,
-    # Tell the draw function to not show any wake vortices. As this is a steady
-    # solver, no vortices have been shed into the wake. This value defaults to false.
+    # Tell the draw function to not show any wake vortices. As this is a steady solver, no vortices have been shed
+    # into the wake. This value defaults to false.
     show_wake_vortices=False,
-    # The the draw function to not save the drawing as an image file. This way,
-    # the drawing will still be displayed but not saved. This value defaults to false.
+    # The draw function to not save the drawing as an image file. This way, the drawing will still be displayed but
+    # not saved. This value defaults to false.
     save=False,
 )
 
-# Compare the output you see with the expected outputs saved in the "docs/examples
-# expected output" directory.
+# Compare the output you see with the expected outputs saved in the "docs/examples expected output" directory.

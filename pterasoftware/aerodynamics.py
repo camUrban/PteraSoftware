@@ -13,7 +13,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     collapsed_velocities_from_horseshoe_vortices: This function takes in a group of
     points, and the attributes of a group of horseshoe vortices. At every point,
-    it finds the cumulative induced velocity due to all of the horseshoe vortices.
+    it finds the cumulative induced velocity due to all the horseshoe vortices.
 
     expanded_velocities_from_horseshoe_vortices: This function takes in a group of
     points, and the attributes of a group of horseshoe vortices. At every point,
@@ -21,7 +21,7 @@ This module contains the following functions:
 
     collapsed_velocities_from_ring_vortices: This function takes in a group of
     points, and the attributes of a group of ring vortices. At every point, it finds
-    the cumulative induced velocity due to all of the ring vortices.
+    the cumulative induced velocity due to all the ring vortices.
 
     expanded_velocities_from_ring_vortices: This function takes in a group of points,
     and the attributes of a group of ring vortices. At every point, it finds the
@@ -29,7 +29,7 @@ This module contains the following functions:
 
     collapsed_velocities_from_line_vortices: This function takes in a group of
     points, and the attributes of a group of line vortices. At every point, it finds
-    the cumulative induced velocity due to all of the line vortices.
+    the cumulative induced velocity due to all the line vortices.
 
     expanded_velocities_from_line_vortices: This function takes in a group of points,
     and the attributes of a group of line vortices. At every point, it finds the
@@ -46,10 +46,10 @@ from . import functions
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
 # at which they grow. The value of this parameter is slightly controversial. It
-# dramatically affect the stability of the result. I'm using this value, as cited for
+# dramatically affects the stability of the result. I'm using this value, as cited for
 # use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
 # Modeling of Rotor Wakes" (Ananthan and Leishman, 2004). It is unitless.
-squire = 10 ** -4
+squire = 10**-4
 
 # Set the value of Lamb's constant that will be used by the induced velocity
 # functions. Lamb's constant relates to the size of the vortex cores and the rate at
@@ -348,7 +348,7 @@ def collapsed_velocities_from_horseshoe_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the cumulative induced velocity due
-    to all of the horseshoe vortices.
+    to all the horseshoe vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -390,9 +390,8 @@ def collapsed_velocities_from_horseshoe_vortices(
         in meters squared per second. The default value is 0.0 meters squared per
         second.
     :return velocities: 2D array of floats
-        This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the horseshoe vortices. The
-        units are meters per second.
+        This is an array of shape (N x 3), and it holds the cumulative induced velocity at each of the N points due
+        to all the horseshoe vortices. The units are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -516,7 +515,7 @@ def collapsed_velocities_from_ring_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the cumulative induced velocity due to
-    all of the ring vortices.
+    all the ring vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -558,9 +557,8 @@ def collapsed_velocities_from_ring_vortices(
         in meters squared per second. The default value is 0.0 meters squared per
         second.
     :return velocities: 2D array of floats
-        This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the ring vortices. The units
-        are meters per second.
+        This is an array of shape (N x 3), and it holds the cumulative induced velocity at each of the N points due
+        to all the ring vortices. The units are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -686,7 +684,7 @@ def collapsed_velocities_from_line_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     line vortices. At every point, it finds the cumulative induced velocity due to
-    all of the line vortices.
+    all the line vortices.
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -729,9 +727,8 @@ def collapsed_velocities_from_line_vortices(
         in meters squared per second. The default value is 0.0 meters squared per
         second.
     :return velocities: 2D array of floats
-        This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the line vortices. The units
-        are meters per second.
+        This is an array of shape (N x 3), and it holds the cumulative induced velocity at each of the N points due
+        to all the line vortices. The units are meters per second.
     """
     num_vortices = origins.shape[0]
     num_points = points.shape[0]
@@ -759,10 +756,10 @@ def collapsed_velocities_from_line_vortices(
         r_0_z = termination[2] - origin[2]
 
         # Find the r_0 vector's length.
-        r_0 = math.sqrt(r_0_x ** 2 + r_0_y ** 2 + r_0_z ** 2)
+        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0 ** 2 * r_c ** 2
+        c_2 = r_0**2 * r_c**2
 
         for point_id in range(num_points):
             point = points[point_id]
@@ -783,9 +780,9 @@ def collapsed_velocities_from_line_vortices(
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
 
             # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x ** 2 + r_1_y ** 2 + r_1_z ** 2)
-            r_2 = math.sqrt(r_2_x ** 2 + r_2_y ** 2 + r_2_z ** 2)
-            r_3 = math.sqrt(r_3_x ** 2 + r_3_y ** 2 + r_3_z ** 2)
+            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
+            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
+            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
 
             c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
 
@@ -793,14 +790,14 @@ def collapsed_velocities_from_line_vortices(
             # within machine epsilon), there is a removable discontinuity. In this
             # case, continue to the next point because there is no velocity induced
             # by the current vortex at this point.
-            if r_1 < eps or r_2 < eps or r_3 ** 2 < eps:
+            if r_1 < eps or r_2 < eps or r_3**2 < eps:
                 continue
             else:
                 c_4 = (
                     c_1
                     * (r_1 + r_2)
                     * (r_1 * r_2 - c_3)
-                    / (r_1 * r_2 * (r_3 ** 2 + c_2))
+                    / (r_1 * r_2 * (r_3**2 + c_2))
                 )
                 velocities[point_id, 0] += c_4 * r_3_x
                 velocities[point_id, 1] += c_4 * r_3_y
@@ -893,10 +890,10 @@ def expanded_velocities_from_line_vortices(
         r_0_z = termination[2] - origin[2]
 
         # Find the r_0 vector's length.
-        r_0 = math.sqrt(r_0_x ** 2 + r_0_y ** 2 + r_0_z ** 2)
+        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0 ** 2 * r_c ** 2
+        c_2 = r_0**2 * r_c**2
 
         for point_id in range(num_points):
             point = points[point_id]
@@ -917,9 +914,9 @@ def expanded_velocities_from_line_vortices(
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
 
             # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x ** 2 + r_1_y ** 2 + r_1_z ** 2)
-            r_2 = math.sqrt(r_2_x ** 2 + r_2_y ** 2 + r_2_z ** 2)
-            r_3 = math.sqrt(r_3_x ** 2 + r_3_y ** 2 + r_3_z ** 2)
+            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
+            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
+            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
 
             c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
 
@@ -927,14 +924,14 @@ def expanded_velocities_from_line_vortices(
             # within machine epsilon), there is a removable discontinuity. In this
             # case, set the velocity components to their true values, which are 0.0
             # meters per second.
-            if r_1 < eps or r_2 < eps or r_3 ** 2 < eps:
+            if r_1 < eps or r_2 < eps or r_3**2 < eps:
                 continue
             else:
                 c_4 = (
                     c_1
                     * (r_1 + r_2)
                     * (r_1 * r_2 - c_3)
-                    / (r_1 * r_2 * (r_3 ** 2 + c_2))
+                    / (r_1 * r_2 * (r_3**2 + c_2))
                 )
                 velocities[point_id, vortex_id, 0] = c_4 * r_3_x
                 velocities[point_id, vortex_id, 1] = c_4 * r_3_y

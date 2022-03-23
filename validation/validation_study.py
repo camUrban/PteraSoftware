@@ -661,15 +661,14 @@ lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
 sim_net_lift_forces_wind_axes = sim_net_forces_wind_axes[2, :]
 
 # Interpolate the simulated net lift forces to find them with respect to the
-# normalized final flap time scale.
+# normalized final flap timescale.
 final_flap_sim_net_lift_forces_wind_axes = np.interp(
     final_flap_times, times, sim_net_lift_forces_wind_axes[:]
 )
 
-# Plot the simulated lift forces. The x-axis is set to the normalized times,
-# which may seem odd because we just interpolated so as to get them in terms of the
-# normalized final flap times. But, they are discretized in exactly the same way as
-# the normalized times, just horizontally shifted.
+# Plot the simulated lift forces. The x-axis is set to the normalized times, which may seem odd because we just
+# interpolated to get them in terms of the normalized final flap times. But, they are discretized in exactly the same
+# way as the normalized times, just horizontally shifted.
 lift_axes.plot(
     normalized_times,
     final_flap_sim_net_lift_forces_wind_axes,
@@ -707,17 +706,16 @@ del airplanes
 del sim_net_forces_wind_axes
 del step
 
-# Calculate the lift mean absolute error (MAE). The experimental and simulated lift
-# comparison here is valid because, due to the interpolation steps, the experimental
-# and simulated lifts time histories are discretized so that they they are with
-# respect to the same time scale.
+# Calculate the lift mean absolute error (MAE). The experimental and simulated lift comparison here is valid because,
+# due to the interpolation steps, the experimental and simulated lifts time histories are discretized so that they
+# are with respect to the same timescale.
 lift_absolute_errors = np.abs(
     final_flap_sim_net_lift_forces_wind_axes - exp_lifts_wind_axes
 )
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
 
-sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes ** 2))
-exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes ** 2))
+sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes**2))
+exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
 print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
 print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
@@ -728,7 +726,7 @@ print(
     "\nMean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
 )
 
-# Calculate the experimental root mean square (RMS) lift.
+# Calculate the experimental root-mean-square (RMS) lift.
 exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts_wind_axes, 2)))
 
 # Print the experimental RMS lift.

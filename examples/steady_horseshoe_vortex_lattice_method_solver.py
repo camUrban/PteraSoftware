@@ -75,53 +75,42 @@ example_airplane = ps.geometry.Airplane(
                     # 0.0 degrees. Positive twist corresponds to positive rotation
                     # about the y axis, as defined by the right-hand rule.
                     twist=0.0,
-                    # Define the type of control surface. The options are "symmetric"
-                    # and "asymmetric". This is only applicable if your wing is also
-                    # symmetric. If so, symmetric control surfaces will deflect in
-                    # the same direction, like flaps, while asymmetric control
-                    # surfaces will deflect in opposite directions, like ailerons.
-                    # The default value is "symmetric".
+                    # Define the type of control surface. The options are "symmetric" and "asymmetric". This is only
+                    # applicable if your wing is also symmetric. If so, symmetric control surfaces will deflect in
+                    # the same direction, like flaps, while asymmetric control surfaces will deflect in opposite
+                    # directions, like ailerons. The default value is "symmetric".
                     control_surface_type="symmetric",
-                    # Define the point on the airfoil where the control surface
-                    # hinges. This is expressed as a faction of the chord length,
-                    # back from the leading edge. The default value is 0.75.
+                    # Define the point on the airfoil where the control surface hinges. This is expressed as a
+                    # faction of the chord length, back from the leading edge. The default value is 0.75.
                     control_surface_hinge_point=0.75,
                     # Define the deflection of the control surface in degrees. The
                     # default is 0.0 degrees.
                     control_surface_deflection=0.0,
-                    # Define the number of spanwise panels on the wing cross section,
-                    # and the spacing between them. The number of spanwise panels
-                    # defaults to 8 panels. The spacing defaults to "cosine",
-                    # which makes the panels relatively finer, in the spanwise
-                    # direction, near the cross section ends. The other option is
-                    # "uniform".
+                    # Define the number of spanwise panels on the wing cross section, and the spacing between them.
+                    # The number of spanwise panels defaults to 8 panels. The spacing defaults to "cosine",
+                    # which makes the panels relatively finer, in the spanwise direction, near the cross section
+                    # ends. The other option is "uniform".
                     num_spanwise_panels=8,
                     spanwise_spacing="cosine",
-                    # Set the chord of this cross section to be 1.75 meters. This
-                    # value defaults to 1.0 meter.
+                    # Set the chord of this cross section to be 1.75 meters. This value defaults to 1.0 meter.
                     chord=1.75,
                     airfoil=ps.geometry.Airfoil(
-                        # Give the airfoil a name. This defaults to "Untitled
-                        # Airfoil". This name should correspond to a name in the
-                        # airfoil directory or a NACA four series airfoil, unless you
-                        # are passing in your own coordinates.
+                        # Give the airfoil a name. This defaults to "Untitled Airfoil". This name should correspond
+                        # to a name in the airfoil directory or a NACA four series airfoil, unless you are passing in
+                        # your own coordinates.
                         name="naca2412",
-                        # If you wish to pass in coordinates, set this to a N x 2
-                        # array of the airfoil's coordinates, where N is the number
-                        # of coordinates. Treat this as an immutable, don't edit
-                        # directly after initialization. If you wish to load
-                        # coordinates from the airfoil directory, leave this as None.
-                        # The default is None. Make sure that any airfoil coordinates
-                        # used range in x from 0 to 1.
+                        # If you wish to pass in coordinates, set this to an N x 2 array of the airfoil's
+                        # coordinates, where N is the number of coordinates. Treat this as an immutable, don't edit
+                        # directly after initialization. If you wish to load coordinates from the airfoil directory,
+                        # leave this as None. The default is None. Make sure that any airfoil coordinates used range
+                        # in x from 0 to 1.
                         coordinates=None,
-                        # This is the variable that determines whether or not you
-                        # would like to repanel the airfoil coordinates. This applies
-                        # to coordinates passed in by the user or to the directory
-                        # coordinates. It is highly recommended to set this to True.
-                        # The default is True.
+                        # This is the variable that determines whether you would like to repanel the airfoil
+                        # coordinates. This applies to coordinates passed in by the user or to the directory
+                        # coordinates.I highly recommended setting this to True. The default is True.
                         repanel=True,
-                        # This is number of points to use if repaneling the airfoil.
-                        # It is ignored if the repanel is False. The default is 400.
+                        # This is number of points to use if repaneling the airfoil. It is ignored if the repanel is
+                        # False. The default is 400.
                         n_points_per_side=400,
                     ),
                 ),
@@ -239,8 +228,8 @@ ps.output.draw(
     # Tell the draw function to not show any wake vortices. As this is a steady
     # solver, no vortices have been shed into the wake. This value defaults to false.
     show_wake_vortices=False,
-    # The the draw function to not save the drawing as an image file. This way,
-    # the drawing will still be displayed but not saved. This value defaults to false.
+    # The draw function to not save the drawing as an image file. This way, the drawing will still be displayed but
+    # not saved. This value defaults to false.
     save=False,
 )
 

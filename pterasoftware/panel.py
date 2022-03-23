@@ -142,7 +142,7 @@ class Panel:
     def calculate_collocation_point_location(self):
         """This method calculates the location of the collocation point.
 
-        The collocation point is at the panel's three quarter chord point.
+        The collocation point is at the panel's three-quarter chord point.
 
         :return: None
         """

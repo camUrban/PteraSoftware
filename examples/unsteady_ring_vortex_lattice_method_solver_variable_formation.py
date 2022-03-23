@@ -1,8 +1,7 @@
-"""This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a three airplanes, flying in formation, each with custom
-geometry and motion. Note, I will comment this example less rigorously than the
-single-airplane examples for readability. I recommend you read and understand those
-examples before reading this example. """
+"""This is script is an example of how to run Ptera Software's unsteady ring vortex lattice method solver on three
+airplanes, flying in formation, each with custom geometry and motion. Note, I will comment this example less
+rigorously than the single-airplane examples for readability. I recommend you read and understand those examples
+before reading this example. """
 
 import pterasoftware as ps
 
@@ -12,47 +11,40 @@ y_spacing = 13
 # Create the lead airplane object.
 lead_airplane = ps.geometry.Airplane(
     name="Lead Airplane",
-    # Specify the location of the lead airplane's center of gravity. This is the
-    # point around about which the solver will calculate the moments on the airplane.
-    # These three values default to 0.0 meters. Note: these values are relative to
-    # the global coordinate system fixed front left corner of the first airplane's
-    # first wing's root wing cross section.
+    # Specify the location of the lead airplane's center of gravity. This is the point around about which the solver
+    # will calculate the moments on the airplane. These three values default to 0.0 meters. Note: these values are
+    # relative to the global coordinate system fixed front left corner of the first airplane's first wing's root wing
+    # cross section.
     x_ref=0.0,
     y_ref=0.0,
     z_ref=0.0,
     wings=[
         ps.geometry.Wing(
             name="Main Wing",
-            # Define the location of the leading edge of the wing relative to the
-            # global coordinate system fixed front left corner of the first
-            # airplane's first wing's root wing cross section.
+            # Define the location of the leading edge of the wing relative to the global coordinate system fixed
+            # front left corner of the first airplane's first wing's root wing cross section.
             x_le=0.0,
             y_le=0.0,
-            # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across plane of this wing's root wing cross section. Note
-            # that the geometry coordinates are defined as such: If you were riding
-            # in the airplane, the positive x direction would point behind you,
-            # the positive y direction would point out of your right wing, and the
-            # positive z direction would point upwards, out of your chair. These
-            # directions form a right-handed coordinate system. The default value of
-            # "symmetric" is false.
+            # Declare that this wing is symmetric. This means that the geometry will be reflected across plane of
+            # this wing's root wing cross section. Note that the geometry coordinates are defined as such: If you
+            # were riding in the airplane, the positive x direction would point behind you, the positive y direction
+            # would point out of your right wing, and the positive z direction would point upwards, out of your
+            # chair. These directions form a right-handed coordinate system. The default value of "symmetric" is false.
             symmetric=True,
-            # Define the chordwise spacing of the wing panels to be "uniform" as this
-            # increase the accuracy of unsteady solvers.
+            # Define the chordwise spacing of the wing panels to be "uniform" as this increase the accuracy of
+            # unsteady solvers.
             chordwise_spacing="uniform",
             num_chordwise_panels=4,
             wing_cross_sections=[
                 ps.geometry.WingCrossSection(
-                    # Define the location of the leading edge of the wing cross
-                    # section relative to the wing's leading edge. These values all
-                    # default to 0.0 meters.
+                    # Define the location of the leading edge of the wing cross section relative to the wing's
+                    # leading edge. These values all default to 0.0 meters.
                     x_le=0.0,
                     y_le=0.0,
-                    # Assign the twist of this wing cross section. Note: when
-                    # assigning angles of attack to multiple airplanes, it is better
-                    # to set the operating point's angle of attack to zero, and then
-                    # use offset the twist values of all the wing cross sections to
-                    # simulate each aircraft having an angle of attack.
+                    # Assign the twist of this wing cross section. Note: when assigning angles of attack to multiple
+                    # airplanes, it is better to set the operating point's angle of attack to zero, and then use
+                    # offset the twist values of all the wing cross sections to simulate each aircraft having an
+                    # angle of attack.
                     twist=5.0,
                     chord=1.75,
                     airfoil=ps.geometry.Airfoil(
@@ -310,11 +302,9 @@ ps.output.animate(
     unsteady_solver=solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    # The the animate function to not save the animation as file. This way,
-    # the animation will still be displayed but not saved. This value defaults to
-    # false.
+    # The animate function to not save the animation as file. This way, the animation will still be displayed but not
+    # saved. This value defaults to false.
     save=False,
 )
 
-# Compare the output you see with the expected outputs saved in the "docs/examples
-# expected output" directory.
+# Compare the output you see with the expected outputs saved in the "docs/examples expected output" directory.

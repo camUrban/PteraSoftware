@@ -20,9 +20,8 @@ This module contains the following functions:
     calculate_streamlines: This function calculates the location of the streamlines
     coming off the back of the wings.
 
-    convert_logging_level_name_to_value: This function takes in a string that
-    represents the the logging level and returns the integer that can be used to set
-    the logger to this level.
+    convert_logging_level_name_to_value: This function takes in a string that represents the logging level and
+    returns the integer that can be used to set the logger to this level.
 
     process_steady_solver_forces: This function uses the forces and moments a solver
     has found on its panels to find the forces, moments, and associated coefficients

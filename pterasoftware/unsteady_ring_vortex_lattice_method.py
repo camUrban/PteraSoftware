@@ -187,9 +187,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             the solver significantly slower. The default is True.
         :param calculate_streamlines: Bool, optional
             This parameter determines if the solver uses calculates streamlines
-            emanating from the back of the wing after running the solver.prescribed
-            wake model. Setting this to False is recommended to increase performance,
-            but the default value is True for back-compatibility.
+            emanating from the back of the wing after running the solver.
         :return: None
         """
         # Configure the problem's logger.
@@ -668,7 +666,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the matrix of normalized velocities induced at every panel's
         # collocation point by every panel's ring vortex. The answer is normalized
         # because the solver's vortex strength list was initialized to all ones. This
-        # will be updated once the correct vortex strength's are calculated.
+        # will be updated once the correct vortex strengths are calculated.
         total_influences = aerodynamics.expanded_velocities_from_ring_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
@@ -838,12 +836,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # due to the bound ring vortices and the wake ring vortices.
         total_vortex_velocities = velocities_from_wings + velocities_from_wake
 
-        # Calculate and return the the sum of the velocities induced by the vortices
-        # and freestream at every point.
+        # Calculate and return the sum of the velocities induced by the vortices and
+        # freestream at every point.
         return total_vortex_velocities + self.current_freestream_velocity_geometry_axes
 
     def calculate_near_field_forces_and_moments(self):
-        """This method finds the the forces and moments calculated from the near field.
+        """This method finds the forces and moments calculated from the near field.
 
         Citation: This method uses logic described on pages 9-11 of "Modeling of
         aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
@@ -855,8 +853,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Initialize a variable to hold the global panel position as the panel's are
-        # iterate through.
+        # Initialize a variable to hold the global panel position as the panels are
+        # iterated through.
         global_panel_position = 0
 
         # Initialize three lists of variables, which will hold the effective strength
@@ -1096,7 +1094,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             for airplane in self.current_airplanes:
                 num_wings += len(airplane.wings)
 
-            # Iterate through the this time step's airplanes' successor objects.
+            # Iterate through this time step's airplanes' successor objects.
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
                 # Iterate through the next airplane's wings.
@@ -1415,8 +1413,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                                 if chordwise_vertex_position > 0:
 
-                                    # If this is isn't the front of the wake, update
-                                    # the position of the ring vortex at this location.
+                                    # If this isn't the front of the wake, update the
+                                    # position of the ring vortex at this location.
                                     next_wing.wake_ring_vortices[
                                         chordwise_vertex_position,
                                         spanwise_vertex_position,

@@ -880,11 +880,11 @@ def print_steady_results(steady_solver):
 
 
 def print_unsteady_results(unsteady_solver):
-    """This function prints the averages of the forces, moments, force coefficients, and moment coefficients
-    calculated by an unsteady solver.
+    """This function prints the averages of the forces, moments, force coefficients,
+    and moment coefficients calculated by an unsteady solver.
 
-    Note: This method averages the values for every time step that calculated results. Therefore, the averages are
-    not necessarily the final-cycle averages.
+    Note: This method averages the values for every time step that calculated
+    results. Therefore, the averages are not necessarily the final-cycle averages.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver or
         This is the solver object with the results to be printed.

@@ -63,9 +63,9 @@ default_solver = (
 
 default_solver.run()
 
-ps.output.draw(solver=default_solver, scalar_type="lift", show_streamlines=True)
-ps.output.print_steady_results(steady_solver=default_solver)
+trim_conditions = ps.trim.analyze_steady_trim(problem=default_problem)
 
-ps.trim.analyze_steady_trim(problem=default_problem)
-
-print("done!")
+print("Trim Velocity:\t%.2f m/s" % trim_conditions[0])
+print("Trim Alpha:\t\t%.2f deg" % trim_conditions[1])
+print("Trim Beta:\t\t%.2f deg" % trim_conditions[2])
+print("Trim Thrust:\t%.2f N" % trim_conditions[3])

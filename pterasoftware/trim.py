@@ -22,6 +22,7 @@ This module contains the following functions:
 import logging
 
 import numpy as np
+import scipy.optimize
 
 from . import steady_horseshoe_vortex_lattice_method
 
@@ -29,17 +30,11 @@ from . import steady_horseshoe_vortex_lattice_method
 # ToDo: Document this function.
 def analyze_steady_trim(
     problem,
-    velocity_offsets=(-5, 5),
-    alpha_offsets=(-5, 5),
-    beta_offsets=(-5, 5),
-    num_samples=5,
-    weight=100,
-    thrust=25,
+    weight=250,
+    base_thrust=10,
+    num_iter=100,
 ):
-    """This function attempts to calculate a trim condition of a steady solver by
-    varying the angles of attack and sideslip until the steady pitching and yawing
-    moments are zero. If a trim condition can be found, it returns the angles of
-    attack and sideslip. Otherwise, it returns NaN angles and logs the failure.
+    """
 
     :return:
     """
@@ -48,53 +43,64 @@ def analyze_steady_trim(
             "The problem objects for trim analyses must have only one airplane."
         )
 
+    obj_cut_off = ((weight + base_thrust) / 2) / 100
+
     base_velocity = problem.operating_point.velocity
     base_alpha = problem.operating_point.alpha
     base_beta = problem.operating_point.beta
 
-    neg_velocity_offset, pos_velocity_offset = velocity_offsets
-    neg_alpha_offset, pos_alpha_offset = alpha_offsets
-    neg_beta_offset, pos_beta_offset = beta_offsets
+    # ToDo: Document this function.
+    def obj(arguments):
+        """
 
-    min_velocity = max(0, base_velocity + neg_velocity_offset)
-    max_velocity = base_velocity + pos_velocity_offset
-    min_alpha = max(-90, base_alpha + neg_alpha_offset)
-    max_alpha = min(90, base_alpha + pos_alpha_offset)
-    min_beta = max(-90, base_beta + neg_beta_offset)
-    max_beta = min(90, base_beta + pos_beta_offset)
+        :param arguments:
+        :return:
+        """
+        velocity, alpha, beta, thrust = arguments
 
-    velocities = np.linspace(min_velocity, max_velocity, num_samples)
-    alphas = np.linspace(min_alpha, max_alpha, num_samples)
-    betas = np.linspace(min_beta, max_beta, num_samples)
+        problem.operating_point.velocity = velocity
+        problem.operating_point.alpha = alpha
+        problem.operating_point.beta = beta
+        ext_force = np.array([thrust, 0, weight])
 
-    net_forces = np.zeros((num_samples, num_samples, num_samples))
-    net_moments = np.zeros((num_samples, num_samples, num_samples))
+        solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem=problem
+        )
 
-    ext_force = np.array([thrust, 0, weight])
+        solver.run()
 
-    for i, velocity in enumerate(velocities):
-        for j, alpha in enumerate(alphas):
-            for k, beta in enumerate(betas):
+        airplane = solver.airplanes[0]
 
-                problem.operating_point.velocity = velocity
-                problem.operating_point.alpha = alpha
-                problem.operating_point.beta = beta
+        net_force = np.linalg.norm(
+            airplane.total_near_field_force_wind_axes + ext_force
+        )
+        net_moment = np.linalg.norm(airplane.total_near_field_moment_wind_axes)
+        return abs(net_force) + abs(net_moment)
 
-                solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-                    steady_problem=problem
-                )
+    logging.info("Starting local optimization.")
+    result_local = scipy.optimize.minimize(
+        fun=obj,
+        x0=(base_velocity, base_alpha, base_beta, base_thrust),
+    )
+    logging.info("Local optimization function executed.")
 
-                solver.run()
+    if result_local.fun < obj_cut_off:
+        logging.info("Acceptable local minima found.")
+        return result_local.x
 
-                airplane = solver.airplanes[0]
+    logging.warning("No acceptable local minima found. Starting global search.")
+    result_global = scipy.optimize.dual_annealing(
+        func=obj,
+        bounds=[(5, 15), (-10, 10), (-10, 10), (0, 10)],
+        x0=(base_velocity, base_alpha, base_beta, base_thrust),
+        maxfun=num_iter,
+    )
 
-                net_force = np.linalg.norm(
-                    airplane.total_near_field_force_wind_axes + ext_force
-                )
-                net_moment = np.linalg.norm(airplane.total_near_field_moment_wind_axes)
+    if result_global.fun < obj_cut_off:
+        logging.info("Acceptable global minima found.")
+        return result_global.x
 
-                net_forces[i, j, k] = net_force
-                net_moments[i, j, k] = net_moment
+    logging.error("No trim condition found.")
 
 
 # ToDo: Document this function.

@@ -111,7 +111,9 @@ def analyze_steady_trim(
 
         return abs(net_force) + abs(net_moment)
 
-    initial_guess = (base_velocity, base_alpha, base_beta, base_external_thrust)
+    initial_guess = np.array(
+        [base_velocity, base_alpha, base_beta, base_external_thrust]
+    )
     bounds = (velocity_bounds, alpha_bounds, beta_bounds, external_thrust_bounds)
 
     trim_logger.info("Starting local optimization.")

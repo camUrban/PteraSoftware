@@ -11,7 +11,7 @@ def obj(arguments):
 x_init = 5
 y_init = 5
 z_init = obj((x_init, y_init))
-initial_guess = (x_init, y_init)
+initial_guess = np.array([x_init, y_init])
 result = opto.minimize(obj, initial_guess, tol=0.01)
 
 x_opto, y_opto = result.x

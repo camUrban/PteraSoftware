@@ -1,3 +1,4 @@
+# ToDo: Document this script.
 import pterasoftware as ps
 
 default_airplane = ps.geometry.Airplane(

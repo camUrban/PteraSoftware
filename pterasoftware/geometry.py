@@ -46,12 +46,14 @@ class Airplane:
         This class is not meant to be subclassed.
     """
 
+    # ToDo: Update this method's documentation to include the new weight parameter.
     def __init__(
         self,
         name="Untitled",
         x_ref=0.0,
         y_ref=0.0,
         z_ref=0.0,
+        weight=0.0,
         wings=None,
         s_ref=None,
         c_ref=None,
@@ -73,6 +75,7 @@ class Airplane:
             This is the z coordinate of the moment reference point. It should be the
             z coordinate of the center of
             gravity. The default is 0.0.
+        :param weight:
         :param wings: list of Wing objects, optional
             This is a list of the current_airplane's wings defined as Wing objects.
             The default is None, which this
@@ -96,6 +99,9 @@ class Airplane:
         self.xyz_ref = np.array(
             [float(self.x_ref), float(self.y_ref), float(self.z_ref)]
         )
+
+        # Initialize the weight.
+        self.weight = weight
 
         # If wings was passed as None, set wings to an empty list.
         if wings is None:

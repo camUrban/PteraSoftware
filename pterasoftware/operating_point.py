@@ -42,12 +42,14 @@ class OperatingPoint:
         This class is not meant to be subclassed.
     """
 
+    # ToDo: Update this method's documentation to include the new thrust parameter.
     def __init__(
         self,
         density=1.225,
         velocity=10.0,
         alpha=5.0,
         beta=0.0,
+        external_thrust=0.0,
         nu=15.06e-6,
     ):
         """This is the initialization method.
@@ -65,6 +67,7 @@ class OperatingPoint:
         :param beta: float, optional
             This parameter is the sideslip angle. The units are degrees. The default
             value is 0.0.
+        :param external_thrust: float, optional
         :param nu: float, optional
             This parameter is the air's kinematic viscosity. The units are meters
             squared per second. This parameter is only used in the unsteady ring
@@ -78,6 +81,7 @@ class OperatingPoint:
         self.velocity = velocity
         self.alpha = alpha
         self.beta = beta
+        self.external_thrust = external_thrust
         self.nu = nu
 
     def calculate_dynamic_pressure(self):
@@ -88,7 +92,7 @@ class OperatingPoint:
         """
 
         # Calculate and return the freestream dynamic pressure
-        dynamic_pressure = 0.5 * self.density * self.velocity ** 2
+        dynamic_pressure = 0.5 * self.density * self.velocity**2
         return dynamic_pressure
 
     def calculate_rotation_matrix_wind_to_geometry(self):

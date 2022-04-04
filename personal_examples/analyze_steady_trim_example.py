@@ -67,6 +67,8 @@ default_solver.run()
 print("Untrimmed Results:")
 ps.output.print_steady_results(steady_solver=default_solver)
 
+ps.output.draw(solver=default_solver, scalar_type="lift", show_streamlines=True)
+
 trim_conditions = ps.trim.analyze_steady_trim(
     problem=default_problem,
     velocity_bounds=(5, 15),

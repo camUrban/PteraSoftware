@@ -501,30 +501,30 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
     num_airplanes = unsteady_solver.num_airplanes
     first_results_time_step_time = delta_time * first_results_step
     final_time_step_time = delta_time * (num_steps - 1)
-    num_steps_with_results = num_steps - first_results_step
+    num_steps_to_average = num_steps - first_results_step
 
     # Create a 1D array with the time at each time step where results have been
     # calculated.
     times = np.linspace(
         first_results_time_step_time,
         final_time_step_time,
-        num_steps_with_results,
+        num_steps_to_average,
         endpoint=True,
     )
 
     # Initialize matrices to hold the forces, moments, and coefficients at each time
     # step which has results.
     total_near_field_force_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+        (num_airplanes, 3, num_steps_to_average)
     )
     total_near_field_force_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+        (num_airplanes, 3, num_steps_to_average)
     )
     total_near_field_moment_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+        (num_airplanes, 3, num_steps_to_average)
     )
     total_near_field_moment_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+        (num_airplanes, 3, num_steps_to_average)
     )
 
     # Initialize a variable to track position in the results arrays.
@@ -879,6 +879,7 @@ def print_steady_results(steady_solver):
             print("")
 
 
+# ToDo: Update this function's documentation.
 def print_unsteady_results(unsteady_solver):
     """This function prints the averages of the forces, moments, force coefficients,
     and moment coefficients calculated by an unsteady solver.
@@ -891,97 +892,43 @@ def print_unsteady_results(unsteady_solver):
     :return: None
     """
 
-    first_results_step = unsteady_solver.first_results_step
-
-    # Get this solver's time step characteristics. Note that the first time step (
-    # time step 0), occurs at 0 seconds.
-    num_steps = unsteady_solver.num_steps
-    num_airplanes = unsteady_solver.num_airplanes
-    num_steps_with_results = num_steps - first_results_step
-
-    # Initialize matrices to hold the forces, moments, and coefficients at each of
-    # the time steps that has results.
-    total_near_field_force_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+    forces = unsteady_solver.unsteady_problem.final_total_near_field_forces_wind_axes
+    moments = unsteady_solver.unsteady_problem.final_total_near_field_moments_wind_axes
+    force_coefficients = (
+        unsteady_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes
     )
-    total_near_field_force_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
+    moment_coefficients = (
+        unsteady_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes
     )
-    total_near_field_moment_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
-    )
-    total_near_field_moment_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_with_results)
-    )
-
-    # Initialize a variable to track position in the results arrays.
-    results_step = 0
-
-    # Iterate through the time steps with results and add the results to their
-    # respective matrices.
-    for step in range(first_results_step, num_steps):
-
-        # Get the airplanes from the problem at this step.
-        airplanes = unsteady_solver.steady_problems[step].airplanes
-
-        # Iterate through this step's airplanes.
-        for airplane_id, airplane in enumerate(airplanes):
-            total_near_field_force_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_force_wind_axes
-            total_near_field_force_coefficients_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_force_coefficients_wind_axes
-            total_near_field_moment_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_moment_wind_axes
-            total_near_field_moment_coefficients_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_moment_coefficients_wind_axes
-
-        results_step += 1
 
     # For each airplane object, calculate and print the average force, moment,
     # force coefficient, and moment coefficient values.
     for airplane_id, airplane in enumerate(
         unsteady_solver.steady_problems[0].airplanes
     ):
-        # Calculate the average values.
-        this_induced_drag = np.mean(total_near_field_force_wind_axes[airplane_id, 0, :])
-        this_side_force = np.mean(total_near_field_force_wind_axes[airplane_id, 1, :])
-        this_lift = np.mean(total_near_field_force_wind_axes[airplane_id, 2, :])
-        this_rolling_moment = np.mean(
-            total_near_field_moment_wind_axes[airplane_id, 0, :]
-        )
-        this_pitching_moment = np.mean(
-            total_near_field_moment_wind_axes[airplane_id, 1, :]
-        )
-        this_yawing_moment = np.mean(
-            total_near_field_moment_wind_axes[airplane_id, 2, :]
-        )
-        this_induced_drag_coefficient = np.mean(
-            total_near_field_force_coefficients_wind_axes[airplane_id, 0, :]
-        )
-        this_side_force_coefficient = np.mean(
-            total_near_field_force_coefficients_wind_axes[airplane_id, 1, :]
-        )
-        this_lift_coefficient = np.mean(
-            total_near_field_force_coefficients_wind_axes[airplane_id, 2, :]
-        )
-        this_rolling_coefficient = np.mean(
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 0, :]
-        )
-        this_pitching_coefficient = np.mean(
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 1, :]
-        )
-        this_yawing_coefficient = np.mean(
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 2, :]
-        )
+        these_forces = forces[airplane_id]
+        these_moments = moments[airplane_id]
+        these_force_coefficients = force_coefficients[airplane_id]
+        these_moment_coefficients = moment_coefficients[airplane_id]
+
+        this_induced_drag = these_forces[0]
+        this_side_force = these_forces[1]
+        this_lift = these_forces[2]
+        this_rolling_moment = these_moments[0]
+        this_pitching_moment = these_moments[1]
+        this_yawing_moment = these_moments[2]
+
+        this_induced_drag_coefficient = these_force_coefficients[0]
+        this_side_force_coefficient = these_force_coefficients[1]
+        this_lift_coefficient = these_force_coefficients[2]
+        this_rolling_moment_coefficient = these_moment_coefficients[0]
+        this_pitching_moment_coefficient = these_moment_coefficients[1]
+        this_yawing_moment_coefficient = these_moment_coefficients[2]
 
         print(airplane.name, ":", sep="")
 
         # Print out this airplane's average forces.
-        print("\tAverage Forces in Wind Axes:")
+        print("\tFinal Forces in Wind Axes:")
         print(
             "\t\tInduced Drag:\t\t\t",
             np.round(this_induced_drag, 3),
@@ -1002,7 +949,7 @@ def print_unsteady_results(unsteady_solver):
         )
 
         # Print out this airplane's average moments.
-        print("\n\tAverage Moments in Wind Axes:")
+        print("\n\tFinal Moments in Wind Axes:")
         print(
             "\t\tRolling Moment:\t\t\t",
             np.round(this_rolling_moment, 3),
@@ -1023,7 +970,7 @@ def print_unsteady_results(unsteady_solver):
         )
 
         # Print out this airplane's average force coefficients.
-        print("\n\tAverage Force Coefficients in Wind Axes:")
+        print("\n\tFinal Force Coefficients in Wind Axes:")
         print(
             "\t\tCDi:\t\t\t\t\t",
             np.round(this_induced_drag_coefficient, 3),
@@ -1041,26 +988,26 @@ def print_unsteady_results(unsteady_solver):
         )
 
         # Print out this airplane's average moment coefficients.
-        print("\n\tAverage Moment Coefficients in Wind Axes:")
+        print("\n\tFinal Moment Coefficients in Wind Axes:")
         print(
             "\t\tCl:\t\t\t\t\t\t",
-            np.round(this_rolling_coefficient, 3),
+            np.round(this_rolling_moment_coefficient, 3),
             sep="",
         )
         print(
             "\t\tCm:\t\t\t\t\t\t",
-            np.round(this_pitching_coefficient, 3),
+            np.round(this_pitching_moment_coefficient, 3),
             sep="",
         )
         print(
             "\t\tCn:\t\t\t\t\t\t",
-            np.round(this_yawing_coefficient, 3),
+            np.round(this_yawing_moment_coefficient, 3),
             sep="",
         )
 
         # If the results from more airplanes are going to be printed, print new line
         # to separate them.
-        if (airplane_id + 1) < num_airplanes:
+        if (airplane_id + 1) < unsteady_solver.num_airplanes:
             print("")
 
 

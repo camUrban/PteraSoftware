@@ -26,9 +26,13 @@ import numpy as np
 import scipy.optimize
 
 from . import steady_horseshoe_vortex_lattice_method
+from . import unsteady_ring_vortex_lattice_method
+from . import movement
+from . import problems
 
 
 trim_logger = logging.getLogger("trim")
+trim_logger.setLevel(logging.INFO)
 
 
 # ToDo: Document this function.
@@ -148,7 +152,15 @@ def analyze_steady_trim(
 
 
 # ToDo: Document this function.
-def analyze_unsteady_trim():
+def analyze_unsteady_trim(
+    airplane_movement,
+    operating_point,
+    velocity_bounds,
+    alpha_bounds,
+    beta_bounds,
+    objective_cut_off,
+    num_calls=1,
+):
     """analyze_unsteady_trim: This function attempts to calculate a trim condition of
     an unsteady solver by varying the operating point's velocity, angle of attack,
     angle of sideslip, and external thrust until the net cycle-averaged force and net
@@ -158,4 +170,101 @@ def analyze_unsteady_trim():
 
     :return:
     """
-    pass
+    weight = airplane_movement.base_airplane.weight
+    base_velocity = operating_point.velocity
+    base_alpha = operating_point.alpha
+    base_beta = operating_point.beta
+
+    if base_velocity < velocity_bounds[0] or base_velocity > velocity_bounds[1]:
+        trim_logger.error(
+            "The operating point's velocity must be within the specified velocity "
+            "bounds."
+        )
+    if base_alpha < alpha_bounds[0] or base_alpha > alpha_bounds[1]:
+        trim_logger.error(
+            "The operating point's alpha must be within the specified alpha bounds."
+        )
+    if base_beta < beta_bounds[0] or base_beta > beta_bounds[1]:
+        trim_logger.error(
+            "The operating point's beta must be within the specified beta bounds."
+        )
+
+    # ToDo: Document this function.
+    def objective_function(arguments):
+        """
+
+        :param arguments:
+        :return:
+        """
+        velocity, alpha, beta = arguments
+
+        operating_point.velocity = velocity
+        operating_point.alpha = alpha
+        operating_point.beta = beta
+        external_force = np.array([0, 0, weight])
+
+        operating_point_movement = movement.OperatingPointMovement(
+            base_operating_point=operating_point
+        )
+
+        this_movement = movement.Movement(
+            airplane_movements=[airplane_movement],
+            operating_point_movement=operating_point_movement,
+        )
+
+        this_problem = problems.UnsteadyProblem(
+            movement=this_movement, only_final_results=True
+        )
+
+        this_solver = (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                unsteady_problem=this_problem
+            )
+        )
+
+        this_solver.run()
+
+        force = this_solver.unsteady_problem.final_total_near_field_forces_wind_axes[0]
+        moment = this_solver.unsteady_problem.final_total_near_field_moments_wind_axes[
+            0
+        ]
+
+        net_force = np.linalg.norm(force + external_force)
+        net_moment = np.linalg.norm(moment)
+
+        objective = abs(net_force) + abs(net_moment)
+        trim_logger.info(objective)
+        return objective
+
+    initial_guess = np.array([base_velocity, base_alpha, base_beta])
+    bounds = (velocity_bounds, alpha_bounds, beta_bounds)
+
+    # trim_logger.info("Starting local optimization.")
+    # result_local = scipy.optimize.minimize(
+    #     fun=objective_function,
+    #     x0=initial_guess,
+    #     bounds=bounds,
+    #     options={"maxiter": num_calls},
+    # )
+    # trim_logger.info("Local optimization function executed.")
+    #
+    # if result_local.fun < objective_cut_off:
+    #     trim_logger.info("Acceptable local minima found.")
+    #     return result_local.x
+
+    trim_logger.warning("No acceptable local minima found. Starting global search.")
+    result_global = scipy.optimize.dual_annealing(
+        func=objective_function,
+        bounds=bounds,
+        x0=initial_guess,
+        maxfun=num_calls,
+    )
+
+    if result_global.fun < objective_cut_off:
+        trim_logger.info("Acceptable global minima found.")
+        return result_global.x
+
+    trim_logger.error(
+        "No trim condition found. Try increasing the bounds and the maximum number of "
+        "iterations."
+    )

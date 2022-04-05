@@ -335,7 +335,7 @@ class RingVortex:
         )
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     points,
     back_right_vortex_vertices,
@@ -419,7 +419,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     points,
     back_right_vortex_vertices,
@@ -503,7 +503,7 @@ def expanded_velocities_from_horseshoe_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices(
     points,
     back_right_vortex_vertices,
@@ -589,7 +589,7 @@ def collapsed_velocities_from_ring_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
     points,
     back_right_vortex_vertices,
@@ -675,7 +675,7 @@ def expanded_velocities_from_ring_vortices(
     return induced_velocities
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_line_vortices(
     points,
     origins,
@@ -809,7 +809,7 @@ def collapsed_velocities_from_line_vortices(
     return velocities
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def expanded_velocities_from_line_vortices(
     points,
     origins,

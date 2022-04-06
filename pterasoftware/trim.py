@@ -32,7 +32,7 @@ from . import problems
 
 
 trim_logger = logging.getLogger("trim")
-trim_logger.setLevel(logging.INFO)
+trim_logger.setLevel(logging.DEBUG)
 
 
 # ToDo: Document this function.
@@ -159,7 +159,7 @@ def analyze_unsteady_trim(
     alpha_bounds,
     beta_bounds,
     objective_cut_off,
-    num_calls=1,
+    num_calls=100,
 ):
     """analyze_unsteady_trim: This function attempts to calculate a trim condition of
     an unsteady solver by varying the operating point's velocity, angle of attack,
@@ -222,7 +222,7 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_solver.run()
+        this_solver.run(logging_level="Critical")
 
         force = this_solver.unsteady_problem.final_total_near_field_forces_wind_axes[0]
         moment = this_solver.unsteady_problem.final_total_near_field_moments_wind_axes[
@@ -232,9 +232,32 @@ def analyze_unsteady_trim(
         net_force = np.linalg.norm(force + external_force)
         net_moment = np.linalg.norm(moment)
 
-        objective = abs(net_force) + abs(net_moment)
-        trim_logger.info(objective)
+        objective = (abs(net_force) + abs(net_moment))/2
+
+        v_str = str(round(velocity, 2))
+        a_str = str(round(alpha, 2))
+        b_str = str(round(beta, 2))
+        o_str = str(round(objective, 2))
+
+        state_msg = "State: velocity="+v_str+", alpha="+a_str+", beta="+b_str
+        obj_msg = "Objective: " + o_str
+
+        trim_logger.info(state_msg)
+        trim_logger.info(obj_msg)
         return objective
+
+    # ToDo: Document this function.
+    def local_callback_function(xk, state):
+        if state.fun < objective_cut_off:
+            return True
+        return False
+
+    # ToDo: Document this function.
+    def global_callback_function(x, f, context):
+        print("Called!!")
+        if f < objective_cut_off:
+            return True
+        return False
 
     initial_guess = np.array([base_velocity, base_alpha, base_beta])
     bounds = (velocity_bounds, alpha_bounds, beta_bounds)
@@ -245,26 +268,28 @@ def analyze_unsteady_trim(
     #     x0=initial_guess,
     #     bounds=bounds,
     #     options={"maxiter": num_calls},
+    #     callback=local_callback_function,
     # )
     # trim_logger.info("Local optimization function executed.")
     #
     # if result_local.fun < objective_cut_off:
     #     trim_logger.info("Acceptable local minima found.")
     #     return result_local.x
-
-    trim_logger.warning("No acceptable local minima found. Starting global search.")
+    #
+    # trim_logger.info("No acceptable local minima found. Starting global search.")
     result_global = scipy.optimize.dual_annealing(
         func=objective_function,
         bounds=bounds,
         x0=initial_guess,
         maxfun=num_calls,
+        callback=global_callback_function,
     )
 
     if result_global.fun < objective_cut_off:
         trim_logger.info("Acceptable global minima found.")
         return result_global.x
 
-    trim_logger.error(
+    trim_logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
         "iterations."
     )

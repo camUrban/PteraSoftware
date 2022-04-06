@@ -131,7 +131,7 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     velocity_bounds=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
-    objective_cut_off=default_airplane.weight/100,
+    objective_cut_off=default_airplane.weight / 100,
     num_calls=5,
 )
 
@@ -146,7 +146,8 @@ trim_operating_point = ps.operating_point.OperatingPoint(
     beta=trim_conditions[2],
 )
 trim_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=trim_operating_point)
+    base_operating_point=trim_operating_point
+)
 
 trim_movement = ps.movement.Movement(
     airplane_movements=[default_airplane_movement],

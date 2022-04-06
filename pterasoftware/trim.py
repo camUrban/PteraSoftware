@@ -232,14 +232,14 @@ def analyze_unsteady_trim(
         net_force = np.linalg.norm(force + external_force)
         net_moment = np.linalg.norm(moment)
 
-        objective = (abs(net_force) + abs(net_moment))/2
+        objective = (abs(net_force) + abs(net_moment)) / 2
 
         v_str = str(round(velocity, 2))
         a_str = str(round(alpha, 2))
         b_str = str(round(beta, 2))
         o_str = str(round(objective, 2))
 
-        state_msg = "State: velocity="+v_str+", alpha="+a_str+", beta="+b_str
+        state_msg = "State: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
         obj_msg = "Objective: " + o_str
 
         trim_logger.info(state_msg)

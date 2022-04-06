@@ -716,8 +716,8 @@ lift_absolute_errors = np.abs(
 )
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
 
-sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes ** 2))
-exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes ** 2))
+sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes**2))
+exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
 print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
 print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")

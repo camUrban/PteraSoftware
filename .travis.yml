@@ -5,7 +5,7 @@ os: linux
 dist: xenial
 before_install:
   # configure a headless display
-  - git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+  - git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
   - source ./gl-ci-helpers/travis/setup_headless_display.sh
 install:
   - pip install -r requirements.txt

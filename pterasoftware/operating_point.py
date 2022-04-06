@@ -88,7 +88,7 @@ class OperatingPoint:
         """
 
         # Calculate and return the freestream dynamic pressure
-        dynamic_pressure = 0.5 * self.density * self.velocity ** 2
+        dynamic_pressure = 0.5 * self.density * self.velocity**2
         return dynamic_pressure
 
     def calculate_rotation_matrix_wind_to_geometry(self):

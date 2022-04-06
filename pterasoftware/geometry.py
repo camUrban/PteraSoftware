@@ -610,7 +610,7 @@ class Airfoil:
                     # Get the camber.
                     y_c_piece1 = (
                         max_camber
-                        / camber_loc ** 2
+                        / camber_loc**2
                         * (
                             2 * camber_loc * x_t[x_t <= camber_loc]
                             - x_t[x_t <= camber_loc] ** 2
@@ -631,7 +631,7 @@ class Airfoil:
                     first_piece_slope = (
                         2
                         * max_camber
-                        / camber_loc ** 2
+                        / camber_loc**2
                         * (camber_loc - x_t[x_t <= camber_loc])
                     )
                     second_piece_slope = (

@@ -119,19 +119,19 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     rotation_matrix = np.array(
         [
             [
-                cos_theta + u_x ** 2 * (1 - cos_theta),
+                cos_theta + u_x**2 * (1 - cos_theta),
                 u_x * u_y * (1 - cos_theta) - u_z * sin_theta,
                 u_x * u_z * (1 - cos_theta) + u_y * sin_theta,
             ],
             [
                 u_y * u_x * (1 - cos_theta) + u_z * sin_theta,
-                cos_theta + u_y ** 2 * (1 - cos_theta),
+                cos_theta + u_y**2 * (1 - cos_theta),
                 u_y * u_z * (1 - cos_theta) - u_x * sin_theta,
             ],
             [
                 u_z * u_x * (1 - cos_theta) - u_y * sin_theta,
                 u_z * u_y * (1 - cos_theta) + u_x * sin_theta,
-                cos_theta + u_z ** 2 * (1 - cos_theta),
+                cos_theta + u_z**2 * (1 - cos_theta),
             ],
         ]
     )
@@ -140,7 +140,7 @@ def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
     return rotation_matrix
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
@@ -616,7 +616,7 @@ def calculate_steady_freestream_wing_influences(steady_solver):
     )
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=False)
 def numba_1d_explicit_cross(vectors_1, vectors_2):
     """This function takes in two arrays, each of which contain N vectors of 3
     components. The function then calculates and returns the cross product of the two

@@ -20,8 +20,8 @@ from PySide2.QtWidgets import QDialog, QMainWindow, QApplication, QListWidgetIte
 from pterasoftware.ui_resources import mainWindow
 
 class MainWindow(QMainWindow, mainWindow):
-
-
+    if 0==0:
+        print("Duh")
 
 
 if __name__ == '__main__':

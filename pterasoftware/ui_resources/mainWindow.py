@@ -17,7 +17,7 @@ class Ui_MainWindowDesign(object):
     def setupUi(self, MainWindowDesign):
         if not MainWindowDesign.objectName():
             MainWindowDesign.setObjectName(u"MainWindowDesign")
-        MainWindowDesign.resize(1052, 880)
+        MainWindowDesign.resize(1134, 887)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -457,6 +457,8 @@ class Ui_MainWindowDesign(object):
         self.tabWidget_3.setSizePolicy(sizePolicy9)
         self.tab_13 = QWidget()
         self.tab_13.setObjectName(u"tab_13")
+        sizePolicy7.setHeightForWidth(self.tab_13.sizePolicy().hasHeightForWidth())
+        self.tab_13.setSizePolicy(sizePolicy7)
         self.tab_13.setMinimumSize(QSize(318, 0))
         self.groupBox_7 = QGroupBox(self.tab_13)
         self.groupBox_7.setObjectName(u"groupBox_7")
@@ -802,20 +804,11 @@ class Ui_MainWindowDesign(object):
         self.gridLayout_5.setSpacing(6)
         self.gridLayout_5.setContentsMargins(11, 11, 11, 11)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.Title = QLabel(self.frame_3)
-        self.Title.setObjectName(u"Title")
-        self.Title.setEnabled(True)
-        sizePolicy.setHeightForWidth(self.Title.sizePolicy().hasHeightForWidth())
-        self.Title.setSizePolicy(sizePolicy)
-        self.Title.setMinimumSize(QSize(500, 0))
-        self.Title.setMaximumSize(QSize(799, 16777215))
-
-        self.gridLayout_5.addWidget(self.Title, 0, 0, 1, 1)
-
         self.Logo = QLabel(self.frame_3)
         self.Logo.setObjectName(u"Logo")
+        self.Logo.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_5.addWidget(self.Logo, 0, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.Logo, 0, 0, 1, 1)
 
 
         self.gridLayout_4.addWidget(self.frame_3, 1, 0, 1, 2)
@@ -867,7 +860,7 @@ class Ui_MainWindowDesign(object):
         MainWindowDesign.setCentralWidget(self.centralWidget)
         self.menuBar = QMenuBar(MainWindowDesign)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1052, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1134, 21))
         self.menuHelp = QMenu(self.menuBar)
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuFile = QMenu(self.menuBar)
@@ -893,7 +886,7 @@ class Ui_MainWindowDesign(object):
         self.retranslateUi(MainWindowDesign)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(0)
+        self.tabWidget_2.setCurrentIndex(1)
         self.tabWidget_3.setCurrentIndex(0)
 
 
@@ -998,8 +991,7 @@ class Ui_MainWindowDesign(object):
         self.label_27.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p>\u03b2</p></body></html>", None))
         self.label_28.setText(QCoreApplication.translate("MainWindowDesign", u"d", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindowDesign", u"Visualiser Settings", None))
-        self.Title.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p><span style=\" font-size:36pt; font-weight:600;\">PteraSoftware</span></p></body></html>", None))
-        self.Logo.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p><img src=\"../docs/logo.png\"/></p></body></html>", None))
+        self.Logo.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p><img src=\"docs/logo.png\"/></p></body></html>", None))
         self.q_start.setText(QCoreApplication.translate("MainWindowDesign", u"Generate Results", None))
         self.q_homing.setText(QCoreApplication.translate("MainWindowDesign", u"Plot Visualisation", None))
         self.terminalOutpotLogo.setText(QCoreApplication.translate("MainWindowDesign", u"Terminal Output", None))

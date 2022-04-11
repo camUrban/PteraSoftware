@@ -88,7 +88,7 @@ bar_position_x = 0.25
 bar_position_y = 0.05
 bar_n_labels = 2
 text_max_position = (0.85, 0.075)
-text_min_position = (0.85, 0.05)
+text_min_position = (0.85, 0.050)
 text_speed_position = (0.05, 0.075)
 text_font_size = 11
 
@@ -330,7 +330,7 @@ def animate(
         # Add text to the animation that display's its speed relative to the true
         # speed.
         plotter.add_text(
-            text=str(round(100 * speed)) + "% Actual Speed",
+            text="Speed: " + str(round(100 * speed)) + "%",
             position=text_speed_position,
             font_size=text_font_size,
             viewport=True,
@@ -450,7 +450,7 @@ def animate(
 
         if save:
             plotter.add_text(
-                text=str(round(100 * speed)) + "% Actual Speed",
+                text="Speed: " + str(round(100 * speed)) + "%",
                 position=text_speed_position,
                 font_size=text_font_size,
                 viewport=True,

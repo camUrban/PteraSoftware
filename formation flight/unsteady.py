@@ -1,21 +1,21 @@
 # ToDo: Document this script.
 import pterasoftware as ps
 
-# Known Converged Values (prescribed wake, 0.5% convergence, 0 degrees angle of attack):
-#   1 Airplane:
-#       2, 8
-#   3 Airplanes:
-#       3, 11
-#   5 Airplanes:
-#       3, 11
-num_airplanes = 5
-num_flaps = 3
-num_chord = 11
+# Known Converged Values (0.5% convergence, 0 degrees angle of attack):
+#   1 Airplane (flaps, chordwise panels, prescribed wake):
+#       2, 7, False
+#   3 Airplanes (flaps, chordwise panels, prescribed wake):
+#       3, 7, False
+#   5 Airplanes (flaps, chordwise panels, prescribed wake):
+#       3, 7, False
+num_airplanes = 1
+num_flaps = 2
+num_chord = 7
 prescribed_wake = False
 
 aspect_ratio = 5.0
 speed = 1.0
-alpha = 5.0
+alpha = 0.0
 x_spacing = 0.5
 y_spacing = 0.5
 root_to_mid_span = 0.2275
@@ -158,7 +158,7 @@ del these_airplane_movements
 
 this_problem = ps.problems.UnsteadyProblem(
     movement=this_movement,
-    only_final_results=True,
+    only_final_results=False,
 )
 
 del this_movement
@@ -178,11 +178,18 @@ this_solver.run(
 
 ps.output.print_unsteady_results(unsteady_solver=this_solver)
 
-# ps.output.plot_results_versus_time(unsteady_solver=this_solver)
+ps.output.plot_results_versus_time(unsteady_solver=this_solver, save=True)
 
-# ps.output.animate(
-#     unsteady_solver=this_solver,
-#     scalar_type="lift",
-#     show_wake_vortices=True,
-#     keep_file=True,
-# )
+ps.output.draw(
+    solver=this_solver,
+    scalar_type="lift",
+    show_wake_vortices=True,
+    save=True,
+)
+
+ps.output.animate(
+    unsteady_solver=this_solver,
+    scalar_type="lift",
+    show_wake_vortices=True,
+    save=True,
+)

@@ -112,7 +112,7 @@ example_airplane = ps.geometry.Airplane(
                         # airfoil directory or a NACA four series airfoil, unless you
                         # are passing in your own coordinates.
                         name="naca2412",
-                        # If you wish to pass in coordinates, set this to a N x 2
+                        # If you wish to pass in coordinates, set this to an N x 2
                         # array of the airfoil's coordinates, where N is the number
                         # of coordinates. Treat this as an immutable, don't edit
                         # directly after initialization. If you wish to load
@@ -120,11 +120,11 @@ example_airplane = ps.geometry.Airplane(
                         # The default is None. Make sure that any airfoil coordinates
                         # used range in x from 0 to 1.
                         coordinates=None,
-                        # This is the variable that determines whether or not you
-                        # would like to repanel the airfoil coordinates. This applies
-                        # to coordinates passed in by the user or to the directory
-                        # coordinates. It is highly recommended to set this to True.
-                        # The default is True.
+                        # This is the variable that determines whether you would like
+                        # to repanel the airfoil coordinates. This applies to
+                        # coordinates passed in by the user or to the directory
+                        # coordinates. I highly recommended setting this to True. The
+                        # default is True.
                         repanel=True,
                         # This is number of points to use if repaneling the airfoil.
                         # It is ignored if the repanel is False. The default is 400.
@@ -392,12 +392,11 @@ movement = ps.movement.Movement(
     operating_point_movement=operating_point_movement,
     # Leave the number of time steps and the length of each time step unspecified.
     # The solver will automatically set the length of the time steps so that the wake
-    # ring vortices and the bound ring vortices have the approximately the same area.
-    # The solver will also determine if the geometry is static or not. If it is
-    # static, the number of steps will be set such that the wake extends ten chord
-    # lengths back from the main wing. If the geometry isn't static, the number of
-    # steps will be set such that three periods of the slowest movement oscillation
-    # complete.
+    # ring vortices and the bound ring vortices have approximately the same area. The
+    # solver will also determine if the geometry is static or not. If it is static,
+    # the number of steps will be set such that the wake extends ten chord lengths
+    # back from the main wing. If the geometry isn't static, the number of steps will
+    # be set such that three periods of the slowest movement oscillation complete.
     num_steps=None,
     delta_time=None,
 )
@@ -444,13 +443,13 @@ ps.output.draw(
     # "side force", or "lift".
     scalar_type="lift",
     # Tell the draw function to show the calculated streamlines. This value defaults
-    # to false.
+    # to False.
     show_streamlines=True,
     # Tell the draw function to not show the wake vortices. This value defaults to
-    # false.
+    # False.
     show_wake_vortices=False,
-    # The the draw function to not save the drawing as an image file. This way,
-    # the drawing will still be displayed but not saved. This value defaults to false.
+    # Tell the draw function to not save the drawing as an image file. This way,
+    # the drawing will still be displayed but not saved. This value defaults to False.
     save=False,
 )
 
@@ -465,12 +464,12 @@ ps.output.animate(
     # "side force", or "lift".
     scalar_type="lift",
     # Tell the animate function to show the wake vortices. This value defaults to
-    # false.
+    # False.
     show_wake_vortices=True,
-    # The the animate function to not save the animation as file. This way,
+    # Tell the animate function to not save the animation as file. This way,
     # the animation will still be displayed but not saved. This value defaults to
-    # false.
-    save=False,
+    # False.
+    save=True,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the

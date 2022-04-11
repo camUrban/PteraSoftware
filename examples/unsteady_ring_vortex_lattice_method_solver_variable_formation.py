@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a three airplanes, flying in formation, each with custom
+lattice method solver on three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the
 single-airplane examples for readability. I recommend you read and understand those
 examples before reading this example. """
@@ -303,17 +303,17 @@ solver.run(
     prescribed_wake=False,
 )
 
-# Call the software's animate function on the solver. This produces a GIF of the wake
-# being shed. The GIF is saved in the same directory as this script. Press "q",
-# after orienting the view, to begin the animation.
+# Call the software's animate function on the solver. This produces a WebP animation
+# of the wake being shed. The animation is saved in the same directory as this
+# script. Press "q", after orienting the view, to begin the animation.
 ps.output.animate(
     unsteady_solver=solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    # The the animate function to not save the animation as file. This way,
+    # Tell the animate function to not save the animation as file. This way,
     # the animation will still be displayed but not saved. This value defaults to
     # false.
-    save=False,
+    save=True,
 )
 
 # Compare the output you see with the expected outputs saved in the "docs/examples

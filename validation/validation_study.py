@@ -9,8 +9,7 @@ simulated results to the published experimental results.
 WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 2011.
 
 More information can be found in my accompanying report: "Validating an Open-Source
-UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
-"""
+UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach." """
 
 # Import Python’s math package.
 import math
@@ -62,12 +61,11 @@ planform_coords = planform_coords * np.array([1, -1])
 # coordinates are now in the geometry frame projected on the XY plane.
 planform_coords[:, [0, 1]] = planform_coords[:, [1, 0]]
 
-# Find the index of the point where the planform x-coordinate equals the
-# half span.
+# Find the index of the point where the planform x-coordinate equals the half span.
 tip_index = np.where(planform_coords[:, 1] == half_span)[0][0]
 
-# Using the tip index, split the coordinates into two arrays of leading
-# and trailing edge coordinates.
+# Using the tip index, split the coordinates into two arrays of leading and trailing
+# edge coordinates.
 leading_coords = planform_coords[:tip_index, :]
 trailing_coords = np.flip(planform_coords[tip_index:, :], axis=0)
 
@@ -204,6 +202,7 @@ for i in range(num_spanwise_sections):
 
 # Define the validation airplane object.
 validation_airplane = ps.geometry.Airplane(
+    name="Validation Airplane",
     wings=[
         ps.geometry.Wing(
             symmetric=True,
@@ -443,15 +442,6 @@ green_leading_area = 0.071 * 0.015
 # Run the validation solver. This validation study was run using a prescribed wake.
 validation_solver.run(prescribed_wake=True)
 
-# Call the software’s animate function on the solver. This produces a GIF. The GIF is
-# saved in the same directory as this script. Press "q," after orienting the view,
-# to begin the animation.
-# ps.output.animate(
-#     unsteady_solver=validation_solver,
-#     scalar_type="lift",
-#     show_wake_vortices=True,
-# )
-
 # Create a variable to hold the time in seconds at each of the simulation’s time steps.
 times = np.linspace(
     0,
@@ -581,111 +571,145 @@ exp_green_leading_normal_forces = (
     248.84 * exp_green_leading_point_pressures_norm * green_leading_area
 )
 
-# Convert each experimental panel’s normal force time history to a lift time history
-# by finding the vertical component given the wing’s sweep angle at each time step.
-exp_blue_trailing_lift_forces = exp_blue_trailing_normal_forces * np.cos(
+# Convert each experimental panel’s normal force time history to a time history of
+# the force in the z axis of the geometry frame. This is done by finding the vertical
+# component given the wing’s sweep angle at each time step.
+exp_blue_trailing_z_forces_geometry_axes = exp_blue_trailing_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_blue_middle_lift_forces = exp_blue_middle_normal_forces * np.cos(
+exp_blue_middle_z_forces_geometry_axes = exp_blue_middle_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_blue_leading_lift_forces = exp_blue_leading_normal_forces * np.cos(
+exp_blue_leading_z_forces_geometry_axes = exp_blue_leading_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_trailing_lift_forces = exp_orange_trailing_normal_forces * np.cos(
+exp_orange_trailing_z_forces_geometry_axes = exp_orange_trailing_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_middle_lift_forces = exp_orange_middle_normal_forces * np.cos(
+exp_orange_middle_z_forces_geometry_axes = exp_orange_middle_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_leading_lift_forces = exp_orange_leading_normal_forces * np.cos(
+exp_orange_leading_z_forces_geometry_axes = exp_orange_leading_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_trailing_lift_forces = exp_green_trailing_normal_forces * np.cos(
+exp_green_trailing_z_forces_geometry_axes = exp_green_trailing_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_middle_lift_forces = exp_green_middle_normal_forces * np.cos(
+exp_green_middle_z_forces_geometry_axes = exp_green_middle_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_leading_lift_forces = exp_green_leading_normal_forces * np.cos(
+exp_green_leading_z_forces_geometry_axes = exp_green_leading_normal_forces * np.cos(
     normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
 
-# Calculate the net experimental lift. This is the sum of all the lift on each of the
-# experimental panels multiplied by two (because the experimental panels only cover
-# one of the symmetric wing halves). Note: this list of lift forces is with respect
-# to the geometry axes.
-exp_lifts_geometry_axes = 2 * (
-    exp_blue_trailing_lift_forces
-    + exp_blue_middle_lift_forces
-    + exp_blue_leading_lift_forces
-    + exp_orange_trailing_lift_forces
-    + exp_orange_middle_lift_forces
-    + exp_orange_leading_lift_forces
-    + exp_green_trailing_lift_forces
-    + exp_green_middle_lift_forces
-    + exp_green_leading_lift_forces
+# Calculate the net experimental force in the z direction of the geometry axes. This
+# is the sum of all the z-direction-forces on each of the experimental panels
+# multiplied by two ( because the experimental panels only cover one of the symmetric
+# wing halves).
+exp_net_z_forces_geometry_axes = 2 * (
+    exp_blue_trailing_z_forces_geometry_axes
+    + exp_blue_middle_z_forces_geometry_axes
+    + exp_blue_leading_z_forces_geometry_axes
+    + exp_orange_trailing_z_forces_geometry_axes
+    + exp_orange_middle_z_forces_geometry_axes
+    + exp_orange_leading_z_forces_geometry_axes
+    + exp_green_trailing_z_forces_geometry_axes
+    + exp_green_middle_z_forces_geometry_axes
+    + exp_green_leading_z_forces_geometry_axes
 )
 
-# Initialize an array to hold the frame shifted lift forces.
-exp_lifts_wind_axes = np.zeros(exp_lifts_geometry_axes.size)
+# Initialize an array to hold the wind frame z-direction forces.
+exp_net_z_forces_wind_axes = np.zeros(exp_net_z_forces_geometry_axes.size)
 
-# To compare the experimental lift to the simulated lift, use the rotation matrix to
-# shift the experimental lift to the wind frame.
-for lift_id, lift_geometry_axes in enumerate(exp_lifts_geometry_axes):
-    exp_force_geometry_axes = np.array([0, 0, lift_geometry_axes])
-    exp_force_wind_axes = wind_to_geometry_rotation_matrix @ exp_force_geometry_axes
-    exp_lift_wind_axes = exp_force_wind_axes[2]
-    exp_lifts_wind_axes[lift_id] = exp_lift_wind_axes
+# To eventually compare the experimental and simulated lifts, use the rotation matrix
+# to shift the experimental force z-direction force to the wind frame.
+for force_id, force in enumerate(exp_net_z_forces_geometry_axes):
+    exp_net_force_geometry_axes = np.array([0, 0, force])
+    exp_net_force_wind_axes = (
+        wind_to_geometry_rotation_matrix @ exp_net_force_geometry_axes
+    )
+    exp_net_z_force_wind_axes = exp_net_force_wind_axes[2]
+    exp_net_z_forces_wind_axes[force_id] = exp_net_z_force_wind_axes
+
+# Get the experimental lift forces. Lift is defined as the z-direction wind-frame
+# force multiplied by negative one.
+exp_lifts = -1 * exp_net_z_forces_wind_axes
 
 # Get this solver’s problem’s airplanes.
 airplanes = []
 for steady_problem in validation_solver.steady_problems:
     airplanes.append(steady_problem.airplanes[0])
 
-# Initialize matrices to hold the forces and moments at each time step.
-sim_net_forces_wind_axes = np.zeros((3, validation_num_steps))
+# Initialize matrices to hold the forces at each time step.
+sim_forces_wind_axes = np.zeros((3, validation_num_steps))
 
 # Iterate through the time steps and add the results to their respective matrices.
 for step in range(validation_num_steps):
     # Get the airplane at this time step.
     airplane = airplanes[step]
-    # Add the total near field forces on the airplane at this time step to the list of
-    # simulated net forces.
-    sim_net_forces_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
+    # Add the total near field forces on the airplane at this time step to the list
+    # of simulated forces.
+    sim_forces_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
 
 # Initialize the figure and axes of the experimental versus simulated lift plot.
 lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
 
-# Get the simulated net lift forces. They are the third row of the net forces array.
-sim_net_lift_forces_wind_axes = sim_net_forces_wind_axes[2, :]
+# Get the simulated lift forces. Lift is defined as the z-direction wind-frame force
+# multiplied by negative one.
+sim_lifts = -1 * sim_forces_wind_axes[2, :]
 
-# Interpolate the simulated net lift forces to find them with respect to the
-# normalized final flap time scale.
-final_flap_sim_net_lift_forces_wind_axes = np.interp(
-    final_flap_times, times, sim_net_lift_forces_wind_axes[:]
-)
+# Interpolate the simulated lift forces to find them with respect to the normalized
+# final flap timescale.
+final_flap_sim_lifts = np.interp(final_flap_times, times, sim_lifts[:])
+
+sim_lift_color = "#D81E5B"
+exp_lift_color = "#003F91"
+
+num_markers = 6
+marker_size = 8
+text_color = "black"
+figure_background_color = "None"
+
+lift_axes.spines.right.set_visible(False)
+lift_axes.spines.top.set_visible(False)
+lift_axes.spines.bottom.set_color(text_color)
+lift_axes.spines.left.set_color(text_color)
+lift_axes.xaxis.label.set_color(text_color)
+lift_axes.yaxis.label.set_color(text_color)
+lift_axes.tick_params(axis="x", colors=text_color)
+lift_axes.tick_params(axis="y", colors=text_color)
+lift_figure.patch.set_facecolor(figure_background_color)
+lift_axes.set_facecolor(figure_background_color)
+
+marker_spacing = 1.0 / num_markers
 
 # Plot the simulated lift forces. The x-axis is set to the normalized times,
-# which may seem odd because we just interpolated so as to get them in terms of the
+# which may seem odd because we just interpolated to get them in terms of the
 # normalized final flap times. But, they are discretized in exactly the same way as
 # the normalized times, just horizontally shifted.
 lift_axes.plot(
     normalized_times,
-    final_flap_sim_net_lift_forces_wind_axes,
+    final_flap_sim_lifts,
     label="Simulated",
-    color="#E62128",
-    linestyle="solid",
+    color=sim_lift_color,
+    marker=".",
+    markevery=(marker_spacing * 0 / 2, marker_spacing),
+    markersize=marker_size,
 )
 
 # Plot the experimental lift forces.
 lift_axes.plot(
     normalized_times,
-    exp_lifts_wind_axes,
+    exp_lifts,
     label="Experimental",
-    color="#E62128",
-    linestyle="dashed",
+    color=exp_lift_color,
+    marker=".",
+    markevery=(marker_spacing * 1 / 2, marker_spacing),
+    markersize=marker_size,
 )
+
+# Add a gray box to signify which part of the graph is the downstroke.
+plt.axvspan(0.25, 0.75, facecolor="darkgray", label="Downstroke")
 
 # Label the axis, add a title, and add a legend.
 lift_axes.set_xlabel(
@@ -697,27 +721,34 @@ lift_axes.set_ylabel(
 lift_axes.set_title(
     "Simulated and Experimental Lift Versus Time",
 )
-lift_axes.legend()
+lift_axes.legend(
+    loc="upper left",
+    facecolor=figure_background_color,
+    edgecolor=figure_background_color,
+    labelcolor=text_color,
+)
 
-# Show the figure.
-lift_figure.show()
+# Save the lift comparison figure.
+lift_figure.savefig(
+    fname="Lift comparison.jpg",
+    dpi=300,
+    bbox_inches="tight",
+)
 
 # Delete the extraneous pointers.
 del airplanes
-del sim_net_forces_wind_axes
+del sim_forces_wind_axes
 del step
 
 # Calculate the lift mean absolute error (MAE). The experimental and simulated lift
 # comparison here is valid because, due to the interpolation steps, the experimental
-# and simulated lifts time histories are discretized so that they they are with
-# respect to the same time scale.
-lift_absolute_errors = np.abs(
-    final_flap_sim_net_lift_forces_wind_axes - exp_lifts_wind_axes
-)
+# and simulated lifts time histories are discretized so that they are with respect to
+# the same timescale.
+lift_absolute_errors = np.abs(final_flap_sim_lifts - exp_lifts)
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
 
-sim_lift_rms = math.sqrt(np.mean(final_flap_sim_net_lift_forces_wind_axes**2))
-exp_lift_rms = math.sqrt(np.mean(exp_lifts_wind_axes**2))
+sim_lift_rms = math.sqrt(np.mean(final_flap_sim_lifts**2))
+exp_lift_rms = math.sqrt(np.mean(exp_lifts**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
 print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
 print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
@@ -728,12 +759,28 @@ print(
     "\nMean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
 )
 
-# Calculate the experimental root mean square (RMS) lift.
-exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts_wind_axes, 2)))
+# Calculate the experimental root-mean-square (RMS) lift.
+exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts, 2)))
 
 # Print the experimental RMS lift.
 print("Experimental RMS Lift: " + str(np.round(exp_rms_lift, 4)) + " N")
 
+ps.output.draw(
+    solver=validation_solver,
+    show_wake_vortices=True,
+    scalar_type="lift",
+    save=True,
+)
+
+ps.output.plot_results_versus_time(
+    unsteady_solver=validation_solver,
+    show=False,
+    save=True,
+)
+
 ps.output.animate(
-    unsteady_solver=validation_solver, show_wake_vortices=True, scalar_type="lift"
+    unsteady_solver=validation_solver,
+    show_wake_vortices=True,
+    scalar_type="lift",
+    save=True,
 )

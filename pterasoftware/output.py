@@ -20,7 +20,7 @@ This module contains the following functions:
     force coefficients, and moment coefficients calculated by a steady solver.
 
     print_unsteady_results: This function prints the averages of the forces, moments,
-    force coefficients, and moment coefficients calculated by a unsteady solver.
+    force coefficients, and moment coefficients calculated by an unsteady solver.
 
     get_panel_surfaces: This function returns a PolyData representation of the wing
     panel surfaces associated with all the airplanes in a given list.
@@ -32,6 +32,8 @@ This module contains the following functions:
     objects, and puts them into a 1D array to be used as scalars for display by other
     output methods.
 """
+
+import math
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -49,6 +51,8 @@ streamline_color = "orchid"
 plotter_background_color = "black"
 figure_background_color = "None"
 text_color = "#818181"
+quality = 75
+window_size = [1024, 768]
 
 # For the figure lines, use the "Prism" qualitative color map from
 # carto.com/carto-colors.
@@ -77,15 +81,16 @@ prism = [
 
 # Set constants for the color maps, scalar bars, and text boxes.
 color_map_num_sig = 3
-bar_title_font_size = 20
-bar_label_font_size = 14
+bar_title_font_size = 30
+bar_label_font_size = 21
 bar_width = 0.5
 bar_position_x = 0.25
 bar_position_y = 0.05
 bar_n_labels = 2
 text_max_position = (0.85, 0.075)
 text_min_position = (0.85, 0.05)
-text_font_size = 7
+text_speed_position = (0.05, 0.075)
+text_font_size = 11
 
 # Set the number of markers and the marker size for the results plots.
 num_markers = 6
@@ -131,20 +136,20 @@ def draw(
     """
 
     # Initialize the plotter.
-    plotter = pv.Plotter(lighting=None)
+    plotter = pv.Plotter(window_size=window_size, lighting=None)
 
     # Get the solver's geometry.
     if isinstance(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
-        airplanes = solver.steady_problems[-1].airplanes
-        last_step = solver.num_steps - 1
+        draw_step = solver.num_steps - 1
+        airplanes = solver.steady_problems[draw_step].airplanes
 
         # If the user wants to show the wake ring vortices, then get their surfaces and
         # plot them.
         if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(solver, last_step)
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(solver, draw_step)
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
@@ -171,7 +176,7 @@ def draw(
 
         # Get the scalars
         these_scalars = get_scalars(airplanes, scalar_type)
-        min_scalar = round(max(these_scalars), 2)
+        min_scalar = round(min(these_scalars), 2)
         max_scalar = round(max(these_scalars), 2)
 
         # Choose the color map and set its limits based on if the min and max scalars
@@ -247,7 +252,11 @@ def draw(
     # window, the plotter object won't be closed so that it can be saved as an image
     # if the user wants.
     plotter.set_background(color=plotter_background_color)
-    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+    plotter.show(
+        cpos=(-1, -1, 1),
+        full_screen=False,
+        auto_close=False,
+    )
 
     # If the user wants to save the image, take a screenshot, convert it into an
     # image object, and save it as a WebP.
@@ -257,10 +266,11 @@ def draw(
                 filename=None,
                 transparent_background=True,
                 return_img=True,
-                window_size=None,
             )
         )
-        webp.save_image(img=image, file_path="Draw.webp", lossless=False, quality=50)
+        webp.save_image(
+            img=image, file_path="Draw.webp", lossless=False, quality=quality
+        )
 
     # Close all the plotters.
     pv.close_all()
@@ -300,14 +310,32 @@ def animate(
     for steady_problem in unsteady_solver.steady_problems:
         step_airplanes.append(steady_problem.airplanes)
 
-    # Initialize the plotter and get the color map. Also, turn off the lighting to avoid
-    # making the scalar bar jittery.
-    plotter = pv.Plotter(lighting=None)
+    # Scale down the true-speed frames per second to at most 50 fps. This is the
+    # maximum speed some programs can render WebPs.
+    requested_fps = 1 / unsteady_solver.delta_time
+    speed = 1
+    if requested_fps > 50:
+        speed = 50 / requested_fps
+    actual_fps = math.floor(requested_fps * speed)
+
+    # Initialize the plotter and get the color map.
+    plotter = pv.Plotter(window_size=window_size, lighting=None)
 
     # Initialize values to hold the color map choice and its limits.
     c_min = 0
     c_max = 0
     color_map = None
+
+    if save:
+        # Add text to the animation that display's its speed relative to the true
+        # speed.
+        plotter.add_text(
+            text=str(round(100 * speed)) + "% Actual Speed",
+            position=text_speed_position,
+            font_size=text_font_size,
+            viewport=True,
+            color=text_color,
+        )
 
     # Check if the user wants to show scalars on the wing panels.
     show_scalars = False
@@ -318,7 +346,7 @@ def animate(
     ):
         show_scalars = True
 
-    # Initialize an variables to hold the problems' scalars and their attributes.
+    # Initialize variables to hold the problems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=int)
     min_scalar = None
     max_scalar = None
@@ -326,8 +354,8 @@ def animate(
     # Check if the user wants to show scalars on the wing panels.
     if show_scalars:
 
-        # Now iterate through each time step and gather all of the scalars for its
-        # list of airplanes. These values will be used to configure the color map.
+        # Now iterate through each time step and gather all the scalars for its list
+        # of airplanes. These values will be used to configure the color map.
         for airplanes in step_airplanes:
             scalars_to_add = get_scalars(airplanes, scalar_type)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
@@ -350,7 +378,7 @@ def animate(
             c_min = -color_map_num_sig * np.std(all_scalars)
             c_max = color_map_num_sig * np.std(all_scalars)
 
-        min_scalar = round(max(all_scalars), 2)
+        min_scalar = round(min(all_scalars), 2)
         max_scalar = round(max(all_scalars), 2)
 
     # Initialize the panel surfaces and add the meshes to the plotter.
@@ -390,8 +418,13 @@ def animate(
     )
 
     # Show the plotter so the user can set up the camera. Then, they will close the
-    # window, but the plotter object will stay open off screen.
-    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+    # window, but the plotter object will stay open off-screen.
+    plotter.show(
+        title="Rendering speed not to scale.",
+        cpos=(-1, -1, 1),
+        full_screen=False,
+        auto_close=False,
+    )
 
     # Start a list which will hold a WebP image of each frame.
     images = [
@@ -399,7 +432,6 @@ def animate(
             plotter.screenshot(
                 transparent_background=True,
                 return_img=True,
-                window_size=None,
             )
         )
     ]
@@ -415,6 +447,15 @@ def animate(
 
         # Get the panel surfaces.
         panel_surfaces = get_panel_surfaces(airplanes)
+
+        if save:
+            plotter.add_text(
+                text=str(round(100 * speed)) + "% Actual Speed",
+                position=text_speed_position,
+                font_size=text_font_size,
+                viewport=True,
+                color=text_color,
+            )
 
         # If the user wants to show the wake ring vortices, then get their surfaces
         # and plot them.
@@ -464,7 +505,6 @@ def animate(
                         filename=None,
                         transparent_background=True,
                         return_img=True,
-                        window_size=None,
                     )
                 )
             )
@@ -474,11 +514,9 @@ def animate(
 
     # If the user wants to save the file, save the list of images as an animated WebP.
     if save:
-        this_fps = round(1 / unsteady_solver.delta_time)
-
         # Convert the list of WebP images to a WebP animation.
         webp.save_images(
-            images, "Animate.webp", fps=this_fps, lossless=False, quality=50
+            images, "Animate.webp", fps=actual_fps, lossless=False, quality=quality
         )
 
     # Close all the plotters.
@@ -627,7 +665,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
             label="Induced Drag",
             color=drag_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
+            markevery=(marker_spacing * 0 / 3, marker_spacing),
             markersize=marker_size,
         )
         force_axes.plot(
@@ -636,7 +674,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
             label="Side Force",
             color=side_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
+            markevery=(marker_spacing * 1 / 3, marker_spacing),
             markersize=marker_size,
         )
         force_axes.plot(
@@ -672,7 +710,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
             label="Lift",
             color=lift_color,
             marker=".",
-            markevery=(marker_spacing * 0 / 3, marker_spacing),
+            markevery=(marker_spacing * 2 / 3, marker_spacing),
             markersize=marker_size,
         )
         moment_axes.plot(
@@ -775,11 +813,21 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
         # Save the figures as PNGs if the user wants to do so.
         if save:
-            force_figure.savefig(airplane_name + " Forces.png")
-            force_coefficients_figure.savefig(airplane_name + " Force Coefficients.png")
-            moment_figure.savefig(airplane_name + " Moments.png")
+            force_figure.savefig(
+                airplane_name + " Forces.png",
+                dpi=300,
+            )
+            force_coefficients_figure.savefig(
+                airplane_name + " Force Coefficients.png",
+                dpi=300,
+            )
+            moment_figure.savefig(
+                airplane_name + " Moments.png",
+                dpi=300,
+            )
             moment_coefficients_figure.savefig(
-                airplane_name + " Moment Coefficients.png"
+                airplane_name + " Moment Coefficients.png",
+                dpi=300,
             )
 
         # If the user wants to show the plots, do so.
@@ -891,7 +939,7 @@ def print_steady_results(steady_solver):
 
 def print_unsteady_results(unsteady_solver):
     """This function prints the averages of the forces, moments, force coefficients,
-    and moment coefficients calculated by a unsteady solver.
+    and moment coefficients calculated by an unsteady solver.
 
     Note: This method averages the values for every time step that calculated
     results. Therefore, the averages are not necessarily the final-cycle averages.
@@ -1100,7 +1148,6 @@ def get_panel_surfaces(
             # Unravel the wing's panel matrix and iterate through it.
             panels = np.ravel(wing.panels)
             for panel in panels:
-
                 # Stack this panel's vertices and faces. Look through the PolyData
                 # documentation for more details.
                 panel_vertices_to_add = np.vstack(
@@ -1164,7 +1211,6 @@ def get_wake_ring_vortex_surfaces(solver, step):
     wake_ring_vortex_faces = np.zeros(0, dtype=int)
 
     for wake_ring_vortex_num in range(num_wake_ring_vortices):
-
         this_front_right_vertex = wake_ring_vortex_front_right_vertices[
             wake_ring_vortex_num
         ]

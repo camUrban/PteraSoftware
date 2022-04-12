@@ -1325,11 +1325,11 @@
      <property name="title">
       <string>Examples</string>
      </property>
-     <addaction name="actionExample_1_steady_horseshoe_vortex_lattice_method_solver"/>
-     <addaction name="actionExample_2_Steady_ring_vortex_lattice_method_solver"/>
-     <addaction name="actionExample_3_Unsteady_ring_vortex_lattice_method_solver_static"/>
+     <addaction name="actionExample_1"/>
+     <addaction name="actionExample_2"/>
+     <addaction name="actionExample_3"/>
      <addaction name="actionExample_4"/>
-     <addaction name="actionExample_5_Unsteady_ring_vortex_lattice_method_solver_variable_formation"/>
+     <addaction name="actionExample_5"/>
     </widget>
     <addaction name="actionAbout"/>
     <addaction name="menuExamples"/>
@@ -1385,17 +1385,17 @@
     <string>Preset Aircraft List</string>
    </property>
   </action>
-  <action name="actionExample_1_steady_horseshoe_vortex_lattice_method_solver">
+  <action name="actionExample_1">
    <property name="text">
     <string>Example 1: Steady horseshoe vortex lattice method solver</string>
    </property>
   </action>
-  <action name="actionExample_2_Steady_ring_vortex_lattice_method_solver">
+  <action name="actionExample_2">
    <property name="text">
     <string>Example 2: Steady ring vortex lattice method solver</string>
    </property>
   </action>
-  <action name="actionExample_3_Unsteady_ring_vortex_lattice_method_solver_static">
+  <action name="actionExample_3">
    <property name="text">
     <string>Example 3: Unsteady ring vortex lattice method solver static</string>
    </property>
@@ -1405,7 +1405,7 @@
     <string>Example 4: Unsteady ring vortex lattice method solver variable</string>
    </property>
   </action>
-  <action name="actionExample_5_Unsteady_ring_vortex_lattice_method_solver_variable_formation">
+  <action name="actionExample_5">
    <property name="text">
     <string>Example 5: Unsteady ring vortex lattice method solver variable formation</string>
    </property>

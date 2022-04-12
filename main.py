@@ -2,20 +2,14 @@ import os
 import sys
 import time
 
-import PySide2
-
-from pterasoftware import *
-
-
 print("Builtin modules imported")
-from PySide2.QtCore import Qt, QRect, Slot, QThreadPool
+from PySide2.QtCore import Qt
 
 print("QTCore imported")
-from PySide2.QtGui import QPixmap, QCloseEvent, QPalette, QColor
+from PySide2.QtGui import QPixmap
 
 print("QtGUI imported")
-from PySide2.QtWidgets import QDialog, QMainWindow, QApplication, QListWidgetItem, QSplashScreen, QMessageBox, QSlider, \
-    QLabel, QAbstractItemView, QWidget, QColorDialog, QMenu
+from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
 
 from pterasoftware.ui_resources.mainWindow import Ui_MainWindowDesign
 
@@ -24,9 +18,24 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         super(MainWindow, self).__init__()
         self.setupUi(self)
 
+        self.actionExample_1.triggered.connect(lambda x : self.exampleMenu(1))
+        self.actionExample_2.triggered.connect(lambda x : self.exampleMenu(2))
+        self.actionExample_3.triggered.connect(lambda x : self.exampleMenu(3))
+        self.actionExample_4.triggered.connect(lambda x : self.exampleMenu(4))
+        self.actionExample_5.triggered.connect(lambda x : self.exampleMenu(5))
+
+
+    def exampleMenu(self,ex_num):
+        files = []
+        for i, filename in enumerate(os.listdir("examples")):
+            f = os.path.join("examples", filename)
+            if os.path.isfile(f):
+                files.append(f)
+        run(files[num])
+
+
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     pixmap = QPixmap('docs/logo.png')
     splash = QSplashScreen(pixmap)
@@ -45,8 +54,3 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 
     print("Yup, it works")
-
-
-
-
-

@@ -18,11 +18,11 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         super(MainWindow, self).__init__()
         self.setupUi(self)
 
-        self.actionExample_1.triggered.connect(lambda x : self.exampleMenu(1))
-        self.actionExample_2.triggered.connect(lambda x : self.exampleMenu(2))
-        self.actionExample_3.triggered.connect(lambda x : self.exampleMenu(3))
-        self.actionExample_4.triggered.connect(lambda x : self.exampleMenu(4))
-        self.actionExample_5.triggered.connect(lambda x : self.exampleMenu(5))
+        self.actionExample_1.triggered.connect(lambda x : self.exampleMenu(0))
+        self.actionExample_2.triggered.connect(lambda x : self.exampleMenu(1))
+        self.actionExample_3.triggered.connect(lambda x : self.exampleMenu(2))
+        self.actionExample_4.triggered.connect(lambda x : self.exampleMenu(3))
+        self.actionExample_5.triggered.connect(lambda x : self.exampleMenu(4))
 
 
     def exampleMenu(self,ex_num):

@@ -991,7 +991,7 @@ class Ui_MainWindowDesign(object):
         self.label_27.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p>\u03b2</p></body></html>", None))
         self.label_28.setText(QCoreApplication.translate("MainWindowDesign", u"d", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QCoreApplication.translate("MainWindowDesign", u"Visualiser Settings", None))
-        self.Logo.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p><img src=\"docs/logo.png\"/></p></body></html>", None))
+        self.Logo.setText(QCoreApplication.translate("MainWindowDesign", u"<html><head/><body><p><img src=\"docs/Black_Text_Logo.png\"/></p></body></html>", None))
         self.q_start.setText(QCoreApplication.translate("MainWindowDesign", u"Generate Results", None))
         self.q_homing.setText(QCoreApplication.translate("MainWindowDesign", u"Plot Visualisation", None))
         self.terminalOutpotLogo.setText(QCoreApplication.translate("MainWindowDesign", u"Terminal Output", None))

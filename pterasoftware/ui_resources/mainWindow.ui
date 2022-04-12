@@ -1294,7 +1294,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="view_logging">
+        <widget class="QListView" name="terminalOutput">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>

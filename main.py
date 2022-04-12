@@ -26,12 +26,15 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
 
     def exampleMenu(self,ex_num):
+        import importlib
         files = []
         for i, filename in enumerate(os.listdir("examples")):
-            f = os.path.join("examples", filename)
-            if os.path.isfile(f):
-                files.append(f)
-        run(files[num])
+            f = "examples." + filename
+            files.append(f)
+        file = files[ex_num]
+        file = file.replace(".py", "")
+        print(file)
+        importlib.import_module(file)
 
 
 

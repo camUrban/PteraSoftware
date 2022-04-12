@@ -863,15 +863,15 @@ class Ui_MainWindowDesign(object):
 
         self.verticalLayout.addWidget(self.terminalOutpotLogo)
 
-        self.view_logging = QListView(self.frame_2)
-        self.view_logging.setObjectName(u"view_logging")
+        self.terminalOutput = QListView(self.frame_2)
+        self.terminalOutput.setObjectName(u"terminalOutput")
         sizePolicy10 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy10.setHorizontalStretch(0)
         sizePolicy10.setVerticalStretch(0)
-        sizePolicy10.setHeightForWidth(self.view_logging.sizePolicy().hasHeightForWidth())
-        self.view_logging.setSizePolicy(sizePolicy10)
+        sizePolicy10.setHeightForWidth(self.terminalOutput.sizePolicy().hasHeightForWidth())
+        self.terminalOutput.setSizePolicy(sizePolicy10)
 
-        self.verticalLayout.addWidget(self.view_logging)
+        self.verticalLayout.addWidget(self.terminalOutput)
 
 
         self.gridLayout_4.addWidget(self.frame_2, 4, 0, 1, 2)

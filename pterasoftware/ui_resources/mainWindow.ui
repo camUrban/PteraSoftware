@@ -52,7 +52,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="aircraftParametersTab">
        <attribute name="title">
         <string>Aircraft Parameters</string>
        </attribute>
@@ -103,7 +103,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="nameInput">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -151,7 +151,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox">
+           <widget class="QDoubleSpinBox" name="x_CofG">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
               <horstretch>0</horstretch>
@@ -185,7 +185,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+           <widget class="QDoubleSpinBox" name="y_CofG">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -214,7 +214,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+           <widget class="QDoubleSpinBox" name="z_CofG">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -240,7 +240,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="q_injection">
+           <widget class="QPushButton" name="saveAircraftButtom">
             <property name="text">
              <string>Save Aircraft</string>
             </property>
@@ -289,7 +289,7 @@
             </widget>
            </item>
            <item row="5" column="0">
-            <widget class="QDoubleSpinBox" name="q_alpha">
+            <widget class="QDoubleSpinBox" name="LE_loc_z">
              <property name="minimum">
               <double>-33.000000000000000</double>
              </property>
@@ -299,7 +299,7 @@
             </widget>
            </item>
            <item row="3" column="0">
-            <widget class="QDoubleSpinBox" name="q_x">
+            <widget class="QDoubleSpinBox" name="LE_loc_x">
              <property name="suffix">
               <string/>
              </property>
@@ -322,14 +322,14 @@
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="QDoubleSpinBox" name="q_y">
+            <widget class="QDoubleSpinBox" name="LE_loc_y">
              <property name="maximum">
               <double>49.000000000000000</double>
              </property>
             </widget>
            </item>
            <item row="11" column="0">
-            <widget class="QCheckBox" name="checkBox">
+            <widget class="QCheckBox" name="mainWingSymmetryCheckbox">
              <property name="text">
               <string>Symmetric?</string>
              </property>
@@ -363,7 +363,7 @@
             </widget>
            </item>
            <item row="10" column="0">
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="CWPanelSpcaing">
              <item>
               <property name="text">
                <string>Uniform</string>
@@ -389,7 +389,7 @@
             </widget>
            </item>
            <item row="8" column="0">
-            <widget class="QDoubleSpinBox" name="q_beta">
+            <widget class="QDoubleSpinBox" name="panelNum_CWPanels">
              <property name="minimum">
               <double>-50.000000000000000</double>
              </property>
@@ -461,6 +461,52 @@
                <string/>
               </property>
               <layout class="QGridLayout" name="gridLayout_11">
+               <item row="4" column="0">
+                <widget class="QDoubleSpinBox" name="WRCW_LE_loc_y">
+                 <property name="maximum">
+                  <double>49.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QDoubleSpinBox" name="panelNum_SWPanels">
+                 <property name="minimum">
+                  <double>-50.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>44.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="0">
+                <widget class="QDoubleSpinBox" name="WRCS_CSHP"/>
+               </item>
+               <item row="8" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="label_74">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Number of Panels</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="label_78">
+                 <property name="text">
+                  <string>x</string>
+                 </property>
+                </widget>
+               </item>
                <item row="12" column="0">
                 <widget class="QLabel" name="label_69">
                  <property name="font">
@@ -474,6 +520,39 @@
                   <string>Chord and Control Surface</string>
                  </property>
                 </widget>
+               </item>
+               <item row="13" column="1">
+                <widget class="QLabel" name="label_75">
+                 <property name="text">
+                  <string>Chord</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="15" column="0">
+                <widget class="QDoubleSpinBox" name="WRCS_CSD"/>
+               </item>
+               <item row="15" column="1">
+                <widget class="QLabel" name="label_79">
+                 <property name="text">
+                  <string>Control Surface Deflection</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="label_73">
+                 <property name="text">
+                  <string>y</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QDoubleSpinBox" name="WRCS_Chord"/>
                </item>
                <item row="7" column="0">
                 <widget class="QLabel" name="label_70">
@@ -495,30 +574,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0">
-                <widget class="QCheckBox" name="checkBox_6">
+               <item row="5" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="label_72">
                  <property name="text">
-                  <string>Symmetric?</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QDoubleSpinBox" name="q_alpha_7">
-                 <property name="minimum">
-                  <double>-33.000000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>45.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QDoubleSpinBox" name="q_x_7">
-                 <property name="suffix">
-                  <string/>
-                 </property>
-                 <property name="maximum">
-                  <double>49.000000000000000</double>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;z&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -529,51 +588,55 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1" alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="label_72">
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;z&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <item row="5" column="0">
+                <widget class="QDoubleSpinBox" name="WRCW_LE_loc_z">
+                 <property name="minimum">
+                  <double>-33.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>45.000000000000000</double>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1" alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="label_73">
-                 <property name="text">
-                  <string>y</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1" alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="label_74">
+               <item row="2" column="0" colspan="2">
+                <widget class="QLabel" name="label_77">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
                  </property>
                  <property name="text">
-                  <string>Number of Panels</string>
+                  <string>Leading Edge Location</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
-                <widget class="QDoubleSpinBox" name="q_beta_7">
-                 <property name="minimum">
-                  <double>-50.000000000000000</double>
+               <item row="14" column="1">
+                <widget class="QLabel" name="label_76">
+                 <property name="text">
+                  <string>Control Surface Hinge Point</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QDoubleSpinBox" name="WRCW_LE_loc_x">
+                 <property name="suffix">
+                  <string/>
                  </property>
                  <property name="maximum">
-                  <double>44.000000000000000</double>
+                  <double>49.000000000000000</double>
                  </property>
                 </widget>
                </item>
                <item row="10" column="0">
-                <widget class="QComboBox" name="comboBox_6">
+                <widget class="QComboBox" name="SWPanelSpcaing">
                  <item>
                   <property name="text">
                    <string>Uniform</string>
@@ -591,33 +654,10 @@
                  </item>
                 </widget>
                </item>
-               <item row="14" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_16"/>
-               </item>
-               <item row="13" column="1">
-                <widget class="QLabel" name="label_75">
+               <item row="11" column="0">
+                <widget class="QCheckBox" name="WRCS_S_symCheckbox">
                  <property name="text">
-                  <string>Chord</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_17"/>
-               </item>
-               <item row="4" column="0">
-                <widget class="QDoubleSpinBox" name="q_y_7">
-                 <property name="maximum">
-                  <double>49.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="14" column="1">
-                <widget class="QLabel" name="label_76">
-                 <property name="text">
-                  <string>Control Surface Hinge Point</string>
+                  <string>Symmetric?</string>
                  </property>
                 </widget>
                </item>
@@ -653,40 +693,22 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QLabel" name="label_77">
+               <item row="16" column="0">
+                <widget class="QComboBox" name="WRCS_aerofoil"/>
+               </item>
+               <item row="16" column="1">
+                <widget class="QLabel" name="label_23">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>10</pointsize>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
+                 <property name="toolTipDuration">
+                  <number>0</number>
                  </property>
                  <property name="text">
-                  <string>Leading Edge Location</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1" alignment="Qt::AlignHCenter">
-                <widget class="QLabel" name="label_78">
-                 <property name="text">
-                  <string>x</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="15" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_18"/>
-               </item>
-               <item row="15" column="1">
-                <widget class="QLabel" name="label_79">
-                 <property name="text">
-                  <string>Control Surface Deflection</string>
+                  <string>Aerofoil</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -710,10 +732,10 @@
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
                <item row="13" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_14"/>
+                <widget class="QDoubleSpinBox" name="WTCS_Chord"/>
                </item>
                <item row="4" column="0">
-                <widget class="QDoubleSpinBox" name="q_y_6">
+                <widget class="QDoubleSpinBox" name="WTCW_LE_loc_y">
                  <property name="maximum">
                   <double>49.000000000000000</double>
                  </property>
@@ -734,7 +756,7 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QDoubleSpinBox" name="q_x_6">
+                <widget class="QDoubleSpinBox" name="WTCW_LE_loc_x">
                  <property name="suffix">
                   <string/>
                  </property>
@@ -763,7 +785,7 @@
                 </widget>
                </item>
                <item row="10" column="0">
-                <widget class="QComboBox" name="comboBox_5">
+                <widget class="QComboBox" name="SWPanelSpcaing_WTCS">
                  <item>
                   <property name="text">
                    <string>Uniform</string>
@@ -828,7 +850,7 @@
                 </widget>
                </item>
                <item row="14" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_13"/>
+                <widget class="QDoubleSpinBox" name="WTCS_CSHP"/>
                </item>
                <item row="14" column="1">
                 <widget class="QLabel" name="label_65">
@@ -838,7 +860,7 @@
                 </widget>
                </item>
                <item row="8" column="0">
-                <widget class="QDoubleSpinBox" name="q_beta_6">
+                <widget class="QDoubleSpinBox" name="panelNum_SWPanels_WTCS">
                  <property name="minimum">
                   <double>-50.000000000000000</double>
                  </property>
@@ -868,7 +890,7 @@
                 </widget>
                </item>
                <item row="11" column="0">
-                <widget class="QCheckBox" name="checkBox_5">
+                <widget class="QCheckBox" name="WTCS_S_symCheckbox">
                  <property name="text">
                   <string>Symmetric?</string>
                  </property>
@@ -919,10 +941,10 @@
                 </widget>
                </item>
                <item row="15" column="0">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_15"/>
+                <widget class="QDoubleSpinBox" name="WTCS_CSD"/>
                </item>
                <item row="5" column="0">
-                <widget class="QDoubleSpinBox" name="q_alpha_6">
+                <widget class="QDoubleSpinBox" name="WTCW_LE_loc_z">
                  <property name="minimum">
                   <double>-33.000000000000000</double>
                  </property>
@@ -932,7 +954,7 @@
                 </widget>
                </item>
                <item row="16" column="0">
-                <widget class="QComboBox" name="aerofoilSelection"/>
+                <widget class="QComboBox" name="WTCS_aerofoil"/>
                </item>
                <item row="15" column="1">
                 <widget class="QLabel" name="label_68">
@@ -963,7 +985,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="modellingTab">
        <attribute name="title">
         <string>Model </string>
        </attribute>
@@ -973,114 +995,7 @@
           <property name="title">
            <string>Controller</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="4" column="1" alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;θ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QDoubleSpinBox" name="ee_phi">
-             <property name="minimum">
-              <double>57.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>135.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QDoubleSpinBox" name="ee_z">
-             <property name="minimum">
-              <double>-300.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>300.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="ee_start">
-             <property name="text">
-              <string>Move</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QDoubleSpinBox" name="ee_x">
-             <property name="minimum">
-              <double>-300.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>300.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QDoubleSpinBox" name="ee_y">
-             <property name="minimum">
-              <double>-300.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>300.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QDoubleSpinBox" name="ee_theta">
-             <property name="minimum">
-              <double>-50.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>44.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="2">
-            <widget class="QPushButton" name="ee_homing">
-             <property name="text">
-              <string>Homing</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1" alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>z</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1" alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>x</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1" alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;φ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1" alignment="Qt::AlignHCenter">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>y</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QPushButton" name="ee_injection">
-             <property name="text">
-              <string>Injection</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <layout class="QGridLayout" name="gridLayout_2"/>
          </widget>
         </item>
        </layout>
@@ -1100,7 +1015,7 @@
         <string>Solution</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_3">
+      <widget class="QWidget" name="visualiserSettingsTab">
        <attribute name="title">
         <string>Visualiser Settings</string>
        </attribute>
@@ -1270,7 +1185,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="q_start">
+        <widget class="QPushButton" name="genResultsButton">
          <property name="contextMenuPolicy">
           <enum>Qt::NoContextMenu</enum>
          </property>
@@ -1280,7 +1195,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="q_homing">
+        <widget class="QPushButton" name="plotVisualsButton">
          <property name="text">
           <string>Plot Visualisation</string>
          </property>

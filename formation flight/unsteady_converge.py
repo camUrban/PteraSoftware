@@ -9,24 +9,24 @@ import pterasoftware as ps
 
 start_time = time.time()
 
-# Known Converged Values (prescribed wake, 0.5% convergence, 0 degrees angle of attack):
-#   1 Airplane:
-#       2, 8
-#   3 Airplanes:
-#       3, 11
-#   5 Airplanes:
-#       3, 11
+# Known Converged Values (0.5% convergence, 0 degrees angle of attack):
+#   1 Airplane (flaps, chordwise panels, prescribed wake):
+#       2, 7, False
+#   3 Airplanes (flaps, chordwise panels, prescribed wake):
+#       3, 7, False
+#   5 Airplanes (flaps, chordwise panels, prescribed wake):
+#       3, 7, False
 convergence = 0.5
-num_airplanes = 1
+num_airplanes = 5
 min_num_flaps = 1
-max_num_flaps = 6
-min_num_chord = 2
-max_num_chord = 12
-prescribed_wake = True
+max_num_flaps = 4
+min_num_chord = 5
+max_num_chord = 13
+wake_state_list = [True, False]
 
 aspect_ratio = 5.0
 speed = 1.0
-alpha = 5.0
+alpha = 0.0
 x_spacing = 0.5
 y_spacing = 0.5
 root_to_mid_span = 0.2275
@@ -39,7 +39,6 @@ period = x_spacing / speed
 root_to_mid_chord = root_chord
 mid_to_tip_chord = (root_chord + tip_chord) / 2
 
-wake_state_list = [prescribed_wake]
 num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]
 num_chord_list = [i for i in range(min_num_chord, max_num_chord + 1)]
 
@@ -255,8 +254,8 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             these_ms_drags = np.mean(these_s_drags, axis=-1)
             these_ms_lifts = np.mean(these_s_lifts, axis=-1)
 
-            these_rms_drags = these_ms_drags ** 0.5
-            these_rms_lifts = these_ms_lifts ** 0.5
+            these_rms_drags = these_ms_drags**0.5
+            these_rms_lifts = these_ms_lifts**0.5
 
             rms_drags[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_drags
             rms_lifts[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_lifts

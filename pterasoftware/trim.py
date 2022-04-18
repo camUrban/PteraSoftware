@@ -42,8 +42,8 @@ def analyze_steady_trim(
     alpha_bounds,
     beta_bounds,
     external_thrust_bounds,
-    objective_cut_off,
-    num_calls=100,
+    objective_cut_off=0.01,
+    num_calls=50,
 ):
     """This function attempts to calculate a trim condition of a steady solver by
     varying the operating point's velocity, angle of attack, angle of sideslip,
@@ -98,7 +98,11 @@ def analyze_steady_trim(
         problem.operating_point.velocity = velocity
         problem.operating_point.alpha = alpha
         problem.operating_point.beta = beta
-        external_force = np.array([external_thrust, 0, weight])
+        dynamic_pressure = problem.operating_point.calculate_dynamic_pressure()
+        s_ref = problem.airplanes[0].s_ref
+
+        external_forces = np.array([external_thrust, 0, weight])
+        external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
         solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
             steady_problem=problem
@@ -108,12 +112,17 @@ def analyze_steady_trim(
 
         airplane = solver.airplanes[0]
 
-        net_force = np.linalg.norm(
-            airplane.total_near_field_force_wind_axes + external_force
+        net_force_coefficient = np.linalg.norm(
+            airplane.total_near_field_force_coefficients_wind_axes
+            - external_force_coefficients
         )
-        net_moment = np.linalg.norm(airplane.total_near_field_moment_wind_axes)
+        net_moment_coefficient = np.linalg.norm(
+            airplane.total_near_field_moment_coefficients_wind_axes
+        )
 
-        return abs(net_force) + abs(net_moment)
+        objective = (abs(net_force_coefficient) + abs(net_moment_coefficient)) / 2
+
+        return objective
 
     initial_guess = np.array(
         [base_velocity, base_alpha, base_beta, base_external_thrust]
@@ -158,8 +167,8 @@ def analyze_unsteady_trim(
     velocity_bounds,
     alpha_bounds,
     beta_bounds,
-    objective_cut_off,
-    num_calls=100,
+    objective_cut_off=0.01,
+    num_calls=50,
 ):
     """analyze_unsteady_trim: This function attempts to calculate a trim condition of
     an unsteady solver by varying the operating point's velocity, angle of attack,
@@ -201,7 +210,10 @@ def analyze_unsteady_trim(
         operating_point.velocity = velocity
         operating_point.alpha = alpha
         operating_point.beta = beta
-        external_force = np.array([0, 0, weight])
+        external_forces = np.array([0, 0, weight])
+        dynamic_pressure = operating_point.calculate_dynamic_pressure()
+        s_ref = airplane_movement.base_airplane.s_ref
+        external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
         operating_point_movement = movement.OperatingPointMovement(
             base_operating_point=operating_point
@@ -224,20 +236,24 @@ def analyze_unsteady_trim(
 
         this_solver.run(logging_level="Critical")
 
-        force = this_solver.unsteady_problem.final_total_near_field_forces_wind_axes[0]
-        moment = this_solver.unsteady_problem.final_total_near_field_moments_wind_axes[
-            0
-        ]
+        force_coefficients = (
+            this_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes
+        )
+        moment_coefficients = (
+            this_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes
+        )
 
-        net_force = np.linalg.norm(force + external_force)
-        net_moment = np.linalg.norm(moment)
+        net_force_coefficients = np.linalg.norm(
+            force_coefficients - external_force_coefficients
+        )
+        net_moment_coefficients = np.linalg.norm(moment_coefficients)
 
-        objective = (abs(net_force) + abs(net_moment)) / 2
+        objective = (abs(net_force_coefficients) + abs(net_moment_coefficients)) / 2
 
-        v_str = str(round(velocity, 2))
-        a_str = str(round(alpha, 2))
-        b_str = str(round(beta, 2))
-        o_str = str(round(objective, 2))
+        v_str = str(round(velocity, 3))
+        a_str = str(round(alpha, 3))
+        b_str = str(round(beta, 3))
+        o_str = str(round(objective, 3))
 
         state_msg = "State: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
         obj_msg = "Objective: " + o_str
@@ -246,43 +262,28 @@ def analyze_unsteady_trim(
         trim_logger.info(obj_msg)
         return objective
 
-    # ToDo: Document this function.
-    def local_callback_function(xk, state):
-        if state.fun < objective_cut_off:
-            return True
-        return False
-
-    # ToDo: Document this function.
-    def global_callback_function(x, f, context):
-        print("Called!!")
-        if f < objective_cut_off:
-            return True
-        return False
-
     initial_guess = np.array([base_velocity, base_alpha, base_beta])
     bounds = (velocity_bounds, alpha_bounds, beta_bounds)
 
-    # trim_logger.info("Starting local optimization.")
-    # result_local = scipy.optimize.minimize(
-    #     fun=objective_function,
-    #     x0=initial_guess,
-    #     bounds=bounds,
-    #     options={"maxiter": num_calls},
-    #     callback=local_callback_function,
-    # )
-    # trim_logger.info("Local optimization function executed.")
-    #
-    # if result_local.fun < objective_cut_off:
-    #     trim_logger.info("Acceptable local minima found.")
-    #     return result_local.x
-    #
-    # trim_logger.info("No acceptable local minima found. Starting global search.")
+    trim_logger.info("Starting local optimization.")
+    result_local = scipy.optimize.minimize(
+        fun=objective_function,
+        x0=initial_guess,
+        bounds=bounds,
+        options={"maxiter": num_calls},
+    )
+    trim_logger.info("Local optimization function executed.")
+
+    if result_local.fun < objective_cut_off:
+        trim_logger.info("Acceptable local minima found.")
+        return result_local.x
+
+    trim_logger.info("No acceptable local minima found. Starting global search.")
     result_global = scipy.optimize.dual_annealing(
         func=objective_function,
         bounds=bounds,
         x0=initial_guess,
         maxfun=num_calls,
-        callback=global_callback_function,
     )
 
     if result_global.fun < objective_cut_off:

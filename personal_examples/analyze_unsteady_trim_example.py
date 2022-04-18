@@ -131,8 +131,8 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     velocity_bounds=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
-    objective_cut_off=default_airplane.weight / 100,
-    num_calls=5,
+    objective_cut_off=0.01,
+    num_calls=50,
 )
 
 print("\nTrim Values:")
@@ -167,4 +167,4 @@ trim_solver = (
 trim_solver.run(logging_level="Critical")
 
 print("\nTrimmed Results:")
-ps.output.print_steady_results(steady_solver=trim_solver)
+ps.output.print_unsteady_results(unsteady_solver=trim_solver)

@@ -35,6 +35,37 @@ Python, is well documented, tested, and validated.
 
 With your help, I hope we will increase the open-source community's interest and understanding of biological flight.
 
+## Features
+
+1. Various Aerodynamic Simulation Methods
+   * Steady simulations can be run with a standard horseshoe vortex-lattice method (VLM) or a ring VLM.
+   * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
+   * Unsteady simulations support both fixed and free wakes.
+   * Unsteady simulations implement vortex aging to reduce numerical instabilities.
+2. Customizable Aircraft Geometry
+   * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
+   * Wings can be defined as a collection of two or more wing cross sections of any dimensions and positions.
+   * Wing cross sections can be specified to match the mean camber line of an airfoil.
+   * The package comes with a massive database of airfoil to chose from.
+   * Wings are automatically discretized into panels with customizable sizes and spacings.
+3. Customizable Aircraft Motion
+   * The relative motion of wings and wing cross sections can be defined using any time-dependent functions of sweep, 
+   pitch, and heave angles.
+4. Customizable Operating Points
+   * Parameters such as the free-stream velocity, density, angle of attack, angle of sideslip, etc. can be changed by 
+   the user.
+5. High-Speed Simulations
+   * Using Just-In-Time compilation, Ptera Software can solve many unsteady flapping-wing simulations in less than a 
+   minute!
+   * Steady simulations take only seconds!
+6. Simulations of Formation Flight
+   * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
+   * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
+7. Features for Flapping-Wing Vehicle Design
+   * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
+   * For example, use the functions in the trim module to automatically search for a trim operating point for steady 
+   and unsteady simulations of aircraft. 
+
 ## Installation and Use
 
 First things first, you will need a copy of Python 3.8. Python 3.9 is not yet supported due to a dependency issue in 

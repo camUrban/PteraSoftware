@@ -46,7 +46,6 @@ class Airplane:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Update this method's documentation to include the new weight parameter.
     def __init__(
         self,
         name="Untitled",
@@ -65,21 +64,19 @@ class Airplane:
             A sensible name for your current_airplane. The default is "Untitled".
         :param x_ref: float, optional
             This is the x coordinate of the moment reference point. It should be the
-            x coordinate of the center of
-            gravity. The default is 0.0.
+            x coordinate of the center of gravity. The default is 0.0.
         :param y_ref: float, optional
             This is the y coordinate of the moment reference point. It should be the
-            y coordinate of the center of
-            gravity. The default is 0.0.
+            y coordinate of the center of gravity. The default is 0.0.
         :param z_ref: float, optional
             This is the z coordinate of the moment reference point. It should be the
-            z coordinate of the center of
-            gravity. The default is 0.0.
-        :param weight:
+            z coordinate of the center of gravity. The default is 0.0.
+        :param weight: float, optional
+            This parameter holds the weight of the aircraft in Newtons. This is used
+            by the trim functions. The default value is 0.0.
         :param wings: list of Wing objects, optional
             This is a list of the current_airplane's wings defined as Wing objects.
-            The default is None, which this
-            method converts to an empty list.
+            The default is None, which this method converts to an empty list.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first
             wing object.

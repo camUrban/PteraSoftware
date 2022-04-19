@@ -42,7 +42,6 @@ class OperatingPoint:
         This class is not meant to be subclassed.
     """
 
-    # ToDo: Update this method's documentation to include the new thrust parameter.
     def __init__(
         self,
         density=1.225,
@@ -68,6 +67,9 @@ class OperatingPoint:
             This parameter is the sideslip angle. The units are degrees. The default
             value is 0.0.
         :param external_thrust: float, optional
+            This parameter is for any thrust that's due to the airplanes' wings. For
+            example, this may hold thrust due to a non-modeled propeller or engine.
+            The default value is 0.0.
         :param nu: float, optional
             This parameter is the air's kinematic viscosity. The units are meters
             squared per second. This parameter is only used in the unsteady ring

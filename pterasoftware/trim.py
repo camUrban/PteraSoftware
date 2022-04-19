@@ -43,7 +43,7 @@ def analyze_steady_trim(
     beta_bounds,
     external_thrust_bounds,
     objective_cut_off=0.01,
-    num_calls=50,
+    num_calls=100,
 ):
     """This function attempts to calculate a trim condition of a steady solver by
     varying the operating point's velocity, angle of attack, angle of sideslip,
@@ -86,6 +86,8 @@ def analyze_steady_trim(
             "external thrust bounds."
         )
 
+    current_arguments = [np.nan, np.nan, np.nan, np.nan]
+
     # ToDo: Document this function.
     def objective_function(arguments):
         """
@@ -95,9 +97,13 @@ def analyze_steady_trim(
         """
         velocity, alpha, beta, external_thrust = arguments
 
+        current_arguments.clear()
+        current_arguments.extend([velocity, alpha, beta, external_thrust])
+
         problem.operating_point.velocity = velocity
         problem.operating_point.alpha = alpha
         problem.operating_point.beta = beta
+
         dynamic_pressure = problem.operating_point.calculate_dynamic_pressure()
         s_ref = problem.airplanes[0].s_ref
 
@@ -122,6 +128,33 @@ def analyze_steady_trim(
 
         objective = (abs(net_force_coefficient) + abs(net_moment_coefficient)) / 2
 
+        v_str = str(round(velocity, 2))
+        a_str = str(round(alpha, 2))
+        b_str = str(round(beta, 2))
+        t_str = str(round(external_thrust, 2))
+        o_str = str(round(objective, 3))
+
+        state_msg = (
+            "State: velocity="
+            + v_str
+            + ", alpha="
+            + a_str
+            + ", beta="
+            + b_str
+            + ", external thrust="
+            + t_str
+        )
+        obj_msg = "Objective: " + o_str
+
+        trim_logger.info(state_msg)
+        trim_logger.info(obj_msg)
+
+        if objective < objective_cut_off:
+            raise StopIteration
+
+        current_arguments.clear()
+        current_arguments.extend([np.nan, np.nan, np.nan, np.nan])
+
         return objective
 
     initial_guess = np.array(
@@ -129,35 +162,42 @@ def analyze_steady_trim(
     )
     bounds = (velocity_bounds, alpha_bounds, beta_bounds, external_thrust_bounds)
 
-    trim_logger.info("Starting local optimization.")
-    result_local = scipy.optimize.minimize(
-        fun=objective_function,
-        x0=initial_guess,
-        bounds=bounds,
-        options={"maxiter": num_calls},
+    trim_logger.info("Starting local search.")
+    try:
+        scipy.optimize.minimize(
+            fun=objective_function,
+            x0=initial_guess,
+            bounds=bounds,
+            method="L-BFGS-B",
+            options={"maxfun": num_calls, "eps": 0.01},
+        )
+    except StopIteration:
+        trim_logger.info("Acceptable value reached with local search.")
+        return current_arguments
+
+    trim_logger.warning(
+        "No acceptable value reached with local search. Starting global search."
     )
-    trim_logger.info("Local optimization function executed.")
-
-    if result_local.fun < objective_cut_off:
-        trim_logger.info("Acceptable local minima found.")
-        return result_local.x
-
-    trim_logger.warning("No acceptable local minima found. Starting global search.")
-    result_global = scipy.optimize.dual_annealing(
-        func=objective_function,
-        bounds=bounds,
-        x0=initial_guess,
-        maxfun=num_calls,
-    )
-
-    if result_global.fun < objective_cut_off:
+    try:
+        scipy.optimize.dual_annealing(
+            func=objective_function,
+            bounds=bounds,
+            x0=initial_guess,
+            maxfun=num_calls,
+            minimizer_kwargs={
+                "method": "L-BFGS-B",
+                "options": {"maxfun": num_calls, "eps": 0.01},
+            },
+        )
+    except StopIteration:
         trim_logger.info("Acceptable global minima found.")
-        return result_global.x
+        return current_arguments
 
-    trim_logger.error(
+    trim_logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
         "iterations."
     )
+    return [np.nan, np.nan, np.nan, np.nan]
 
 
 # ToDo: Document this function.
@@ -168,7 +208,7 @@ def analyze_unsteady_trim(
     alpha_bounds,
     beta_bounds,
     objective_cut_off=0.01,
-    num_calls=50,
+    num_calls=100,
 ):
     """analyze_unsteady_trim: This function attempts to calculate a trim condition of
     an unsteady solver by varying the operating point's velocity, angle of attack,
@@ -198,6 +238,8 @@ def analyze_unsteady_trim(
             "The operating point's beta must be within the specified beta bounds."
         )
 
+    current_arguments = [np.nan, np.nan, np.nan]
+
     # ToDo: Document this function.
     def objective_function(arguments):
         """
@@ -207,12 +249,17 @@ def analyze_unsteady_trim(
         """
         velocity, alpha, beta = arguments
 
+        current_arguments.clear()
+        current_arguments.extend([velocity, alpha, beta])
+
         operating_point.velocity = velocity
         operating_point.alpha = alpha
         operating_point.beta = beta
-        external_forces = np.array([0, 0, weight])
+
         dynamic_pressure = operating_point.calculate_dynamic_pressure()
         s_ref = airplane_movement.base_airplane.s_ref
+
+        external_forces = np.array([0, 0, weight])
         external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
         operating_point_movement = movement.OperatingPointMovement(
@@ -250,9 +297,9 @@ def analyze_unsteady_trim(
 
         objective = (abs(net_force_coefficients) + abs(net_moment_coefficients)) / 2
 
-        v_str = str(round(velocity, 3))
-        a_str = str(round(alpha, 3))
-        b_str = str(round(beta, 3))
+        v_str = str(round(velocity, 2))
+        a_str = str(round(alpha, 2))
+        b_str = str(round(beta, 2))
         o_str = str(round(objective, 3))
 
         state_msg = "State: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
@@ -260,37 +307,51 @@ def analyze_unsteady_trim(
 
         trim_logger.info(state_msg)
         trim_logger.info(obj_msg)
+
+        if objective < objective_cut_off:
+            raise StopIteration
+
+        current_arguments.clear()
+        current_arguments.extend([np.nan, np.nan, np.nan, np.nan])
+
         return objective
 
     initial_guess = np.array([base_velocity, base_alpha, base_beta])
     bounds = (velocity_bounds, alpha_bounds, beta_bounds)
 
-    trim_logger.info("Starting local optimization.")
-    result_local = scipy.optimize.minimize(
-        fun=objective_function,
-        x0=initial_guess,
-        bounds=bounds,
-        options={"maxiter": num_calls},
+    trim_logger.info("Starting local search.")
+    try:
+        scipy.optimize.minimize(
+            fun=objective_function,
+            x0=initial_guess,
+            bounds=bounds,
+            method="L-BFGS-B",
+            options={"maxfun": num_calls, "eps": 0.01},
+        )
+    except StopIteration:
+        trim_logger.info("Acceptable value reached with local search.")
+        return current_arguments
+
+    trim_logger.warning(
+        "No acceptable value reached with local search. Starting global search."
     )
-    trim_logger.info("Local optimization function executed.")
-
-    if result_local.fun < objective_cut_off:
-        trim_logger.info("Acceptable local minima found.")
-        return result_local.x
-
-    trim_logger.info("No acceptable local minima found. Starting global search.")
-    result_global = scipy.optimize.dual_annealing(
-        func=objective_function,
-        bounds=bounds,
-        x0=initial_guess,
-        maxfun=num_calls,
-    )
-
-    if result_global.fun < objective_cut_off:
+    try:
+        scipy.optimize.dual_annealing(
+            func=objective_function,
+            bounds=bounds,
+            x0=initial_guess,
+            maxfun=num_calls,
+            minimizer_kwargs={
+                "method": "L-BFGS-B",
+                "options": {"maxfun": num_calls, "eps": 0.01},
+            },
+        )
+    except StopIteration:
         trim_logger.info("Acceptable global minima found.")
-        return result_global.x
+        return current_arguments
 
     trim_logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
         "iterations."
     )
+    return [np.nan, np.nan, np.nan]

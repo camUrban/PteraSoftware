@@ -91,7 +91,7 @@ def mesh_wing(wing):
     # normals for the inner wing cross sections, where we need to merge directions.
     if num_wing_cross_sections > 2:
         # Add together the adjacent normalized wing section quarter chords projected
-        # onto the the YZ plane.
+        # onto the YZ plane.
         wing_sections_local_normals = (
             normalized_projected_quarter_chords[:-1, :]
             + normalized_projected_quarter_chords[1:, :]
@@ -574,7 +574,7 @@ def get_panel_vertices(
     # "i" is a 1D array (or vector) of length M that holds the nondimensionalized
     # spanwise panel spacing from 0 to 1.
     #
-    # This produces a M x N x 3 array where each slot holds the coordinates of a
+    # This produces an M x N x 3 array where each slot holds the coordinates of a
     # point on the surface between the inner and outer wing cross sections.
     wing_section_mcl_vertices = (
         reversed_nondim_spanwise_coordinates_matrix
@@ -624,7 +624,7 @@ def get_normalized_projected_quarter_chords(
     #
     # Project quarter chords onto YZ plane and normalize.
     #
-    # Create a L x 2 array with just the y and z components of this wing section's
+    # Create an L x 2 array with just the y and z components of this wing section's
     # quarter chord vectors.
     projected_quarter_chords = quarter_chords[:, 1:]
 

@@ -1,5 +1,10 @@
 # ToDo: Document this script.
+import logging
+
 import pterasoftware as ps
+
+example_logger = logging.getLogger("example")
+example_logger.setLevel(logging.DEBUG)
 
 default_airplane = ps.geometry.Airplane(
     weight=250,
@@ -64,43 +69,15 @@ default_solver = (
 )
 default_solver.run()
 
-print("Untrimmed Results:")
-ps.output.print_steady_results(steady_solver=default_solver)
-
-# ps.output.draw(solver=default_solver, scalar_type="lift", show_streamlines=True)
-
 trim_conditions = ps.trim.analyze_steady_trim(
     problem=default_problem,
     velocity_bounds=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-1, 1),
     external_thrust_bounds=(0, 10),
-    objective_cut_off=0.01,
-    num_calls=50,
 )
 
-print("\nTrim Values:")
-print("Velocity:\t%.2f m/s" % trim_conditions[0])
-print("Alpha:\t\t%.2f deg" % trim_conditions[1])
-print("Beta:\t\t%.2f deg" % trim_conditions[2])
-print("External Thrust:\t%.2f N" % trim_conditions[3])
-
-trim_operating_point = ps.operating_point.OperatingPoint(
-    velocity=trim_conditions[0],
-    alpha=trim_conditions[1],
-    beta=trim_conditions[2],
-    external_thrust=trim_conditions[3],
-)
-trim_problem = ps.problems.SteadyProblem(
-    operating_point=trim_operating_point,
-    airplanes=[default_airplane],
-)
-trim_solver = (
-    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-        steady_problem=trim_problem
-    )
-)
-trim_solver.run()
-
-print("\nTrimmed Results:")
-ps.output.print_steady_results(steady_solver=trim_solver)
+example_logger.info("Trim Velocity:\t\t\t%.2f m/s" % trim_conditions[0])
+example_logger.info("Trim Alpha:\t\t\t%.2f deg" % trim_conditions[1])
+example_logger.info("Trim Beta:\t\t\t\t%.2f deg" % trim_conditions[2])
+example_logger.info("Trim External Thrust:\t%.2f N" % trim_conditions[3])

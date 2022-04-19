@@ -255,8 +255,8 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             these_ms_drags = np.mean(these_s_drags, axis=-1)
             these_ms_lifts = np.mean(these_s_lifts, axis=-1)
 
-            these_rms_drags = these_ms_drags ** 0.5
-            these_rms_lifts = these_ms_lifts ** 0.5
+            these_rms_drags = these_ms_drags**0.5
+            these_rms_lifts = these_ms_lifts**0.5
 
             rms_drags[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_drags
             rms_lifts[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_lifts

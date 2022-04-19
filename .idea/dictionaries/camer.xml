@@ -19,6 +19,7 @@
       <w>bacxxx</w>
       <w>bambino</w>
       <w>bergey</w>
+      <w>bfgs</w>
       <w>bleriot</w>
       <w>camberline</w>
       <w>cambre</w>
@@ -83,6 +84,7 @@
       <w>massa</w>
       <w>matplotlib</w>
       <w>maxfev</w>
+      <w>maxfun</w>
       <w>maxiter</w>
       <w>maxtime</w>
       <w>midspan</w>

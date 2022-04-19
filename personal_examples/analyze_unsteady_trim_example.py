@@ -1,8 +1,13 @@
 # ToDo: Document this script.
+import logging
+
 import pterasoftware as ps
 
+example_logger = logging.getLogger("example")
+example_logger.setLevel(logging.DEBUG)
+
 default_airplane = ps.geometry.Airplane(
-    x_ref=0.15,
+    x_ref=0.14,
     weight=420,
     wings=[
         ps.geometry.Wing(
@@ -115,56 +120,14 @@ default_solver = (
 )
 default_solver.run(logging_level="Critical")
 
-# ps.output.animate(
-#     unsteady_solver=default_solver,
-#     scalar_type="lift",
-#     show_wake_vortices=True,
-#     save=False,
-# )
-
-print("Untrimmed Results:")
-ps.output.print_unsteady_results(unsteady_solver=default_solver)
-
 trim_conditions = ps.trim.analyze_unsteady_trim(
     airplane_movement=default_airplane_movement,
     operating_point=default_operating_point,
     velocity_bounds=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
-    objective_cut_off=0.01,
-    num_calls=50,
 )
 
-print("\nTrim Values:")
-print("Velocity:\t%.2f m/s" % trim_conditions[0])
-print("Alpha:\t\t%.2f deg" % trim_conditions[1])
-print("Beta:\t\t%.2f deg" % trim_conditions[2])
-
-trim_operating_point = ps.operating_point.OperatingPoint(
-    velocity=trim_conditions[0],
-    alpha=trim_conditions[1],
-    beta=trim_conditions[2],
-)
-trim_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=trim_operating_point
-)
-
-trim_movement = ps.movement.Movement(
-    airplane_movements=[default_airplane_movement],
-    operating_point_movement=trim_operating_point_movement,
-)
-
-trim_problem = ps.problems.UnsteadyProblem(
-    movement=trim_movement,
-    only_final_results=False,
-)
-
-trim_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=trim_problem
-    )
-)
-trim_solver.run(logging_level="Critical")
-
-print("\nTrimmed Results:")
-ps.output.print_unsteady_results(unsteady_solver=trim_solver)
+example_logger.info("Trim Velocity:\t%.2f m/s" % trim_conditions[0])
+example_logger.info("Trim Alpha:\t%.2f deg" % trim_conditions[1])
+example_logger.info("Trim Beta:\t\t%.2f deg" % trim_conditions[2])

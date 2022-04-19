@@ -20,6 +20,7 @@ from . import aerodynamics
 from . import functions
 
 
+# ToDo: Add the new function to this class's documentation.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -49,7 +50,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         every point, it finds the induced velocity due to every vortex and the
         freestream velocity.
 
-        calculate_near_field_forces_and_moments: This method finds the the forces and
+        calculate_near_field_forces_and_moments: This method finds the forces and
         moments calculated from the near field.
 
         populate_next_airplanes_wake: This method updates the next time step's
@@ -96,6 +97,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.delta_time = self.unsteady_problem.delta_time
         self.steady_problems = self.unsteady_problem.steady_problems
         self.first_results_step = self.unsteady_problem.first_results_step
+        self.first_averaging_step = self.unsteady_problem.first_averaging_step
         self.num_airplanes = len(self.steady_problems[0].airplanes)
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
@@ -190,9 +192,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             the solver significantly slower. The default is True.
         :param calculate_streamlines: Bool, optional
             This parameter determines if the solver uses calculates streamlines
-            emanating from the back of the wing after running the solver.prescribed
-            wake model. Setting this to False is recommended to increase performance,
-            but the default value is True for back-compatibility.
+            emanating from the back of the wing after running the solver.
         :return: None
         """
         # Configure the problem's logger.
@@ -452,7 +452,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Solve for the near field forces and moments on each panel.
                 if self.current_step >= self.first_results_step:
-                    logging.info("Calculating near field forces.")
+                    logging.info("Calculating near field forces and moments.")
                     self.calculate_near_field_forces_and_moments()
 
                 # Solve for the near field forces and moments on each panel.
@@ -462,6 +462,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Update the progress bar based on this step's predicted approximate,
                 # relative computing time.
                 bar.update(n=approx_times[step + 1])
+
+            logging.info("Calculating averaged or final forces and moments.")
+            self.finalize_near_field_forces_and_moments()
 
         # Solve for the location of the streamlines if requested.
         if calculate_streamlines:
@@ -671,7 +674,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the matrix of normalized velocities induced at every panel's
         # collocation point by every panel's ring vortex. The answer is normalized
         # because the solver's vortex strength list was initialized to all ones. This
-        # will be updated once the correct vortex strength's are calculated.
+        # will be updated once the correct vortex strengths are calculated.
         total_influences = aerodynamics.expanded_velocities_from_ring_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
@@ -841,12 +844,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # due to the bound ring vortices and the wake ring vortices.
         total_vortex_velocities = velocities_from_wings + velocities_from_wake
 
-        # Calculate and return the the sum of the velocities induced by the vortices
-        # and freestream at every point.
+        # Calculate and return the sum of the velocities induced by the vortices and
+        # freestream at every point.
         return total_vortex_velocities + self.current_freestream_velocity_geometry_axes
 
     def calculate_near_field_forces_and_moments(self):
-        """This method finds the the forces and moments calculated from the near field.
+        """This method finds the forces and moments calculated from the near field.
 
         Citation: This method uses logic described on pages 9-11 of "Modeling of
         aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
@@ -858,8 +861,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Initialize a variable to hold the global panel position as the panel's are
-        # iterate through.
+        # Initialize a variable to hold the global panel position as the panels are
+        # iterated through.
         global_panel_position = 0
 
         # Initialize three lists of variables, which will hold the effective strength
@@ -1099,7 +1102,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             for airplane in self.current_airplanes:
                 num_wings += len(airplane.wings)
 
-            # Iterate through the this time step's airplanes' successor objects.
+            # Iterate through this time step's airplanes' successor objects.
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
                 # Iterate through the next airplane's wings.
@@ -1418,8 +1421,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                                 if chordwise_vertex_position > 0:
 
-                                    # If this is isn't the front of the wake, update
-                                    # the position of the ring vortex at this location.
+                                    # If this isn't the front of the wake, update the
+                                    # position of the ring vortex at this location.
                                     next_wing.wake_ring_vortices[
                                         chordwise_vertex_position,
                                         spanwise_vertex_position,
@@ -1581,3 +1584,137 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Calculate and return the flapping velocities.
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
+
+    # ToDo: Document this function.
+    def finalize_near_field_forces_and_moments(self):
+        """
+
+        :return:
+        """
+        # Get this solver's time step characteristics. Note that the first time step (
+        # time step 0), occurs at 0 seconds.
+        num_steps_to_average = self.num_steps - self.first_averaging_step
+
+        # Initialize matrices to hold the forces, moments, and coefficients at each of
+        # the time steps that has results.
+        total_near_field_forces_wind_axes = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average)
+        )
+        total_near_field_force_coefficients_wind_axes = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average)
+        )
+        total_near_field_moments_wind_axes = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average)
+        )
+        total_near_field_moment_coefficients_wind_axes = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average)
+        )
+
+        # Initialize a variable to track position in the results arrays.
+        results_step = 0
+
+        # Iterate through the time steps with results and add the results to their
+        # respective matrices.
+        for step in range(self.first_averaging_step, self.num_steps):
+
+            # Get the airplanes from the problem at this step.
+            these_airplanes = self.steady_problems[step].airplanes
+
+            # Iterate through this step's airplanes.
+            for airplane_id, airplane in enumerate(these_airplanes):
+                total_near_field_forces_wind_axes[
+                    airplane_id, :, results_step
+                ] = airplane.total_near_field_force_wind_axes
+                total_near_field_force_coefficients_wind_axes[
+                    airplane_id, :, results_step
+                ] = airplane.total_near_field_force_coefficients_wind_axes
+                total_near_field_moments_wind_axes[
+                    airplane_id, :, results_step
+                ] = airplane.total_near_field_moment_wind_axes
+                total_near_field_moment_coefficients_wind_axes[
+                    airplane_id, :, results_step
+                ] = airplane.total_near_field_moment_coefficients_wind_axes
+
+            results_step += 1
+
+        # For each airplane object, calculate and then save the final or
+        # cycle-averaged forces, moments, force coefficients, and moment coefficients.
+        for airplane_id, airplane in enumerate(self.steady_problems[0].airplanes):
+            these_mean_induced_drags = np.mean(
+                total_near_field_forces_wind_axes[airplane_id, 0, :]
+            )
+            these_mean_side_forces = np.mean(
+                total_near_field_forces_wind_axes[airplane_id, 1, :]
+            )
+            these_mean_lifts = np.mean(
+                total_near_field_forces_wind_axes[airplane_id, 2, :]
+            )
+            these_mean_rolling_moments = np.mean(
+                total_near_field_moments_wind_axes[airplane_id, 0, :]
+            )
+            these_mean_pitching_moments = np.mean(
+                total_near_field_moments_wind_axes[airplane_id, 1, :]
+            )
+            these_mean_yawing_moments = np.mean(
+                total_near_field_moments_wind_axes[airplane_id, 2, :]
+            )
+            these_mean_induced_drag_coefficients = np.mean(
+                total_near_field_force_coefficients_wind_axes[airplane_id, 0, :]
+            )
+            these_mean_side_force_coefficients = np.mean(
+                total_near_field_force_coefficients_wind_axes[airplane_id, 1, :]
+            )
+            these_mean_lift_coefficients = np.mean(
+                total_near_field_force_coefficients_wind_axes[airplane_id, 2, :]
+            )
+            these_mean_rolling_moment_coefficients = np.mean(
+                total_near_field_moment_coefficients_wind_axes[airplane_id, 0, :]
+            )
+            these_mean_pitching_moment_coefficients = np.mean(
+                total_near_field_moment_coefficients_wind_axes[airplane_id, 1, :]
+            )
+            these_mean_yawing_moment_coefficients = np.mean(
+                total_near_field_moment_coefficients_wind_axes[airplane_id, 2, :]
+            )
+
+            these_mean_forces = np.array(
+                [
+                    these_mean_induced_drags,
+                    these_mean_side_forces,
+                    these_mean_lifts,
+                ]
+            )
+            these_mean_force_coefficients = np.array(
+                [
+                    these_mean_induced_drag_coefficients,
+                    these_mean_side_force_coefficients,
+                    these_mean_lift_coefficients,
+                ]
+            )
+            these_mean_moments = np.array(
+                [
+                    these_mean_rolling_moments,
+                    these_mean_pitching_moments,
+                    these_mean_yawing_moments,
+                ]
+            )
+            these_mean_moment_coefficients = np.array(
+                [
+                    these_mean_rolling_moment_coefficients,
+                    these_mean_pitching_moment_coefficients,
+                    these_mean_yawing_moment_coefficients,
+                ]
+            )
+
+            self.unsteady_problem.final_total_near_field_forces_wind_axes.append(
+                these_mean_forces
+            )
+            self.unsteady_problem.final_total_near_field_moments_wind_axes.append(
+                these_mean_moments
+            )
+            self.unsteady_problem.final_total_near_field_force_coefficients_wind_axes.append(
+                these_mean_force_coefficients
+            )
+            self.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes.append(
+                these_mean_moment_coefficients
+            )

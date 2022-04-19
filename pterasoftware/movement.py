@@ -5,7 +5,7 @@ This module contains the following classes:
     unsteady aerodynamics problem.
 
     AirplaneMovement: This is a class used to contain the movement characteristics of
-    an current_airplane.
+    an airplane.
 
     WingMovement: This is a class used to contain the movement characteristics of a
     wing.
@@ -46,8 +46,8 @@ class Movement:
     aerodynamics problem.
 
     This class contains the following public methods:
-        get_max_period: This method returns the longest period of any of this
-        movement object's sub-movement objects, sub-sub-movement objects, etc.
+        get_max_period: This method returns the longest period of this movement
+        object's sub-movement objects, sub-sub-movement objects, etc.
 
     This class contains the following class attributes:
         None
@@ -70,7 +70,7 @@ class Movement:
             This is a list of objects which characterize the movement of
             each airplane in the problem.
         :param operating_point_movement: OperatingPointMovement
-            This object characterizes the movement of the the operating point.
+            This object characterizes the movement of the operating point.
         :param num_steps: int, optional
             This integer is the number of time steps of the unsteady simulation. If
             not given a value, and the movement is dynamic, this method will
@@ -132,7 +132,7 @@ class Movement:
 
         if num_steps is None:
 
-            # Get the maximum period of any of this movement's sub-movements.
+            # Get the maximum period of this movement's sub-movements.
             max_period = self.get_max_period()
 
             if max_period == 0:
@@ -184,7 +184,7 @@ class Movement:
         )
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's sub-
+        """This method returns the longest period of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
 
         :return: float
@@ -206,15 +206,14 @@ class Movement:
 
 
 class AirplaneMovement:
-    """This is a class used to contain the movement characteristics of an
-    current_airplane.
+    """This is a class used to contain the movement characteristics of an airplane.
 
     This class contains the following public methods:
         generate_airplanes: This method creates the current_airplane object at each
         time current_step, and groups them into a list.
 
-        get_max_period: This method returns the longest period of any of this
-        movement object's sub-movement objects, sub-sub-movement objects, etc.
+        get_max_period: This method returns the longest period of this movement
+        object's sub-movement objects, sub-sub-movement objects, etc.
 
     This class contains the following class attributes:
         None
@@ -432,7 +431,7 @@ class AirplaneMovement:
         return airplanes
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's sub-
+        """This method returns the longest period of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
 
         :return max_period: float
@@ -461,8 +460,8 @@ class WingMovement:
         generate_wings: This method creates the wing object at each time step,
         and groups them into a list.
 
-        get_max_period: This method returns the longest period of any of this
-        movement object's sub-movement objects, sub-sub-movement objects, etc.
+        get_max_period: This method returns the longest period of this movement
+        object's sub-movement objects, sub-sub-movement objects, etc.
 
     This class contains the following class attributes:
         None
@@ -801,7 +800,7 @@ class WingMovement:
         return wings
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's
+        """This method returns the longest period of this movement object's
         sub-movement objects, sub-sub-movement objects, etc.
 
         :return max_period: float
@@ -835,8 +834,8 @@ class WingCrossSectionMovement:
         generate_wing_cross_sections: This method creates the wing cross section
         objects at each time current_step, and groups them into a list.
 
-        get_max_period: This method returns the longest period of any of this
-        movement object's cycles.
+        get_max_period: This method returns the longest period of this movement
+        object's cycles.
 
     This class contains the following class attributes:
         None
@@ -868,85 +867,69 @@ class WingCrossSectionMovement:
             be created.
         :param sweeping_amplitude: float, optional
             This is the amplitude of the cross section's change in its sweep,
-            relative to the vehicle's body axes. Its
-            units are degrees and its default value is 0.0 degrees.
+            relative to the vehicle's body axes. Its units are degrees and its
+            default value is 0.0 degrees.
         :param sweeping_period: float, optional
             This is the period of the cross section's change in its sweep. Its units
-            are seconds and its default value
-            is 0.0 seconds.
+            are seconds and its default value is 0.0 seconds.
         :param sweeping_spacing: string, optional
             This value determines the spacing of the cross section's change in its
-            sweep. The options are "sine",
-            "uniform", and "custom". The default value is "sine". If "custom",
-            then the value of custom_sweep_function
-            must not be none. If both sweeping_spacing and custom_sweep_function are
-            not none, then the value of
-            sweeping_spacing will take precedence.
+            sweep. The options are "sine", "uniform", and "custom". The default value
+            is "sine". If "custom", then the value of custom_sweep_function must not
+            be none. If both sweeping_spacing and custom_sweep_function are not none,
+            then the value of sweeping_spacing will take precedence.
         :param custom_sweep_function: function, optional
             This is a function that describes the motion of the sweeping. For
-            example, it could be np.cos or np.sinh
-            (assuming numpy had previously been imported as np). It will be
-            horizontally scaled by the sweeping_period,
-            vertically scaled by the the sweeping_amplitude. For example, say the
-            function has an amplitude of 2 units,
-            a period of 3 units, sweeping_amplitude is set to 4 units and
-            sweeping_period is set to 5 units. The
-            sweeping motion will have a net amplitude of 8 units and a net period of
-            15 units.
+            example, it could be np.cos or np.sinh (assuming numpy had previously
+            been imported as np). It will be horizontally scaled by the
+            sweeping_period, vertically scaled by the sweeping_amplitude. For
+            example, say the function has an amplitude of 2 units, a period of 3
+            units, sweeping_amplitude is set to 4 units and sweeping_period is set to
+            5 units. The sweeping motion will have a net amplitude of 8 units and a
+            net period of 15 units.
         :param pitching_amplitude: float, optional
             This is the amplitude of the cross section's change in its pitch,
-            relative to the vehicle's body axes. Its
-            units are degrees and its default value is 0.0 degrees.
+            relative to the vehicle's body axes. Its units are degrees and its
+            default value is 0.0 degrees.
         :param pitching_period: float, optional
             This is the period of the cross section's change in its pitch. Its units
-            are seconds and its default value
-            is 0.0 seconds.
+            are seconds and its default value is 0.0 seconds.
         :param pitching_spacing: string, optional
             This value determines the spacing of the cross section's change in its
-            pitch. The options are "sine",
-            "uniform", and "custom". The default value is "sine". If "custom",
-            then the value of custom_pitch_function
-            must not be none. If both pitching_spacing and custom_pitch_function are
-            not none, then the value of
-            pitching_spacing will take precedence.
+            pitch. The options are "sine", "uniform", and "custom". The default value
+            is "sine". If "custom", then the value of custom_pitch_function must not
+            be none. If both pitching_spacing and custom_pitch_function are not none,
+            then the value of pitching_spacing will take precedence.
         :param custom_pitch_function: function, optional
             This is a function that describes the motion of the pitching. For
-            example, it could be np.cos or np.sinh
-            (assuming numpy had previously been imported as np). It will be
-            horizontally scaled by the pitching_period,
-            vertically scaled by the the pitching_amplitude. For example, say the
-            function has an amplitude of 2 units,
-            a period of 3 units, pitching_amplitude is set to 4 units and
-            pitching_period is set to 5 units. The
-            pitching motion will have a net amplitude of 8 units and a net period of
-            15 units.
+            example, it could be np.cos or np.sinh (assuming numpy had previously
+            been imported as np). It will be horizontally scaled by the
+            pitching_period, vertically scaled by the pitching_amplitude. For
+            example, say the function has an amplitude of 2 units, a period of 3
+            units, pitching_amplitude is set to 4 units and pitching_period is set to
+            5 units. The pitching motion will have a net amplitude of 8 units and a
+            net period of 15 units.
         :param heaving_amplitude: float, optional
             This is the amplitude of the cross section's change in its heave,
-            relative to the vehicle's body axes. Its
-            units are degrees and its default value is 0.0 degrees.
+            relative to the vehicle's body axes. Its units are degrees and its
+            default value is 0.0 degrees.
         :param heaving_period: float, optional
             This is the period of the cross section's change in its heave. Its units
-            are seconds and its default value
-            is 0.0 seconds.
+            are seconds and its default value is 0.0 seconds.
         :param heaving_spacing: string, optional
             This value determines the spacing of the cross section's change in its
-            heave. The options are "sine",
-            "uniform", and "custom". The default value is "sine". If "custom",
-            then the value of custom_heave_function
-            must not be none. If both heaving_spacing and custom_heave_function are
-            not none, then the value of
-            heaving_spacing will take precedence.
+            heave. The options are "sine", "uniform", and "custom". The default value
+            is "sine". If "custom", then the value of custom_heave_function must not
+            be none. If both heaving_spacing and custom_heave_function are not none,
+            then the value of heaving_spacing will take precedence.
         :param custom_heave_function: function, optional
             This is a function that describes the motion of the heaving. For example,
-            it could be np.cos or np.sinh
-            (assuming numpy had previously been imported as np). It will be
-            horizontally scaled by the heaving_period,
-            vertically scaled by the the heaving_amplitude. For example, say the
-            function has an amplitude of 2 units,
-            a period of 3 units, heaving_amplitude is set to 4 units and
-            heaving_period is set to 5 units. The
-            heaving motion will have a net amplitude of 8 units and a net period of
-            15 units.
+            it could be np.cos or np.sinh (assuming numpy had previously been
+            imported as np). It will be horizontally scaled by the heaving_period,
+            vertically scaled by the heaving_amplitude. For example, say the function
+            has an amplitude of 2 units, a period of 3 units, heaving_amplitude is
+            set to 4 units and heaving_period is set to 5 units. The heaving motion
+            will have a net amplitude of 8 units and a net period of 15 units.
         """
 
         # Initialize the class attributes.
@@ -996,41 +979,34 @@ class WingCrossSectionMovement:
             is 0.1 seconds.
         :param last_x_les: float, optional
             This is an array of the x coordinates of the reference location of the
-            previous cross section at each time
-            step. Its units are in meters,
+            previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
         :param last_y_les: float, optional
             This is an array of the y coordinates of the reference location of the
-            previous cross section at each time
-            step. Its units are in meters,
+            previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
         :param last_z_les: float, optional
             This is an array of the z coordinates of the reference location of the
-            previous cross section at each time
-            step. Its units are in meters,
+            previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
         :param wing_is_vertical: bool, optional
             This flag is set to true if the wing containing this wing cross section
-            is vertical. If true, the cross
-            section's movement will automatically be eliminated. This is a temporary
-            patch until vertical wing cross
-            section movement is supported. The default value is false.
+            is vertical. If true, the cross section's movement will automatically be
+            eliminated. This is a temporary patch until vertical wing cross section
+            movement is supported. The default value is false.
         :param cross_section_span: float, optional
             This is the length, in meters, of the leading edge stretching between
-            this wing cross section at the
-            previous wing cross section. If this is the first cross section,
-            it should be 0.0 meters. The default value
-            is 0.0 meters.
+            this wing cross section at the previous wing cross section. If this is
+            the first cross section, it should be 0.0 meters. The default value is
+            0.0 meters.
         :param cross_section_sweep: float, optional
             This is the sweep, in degrees, of this wing cross section relative to the
-            the previous wing cross section.
-            If this is the first cross section, it should be 0.0 degrees. The default
-            value is 0.0 degrees.
+            previous wing cross section. If this is the first cross section,
+            it should be 0.0 degrees. The default value is 0.0 degrees.
         :param cross_section_heave: float, optional
             This is the heave, in degrees, of this wing cross section relative to the
-            the previous wing cross section.
-            If this is the first cross section, it should be 0.0 degrees. The default
-            value is 0.0 degrees.
+            previous wing cross section. If this is the first cross section,
+            it should be 0.0 degrees. The default value is 0.0 degrees.
         :return wing_cross_sections: list of WingCrossSection objects
             This is the list of WingCrossSection objects that is associated with this
             WingCrossSectionMovement object.
@@ -1236,8 +1212,7 @@ class WingCrossSectionMovement:
         return wing_cross_sections
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's
-        cycles.
+        """This method returns the longest period of this movement object's cycles.
 
         :return max_period: float
             The longest period in seconds.
@@ -1258,8 +1233,8 @@ class OperatingPointMovement:
         generate_operating_points: This method creates the operating point objects at
         each time current_step, and groups them into a list.
 
-        get_max_period: This method returns the longest period of any of this
-        movement object's cycles.
+        get_max_period: This method returns the longest period of this movement
+        object's cycles.
 
     This class contains the following class attributes:
         None
@@ -1365,8 +1340,7 @@ class OperatingPointMovement:
         return operating_points
 
     def get_max_period(self):
-        """This method returns the longest period of any of this movement object's
-        cycles.
+        """This method returns the longest period of this movement object's cycles.
 
         :return max_period: float
             The longest period in seconds.
@@ -1472,7 +1446,7 @@ def oscillating_customspace(
     :param custom_function: function
         This is a custom function used to return the values. For example, it could be
         np.cos or np.sinh (assuming numpy had previously been imported as np). It
-        will be horizontally scaled by the period, vertically scaled by the the
+        will be horizontally scaled by the period, vertically scaled by the
         amplitude. For example, say the function has an internal amplitude of 2
         units, an internal period of 3 units, amplitude is set to 4 units and period
         is set to 5 units. The result will have a net amplitude of 8 units and a net

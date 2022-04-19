@@ -7,7 +7,7 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    cosspace: This function is used to create a array containing a specified number
+    cosspace: This function is used to create an array containing a specified number
     of values between a specified minimum and maximum value that are spaced via a
     cosine function.
 
@@ -20,9 +20,8 @@ This module contains the following functions:
     calculate_streamlines: This function calculates the location of the streamlines
     coming off the back of the wings.
 
-    convert_logging_level_name_to_value: This function takes in a string that
-    represents the the logging level and returns the integer that can be used to set
-    the logger to this level.
+    convert_logging_level_name_to_value: This function takes in a string that represents the logging level and
+    returns the integer that can be used to set the logger to this level.
 
     process_steady_solver_forces: This function uses the forces and moments a solver
     has found on its panels to find the forces, moments, and associated coefficients
@@ -45,7 +44,7 @@ from numba import njit
 
 
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
-    """This function is used to create a array containing a specified number of
+    """This function is used to create an array containing a specified number of
     values between a specified minimum and maximum value that are spaced via a cosine
     function.
 
@@ -61,8 +60,7 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
     :param endpoint: bool, optional
-        This sets whether or not the maximum value will be included in the output.
-        The default is True.
+        This determines if the maximum value will be included in the output. The default is True.
     :return cosine_spaced_points: 1D array
         This is a 1D array of the points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
@@ -204,7 +202,7 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
         It's default value is 0.02 seconds.
     :return: None
     """
-    # Initialize a array to hold this solver's matrix of streamline points.
+    # Initialize an array to hold this solver's matrix of streamline points.
     solver.streamline_points = np.expand_dims(solver.seed_points, axis=0)
 
     # Iterate through the streamline steps.
@@ -234,8 +232,8 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
 
 
 def convert_logging_level_name_to_value(name):
-    """This function takes in a string that represents the the logging level and
-    returns the integer that can be used to set the logger to this level.
+    """This function takes in a string that represents the logging level and returns the integer that can be used to
+    set the logger to this level.
 
     :param name: str
         This is the string representation of the logging level. The options are

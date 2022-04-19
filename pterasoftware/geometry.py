@@ -3,13 +3,13 @@
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
 
-    Wing: This is a class used to contain the wings of an current_airplane.
+    Wing: This is a class used to contain the wings of a current_airplane.
 
     WingCrossSection: This class is used to contain the cross sections of the wings
-    of an current_airplane.
+    of a current_airplane.
 
     Airfoil: This class is used to contain the airfoil of a cross section of a wing
-    of an current_airplane.
+    of a current_airplane.
 
 This module contains the following exceptions:
     None
@@ -52,6 +52,7 @@ class Airplane:
         x_ref=0.0,
         y_ref=0.0,
         z_ref=0.0,
+        weight=0.0,
         wings=None,
         s_ref=None,
         c_ref=None,
@@ -63,20 +64,19 @@ class Airplane:
             A sensible name for your current_airplane. The default is "Untitled".
         :param x_ref: float, optional
             This is the x coordinate of the moment reference point. It should be the
-            x coordinate of the center of
-            gravity. The default is 0.0.
+            x coordinate of the center of gravity. The default is 0.0.
         :param y_ref: float, optional
             This is the y coordinate of the moment reference point. It should be the
-            y coordinate of the center of
-            gravity. The default is 0.0.
+            y coordinate of the center of gravity. The default is 0.0.
         :param z_ref: float, optional
             This is the z coordinate of the moment reference point. It should be the
-            z coordinate of the center of
-            gravity. The default is 0.0.
+            z coordinate of the center of gravity. The default is 0.0.
+        :param weight: float, optional
+            This parameter holds the weight of the aircraft in Newtons. This is used
+            by the trim functions. The default value is 0.0.
         :param wings: list of Wing objects, optional
             This is a list of the current_airplane's wings defined as Wing objects.
-            The default is None, which this
-            method converts to an empty list.
+            The default is None, which this method converts to an empty list.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first
             wing object.
@@ -97,19 +97,19 @@ class Airplane:
             [float(self.x_ref), float(self.y_ref), float(self.z_ref)]
         )
 
+        # Initialize the weight.
+        self.weight = weight
+
         # If wings was passed as None, set wings to an empty list.
         if wings is None:
             wings = []
         self.wings = wings
 
-        # If the the wing list is not empty, set the wing reference dimensions to be
-        # the main wing's reference
-        # dimensions.
+        # If the wing list is not empty, set the wing reference dimensions to be the main wing's reference dimensions.
         if len(self.wings) > 0:
             self.set_reference_dimensions_from_main_wing()
 
-        # If any of the passed reference dimensions are not None, set that reference
-        # dimension to be what was passed.
+        # If any of the passed reference dimensions are not None, set that reference dimension to be what was passed.
         if s_ref is not None:
             self.s_ref = float(s_ref)
         if c_ref is not None:
@@ -122,9 +122,8 @@ class Airplane:
         for wing_position, wing in enumerate(self.wings):
             self.num_panels += wing.num_panels
 
-        # Initialize empty class attributes to hold the force, moment,
-        # force coefficients, and moment coefficients this
-        # airplane experiences after
+        # Initialize empty class attributes to hold the force, moment, force coefficients, and moment coefficients
+        # this airplane experiences after
         self.total_near_field_force_wind_axes = None
         self.total_near_field_force_coefficients_wind_axes = None
         self.total_near_field_moment_wind_axes = None
@@ -153,7 +152,7 @@ class Airplane:
 
 
 class Wing:
-    """This is a class used to contain the wings of an current_airplane.
+    """This is a class used to contain the wings of an airplane.
 
     If the wing is symmetric across the XZ plane, just define the right half and
     supply "symmetric=True" in the constructor. If the wing is not symmetric across
@@ -244,7 +243,7 @@ class Wing:
         # Find the number of spanwise panels on the wing by adding each cross
         # section's number of spanwise panels. Exclude the last cross section's
         # number of spanwise panels as this is irrelevant. If the wing is symmetric,
-        # multiple the summation by two.
+        # multiply the summation by two.
         self.num_spanwise_panels = 0
         for cross_section in self.wing_cross_sections[:-1]:
             self.num_spanwise_panels += cross_section.num_spanwise_panels
@@ -257,7 +256,7 @@ class Wing:
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-        # Initialize the the panels attribute. Then mesh the wing, which will
+        # Initialize the panels attribute. Then mesh the wing, which will
         # populate this attribute.
         self.panels = None
         meshing.mesh_wing(self)
@@ -280,12 +279,10 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
     def calculate_wetted_area(self):
-        """This method calculates the wetted area of the wing based on the areas of
-        its panels.
+        """This method calculates the wetted area of the wing based on the areas of its panels.
 
-        This method also updates the class's wetted area attribute. If the wing is
-        symmetrical, it includes the area of
-        the mirrored half.
+        This method also updates the class's wetted area attribute. If the wing is symmetrical, it includes the area
+        of the mirrored half.
 
         :return: None
         """
@@ -324,8 +321,7 @@ class Wing:
 
 
 class WingCrossSection:
-    """This class is used to contain the cross sections of the wings of an
-    current_airplane.
+    """This class is used to contain the cross sections of the wings of an airplane.
 
     Citation:
         Adapted from:         geometry.WingXSec in AeroSandbox
@@ -387,8 +383,7 @@ class WingCrossSection:
             surfaces are ailerons. The default
             value is "symmetric".
         :param control_surface_hinge_point: float, optional
-            This is the The location of the control surface hinge from the leading
-            edge as a fraction of chord. The
+            This is the location of the control surface hinge from the leading edge as a fraction of chord. The
             default value is 0.75.
         :param control_surface_deflection: float, optional
             This is the Control deflection in degrees. Deflection downwards is
@@ -399,8 +394,8 @@ class WingCrossSection:
             section and the next one. The default
             value is 8.
         :param spanwise_spacing: str, optional
-            This is the Can be 'cosine' or 'uniform'. Highly recommended to be
-            cosine. The default value is
+            This can be 'cosine' or 'uniform'. Using cosine spacing is highly recommended. The default value is
+            'cosine'.
         """
 
         # Initialize all the class attributes.
@@ -454,8 +449,7 @@ class WingCrossSection:
 
 
 class Airfoil:
-    """This class is used to contain the airfoil of a cross section of a wing of an
-    current_airplane.
+    """This class is used to contain the airfoil of a cross section of a wing of an airplane.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox
@@ -509,11 +503,10 @@ class Airfoil:
         """This is the initialization method.
 
         :param name: str, optional
-            This is the name of the airfoil. It should correspond to the name in the
-            airfoils directory unless you are
-            passing in your own coordinates. The default is "Untitled Airfoil".
+            This is the name of the airfoil. It should correspond to the name in the airfoils directory unless you
+            are passing in your own coordinates. The default is "Untitled Airfoil".
         :param coordinates: array, optional
-            This is a N x 2 array of the airfoil's coordinates, where N is the
+            This is an N x 2 array of the airfoil's coordinates, where N is the
             number of coordinates. Treat this
             as an immutable, don't edit directly after initialization. If you wish to
             load coordinates from the airfoil
@@ -521,14 +514,11 @@ class Airfoil:
             airfoil coordinates used range in x
             from 0 to 1.
         :param repanel: bool, optional
-            This is the variable that determines whether or not you would like to
-            repanel the airfoil coordinates. This
-            applies to coordinates passed in by the user or to the directory
-            coordinates. It is highly recommended to
-            set this to True. The default is True.
+            This is the variable that determines whether you would like to repanel the airfoil coordinates. This
+            applies to coordinates passed in by the user or to the directory coordinates. I highly recommended
+            setting this to True. The default is True.
         :param n_points_per_side: int, optional
-            This is number of points to use when repaneling the airfoil. It is
-            ignored if the repanel is False. The
+            This is number of points to use when repaneling the airfoil. It is ignored if the repanel is False. The
             default is 400.
         """
 
@@ -561,13 +551,10 @@ class Airfoil:
     def populate_coordinates(self):
         """This method populates a variable with the coordinates of the airfoil.
 
-        The airfoil coordinates will either be generated, if the airfoil is a NACA
-        4-series airfoil, or loaded from the
-        the airfoil database (a folder named "airfoils" in this directory,
-        that contains a library of dat files for
+        The airfoil coordinates will either be generated, if the airfoil is a NACA 4-series airfoil, or loaded from
+        the airfoil database (a folder named "airfoils" in this directory, that contains a library of dat files for
         airfoil coordinates). NACA 4-series airfoil generation is an adaptation of:
-        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4
-        -digit_NACA_airfoil.
+        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4 -digit_NACA_airfoil.
 
         :return: None
         """
@@ -688,16 +675,14 @@ class Airfoil:
                 "but it could not be read correctly."
             )
 
-            # Reshape the 1D coordinates array into a N x 2 array, where N is the
-            # number of rows.
+            # Reshape the 1D coordinates array into an N x 2 array, where N is the number of rows.
             coordinates = np.reshape(coordinates_1d, (-1, 2))
 
             # Populate the coordinates attribute and return.
             self.coordinates = coordinates
             return
 
-        # If the airfoil was not a NACA 4-series and was not found in the
-        # database, throw an error.
+        # If the airfoil was not a NACA 4-series and was not found in the database, throw an error.
         except FileNotFoundError:
             raise Exception("Airfoil not in database!")
 
@@ -752,18 +737,14 @@ class Airfoil:
         return leading_edge_index
 
     def lower_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the
-        lower surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the lower surface of the airfoil.
 
-        The order of the returned matrix is from leading edge to trailing edge. This
-        matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with
-        self.upper_coordinates.
+        The order of the returned matrix is from leading edge to trailing edge. This matrix includes the leading edge
+        point so be careful about duplicates if using this method in conjunction with self.upper_coordinates.
 
         :return lower_coordinates: array
-            This is a N x 2 array of x and y coordinates that describe the lower
-            surface of the airfoil, where N
-            is the number of points.
+            This is an N x 2 array of x and y coordinates that describe the lower surface of the airfoil, where N is
+            the number of points.
         """
 
         # Find the lower coordinates.
@@ -773,18 +754,14 @@ class Airfoil:
         return lower_coordinates
 
     def upper_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the
-        upper surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the upper surface of the airfoil.
 
-        The order of the returned matrix is from trailing edge to leading edge. This
-        matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with
-        self.lower_coordinates.
+        The order of the returned matrix is from trailing edge to leading edge. This matrix includes the leading edge
+        point so be careful about duplicates if using this method in conjunction with self.lower_coordinates.
 
         :return upper_coordinates: array
-            This is a N x 2 array of x and y coordinates that describe the upper
-            surface of the airfoil, where N
-            is the number of points.
+            This is an N x 2 array of x and y coordinates that describe the upper surface of the airfoil, where N is
+            the number of points.
         """
 
         # Find the upper coordinates.
@@ -936,8 +913,7 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
 
-        # Insure that the airfoil's deflection is not too high, which increases the
-        # risk of self intersection.
+        # Ensure that the airfoil's deflection is not too high, which increases the risk of self intersection.
         if deflection > 90 or deflection < -90:
             raise Exception("Invalid value for deflection!")
 

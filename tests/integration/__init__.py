@@ -31,6 +31,7 @@ This package contains the following modules:
     test_unsteady_ring_vortex_lattice_method_variable_geometry.py: This is a testing
     case for the unsteady ring vortex lattice method solver with variable geometry.
 """
+
 import tests.integration.fixtures
 import tests.integration.test_output
 import tests.integration.test_steady_horseshoe_vortex_lattice_method

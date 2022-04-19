@@ -1,12 +1,17 @@
-# ToDo: Document this script.
+"""This example script demonstrates how to automatically find the trim condition for
+an unsteady simulation. It is not as well documented as some solver example scripts,
+as it assumes you have read and understood those first. """
 import logging
 
 import pterasoftware as ps
 
+# Configure a logger for this example.
 example_logger = logging.getLogger("example")
 example_logger.setLevel(logging.DEBUG)
 
-default_airplane = ps.geometry.Airplane(
+# Create an airplane object. Read through the solver examples for more details on
+# creating this object.
+example_airplane = ps.geometry.Airplane(
     x_ref=0.14,
     weight=420,
     wings=[
@@ -57,19 +62,21 @@ default_airplane = ps.geometry.Airplane(
     ],
 )
 
-default_airplane_movement = ps.movement.AirplaneMovement(
-    base_airplane=default_airplane,
+# Create a movement for this example's airplane. Read through the unsteady solver
+# examples for more details on this type of object.
+example_airplane_movement = ps.movement.AirplaneMovement(
+    base_airplane=example_airplane,
     wing_movements=[
         ps.movement.WingMovement(
-            base_wing=default_airplane.wings[0],
+            base_wing=example_airplane.wings[0],
             wing_cross_sections_movements=[
                 ps.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=default_airplane.wings[
+                    base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[0]
                 ),
                 ps.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=default_airplane.wings[
+                    base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[1],
                     sweeping_period=1.0,
@@ -80,15 +87,15 @@ default_airplane_movement = ps.movement.AirplaneMovement(
             ],
         ),
         ps.movement.WingMovement(
-            base_wing=default_airplane.wings[1],
+            base_wing=example_airplane.wings[1],
             wing_cross_sections_movements=[
                 ps.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=default_airplane.wings[
+                    base_wing_cross_section=example_airplane.wings[
                         1
                     ].wing_cross_sections[0]
                 ),
                 ps.movement.WingCrossSectionMovement(
-                    base_wing_cross_section=default_airplane.wings[
+                    base_wing_cross_section=example_airplane.wings[
                         1
                     ].wing_cross_sections[1]
                 ),
@@ -97,37 +104,44 @@ default_airplane_movement = ps.movement.AirplaneMovement(
     ],
 )
 
-default_operating_point = ps.operating_point.OperatingPoint()
+# Create an operating point object for this example's problem using the default values.
+example_operating_point = ps.operating_point.OperatingPoint()
 
-default_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=default_operating_point
+# Create an operating point movement object. Read through the unsteady solver
+# examples for more details on this type of object.
+example_operating_point_movement = ps.movement.OperatingPointMovement(
+    base_operating_point=example_operating_point
 )
 
-default_movement = ps.movement.Movement(
-    airplane_movements=[default_airplane_movement],
-    operating_point_movement=default_operating_point_movement,
+# Construct this example's movement and problem object. Only calculate final results
+# to speed up the solver.
+example_movement = ps.movement.Movement(
+    airplane_movements=[example_airplane_movement],
+    operating_point_movement=example_operating_point_movement,
 )
-
-default_problem = ps.problems.UnsteadyProblem(
-    movement=default_movement,
+example_problem = ps.problems.UnsteadyProblem(
+    movement=example_movement,
     only_final_results=False,
 )
 
-default_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=default_problem
-    )
-)
-default_solver.run(logging_level="Critical")
-
+# Call the analyze_unsteady_trim function to search for a trim condition (thrust
+# balances drag, weight balances lift, and all moments are close to zero) within a
+# certain set of bounds.
 trim_conditions = ps.trim.analyze_unsteady_trim(
-    airplane_movement=default_airplane_movement,
-    operating_point=default_operating_point,
+    airplane_movement=example_airplane_movement,
+    operating_point=example_operating_point,
     velocity_bounds=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
 )
 
+# Log the trim conditions. If these display "nan", then the trim function couldn't
+# find a trimmed state.
 example_logger.info("Trim Velocity:\t%.2f m/s" % trim_conditions[0])
 example_logger.info("Trim Alpha:\t%.2f deg" % trim_conditions[1])
 example_logger.info("Trim Beta:\t\t%.2f deg" % trim_conditions[2])
+
+# The expected results are:
+# Trim Velocity: 10.02 m/s
+# Trim Alpha: 4.94 deg
+# Trim Beta: 0.00 deg

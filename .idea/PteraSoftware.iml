@@ -6,6 +6,8 @@
       <excludeFolder url="file://$MODULE_DIR$/venvTest" />
       <excludeFolder url="file://$MODULE_DIR$/venvTest3.8" />
       <excludeFolder url="file://$MODULE_DIR$/venvTest3.7" />
+      <excludeFolder url="file://$MODULE_DIR$/venv_3.8" />
+      <excludeFolder url="file://$MODULE_DIR$/.github" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (PteraSoftware)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

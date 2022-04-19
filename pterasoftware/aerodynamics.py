@@ -13,7 +13,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     collapsed_velocities_from_horseshoe_vortices: This function takes in a group of
     points, and the attributes of a group of horseshoe vortices. At every point,
-    it finds the cumulative induced velocity due to all of the horseshoe vortices.
+    it finds the cumulative induced velocity due to all the horseshoe vortices.
 
     expanded_velocities_from_horseshoe_vortices: This function takes in a group of
     points, and the attributes of a group of horseshoe vortices. At every point,
@@ -21,7 +21,7 @@ This module contains the following functions:
 
     collapsed_velocities_from_ring_vortices: This function takes in a group of
     points, and the attributes of a group of ring vortices. At every point, it finds
-    the cumulative induced velocity due to all of the ring vortices.
+    the cumulative induced velocity due to all the ring vortices.
 
     expanded_velocities_from_ring_vortices: This function takes in a group of points,
     and the attributes of a group of ring vortices. At every point, it finds the
@@ -29,7 +29,7 @@ This module contains the following functions:
 
     collapsed_velocities_from_line_vortices: This function takes in a group of
     points, and the attributes of a group of line vortices. At every point, it finds
-    the cumulative induced velocity due to all of the line vortices.
+    the cumulative induced velocity due to all the line vortices.
 
     expanded_velocities_from_line_vortices: This function takes in a group of points,
     and the attributes of a group of line vortices. At every point, it finds the
@@ -46,8 +46,8 @@ from . import functions
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
 # at which they grow. The value of this parameter is slightly controversial. It
-# dramatically affect the stability of the result. I'm using this value, as cited for
-# use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
+# dramatically affects the stability of the result. I'm using this value, as cited
+# for use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
 # Modeling of Rotor Wakes" (Ananthan and Leishman, 2004). It is unitless.
 squire = 10**-4
 
@@ -348,7 +348,7 @@ def collapsed_velocities_from_horseshoe_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the cumulative induced velocity due
-    to all of the horseshoe vortices.
+    to all the horseshoe vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -391,8 +391,8 @@ def collapsed_velocities_from_horseshoe_vortices(
         second.
     :return velocities: 2D array of floats
         This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the horseshoe vortices. The
-        units are meters per second.
+        velocity at each of the N points due to all the horseshoe vortices. The units
+        are meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -516,7 +516,7 @@ def collapsed_velocities_from_ring_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the cumulative induced velocity due to
-    all of the ring vortices.
+    all the ring vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -559,8 +559,8 @@ def collapsed_velocities_from_ring_vortices(
         second.
     :return velocities: 2D array of floats
         This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the ring vortices. The units
-        are meters per second.
+        velocity at each of the N points due to all the ring vortices. The units are
+        meters per second.
     """
     origins_list = [
         back_right_vortex_vertices,
@@ -686,7 +686,7 @@ def collapsed_velocities_from_line_vortices(
 ):
     """This function takes in a group of points, and the attributes of a group of
     line vortices. At every point, it finds the cumulative induced velocity due to
-    all of the line vortices.
+    all the line vortices.
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -730,8 +730,8 @@ def collapsed_velocities_from_line_vortices(
         second.
     :return velocities: 2D array of floats
         This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all of the line vortices. The units
-        are meters per second.
+        velocity at each of the N points due to all the line vortices. The units are
+        meters per second.
     """
     num_vortices = origins.shape[0]
     num_points = points.shape[0]

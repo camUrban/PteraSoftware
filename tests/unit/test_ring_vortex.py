@@ -88,7 +88,7 @@ class TestRingVortex(unittest.TestCase):
         :return: None
         """
 
-        # Test that the objects are all of the right type.
+        # Test that the objects are all the right type.
         self.assertIsInstance(self.ring_vortex_fixture, ps.aerodynamics.RingVortex)
         self.assertIsInstance(
             self.ring_vortex_fixture.front_leg,

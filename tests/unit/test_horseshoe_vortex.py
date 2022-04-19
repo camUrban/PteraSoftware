@@ -85,7 +85,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         :return: None
         """
 
-        # Test that the objects are all of the right type.
+        # Test that the objects are all the right type.
         self.assertIsInstance(
             self.horseshoe_vortex_fixture,
             ps.aerodynamics.HorseshoeVortex,

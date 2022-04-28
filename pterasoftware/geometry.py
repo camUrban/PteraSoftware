@@ -540,10 +540,11 @@ class Airfoil:
         self.mcl_coordinates = None
         self.upper_minus_mcl = None
         self.thickness = None
+        self.n_points_per_side = n_points_per_side
 
         # If repanel is True, repanel the airfoil.
         if self.repanel:
-            self.repanel_current_airfoil(n_points_per_side=n_points_per_side)
+            self.repanel_current_airfoil(n_points_per_side=self.n_points_per_side)
 
         # Populate the mean camber line attributes.
         self.populate_mcl_coordinates()

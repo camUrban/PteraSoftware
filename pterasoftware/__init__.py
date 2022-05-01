@@ -39,8 +39,13 @@ This package contains the following modules:
     steady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's steady ring vortex lattice solver.
 
+    trim.py: This module contains functions to analyze the trim conditions of steady
+    and unsteady solvers.
+
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's unsteady ring vortex lattice solver."""
+    of this package's unsteady ring vortex lattice solver.
+"""
+
 import pterasoftware.aerodynamics
 import pterasoftware.airfoils
 import pterasoftware.functions
@@ -53,4 +58,5 @@ import pterasoftware.panel
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
+import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method

@@ -68,25 +68,37 @@ class UnsteadyProblem:
         self.delta_time = movement.delta_time
         self.only_final_results = only_final_results
 
-        # If the user only wants the results for the final cycle, find the first time
-        # step index where the solver should start calculating results. Otherwise,
-        # set the first time step index to 0.
-        if self.only_final_results:
-            self.max_period = movement.get_max_period()
+        # Find the maximum period of this problem's movements.
+        self.max_period = movement.get_max_period()
 
-            # If the movement is static, set the first time step index at which to
-            # calculate results to 0. Otherwise, the solver will calculate over the
-            # range which encompasses the last full cycle.
-            if self.max_period == 0:
-                first_results_step = 0
-            else:
-                first_results_step = max(
-                    0, math.floor(self.num_steps - (self.max_period / self.delta_time))
-                )
+        # For unsteady problems with static movement, users are typically interested
+        # in the final time step's forces and moments, which, assuming convergence,
+        # will be the most accurate. For unsteady problems with cyclic movement,
+        # users are typically interested in the forces and movements averaged over
+        # the last cycle simulated. Based on if the movement is static or cyclic,
+        # find the first time step with relevant results.
+        if self.max_period == 0:
+            self.first_averaging_step = self.num_steps - 1
         else:
-            first_results_step = 0
+            self.first_averaging_step = max(
+                0, math.floor(self.num_steps - (self.max_period / self.delta_time))
+            )
 
-        self.first_results_step = first_results_step
+        # If the user only wants to calculate forces and moments for the final cycle
+        # (for cyclic motion) or for the final time step (for static movement) set
+        # the first step to calculate results to the first averaging step. Otherwise,
+        # set it to the zero, which is the first time step.
+        if self.only_final_results:
+            self.first_results_step = self.first_averaging_step
+        else:
+            self.first_results_step = 0
+
+        # Initialize empty lists to hold the final force, moment, force coefficients,
+        # and moment coefficients this each airplane object experiences.
+        self.final_total_near_field_forces_wind_axes = []
+        self.final_total_near_field_force_coefficients_wind_axes = []
+        self.final_total_near_field_moments_wind_axes = []
+        self.final_total_near_field_moment_coefficients_wind_axes = []
 
         # Initialize an empty list to hold the steady problems.
         self.steady_problems = []

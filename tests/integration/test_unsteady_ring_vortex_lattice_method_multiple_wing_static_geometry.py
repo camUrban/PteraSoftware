@@ -1,13 +1,11 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with
-static, multi-wing geometry.
+"""This is a testing case for the unsteady ring vortex lattice method solver with static, multi-wing geometry.
 
-Note: This case does not currently test the solver's output against a expected
-output. Instead, it just tests that the solver doesn't throw an error.
+Note: This case does not currently test the solver's output against an expected output. Instead, it just tests that
+the solver doesn't throw an error.
 
 This module contains the following classes:
-    TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry: This is a class
-    for testing the unsteady ring vortex lattice method solver on static, multi-wing
-    geometry.
+    TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry: This is a class for testing the unsteady ring
+    vortex lattice method solver on static, multi-wing geometry.
 
 This module contains the following exceptions:
     None

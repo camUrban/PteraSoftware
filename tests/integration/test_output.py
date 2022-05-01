@@ -1,8 +1,7 @@
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test the output against a
-expected output. Instead, they test that the methods to create the output don't throw
-any errors.
+Note: Most of the tests in this case do not currently test the output against an expected output. Instead,
+they test that the methods to create the output don't throw any errors.
 
 This module contains the following classes:
     TestOutput: This is a class with functions to test the output module.
@@ -23,20 +22,15 @@ class TestOutput(unittest.TestCase):
     """This is a class with functions to test the output module.
 
     This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set
-        up the fixtures.
+        setUp: This method is automatically called before each testing method to set up the fixtures.
 
-        tearDown: This method is automatically called before each testing method to
-        tear down the fixtures.
+        tearDown: This method is automatically called before each testing method to tear down the fixtures.
 
-        test_plot_results_versus_time: This method tests the plot_results_versus_time
-        method.
+        test_plot_results_versus_time: This method tests the plot_results_versus_time method.
 
-        test_animate_does_not_throw: This method tests that the animate method does
-        not throw any errors.
+        test_animate_does_not_throw: This method tests that the animate method does not throw any errors.
 
-        test_draw_does_not_throw: This method tests that the draw method does not
-        throw any errors.
+        test_draw_does_not_throw: This method tests that the draw method does not throw any errors.
 
     This class contains the following class attributes:
         None
@@ -46,8 +40,7 @@ class TestOutput(unittest.TestCase):
     """
 
     def setUp(self):
-        """This method is automatically called before each testing method to set up
-        the fixtures.
+        """This method is automatically called before each testing method to set up the fixtures.
 
         :return: None
         """
@@ -58,8 +51,7 @@ class TestOutput(unittest.TestCase):
         )
 
     def tearDown(self):
-        """This method is automatically called before each testing method to tear
-        down the fixtures.
+        """This method is automatically called before each testing method to tear down the fixtures.
 
         :return: None
         """
@@ -68,14 +60,13 @@ class TestOutput(unittest.TestCase):
         del self.unsteady_solver
 
     def test_plot_results_versus_time_does_not_throw(self):
-        """This method tests that the plot_results_versus_time method doesn't throw
-        any errors.
+        """This method tests that the plot_results_versus_time method doesn't throw any errors.
 
         :return: None
         """
 
-        # Call the plot_results_versus_time method on the solver fixture. The show
-        # flag is set to False, so the figures will not be displayed.
+        # Call the plot_results_versus_time method on the solver fixture. The show flag is set to False,
+        # so the figures will not be displayed.
         ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, show=False
         )

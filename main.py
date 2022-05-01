@@ -13,19 +13,19 @@ from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
 
 from pterasoftware.ui_resources.mainWindow import Ui_MainWindowDesign
 
+
 class MainWindow(QMainWindow, Ui_MainWindowDesign):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
 
-        self.actionExample_1.triggered.connect(lambda x : self.exampleMenu(0))
-        self.actionExample_2.triggered.connect(lambda x : self.exampleMenu(1))
-        self.actionExample_3.triggered.connect(lambda x : self.exampleMenu(2))
-        self.actionExample_4.triggered.connect(lambda x : self.exampleMenu(3))
-        self.actionExample_5.triggered.connect(lambda x : self.exampleMenu(4))
+        self.actionExample_1.triggered.connect(lambda x: self.exampleMenu(0))
+        self.actionExample_2.triggered.connect(lambda x: self.exampleMenu(1))
+        self.actionExample_3.triggered.connect(lambda x: self.exampleMenu(2))
+        self.actionExample_4.triggered.connect(lambda x: self.exampleMenu(3))
+        self.actionExample_5.triggered.connect(lambda x: self.exampleMenu(4))
 
-
-    def exampleMenu(self,ex_num):
+    def exampleMenu(self, ex_num):
         import importlib
         files = []
         for i, filename in enumerate(os.listdir("examples")):
@@ -36,6 +36,8 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         print(file)
         importlib.import_module(file)
 
+    def printTerminalOutput(self):
+        pass
 
 
 if __name__ == '__main__':

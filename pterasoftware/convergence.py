@@ -21,9 +21,7 @@ from . import geometry
 from . import problems
 from . import steady_horseshoe_vortex_lattice_method
 from . import output
-
-convergence_logger = logging.getLogger("convergence")
-convergence_logger.setLevel(logging.DEBUG)
+from . import functions
 
 
 # ToDo: Document this function.
@@ -32,7 +30,17 @@ def analyze_steady_convergence(
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(5, 14),
     convergence_criteria=0.5,
+    logging_level="Debug",
 ):
+    convergence_logger = logging.getLogger("convergence")
+
+    logging_level_value = functions.convert_logging_level_name_to_value(logging_level)
+    convergence_logger.setLevel(logging_level_value)
+
+    logging.basicConfig()
+
+    convergence_logger.info("Beginning convergence analysis.")
+
     base_operating_point = base_problem.operating_point
 
     base_airplane = base_problem.airplanes[0]
@@ -40,14 +48,12 @@ def analyze_steady_convergence(
     base_wing_cross_sections = base_wing.wing_cross_sections
 
     if len(base_problem.airplanes) != 1:
-        convergence_logger.error(
-            "The problem for convergence analyses must have only one airplane."
-        )
+        err_msg = "The problem for convergence analyses must have only one airplane."
+        convergence_logger.error(msg=err_msg)
 
     if len(base_airplane.wings) != 1:
-        convergence_logger.error(
-            "The airplane for convergence analyses must have only one wing."
-        )
+        err_msg = "The airplane for convergence analyses must have only one wing."
+        convergence_logger.error(msg=err_msg)
 
     panel_aspect_ratios_list = list(
         range(panel_aspect_ratio_bounds[0], panel_aspect_ratio_bounds[1] - 1, -1)
@@ -71,20 +77,31 @@ def analyze_steady_convergence(
     num_iterations = len(panel_aspect_ratios_list) * len(num_chordwise_panels_list)
 
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-        print("Panel aspect ratio: " + str(panel_aspect_ratio))
+
+        ar_msg = "Panel aspect ratio: " + str(panel_aspect_ratio)
+        convergence_logger.debug(msg=ar_msg)
 
         for chord_id, num_chordwise_panels in enumerate(num_chordwise_panels_list):
-            print("\tNum chordwise panels: " + str(num_chordwise_panels))
-
-            iteration += 1
-            print("\t\t", iteration, "/", num_iterations, sep="")
 
             num_spanwise_panels = round(
                 (base_airplane.b_ref * num_chordwise_panels)
                 / (base_airplane.c_ref * panel_aspect_ratio)
             )
 
-            print("\t\tNum spanwise panels:", num_spanwise_panels)
+            chordwise_msg = (
+                "\tNumber of chordwise panels: "
+                + str(num_chordwise_panels)
+                + " (Number of spanwise panels: "
+                + str(num_spanwise_panels)
+                + ")"
+            )
+            convergence_logger.debug(msg=chordwise_msg)
+
+            iteration += 1
+            iteration_msg = (
+                "\t\tIteration Number: " + str(iteration) + "/" + str(num_iterations)
+            )
+            convergence_logger.debug(msg=iteration_msg)
 
             these_wing_cross_sections = []
 
@@ -152,9 +169,7 @@ def analyze_steady_convergence(
             del this_problem
 
             iter_start = time.time()
-            this_solver.run(
-                logging_level="Critical",
-            )
+            this_solver.run(logging_level="Critical")
             iter_stop = time.time()
 
             this_iter_time = iter_stop - iter_start
@@ -170,7 +185,7 @@ def analyze_steady_convergence(
             moment_coefficients[ar_id, chord_id] = this_moment_coefficient
 
             time_msg = "\t\tIteration Time: " + str(round(this_iter_time, 3)) + " s"
-            convergence_logger.log(logging.DEBUG, msg=time_msg)
+            convergence_logger.debug(msg=time_msg)
 
             max_ar_pc = np.inf
             max_chord_pc = np.inf
@@ -188,9 +203,18 @@ def analyze_steady_convergence(
                 )
                 max_ar_pc = max(ar_force_pc, ar_moment_pc)
 
-                print("\t\tMax AR PC: ", round(max_ar_pc, 2), "%", sep="")
+                max_ar_pc_msg = (
+                    "\t\tMaximum coefficient change from the panel aspect ratio: "
+                    + str(round(max_ar_pc, 2))
+                    + "%"
+                )
+                convergence_logger.debug(msg=max_ar_pc_msg)
             else:
-                print("\t\tMax AR PC:", max_ar_pc)
+                max_ar_pc_msg = (
+                    "\t\tMaximum coefficient change from the panel aspect ratio: "
+                    + str(max_ar_pc)
+                )
+                convergence_logger.debug(msg=max_ar_pc_msg)
 
             if chord_id > 0:
                 last_chord_force_coefficient = force_coefficients[ar_id, chord_id - 1]
@@ -205,9 +229,18 @@ def analyze_steady_convergence(
                 )
                 max_chord_pc = max(chord_force_pc, chord_moment_pc)
 
-                print("\t\tMax Chord PC: ", round(max_chord_pc, 2), "%", sep="")
+                max_chord_pc_msg = (
+                    "\t\tMaximum coefficient change from the number of chordwise panels: "
+                    + str(round(max_chord_pc, 2))
+                    + "%"
+                )
+                convergence_logger.debug(msg=max_chord_pc_msg)
             else:
-                print("\t\tMax Chord PC:", max_chord_pc)
+                max_chord_pc_msg = (
+                    "\t\tMaximum coefficient change from the number of chordwise panels: "
+                    + str(max_chord_pc)
+                )
+                convergence_logger.debug(msg=max_chord_pc_msg)
 
             single_ar = len(panel_aspect_ratios_list) == 1
             single_chord = len(num_chordwise_panels_list) == 1
@@ -227,24 +260,33 @@ def analyze_steady_convergence(
                 )
                 converged_iter_time = iter_times[ar_id - 1, chord_id - 1]
 
-                print("")
-                print("The simulation found a converged mesh:")
-                print("\tNum chordwise panels:", converged_chordwise_panels)
-                print("\tAspect ratio:", converged_aspect_ratio)
-                print("\tNum spanwise panels:", converged_spanwise_panels)
-                print("\tConverged iteration time:", round(converged_iter_time, 3), "s")
-
-                print("Drawing")
-                output.draw(
-                    solver=this_solver,
-                    scalar_type="lift",
+                convergence_logger.info("The analysis found a converged mesh:")
+                convergence_logger.info(
+                    "\tConverged panel aspect ratio: " + str(converged_aspect_ratio)
                 )
-                print("Drawn")
+                convergence_logger.info(
+                    "\tConverged number of chordwise panels: "
+                    + str(converged_chordwise_panels)
+                    + " (Converged number of spanwise panels: "
+                    + str(converged_spanwise_panels)
+                    + ")"
+                )
+                convergence_logger.info(
+                    "\tConverged iteration time: "
+                    + str(round(converged_iter_time, 3))
+                    + " s"
+                )
+
+                if convergence_logger.level == logging.DEBUG:
+                    output.draw(
+                        solver=this_solver,
+                        scalar_type="lift",
+                    )
                 return [
                     converged_chordwise_panels,
                     converged_aspect_ratio,
                     converged_spanwise_panels,
                 ]
 
-    print("The simulation did not find a converged mesh:")
+    convergence_logger.info("The analysis did not find a converged mesh.")
     return [None, None, None]

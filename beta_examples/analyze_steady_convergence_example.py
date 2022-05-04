@@ -1,3 +1,5 @@
+# ToDo: Document this script.
+
 import logging
 
 import pterasoftware as ps
@@ -44,10 +46,6 @@ default_airplane = ps.geometry.Airplane(
     ],
 )
 
-# Create an operating point object for this example's problem. Be sure to specify an
-# external thrust because this aircraft is not flapping, and will therefore generate
-# no thrust of its own. This external thrust could be due to a propeller or other
-# type of engine.
 default_operating_point = ps.operating_point.OperatingPoint()
 
 # Construct this example's problem object.

@@ -44,16 +44,11 @@ def analyze_steady_convergence(
     base_operating_point = base_problem.operating_point
 
     base_airplane = base_problem.airplanes[0]
-    base_wing = base_airplane.wings[0]
-    base_wing_cross_sections = base_wing.wing_cross_sections
+    base_wings = base_airplane.wings
 
     if len(base_problem.airplanes) != 1:
         err_msg = "The problem for convergence analyses must have only one airplane."
-        convergence_logger.error(msg=err_msg)
-
-    if len(base_airplane.wings) != 1:
-        err_msg = "The airplane for convergence analyses must have only one wing."
-        convergence_logger.error(msg=err_msg)
+        convergence_logger.critical(msg=err_msg)
 
     panel_aspect_ratios_list = list(
         range(panel_aspect_ratio_bounds[0], panel_aspect_ratio_bounds[1] - 1, -1)
@@ -103,29 +98,47 @@ def analyze_steady_convergence(
             )
             convergence_logger.debug(msg=iteration_msg)
 
-            these_wing_cross_sections = []
+            these_wings = []
+            for base_wing in base_wings:
 
-            for base_wing_cross_section in base_wing_cross_sections:
-                these_wing_cross_sections.append(
-                    geometry.WingCrossSection(
-                        # These values are copied from the base wing cross section.
-                        x_le=base_wing_cross_section.x_le,
-                        y_le=base_wing_cross_section.y_le,
-                        z_le=base_wing_cross_section.z_le,
-                        chord=base_wing_cross_section.chord,
-                        twist=base_wing_cross_section.twist,
-                        control_surface_type=base_wing_cross_section.control_surface_type,
-                        control_surface_hinge_point=base_wing_cross_section.control_surface_hinge_point,
-                        control_surface_deflection=base_wing_cross_section.control_surface_deflection,
-                        spanwise_spacing=base_wing_cross_section.spanwise_spacing,
+                base_wing_cross_sections = base_wing.wing_cross_sections
+                these_wing_cross_sections = []
+                for base_wing_cross_section in base_wing_cross_sections:
+                    these_wing_cross_sections.append(
+                        geometry.WingCrossSection(
+                            # These values are copied from the base wing cross section.
+                            x_le=base_wing_cross_section.x_le,
+                            y_le=base_wing_cross_section.y_le,
+                            z_le=base_wing_cross_section.z_le,
+                            chord=base_wing_cross_section.chord,
+                            twist=base_wing_cross_section.twist,
+                            control_surface_type=base_wing_cross_section.control_surface_type,
+                            control_surface_hinge_point=base_wing_cross_section.control_surface_hinge_point,
+                            control_surface_deflection=base_wing_cross_section.control_surface_deflection,
+                            spanwise_spacing=base_wing_cross_section.spanwise_spacing,
+                            # These values change.
+                            num_spanwise_panels=num_spanwise_panels,
+                            airfoil=geometry.Airfoil(
+                                name=base_wing_cross_section.airfoil.name,
+                                coordinates=base_wing_cross_section.airfoil.coordinates,
+                                repanel=base_wing_cross_section.airfoil.repanel,
+                                n_points_per_side=base_wing_cross_section.airfoil.n_points_per_side,
+                            ),
+                        )
+                    )
+
+                these_wings.append(
+                    geometry.Wing(
+                        # These values are copied from this base wing.
+                        name=base_wing.name,
+                        x_le=base_wing.x_le,
+                        y_le=base_wing.y_le,
+                        z_le=base_wing.z_le,
+                        symmetric=base_wing.symmetric,
+                        chordwise_spacing=base_wing.chordwise_spacing,
                         # These values change.
-                        num_spanwise_panels=num_spanwise_panels,
-                        airfoil=geometry.Airfoil(
-                            name=base_wing_cross_section.airfoil.name,
-                            coordinates=base_wing_cross_section.airfoil.coordinates,
-                            repanel=base_wing_cross_section.airfoil.repanel,
-                            n_points_per_side=base_wing_cross_section.airfoil.n_points_per_side,
-                        ),
+                        num_chordwise_panels=num_chordwise_panels,
+                        wing_cross_sections=these_wing_cross_sections,
                     )
                 )
 
@@ -142,20 +155,7 @@ def analyze_steady_convergence(
                 c_ref=None,
                 b_ref=None,
                 # This value changes.
-                wings=[
-                    geometry.Wing(
-                        # These values are copied from the base wing.
-                        name=base_wing.name,
-                        x_le=base_wing.x_le,
-                        y_le=base_wing.y_le,
-                        z_le=base_wing.z_le,
-                        symmetric=base_wing.symmetric,
-                        chordwise_spacing=base_wing.chordwise_spacing,
-                        # These values change.
-                        num_chordwise_panels=num_chordwise_panels,
-                        wing_cross_sections=these_wing_cross_sections,
-                    ),
-                ],
+                wings=these_wings,
             )
 
             this_problem = problems.SteadyProblem(

@@ -43,6 +43,37 @@ default_airplane = ps.geometry.Airplane(
                 ),
             ],
         ),
+        ps.geometry.Wing(
+            x_le=5.0,
+            symmetric=True,
+            chordwise_spacing="uniform",
+            wing_cross_sections=[
+                ps.geometry.WingCrossSection(
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
+                    spanwise_spacing="cosine",
+                ),
+                ps.geometry.WingCrossSection(
+                    x_le=0.0,
+                    y_le=5.0,
+                    z_le=0.0,
+                    chord=1.0,
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
+                ),
+                ps.geometry.WingCrossSection(
+                    x_le=0.25,
+                    y_le=10.0,
+                    z_le=0.0,
+                    chord=1.0,
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca2412",
+                    ),
+                ),
+            ],
+        ),
     ],
 )
 

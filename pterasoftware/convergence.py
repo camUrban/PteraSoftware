@@ -43,8 +43,9 @@ def analyze_steady_convergence(
 
     base_operating_point = base_problem.operating_point
 
-    base_airplane = base_problem.airplanes[0]
-    base_wings = base_airplane.wings
+    base_airplanes = base_problem.airplanes
+    # base_airplane = base_problem.airplanes[0]
+    # base_wings = base_airplane.wings
 
     if len(base_problem.airplanes) != 1:
         err_msg = "The problem for convergence analyses must have only one airplane."
@@ -62,10 +63,18 @@ def analyze_steady_convergence(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list))
     )
     force_coefficients = np.zeros(
-        (len(panel_aspect_ratios_list), len(num_chordwise_panels_list))
+        (
+            len(panel_aspect_ratios_list),
+            len(num_chordwise_panels_list),
+            len(base_airplanes),
+        )
     )
     moment_coefficients = np.zeros(
-        (len(panel_aspect_ratios_list), len(num_chordwise_panels_list))
+        (
+            len(panel_aspect_ratios_list),
+            len(num_chordwise_panels_list),
+            len(base_airplanes),
+        )
     )
 
     iteration = 0
@@ -78,18 +87,7 @@ def analyze_steady_convergence(
 
         for chord_id, num_chordwise_panels in enumerate(num_chordwise_panels_list):
 
-            num_spanwise_panels = round(
-                (base_airplane.b_ref * num_chordwise_panels)
-                / (base_airplane.c_ref * panel_aspect_ratio)
-            )
-
-            chordwise_msg = (
-                "\tNumber of chordwise panels: "
-                + str(num_chordwise_panels)
-                + " (Number of spanwise panels: "
-                + str(num_spanwise_panels)
-                + ")"
-            )
+            chordwise_msg = "\tNumber of chordwise panels: " + str(num_chordwise_panels)
             convergence_logger.debug(msg=chordwise_msg)
 
             iteration += 1
@@ -98,68 +96,79 @@ def analyze_steady_convergence(
             )
             convergence_logger.debug(msg=iteration_msg)
 
-            these_wings = []
-            for base_wing in base_wings:
+            these_airplanes = []
+            for base_airplane in base_airplanes:
 
-                base_wing_cross_sections = base_wing.wing_cross_sections
-                these_wing_cross_sections = []
-                for base_wing_cross_section in base_wing_cross_sections:
-                    these_wing_cross_sections.append(
-                        geometry.WingCrossSection(
-                            # These values are copied from the base wing cross section.
-                            x_le=base_wing_cross_section.x_le,
-                            y_le=base_wing_cross_section.y_le,
-                            z_le=base_wing_cross_section.z_le,
-                            chord=base_wing_cross_section.chord,
-                            twist=base_wing_cross_section.twist,
-                            control_surface_type=base_wing_cross_section.control_surface_type,
-                            control_surface_hinge_point=base_wing_cross_section.control_surface_hinge_point,
-                            control_surface_deflection=base_wing_cross_section.control_surface_deflection,
-                            spanwise_spacing=base_wing_cross_section.spanwise_spacing,
+                this_num_spanwise_panels = round(
+                    (base_airplane.b_ref * num_chordwise_panels)
+                    / (base_airplane.c_ref * panel_aspect_ratio)
+                )
+
+                base_wings = base_airplane.wings
+                these_wings = []
+                for base_wing in base_wings:
+
+                    base_wing_cross_sections = base_wing.wing_cross_sections
+                    these_wing_cross_sections = []
+                    for base_wing_cross_section in base_wing_cross_sections:
+                        these_wing_cross_sections.append(
+                            geometry.WingCrossSection(
+                                # These values are copied from the base wing cross section.
+                                x_le=base_wing_cross_section.x_le,
+                                y_le=base_wing_cross_section.y_le,
+                                z_le=base_wing_cross_section.z_le,
+                                chord=base_wing_cross_section.chord,
+                                twist=base_wing_cross_section.twist,
+                                control_surface_type=base_wing_cross_section.control_surface_type,
+                                control_surface_hinge_point=base_wing_cross_section.control_surface_hinge_point,
+                                control_surface_deflection=base_wing_cross_section.control_surface_deflection,
+                                spanwise_spacing=base_wing_cross_section.spanwise_spacing,
+                                # These values change.
+                                num_spanwise_panels=this_num_spanwise_panels,
+                                airfoil=geometry.Airfoil(
+                                    name=base_wing_cross_section.airfoil.name,
+                                    coordinates=base_wing_cross_section.airfoil.coordinates,
+                                    repanel=base_wing_cross_section.airfoil.repanel,
+                                    n_points_per_side=base_wing_cross_section.airfoil.n_points_per_side,
+                                ),
+                            )
+                        )
+
+                    these_wings.append(
+                        geometry.Wing(
+                            # These values are copied from this base wing.
+                            name=base_wing.name,
+                            x_le=base_wing.x_le,
+                            y_le=base_wing.y_le,
+                            z_le=base_wing.z_le,
+                            symmetric=base_wing.symmetric,
+                            chordwise_spacing=base_wing.chordwise_spacing,
                             # These values change.
-                            num_spanwise_panels=num_spanwise_panels,
-                            airfoil=geometry.Airfoil(
-                                name=base_wing_cross_section.airfoil.name,
-                                coordinates=base_wing_cross_section.airfoil.coordinates,
-                                repanel=base_wing_cross_section.airfoil.repanel,
-                                n_points_per_side=base_wing_cross_section.airfoil.n_points_per_side,
-                            ),
+                            num_chordwise_panels=num_chordwise_panels,
+                            wing_cross_sections=these_wing_cross_sections,
                         )
                     )
 
-                these_wings.append(
-                    geometry.Wing(
-                        # These values are copied from this base wing.
-                        name=base_wing.name,
-                        x_le=base_wing.x_le,
-                        y_le=base_wing.y_le,
-                        z_le=base_wing.z_le,
-                        symmetric=base_wing.symmetric,
-                        chordwise_spacing=base_wing.chordwise_spacing,
-                        # These values change.
-                        num_chordwise_panels=num_chordwise_panels,
-                        wing_cross_sections=these_wing_cross_sections,
+                these_airplanes.append(
+                    geometry.Airplane(
+                        # These values are copied from the base airplane.
+                        name=base_airplane.name,
+                        x_ref=base_airplane.x_ref,
+                        y_ref=base_airplane.y_ref,
+                        z_ref=base_airplane.z_ref,
+                        weight=base_airplane.weight,
+                        # These are kept as None so that they are recalculated with this
+                        # airplane's mesh.
+                        s_ref=None,
+                        c_ref=None,
+                        b_ref=None,
+                        # This value changes.
+                        wings=these_wings,
                     )
                 )
 
-            this_airplane = geometry.Airplane(
-                # These values are copied from the base airplane.
-                name=base_airplane.name,
-                x_ref=base_airplane.x_ref,
-                y_ref=base_airplane.y_ref,
-                z_ref=base_airplane.z_ref,
-                weight=base_airplane.weight,
-                # These are kept as None so that they are recalculated with this
-                # airplane's mesh.
-                s_ref=None,
-                c_ref=None,
-                b_ref=None,
-                # This value changes.
-                wings=these_wings,
-            )
-
             this_problem = problems.SteadyProblem(
-                airplanes=[this_airplane], operating_point=base_operating_point
+                airplanes=these_airplanes, operating_point=base_operating_point
             )
 
             this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
@@ -173,16 +182,21 @@ def analyze_steady_convergence(
             iter_stop = time.time()
 
             this_iter_time = iter_stop - iter_start
-            this_force_coefficient = np.linalg.norm(
-                this_airplane.total_near_field_force_coefficients_wind_axes
-            )
-            this_moment_coefficient = np.linalg.norm(
-                this_airplane.total_near_field_moment_coefficients_wind_axes
-            )
+
+            these_force_coefficients = np.zeros(len(these_airplanes))
+            these_moment_coefficients = np.zeros(len(these_airplanes))
+            for airplane_id, airplane in enumerate(these_airplanes):
+                these_force_coefficients[airplane_id] = np.linalg.norm(
+                    airplane.total_near_field_force_coefficients_wind_axes
+                )
+                these_moment_coefficients[airplane_id] = np.linalg.norm(
+                    airplane.total_near_field_moment_coefficients_wind_axes
+                )
+
+            force_coefficients[ar_id, chord_id, :] = these_force_coefficients
+            moment_coefficients[ar_id, chord_id, :] = these_moment_coefficients
 
             iter_times[ar_id, chord_id] = this_iter_time
-            force_coefficients[ar_id, chord_id] = this_force_coefficient
-            moment_coefficients[ar_id, chord_id] = this_moment_coefficient
 
             time_msg = "\t\tIteration Time: " + str(round(this_iter_time, 3)) + " s"
             convergence_logger.debug(msg=time_msg)
@@ -191,17 +205,25 @@ def analyze_steady_convergence(
             max_chord_pc = np.inf
 
             if ar_id > 0:
-                last_ar_force_coefficient = force_coefficients[ar_id - 1, chord_id]
-                last_ar_moment_coefficient = moment_coefficients[ar_id - 1, chord_id]
-                ar_force_pc = 100 * np.abs(
-                    (this_force_coefficient - last_ar_force_coefficient)
-                    / last_ar_force_coefficient
+                last_ar_force_coefficients = force_coefficients[ar_id - 1, chord_id, :]
+                last_ar_moment_coefficients = moment_coefficients[
+                    ar_id - 1, chord_id, :
+                ]
+                max_ar_force_pc = max(
+                    100
+                    * np.abs(
+                        (these_force_coefficients - last_ar_force_coefficients)
+                        / last_ar_force_coefficients
+                    )
                 )
-                ar_moment_pc = 100 * np.abs(
-                    (this_moment_coefficient - last_ar_moment_coefficient)
-                    / last_ar_moment_coefficient
+                max_ar_moment_pc = max(
+                    100
+                    * np.abs(
+                        (these_moment_coefficients - last_ar_moment_coefficients)
+                        / last_ar_moment_coefficients
+                    )
                 )
-                max_ar_pc = max(ar_force_pc, ar_moment_pc)
+                max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                 max_ar_pc_msg = (
                     "\t\tMaximum coefficient change from the panel aspect ratio: "
@@ -217,17 +239,27 @@ def analyze_steady_convergence(
                 convergence_logger.debug(msg=max_ar_pc_msg)
 
             if chord_id > 0:
-                last_chord_force_coefficient = force_coefficients[ar_id, chord_id - 1]
-                last_chord_moment_coefficient = moment_coefficients[ar_id, chord_id - 1]
-                chord_force_pc = 100 * np.abs(
-                    (this_force_coefficient - last_chord_force_coefficient)
-                    / last_chord_force_coefficient
+                last_chord_force_coefficients = force_coefficients[
+                    ar_id, chord_id - 1, :
+                ]
+                last_chord_moment_coefficients = moment_coefficients[
+                    ar_id, chord_id - 1, :
+                ]
+                max_chord_force_pc = max(
+                    100
+                    * np.abs(
+                        (these_force_coefficients - last_chord_force_coefficients)
+                        / last_chord_force_coefficients
+                    )
                 )
-                chord_moment_pc = 100 * np.abs(
-                    (this_moment_coefficient - last_chord_moment_coefficient)
-                    / last_chord_moment_coefficient
+                max_chord_moment_pc = max(
+                    100
+                    * np.abs(
+                        (these_moment_coefficients - last_chord_moment_coefficients)
+                        / last_chord_moment_coefficients
+                    )
                 )
-                max_chord_pc = max(chord_force_pc, chord_moment_pc)
+                max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 max_chord_pc_msg = (
                     "\t\tMaximum coefficient change from the number of chordwise panels: "
@@ -254,10 +286,6 @@ def analyze_steady_convergence(
             if ar_passed and chord_passed:
                 converged_chordwise_panels = num_chordwise_panels_list[chord_id - 1]
                 converged_aspect_ratio = panel_aspect_ratios_list[ar_id - 1]
-                converged_spanwise_panels = round(
-                    (base_airplane.b_ref * converged_chordwise_panels)
-                    / (base_airplane.c_ref * converged_aspect_ratio)
-                )
                 converged_iter_time = iter_times[ar_id - 1, chord_id - 1]
 
                 convergence_logger.info("The analysis found a converged mesh:")
@@ -267,9 +295,6 @@ def analyze_steady_convergence(
                 convergence_logger.info(
                     "\tConverged number of chordwise panels: "
                     + str(converged_chordwise_panels)
-                    + " (Converged number of spanwise panels: "
-                    + str(converged_spanwise_panels)
-                    + ")"
                 )
                 convergence_logger.info(
                     "\tConverged iteration time: "
@@ -282,6 +307,16 @@ def analyze_steady_convergence(
                         solver=this_solver,
                         scalar_type="lift",
                     )
+
+                converged_spanwise_panels = []
+                for base_airplane in base_airplanes:
+                    converged_spanwise_panels.append(
+                        round(
+                            (base_airplane.b_ref * converged_chordwise_panels)
+                            / (base_airplane.c_ref * converged_aspect_ratio)
+                        )
+                    )
+
                 return [
                     converged_chordwise_panels,
                     converged_aspect_ratio,

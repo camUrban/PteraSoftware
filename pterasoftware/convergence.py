@@ -19,8 +19,9 @@ import numpy as np
 
 from . import geometry
 from . import problems
+from . import movement
 
-# from . import unsteady_ring_vortex_lattice_method
+from . import unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
 from . import output
 from . import functions
@@ -327,13 +328,13 @@ def analyze_steady_convergence(
 
 # ToDo: Document this function.
 def analyze_unsteady_convergence(
-    airplane_movements,
-    operating_point_movement,
+    ref_airplane_movements,
+    ref_operating_point_movement,
     prescribed_wake=True,
     free_wake=True,
     num_cycles_bounds=(2, 4),
-    panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(5, 14),
+    panel_aspect_ratio_bounds=(4, 3),
+    num_chordwise_panels_bounds=(3, 4),
     convergence_criteria=0.5,
     logging_level="Debug",
 ):
@@ -343,11 +344,6 @@ def analyze_unsteady_convergence(
     logging.basicConfig()
 
     convergence_logger.info("Beginning convergence analysis.")
-
-    base_operating_point = operating_point_movement.base_operating_point
-    base_airplanes = []
-    for airplane_movement in airplane_movements:
-        base_airplanes.append(airplane_movement.base_airplane)
 
     wake_list = []
     if prescribed_wake:
@@ -384,7 +380,7 @@ def analyze_unsteady_convergence(
             len(num_cycles_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
-            len(base_airplanes),
+            len(ref_airplane_movements),
         )
     )
     moment_coefficients = np.zeros(
@@ -393,7 +389,7 @@ def analyze_unsteady_convergence(
             len(num_cycles_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
-            len(base_airplanes),
+            len(ref_airplane_movements),
         )
     )
 
@@ -440,90 +436,223 @@ def analyze_unsteady_convergence(
                     )
                     convergence_logger.debug(msg=iteration_msg)
 
-                    # these_airplanes = []
-                    # for base_airplane in base_airplanes:
-                    #
-                    #     this_num_spanwise_panels = round(
-                    #         (base_airplane.b_ref * num_chordwise_panels)
-                    #         / (base_airplane.c_ref * panel_aspect_ratio)
-                    #     )
-                    #
-                    #     base_wings = base_airplane.wings
-                    #     these_wings = []
-                    #     for base_wing in base_wings:
-                    #
-                    #         base_wing_cross_sections = base_wing.wing_cross_sections
-                    #         these_wing_cross_sections = []
-                    #         for base_wing_cross_section in base_wing_cross_sections:
-                    #             these_wing_cross_sections.append(
-                    #                 geometry.WingCrossSection(
-                    #                     # These values are copied from the base wing cross section.
-                    #                     x_le=base_wing_cross_section.x_le,
-                    #                     y_le=base_wing_cross_section.y_le,
-                    #                     z_le=base_wing_cross_section.z_le,
-                    #                     chord=base_wing_cross_section.chord,
-                    #                     twist=base_wing_cross_section.twist,
-                    #                     control_surface_type=base_wing_cross_section.control_surface_type,
-                    #                     control_surface_hinge_point=base_wing_cross_section.control_surface_hinge_point,
-                    #                     control_surface_deflection=base_wing_cross_section.control_surface_deflection,
-                    #                     spanwise_spacing=base_wing_cross_section.spanwise_spacing,
-                    #                     # These values change.
-                    #                     num_spanwise_panels=this_num_spanwise_panels,
-                    #                     airfoil=geometry.Airfoil(
-                    #                         name=base_wing_cross_section.airfoil.name,
-                    #                         coordinates=base_wing_cross_section.airfoil.coordinates,
-                    #                         repanel=base_wing_cross_section.airfoil.repanel,
-                    #                         n_points_per_side=base_wing_cross_section.airfoil.n_points_per_side,
-                    #                     ),
-                    #                 )
-                    #             )
-                    #
-                    #         these_wings.append(
-                    #             geometry.Wing(
-                    #                 # These values are copied from this base wing.
-                    #                 name=base_wing.name,
-                    #                 x_le=base_wing.x_le,
-                    #                 y_le=base_wing.y_le,
-                    #                 z_le=base_wing.z_le,
-                    #                 symmetric=base_wing.symmetric,
-                    #                 chordwise_spacing=base_wing.chordwise_spacing,
-                    #                 # These values change.
-                    #                 num_chordwise_panels=num_chordwise_panels,
-                    #                 wing_cross_sections=these_wing_cross_sections,
-                    #             )
-                    #         )
-                    #
-                    #     these_airplanes.append(
-                    #         geometry.Airplane(
-                    #             # These values are copied from the base airplane.
-                    #             name=base_airplane.name,
-                    #             x_ref=base_airplane.x_ref,
-                    #             y_ref=base_airplane.y_ref,
-                    #             z_ref=base_airplane.z_ref,
-                    #             weight=base_airplane.weight,
-                    #             # These are kept as None so that they are recalculated with this
-                    #             # airplane's mesh.
-                    #             s_ref=None,
-                    #             c_ref=None,
-                    #             b_ref=None,
-                    #             # This value changes.
-                    #             wings=these_wings,
-                    #         )
-                    #     )
-                    #
-                    # this_problem = problems.UnsteadyProblem(
-                    #     movement=None,
-                    #     only_final_results=True,
-                    # )
-                    #
-                    # this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                    #     unsteady_problem=this_problem
-                    # )
-                    #
-                    # del this_problem
+                    these_base_airplanes = []
+                    these_airplane_movements = []
+                    for ref_airplane_movement in ref_airplane_movements:
+                        # 1: Reference this movement's base.
+                        ref_base_airplane = ref_airplane_movement.base_airplane
+
+                        this_num_spanwise_panels = round(
+                            (ref_base_airplane.b_ref * num_chordwise_panels)
+                            / (ref_base_airplane.c_ref * panel_aspect_ratio)
+                        )
+
+                        # 2: Reference this movement's list of sub-movements.
+                        ref_wing_movements = ref_airplane_movement.wing_movements
+
+                        # 3: Create an empty list for the sub-movement base objects.
+                        these_base_wings = []
+
+                        # 4: Create an empty list for the sub-movement copies.
+                        these_wing_movements = []
+
+                        # 5: Iterate over the sub-movements.
+                        for ref_wing_movement in ref_wing_movements:
+                            # 1: Reference this movement's base.
+                            ref_base_wing = ref_wing_movement.base_wing
+
+                            # 2: Reference this movement's list of sub-movements.
+                            ref_wing_cross_section_movements = (
+                                ref_wing_movement.wing_cross_section_movements
+                            )
+
+                            # 3: Create an empty list for the sub-movement base objects.
+                            these_base_wing_cross_sections = []
+
+                            # 4: Create an empty list for the sub-movement copies.
+                            these_wing_cross_section_movements = []
+
+                            # 5: Iterate over the sub-movements.
+                            for (
+                                ref_wing_cross_section_movement
+                            ) in ref_wing_cross_section_movements:
+                                # 1: Reference this movement's base.
+                                ref_base_wing_cross_section = (
+                                    ref_wing_cross_section_movement.base_wing_cross_section
+                                )
+
+                                # 2: Reference this movement's list of sub-movements.
+                                # N/A
+
+                                # 3: Create an empty list for the sub-movement base
+                                # objects.
+                                # N/A
+
+                                # 4: Create an empty list for the sub-movement copies.
+                                # N/A
+
+                                # 5: Iterate over the sub-movements.
+                                # N/A
+
+                                # 6: Create a copy of the base.
+                                this_base_wing_cross_section = geometry.WingCrossSection(
+                                    # These values are copied from the reference
+                                    # base wing cross section.
+                                    x_le=ref_base_wing_cross_section.x_le,
+                                    y_le=ref_base_wing_cross_section.y_le,
+                                    z_le=ref_base_wing_cross_section.z_le,
+                                    chord=ref_base_wing_cross_section.chord,
+                                    twist=ref_base_wing_cross_section.twist,
+                                    control_surface_type=ref_base_wing_cross_section.control_surface_type,
+                                    control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
+                                    control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
+                                    spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
+                                    # These values change.
+                                    num_spanwise_panels=this_num_spanwise_panels,
+                                    airfoil=geometry.Airfoil(
+                                        name=ref_base_wing_cross_section.airfoil.name,
+                                        coordinates=ref_base_wing_cross_section.airfoil.coordinates,
+                                        repanel=ref_base_wing_cross_section.airfoil.repanel,
+                                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
+                                    ),
+                                )
+
+                                # 7. Create a copy of the new movement.
+                                this_wing_cross_section_movement = movement.WingCrossSectionMovement(
+                                    # These values are copied from the reference
+                                    # object.
+                                    sweeping_amplitude=ref_wing_cross_section_movement.sweeping_amplitude,
+                                    sweeping_period=ref_wing_cross_section_movement.sweeping_period,
+                                    sweeping_spacing=ref_wing_cross_section_movement.sweeping_spacing,
+                                    custom_sweep_function=ref_wing_cross_section_movement.custom_sweep_function,
+                                    pitching_amplitude=ref_wing_cross_section_movement.pitching_amplitude,
+                                    pitching_period=ref_wing_cross_section_movement.pitching_period,
+                                    pitching_spacing=ref_wing_cross_section_movement.pitching_spacing,
+                                    custom_pitch_function=ref_wing_cross_section_movement.custom_pitch_function,
+                                    heaving_amplitude=ref_wing_cross_section_movement.heaving_amplitude,
+                                    heaving_period=ref_wing_cross_section_movement.heaving_period,
+                                    heaving_spacing=ref_wing_cross_section_movement.heaving_spacing,
+                                    custom_heave_function=ref_wing_cross_section_movement.custom_heave_function,
+                                    # This value is new.
+                                    base_wing_cross_section=this_base_wing_cross_section,
+                                )
+
+                                # 8. Append the new base object to the list of new
+                                # base objects.
+                                these_base_wing_cross_sections.append(
+                                    this_base_wing_cross_section
+                                )
+
+                                # 9. Append the new movement to the list of new
+                                # movements.
+                                these_wing_cross_section_movements.append(
+                                    this_wing_cross_section_movement
+                                )
+
+                            # 6: Create a copy of the base.
+                            this_base_wing = geometry.Wing(
+                                # These values are copied from this reference base wing.
+                                name=ref_base_wing.name,
+                                x_le=ref_base_wing.x_le,
+                                y_le=ref_base_wing.y_le,
+                                z_le=ref_base_wing.z_le,
+                                symmetric=ref_base_wing.symmetric,
+                                chordwise_spacing=ref_base_wing.chordwise_spacing,
+                                # These values change.
+                                num_chordwise_panels=num_chordwise_panels,
+                                wing_cross_sections=these_base_wing_cross_sections,
+                            )
+
+                            # 7. Create a copy of the new movement.
+                            this_wing_movement = movement.WingMovement(
+                                # These values are copied from this reference wing
+                                # movement.
+                                x_le_amplitude=ref_wing_movement.x_le_amplitude,
+                                x_le_period=ref_wing_movement.x_le_period,
+                                x_le_spacing=ref_wing_movement.x_le_spacing,
+                                y_le_amplitude=ref_wing_movement.y_le_amplitude,
+                                y_le_period=ref_wing_movement.y_le_period,
+                                y_le_spacing=ref_wing_movement.y_le_spacing,
+                                z_le_amplitude=ref_wing_movement.z_le_amplitude,
+                                z_le_period=ref_wing_movement.z_le_period,
+                                z_le_spacing=ref_wing_movement.z_le_spacing,
+                                # These values change.
+                                base_wing=this_base_wing,
+                                wing_cross_sections_movements=these_wing_cross_section_movements,
+                            )
+
+                            # 8. Append the new base object to the list of new base
+                            # objects.
+                            these_base_wings.append(this_base_wing)
+
+                            # 9. Append the new movement to the list of new movements.
+                            these_wing_movements.append(this_wing_movement)
+
+                        # 6: Create a copy of the base.
+                        this_base_airplane = geometry.Airplane(
+                            # These values are copied from the reference base airplane.
+                            name=ref_base_airplane.name,
+                            x_ref=ref_base_airplane.x_ref,
+                            y_ref=ref_base_airplane.y_ref,
+                            z_ref=ref_base_airplane.z_ref,
+                            weight=ref_base_airplane.weight,
+                            # These are kept as None so that they are recalculated
+                            # with this airplane's mesh.
+                            s_ref=None,
+                            c_ref=None,
+                            b_ref=None,
+                            # This value changes.
+                            wings=these_base_wings,
+                        )
+
+                        # 7. Create a copy of the new movement.
+                        this_airplane_movement = movement.AirplaneMovement(
+                            # These values are copied from this reference airplane
+                            # movement.
+                            x_ref_amplitude=ref_airplane_movement.x_ref_amplitude,
+                            x_ref_period=ref_airplane_movement.x_ref_period,
+                            x_ref_spacing=ref_airplane_movement.x_ref_spacing,
+                            y_ref_amplitude=ref_airplane_movement.y_ref_amplitude,
+                            y_ref_period=ref_airplane_movement.y_ref_period,
+                            y_ref_spacing=ref_airplane_movement.y_ref_spacing,
+                            z_ref_amplitude=ref_airplane_movement.z_ref_amplitude,
+                            z_ref_period=ref_airplane_movement.z_ref_period,
+                            z_ref_spacing=ref_airplane_movement.z_ref_spacing,
+                            # These values change.
+                            base_airplane=this_base_airplane,
+                            wing_movements=these_wing_movements,
+                        )
+
+                        # 8. Append the new base object to the list of new base
+                        # objects.
+                        these_base_airplanes.append(this_base_airplane)
+
+                        # 9. Append the new movement to the list of new movements.
+                        these_airplane_movements.append(this_airplane_movement)
+
+                    this_movement = movement.Movement(
+                        airplane_movements=these_airplane_movements,
+                        operating_point_movement=ref_operating_point_movement,
+                        num_cycles=num_cycles,
+                    )
+
+                    this_problem = problems.UnsteadyProblem(
+                        movement=this_movement,
+                        only_final_results=True,
+                    )
+
+                    this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                        unsteady_problem=this_problem
+                    )
+
+                    del this_problem
 
                     iter_start = time.time()
-                    # this_solver.run(logging_level="Critical")
+                    # this_solver.run(
+                    #     logging_level="Critical",
+                    #     prescribed_wake=wake,
+                    #     calculate_streamlines=False,
+                    # )
                     iter_stop = time.time()
 
                     this_iter_time = iter_stop - iter_start
@@ -647,10 +776,10 @@ def analyze_unsteady_convergence(
 
                     if ar_id > 0:
                         last_ar_force_coefficients = force_coefficients[
-                            ar_id - 1, chord_id, :
+                            wake_id, cycle_id, ar_id - 1, chord_id, :
                         ]
                         last_ar_moment_coefficients = moment_coefficients[
-                            ar_id - 1, chord_id, :
+                            wake_id, cycle_id, ar_id - 1, chord_id, :
                         ]
                         max_ar_force_pc = max(
                             100
@@ -686,10 +815,10 @@ def analyze_unsteady_convergence(
 
                     if chord_id > 0:
                         last_chord_force_coefficients = force_coefficients[
-                            ar_id, chord_id - 1, :
+                            wake_id, cycle_id, ar_id, chord_id - 1, :
                         ]
                         last_chord_moment_coefficients = moment_coefficients[
-                            ar_id, chord_id - 1, :
+                            wake_id, cycle_id, ar_id, chord_id - 1, :
                         ]
                         max_chord_force_pc = max(
                             100
@@ -727,7 +856,7 @@ def analyze_unsteady_convergence(
                         convergence_logger.debug(msg=max_chord_pc_msg)
 
                     single_wake = len(wake_list) == 1
-                    single_cycle = len(num_cycles) == 1
+                    single_cycle = len(num_cycles_list) == 1
                     single_ar = len(panel_aspect_ratios_list) == 1
                     single_chord = len(num_chordwise_panels_list) == 1
 
@@ -782,11 +911,15 @@ def analyze_unsteady_convergence(
                         #     )
 
                         converged_spanwise_panels = []
-                        for base_airplane in base_airplanes:
+                        for ref_airplane_movement in ref_airplane_movements:
+                            ref_base_airplane = ref_airplane_movement.base_airplane
                             converged_spanwise_panels.append(
                                 round(
-                                    (base_airplane.b_ref * converged_chordwise_panels)
-                                    / (base_airplane.c_ref * converged_aspect_ratio)
+                                    (
+                                        ref_base_airplane.b_ref
+                                        * converged_chordwise_panels
+                                    )
+                                    / (ref_base_airplane.c_ref * converged_aspect_ratio)
                                 )
                             )
 

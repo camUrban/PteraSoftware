@@ -18,14 +18,18 @@ leading_airplane = ps.geometry.Airplane(
             chordwise_spacing="uniform",
             wing_cross_sections=[
                 ps.geometry.WingCrossSection(
+                    x_le=0.0,
+                    y_le=0.0,
+                    z_le=0.0,
+                    chord=1.0,
                     airfoil=ps.geometry.Airfoil(
                         name="naca2412",
                     ),
-                    spanwise_spacing="cosine",
+                    spanwise_spacing="uniform",
                 ),
                 ps.geometry.WingCrossSection(
                     x_le=0.0,
-                    y_le=5.0,
+                    y_le=3.0,
                     z_le=0.0,
                     chord=1.0,
                     airfoil=ps.geometry.Airfoil(

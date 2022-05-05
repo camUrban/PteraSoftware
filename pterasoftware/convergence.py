@@ -172,6 +172,8 @@ def analyze_steady_convergence(
                 airplanes=these_airplanes, operating_point=base_operating_point
             )
 
+            # ToDo: Have this function be capable of running either steady solver (
+            #  not just the horseshoe vortex solver).
             this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                 steady_problem=this_problem,
             )
@@ -873,7 +875,9 @@ def analyze_unsteady_convergence(
                     ar_converged = max_ar_pc < convergence_criteria
                     chord_converged = max_chord_pc < convergence_criteria
 
-                    wake_passed = wake_converged or single_wake
+                    wake_saturated = not wake
+
+                    wake_passed = wake_converged or single_wake or wake_saturated
                     cycle_passed = cycle_converged or single_cycle
                     ar_passed = ar_converged or single_ar
                     chord_passed = chord_converged or single_chord

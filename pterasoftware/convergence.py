@@ -96,6 +96,10 @@ def analyze_steady_convergence(
             these_airplanes = []
             for base_airplane in base_airplanes:
 
+                # ToDo: This formula only works for wings with two wing cross
+                #  sections. Fix this by normalizing each wing cross section's number
+                #  of spanwise panels by the fraction of the total wing area it
+                #  represents.
                 this_num_spanwise_panels = round(
                     (base_airplane.b_ref * num_chordwise_panels)
                     / (base_airplane.c_ref * panel_aspect_ratio)
@@ -332,9 +336,9 @@ def analyze_unsteady_convergence(
     ref_operating_point_movement,
     prescribed_wake=True,
     free_wake=True,
-    num_cycles_bounds=(2, 4),
-    panel_aspect_ratio_bounds=(4, 3),
-    num_chordwise_panels_bounds=(3, 4),
+    num_cycles_bounds=(1, 3),
+    panel_aspect_ratio_bounds=(5, 3),
+    num_chordwise_panels_bounds=(6, 9),
     convergence_criteria=0.5,
     logging_level="Debug",
 ):
@@ -442,6 +446,10 @@ def analyze_unsteady_convergence(
                         # 1: Reference this movement's base.
                         ref_base_airplane = ref_airplane_movement.base_airplane
 
+                        # ToDo: This formula only works for wings with two wing cross
+                        #  sections. Fix this by normalizing each wing cross
+                        #  section's number of spanwise panels by the fraction of the
+                        #  total wing area it represents.
                         this_num_spanwise_panels = round(
                             (ref_base_airplane.b_ref * num_chordwise_panels)
                             / (ref_base_airplane.c_ref * panel_aspect_ratio)
@@ -645,29 +653,29 @@ def analyze_unsteady_convergence(
                         unsteady_problem=this_problem
                     )
 
-                    del this_problem
-
                     iter_start = time.time()
-                    # this_solver.run(
-                    #     logging_level="Critical",
-                    #     prescribed_wake=wake,
-                    #     calculate_streamlines=False,
-                    # )
+                    this_solver.run(
+                        logging_level="Warning",
+                        prescribed_wake=wake,
+                        calculate_streamlines=False,
+                    )
                     iter_stop = time.time()
 
                     this_iter_time = iter_stop - iter_start
 
-                    these_force_coefficients = np.zeros(1)
-                    these_moment_coefficients = np.zeros(1)
-                    # these_force_coefficients = np.zeros(len(these_airplanes))
-                    # these_moment_coefficients = np.zeros(len(these_airplanes))
-                    # for airplane_id, airplane in enumerate(these_airplanes):
-                    #     these_force_coefficients[airplane_id] = np.linalg.norm(
-                    #         airplane.total_near_field_force_coefficients_wind_axes
-                    #     )
-                    #     these_moment_coefficients[airplane_id] = np.linalg.norm(
-                    #         airplane.total_near_field_moment_coefficients_wind_axes
-                    #     )
+                    these_force_coefficients = np.zeros(len(these_airplane_movements))
+                    these_moment_coefficients = np.zeros(len(these_airplane_movements))
+                    for airplane_id, airplane in enumerate(these_airplane_movements):
+                        these_force_coefficients[airplane_id] = np.linalg.norm(
+                            this_problem.final_total_near_field_force_coefficients_wind_axes[
+                                airplane_id
+                            ]
+                        )
+                        these_moment_coefficients[airplane_id] = np.linalg.norm(
+                            this_problem.final_total_near_field_moment_coefficients_wind_axes[
+                                airplane_id
+                            ]
+                        )
 
                     force_coefficients[
                         wake_id, cycle_id, ar_id, chord_id, :
@@ -904,11 +912,11 @@ def analyze_unsteady_convergence(
                             + " s"
                         )
 
-                        # if convergence_logger.level == logging.DEBUG:
-                        #     output.draw(
-                        #         solver=this_solver,
-                        #         scalar_type="lift",
-                        #     )
+                        if convergence_logger.level == logging.DEBUG:
+                            output.draw(
+                                solver=this_solver,
+                                scalar_type="lift",
+                            )
 
                         converged_spanwise_panels = []
                         for ref_airplane_movement in ref_airplane_movements:

@@ -75,7 +75,7 @@ def mesh_wing(wing):
         wing_cross_sections_trailing_edges = np.vstack(
             (
                 wing_cross_sections_trailing_edges,
-                wing_cross_section.trailing_edge() + wing.leading_edge,
+                wing_cross_section.trailing_edge + wing.leading_edge,
             )
         )
 

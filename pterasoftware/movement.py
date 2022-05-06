@@ -706,8 +706,7 @@ class WingMovement:
                     + (this_z_le - last_z_les[0]) ** 2
                 )
 
-                try:
-
+                if this_y_le != last_y_les[0]:
                     # Find the base sweep angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
                     base_wing_cross_section_sweep = (
@@ -717,11 +716,6 @@ class WingMovement:
                         * 180
                         / np.pi
                     )
-                except ZeroDivisionError:
-                    base_wing_cross_section_sweep = 0.0
-                    wing_is_vertical = True
-
-                try:
 
                     # Find the base heave angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
@@ -732,7 +726,8 @@ class WingMovement:
                         * 180
                         / np.pi
                     )
-                except ZeroDivisionError:
+                else:
+                    base_wing_cross_section_sweep = 0.0
                     base_wing_cross_section_heave = 0.0
                     wing_is_vertical = True
 

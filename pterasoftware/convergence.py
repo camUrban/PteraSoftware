@@ -287,11 +287,20 @@ def analyze_steady_convergence(
             chord_passed = chord_converged or single_chord
 
             if ar_passed and chord_passed:
-                # ToDo: These three lines don't work when any of the lists contain
-                #  only one item. Fix this bug.
-                converged_chordwise_panels = num_chordwise_panels_list[chord_id - 1]
-                converged_aspect_ratio = panel_aspect_ratios_list[ar_id - 1]
-                converged_iter_time = iter_times[ar_id - 1, chord_id - 1]
+                if single_ar:
+                    converged_ar_id = ar_id
+                else:
+                    converged_ar_id = ar_id - 1
+                if single_chord:
+                    converged_chord_id = chord_id
+                else:
+                    converged_chord_id = chord_id - 1
+
+                converged_chordwise_panels = num_chordwise_panels_list[
+                    converged_chord_id
+                ]
+                converged_aspect_ratio = panel_aspect_ratios_list[converged_ar_id]
+                converged_iter_time = iter_times[converged_ar_id, converged_chord_id]
 
                 convergence_logger.info("The analysis found a converged mesh:")
                 convergence_logger.info(
@@ -341,7 +350,7 @@ def analyze_unsteady_convergence(
     num_cycles_bounds=(1, 3),
     panel_aspect_ratio_bounds=(5, 3),
     num_chordwise_panels_bounds=(6, 9),
-    convergence_criteria=0.5,
+    convergence_criteria=1.0,
     logging_level="Debug",
 ):
     logging_level_value = functions.convert_logging_level_name_to_value(logging_level)
@@ -876,23 +885,44 @@ def analyze_unsteady_convergence(
                     chord_converged = max_chord_pc < convergence_criteria
 
                     wake_saturated = not wake
+                    ar_saturated = panel_aspect_ratio == 1
 
                     wake_passed = wake_converged or single_wake or wake_saturated
                     cycle_passed = cycle_converged or single_cycle
-                    ar_passed = ar_converged or single_ar
+                    ar_passed = ar_converged or single_ar or ar_saturated
                     chord_passed = chord_converged or single_chord
 
                     if wake_passed and cycle_passed and ar_passed and chord_passed:
-                        # ToDo: These five lines don't work when any of the lists
-                        #  contain only one item. Fix this bug.
-                        converged_wake = wake_list[wake_id - 1]
-                        converged_num_cycles = num_cycles_list[cycle_id - 1]
+                        if single_wake or (not wake_converged):
+                            converged_wake_id = wake_id
+                        else:
+                            converged_wake_id = wake_id - 1
+                        if single_cycle:
+                            converged_cycle_id = cycle_id
+                        else:
+                            converged_cycle_id = cycle_id - 1
+                        if single_ar or (not ar_converged):
+                            converged_ar_id = ar_id
+                        else:
+                            converged_ar_id = ar_id - 1
+                        if single_chord:
+                            converged_chord_id = chord_id
+                        else:
+                            converged_chord_id = chord_id - 1
+
+                        converged_wake = wake_list[converged_wake_id]
+                        converged_num_cycles = num_cycles_list[converged_cycle_id]
                         converged_chordwise_panels = num_chordwise_panels_list[
-                            chord_id - 1
+                            converged_chord_id
                         ]
-                        converged_aspect_ratio = panel_aspect_ratios_list[ar_id - 1]
+                        converged_aspect_ratio = panel_aspect_ratios_list[
+                            converged_ar_id
+                        ]
                         converged_iter_time = iter_times[
-                            wake_id - 1, cycle_id - 1, ar_id - 1, chord_id - 1
+                            converged_wake_id,
+                            converged_cycle_id,
+                            converged_ar_id,
+                            converged_chord_id,
                         ]
 
                         convergence_logger.info("The analysis found a converged mesh:")

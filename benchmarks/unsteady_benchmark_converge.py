@@ -89,7 +89,4 @@ ps.convergence.analyze_unsteady_convergence(
     operating_point_movement,
     prescribed_wake=False,
     free_wake=True,
-    num_cycles_bounds=(3 - 1, 3 + 2),
-    panel_aspect_ratio_bounds=(4, 2),
-    num_chordwise_panels_bounds=(1, 20),
 )

@@ -100,10 +100,19 @@ def analyze_steady_convergence(
                 #  sections. Fix this by normalizing each wing cross section's number
                 #  of spanwise panels by the fraction of the total wing area it
                 #  represents.
-                this_num_spanwise_panels = round(
-                    (base_airplane.b_ref * num_chordwise_panels)
-                    / (base_airplane.c_ref * panel_aspect_ratio)
-                )
+
+                # ToDo: ANOTHER MASSIVE BUG: THIS ALSO ONLY WORKS WITH SINGLE
+                #  WINGS.
+                if base_airplane.wings[0].symmetric:
+                    this_num_spanwise_panels = round(
+                        (base_airplane.b_ref * num_chordwise_panels)
+                        / (2 * base_airplane.c_ref * panel_aspect_ratio)
+                    )
+                else:
+                    this_num_spanwise_panels = round(
+                        (base_airplane.b_ref * num_chordwise_panels)
+                        / (base_airplane.c_ref * panel_aspect_ratio)
+                    )
 
                 base_wings = base_airplane.wings
                 these_wings = []
@@ -316,6 +325,7 @@ def analyze_steady_convergence(
                     + " s"
                 )
 
+                # ToDo: BUG: This is displaying the "super-converged" solver.
                 if convergence_logger.level == logging.DEBUG:
                     output.draw(
                         solver=this_solver,
@@ -341,15 +351,17 @@ def analyze_steady_convergence(
     return [None, None, [None]]
 
 
+# ToDo: Add the ability for this function to deal with static geometry unsteady
+#  problems.
 # ToDo: Document this function.
 def analyze_unsteady_convergence(
     ref_airplane_movements,
     ref_operating_point_movement,
     prescribed_wake=True,
-    free_wake=True,
-    num_cycles_bounds=(1, 3),
-    panel_aspect_ratio_bounds=(5, 3),
-    num_chordwise_panels_bounds=(6, 9),
+    free_wake=False,
+    num_cycles_bounds=(1, 1),
+    panel_aspect_ratio_bounds=(1, 1),
+    num_chordwise_panels_bounds=(5, 5),
     convergence_criteria=1.0,
     logging_level="Debug",
 ):
@@ -461,10 +473,19 @@ def analyze_unsteady_convergence(
                         #  sections. Fix this by normalizing each wing cross
                         #  section's number of spanwise panels by the fraction of the
                         #  total wing area it represents.
-                        this_num_spanwise_panels = round(
-                            (ref_base_airplane.b_ref * num_chordwise_panels)
-                            / (ref_base_airplane.c_ref * panel_aspect_ratio)
-                        )
+
+                        # ToDo: A THIRD MASSIVE BUG: THIS ALSO ONLY WORKS WITH SINGLE
+                        #  WINGS.
+                        if ref_base_airplane.wings[0].symmetric:
+                            this_num_spanwise_panels = round(
+                                (ref_base_airplane.b_ref * num_chordwise_panels)
+                                / (2 * ref_base_airplane.c_ref * panel_aspect_ratio)
+                            )
+                        else:
+                            this_num_spanwise_panels = round(
+                                (ref_base_airplane.b_ref * num_chordwise_panels)
+                                / (ref_base_airplane.c_ref * panel_aspect_ratio)
+                            )
 
                         # 2: Reference this movement's list of sub-movements.
                         ref_wing_movements = ref_airplane_movement.wing_movements
@@ -946,10 +967,12 @@ def analyze_unsteady_convergence(
                             + " s"
                         )
 
+                        # ToDo: BUG: This is displaying the "super-converged" solver.
                         if convergence_logger.level == logging.DEBUG:
                             output.draw(
                                 solver=this_solver,
                                 scalar_type="lift",
+                                show_wake_vortices=True,
                             )
 
                         converged_spanwise_panels = []

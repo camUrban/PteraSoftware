@@ -69,7 +69,7 @@ operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=operating_point
 )
 
-trim_conditions = ps.convergence.analyze_unsteady_convergence(
+converged_attributes = ps.convergence.analyze_unsteady_convergence(
     ref_airplane_movements=[leading_airplane_movement],
     ref_operating_point_movement=operating_point_movement,
 )

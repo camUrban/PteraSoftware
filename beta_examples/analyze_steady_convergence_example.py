@@ -140,6 +140,6 @@ default_problem = ps.problems.SteadyProblem(
     operating_point=default_operating_point,
 )
 
-trim_conditions = ps.convergence.analyze_steady_convergence(
+converged_attributes = ps.convergence.analyze_steady_convergence(
     base_problem=default_problem
 )

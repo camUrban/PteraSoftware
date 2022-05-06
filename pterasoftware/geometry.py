@@ -146,9 +146,9 @@ class Airplane:
         # Set the objects reference dimension attributes to be the reference
         # dimension attributes of the main wing. These attributes are calculated via
         # methods in the Wing class.
-        self.s_ref = main_wing.wetted_area
+        self.s_ref = main_wing.projected_area
         self.b_ref = main_wing.span
-        self.c_ref = main_wing.wetted_area / main_wing.span
+        self.c_ref = main_wing.mean_aerodynamic_chord
 
 
 class Wing:

@@ -261,28 +261,17 @@ class Wing:
         self.panels = None
         meshing.mesh_wing(self)
 
-        # Initialize and calculate the wing's wetted area. If the wing is
-        # symmetrical, this includes the area of the
-        # mirrored half.
-        self.wetted_area = None
-        self.calculate_wetted_area()
-
-        # Initialize and calculate the wing's calculate_span. If the wing is
-        # symmetrical, this includes the length of
-        # the mirrored half.
-        self.span = None
-        self.calculate_span()
-
         # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
-    def calculate_wetted_area(self):
-        """This method calculates the wetted area of the wing based on the areas of its panels.
+    @property
+    def wetted_area(self):
+        """This method calculates the wetted area of the wing based on the areas of
+        its panels.
 
-        This method also updates the class's wetted area attribute. If the wing is symmetrical, it includes the area
-        of the mirrored half.
+        If the wing is symmetrical, this method includes the area of the mirrored half.
 
         :return: None
         """
@@ -295,13 +284,13 @@ class Wing:
                 # Add each panel's area to the total wetted area of the wing.
                 wetted_area += self.panels[chordwise_location, spanwise_location].area
 
-        self.wetted_area = wetted_area
+        return wetted_area
 
-    def calculate_span(self):
-        """This method calculates the calculate_span of the wing.
+    @property
+    def span(self):
+        """This method calculates the span of the wing.
 
-        This method also updates the class's span attribute. If the wing is
-        symmetrical, it includes the length of the mirrored half.
+        If the wing is symmetrical, this method includes the span of the mirrored half.
 
         :return: None
         """
@@ -317,7 +306,7 @@ class Wing:
         if self.symmetric:
             span *= 2
 
-        self.span = span
+        return span
 
 
 class WingCrossSection:

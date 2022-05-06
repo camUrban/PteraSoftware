@@ -33,8 +33,8 @@ convergence_logger = logging.getLogger("convergence")
 def analyze_steady_convergence(
     base_problem,
     panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(5, 14),
-    convergence_criteria=0.5,
+    num_chordwise_panels_bounds=(3, 12),
+    convergence_criteria=1.0,
     logging_level="Debug",
 ):
     logging_level_value = functions.convert_logging_level_name_to_value(logging_level)
@@ -358,10 +358,10 @@ def analyze_unsteady_convergence(
     ref_airplane_movements,
     ref_operating_point_movement,
     prescribed_wake=True,
-    free_wake=False,
-    num_cycles_bounds=(1, 1),
-    panel_aspect_ratio_bounds=(1, 1),
-    num_chordwise_panels_bounds=(5, 5),
+    free_wake=True,
+    num_cycles_bounds=(1, 4),
+    panel_aspect_ratio_bounds=(4, 1),
+    num_chordwise_panels_bounds=(3, 12),
     convergence_criteria=1.0,
     logging_level="Debug",
 ):

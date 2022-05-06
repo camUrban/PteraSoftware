@@ -110,7 +110,7 @@ def make_infinite_leg_direction_fixture():
     :return direction: (,3) array of floats
         This holds the direction's components.
     """
-    direction = np.array([1, 0, 0])
+    direction = np.array([1.0, 0.0, 0.0])
 
     return direction
 
@@ -187,7 +187,7 @@ def make_back_left_vertex_fixture():
     :return back_left_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
-    back_left_vertex = np.array([1, 1, 0])
+    back_left_vertex = np.array([1.0, 1.0, 0.0])
 
     return back_left_vertex
 
@@ -198,7 +198,7 @@ def make_back_right_vertex_fixture():
     :return back_right_vertex: (,3) array of floats
         This holds the fixture's coordinates.
     """
-    back_right_vertex = np.array([1, 1, 0])
+    back_right_vertex = np.array([1.0, 1.0, 0.0])
 
     return back_right_vertex
 

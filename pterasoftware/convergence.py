@@ -13,6 +13,7 @@ This module contains the following functions:
 
     analyze_unsteady_convergence:"""
 import logging
+import math
 import time
 
 import numpy as np
@@ -96,31 +97,43 @@ def analyze_steady_convergence(
             these_airplanes = []
             for base_airplane in base_airplanes:
 
-                # ToDo: This formula only works for wings with two wing cross
-                #  sections. Fix this by normalizing each wing cross section's number
-                #  of spanwise panels by the fraction of the total wing area it
-                #  represents.
-
-                # ToDo: ANOTHER MASSIVE BUG: THIS ALSO ONLY WORKS WITH SINGLE
-                #  WINGS.
-                if base_airplane.wings[0].symmetric:
-                    this_num_spanwise_panels = round(
-                        (base_airplane.b_ref * num_chordwise_panels)
-                        / (2 * base_airplane.c_ref * panel_aspect_ratio)
-                    )
-                else:
-                    this_num_spanwise_panels = round(
-                        (base_airplane.b_ref * num_chordwise_panels)
-                        / (base_airplane.c_ref * panel_aspect_ratio)
-                    )
-
                 base_wings = base_airplane.wings
                 these_wings = []
                 for base_wing in base_wings:
 
                     base_wing_cross_sections = base_wing.wing_cross_sections
                     these_wing_cross_sections = []
-                    for base_wing_cross_section in base_wing_cross_sections:
+                    for (
+                        base_wing_cross_section_id,
+                        base_wing_cross_section,
+                    ) in enumerate(base_wing_cross_sections):
+
+                        if base_wing_cross_section_id < (
+                            len(base_wing_cross_sections) - 1
+                        ):
+                            next_base_wing_cross_section = base_wing_cross_sections[
+                                base_wing_cross_section_id + 1
+                            ]
+                            section_length = (
+                                next_base_wing_cross_section.y_le
+                                - base_wing_cross_section.y_le
+                            )
+                            root_chord = base_wing_cross_section.chord
+                            tip_chord = next_base_wing_cross_section.chord
+                            section_area = section_length * (root_chord + tip_chord) / 2
+                            section_standard_mean_chord = section_area / section_length
+
+                            this_num_spanwise_panels = round(
+                                (section_length * num_chordwise_panels)
+                                / (section_standard_mean_chord * panel_aspect_ratio)
+                            )
+
+                            this_num_spanwise_panels = math.ceil(
+                                this_num_spanwise_panels
+                            )
+                        else:
+                            this_num_spanwise_panels = 0
+
                         these_wing_cross_sections.append(
                             geometry.WingCrossSection(
                                 # These values are copied from the base wing cross section.
@@ -332,23 +345,13 @@ def analyze_steady_convergence(
                         scalar_type="lift",
                     )
 
-                converged_spanwise_panels = []
-                for base_airplane in base_airplanes:
-                    converged_spanwise_panels.append(
-                        round(
-                            (base_airplane.b_ref * converged_chordwise_panels)
-                            / (base_airplane.c_ref * converged_aspect_ratio)
-                        )
-                    )
-
                 return [
                     converged_chordwise_panels,
                     converged_aspect_ratio,
-                    converged_spanwise_panels,
                 ]
 
     convergence_logger.info("The analysis did not find a converged mesh.")
-    return [None, None, [None]]
+    return [None, None]
 
 
 # ToDo: Add the ability for this function to deal with static geometry unsteady
@@ -358,10 +361,10 @@ def analyze_unsteady_convergence(
     ref_airplane_movements,
     ref_operating_point_movement,
     prescribed_wake=True,
-    free_wake=True,
-    num_cycles_bounds=(1, 4),
-    panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(3, 12),
+    free_wake=False,
+    num_cycles_bounds=(1, 1),
+    panel_aspect_ratio_bounds=(2, 1),
+    num_chordwise_panels_bounds=(3, 5),
     convergence_criteria=1.0,
     logging_level="Debug",
 ):
@@ -469,24 +472,6 @@ def analyze_unsteady_convergence(
                         # 1: Reference this movement's base.
                         ref_base_airplane = ref_airplane_movement.base_airplane
 
-                        # ToDo: This formula only works for wings with two wing cross
-                        #  sections. Fix this by normalizing each wing cross
-                        #  section's number of spanwise panels by the fraction of the
-                        #  total wing area it represents.
-
-                        # ToDo: A THIRD MASSIVE BUG: THIS ALSO ONLY WORKS WITH SINGLE
-                        #  WINGS.
-                        if ref_base_airplane.wings[0].symmetric:
-                            this_num_spanwise_panels = round(
-                                (ref_base_airplane.b_ref * num_chordwise_panels)
-                                / (2 * ref_base_airplane.c_ref * panel_aspect_ratio)
-                            )
-                        else:
-                            this_num_spanwise_panels = round(
-                                (ref_base_airplane.b_ref * num_chordwise_panels)
-                                / (ref_base_airplane.c_ref * panel_aspect_ratio)
-                            )
-
                         # 2: Reference this movement's list of sub-movements.
                         ref_wing_movements = ref_airplane_movement.wing_movements
 
@@ -514,12 +499,48 @@ def analyze_unsteady_convergence(
 
                             # 5: Iterate over the sub-movements.
                             for (
-                                ref_wing_cross_section_movement
-                            ) in ref_wing_cross_section_movements:
+                                ref_wing_cross_section_movement_id,
+                                ref_wing_cross_section_movement,
+                            ) in enumerate(ref_wing_cross_section_movements):
                                 # 1: Reference this movement's base.
                                 ref_base_wing_cross_section = (
                                     ref_wing_cross_section_movement.base_wing_cross_section
                                 )
+
+                                if ref_wing_cross_section_movement_id < (
+                                    len(ref_wing_cross_section_movements) - 1
+                                ):
+                                    next_ref_base_wing_cross_section = (
+                                        ref_wing_cross_section_movements[
+                                            ref_wing_cross_section_movement_id + 1
+                                        ].base_wing_cross_section
+                                    )
+                                    section_length = (
+                                        next_ref_base_wing_cross_section.y_le
+                                        - ref_base_wing_cross_section.y_le
+                                    )
+                                    root_chord = ref_base_wing_cross_section.chord
+                                    tip_chord = next_ref_base_wing_cross_section.chord
+                                    section_area = (
+                                        section_length * (root_chord + tip_chord) / 2
+                                    )
+                                    section_standard_mean_chord = (
+                                        section_area / section_length
+                                    )
+
+                                    this_num_spanwise_panels = round(
+                                        (section_length * num_chordwise_panels)
+                                        / (
+                                            section_standard_mean_chord
+                                            * panel_aspect_ratio
+                                        )
+                                    )
+
+                                    this_num_spanwise_panels = math.ceil(
+                                        this_num_spanwise_panels
+                                    )
+                                else:
+                                    this_num_spanwise_panels = 0
 
                                 # 2: Reference this movement's list of sub-movements.
                                 # N/A
@@ -975,26 +996,12 @@ def analyze_unsteady_convergence(
                                 show_wake_vortices=True,
                             )
 
-                        converged_spanwise_panels = []
-                        for ref_airplane_movement in ref_airplane_movements:
-                            ref_base_airplane = ref_airplane_movement.base_airplane
-                            converged_spanwise_panels.append(
-                                round(
-                                    (
-                                        ref_base_airplane.b_ref
-                                        * converged_chordwise_panels
-                                    )
-                                    / (ref_base_airplane.c_ref * converged_aspect_ratio)
-                                )
-                            )
-
                         return [
                             converged_wake,
                             converged_num_cycles,
                             converged_chordwise_panels,
                             converged_aspect_ratio,
-                            converged_spanwise_panels,
                         ]
 
     convergence_logger.info("The analysis did not find a converged mesh.")
-    return [None, None, None, None, [None]]
+    return [None, None, None, None]

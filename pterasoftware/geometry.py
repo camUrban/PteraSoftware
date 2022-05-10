@@ -22,7 +22,6 @@ import importlib.resources
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
-from scipy.integrate import quad
 
 from . import functions
 from . import meshing
@@ -338,28 +337,28 @@ class Wing:
     # ToDo: Document this method.
     @property
     def mean_aerodynamic_chord(self):
-        a = quad(self.c_squared, 0, self.span / 2)
-        return (2 / self.projected_area) * a[0]
+        integral = 0
 
-    def c_squared(self, y):
-        for wcs_id, wcs in enumerate(self.wing_cross_sections[:-1]):
-            section_start = wcs.y_le
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
 
-            next_wcs = self.wing_cross_sections[wcs_id + 1]
-            section_end = next_wcs.y_le
+            root_chord = wing_cross_section.chord
+            tip_chord = next_wing_cross_section.chord
+            section_length = next_wing_cross_section.y_le - wing_cross_section.y_le
 
-            if not (section_start <= y <= section_end):
-                continue
+            integral += (
+                section_length
+                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
+                / 3
+            )
 
-            y_adj = y - section_start
-
-            root_chord = wcs.chord
-            tip_chord = next_wcs.chord
-            section_length = section_end - section_start
-
-            return (
-                ((tip_chord - root_chord) / section_length) * y_adj + root_chord
-            ) ** 2
+        if self.symmetric:
+            return 2 * integral / self.projected_area
+        return integral / self.projected_area
 
 
 class WingCrossSection:

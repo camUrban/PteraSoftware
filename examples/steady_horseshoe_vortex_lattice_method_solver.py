@@ -47,7 +47,7 @@ example_airplane = ps.geometry.Airplane(
             # the positive y direction would point out of your right wing, and the
             # positive z direction would point upwards, out of your chair. These
             # directions form a right-handed coordinate system. The default value of
-            # "symmetric" is false.
+            # "symmetric" is False.
             symmetric=True,
             # Define the number of chordwise panels on the wing, and the spacing
             # between them. The number of chordwise panels defaults to 8 panels. The

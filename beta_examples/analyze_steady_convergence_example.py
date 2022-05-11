@@ -141,5 +141,5 @@ default_problem = ps.problems.SteadyProblem(
 )
 
 converged_attributes = ps.convergence.analyze_steady_convergence(
-    base_problem=default_problem
+    base_problem=default_problem, solver_type="steady ring vortex lattice method"
 )

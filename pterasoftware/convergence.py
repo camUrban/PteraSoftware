@@ -24,6 +24,7 @@ from . import movement
 
 from . import unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
+from . import steady_ring_vortex_lattice_method
 from . import output
 from . import functions
 
@@ -33,6 +34,7 @@ convergence_logger = logging.getLogger("convergence")
 # ToDo: Document this function.
 def analyze_steady_convergence(
     base_problem,
+    solver_type,
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 12),
     convergence_criteria=1.0,
@@ -194,11 +196,16 @@ def analyze_steady_convergence(
                 airplanes=these_airplanes, operating_point=base_operating_point
             )
 
-            # ToDo: Have this function be capable of running either steady solver (
-            #  not just the horseshoe vortex solver).
-            this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-                steady_problem=this_problem,
-            )
+            if solver_type == "steady horseshoe vortex lattice method":
+                this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                    steady_problem=this_problem,
+                )
+            elif solver_type == "steady ring vortex lattice method":
+                this_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                    steady_problem=this_problem,
+                )
+            else:
+                raise Exception("You entered an invalid type of solver.")
 
             del this_problem
 
@@ -361,10 +368,10 @@ def analyze_unsteady_convergence(
     ref_airplane_movements,
     ref_operating_point_movement,
     prescribed_wake=True,
-    free_wake=False,
-    num_cycles_bounds=(1, 1),
-    panel_aspect_ratio_bounds=(2, 1),
-    num_chordwise_panels_bounds=(3, 5),
+    free_wake=True,
+    num_cycles_bounds=(1, 4),
+    panel_aspect_ratio_bounds=(4, 1),
+    num_chordwise_panels_bounds=(3, 10),
     convergence_criteria=1.0,
     logging_level="Debug",
 ):

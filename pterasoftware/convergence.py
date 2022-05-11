@@ -345,13 +345,6 @@ def analyze_steady_convergence(
                     + " s"
                 )
 
-                # ToDo: BUG: This is displaying the "super-converged" solver.
-                if convergence_logger.level == logging.DEBUG:
-                    output.draw(
-                        solver=this_solver,
-                        scalar_type="lift",
-                    )
-
                 return [
                     converged_chordwise_panels,
                     converged_aspect_ratio,
@@ -994,14 +987,6 @@ def analyze_unsteady_convergence(
                             + str(round(converged_iter_time, 3))
                             + " s"
                         )
-
-                        # ToDo: BUG: This is displaying the "super-converged" solver.
-                        if convergence_logger.level == logging.DEBUG:
-                            output.draw(
-                                solver=this_solver,
-                                scalar_type="lift",
-                                show_wake_vortices=True,
-                            )
 
                         return [
                             converged_wake,

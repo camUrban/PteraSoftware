@@ -353,15 +353,13 @@ def analyze_steady_convergence(
     return [None, None]
 
 
-# ToDo: Add the ability for this function to deal with static geometry unsteady
-#  problems.
 # ToDo: Document this function.
 def analyze_unsteady_convergence(
-    ref_airplane_movements,
-    ref_operating_point_movement,
+    ref_movement,
     prescribed_wake=True,
     free_wake=True,
     num_cycles_bounds=(1, 4),
+    num_chords_bounds=(3, 7),
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 10),
     convergence_criteria=1.0,
@@ -374,6 +372,11 @@ def analyze_unsteady_convergence(
 
     convergence_logger.info("Beginning convergence analysis.")
 
+    is_static = ref_movement.get_max_period() == 0
+
+    ref_airplane_movements = ref_movement.airplane_movements
+    ref_operating_point_movement = ref_movement.operating_point_movement
+
     wake_list = []
     if prescribed_wake:
         wake_list.append(True)
@@ -384,7 +387,10 @@ def analyze_unsteady_convergence(
             "Your solver must have at least one type of wake equal to True."
         )
 
-    num_cycles_list = list(range(num_cycles_bounds[0], num_cycles_bounds[1] + 1))
+    if is_static:
+        wake_lengths_list = list(range(num_chords_bounds[0], num_chords_bounds[1] + 1))
+    else:
+        wake_lengths_list = list(range(num_cycles_bounds[0], num_cycles_bounds[1] + 1))
 
     panel_aspect_ratios_list = list(
         range(panel_aspect_ratio_bounds[0], panel_aspect_ratio_bounds[1] - 1, -1)
@@ -397,7 +403,7 @@ def analyze_unsteady_convergence(
     iter_times = np.zeros(
         (
             len(wake_list),
-            len(num_cycles_list),
+            len(wake_lengths_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
         )
@@ -406,7 +412,7 @@ def analyze_unsteady_convergence(
     force_coefficients = np.zeros(
         (
             len(wake_list),
-            len(num_cycles_list),
+            len(wake_lengths_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplane_movements),
@@ -415,7 +421,7 @@ def analyze_unsteady_convergence(
     moment_coefficients = np.zeros(
         (
             len(wake_list),
-            len(num_cycles_list),
+            len(wake_lengths_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplane_movements),
@@ -425,7 +431,7 @@ def analyze_unsteady_convergence(
     iteration = 0
     num_iterations = (
         len(wake_list)
-        * len(num_cycles_list)
+        * len(wake_lengths_list)
         * len(panel_aspect_ratios_list)
         * len(num_chordwise_panels_list)
     )
@@ -438,9 +444,13 @@ def analyze_unsteady_convergence(
             wake_msg += "free"
         convergence_logger.debug(msg=wake_msg)
 
-        for cycle_id, num_cycles in enumerate(num_cycles_list):
-            cycle_msg = "\tNumber of cycles: " + str(num_cycles)
-            convergence_logger.debug(msg=cycle_msg)
+        for length_id, wake_length in enumerate(wake_lengths_list):
+            if is_static:
+                length_msg = "\tNumber of chord lengths: "
+            else:
+                length_msg = "\tNumber of cycles: "
+            length_msg += str(wake_length)
+            convergence_logger.debug(msg=length_msg)
 
             for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
 
@@ -690,11 +700,18 @@ def analyze_unsteady_convergence(
                         # 9. Append the new movement to the list of new movements.
                         these_airplane_movements.append(this_airplane_movement)
 
-                    this_movement = movement.Movement(
-                        airplane_movements=these_airplane_movements,
-                        operating_point_movement=ref_operating_point_movement,
-                        num_cycles=num_cycles,
-                    )
+                    if is_static:
+                        this_movement = movement.Movement(
+                            airplane_movements=these_airplane_movements,
+                            operating_point_movement=ref_operating_point_movement,
+                            num_chords=wake_length,
+                        )
+                    else:
+                        this_movement = movement.Movement(
+                            airplane_movements=these_airplane_movements,
+                            operating_point_movement=ref_operating_point_movement,
+                            num_cycles=wake_length,
+                        )
 
                     this_problem = problems.UnsteadyProblem(
                         movement=this_movement,
@@ -730,13 +747,13 @@ def analyze_unsteady_convergence(
                         )
 
                     force_coefficients[
-                        wake_id, cycle_id, ar_id, chord_id, :
+                        wake_id, length_id, ar_id, chord_id, :
                     ] = these_force_coefficients
                     moment_coefficients[
-                        wake_id, cycle_id, ar_id, chord_id, :
+                        wake_id, length_id, ar_id, chord_id, :
                     ] = these_moment_coefficients
 
-                    iter_times[wake_id, cycle_id, ar_id, chord_id] = this_iter_time
+                    iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     time_msg = (
                         "\t\t\t\tIteration Time: "
@@ -746,16 +763,16 @@ def analyze_unsteady_convergence(
                     convergence_logger.debug(msg=time_msg)
 
                     max_wake_pc = np.inf
-                    max_cycle_pc = np.inf
+                    max_length_pc = np.inf
                     max_ar_pc = np.inf
                     max_chord_pc = np.inf
 
                     if wake_id > 0:
                         last_wake_force_coefficients = force_coefficients[
-                            wake_id - 1, cycle_id, ar_id, chord_id, :
+                            wake_id - 1, length_id, ar_id, chord_id, :
                         ]
                         last_wake_moment_coefficients = moment_coefficients[
-                            wake_id - 1, cycle_id, ar_id, chord_id, :
+                            wake_id - 1, length_id, ar_id, chord_id, :
                         ]
                         max_wake_force_pc = max(
                             100
@@ -792,54 +809,54 @@ def analyze_unsteady_convergence(
                         )
                         convergence_logger.debug(msg=max_wake_pc_msg)
 
-                    if cycle_id > 0:
-                        last_cycle_force_coefficients = force_coefficients[
-                            wake_id, cycle_id - 1, ar_id, chord_id, :
+                    if length_id > 0:
+                        last_length_force_coefficients = force_coefficients[
+                            wake_id, length_id - 1, ar_id, chord_id, :
                         ]
-                        last_cycle_moment_coefficients = moment_coefficients[
-                            wake_id, cycle_id - 1, ar_id, chord_id, :
+                        last_length_moment_coefficients = moment_coefficients[
+                            wake_id, length_id - 1, ar_id, chord_id, :
                         ]
-                        max_cycle_force_pc = max(
+                        max_length_force_pc = max(
                             100
                             * np.abs(
                                 (
                                     these_force_coefficients
-                                    - last_cycle_force_coefficients
+                                    - last_length_force_coefficients
                                 )
-                                / last_cycle_force_coefficients
+                                / last_length_force_coefficients
                             )
                         )
-                        max_cycle_moment_pc = max(
+                        max_length_moment_pc = max(
                             100
                             * np.abs(
                                 (
                                     these_moment_coefficients
-                                    - last_cycle_moment_coefficients
+                                    - last_length_moment_coefficients
                                 )
-                                / last_cycle_moment_coefficients
+                                / last_length_moment_coefficients
                             )
                         )
-                        max_cycle_pc = max(max_cycle_force_pc, max_cycle_moment_pc)
+                        max_length_pc = max(max_length_force_pc, max_length_moment_pc)
 
-                        max_cycle_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the number of cycles: "
-                            + str(round(max_cycle_pc, 2))
+                        max_length_pc_msg = (
+                            "\t\t\t\tMaximum coefficient change from the wake length: "
+                            + str(round(max_length_pc, 2))
                             + "%"
                         )
-                        convergence_logger.debug(msg=max_cycle_pc_msg)
+                        convergence_logger.debug(msg=max_length_pc_msg)
                     else:
-                        max_cycle_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the number of cycles: "
-                            + str(max_cycle_pc)
+                        max_length_pc_msg = (
+                            "\t\t\t\tMaximum coefficient change from the wake length: "
+                            + str(max_length_pc)
                         )
-                        convergence_logger.debug(msg=max_cycle_pc_msg)
+                        convergence_logger.debug(msg=max_length_pc_msg)
 
                     if ar_id > 0:
                         last_ar_force_coefficients = force_coefficients[
-                            wake_id, cycle_id, ar_id - 1, chord_id, :
+                            wake_id, length_id, ar_id - 1, chord_id, :
                         ]
                         last_ar_moment_coefficients = moment_coefficients[
-                            wake_id, cycle_id, ar_id - 1, chord_id, :
+                            wake_id, length_id, ar_id - 1, chord_id, :
                         ]
                         max_ar_force_pc = max(
                             100
@@ -875,10 +892,10 @@ def analyze_unsteady_convergence(
 
                     if chord_id > 0:
                         last_chord_force_coefficients = force_coefficients[
-                            wake_id, cycle_id, ar_id, chord_id - 1, :
+                            wake_id, length_id, ar_id, chord_id - 1, :
                         ]
                         last_chord_moment_coefficients = moment_coefficients[
-                            wake_id, cycle_id, ar_id, chord_id - 1, :
+                            wake_id, length_id, ar_id, chord_id - 1, :
                         ]
                         max_chord_force_pc = max(
                             100
@@ -916,12 +933,12 @@ def analyze_unsteady_convergence(
                         convergence_logger.debug(msg=max_chord_pc_msg)
 
                     single_wake = len(wake_list) == 1
-                    single_cycle = len(num_cycles_list) == 1
+                    single_length = len(wake_lengths_list) == 1
                     single_ar = len(panel_aspect_ratios_list) == 1
                     single_chord = len(num_chordwise_panels_list) == 1
 
                     wake_converged = max_wake_pc < convergence_criteria
-                    cycle_converged = max_cycle_pc < convergence_criteria
+                    length_converged = max_length_pc < convergence_criteria
                     ar_converged = max_ar_pc < convergence_criteria
                     chord_converged = max_chord_pc < convergence_criteria
 
@@ -929,19 +946,19 @@ def analyze_unsteady_convergence(
                     ar_saturated = panel_aspect_ratio == 1
 
                     wake_passed = wake_converged or single_wake or wake_saturated
-                    cycle_passed = cycle_converged or single_cycle
+                    length_passed = length_converged or single_length
                     ar_passed = ar_converged or single_ar or ar_saturated
                     chord_passed = chord_converged or single_chord
 
-                    if wake_passed and cycle_passed and ar_passed and chord_passed:
+                    if wake_passed and length_passed and ar_passed and chord_passed:
                         if single_wake or (not wake_converged):
                             converged_wake_id = wake_id
                         else:
                             converged_wake_id = wake_id - 1
-                        if single_cycle:
-                            converged_cycle_id = cycle_id
+                        if single_length:
+                            converged_length_id = length_id
                         else:
-                            converged_cycle_id = cycle_id - 1
+                            converged_length_id = length_id - 1
                         if single_ar or (not ar_converged):
                             converged_ar_id = ar_id
                         else:
@@ -952,7 +969,7 @@ def analyze_unsteady_convergence(
                             converged_chord_id = chord_id - 1
 
                         converged_wake = wake_list[converged_wake_id]
-                        converged_num_cycles = num_cycles_list[converged_cycle_id]
+                        converged_wake_length = wake_lengths_list[converged_length_id]
                         converged_chordwise_panels = num_chordwise_panels_list[
                             converged_chord_id
                         ]
@@ -961,7 +978,7 @@ def analyze_unsteady_convergence(
                         ]
                         converged_iter_time = iter_times[
                             converged_wake_id,
-                            converged_cycle_id,
+                            converged_length_id,
                             converged_ar_id,
                             converged_chord_id,
                         ]
@@ -970,9 +987,18 @@ def analyze_unsteady_convergence(
                         convergence_logger.info(
                             "\tConverged wake type: " + str(converged_wake)
                         )
-                        convergence_logger.info(
-                            "\tConverged number of cycles: " + str(converged_num_cycles)
-                        )
+
+                        if is_static:
+                            convergence_logger.info(
+                                "\tConverged number of chord lengths: "
+                                + str(converged_wake_length)
+                            )
+                        else:
+                            convergence_logger.info(
+                                "\tConverged number of cycles: "
+                                + str(converged_wake_length)
+                            )
+
                         convergence_logger.info(
                             "\tConverged panel aspect ratio: "
                             + str(converged_aspect_ratio)
@@ -989,7 +1015,7 @@ def analyze_unsteady_convergence(
 
                         return [
                             converged_wake,
-                            converged_num_cycles,
+                            converged_wake_length,
                             converged_chordwise_panels,
                             converged_aspect_ratio,
                         ]

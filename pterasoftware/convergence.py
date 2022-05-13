@@ -25,7 +25,6 @@ from . import movement
 from . import unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
-from . import output
 from . import functions
 
 convergence_logger = logging.getLogger("convergence")

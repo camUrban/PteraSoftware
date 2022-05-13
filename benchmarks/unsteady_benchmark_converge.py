@@ -69,6 +69,7 @@ airplane_movement = ps.movement.AirplaneMovement(
     wing_movements=[upper_wing_movement],
 )
 
+del example_airplane
 del upper_wing_movement
 
 example_operating_point = ps.operating_point.OperatingPoint(
@@ -82,11 +83,29 @@ operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=example_operating_point,
 )
 
-airplane_movements = [airplane_movement]
+del example_operating_point
+
+movement = ps.movement.Movement(
+    airplane_movements=[airplane_movement],
+    operating_point_movement=operating_point_movement,
+)
+
+del airplane_movement
+del operating_point_movement
 
 ps.convergence.analyze_unsteady_convergence(
-    airplane_movements,
-    operating_point_movement,
-    prescribed_wake=False,
+    ref_movement=movement,
+    prescribed_wake=True,
     free_wake=True,
+    num_cycles_bounds=(1, 3),
+    num_chords_bounds=None,
+    panel_aspect_ratio_bounds=(4, 1),
+    num_chordwise_panels_bounds=(5, 10),
+    convergence_criteria=5.0,
 )
+
+# Converged result:
+# wake=false
+# cycles=2
+# ar=4
+# panels=9

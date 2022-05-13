@@ -56,8 +56,6 @@ leading_airplane_movement = ps.movement.AirplaneMovement(
                     base_wing_cross_section=leading_airplane.wings[
                         0
                     ].wing_cross_sections[1],
-                    sweeping_amplitude=15.0,
-                    sweeping_period=1.0,
                 ),
             ],
         )

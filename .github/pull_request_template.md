@@ -10,7 +10,13 @@ Please describe your motivation for making these changes.
 * List the changes you made.
 
 ## New Dependencies
-* List any new dependencies required to implement these changes. 
+* List any new dependencies required to implement these changes.
+
+## Change Magnitude
+Indicate if the magnitude of your enhancement is a major, minor, or patch. For 
+clarification on these terms, please read the 
+[semantic versioning guide](https://semver.org/?fbclid=IwAR1xgl6Hioqq9BOE9a8FdU6pVdPU3CAPeOUTldSZU1rIEv9d4Jw6ZyE0v9g)
+documentation.
 
 # Checklist
 

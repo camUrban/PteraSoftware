@@ -62,6 +62,7 @@ class Movement:
         operating_point_movement,
         num_steps=None,
         num_cycles=None,
+        num_chords=None,
         delta_time=None,
     ):
         """This is the initialization method.
@@ -78,13 +79,19 @@ class Movement:
             of the maximum period movement. The number of cycles defaults to three,
             but can be changed with the num_cycles parameter. If not given a value,
             and the movement is static, the number of steps will default to the
-            number of time steps such that the wake extends back by 10 reference
-            chord lengths.
+            number of time steps such that the wake extends back by some number of
+            reference chord lengths. The number of chord lengths defaults to ten,
+            but can be changed with the num_chords parameter.
         :param num_cycles: int, optional
             This integer is the number of cycles of the maximum period movement used
             to calculate a non-populated num_steps parameter. This parameter is only
             used if the num_steps parameter is None, and the movement isn't static.
             The default value is None.
+        :param num_chords: int, optional
+            This integer is the number of reference chord lengths used to calculate a
+            non-populated num_steps parameter. This parameter is only used if the
+            num_steps parameter is None, and the movement is static. The default
+            value is None.
         :param delta_time: float, optional
             This float is the time, in seconds, between each time current_step. If
             not given a value, this method will calculate one such the ring vortices
@@ -109,6 +116,18 @@ class Movement:
             self.num_cycles = num_cycles
         else:
             self.num_cycles = None
+
+        # If the number of chords were specified, make sure that the number of steps
+        # isn't also specified and that the movement is static.
+        if num_chords is not None:
+            if num_steps is not None or self.get_max_period() != 0:
+                raise Exception(
+                    "Only specify the number of chords if you haven't specified the "
+                    "number of steps and the movement is static!"
+                )
+            self.num_chords = num_chords
+        else:
+            self.num_chords = None
 
         # Calculate default num_steps and delta_time values if the user hasn't passed
         # one in.
@@ -144,9 +163,14 @@ class Movement:
                     c_refs.append(airplane_movement.base_airplane.c_ref)
                 max_c_ref = max(c_refs)
 
+                # If the user didn't specify the number of reference chord lengths
+                # for which to convect the wake, set it to ten.
+                if self.num_chords is None:
+                    self.num_chords = 10
+
                 # If the movement is static, then set the number of time steps such
-                # that the wake extends back by 10 reference chord lengths.
-                wake_length = 10 * max_c_ref
+                # that the wake extends back by some number of reference chord lengths.
+                wake_length = self.num_chords * max_c_ref
                 panel_length = (
                     delta_time
                     * self.operating_point_movement.base_operating_point.velocity
@@ -706,8 +730,7 @@ class WingMovement:
                     + (this_z_le - last_z_les[0]) ** 2
                 )
 
-                try:
-
+                if this_y_le != last_y_les[0]:
                     # Find the base sweep angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
                     base_wing_cross_section_sweep = (
@@ -717,11 +740,6 @@ class WingMovement:
                         * 180
                         / np.pi
                     )
-                except ZeroDivisionError:
-                    base_wing_cross_section_sweep = 0.0
-                    wing_is_vertical = True
-
-                try:
 
                     # Find the base heave angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
@@ -732,7 +750,8 @@ class WingMovement:
                         * 180
                         / np.pi
                     )
-                except ZeroDivisionError:
+                else:
+                    base_wing_cross_section_sweep = 0.0
                     base_wing_cross_section_heave = 0.0
                     wing_is_vertical = True
 

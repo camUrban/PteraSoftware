@@ -93,9 +93,7 @@ class Airplane:
         self.x_ref = x_ref
         self.y_ref = y_ref
         self.z_ref = z_ref
-        self.xyz_ref = np.array(
-            [float(self.x_ref), float(self.y_ref), float(self.z_ref)]
-        )
+        self.xyz_ref = np.array([self.x_ref, self.y_ref, self.z_ref])
 
         # Initialize the weight.
         self.weight = weight
@@ -105,25 +103,27 @@ class Airplane:
             wings = []
         self.wings = wings
 
-        # If the wing list is not empty, set the wing reference dimensions to be the main wing's reference dimensions.
+        # If the wing list is not empty, set the wing reference dimensions to be the
+        # main wing's reference dimensions.
         if len(self.wings) > 0:
             self.set_reference_dimensions_from_main_wing()
 
-        # If any of the passed reference dimensions are not None, set that reference dimension to be what was passed.
+        # If any of the passed reference dimensions are not None, set that reference
+        # dimension to be what was passed.
         if s_ref is not None:
-            self.s_ref = float(s_ref)
+            self.s_ref = s_ref
         if c_ref is not None:
-            self.c_ref = float(c_ref)
+            self.c_ref = c_ref
         if b_ref is not None:
-            self.b_ref = float(b_ref)
+            self.b_ref = b_ref
 
         # Calculate the number of panels in the entire current_airplane.
         self.num_panels = 0
         for wing_position, wing in enumerate(self.wings):
             self.num_panels += wing.num_panels
 
-        # Initialize empty class attributes to hold the force, moment, force coefficients, and moment coefficients
-        # this airplane experiences after
+        # Initialize empty class attributes to hold the force, moment,
+        # force coefficients, and moment coefficients this airplane experiences after
         self.total_near_field_force_wind_axes = None
         self.total_near_field_force_coefficients_wind_axes = None
         self.total_near_field_moment_wind_axes = None
@@ -131,8 +131,7 @@ class Airplane:
 
     def set_reference_dimensions_from_main_wing(self):
         """This method sets the reference dimensions of the current_airplane from
-        measurements obtained from the main
-        wing.
+        measurements obtained from the main wing.
 
         This method assumes the main wing to be the first wing in the wings list
         passed by the user.
@@ -144,11 +143,11 @@ class Airplane:
         main_wing = self.wings[0]
 
         # Set the objects reference dimension attributes to be the reference
-        # dimension attributes of the main wing.
-        # These attributes are calculated via methods in the Wing class.
-        self.s_ref = float(main_wing.wetted_area)
-        self.b_ref = float(main_wing.span)
-        self.c_ref = float(main_wing.wetted_area / main_wing.span)
+        # dimension attributes of the main wing. These attributes are calculated via
+        # methods in the Wing class.
+        self.s_ref = main_wing.projected_area
+        self.b_ref = main_wing.span
+        self.c_ref = main_wing.mean_aerodynamic_chord
 
 
 class Wing:
@@ -222,9 +221,7 @@ class Wing:
         self.x_le = x_le
         self.y_le = y_le
         self.z_le = z_le
-        self.leading_edge = np.array(
-            [float(self.x_le), float(self.y_le), float(self.z_le)]
-        )
+        self.leading_edge = np.array([self.x_le, self.y_le, self.z_le])
 
         # If wing_cross_sections is set to None, set it to an empty list.
         if wing_cross_sections is None:
@@ -261,28 +258,44 @@ class Wing:
         self.panels = None
         meshing.mesh_wing(self)
 
-        # Initialize and calculate the wing's wetted area. If the wing is
-        # symmetrical, this includes the area of the
-        # mirrored half.
-        self.wetted_area = None
-        self.calculate_wetted_area()
-
-        # Initialize and calculate the wing's calculate_span. If the wing is
-        # symmetrical, this includes the length of
-        # the mirrored half.
-        self.span = None
-        self.calculate_span()
-
         # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
-    def calculate_wetted_area(self):
-        """This method calculates the wetted area of the wing based on the areas of its panels.
+    # ToDo: Document this method.
+    @property
+    def projected_area(self):
 
-        This method also updates the class's wetted area attribute. If the wing is symmetrical, it includes the area
-        of the mirrored half.
+        projected_area = 0
+
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
+
+            span = abs(next_wing_cross_section.y_le - wing_cross_section.y_le)
+
+            chord = wing_cross_section.chord
+            next_chord = next_wing_cross_section.chord
+            mean_chord = (chord + next_chord) / 2
+
+            projected_area += mean_chord * span
+
+        # If the wing is symmetric, double the projected area.
+        if self.symmetric:
+            projected_area *= 2
+
+        return projected_area
+
+    @property
+    def wetted_area(self):
+        """This method calculates the wetted area of the wing based on the areas of
+        its panels.
+
+        If the wing is symmetrical, this method includes the area of the mirrored half.
 
         :return: None
         """
@@ -295,29 +308,57 @@ class Wing:
                 # Add each panel's area to the total wetted area of the wing.
                 wetted_area += self.panels[chordwise_location, spanwise_location].area
 
-        self.wetted_area = wetted_area
+        return wetted_area
 
-    def calculate_span(self):
-        """This method calculates the calculate_span of the wing.
+    @property
+    def span(self):
+        """This method calculates the span of the wing.
 
-        This method also updates the class's span attribute. If the wing is
-        symmetrical, it includes the length of the mirrored half.
+        If the wing is symmetrical, this method includes the span of the mirrored half.
 
         :return: None
         """
 
         # Calculate the span (y-distance between the root and the tip) of the entire
         # wing.
-        span = (
-            self.wing_cross_sections[-1].leading_edge[1]
-            - self.wing_cross_sections[0].leading_edge[1]
-        )
+        span = self.wing_cross_sections[-1].y_le - self.wing_cross_sections[0].y_le
 
         # If the wing is symmetric, multiply the span by two.
         if self.symmetric:
             span *= 2
 
-        self.span = span
+        return span
+
+    # ToDo: Document this method.
+    @property
+    def standard_mean_chord(self):
+        return self.projected_area / self.span
+
+    # ToDo: Document this method.
+    @property
+    def mean_aerodynamic_chord(self):
+        integral = 0
+
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
+
+            root_chord = wing_cross_section.chord
+            tip_chord = next_wing_cross_section.chord
+            section_length = next_wing_cross_section.y_le - wing_cross_section.y_le
+
+            integral += (
+                section_length
+                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
+                / 3
+            )
+
+        if self.symmetric:
+            return 2 * integral / self.projected_area
+        return integral / self.projected_area
 
 
 class WingCrossSection:
@@ -399,15 +440,15 @@ class WingCrossSection:
         """
 
         # Initialize all the class attributes.
-        self.x_le = float(x_le)
-        self.y_le = float(y_le)
-        self.z_le = float(z_le)
-        self.chord = float(chord)
-        self.twist = float(twist)
+        self.x_le = x_le
+        self.y_le = y_le
+        self.z_le = z_le
+        self.chord = chord
+        self.twist = twist
         self.airfoil = airfoil
         self.control_surface_type = control_surface_type
-        self.control_surface_hinge_point = float(control_surface_hinge_point)
-        self.control_surface_deflection = float(control_surface_deflection)
+        self.control_surface_hinge_point = control_surface_hinge_point
+        self.control_surface_deflection = control_surface_deflection
         self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
         self.leading_edge = np.array([x_le, y_le, z_le])
@@ -424,6 +465,7 @@ class WingCrossSection:
         if self.spanwise_spacing not in ["cosine", "uniform"]:
             raise Exception("Invalid value of spanwise_spacing!")
 
+    @property
     def trailing_edge(self):
         """This method calculates the coordinates of the trailing edge of the cross
         section.
@@ -540,10 +582,11 @@ class Airfoil:
         self.mcl_coordinates = None
         self.upper_minus_mcl = None
         self.thickness = None
+        self.n_points_per_side = n_points_per_side
 
         # If repanel is True, repanel the airfoil.
         if self.repanel:
-            self.repanel_current_airfoil(n_points_per_side=n_points_per_side)
+            self.repanel_current_airfoil(n_points_per_side=self.n_points_per_side)
 
         # Populate the mean camber line attributes.
         self.populate_mcl_coordinates()

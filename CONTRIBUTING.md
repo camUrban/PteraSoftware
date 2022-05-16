@@ -55,8 +55,7 @@ labels (and any other applicable labels) to the issue.
 ### Creating an Enhancement
 
 If you can't think of a particular enhancement you'd benefit from, search for issues
-labeled `help wanted` or
-`good first issue` for inspiration.
+labeled `help wanted` or `good first issue` for inspiration.
 
 If you have your own idea for an enhancement, we recommend searching the
 [issues page](https://github.com/camUrban/PteraSoftware/issues) to make sure there is no
@@ -84,10 +83,11 @@ write detailed commit messages. Additionally, please try to use the follow style
 [docstrings](https://realpython.com/documenting-python-code/#docstring-types).
 * Use the reStructuredText docstring format.
 * Your code itself should be well documented using block comments.
-* Inline comments should be avoided if possible.
 * Use tagging (`TODO`, `BUG`, etc.) to mark areas of the code that need changing.
 * Major new functionality should also include new tests, which you should add to the 
 tests package.
+* If you use any code or equations from someone else, please be sure to cite your 
+sources in a comment or docstring.
 
 Once you've finished implementing the enhancement, push your feature branch to your
 clone of Ptera Software. Then, make a pull request to merge your feature branch with 

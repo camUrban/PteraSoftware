@@ -1,3 +1,4 @@
+# ToDo: Update documentation with new module.
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
@@ -48,6 +49,7 @@ This package contains the following modules:
 
 import pterasoftware.aerodynamics
 import pterasoftware.airfoils
+import pterasoftware.convergence
 import pterasoftware.functions
 import pterasoftware.geometry
 import pterasoftware.meshing

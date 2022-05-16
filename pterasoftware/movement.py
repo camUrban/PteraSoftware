@@ -269,40 +269,34 @@ class AirplaneMovement:
             base airplane's wings.
         :param x_ref_amplitude: float, optional
             This is the amplitude of the airplane's change in its x reference point.
-            Its units are meters and its
-            default value is 0 meters.
+            Its units are meters and its default value is 0 meters.
         :param x_ref_period: float, optional
             This is the period of the airplane's change in its x reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param x_ref_spacing: string, optional
             This value determines the spacing of the airplane's change in its x
-            reference point. The options are "sine",
-            and "uniform". The default value is "sine".
+            reference point. The options are "sine", and "uniform". The default value
+            is "sine".
         :param y_ref_amplitude: float, optional
             This is the amplitude of the airplane's change in its y reference point.
-            Its units are meters and its
-            default value is 0 meters.
+            Its units are meters and its default value is 0 meters.
         :param y_ref_period: float, optional
             This is the period of the airplane's change in its y reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param y_ref_spacing: string, optional
             This value determines the spacing of the airplane's change in its y
-            reference point. The options are "sine",
-            and "uniform". The default value is "sine".
+            reference point. The options are "sine", and "uniform". The default value
+            is "sine".
         :param z_ref_amplitude: float, optional
             This is the amplitude of the airplane's change in its z reference point.
-            Its units are meters and its
-            default value is 0 meters.
+            Its units are meters and its default value is 0 meters.
         :param z_ref_period: float, optional
             This is the period of the airplane's change in its z reference point. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param z_ref_spacing: string, optional
             This value determines the spacing of the airplane's change in its z
-            reference point. The options are "sine",
-            and "uniform". The default value is "sine".
+            reference point. The options are "sine", and "uniform". The default value
+            is "sine".
         """
 
         # Initialize the class attributes.
@@ -414,8 +408,7 @@ class AirplaneMovement:
             raise Exception("Bad value of z_ref_spacing!")
 
         # Create an empty array that will hold each of the airplane's wing's vector
-        # of other wing's based its
-        # movement.
+        # of other wing's based its movement.
         wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
         # Iterate through the wing movement locations.
@@ -1171,11 +1164,10 @@ class WingCrossSectionMovement:
         else:
 
             # Find the list of new leading edge points. This uses a spherical
-            # coordinate transformation, referencing the
-            # previous wing cross section's leading edge point (at each time step) as
-            # the origin. Also convert the lists
-            # of sweep, pitch, and heave values to radians before passing them into
-            # numpy's trigonometry functions.
+            # coordinate transformation, referencing the previous wing cross
+            # section's leading edge point (at each time step) as the origin. Also
+            # convert the lists of sweep, pitch, and heave values to radians before
+            # passing them into numpy's trigonometry functions.
             x_le_list = last_x_les + cross_section_span * np.cos(
                 sweeping_list * np.pi / 180
             ) * np.sin(heaving_list * np.pi / 180)
@@ -1275,16 +1267,14 @@ class OperatingPointMovement:
             This is the operating point object, from which the others will be created.
         :param velocity_amplitude: float, optional
             This is the amplitude of the operating point's change in velocity. Its
-            units are meters per second and its
-            default value is 0 meters per second.
+            units are meters per second and its default value is 0 meters per second.
         :param velocity_period: float, optional
             This is the period of the operating point's change in its velocity. Its
-            units are seconds and its
-            default value is 0 seconds.
+            units are seconds and its default value is 0 seconds.
         :param velocity_spacing: string, optional
             This value determines the spacing of the operating point's change in its
-            velocity. The options are "sine",
-            and "uniform". The default value is "sine".
+            velocity. The options are "sine", and "uniform". The default value is
+            "sine".
         """
 
         # Initialize the class attributes.

@@ -108,8 +108,8 @@ def mesh_wing(wing):
             wing_sections_local_normals_len, axis=1
         )
 
-        # Normalize the summed adjacent normalized wing section quarter chords projected
-        # onto the YZ plane by their magnitudes.
+        # Normalize the summed adjacent normalized wing section quarter chords
+        # projected onto the YZ plane by their magnitudes.
         wing_sections_local_unit_normals = (
             wing_sections_local_normals / transpose_wing_sections_local_normals_len
         )
@@ -396,6 +396,7 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
+# ToDo: Update this function's documentation.
 def get_wing_cross_section_scaling_factors(
     symmetric, wing_section_quarter_chords_proj_yz_norm
 ):
@@ -521,27 +522,25 @@ def get_panel_vertices(
         + outer_wing_cross_section_mcl_local_up
     )
 
-    # Make section_mcl_coordinates: M x N x 3 array of mean camberline
-    # coordinates. The first index is chordwise point number, second index is
-    # spanwise point number, third is the x, y, and z coordinates. M is the
-    # number of chordwise points. N is the number of spanwise points. Put a
-    # reversed version (from 1 to 0) of the non dimensional spanwise coordinates
-    # in a row vector. This is size 1 x N, where N is the number of spanwise
-    # points.
+    # Make section_mcl_coordinates: M x N x 3 array of mean camberline coordinates.
+    # The first index is chordwise point number, second index is spanwise point
+    # number, third is the x, y, and z coordinates. M is the number of chordwise
+    # points. N is the number of spanwise points. Put a reversed version (from 1 to
+    # 0) of the non dimensional spanwise coordinates in a row vector. This is size 1
+    # x N, where N is the number of spanwise points.
     reversed_nondim_spanwise_coordinates_row_vector = np.expand_dims(
         (1 - spanwise_coordinates), 0
     )
 
-    # Convert the reversed non dimensional spanwise coordinate row vector (from 1
-    # to 0) to a matrix. This is size 1 x N x 1, where N is the number of
-    # spanwise points.
+    # Convert the reversed non dimensional spanwise coordinate row vector (from 1 to
+    # 0) to a matrix. This is size 1 x N x 1, where N is the number of spanwise points.
     reversed_nondim_spanwise_coordinates_matrix = np.expand_dims(
         reversed_nondim_spanwise_coordinates_row_vector, 2
     )
 
     # Convert the inner and outer wing cross section's mean camberline coordinates
-    # column vectors to matrices. These are size M x 1 x 3, where M is the number
-    # of chordwise points.
+    # column vectors to matrices. These are size M x 1 x 3, where M is the number of
+    # chordwise points.
     inner_wing_cross_section_mcl_matrix = np.expand_dims(
         inner_wing_cross_section_mcl, 1
     )
@@ -553,23 +552,22 @@ def get_panel_vertices(
     # This is size 1 x N, where N is the number of spanwise points.
     nondim_spanwise_coordinates_row_vector = np.expand_dims(spanwise_coordinates, 0)
 
-    # Convert the non dimensional spanwise coordinate row vector (from to 0 to 1)
-    # to a matrix. This is size 1 x N x 1, where N is the number of spanwise
-    # points.
+    # Convert the non dimensional spanwise coordinate row vector (from to 0 to 1) to
+    # a matrix. This is size 1 x N x 1, where N is the number of spanwise points.
     nondim_spanwise_coordinates_matrix = np.expand_dims(
         nondim_spanwise_coordinates_row_vector, 2
     )
 
-    # Linearly interpolate between inner and outer wing cross sections. This uses
-    # the following equation:
+    # Linearly interpolate between inner and outer wing cross sections. This uses the
+    # following equation:
     #
     # f(a, b, i) = i * a + (1 - i) * b
     #
     # "a" is an N x 3 array of the coordinates points along the outer wing cross
     # section's mean camber line.
     #
-    # "b" is an N x 3 array of the coordinates of points along the inner wing
-    # cross section's mean camber line.
+    # "b" is an N x 3 array of the coordinates of points along the inner wing cross
+    # section's mean camber line.
     #
     # "i" is a 1D array (or vector) of length M that holds the nondimensionalized
     # spanwise panel spacing from 0 to 1.
@@ -613,8 +611,8 @@ def get_normalized_projected_quarter_chords(
         * (wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges)
     )
 
-    # Get a (L - 1) x 3 array of vectors connecting the wing cross section quarter chord
-    # points, where L is the number of wing cross sections.
+    # Get a (L - 1) x 3 array of vectors connecting the wing cross section quarter
+    # chord points, where L is the number of wing cross sections.
     quarter_chords = (
         wing_cross_sections_quarter_chord_points[1:, :]
         - wing_cross_sections_quarter_chord_points[:-1, :]
@@ -628,8 +626,7 @@ def get_normalized_projected_quarter_chords(
     # quarter chord vectors.
     projected_quarter_chords = quarter_chords[:, 1:]
 
-    # Create a list of the lengths of each row of the projected_quarter_chords
-    # array.
+    # Create a list of the lengths of each row of the projected_quarter_chords array.
     projected_quarter_chords_len = np.linalg.norm(projected_quarter_chords, axis=1)
 
     # Convert projected_quarter_chords_len into a column vector.

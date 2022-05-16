@@ -188,7 +188,7 @@ VLM, and an unsteady ring VLM (UVLM). Here are examples of the output you can ex
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.5.1, < 4.0.0
+* matplotlib >= 3.5.2, < 4.0.0
 * numpy >= 1.21.6, < 1.22.0
 * pyvista >= 0.34.1, < 1.0.0
 * scipy >= 1.8.0, < 2.0.0
@@ -201,10 +201,10 @@ Additionally, these packages are useful for continued development of the softwar
 
 * codecov >= 2.1.12, < 3.0.0
 * black >= 22.3.0, < 23.0.0
-* pre-commit >= 2.18.1, < 3.0.0
+* pre-commit >= 2.19.0, < 3.0.0
 * build >= 0.7.0, < 1.0.0
 * twine >= 4.0.0, < 5.0.0
-* setuptools >= 62.1.0, < 63.0.0
+* setuptools >= 62.2.0, < 63.0.0
 * wheel >= 0.37.1, < 0.38.0
 
 ## Validation

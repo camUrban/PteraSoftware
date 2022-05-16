@@ -304,7 +304,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ncols=100,
             desc="Simulating",
             disable=logging_level_value != logging.WARNING,
-            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
+            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
+            "Remaining: {remaining}",
         ) as bar:
 
             # Initialize all the airplanes' panels' vortices.
@@ -523,12 +524,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
                             else:
                                 # As these vertices are directly behind the trailing
-                                # edge, they are spaced back from their panel's vertex by
-                                # one quarter the distance traveled during a time step.
-                                # This is to more accurately predict drag. More
-                                # information can be found on pages 37-39 of "Modeling of
-                                # aerodynamic forces in flapping flight with the Unsteady
-                                # Vortex Lattice Method" by Thomas Lambert.
+                                # edge, they are spaced back from their panel's
+                                # vertex by one quarter the distance traveled during
+                                # a time step. This is to more accurately predict
+                                # drag. More information can be found on pages 37-39
+                                # of "Modeling of aerodynamic forces in flapping
+                                # flight with the Unsteady Vortex Lattice Method" by
+                                # Thomas Lambert.
                                 back_left_vortex_vertex = (
                                     front_left_vortex_vertex
                                     + (panel.back_left_vertex - panel.front_left_vertex)
@@ -578,7 +580,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Iterate through the 1D array of this wing's panels.
                 for panel in panels:
 
-                    # Update the solver's list of attributes with this panel's attributes.
+                    # Update the solver's list of attributes with this panel's
+                    # attributes.
                     functions.update_ring_vortex_solvers_panel_attributes(
                         solver=self,
                         global_panel_position=global_panel_position,

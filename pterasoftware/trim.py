@@ -210,12 +210,11 @@ def analyze_unsteady_trim(
     objective_cut_off=0.01,
     num_calls=100,
 ):
-    """analyze_unsteady_trim: This function attempts to calculate a trim condition of
-    an unsteady solver by varying the operating point's velocity, angle of attack,
-    angle of sideslip, and external thrust until the net cycle-averaged force and net
-    cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
-    be found, it returns the trimmed operating point values. Otherwise, it logs an
-    error.
+    """This function attempts to calculate a trim condition of an unsteady solver by
+    varying the operating point's velocity, angle of attack, angle of sideslip,
+    and external thrust until the net cycle-averaged force and net cycle-averaged
+    moment on the aircraft are sufficient low. If a trim condition can be found,
+    it returns the trimmed operating point values. Otherwise, it logs an error.
 
     :return:
     """

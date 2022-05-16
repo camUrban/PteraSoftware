@@ -137,7 +137,8 @@ def analyze_steady_convergence(
 
                         these_wing_cross_sections.append(
                             geometry.WingCrossSection(
-                                # These values are copied from the base wing cross section.
+                                # These values are copied from the base wing cross
+                                # section.
                                 x_le=base_wing_cross_section.x_le,
                                 y_le=base_wing_cross_section.y_le,
                                 z_le=base_wing_cross_section.z_le,
@@ -293,15 +294,14 @@ def analyze_steady_convergence(
                 max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 max_chord_pc_msg = (
-                    "\t\tMaximum coefficient change from the number of chordwise panels: "
-                    + str(round(max_chord_pc, 2))
-                    + "%"
+                    "\t\tMaximum coefficient change from the number of chordwise "
+                    "panels: " + str(round(max_chord_pc, 2)) + "%"
                 )
                 convergence_logger.debug(msg=max_chord_pc_msg)
             else:
                 max_chord_pc_msg = (
-                    "\t\tMaximum coefficient change from the number of chordwise panels: "
-                    + str(max_chord_pc)
+                    "\t\tMaximum coefficient change from the number of chordwise "
+                    "panels: " + str(max_chord_pc)
                 )
                 convergence_logger.debug(msg=max_chord_pc_msg)
 
@@ -878,15 +878,14 @@ def analyze_unsteady_convergence(
                         max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                         max_ar_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the panel aspect ratio: "
-                            + str(round(max_ar_pc, 2))
-                            + "%"
+                            "\t\t\t\tMaximum coefficient change from the panel aspect "
+                            "ratio: " + str(round(max_ar_pc, 2)) + "%"
                         )
                         convergence_logger.debug(msg=max_ar_pc_msg)
                     else:
                         max_ar_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the panel aspect ratio: "
-                            + str(max_ar_pc)
+                            "\t\t\t\tMaximum coefficient change from the panel aspect "
+                            "ratio: " + str(max_ar_pc)
                         )
                         convergence_logger.debug(msg=max_ar_pc_msg)
 
@@ -920,15 +919,14 @@ def analyze_unsteady_convergence(
                         max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                         max_chord_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the number of chordwise panels: "
-                            + str(round(max_chord_pc, 2))
-                            + "%"
+                            "\t\t\t\tMaximum coefficient change from the number of "
+                            "chordwise panels: " + str(round(max_chord_pc, 2)) + "%"
                         )
                         convergence_logger.debug(msg=max_chord_pc_msg)
                     else:
                         max_chord_pc_msg = (
-                            "\t\t\t\tMaximum coefficient change from the number of chordwise panels: "
-                            + str(max_chord_pc)
+                            "\t\t\t\tMaximum coefficient change from the number of "
+                            "chordwise panels: " + str(max_chord_pc)
                         )
                         convergence_logger.debug(msg=max_chord_pc_msg)
 

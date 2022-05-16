@@ -424,8 +424,8 @@ class WingCrossSection:
             surfaces are ailerons. The default
             value is "symmetric".
         :param control_surface_hinge_point: float, optional
-            This is the location of the control surface hinge from the leading edge as a fraction of chord. The
-            default value is 0.75.
+            This is the location of the control surface hinge from the leading edge
+            as a fraction of chord. The default value is 0.75.
         :param control_surface_deflection: float, optional
             This is the Control deflection in degrees. Deflection downwards is
             positive. The default value is 0.0
@@ -435,8 +435,8 @@ class WingCrossSection:
             section and the next one. The default
             value is 8.
         :param spanwise_spacing: str, optional
-            This can be 'cosine' or 'uniform'. Using cosine spacing is highly recommended. The default value is
-            'cosine'.
+            This can be 'cosine' or 'uniform'. Using cosine spacing is highly
+            recommended. The default value is 'cosine'.
         """
 
         # Initialize all the class attributes.
@@ -490,8 +490,10 @@ class WingCrossSection:
         return trailing_edge
 
 
+# ToDo: Add the draw method to this class docstring.
 class Airfoil:
-    """This class is used to contain the airfoil of a cross section of a wing of an airplane.
+    """This class is used to contain the airfoil of a cross section of a wing of an
+    airplane.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox
@@ -545,23 +547,23 @@ class Airfoil:
         """This is the initialization method.
 
         :param name: str, optional
-            This is the name of the airfoil. It should correspond to the name in the airfoils directory unless you
-            are passing in your own coordinates. The default is "Untitled Airfoil".
+            This is the name of the airfoil. It should correspond to the name in the
+            airfoils directory unless you are passing in your own coordinates. The
+            default is "Untitled Airfoil".
         :param coordinates: array, optional
             This is an N x 2 array of the airfoil's coordinates, where N is the
-            number of coordinates. Treat this
-            as an immutable, don't edit directly after initialization. If you wish to
-            load coordinates from the airfoil
+            number of coordinates. Treat this as an immutable, don't edit directly
+            after initialization. If you wish to load coordinates from the airfoil
             directory, leave this as None. The default is None. Make sure that any
-            airfoil coordinates used range in x
-            from 0 to 1.
+            airfoil coordinates used range in x from 0 to 1.
         :param repanel: bool, optional
-            This is the variable that determines whether you would like to repanel the airfoil coordinates. This
-            applies to coordinates passed in by the user or to the directory coordinates. I highly recommended
-            setting this to True. The default is True.
+            This is the variable that determines whether you would like to repanel
+            the airfoil coordinates. This applies to coordinates passed in by the
+            user or to the directory coordinates. I highly recommended setting this
+            to True. The default is True.
         :param n_points_per_side: int, optional
-            This is number of points to use when repaneling the airfoil. It is ignored if the repanel is False. The
-            default is 400.
+            This is number of points to use when repaneling the airfoil. It is
+            ignored if the repanel is False. The default is 400.
         """
 
         # Initialize the airfoil name.
@@ -594,10 +596,11 @@ class Airfoil:
     def populate_coordinates(self):
         """This method populates a variable with the coordinates of the airfoil.
 
-        The airfoil coordinates will either be generated, if the airfoil is a NACA 4-series airfoil, or loaded from
-        the airfoil database (a folder named "airfoils" in this directory, that contains a library of dat files for
+        The airfoil coordinates will either be generated, if the airfoil is a NACA
+        4-series airfoil, or loaded from the airfoil database (a folder named
+        "airfoils" in this directory, that contains a library of dat files for
         airfoil coordinates). NACA 4-series airfoil generation is an adaptation of:
-        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4 -digit_NACA_airfoil.
+        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
 
         :return: None
         """
@@ -718,22 +721,23 @@ class Airfoil:
                 "but it could not be read correctly."
             )
 
-            # Reshape the 1D coordinates array into an N x 2 array, where N is the number of rows.
+            # Reshape the 1D coordinates array into an N x 2 array, where N is the
+            # number of rows.
             coordinates = np.reshape(coordinates_1d, (-1, 2))
 
             # Populate the coordinates attribute and return.
             self.coordinates = coordinates
             return
 
-        # If the airfoil was not a NACA 4-series and was not found in the database, throw an error.
+        # If the airfoil was not a NACA 4-series and was not found in the database,
+        # throw an error.
         except FileNotFoundError:
             raise Exception("Airfoil not in database!")
 
     def populate_mcl_coordinates(self):
         """This method creates a list of the airfoil's mean camber line coordinates.
-        It also creates two lists of the
-        vectors needed to go from the mcl coordinates to the upper and lower
-        surfaces. It also creates list of the
+        It also creates two lists of the vectors needed to go from the mcl
+        coordinates to the upper and lower surfaces. It also creates list of the
         thicknesses at the x coordinates along the mean camber line.
 
         All vectors are listed from the leading edge to the trailing edge of the
@@ -743,8 +747,7 @@ class Airfoil:
         """
 
         # Get the upper and lower coordinates. Flip the upper coordinates so that it
-        # is ordered from the leading edge to
-        # the trailing edge.
+        # is ordered from the leading edge to the trailing edge.
         upper = np.flipud(self.upper_coordinates())
         lower = self.lower_coordinates()
 
@@ -772,22 +775,23 @@ class Airfoil:
         """
 
         # Find the index of the coordinate pair with the minimum value of the x
-        # coordinate. This is the leading edge
-        # index.
+        # coordinate. This is the leading edge index.
         leading_edge_index = np.argmin(self.coordinates[:, 0])
 
         # Return the leading edge index.
         return leading_edge_index
 
     def lower_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the lower surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the
+        lower surface of the airfoil.
 
-        The order of the returned matrix is from leading edge to trailing edge. This matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with self.upper_coordinates.
+        The order of the returned matrix is from leading edge to trailing edge. This
+        matrix includes the leading edge point so be careful about duplicates if
+        using this method in conjunction with self.upper_coordinates.
 
         :return lower_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the lower surface of the airfoil, where N is
-            the number of points.
+            This is an N x 2 array of x and y coordinates that describe the lower
+            surface of the airfoil, where N is the number of points.
         """
 
         # Find the lower coordinates.
@@ -797,14 +801,16 @@ class Airfoil:
         return lower_coordinates
 
     def upper_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the upper surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the
+        upper surface of the airfoil.
 
-        The order of the returned matrix is from trailing edge to leading edge. This matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with self.lower_coordinates.
+        The order of the returned matrix is from trailing edge to leading edge. This
+        matrix includes the leading edge point so be careful about duplicates if
+        using this method in conjunction with self.lower_coordinates.
 
         :return upper_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the upper surface of the airfoil, where N is
-            the number of points.
+            This is an N x 2 array of x and y coordinates that describe the upper
+            surface of the airfoil, where N is the number of points.
         """
 
         # Find the upper coordinates.
@@ -818,11 +824,11 @@ class Airfoil:
 
         :param mcl_fractions: 1D array
             This is a 1D array that lists the points along the mean camber line (
-            normalized from 0 to 1) at which
-            to return the mean camber line coordinates.
+            normalized from 0 to 1) at which to return the mean camber line
+            coordinates.
         :return mcl_downsampled: 2D array
-            This is a 2D array that contains the coordinates of the downsampled
-            mean camber line.
+            This is a 2D array that contains the coordinates of the downsampled mean
+            camber line.
         """
 
         mcl = self.mcl_coordinates
@@ -846,15 +852,13 @@ class Airfoil:
         )
 
         # Linearly interpolate to find the x coordinates of the mean camber line at
-        # the given mean camber line
-        # fractions.
+        # the given mean camber line fractions.
         mcl_downsampled_x = np.interp(
             x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 0]
         )
 
         # Linearly interpolate to find the y coordinates of the mean camber line at
-        # the given mean camber line
-        # fractions.
+        # the given mean camber line fractions.
         mcl_downsampled_y = np.interp(
             x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 1]
         )
@@ -873,7 +877,8 @@ class Airfoil:
             This is a float of the fraction along the chord (normalized from 0 to 1)
             at which to return the camber.
         :return camber: float
-            This is the camber of the airfoil at the requested fraction along the chord.
+            This is the camber of the airfoil at the requested fraction along the
+            chord.
         """
 
         # Create a function that interpolates between the x and y coordinates of the
@@ -894,12 +899,11 @@ class Airfoil:
 
     def repanel_current_airfoil(self, n_points_per_side=100):
         """This method returns a repaneled version of the airfoil with cosine-spaced
-        coordinates on the upper and lower
-        surfaces.
+        coordinates on the upper and lower surfaces.
 
         The number of points defining the final airfoil will be (n_points_per_side *
-        2 - 1), since the leading edge
-        point is shared by both the upper and lower surfaces.
+        2 - 1), since the leading edge point is shared by both the upper and lower
+        surfaces.
 
         :param n_points_per_side: int, optional
             This is the number of points on the upper and lower surfaces. The default
@@ -916,8 +920,7 @@ class Airfoil:
         cosine_spaced_x_values = functions.cosspace(0, 1, n_points_per_side)
 
         # Create interpolated functions for the x and y values of the upper and lower
-        # surfaces as a function of the
-        # chord fractions
+        # surfaces as a function of the chord fractions
         upper_func = sp_interp.PchipInterpolator(
             x=np.flip(upper_original_coordinates[:, 0]),
             y=np.flip(upper_original_coordinates[:, 1]),
@@ -956,7 +959,8 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
 
-        # Ensure that the airfoil's deflection is not too high, which increases the risk of self intersection.
+        # Ensure that the airfoil's deflection is not too high, which increases the
+        # risk of self intersection.
         if deflection > 90 or deflection < -90:
             raise Exception("Invalid value for deflection!")
 
@@ -1006,6 +1010,7 @@ class Airfoil:
         )
         return flapped_airfoil
 
+    # ToDo: Document this method.
     def draw(self):
         x = self.coordinates[:, 0]
         y = self.coordinates[:, 1]

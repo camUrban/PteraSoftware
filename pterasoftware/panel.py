@@ -79,16 +79,15 @@ class Panel:
         self.is_trailing_edge = is_trailing_edge
 
         # Initialize variables to hold attributes that describe the panel's position
-        # in its wing's panel matrix. They
-        # will be populated by the meshing function.
+        # in its wing's panel matrix. They will be populated by the meshing function.
         self.is_right_edge = None
         self.is_left_edge = None
         self.local_chordwise_position = None
         self.local_spanwise_position = None
 
         # Initialize a variable to hold the position of the wing (who this panel
-        # belongs to) in the airplane's wing
-        # list. This will be populated by the airplane object.
+        # belongs to) in the airplane's wing list. This will be populated by the
+        # airplane object.
         self.wing_position = None
 
         # Initialize variables to hold the panel's ring and horseshoe vortices. These
@@ -102,8 +101,7 @@ class Panel:
         self.calculate_collocation_point_location()
 
         # Initialize variables to hold the panel area and the panel normal vector at
-        # the collocation point. Then
-        # populate them.
+        # the collocation point. Then populate them.
         self.area = None
         self.normal_direction = None
         self.calculate_area_and_normal()
@@ -120,8 +118,8 @@ class Panel:
         self.width = (front_leg_length + back_leg_length) / 2
 
         # Initialize two variables that are along the panel's left and right legs at
-        # the quarter chord. These points
-        # are used for all types of solvers, so we will define them here.
+        # the quarter chord. These points are used for all types of solvers,
+        # so we will define them here.
         self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (
             self.back_right_vertex - self.front_right_vertex
         )
@@ -163,8 +161,8 @@ class Panel:
         )
 
         # Find the collocation point, which is halfway between the points three
-        # quarters of the way down the left and
-        # right legs of the panel. Then populate the class attribute.
+        # quarters of the way down the left and right legs of the panel. Then
+        # populate the class attribute.
         self.collocation_point = (
             right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
         )
@@ -189,8 +187,7 @@ class Panel:
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this panel's
-        vortices, assuming a unit vortex
-        strength.
+        vortices, assuming a unit vortex strength.
 
         This method does not include the effect of the panel's wake vortices.
 
@@ -217,8 +214,7 @@ class Panel:
 
     def calculate_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this panel's
-        vortices with their given vortex
-        strengths.
+        vortices with their given vortex strengths.
 
         This method does not include the effect of the panel's wake vortices.
 

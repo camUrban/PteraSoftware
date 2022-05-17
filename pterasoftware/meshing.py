@@ -1,4 +1,3 @@
-# ToDo: Update this module's documentation.
 """This module contains useful functions for creating meshes.
 
 This module contains the following classes:
@@ -15,6 +14,13 @@ This module contains the following functions:
     get_wing_cross_section_scaling_factors: Get the scaling factors for each wing
     cross section. These factors allow the cross sections to intersect correctly at
     dihedral breaks.
+
+    get_panel_vertices: This function calculates the vertices of the panels on a wing.
+
+    get_normalized_projected_quarter_chords: This method returns the quarter chords
+    of a collection of wing cross sections based on the coordinates of their leading
+    and trailing edges. These quarter chords are also projected on to the YZ plane
+    and normalized by their magnitudes.
 
     get_transpose_mcl_vectors: This function takes in the inner and outer airfoils of
     a wing cross section and its chordwise coordinates. It returns a list of four
@@ -450,7 +456,7 @@ def get_panel_vertices(
     transpose_mcl_vectors,
     spanwise_coordinates,
 ):
-    """
+    """This function calculates the vertices of the panels on a wing.
 
     :param inner_wing_cross_section_num:
     :param wing_cross_sections_local_back_unit_vectors:
@@ -460,7 +466,7 @@ def get_panel_vertices(
     :param wing_cross_sections_leading_edges:
     :param transpose_mcl_vectors:
     :param spanwise_coordinates:
-    :return:
+    :return: list
     """
     [
         transpose_inner_mcl_up_vector,
@@ -598,11 +604,13 @@ def get_panel_vertices(
 def get_normalized_projected_quarter_chords(
     wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
 ):
-    """
+    """This method returns the quarter chords of a collection of wing cross sections
+    based on the coordinates of their leading and trailing edges. These quarter
+    chords are also projected on to the YZ plane and normalized by their magnitudes.
 
     :param wing_cross_sections_leading_edges:
     :param wing_cross_sections_trailing_edges:
-    :return:
+    :return normalized_projected_quarter_chords:
     """
     # Get the location of each wing cross section's quarter chord point.
     wing_cross_sections_quarter_chord_points = (

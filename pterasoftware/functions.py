@@ -28,6 +28,10 @@ This module contains the following functions:
     has found on its panels to find the forces, moments, and associated coefficients
     on each airplane in the solver.
 
+    process_unsteady_solver_forces: This function uses the forces and moments a
+    solver has found on its panels to find the forces, moments, and associated
+    coefficients on each airplane in the solver.
+
     update_ring_vortex_solvers_panel_attributes: This function populates a ring
     vortex solver's attributes with the attributes of a given panel.
 

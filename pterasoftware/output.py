@@ -1,4 +1,3 @@
-# ToDo: Update this script's documentation.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -19,8 +18,9 @@ This module contains the following functions:
     print_steady_results: This function prints the forces, moments,
     force coefficients, and moment coefficients calculated by a steady solver.
 
-    print_unsteady_results: This function prints the averages of the forces, moments,
-    force coefficients, and moment coefficients calculated by an unsteady solver.
+    print_unsteady_results: This function prints the final cycle-averaged of the
+    forces, moments, force coefficients, and moment coefficients calculated by an
+    unsteady solver.
 
     get_panel_surfaces: This function returns a PolyData representation of the wing
     panel surfaces associated with all the airplanes in a given list.
@@ -30,7 +30,10 @@ This module contains the following functions:
 
     get_scalars: This function gets the coefficient values from a problem's airplane
     objects, and puts them into a 1D array to be used as scalars for display by other
-    output methods. """
+    output methods.
+
+    plot_scalars: This function plots a scalar bars, the mesh panels with a
+    particular set of scalars, and labels for the minimum and maximum scalar values. """
 
 import math
 
@@ -935,19 +938,14 @@ def print_steady_results(steady_solver):
             print("")
 
 
-# ToDo: Update this function's documentation.
 def print_unsteady_results(unsteady_solver):
-    """This function prints the averages of the forces, moments, force coefficients,
-    and moment coefficients calculated by an unsteady solver.
-
-    Note: This method averages the values for every time step that calculated
-    results. Therefore, the averages are not necessarily the final-cycle averages.
+    """This function prints the final cycle-averaged of the forces, moments,
+    force coefficients, and moment coefficients calculated by an unsteady solver.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver or
         This is the solver object with the results to be printed.
     :return: None
     """
-
     forces = unsteady_solver.unsteady_problem.final_total_near_field_forces_wind_axes
     moments = unsteady_solver.unsteady_problem.final_total_near_field_moments_wind_axes
     force_coefficients = (
@@ -1243,7 +1241,6 @@ def get_scalars(
     return scalars
 
 
-# ToDo: Update this function's documentation.
 def plot_scalars(
     plotter,
     these_scalars,
@@ -1255,6 +1252,20 @@ def plot_scalars(
     c_max,
     panel_surfaces,
 ):
+    """This function plots a scalar bars, the mesh panels with a particular set of
+    scalars, and labels for the minimum and maximum scalar values.
+
+    :param plotter:
+    :param these_scalars:
+    :param scalar_type:
+    :param min_scalar:
+    :param max_scalar:
+    :param color_map:
+    :param c_min:
+    :param c_max:
+    :param panel_surfaces:
+    :return:
+    """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",
         title_font_size=bar_title_font_size,

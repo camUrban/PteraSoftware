@@ -20,7 +20,6 @@ from . import aerodynamics
 from . import functions
 
 
-# ToDo: Add the new function to this class's documentation.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -77,6 +76,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         calculate_current_flapping_velocities_at_left_leg_centers: This method finds
         the apparent flow velocity due to flapping at the centers of the current
         airplanes' bound ring vortices' left legs.
+
+        finalize_near_field_forces_and_moments: This function finds the final
+        cycle-averaged force, moments, force coefficients, and moment coefficients
+        for each of this problem's airplanes.
 
     This class contains the following class attributes:
         None
@@ -1588,11 +1591,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
 
-    # ToDo: Document this function.
     def finalize_near_field_forces_and_moments(self):
-        """
+        """This function finds the final cycle-averaged force, moments,
+        force coefficients, and moment coefficients for each of this problem's
+        airplanes.
 
-        :return:
+        :return: None
         """
         # Get this solver's time step characteristics. Note that the first time step (
         # time step 0), occurs at 0 seconds.

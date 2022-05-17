@@ -232,7 +232,7 @@ all the "test_method_does_not_throw" tests.
 
 * Maintain the repository's A CodeFactor Rating.
 * We should fill in any of the "Properly document this..." TODO statements.
-* We should ensure that all files have between 30% and 70% comment lines.
+* We should ensure that all files be at least 30% comment lines.
 * We should continue to ensure that all source code is formatted using Black.
 
 ### Features

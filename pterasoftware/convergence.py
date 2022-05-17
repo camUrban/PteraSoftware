@@ -1,6 +1,5 @@
-# ToDo: Document this module.
-"""This module contains functions to analyze the convergence of steady and unsteady
-solvers.
+"""This module contains functions for analyzing the convergence of steady and
+unsteady problems.
 
 This module contains the following classes:
     None
@@ -9,9 +8,11 @@ This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    analyze_steady_convergence:
+    analyze_steady_convergence: This function finds the converged parameters of a
+    steady problem.
 
-    analyze_unsteady_convergence:"""
+    analyze_unsteady_convergence: This function finds the converged parameters of an
+    unsteady problem. """
 import logging
 import math
 import time
@@ -25,9 +26,10 @@ from . import movement
 from . import unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
-from . import functions
 
 convergence_logger = logging.getLogger("convergence")
+convergence_logger.setLevel(logging.INFO)
+logging.basicConfig()
 
 
 # ToDo: Document this function.
@@ -36,14 +38,76 @@ def analyze_steady_convergence(
     solver_type,
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 12),
-    convergence_criteria=1.0,
-    logging_level="Debug",
+    convergence_criteria=5.0,
 ):
-    logging_level_value = functions.convert_logging_level_name_to_value(logging_level)
-    convergence_logger.setLevel(logging_level_value)
+    """This function finds the converged parameters of a steady problem.
 
-    logging.basicConfig()
+    Convergence is found by varying the problem's aircraft objects' panel aspect
+    ratios and numbers of chordwise panels. These values are iterated over via two
+    nested for loops (with the number of chordwise panels as the inner loop).
 
+    With each new combination of these values, the problem is solved, and its
+    resultant force and moment coefficients are stored. The force coefficients are
+    combined by taking the vector norm. This is repeated for the moment coefficients.
+    Then, absolute percent change (APE) of the resultant force coefficient is found
+    between this interation, and the iterations with incrementally coarser meshes
+    in both the number of chordwise panels and panel aspect ratio. The process is
+    repeated for to find the resultant moment coefficient APE.
+
+    The maximums of the resultant force coefficient APEs and resultant moment
+    coefficient APEs are found. This leaves us with two maximum APEs, one for the
+    difference in the number of chordwise panels, and one for the difference in panel
+    aspect ratio. If the chordwise panels APE is below the convergence criteria,
+    this iteration has found a converged number of chordwise panels. The same is true
+    for the panel aspect ratio APE.
+
+    If an iteration's chordwise panels and the panel aspect ratio are both converged,
+    then the solver will exit the loops and return the converged number of chordwise
+    panels and panel aspect ratio. However, the converged parameters are actually
+    the values incrementally coarser than the final values (because the
+    incrementally coarser values were found to be within the convergence criteria
+    percent difference from the final values).
+
+    There are two edge cases to this function. The first is if the user inputs
+    equal values for the coarsest and finest values of either the panel aspect ratio
+    or the number of chordwise panels (i.e. panel_aspect_ratio_bounds=(2, 2)). Then,
+    this parameter will not be iterated over, and convergence will only be checked
+    for the other parameter.
+
+    The second edge case happens if the panel aspect ratio has not converged at a
+    value of 1. This is the gold standard value for panel aspect, so the solver will
+    return 1 for the converged value of panel aspect ratio. In the code below,
+    this state is referred to as a "saturated" panel aspect ratio case.
+
+    :param base_problem: SteadyProblem
+        This is the SteadyProblem object whose convergence will be analyzed.
+    :param solver_type: str
+        This parameter determines what type of steady solver will be used to analyze
+        the problem. The options are "steady horseshoe vortex lattice method" and
+        "steady ring vortex lattice method".
+    :param panel_aspect_ratio_bounds: tuple, optional
+        This parameter determines the range of panel aspect ratio sizes, from largest
+        to smallest. For a given wing section, this value dictates the average panel
+        body-frame-y length divided by the average body-frame-x width. Historically,
+        these values range between 5 and 1. Values above 5 can be uses for a coarser
+        mesh, but the minimum value should not be less than 1. The default value is (
+        4, 1).
+    :param num_chordwise_panels_bounds: tuple, optional
+        This parameter determines the range of each wing section's number of
+        chordwise panels from smallest to largest. The default value is (3, 12).
+    :param convergence_criteria: float, optional
+        This parameter determines at what point the function continues the problem
+        converged. Specifically, it is the absolute percent change in the resultant
+        force coefficient or moment coefficient (whichever is higher). Therefore,
+        it is in units of percent. Refer to the description above for more details on
+        how it affects the solver. In short, set this value to 5.0 for a lenient
+        convergence, and 1.0 for a strict convergence. The default value is 5.0.
+    :return: list
+        This function returns a list of two values. The first is an int and
+        represents the converged number of panel aspect ratio containing the
+        converged numbers of chordwise panels. If the function could not find a set
+        of converged parameters, it returns values of None for both items in the list.
+    """
     convergence_logger.info("Beginning convergence analysis.")
 
     base_operating_point = base_problem.operating_point
@@ -330,23 +394,33 @@ def analyze_steady_convergence(
                 converged_aspect_ratio = panel_aspect_ratios_list[converged_ar_id]
                 converged_iter_time = iter_times[converged_ar_id, converged_chord_id]
 
-                convergence_logger.info("The analysis found a converged mesh:")
+                if single_ar or single_chord:
+                    convergence_logger.info("The analysis found a semi-converged mesh:")
+                    if single_ar:
+                        convergence_logger.warning(
+                            "Panel aspect ratio convergence not checked."
+                        )
+                    if single_chord:
+                        convergence_logger.warning(
+                            "Number of chordwise panels ratio convergence not "
+                            "checked."
+                        )
+                else:
+                    convergence_logger.info("The analysis found a converged mesh:")
+
                 convergence_logger.info(
-                    "\tConverged panel aspect ratio: " + str(converged_aspect_ratio)
+                    "\tPanel aspect ratio: " + str(converged_aspect_ratio)
                 )
                 convergence_logger.info(
-                    "\tConverged number of chordwise panels: "
-                    + str(converged_chordwise_panels)
+                    "\tNumber of chordwise panels: " + str(converged_chordwise_panels)
                 )
                 convergence_logger.info(
-                    "\tConverged iteration time: "
-                    + str(round(converged_iter_time, 3))
-                    + " s"
+                    "\tIteration time: " + str(round(converged_iter_time, 3)) + " s"
                 )
 
                 return [
-                    converged_chordwise_panels,
                     converged_aspect_ratio,
+                    converged_chordwise_panels,
                 ]
 
     convergence_logger.info("The analysis did not find a converged mesh.")
@@ -363,13 +437,19 @@ def analyze_unsteady_convergence(
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 10),
     convergence_criteria=1.0,
-    logging_level="Debug",
 ):
-    logging_level_value = functions.convert_logging_level_name_to_value(logging_level)
-    convergence_logger.setLevel(logging_level_value)
+    """This function finds the converged parameters of an unsteady problem.
 
-    logging.basicConfig()
-
+    :param ref_movement:
+    :param prescribed_wake:
+    :param free_wake:
+    :param num_cycles_bounds:
+    :param num_chords_bounds:
+    :param panel_aspect_ratio_bounds:
+    :param num_chordwise_panels_bounds:
+    :param convergence_criteria:
+    :return:
+    """
     convergence_logger.info("Beginning convergence analysis.")
 
     is_static = ref_movement.get_max_period() == 0
@@ -981,10 +1061,33 @@ def analyze_unsteady_convergence(
                             converged_chord_id,
                         ]
 
-                        convergence_logger.info("The analysis found a converged mesh:")
-                        convergence_logger.info(
-                            "\tConverged wake type: " + str(converged_wake)
-                        )
+                        if single_wake or single_length or single_ar or single_chord:
+                            convergence_logger.info(
+                                "The analysis found a semi-converged mesh:"
+                            )
+                            if single_wake:
+                                convergence_logger.warning(
+                                    "Wake type convergence not checked."
+                                )
+                            if single_length:
+                                convergence_logger.warning(
+                                    "Wake length convergence not checked."
+                                )
+                            if single_ar:
+                                convergence_logger.warning(
+                                    "Panel aspect ratio convergence not checked."
+                                )
+                            if single_chord:
+                                convergence_logger.warning(
+                                    "Number of chordwise panels ratio convergence not "
+                                    "checked."
+                                )
+                        else:
+                            convergence_logger.info(
+                                "The analysis found a converged mesh:"
+                            )
+
+                        convergence_logger.info("\tWake type: " + str(converged_wake))
 
                         if is_static:
                             convergence_logger.info(
@@ -998,15 +1101,14 @@ def analyze_unsteady_convergence(
                             )
 
                         convergence_logger.info(
-                            "\tConverged panel aspect ratio: "
-                            + str(converged_aspect_ratio)
+                            "\tPanel aspect ratio: " + str(converged_aspect_ratio)
                         )
                         convergence_logger.info(
-                            "\tConverged number of chordwise panels: "
+                            "\tNumber of chordwise panels: "
                             + str(converged_chordwise_panels)
                         )
                         convergence_logger.info(
-                            "\tConverged iteration time: "
+                            "\tIteration time: "
                             + str(round(converged_iter_time, 3))
                             + " s"
                         )
@@ -1014,8 +1116,8 @@ def analyze_unsteady_convergence(
                         return [
                             converged_wake,
                             converged_wake_length,
-                            converged_chordwise_panels,
                             converged_aspect_ratio,
+                            converged_chordwise_panels,
                         ]
 
     convergence_logger.info("The analysis did not find a converged mesh.")

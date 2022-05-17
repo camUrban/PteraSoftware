@@ -75,6 +75,10 @@ movement = ps.movement.Movement(
 del leading_airplane_movement
 del operating_point_movement
 
+problem = ps.problems.UnsteadyProblem(movement=movement, only_final_results=True)
+
+del movement
+
 converged_attributes = ps.convergence.analyze_unsteady_convergence(
-    ref_movement=movement,
+    ref_problem=problem,
 )

@@ -54,7 +54,7 @@ example_airplane = ps.geometry.Airplane(
             # spacing defaults to "cosine", which makes the panels relatively finer,
             # in the chordwise direction, near the leading and trailing edges. The
             # other option is "uniform".
-            num_chordwise_panels=8,
+            num_chordwise_panels=6,
             chordwise_spacing="cosine",
             # Every wing has a list of wing cross sections. In order for the geometry
             # output to be sensible, each wing must have at least two wing cross

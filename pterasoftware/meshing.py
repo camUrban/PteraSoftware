@@ -15,8 +15,7 @@ This module contains the following functions:
     cross section. These factors allow the cross sections to intersect correctly at
     dihedral breaks.
 
-    get_panel_vertices: This function calculates the vertices of the panels on a wing
-    section.
+    get_panel_vertices: This function calculates the vertices of the panels on a wing.
 
     get_normalized_projected_quarter_chords: This method returns the quarter chords
     of a collection of wing cross sections based on the coordinates of their leading
@@ -464,31 +463,32 @@ def get_panel_vertices(
     transpose_mcl_vectors,
     spanwise_coordinates,
 ):
-    """This function calculates the vertices of the panels on a wing section.
+    """This function calculates the vertices of the panels on a wing.
 
     :param inner_wing_cross_section_num: int
         This parameter is the integer index of this wing's section's inner wing cross
         section.
     :param wing_cross_sections_local_back_unit_vectors: array
-        This parameter is an array of floats with size (2, 3). It holds two unit
-        vectors that correspond to the inner and outer wing cross sections'
-        local-back directions, written in the body frame.
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. It holds two unit vectors that correspond to
+        the wing cross sections' local-back directions, written in the body frame.
     :param wing_cross_sections_local_up_unit_vectors: array
-        This parameter is an array of floats with size (2, 3). It holds two unit
-        vectors that correspond to the inner and outer wing cross sections' local-up
-        directions, written in the body frame.
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. It holds two unit vectors that correspond to
+        the wing cross sections' local-up directions, written in the body frame.
     :param wing_cross_sections_chord_lengths: array
-        This parameter is a 1D array of floats with length 2. It holds the chord
-        lengths of this wing section's inner and outer wing cross section in meters.
+        This parameter is a 1D array of floats with length X, where X is this wing's
+        number of wing cross sections. It holds the chord lengths of this wing's wing
+        cross section in meters.
     :param wing_cross_sections_scaling_factors: array
-        This parameter is a 1D array of floats with length 2. It holds this wing
-        section's inner and outer wing cross sections' scaling factors. These factors
-        stretch the shape of the wing cross sections to account for changes in
-        dihedral at a give wing cross section.
+        This parameter is a 1D array of floats with length X, where X is this wing's
+        number of wing cross sections. It holds this wing's wing cross sections'
+        scaling factors. These factors stretch the shape of the wing cross sections
+        to account for changes in dihedral at a give wing cross section.
     :param wing_cross_sections_leading_edges: array
-        This parameter is an array of floats with size (2x3). It holds the
-        coordinates of the leading edge points of this wing section's inner and outer
-        wing cross sections. The units are in meters.
+        This parameter is an array of floats with size (Xx3), where X is this wing's
+        number of wing cross sections. It holds the coordinates of the leading edge
+        points of this wing's wing cross sections. The units are in meters.
     :param transpose_mcl_vectors: list
         This parameter is a list of 4 (M x 1) arrays of floats, where M is the number
         of chordwise points. The first array contains the local-up component of the
@@ -504,9 +504,9 @@ def get_panel_vertices(
     :return: list
         This function returns a list with four arrays. Each array is size (MxNx3),
         where M is the number of chordwise points and N is the number of spanwise
-        points. The arrays are the body frame coordinates of this wing section's
-        panels' front-inner, front-outer, back-inner, and back-outer vertices. The
-        units are in meters.
+        points. The arrays are the body frame coordinates of this wing's panels'
+        front-inner, front-outer, back-inner, and back-outer vertices. The units are
+        in meters.
     """
     [
         transpose_inner_mcl_up_vector,
@@ -640,7 +640,6 @@ def get_panel_vertices(
     ]
 
 
-# ToDo: Document this function.
 def get_normalized_projected_quarter_chords(
     wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
 ):
@@ -648,9 +647,19 @@ def get_normalized_projected_quarter_chords(
     based on the coordinates of their leading and trailing edges. These quarter
     chords are also projected on to the YZ plane and normalized by their magnitudes.
 
-    :param wing_cross_sections_leading_edges:
-    :param wing_cross_sections_trailing_edges:
-    :return normalized_projected_quarter_chords:
+    :param wing_cross_sections_leading_edges: array
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. For each cross section, this array holds the
+        body-frame coordinates of its leading edge point in meters.
+    :param wing_cross_sections_trailing_edges: array
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. For each cross section, this array holds the
+        body-frame coordinates of its trailing edge point in meters.
+    :return normalized_projected_quarter_chords: array
+        This functions returns an array of floats with size (X - 1, 3), where X is
+        this wing's number of wing cross sections. This array holds each wing
+        section's quarter chords projected on to the YZ plane and normalized by their
+        magnitudes.
     """
     # Get the location of each wing cross section's quarter chord point.
     wing_cross_sections_quarter_chord_points = (

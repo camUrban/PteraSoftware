@@ -469,7 +469,7 @@ ps.output.animate(
     # Tell the animate function to not save the animation as file. This way,
     # the animation will still be displayed but not saved. This value defaults to
     # False.
-    save=True,
+    save=False,
 )
 
 # Call the software's plotting function on the solver. This produces graphs of the

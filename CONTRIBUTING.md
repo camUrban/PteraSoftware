@@ -79,17 +79,17 @@ write detailed commit messages. Additionally, please try to use the follow style
 * Always use S.I. units for all calculations and results.
 * Format your code using the [black](https://github.com/psf/black).
 * Use a line length of 88 (which is black's default).
-* All modules, scripts, classes, methods, and functions should have 
-[docstrings](https://realpython.com/documenting-python-code/#docstring-types).
+* All modules, scripts, classes, methods, and functions should have
+  [docstrings](https://realpython.com/documenting-python-code/#docstring-types).
 * Use the reStructuredText docstring format.
 * Your code itself should be well documented using block comments.
 * Use tagging (`TODO`, `BUG`, etc.) to mark areas of the code that need changing.
-* Major new functionality should also include new tests, which you should add to the 
-tests package.
-* If you use any code or equations from someone else, please be sure to cite your 
-sources in a comment or docstring.
+* Major new functionality should also include new tests, which you should add to the
+  tests package.
+* If you use any code or equations from someone else, please be sure to cite your
+  sources in a comment or docstring.
 
 Once you've finished implementing the enhancement, push your feature branch to your
-clone of Ptera Software. Then, make a pull request to merge your feature branch with 
-the original Ptera Software's develop branch using our 
+clone of Ptera Software. Then, make a pull request to merge your feature branch with the
+original Ptera Software's develop branch using our
 [pull request template](.github/pull_request_template.md).

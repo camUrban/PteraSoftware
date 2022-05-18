@@ -15,7 +15,8 @@ This module contains the following functions:
     cross section. These factors allow the cross sections to intersect correctly at
     dihedral breaks.
 
-    get_panel_vertices: This function calculates the vertices of the panels on a wing.
+    get_panel_vertices: This function calculates the vertices of the panels on a wing
+    section.
 
     get_normalized_projected_quarter_chords: This method returns the quarter chords
     of a collection of wing cross sections based on the coordinates of their leading
@@ -402,16 +403,24 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
-# ToDo: Update this function's documentation.
 def get_wing_cross_section_scaling_factors(
     symmetric, wing_section_quarter_chords_proj_yz_norm
 ):
     """Get the scaling factors for each wing cross section. These factors allow the
     cross sections to intersect correctly at dihedral breaks.
 
-    :param symmetric:
-    :param wing_section_quarter_chords_proj_yz_norm:
-    :return:
+    :param symmetric: bool
+        This parameter is True if the wing is symmetric and False otherwise.
+    :param wing_section_quarter_chords_proj_yz_norm: array
+        This parameter is a (N x 3) array of floats, where N is the number of wing
+        sections (1 less than the number of wing cross sections). For each wing
+        section, this parameter contains the 3 components of the normalized quarter
+        chord projected onto the YZ plane.
+    :return wing_cross_section_scaling_factors: array
+        This function returns a 1D array of floats of length (N + 1), where N is the
+        number of wing sections. These values are the corresponding scaling factor
+        for each of the wing's wing cross sections. These scaling factors stretch
+        their profiles to account for changes in dihedral at a give wing cross section.
     """
     num_wing_cross_sections = len(wing_section_quarter_chords_proj_yz_norm) + 1
 
@@ -445,7 +454,6 @@ def get_wing_cross_section_scaling_factors(
     return wing_cross_section_scaling_factors
 
 
-# ToDo: Document the following function.
 def get_panel_vertices(
     inner_wing_cross_section_num,
     wing_cross_sections_local_back_unit_vectors,
@@ -456,17 +464,49 @@ def get_panel_vertices(
     transpose_mcl_vectors,
     spanwise_coordinates,
 ):
-    """This function calculates the vertices of the panels on a wing.
+    """This function calculates the vertices of the panels on a wing section.
 
-    :param inner_wing_cross_section_num:
-    :param wing_cross_sections_local_back_unit_vectors:
-    :param wing_cross_sections_local_up_unit_vectors:
-    :param wing_cross_sections_chord_lengths:
-    :param wing_cross_sections_scaling_factors:
-    :param wing_cross_sections_leading_edges:
-    :param transpose_mcl_vectors:
-    :param spanwise_coordinates:
+    :param inner_wing_cross_section_num: int
+        This parameter is the integer index of this wing's section's inner wing cross
+        section.
+    :param wing_cross_sections_local_back_unit_vectors: array
+        This parameter is an array of floats with size (2, 3). It holds two unit
+        vectors that correspond to the inner and outer wing cross sections'
+        local-back directions, written in the body frame.
+    :param wing_cross_sections_local_up_unit_vectors: array
+        This parameter is an array of floats with size (2, 3). It holds two unit
+        vectors that correspond to the inner and outer wing cross sections' local-up
+        directions, written in the body frame.
+    :param wing_cross_sections_chord_lengths: array
+        This parameter is a 1D array of floats with length 2. It holds the chord
+        lengths of this wing section's inner and outer wing cross section in meters.
+    :param wing_cross_sections_scaling_factors: array
+        This parameter is a 1D array of floats with length 2. It holds this wing
+        section's inner and outer wing cross sections' scaling factors. These factors
+        stretch the shape of the wing cross sections to account for changes in
+        dihedral at a give wing cross section.
+    :param wing_cross_sections_leading_edges: array
+        This parameter is an array of floats with size (2x3). It holds the
+        coordinates of the leading edge points of this wing section's inner and outer
+        wing cross sections. The units are in meters.
+    :param transpose_mcl_vectors: list
+        This parameter is a list of 4 (M x 1) arrays of floats, where M is the number
+        of chordwise points. The first array contains the local-up component of the
+        mean-camber-line slope at each of the chordwise points along the inner wing
+        cross section. The second array contains the local-back component of the
+        mean-camber-line slope at each of the chordwise points along the inner wing
+        cross section. The third and fourth arrays are the same but for the outer
+        wing cross section.
+    :param spanwise_coordinates: array
+        This parameter is a 1D array of floats with length N, where N is the number
+        of spanwise points. It holds the distances of each spanwise point along the
+        wing cross section and is normalized from 0 to 1.
     :return: list
+        This function returns a list with four arrays. Each array is size (MxNx3),
+        where M is the number of chordwise points and N is the number of spanwise
+        points. The arrays are the body frame coordinates of this wing section's
+        panels' front-inner, front-outer, back-inner, and back-outer vertices. The
+        units are in meters.
     """
     [
         transpose_inner_mcl_up_vector,

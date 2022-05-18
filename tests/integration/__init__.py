@@ -17,6 +17,9 @@ This package contains the following modules:
     test_steady_ring_vortex_lattice_method.py: This module is a testing case for the
     steady ring vortex lattice method solver.
 
+    test_steady_trim.py: This module contains a testing case for the steady trim
+    function.
+
     test_unsteady_ring_vortex_lattice_method_multiple_wing_static_geometry.py: This
     is a testing case for the unsteady ring vortex lattice method solver with static,
     multi-wing geometry.
@@ -36,6 +39,7 @@ import tests.integration.fixtures
 import tests.integration.test_output
 import tests.integration.test_steady_horseshoe_vortex_lattice_method
 import tests.integration.test_steady_ring_vortex_lattice_method
+import tests.integration.test_steady_trim
 import tests.integration.test_unsteady_ring_vortex_lattice_method_multiple_wing_static_geometry
 import tests.integration.test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry
 import tests.integration.test_unsteady_ring_vortex_lattice_method_static_geometry

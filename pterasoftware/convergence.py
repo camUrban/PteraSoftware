@@ -384,7 +384,7 @@ def analyze_steady_convergence(
             # Consider the panel aspect ratio value to be saturated if it is equal to
             # 1. This is because a panel aspect ratio of 1 is considered the maximum
             # degree of fineness.
-            saturated_ar = panel_aspect_ratio <= 1
+            ar_saturated = panel_aspect_ratio == 1
 
             # Check if the user only specified one value for either the panel aspect
             # ratio or the number of chordwise panels.
@@ -398,17 +398,29 @@ def analyze_steady_convergence(
 
             # Consider each convergence parameter to have passed it is converged,
             # single, or saturated.
-            ar_passed = ar_converged or single_ar or saturated_ar
+            ar_passed = ar_converged or single_ar or ar_saturated
             chord_passed = chord_converged or single_chord
 
             # If both convergence parameters have passed, then the solver has found a
             # converged or semi-converged value and will return the converged
             # parameters.
             if ar_passed and chord_passed:
-                if single_ar or saturated_ar:
+                if single_ar:
                     converged_ar_id = ar_id
                 else:
-                    converged_ar_id = ar_id - 1
+                    # We've tested more than one panel aspect ratio.
+                    if ar_converged:
+                        # There is no big difference between this panel aspect ratio
+                        # and the last (coarser) panel aspect ratio. Therefore,
+                        # the last (coarser) panel aspect ratio is converged.
+                        converged_ar_id = ar_id - 1
+                    else:
+                        # There is a big difference between this panel aspect ratio
+                        # and the last (coarser) panel aspect ratio. However,
+                        # the panel aspect ratio is one, so it's saturated.
+                        # Therefore, this panel aspect ratio is converged.
+                        converged_ar_id = ar_id
+
                 if single_chord:
                     converged_chord_id = chord_id
                 else:
@@ -1184,18 +1196,44 @@ def analyze_unsteady_convergence(
                     # has found a converged or semi-converged value and will return
                     # the converged parameters.
                     if wake_passed and length_passed and ar_passed and chord_passed:
-                        if single_wake or wake_saturated:
+                        if single_wake:
                             converged_wake_id = wake_id
                         else:
-                            converged_wake_id = wake_id - 1
+                            # We've tested both prescribed and free wakes.
+                            if wake_converged:
+                                # There isn't a big difference between the prescribed
+                                # wake and free wake, so the prescribed wake is
+                                # converged.
+                                converged_wake_id = wake_id - 1
+                            else:
+                                # There is a big different difference between the
+                                # prescribed wake and free wake, so the free wake is
+                                # converged.
+                                converged_wake_id = wake_id
+
                         if single_length:
                             converged_length_id = length_id
                         else:
                             converged_length_id = length_id - 1
-                        if single_ar or ar_saturated:
+
+                        if single_ar:
                             converged_ar_id = ar_id
                         else:
-                            converged_ar_id = ar_id - 1
+                            # We've tested more than one panel aspect ratio.
+                            if ar_converged:
+                                # There is no big difference between this panel aspect
+                                # ratio and the last (coarser) panel aspect ratio.
+                                # Therefore, the last (coarser) panel aspect ratio is
+                                # converged.
+                                converged_ar_id = ar_id - 1
+                            else:
+                                # There is a big difference between this panel aspect
+                                # ratio and the last (coarser) panel aspect ratio.
+                                # However, the panel aspect ratio is one, so it's
+                                # saturated. Therefore, this panel aspect ratio is
+                                # converged.
+                                converged_ar_id = ar_id
+
                         if single_chord:
                             converged_chord_id = chord_id
                         else:

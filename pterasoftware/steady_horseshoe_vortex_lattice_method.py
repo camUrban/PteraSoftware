@@ -1,8 +1,9 @@
-"""This module contains the class definition of this package's steady horseshoe vortex lattice solver.
+"""This module contains the class definition of this package's steady horseshoe
+vortex lattice solver.
 
 This module contains the following classes:
-    SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that uses a steady horseshoe vortex
-    lattice method.
+    SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that
+    uses a steady horseshoe vortex lattice method.
 
 This module contains the following exceptions:
     None
@@ -19,7 +20,8 @@ from . import functions
 
 
 class SteadyHorseshoeVortexLatticeMethodSolver:
-    """This is an aerodynamics solver that uses a steady horseshoe vortex lattice method.
+    """This is an aerodynamics solver that uses a steady horseshoe vortex lattice
+    method.
 
     Citation:
         Adapted from:         aerodynamics.vlm3.py in AeroSandbox
@@ -29,21 +31,23 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
     This class contains the following public methods:
         run: Run the solver on the steady problem.
 
-        initialize_panel_vortices: This method calculates the locations of the vortex vertices, and then initializes
-        the panels' vortices.
+        initialize_panel_vortices: This method calculates the locations of the vortex
+        vertices, and then initializes the panels' vortices.
 
-        collapse_geometry: This method converts attributes of the problem's geometry into 1D arrays. This facilitates
-        vectorization, which speeds up the solver.
+        collapse_geometry: This method converts attributes of the problem's geometry
+        into 1D arrays. This facilitates vectorization, which speeds up the solver.
 
-        calculate_wing_wing_influences: This method finds the matrix of wing-wing influence coefficients associated
-        with this airplane's geometry.
+        calculate_wing_wing_influences: This method finds the matrix of wing-wing
+        influence coefficients associated with this airplane's geometry.
 
         calculate_vortex_strengths: Solve for each panels' vortex strengths.
 
-        calculate_solution_velocity: This function takes in a group of points. At every point, it finds the induced
-        velocity due to every vortex and the freestream velocity.
+        calculate_solution_velocity: This function takes in a group of points. At
+        every point, it finds the induced velocity due to every vortex and the
+        freestream velocity.
 
-        calculate_near_field_forces_and_moments: Find the forces and moments calculated from the near field.
+        calculate_near_field_forces_and_moments: Find the forces and moments
+        calculated from the near field.
 
     This class contains the following class attributes:
         None
@@ -96,9 +100,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """Run the solver on the steady problem.
 
         :param logging_level: str, optional
-            This parameter determines the detail of information that the solver's logger will output while running.
-            The options are, in order of detail and severity, "Debug", "Info", "Warning", "Error", "Critical". The
-            default value is "Warning".
+
+            This parameter determines the detail of information that the solver's
+            logger will output while running. The options are, in order of detail and
+            severity, "Debug", "Info", "Warning", "Error", "Critical". The default
+            value is "Warning".
+
         :return: None
         """
         # Configure the problem's logger.
@@ -107,7 +114,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
         logging.basicConfig(level=logging_level_value)
 
-        # Initialize this problem's panels to have vortices congruent with this solver type.
+        # Initialize this problem's panels to have vortices congruent with this
+        # solver type.
         logging.info("Initializing the panel vortices.")
         self.initialize_panel_vortices()
 
@@ -115,7 +123,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         logging.info("Collapsing the geometry.")
         self.collapse_geometry()
 
-        # Find the matrix of aerodynamic influence coefficients associated with this problem's geometry.
+        # Find the matrix of aerodynamic influence coefficients associated with this
+        # problem's geometry.
         logging.info("Calculating the wing-wing influences.")
         self.calculate_wing_wing_influences()
 
@@ -137,10 +146,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         functions.calculate_streamlines(self)
 
     def initialize_panel_vortices(self):
-        """This method calculates the locations of the vortex vertices, and then initializes the panels' vortices.
+        """This method calculates the locations of the vortex vertices, and then
+        initializes the panels' vortices.
 
-        Every panel has a horseshoe vortex. The vortex's finite leg runs along the panel's quarter chord from right
-        to left. It's infinite legs points backwards in the positive x direction.
+        Every panel has a horseshoe vortex. The vortex's finite leg runs along the
+        panel's quarter chord from right to left. It's infinite legs points backwards
+        in the positive x direction.
 
         :return: None
         """
@@ -153,8 +164,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         for airplane in self.airplanes:
             for wing in airplane.wings:
 
-                # Find a suitable length for the "infinite" legs of the horseshoe vortices on this wing. At
-                # twenty-times the wing's span, these legs are essentially infinite.
+                # Find a suitable length for the "infinite" legs of the horseshoe
+                # vortices on this wing. At twenty-times the wing's span, these legs
+                # are essentially infinite.
                 infinite_leg_length = wing.span * 20
 
                 # Iterate through the wing's chordwise and spanwise panel positions.
@@ -163,7 +175,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # Pull the panel object out of the wing's list of panels.
                         panel = wing.panels[chordwise_position, spanwise_position]
 
-                        # Find the location of the panel's front and right vortex vertices.
+                        # Find the location of the panel's front and right vortex
+                        # vertices.
                         front_left_vortex_vertex = panel.front_left_vortex_vertex
                         front_right_vortex_vertex = panel.front_right_vortex_vertex
 
@@ -177,12 +190,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         )
 
     def collapse_geometry(self):
-        """This method converts attributes of the problem's geometry into 1D arrays. This facilitates vectorization,
-        which speeds up the solver.
+        """This method converts attributes of the problem's geometry into 1D arrays.
+        This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
-        # Initialize a variable to hold the global position of the panel as we iterate through them.
+        # Initialize a variable to hold the global position of the panel as we
+        # iterate through them.
         global_panel_position = 0
 
         # Iterate through each airplane's wings.
@@ -195,7 +209,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 # Iterate through the 1D array of this wing's panels.
                 for panel in panels:
 
-                    # Update the solver's list of attributes with this panel's attributes.
+                    # Update the solver's list of attributes with this panel's
+                    # attributes.
                     self.panels[global_panel_position] = panel
                     self.panel_normal_directions[
                         global_panel_position, :
@@ -228,8 +243,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                     # Check if this panel is on the trailing edge.
                     if panel.is_trailing_edge:
-                        # If it is, calculate it's streamline seed point and add it to the solver's array of seed
-                        # points.
+                        # If it is, calculate it's streamline seed point and add it
+                        # to the solver's array of seed points.
                         self.seed_points = np.vstack(
                             (
                                 self.seed_points,
@@ -243,12 +258,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     global_panel_position += 1
 
     def calculate_wing_wing_influences(self):
-        """This method finds the matrix of wing-wing influence coefficients associated with the airplanes' geometry.
+        """This method finds the matrix of wing-wing influence coefficients
+        associated with the airplanes' geometry.
 
         :return: None
         """
-        # Find the matrix of normalized velocities induced at every panel's collocation point by every panel's
-        # horseshoe vortex.
+        # Find the matrix of normalized velocities induced at every panel's
+        # collocation point by every panel's horseshoe vortex.
         induced_velocities = aerodynamics.expanded_velocities_from_horseshoe_vortices(
             points=self.panel_collocation_points,
             back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
@@ -284,22 +300,26 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_num])
 
     def calculate_solution_velocity(self, points):
-        """This function takes in a group of points. At every point, it finds the induced velocity due to every
-        vortex and the freestream velocity.
+        """This function takes in a group of points. At every point, it finds the
+        induced velocity due to every vortex and the freestream velocity.
 
-        Note: The velocity calculated by this method is in geometry axes. Also, this method assumes that the correct
-        vortex strengths have already been calculated.
+        Note: The velocity calculated by this method is in geometry axes. Also,
+        this method assumes that the correct vortex strengths have already been
+        calculated.
 
-        This method uses vectorization, and therefore is much faster for batch operations than using the vortex
-        objects' class methods for calculating induced velocity.
+        This method uses vectorization, and therefore is much faster for batch
+        operations than using the vortex objects' class methods for calculating
+        induced velocity.
 
         :param points: 2D array of floats
-            This variable is an array of shape (N x 3), where N is the number of points. Each row contains the x, y,
-            and z float coordinates of that point's position in meters.
+            This variable is an array of shape (N x 3), where N is the number of
+            points. Each row contains the x, y, and z float coordinates of that
+            point's position in meters.
         :return: 2D array of floats
-            The output is the summed effects from every vortex, and from the freestream on a given point. The result
-            will be of shape (N x 3), where each row identifies the velocity at a point. The results units are meters
-            per second.
+            The output is the summed effects from every vortex, and from the
+            freestream on a given point. The result will be of shape (N x 3),
+            where each row identifies the velocity at a point. The results units are
+            meters per second.
         """
         induced_velocities = aerodynamics.collapsed_velocities_from_horseshoe_vortices(
             points=points,
@@ -315,8 +335,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
     def calculate_near_field_forces_and_moments(self):
         """Find the forces and moments calculated from the near field.
 
-        Note: The forces and moments calculated are in geometry axes. The moment is about each airplane's reference
-        point, which should be at the center of gravity. The units are Newtons and Newton-meters.
+        Note: The forces and moments calculated are in geometry axes. The moment is
+        about each airplane's reference point, which should be at the center of
+        gravity. The units are Newtons and Newton-meters.
 
         :return: None
         """
@@ -325,14 +346,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             points=self.panel_bound_vortex_centers
         )
 
-        # Calculate the near field force, in geometry axes, on each panel's bound vortex.
+        # Calculate the near field force, in geometry axes, on each panel's bound
+        # vortex.
         near_field_forces_geometry_axes = (
             self.operating_point.density
             * np.expand_dims(self.vortex_strengths, axis=1)
             * np.cross(total_velocities, self.panel_bound_vortex_vectors, axis=-1)
         )
 
-        # Calculate the near field moments, in geometry axes, on each panel's bound vortex.
+        # Calculate the near field moments, in geometry axes, on each panel's bound
+        # vortex.
         near_field_moments_geometry_axes = np.cross(
             self.panel_bound_vortex_centers - self.panel_moment_references,
             near_field_forces_geometry_axes,

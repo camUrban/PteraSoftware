@@ -20,18 +20,23 @@ This module contains the following functions:
     calculate_streamlines: This function calculates the location of the streamlines
     coming off the back of the wings.
 
-    convert_logging_level_name_to_value: This function takes in a string that represents the logging level and
-    returns the integer that can be used to set the logger to this level.
+    convert_logging_level_name_to_value: This function takes in a string that
+    represents the logging level and returns the integer that can be used to set the
+    logger to this level.
 
     process_steady_solver_forces: This function uses the forces and moments a solver
     has found on its panels to find the forces, moments, and associated coefficients
     on each airplane in the solver.
 
+    process_unsteady_solver_forces: This function uses the forces and moments a
+    solver has found on its panels to find the forces, moments, and associated
+    coefficients on each airplane in the solver.
+
     update_ring_vortex_solvers_panel_attributes: This function populates a ring
     vortex solver's attributes with the attributes of a given panel.
 
-    calculate_steady_freestream_wing_influences: This method finds the vector of freestream-wing influence coefficients
-    associated with this problem.
+    calculate_steady_freestream_wing_influences: This method finds the vector of
+    freestream-wing influence coefficients associated with this problem.
 
     numba_1d_explicit_cross: This function takes in two arrays, each of which contain
     N vectors of 3 components. The function then calculates and returns the cross
@@ -60,7 +65,8 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
     :param n_points: int, optional
         This is the number of points to space. The default is 50.
     :param endpoint: bool, optional
-        This determines if the maximum value will be included in the output. The default is True.
+        This determines if the maximum value will be included in the output. The
+        default is True.
     :return cosine_spaced_points: 1D array
         This is a 1D array of the points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
@@ -232,8 +238,8 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
 
 
 def convert_logging_level_name_to_value(name):
-    """This function takes in a string that represents the logging level and returns the integer that can be used to
-    set the logger to this level.
+    """This function takes in a string that represents the logging level and returns
+    the integer that can be used to set the logger to this level.
 
     :param name: str
         This is the string representation of the logging level. The options are
@@ -418,7 +424,8 @@ def process_unsteady_solver_forces(
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
 
-        # Get this panel's near field forces and moments in geometry axes and wind axes.
+        # Get this panel's near field forces and moments in geometry axes and wind
+        # axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
         this_force_wind_axes = rotation_matrix @ this_force_geometry_axes

@@ -12,6 +12,9 @@ This package contains the following modules:
 
     aerodynamics.py: This module contains vortex class definitions.
 
+    convergence.py: This module contains functions for analyzing the convergence of
+    steady and unsteady problems.
+
     functions.py: This module contains functions shared by other modules in the src
     package.
 
@@ -48,6 +51,7 @@ This package contains the following modules:
 
 import pterasoftware.aerodynamics
 import pterasoftware.airfoils
+import pterasoftware.convergence
 import pterasoftware.functions
 import pterasoftware.geometry
 import pterasoftware.meshing

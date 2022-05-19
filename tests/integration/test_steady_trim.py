@@ -91,11 +91,6 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
 
-        solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem=self.steady_validation_problem
-        )
-        solver.run()
-
         ans_range = self.ans_corruption * 2
 
         v_x_delta = max(abs(self.v_x_ans * ans_range), 0.01)

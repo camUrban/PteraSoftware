@@ -65,7 +65,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             prescribed_wake=True,
             free_wake=True,
             num_chords_bounds=(6, 9),
-            panel_aspect_ratio_bounds=(5, 2),
+            panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(3, 6),
             convergence_criteria=1.0,
         )

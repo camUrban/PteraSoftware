@@ -1,4 +1,3 @@
-# ToDo: Update documentation with new module.
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
@@ -12,6 +11,9 @@ This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
     aerodynamics.py: This module contains vortex class definitions.
+
+    convergence.py: This module contains functions for analyzing the convergence of
+    steady and unsteady problems.
 
     functions.py: This module contains functions shared by other modules in the src
     package.

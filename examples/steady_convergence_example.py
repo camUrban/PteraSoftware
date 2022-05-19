@@ -1,17 +1,11 @@
-# ToDo: Document this script.
-
-import logging
-
+"""This script is an example of analyzing the steady convergence of a problem with
+multiple airplanes. It should take a few minutes to run. It will display the
+convergence progress and results in the console. """
 import pterasoftware as ps
 
-# Configure a logger for this example.
-example_logger = logging.getLogger("example")
-example_logger.setLevel(logging.DEBUG)
-
-# Create an airplane object. Read through the solver examples for more details on
-# creating this object.
+# Create two airplane objects. Read through the solver and formation examples for
+# more details on creating these objects.
 leading_airplane = ps.geometry.Airplane(
-    weight=250,
     wings=[
         ps.geometry.Wing(
             symmetric=True,
@@ -67,9 +61,7 @@ leading_airplane = ps.geometry.Airplane(
         ),
     ],
 )
-
 trailing_airplane = ps.geometry.Airplane(
-    weight=250,
     x_ref=10,
     y_ref=-5,
     wings=[
@@ -131,15 +123,35 @@ trailing_airplane = ps.geometry.Airplane(
     ],
 )
 
+# Create an operating point object.
+operating_point = ps.operating_point.OperatingPoint()
 
-default_operating_point = ps.operating_point.OperatingPoint()
-
-# Construct this example's problem object.
-default_problem = ps.problems.SteadyProblem(
+# Create a steady problem. We will pass this into the convergence function.
+problem = ps.problems.SteadyProblem(
     airplanes=[leading_airplane, trailing_airplane],
-    operating_point=default_operating_point,
+    operating_point=operating_point,
 )
 
-converged_attributes = ps.convergence.analyze_steady_convergence(
-    base_problem=default_problem, solver_type="steady ring vortex lattice method"
+del leading_airplane
+del trailing_airplane
+del operating_point
+
+# Run the steady convergence analysis. This will run the problem several times,
+# modifying average panel aspect ratio, and number of chordwise panels with each
+# iteration. Once it detects that the net load coefficients haven't change by more
+# than the convergence criteria (measured as an absolute percent error), it will
+# return the parameters it found to result in a converged solution. See the
+# analyze_steady_convergence function docstring for more details. The progress and
+# results are displayed to the console.
+ps.convergence.analyze_steady_convergence(
+    ref_problem=problem,
+    solver_type="steady ring vortex lattice method",
+    panel_aspect_ratio_bounds=(4, 1),
+    num_chordwise_panels_bounds=(3, 8),
+    convergence_criteria=1.0,
 )
+
+# Check the console that the convergence analysis found that the solution converged
+# with the following parameters:
+# Panel aspect ratio: 4
+# Chordwise panels: 4

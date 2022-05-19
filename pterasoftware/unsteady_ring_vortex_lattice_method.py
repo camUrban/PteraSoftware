@@ -20,7 +20,6 @@ from . import aerodynamics
 from . import functions
 
 
-# ToDo: Add the new function to this class's documentation.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -77,6 +76,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         calculate_current_flapping_velocities_at_left_leg_centers: This method finds
         the apparent flow velocity due to flapping at the centers of the current
         airplanes' bound ring vortices' left legs.
+
+        finalize_near_field_forces_and_moments: This function finds the final
+        cycle-averaged force, moments, force coefficients, and moment coefficients
+        for each of this problem's airplanes.
 
     This class contains the following class attributes:
         None
@@ -304,7 +307,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ncols=100,
             desc="Simulating",
             disable=logging_level_value != logging.WARNING,
-            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, Remaining: {remaining}",
+            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
+            "Remaining: {remaining}",
         ) as bar:
 
             # Initialize all the airplanes' panels' vortices.
@@ -523,12 +527,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
                             else:
                                 # As these vertices are directly behind the trailing
-                                # edge, they are spaced back from their panel's vertex by
-                                # one quarter the distance traveled during a time step.
-                                # This is to more accurately predict drag. More
-                                # information can be found on pages 37-39 of "Modeling of
-                                # aerodynamic forces in flapping flight with the Unsteady
-                                # Vortex Lattice Method" by Thomas Lambert.
+                                # edge, they are spaced back from their panel's
+                                # vertex by one quarter the distance traveled during
+                                # a time step. This is to more accurately predict
+                                # drag. More information can be found on pages 37-39
+                                # of "Modeling of aerodynamic forces in flapping
+                                # flight with the Unsteady Vortex Lattice Method" by
+                                # Thomas Lambert.
                                 back_left_vortex_vertex = (
                                     front_left_vortex_vertex
                                     + (panel.back_left_vertex - panel.front_left_vertex)
@@ -578,7 +583,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Iterate through the 1D array of this wing's panels.
                 for panel in panels:
 
-                    # Update the solver's list of attributes with this panel's attributes.
+                    # Update the solver's list of attributes with this panel's
+                    # attributes.
                     functions.update_ring_vortex_solvers_panel_attributes(
                         solver=self,
                         global_panel_position=global_panel_position,
@@ -1585,11 +1591,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
 
-    # ToDo: Document this function.
     def finalize_near_field_forces_and_moments(self):
-        """
+        """This function finds the final cycle-averaged force, moments,
+        force coefficients, and moment coefficients for each of this problem's
+        airplanes.
 
-        :return:
+        :return: None
         """
         # Get this solver's time step characteristics. Note that the first time step (
         # time step 0), occurs at 0 seconds.

@@ -3,13 +3,12 @@
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
 
-    Wing: This is a class used to contain the wings of a current_airplane.
+    Wing: This is a class used to contain the wings of an Airplane object.
 
-    WingCrossSection: This class is used to contain the cross sections of the wings
-    of a current_airplane.
+    WingCrossSection: This class is used to contain the cross sections of a Wing
+    object.
 
-    Airfoil: This class is used to contain the airfoil of a cross section of a wing
-    of a current_airplane.
+    Airfoil: This class is used to contain the airfoil of a WingCrossSection object.
 
 This module contains the following exceptions:
     None
@@ -151,7 +150,7 @@ class Airplane:
 
 
 class Wing:
-    """This is a class used to contain the wings of an airplane.
+    """This is a class used to contain the wings of an Airplane object.
 
     If the wing is symmetric across the XZ plane, just define the right half and
     supply "symmetric=True" in the constructor. If the wing is not symmetric across
@@ -163,10 +162,20 @@ class Wing:
         Date of Retrieval:    04/24/2020
 
     This class contains the following public methods:
-        calculate_wetted_area: This method calculates the wetted area of the wing
-        based on the areas of its panels.
+        projected_area: This method calculates the projected area of the wing and
+        assigns it to the projected_area attribute.
 
-        calculate_span: This method calculates the span of the wing.
+        wetted_area: This method calculates the wetted area of the wing based on the
+        areas of its panels and assigns it to the wetted_area attribute.
+
+        span: This method calculates the span of the wing and assigns it to the span
+        attribute.
+
+        standard_mean_chord: This method calculates the standard mean chord of the
+        wing and assigns it to the standard_mean_chord attribute.
+
+        mean_aerodynamic_chord: This method calculates the mean aerodynamic chord of
+        the wing and assigns it to the mean_aerodynamic_chord attribute.
 
     This class contains the following class attributes:
         None
@@ -263,12 +272,21 @@ class Wing:
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
-    # ToDo: Document this method.
     @property
     def projected_area(self):
+        """This method calculates the projected area of the wing and assigns it to
+        the projected_area attribute.
 
+        If the wing is symmetrical, the area of the mirrored half is included.
+
+        :return projected_area: float
+            This attribute is the projected area of the wing. It has units of square
+            meters.
+        """
         projected_area = 0
 
+        # Iterate through the wing cross sections and add the area of their
+        # corresponding wing sections to the total projected area.
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections[:-1]
         ):
@@ -293,16 +311,18 @@ class Wing:
     @property
     def wetted_area(self):
         """This method calculates the wetted area of the wing based on the areas of
-        its panels.
+        its panels and assigns it to the wetted_area attribute.
 
-        If the wing is symmetrical, this method includes the area of the mirrored half.
+        If the wing is symmetrical, the area of the mirrored half is included.
 
-        :return: None
+        :return wetted_area: float
+            This attribute is the wetted area of the wing. It has units of square
+            meters.
         """
-
         wetted_area = 0
 
-        # Iterate through the chordwise and spanwise indices of the panels.
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total wetted area.
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
                 # Add each panel's area to the total wetted area of the wing.
@@ -312,13 +332,14 @@ class Wing:
 
     @property
     def span(self):
-        """This method calculates the span of the wing.
+        """This method calculates the span of the wing and assigns it to the span
+        attribute.
 
         If the wing is symmetrical, this method includes the span of the mirrored half.
 
-        :return: None
+        :return span: float
+            This attribute is the wingspan. It has units of meters.
         """
-
         # Calculate the span (y-distance between the root and the tip) of the entire
         # wing.
         span = self.wing_cross_sections[-1].y_le - self.wing_cross_sections[0].y_le
@@ -329,16 +350,33 @@ class Wing:
 
         return span
 
-    # ToDo: Document this method.
     @property
     def standard_mean_chord(self):
+        """This method calculates the standard mean chord of the wing and assigns it
+        to the standard_mean_chord attribute.
+
+        :return: float
+            This is the standard mean chord of the wing. It has units of meters.
+        """
         return self.projected_area / self.span
 
-    # ToDo: Document this method.
     @property
     def mean_aerodynamic_chord(self):
+        """This method calculates the mean aerodynamic chord of the wing and assigns
+        it to the mean_aerodynamic_chord attribute.
+
+        :return: float
+            This is the mean aerodynamic chord of the wing. It has units of meters.
+        """
+        # This method is based on the equation for the mean aerodynamic chord of a
+        # wing, which can be found here:
+        # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
+        # This equation integrates the squared chord from the wing center to the wing
+        # tip. We will perform this integral piecewise for each section of the wing.
         integral = 0
 
+        # Iterate through the wing cross sections to add the contribution of their
+        # corresponding wing section to the piecewise integral.
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections[:-1]
         ):
@@ -350,19 +388,24 @@ class Wing:
             tip_chord = next_wing_cross_section.chord
             section_length = next_wing_cross_section.y_le - wing_cross_section.y_le
 
+            # Each wing section is, by definition, trapezoidal (at least when
+            # projected on to the body-frame's XY plane). For a trapezoid,
+            # the integral from the cited equation can be shown to evaluate to the
+            # following.
             integral += (
                 section_length
                 * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
                 / 3
             )
 
+        # Multiply the integral's value by the coefficients from the cited equation.
         if self.symmetric:
             return 2 * integral / self.projected_area
         return integral / self.projected_area
 
 
 class WingCrossSection:
-    """This class is used to contain the cross sections of the wings of an airplane.
+    """This class is used to contain the cross sections of a Wing object.
 
     Citation:
         Adapted from:         geometry.WingXSec in AeroSandbox
@@ -370,8 +413,8 @@ class WingCrossSection:
         Date of Retrieval:    04/26/2020
 
     This class contains the following public methods:
-        xyz_te: This method calculates the coordinates of the trailing edge of the
-        cross section.
+        trailing_edge: This method calculates the coordinates of the trailing edge of
+        this wing cross section and assigns them to the trailing_edge attribute.
 
     This class contains the following class attributes:
         None
@@ -424,8 +467,8 @@ class WingCrossSection:
             surfaces are ailerons. The default
             value is "symmetric".
         :param control_surface_hinge_point: float, optional
-            This is the location of the control surface hinge from the leading edge as a fraction of chord. The
-            default value is 0.75.
+            This is the location of the control surface hinge from the leading edge
+            as a fraction of chord. The default value is 0.75.
         :param control_surface_deflection: float, optional
             This is the Control deflection in degrees. Deflection downwards is
             positive. The default value is 0.0
@@ -435,8 +478,8 @@ class WingCrossSection:
             section and the next one. The default
             value is 8.
         :param spanwise_spacing: str, optional
-            This can be 'cosine' or 'uniform'. Using cosine spacing is highly recommended. The default value is
-            'cosine'.
+            This can be 'cosine' or 'uniform'. Using cosine spacing is highly
+            recommended. The default value is 'cosine'.
         """
 
         # Initialize all the class attributes.
@@ -467,12 +510,12 @@ class WingCrossSection:
 
     @property
     def trailing_edge(self):
-        """This method calculates the coordinates of the trailing edge of the cross
-        section.
+        """This method calculates the coordinates of the trailing edge of this wing
+        cross section and assigns them to the trailing_edge attribute.
 
-        :return trailing_edge: array
-            This is a 1D array that contains the coordinates of the cross section's
-            trailing edge.
+        :return: array
+            This is a 1D array that contains the coordinates of this wing cross
+            section's trailing edge.
         """
 
         # Find the rotation matrix given the cross section's twist.
@@ -482,16 +525,11 @@ class WingCrossSection:
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
         # trailing edge coordinates.
-        trailing_edge = self.leading_edge + rotation_matrix @ np.array(
-            [self.chord, 0.0, 0.0]
-        )
-
-        # Return the 1D array that contains the trailing edge's coordinates.
-        return trailing_edge
+        return self.leading_edge + rotation_matrix @ np.array([self.chord, 0.0, 0.0])
 
 
 class Airfoil:
-    """This class is used to contain the airfoil of a cross section of a wing of an airplane.
+    """This class is used to contain the airfoil of a WingCrossSection object.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox
@@ -528,6 +566,8 @@ class Airfoil:
         add_control_surface: This method returns a version of the airfoil with a
         control surface added at a given point.
 
+        draw: This method plots this Airfoil's coordinates using PyPlot.
+
     This class contains the following class attributes:
         None
 
@@ -545,23 +585,23 @@ class Airfoil:
         """This is the initialization method.
 
         :param name: str, optional
-            This is the name of the airfoil. It should correspond to the name in the airfoils directory unless you
-            are passing in your own coordinates. The default is "Untitled Airfoil".
+            This is the name of the airfoil. It should correspond to the name in the
+            airfoils directory unless you are passing in your own coordinates. The
+            default is "Untitled Airfoil".
         :param coordinates: array, optional
             This is an N x 2 array of the airfoil's coordinates, where N is the
-            number of coordinates. Treat this
-            as an immutable, don't edit directly after initialization. If you wish to
-            load coordinates from the airfoil
+            number of coordinates. Treat this as an immutable, don't edit directly
+            after initialization. If you wish to load coordinates from the airfoil
             directory, leave this as None. The default is None. Make sure that any
-            airfoil coordinates used range in x
-            from 0 to 1.
+            airfoil coordinates used range in x from 0 to 1.
         :param repanel: bool, optional
-            This is the variable that determines whether you would like to repanel the airfoil coordinates. This
-            applies to coordinates passed in by the user or to the directory coordinates. I highly recommended
-            setting this to True. The default is True.
+            This is the variable that determines whether you would like to repanel
+            the airfoil coordinates. This applies to coordinates passed in by the
+            user or to the directory coordinates. I highly recommended setting this
+            to True. The default is True.
         :param n_points_per_side: int, optional
-            This is number of points to use when repaneling the airfoil. It is ignored if the repanel is False. The
-            default is 400.
+            This is number of points to use when repaneling the airfoil. It is
+            ignored if the repanel is False. The default is 400.
         """
 
         # Initialize the airfoil name.
@@ -594,10 +634,11 @@ class Airfoil:
     def populate_coordinates(self):
         """This method populates a variable with the coordinates of the airfoil.
 
-        The airfoil coordinates will either be generated, if the airfoil is a NACA 4-series airfoil, or loaded from
-        the airfoil database (a folder named "airfoils" in this directory, that contains a library of dat files for
+        The airfoil coordinates will either be generated, if the airfoil is a NACA
+        4-series airfoil, or loaded from the airfoil database (a folder named
+        "airfoils" in this directory, that contains a library of dat files for
         airfoil coordinates). NACA 4-series airfoil generation is an adaptation of:
-        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4 -digit_NACA_airfoil.
+        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
 
         :return: None
         """
@@ -718,22 +759,23 @@ class Airfoil:
                 "but it could not be read correctly."
             )
 
-            # Reshape the 1D coordinates array into an N x 2 array, where N is the number of rows.
+            # Reshape the 1D coordinates array into an N x 2 array, where N is the
+            # number of rows.
             coordinates = np.reshape(coordinates_1d, (-1, 2))
 
             # Populate the coordinates attribute and return.
             self.coordinates = coordinates
             return
 
-        # If the airfoil was not a NACA 4-series and was not found in the database, throw an error.
+        # If the airfoil was not a NACA 4-series and was not found in the database,
+        # throw an error.
         except FileNotFoundError:
             raise Exception("Airfoil not in database!")
 
     def populate_mcl_coordinates(self):
         """This method creates a list of the airfoil's mean camber line coordinates.
-        It also creates two lists of the
-        vectors needed to go from the mcl coordinates to the upper and lower
-        surfaces. It also creates list of the
+        It also creates two lists of the vectors needed to go from the mcl
+        coordinates to the upper and lower surfaces. It also creates list of the
         thicknesses at the x coordinates along the mean camber line.
 
         All vectors are listed from the leading edge to the trailing edge of the
@@ -743,8 +785,7 @@ class Airfoil:
         """
 
         # Get the upper and lower coordinates. Flip the upper coordinates so that it
-        # is ordered from the leading edge to
-        # the trailing edge.
+        # is ordered from the leading edge to the trailing edge.
         upper = np.flipud(self.upper_coordinates())
         lower = self.lower_coordinates()
 
@@ -772,22 +813,23 @@ class Airfoil:
         """
 
         # Find the index of the coordinate pair with the minimum value of the x
-        # coordinate. This is the leading edge
-        # index.
+        # coordinate. This is the leading edge index.
         leading_edge_index = np.argmin(self.coordinates[:, 0])
 
         # Return the leading edge index.
         return leading_edge_index
 
     def lower_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the lower surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the
+        lower surface of the airfoil.
 
-        The order of the returned matrix is from leading edge to trailing edge. This matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with self.upper_coordinates.
+        The order of the returned matrix is from leading edge to trailing edge. This
+        matrix includes the leading edge point so be careful about duplicates if
+        using this method in conjunction with self.upper_coordinates.
 
         :return lower_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the lower surface of the airfoil, where N is
-            the number of points.
+            This is an N x 2 array of x and y coordinates that describe the lower
+            surface of the airfoil, where N is the number of points.
         """
 
         # Find the lower coordinates.
@@ -797,14 +839,16 @@ class Airfoil:
         return lower_coordinates
 
     def upper_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the upper surface of the airfoil.
+        """This method returns a matrix of x and y coordinates that describe the
+        upper surface of the airfoil.
 
-        The order of the returned matrix is from trailing edge to leading edge. This matrix includes the leading edge
-        point so be careful about duplicates if using this method in conjunction with self.lower_coordinates.
+        The order of the returned matrix is from trailing edge to leading edge. This
+        matrix includes the leading edge point so be careful about duplicates if
+        using this method in conjunction with self.lower_coordinates.
 
         :return upper_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the upper surface of the airfoil, where N is
-            the number of points.
+            This is an N x 2 array of x and y coordinates that describe the upper
+            surface of the airfoil, where N is the number of points.
         """
 
         # Find the upper coordinates.
@@ -818,11 +862,11 @@ class Airfoil:
 
         :param mcl_fractions: 1D array
             This is a 1D array that lists the points along the mean camber line (
-            normalized from 0 to 1) at which
-            to return the mean camber line coordinates.
+            normalized from 0 to 1) at which to return the mean camber line
+            coordinates.
         :return mcl_downsampled: 2D array
-            This is a 2D array that contains the coordinates of the downsampled
-            mean camber line.
+            This is a 2D array that contains the coordinates of the downsampled mean
+            camber line.
         """
 
         mcl = self.mcl_coordinates
@@ -846,15 +890,13 @@ class Airfoil:
         )
 
         # Linearly interpolate to find the x coordinates of the mean camber line at
-        # the given mean camber line
-        # fractions.
+        # the given mean camber line fractions.
         mcl_downsampled_x = np.interp(
             x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 0]
         )
 
         # Linearly interpolate to find the y coordinates of the mean camber line at
-        # the given mean camber line
-        # fractions.
+        # the given mean camber line fractions.
         mcl_downsampled_y = np.interp(
             x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 1]
         )
@@ -873,7 +915,8 @@ class Airfoil:
             This is a float of the fraction along the chord (normalized from 0 to 1)
             at which to return the camber.
         :return camber: float
-            This is the camber of the airfoil at the requested fraction along the chord.
+            This is the camber of the airfoil at the requested fraction along the
+            chord.
         """
 
         # Create a function that interpolates between the x and y coordinates of the
@@ -894,12 +937,11 @@ class Airfoil:
 
     def repanel_current_airfoil(self, n_points_per_side=100):
         """This method returns a repaneled version of the airfoil with cosine-spaced
-        coordinates on the upper and lower
-        surfaces.
+        coordinates on the upper and lower surfaces.
 
         The number of points defining the final airfoil will be (n_points_per_side *
-        2 - 1), since the leading edge
-        point is shared by both the upper and lower surfaces.
+        2 - 1), since the leading edge point is shared by both the upper and lower
+        surfaces.
 
         :param n_points_per_side: int, optional
             This is the number of points on the upper and lower surfaces. The default
@@ -916,8 +958,7 @@ class Airfoil:
         cosine_spaced_x_values = functions.cosspace(0, 1, n_points_per_side)
 
         # Create interpolated functions for the x and y values of the upper and lower
-        # surfaces as a function of the
-        # chord fractions
+        # surfaces as a function of the chord fractions
         upper_func = sp_interp.PchipInterpolator(
             x=np.flip(upper_original_coordinates[:, 0]),
             y=np.flip(upper_original_coordinates[:, 1]),
@@ -956,7 +997,8 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
 
-        # Ensure that the airfoil's deflection is not too high, which increases the risk of self intersection.
+        # Ensure that the airfoil's deflection is not too high, which increases the
+        # risk of self intersection.
         if deflection > 90 or deflection < -90:
             raise Exception("Invalid value for deflection!")
 
@@ -1007,6 +1049,10 @@ class Airfoil:
         return flapped_airfoil
 
     def draw(self):
+        """This method plots this Airfoil's coordinates using PyPlot.
+
+        :return: None
+        """
         x = self.coordinates[:, 0]
         y = self.coordinates[:, 1]
         plt.plot(x, y)

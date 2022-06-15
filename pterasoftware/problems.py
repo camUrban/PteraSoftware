@@ -64,8 +64,9 @@ class UnsteadyProblem:
             longest period), which increases speed. The default value is False.
         """
         # Initialize the class attributes.
-        self.num_steps = movement.num_steps
-        self.delta_time = movement.delta_time
+        self.movement = movement
+        self.num_steps = self.movement.num_steps
+        self.delta_time = self.movement.delta_time
         self.only_final_results = only_final_results
 
         # Find the maximum period of this problem's movements.

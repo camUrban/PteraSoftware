@@ -65,23 +65,23 @@ def analyze_steady_trim(
     base_external_thrust = problem.operating_point.external_thrust
 
     if base_velocity < velocity_bounds[0] or base_velocity > velocity_bounds[1]:
-        trim_logger.error(
+        raise Exception(
             "The operating point's velocity must be within the specified velocity "
             "bounds."
         )
     if base_alpha < alpha_bounds[0] or base_alpha > alpha_bounds[1]:
-        trim_logger.error(
+        raise Exception(
             "The operating point's alpha must be within the specified alpha bounds."
         )
     if base_beta < beta_bounds[0] or base_beta > beta_bounds[1]:
-        trim_logger.error(
+        raise Exception(
             "The operating point's beta must be within the specified beta bounds."
         )
     if (
         base_external_thrust < external_thrust_bounds[0]
         or base_external_thrust > external_thrust_bounds[1]
     ):
-        trim_logger.error(
+        raise Exception(
             "The operating point's external thrust must be within the specified "
             "external thrust bounds."
         )
@@ -210,12 +210,11 @@ def analyze_unsteady_trim(
     objective_cut_off=0.01,
     num_calls=100,
 ):
-    """analyze_unsteady_trim: This function attempts to calculate a trim condition of
-    an unsteady solver by varying the operating point's velocity, angle of attack,
-    angle of sideslip, and external thrust until the net cycle-averaged force and net
-    cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
-    be found, it returns the trimmed operating point values. Otherwise, it logs an
-    error.
+    """This function attempts to calculate a trim condition of an unsteady solver by
+    varying the operating point's velocity, angle of attack, angle of sideslip,
+    and external thrust until the net cycle-averaged force and net cycle-averaged
+    moment on the aircraft are sufficient low. If a trim condition can be found,
+    it returns the trimmed operating point values. Otherwise, it logs an error.
 
     :return:
     """

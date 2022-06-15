@@ -27,6 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
     def exampleMenu(self, ex_num):
         import importlib
+
         files = []
         for i, filename in enumerate(os.listdir("examples")):
             f = "examples." + filename
@@ -40,15 +41,17 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pixmap = QPixmap('docs/logo.png')
+    pixmap = QPixmap("docs/logo.png")
     splash = QSplashScreen(pixmap)
     splash.setWindowFlags(Qt.WindowStaysOnTopHint)
     splash.setEnabled(False)
     splash.setMask(pixmap.mask())
     splash.show()
-    time.sleep(0.1)  # This seems to fix the splash mask displaying but not the actual image
+    time.sleep(
+        0.1
+    )  # This seems to fix the splash mask displaying but not the actual image
     app.processEvents()
 
     window = MainWindow()

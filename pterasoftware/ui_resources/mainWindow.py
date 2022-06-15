@@ -962,4 +962,3 @@ class Ui_MainWindowDesign(object):
         self.menuFile.setTitle(QCoreApplication.translate("MainWindowDesign", u"File", None))
         self.menuAircraft.setTitle(QCoreApplication.translate("MainWindowDesign", u"Aircraft", None))
     # retranslateUi
-

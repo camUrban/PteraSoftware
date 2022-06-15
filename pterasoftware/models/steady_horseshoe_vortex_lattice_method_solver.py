@@ -4,7 +4,7 @@ import pterasoftware as ps
 class steadyHorseshoeVortexLatticeMethodSolver():
 
     def __init__(self):
-        aircraftParams = {}
+        var = "Variables"
 
     def runSolver(self):
         example_airplane = ps.geometry.Airplane(

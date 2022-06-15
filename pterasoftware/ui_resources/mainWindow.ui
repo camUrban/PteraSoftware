@@ -1245,6 +1245,11 @@
      <addaction name="actionExample_3"/>
      <addaction name="actionExample_4"/>
      <addaction name="actionExample_5"/>
+     <addaction name="actionExample_6"/>
+     <addaction name="actionExample_7"/>
+     <addaction name="actionExample_8"/>
+     <addaction name="actionExample_9"/>
+     <addaction name="actionExample_10"/>
     </widget>
     <addaction name="actionAbout"/>
     <addaction name="menuExamples"/>
@@ -1302,27 +1307,52 @@
   </action>
   <action name="actionExample_1">
    <property name="text">
-    <string>Example 1: Steady horseshoe vortex lattice method solver</string>
+    <string>Example 1: Analyze steady trim example</string>
    </property>
   </action>
   <action name="actionExample_2">
    <property name="text">
-    <string>Example 2: Steady ring vortex lattice method solver</string>
+    <string>Example 2: Analyze unsteady trim example</string>
    </property>
   </action>
   <action name="actionExample_3">
    <property name="text">
-    <string>Example 3: Unsteady ring vortex lattice method solver static</string>
+    <string>Example 3: Steady convergence example</string>
    </property>
   </action>
   <action name="actionExample_4">
    <property name="text">
-    <string>Example 4: Unsteady ring vortex lattice method solver variable</string>
+    <string>Example 4: Steady horseshoe vortex lattice method solver</string>
    </property>
   </action>
   <action name="actionExample_5">
    <property name="text">
-    <string>Example 5: Unsteady ring vortex lattice method solver variable formation</string>
+    <string>Example 5: Steady ring vortex lattice method solver static</string>
+   </property>
+  </action>
+  <action name="actionExample_6">
+   <property name="text">
+    <string>Example 6: Unsteady ring vortex lattice method solver static</string>
+   </property>
+  </action>
+  <action name="actionExample_7">
+   <property name="text">
+    <string>Example 7: Unsteady ring vortex lattice method solver variable</string>
+   </property>
+  </action>
+  <action name="actionExample_8">
+   <property name="text">
+    <string>Example 8: Unsteady ring vortex lattice method solver variable formation</string>
+   </property>
+  </action>
+  <action name="actionExample_9">
+   <property name="text">
+    <string>Example 9: Unsteady static convergence example</string>
+   </property>
+  </action>
+  <action name="actionExample_10">
+   <property name="text">
+    <string>Example 10: Unsteady variable convergence example</string>
    </property>
   </action>
  </widget>

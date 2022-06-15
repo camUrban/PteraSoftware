@@ -53,7 +53,7 @@ if __name__ == '__main__':
     splash.setEnabled(False)
     splash.setMask(pixmap.mask())
     splash.show()
-    time.sleep(0.1)  # This seems to fix the splash mask displaying but not the actual image
+    time.sleep(1)
     app.processEvents()
 
     window = MainWindow()

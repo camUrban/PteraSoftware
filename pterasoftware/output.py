@@ -42,7 +42,11 @@ import numpy as np
 import pyvista as pv
 import webp
 
+from PySide2.QtCore import QObject, Signal
 from . import unsteady_ring_vortex_lattice_method
+from main import MainWindow
+
+MainWindow.updateDisplayText(MainWindow,"I'm here")
 
 # Define the color and colormaps used by the visualization functions.
 sequential_color_map = "speed"
@@ -103,11 +107,11 @@ marker_spacing = 1.0 / num_markers
 
 
 def draw(
-    solver,
-    scalar_type=None,
-    show_streamlines=False,
-    show_wake_vortices=False,
-    save=False,
+        solver,
+        scalar_type=None,
+        show_streamlines=False,
+        show_wake_vortices=False,
+        save=False,
 ):
     """Draw the geometry of the airplanes in a solver object.
 
@@ -142,8 +146,8 @@ def draw(
 
     # Get the solver's geometry.
     if isinstance(
-        solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            solver,
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         draw_step = solver.num_steps - 1
         airplanes = solver.steady_problems[draw_step].airplanes
@@ -164,9 +168,9 @@ def draw(
     # Check if the user wants to show scalars on the wing panels.
     show_scalars = False
     if (
-        scalar_type == "induced drag"
-        or scalar_type == "side force"
-        or scalar_type == "lift"
+            scalar_type == "induced drag"
+            or scalar_type == "side force"
+            or scalar_type == "lift"
     ):
         show_scalars = True
 
@@ -279,10 +283,10 @@ def draw(
 
 
 def animate(
-    unsteady_solver,
-    scalar_type=None,
-    show_wake_vortices=False,
-    save=False,
+        unsteady_solver,
+        scalar_type=None,
+        show_wake_vortices=False,
+        save=False,
 ):
     """Create an animation of a solver's geometries.
 
@@ -342,9 +346,9 @@ def animate(
     # Check if the user wants to show scalars on the wing panels.
     show_scalars = False
     if (
-        scalar_type == "induced drag"
-        or scalar_type == "side force"
-        or scalar_type == "lift"
+            scalar_type == "induced drag"
+            or scalar_type == "side force"
+            or scalar_type == "lift"
     ):
         show_scalars = True
 
@@ -588,16 +592,16 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         # Iterate through this step's airplanes.
         for airplane_id, airplane in enumerate(airplanes):
             total_near_field_force_wind_axes[
-                airplane_id, :, results_step
+            airplane_id, :, results_step
             ] = airplane.total_near_field_force_wind_axes
             total_near_field_force_coefficients_wind_axes[
-                airplane_id, :, results_step
+            airplane_id, :, results_step
             ] = airplane.total_near_field_force_coefficients_wind_axes
             total_near_field_moment_wind_axes[
-                airplane_id, :, results_step
+            airplane_id, :, results_step
             ] = airplane.total_near_field_moment_wind_axes
             total_near_field_moment_coefficients_wind_axes[
-                airplane_id, :, results_step
+            airplane_id, :, results_step
             ] = airplane.total_near_field_moment_coefficients_wind_axes
 
         results_step += 1
@@ -958,7 +962,7 @@ def print_unsteady_results(unsteady_solver):
     # For each airplane object, calculate and print the average force, moment,
     # force coefficient, and moment coefficient values.
     for airplane_id, airplane in enumerate(
-        unsteady_solver.steady_problems[0].airplanes
+            unsteady_solver.steady_problems[0].airplanes
     ):
         these_forces = forces[airplane_id]
         these_moments = moments[airplane_id]
@@ -1066,7 +1070,7 @@ def print_unsteady_results(unsteady_solver):
 
 
 def get_panel_surfaces(
-    airplanes,
+        airplanes,
 ):
     """This function returns a PolyData representation of the wing panel surfaces
     associated with all the airplanes in a given list.
@@ -1201,8 +1205,8 @@ def get_wake_ring_vortex_surfaces(solver, step):
 
 
 def get_scalars(
-    airplanes,
-    scalar_type,
+        airplanes,
+        scalar_type,
 ):
     """This function gets the coefficient values from a problem's airplane objects,
     and puts them into a 1D array to be used as scalars for display by other output
@@ -1242,15 +1246,15 @@ def get_scalars(
 
 
 def plot_scalars(
-    plotter,
-    these_scalars,
-    scalar_type,
-    min_scalar,
-    max_scalar,
-    color_map,
-    c_min,
-    c_max,
-    panel_surfaces,
+        plotter,
+        these_scalars,
+        scalar_type,
+        min_scalar,
+        max_scalar,
+        color_map,
+        c_min,
+        c_max,
+        panel_surfaces,
 ):
     """This function plots a scalar bars, the mesh panels with a particular set of
     scalars, and labels for the minimum and maximum scalar values.

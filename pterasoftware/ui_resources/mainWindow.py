@@ -812,10 +812,10 @@ class Ui_MainWindowDesign(object):
 
         self.verticalLayout.addWidget(self.terminalOutpotLogo)
 
-        self.terminalOutput = QListView(self.frame_2)
+        self.terminalOutput = QListWidget(self.frame_2)
         self.terminalOutput.setObjectName(u"terminalOutput")
         sizePolicy10 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy10.setHorizontalStretch(0)
+        sizePolicy10.setHorizontalStretch(5)
         sizePolicy10.setVerticalStretch(0)
         sizePolicy10.setHeightForWidth(self.terminalOutput.sizePolicy().hasHeightForWidth())
         self.terminalOutput.setSizePolicy(sizePolicy10)

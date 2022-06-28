@@ -1209,10 +1209,10 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="terminalOutput">
+        <widget class="QListWidget" name="terminalOutput">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
+           <horstretch>5</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>

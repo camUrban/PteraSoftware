@@ -1016,6 +1016,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
             * np.expand_dims(self.panel_areas, axis=1)
             * self.panel_normal_directions
+            / self.delta_time
         )
 
         # Sum the forces on the legs, and the unsteady force, to calculate the total

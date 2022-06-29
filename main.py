@@ -3,7 +3,7 @@ import sys
 import time
 
 print("Builtin modules imported")
-from PySide2.QtCore import Qt, Slot
+from PySide2.QtCore import Qt
 
 print("QTCore imported")
 from PySide2.QtGui import QPixmap
@@ -12,9 +12,6 @@ print("QtGUI imported")
 from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
 
 from pterasoftware.ui_resources.mainWindow import Ui_MainWindowDesign
-from pterasoftware import aerodynamics, convergence, functions, geometry, meshing, movement, operating_point,output,\
-    panel, problems, steady_horseshoe_vortex_lattice_method, steady_ring_vortex_lattice_method, trim,\
-    unsteady_ring_vortex_lattice_method
 
 
 class MainWindow(QMainWindow, Ui_MainWindowDesign):
@@ -47,14 +44,13 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         print(file)
         importlib.import_module(file)
 
-    def printTerminalOutput(self):
+    def printTerminalOutput(self, text):
         print("Printing terminal output")
-        self.terminalOutput.addItem(f"{self.displayText}")
+        self.terminalOutput.addItem(f"{text}")
 
     def updateDisplayText(self, text):
         self.displayText = text
-        self.printTerminalOutput(self)
-
+        self.printTerminalOutput(self, text)
 
 
 if __name__ == '__main__':

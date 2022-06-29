@@ -42,11 +42,7 @@ import numpy as np
 import pyvista as pv
 import webp
 
-from PySide2.QtCore import QObject, Signal
 from . import unsteady_ring_vortex_lattice_method
-from main import MainWindow
-
-MainWindow.updateDisplayText(MainWindow,"I'm here")
 
 # Define the color and colormaps used by the visualization functions.
 sequential_color_map = "speed"

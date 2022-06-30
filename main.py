@@ -70,5 +70,4 @@ if __name__ == '__main__':
     window.activateWindow()
     splash.finish(window)
     sys.exit(app.exec_())
-
-    print("Yup, it works")
+    print("Exiting")

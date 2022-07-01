@@ -1,8 +1,7 @@
 import pterasoftware as ps
 
 
-class steadyHorseshoeVortexLatticeMethodSolver():
-
+class steadyHorseshoeVortexLatticeMethodSolver:
     def __init__(self):
         var = "Variables"
 

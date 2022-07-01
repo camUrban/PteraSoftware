@@ -7,7 +7,7 @@ examples before reading this example. """
 import pterasoftware as ps
 
 
-class unsteadyRingVortexLatticeSolver():
+class unsteadyRingVortexLatticeSolver:
     def __init__(self):
         var = "Variables"
 
@@ -90,15 +90,15 @@ class unsteadyRingVortexLatticeSolver():
                     wing_cross_sections_movements=[
                         # Define the root wing cross section's movement object.
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
+                            base_wing_cross_section=lead_airplane.wings[
                                 0
-                            ],
+                            ].wing_cross_sections[0],
                         ),
                         # Define the tip wing cross section's movement object.
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
-                                1
-                            ],
+                            base_wing_cross_section=lead_airplane.wings[
+                                0
+                            ].wing_cross_sections[1],
                             sweeping_amplitude=15.0,
                             sweeping_period=1.5,
                             sweeping_spacing="sine",
@@ -160,14 +160,14 @@ class unsteadyRingVortexLatticeSolver():
                     base_wing=right_airplane.wings[0],
                     wing_cross_sections_movements=[
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
+                            base_wing_cross_section=right_airplane.wings[
                                 0
-                            ],
+                            ].wing_cross_sections[0],
                         ),
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
-                                1
-                            ],
+                            base_wing_cross_section=right_airplane.wings[
+                                0
+                            ].wing_cross_sections[1],
                             sweeping_amplitude=15.0,
                             sweeping_period=1.5,
                             sweeping_spacing="sine",
@@ -229,14 +229,14 @@ class unsteadyRingVortexLatticeSolver():
                     base_wing=left_airplane.wings[0],
                     wing_cross_sections_movements=[
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
+                            base_wing_cross_section=left_airplane.wings[
                                 0
-                            ],
+                            ].wing_cross_sections[0],
                         ),
                         ps.movement.WingCrossSectionMovement(
-                            base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
-                                1
-                            ],
+                            base_wing_cross_section=left_airplane.wings[
+                                0
+                            ].wing_cross_sections[1],
                             sweeping_amplitude=15.0,
                             sweeping_period=1.5,
                             sweeping_spacing="sine",

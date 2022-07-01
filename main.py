@@ -34,6 +34,7 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
     def exampleMenu(self, ex_num):
         import importlib
+
         files = []
         for i, filename in enumerate(os.listdir("examples")):
             f = "examples." + filename
@@ -47,15 +48,16 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
     def printTerminalOutput(self, text):
         print("Printing terminal output")
         self.terminalOutput.addItem(f"{text}")
+        self.terminalOutput.scrollToBottom()
 
     def updateDisplayText(self, text):
         self.displayText = text
         self.printTerminalOutput(self, text)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pixmap = QPixmap('docs/logo.png')
+    pixmap = QPixmap("docs/logo.png")
     splash = QSplashScreen(pixmap)
     splash.setWindowFlags(Qt.WindowStaysOnTopHint)
     splash.setEnabled(False)

@@ -151,41 +151,43 @@ issue for guidance.
 ## Example Code
 
 The following code snippet is all that is needed (after running pip install 
-pterasoftware) to run the steady horseshoe solver on a custom airplane object.
+pterasoftware) to run the steady horseshoe solver on an airplane with custom geometry.
 
 ```
 import pterasoftware as ps
 
-example_airplane = ps.geometry.Airplane(
+airplane = ps.geometry.Airplane(
     wings=[
         ps.geometry.Wing(
             symmetric=True,
             wing_cross_sections=[
                 ps.geometry.WingCrossSection(
-                    airfoil=ps.geometry.Airfoil(name="naca2412",),
+                    airfoil=ps.geometry.Airfoil(name="naca2412"),
                 ),
                 ps.geometry.WingCrossSection(
-                    y_le=5.0, airfoil=ps.geometry.Airfoil(name="naca2412",),
+                    y_le=5.0,
+                    airfoil=ps.geometry.Airfoil(name="naca2412"),
                 ),
             ],
         ),
     ],
 )
 
-example_operating_point = ps.operating_point.OperatingPoint()
+operating_point = ps.operating_point.OperatingPoint()
 
-example_problem = ps.problems.SteadyProblem(
-   airplane=example_airplane,
-   operating_point=example_operating_point
+problem = ps.problems.SteadyProblem(
+    airplanes=[airplane], operating_point=operating_point
 )
 
-example_solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-    steady_problem=example_problem
+solver = (
+    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+        steady_problem=problem
+    )
 )
 
-example_solver.run()
+solver.run()
 
-ps.output.draw(solver=example_solver, show_delta_pressures=True, show_streamlines=True)
+ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ```
 
 ## Example Output

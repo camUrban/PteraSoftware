@@ -1,3 +1,6 @@
+"""This script opens the GUI to demonstrate Ptera Software analyzing example models.
+It is in development and will be able to run custom models in the future"""
+
 import os
 import sys
 import time
@@ -11,7 +14,7 @@ from PySide2.QtGui import QPixmap
 print("QtGUI imported")
 from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
 
-from pterasoftware.ui_resources.mainWindow import Ui_MainWindowDesign
+from pterasoftware.ui_resources.main_window import Ui_MainWindowDesign
 
 
 class MainWindow(QMainWindow, Ui_MainWindowDesign):

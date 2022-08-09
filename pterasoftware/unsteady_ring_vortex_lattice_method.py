@@ -118,7 +118,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.panels = None
         self.panel_normal_directions = None
         self.panel_areas = None
-        self.panel_centers = None
         self.panel_collocation_points = None
         self.panel_back_right_vortex_vertices = None
         self.panel_front_right_vortex_vertices = None
@@ -364,7 +363,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panels = np.empty(self.num_panels, dtype=object)
                 self.panel_normal_directions = np.zeros((self.num_panels, 3))
                 self.panel_areas = np.zeros(self.num_panels)
-                self.panel_centers = np.zeros((self.num_panels, 3))
                 self.panel_collocation_points = np.zeros((self.num_panels, 3))
                 self.panel_back_right_vortex_vertices = np.zeros((self.num_panels, 3))
                 self.panel_front_right_vortex_vertices = np.zeros((self.num_panels, 3))

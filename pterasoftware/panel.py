@@ -11,9 +11,8 @@ This module contains the following functions:
 """
 import numpy as np
 
-from . import functions
 
-
+# ToDo: Update the list of methods for this class.
 class Panel:
     """This class is used to contain the panels of a wing.
 
@@ -85,47 +84,10 @@ class Panel:
         self.local_chordwise_position = None
         self.local_spanwise_position = None
 
-        # Initialize a variable to hold the position of the wing (who this panel
-        # belongs to) in the airplane's wing list. This will be populated by the
-        # airplane object.
-        self.wing_position = None
-
         # Initialize variables to hold the panel's ring and horseshoe vortices. These
         # will be populated by the solver.
         self.ring_vortex = None
         self.horseshoe_vortex = None
-
-        # Initialize a variable to hold the collocation point location and then
-        # populate it.
-        self.collocation_point = None
-        self.calculate_collocation_point_location()
-
-        # Initialize variables to hold the panel area and the panel normal vector at
-        # the collocation point. Then populate them.
-        self.area = None
-        self.normal_direction = None
-        self.calculate_area_and_normal()
-
-        # Calculate the center of the panel.
-        self.center = functions.numba_centroid_of_quadrilateral(
-            front_right_vertex, front_left_vertex, back_left_vertex, back_right_vertex
-        )
-
-        # Calculate the front and back leg lengths, then use them to find and
-        # populate the average panel width.
-        front_leg_length = np.linalg.norm(front_left_vertex - front_right_vertex)
-        back_leg_length = np.linalg.norm(back_right_vertex - back_left_vertex)
-        self.width = (front_leg_length + back_leg_length) / 2
-
-        # Initialize two variables that are along the panel's left and right legs at
-        # the quarter chord. These points are used for all types of solvers,
-        # so we will define them here.
-        self.front_right_vortex_vertex = self.front_right_vertex + 0.25 * (
-            self.back_right_vertex - self.front_right_vertex
-        )
-        self.front_left_vortex_vertex = self.front_left_vertex + 0.25 * (
-            self.back_left_vertex - self.front_left_vertex
-        )
 
         # Initialize variables to hold attributes of the panel that will be defined
         # after the solver finds a solution.
@@ -137,22 +99,43 @@ class Panel:
         self.side_force_coefficient = None
         self.lift_coefficient = None
 
-    def calculate_collocation_point_location(self):
-        """This method calculates the location of the collocation point.
+    # ToDo: Update this method's documentation.
+    @property
+    def right_leg(self):
+        return self.front_right_vertex - self.back_right_vertex
 
-        The collocation point is at the panel's three-quarter chord point.
+    # ToDo: Update this method's documentation.
+    @property
+    def front_leg(self):
+        return self.front_left_vertex - self.front_right_vertex
 
-        :return: None
-        """
+    # ToDo: Update this method's documentation.
+    @property
+    def left_leg(self):
+        return self.back_left_vertex - self.front_left_vertex
 
+    # ToDo: Update this method's documentation.
+    @property
+    def back_leg(self):
+        return self.back_right_vertex - self.back_left_vertex
+
+    # ToDo: Update this method's documentation.
+    @property
+    def front_right_vortex_vertex(self):
+        return self.back_right_vertex + 0.75 * self.right_leg
+
+    # ToDo: Update this method's documentation.
+    @property
+    def front_left_vortex_vertex(self):
+        return self.front_left_vertex + 0.25 * self.left_leg
+
+    # ToDo: Update this method's documentation.
+    @property
+    def collocation_point(self):
         # Find the location of points three quarters of the way down the left and
         # right legs of the panel.
-        right_three_quarter_chord_mark = self.front_right_vertex + 0.75 * (
-            self.back_right_vertex - self.front_right_vertex
-        )
-        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * (
-            self.back_left_vertex - self.front_left_vertex
-        )
+        right_three_quarter_chord_mark = self.back_right_vertex + 0.25 * self.right_leg
+        left_three_quarter_chord_mark = self.front_left_vertex + 0.75 * self.left_leg
 
         # Find the vector between the points three quarters of the way down the left
         # and right legs of the panel.
@@ -163,27 +146,56 @@ class Panel:
         # Find the collocation point, which is halfway between the points three
         # quarters of the way down the left and right legs of the panel. Then
         # populate the class attribute.
-        self.collocation_point = (
-            right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
-        )
+        return right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
 
-    def calculate_area_and_normal(self):
-        """This method calculates the panel's area and the panel's normal unit vector.
+    # ToDo: Update this method's documentation.
+    @property
+    def area(self):
+        return np.linalg.norm(self._cross) / 2
 
-        This method makes the assumption that the panel is planar. This is
-        technically incorrect for wing's with twist but is a good approximation for
-        small panels.
+    # ToDo: Update this method's documentation.
+    @property
+    def unit_normal(self):
+        return self._cross / np.linalg.norm(self._cross)
 
-        :return: None
-        """
+    # ToDo: Update this method's documentation.
+    @property
+    def spanwise(self):
+        return (self.front_leg - self.back_leg) / 2
 
-        # Calculate panel's normal unit vector and its area via its diagonals.
-        first_diagonal = self.front_right_vertex - self.back_left_vertex
-        second_diagonal = self.front_left_vertex - self.back_right_vertex
-        cross_product = np.cross(first_diagonal, second_diagonal)
-        cross_product_magnitude = np.linalg.norm(cross_product)
-        self.normal_direction = cross_product / cross_product_magnitude
-        self.area = cross_product_magnitude / 2
+    # ToDo: Update this method's documentation.
+    @property
+    def average_span(self):
+        front_leg_length = np.linalg.norm(self.front_leg)
+        back_leg_length = np.linalg.norm(self.back_leg)
+        return (front_leg_length + back_leg_length) / 2
+
+    # ToDo: Update this method's documentation.
+    @property
+    def chordwise(self):
+        return (self.left_leg - self.right_leg) / 2
+
+    # ToDo: Update this method's documentation.
+    @property
+    def average_chord(self):
+        right_leg_length = np.linalg.norm(self.right_leg)
+        left_leg_length = np.linalg.norm(self.left_leg)
+        return (right_leg_length + left_leg_length) / 2
+
+    # ToDo: Update this method's documentation.
+    @property
+    def _first_diagonal(self):
+        return self.front_right_vertex - self.back_left_vertex
+
+    # ToDo: Update this method's documentation.
+    @property
+    def _second_diagonal(self):
+        return self.front_left_vertex - self.back_right_vertex
+
+    # ToDo: Update this method's documentation.
+    @property
+    def _cross(self):
+        return np.cross(self._first_diagonal, self._second_diagonal)
 
     def calculate_normalized_induced_velocity(self, point):
         """This method calculates the velocity induced at a point by this panel's

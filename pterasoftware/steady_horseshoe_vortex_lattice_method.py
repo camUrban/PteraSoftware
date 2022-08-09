@@ -214,7 +214,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     self.panels[global_panel_position] = panel
                     self.panel_normal_directions[
                         global_panel_position, :
-                    ] = panel.normal_direction
+                    ] = panel.unit_normal
                     self.panel_areas[global_panel_position] = panel.area
                     self.panel_collocation_points[
                         global_panel_position, :

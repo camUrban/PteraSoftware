@@ -94,12 +94,29 @@ class UnsteadyProblem:
         else:
             self.first_results_step = 0
 
-        # Initialize empty lists to hold the final force, moment, force coefficients,
-        # and moment coefficients this each airplane object experiences.
-        self.final_total_near_field_forces_wind_axes = []
-        self.final_total_near_field_force_coefficients_wind_axes = []
-        self.final_total_near_field_moments_wind_axes = []
-        self.final_total_near_field_moment_coefficients_wind_axes = []
+        # Initialize empty lists to hold the final loads and load coefficients each
+        # airplane object experiences. These will only be populated for static
+        # geometry problems.
+        self.final_near_field_forces_wind_axes = []
+        self.final_near_field_force_coefficients_wind_axes = []
+        self.final_near_field_moments_wind_axes = []
+        self.final_near_field_moment_coefficients_wind_axes = []
+
+        # Initialize empty lists to hold the final cycle-averaged loads and load
+        # coefficients each airplane object experiences. These will only be populated
+        # for variable geometry problems.
+        self.final_mean_near_field_forces_wind_axes = []
+        self.final_mean_near_field_force_coefficients_wind_axes = []
+        self.final_mean_near_field_moments_wind_axes = []
+        self.final_mean_near_field_moment_coefficients_wind_axes = []
+
+        # Initialize empty lists to hold the final cycle-root-mean-squared loads and
+        # load coefficients each airplane object experiences. These will only be
+        # populated for variable geometry problems.
+        self.final_rms_near_field_forces_wind_axes = []
+        self.final_rms_near_field_force_coefficients_wind_axes = []
+        self.final_rms_near_field_moments_wind_axes = []
+        self.final_rms_near_field_moment_coefficients_wind_axes = []
 
         # Initialize an empty list to hold the steady problems.
         self.steady_problems = []

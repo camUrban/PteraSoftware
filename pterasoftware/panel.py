@@ -160,8 +160,11 @@ class Panel:
 
     # ToDo: Update this method's documentation.
     @property
-    def spanwise(self):
-        return (self.front_leg - self.back_leg) / 2
+    def unit_spanwise(self):
+        front_spanwise = -self.front_leg
+        back_spanwise = self.back_leg
+        spanwise = (front_spanwise + back_spanwise) / 2
+        return spanwise / np.linalg.norm(spanwise)
 
     # ToDo: Update this method's documentation.
     @property
@@ -172,8 +175,11 @@ class Panel:
 
     # ToDo: Update this method's documentation.
     @property
-    def chordwise(self):
-        return (self.left_leg - self.right_leg) / 2
+    def unit_chordwise(self):
+        right_chordwise = -self.right_leg
+        left_chordwise = self.left_leg
+        chordwise = (right_chordwise + left_chordwise) / 2
+        return chordwise / np.linalg.norm(chordwise)
 
     # ToDo: Update this method's documentation.
     @property

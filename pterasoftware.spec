@@ -5,6 +5,8 @@ import os
 import sys
 
 import PySide2
+import shiboken2
+import cmocean
 from PyInstaller.building.api import PYZ, EXE, COLLECT
 from PyInstaller.building.build_main import Analysis
 
@@ -28,6 +30,7 @@ elif sys.platform.startswith('linux'):
 upx = False  # UPX does not play with anything Qt
 upx_exclude = [
     'PySide2',
+    'shiboken2',
     'qwindows.dll'
 ]
 a = Analysis(
@@ -38,9 +41,21 @@ a = Analysis(
                  ('docs/Black_Text_Logo.ico', 'docs'),
                  ('docs/Logo.png', 'docs'),
                  ('docs/Black_Text_Logo.png', 'docs'),
-                 ("README.md", '.')
+                 ("README.md", '.'),
+                 ('examples/analyze_steady_trim_example.py', 'examples'),
+                 ('examples/analyze_unsteady_trim_example.py', 'examples'),
+                 ('examples/steady_convergence_example.py', 'examples'),
+                 ('examples/steady_horseshoe_vortex_lattice_method_solver.py', 'examples'),
+                 ('examples/steady_ring_vortex_lattice_method_solver.py', 'examples'),
+                 ('examples/unsteady_ring_vortex_lattice_method_solver_static.py', 'examples'),
+                 ('examples/unsteady_ring_vortex_lattice_method_solver_variable.py', 'examples'),
+                 ('examples/unsteady_ring_vortex_lattice_method_solver_variable_formation.py', 'examples'),
+                 ('examples/unsteady_static_convergence_example.py', 'examples'),
+                 ('examples/unsteady_variable_convergence_example.py', 'examples'),
+                 (shiboken2.__path__[0], "shiboken2"),
+                 (cmocean.__path__[0], "cmocean")
                  ],
-    hiddenimports=['vtkmodules','vtkmodules.all','vtkmodules.qt.QVTKRenderWindowInteractor','vtkmodules.util','vtkmodules.util.numpy_support'],
+    hiddenimports=['vtkmodules','vtkmodules.all','vtkmodules.qt.QVTKRenderWindowInteractor','vtkmodules.util','vtkmodules.util.numpy_support', 'examples'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -57,7 +72,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main',
+    name='PteraSoftware',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

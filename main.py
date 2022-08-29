@@ -4,6 +4,7 @@ It is in development and will be able to run custom models in the future"""
 import os
 import sys
 import time
+import importlib
 
 print("Builtin modules imported")
 from PySide2.QtCore import Qt
@@ -36,7 +37,6 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.displayText = ""
 
     def exampleMenu(self, ex_num):
-        import importlib
 
         files = []
         for i, filename in enumerate(os.listdir("examples")):

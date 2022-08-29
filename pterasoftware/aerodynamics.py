@@ -23,6 +23,11 @@ This module contains the following functions:
     points, and the attributes of a group of ring vortices. At every point, it finds
     the cumulative induced velocity due to all the ring vortices.
 
+    collapsed_velocities_from_ring_vortices_chordwise_segments: This function takes
+    in a group of points, and the attributes of a group of ring vortices. At every
+    point, it finds the cumulative induced velocity due to all the ring vortices'
+    chordwise segments.
+
     expanded_velocities_from_ring_vortices: This function takes in a group of points,
     and the attributes of a group of ring vortices. At every point, it finds the
     induced velocity due to each ring vortex.
@@ -578,6 +583,88 @@ def collapsed_velocities_from_ring_vortices(
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(4):
+        induced_velocities += collapsed_velocities_from_line_vortices(
+            points=points,
+            origins=origins_list[i],
+            terminations=terminations_list[i],
+            strengths=strengths,
+            ages=ages,
+            nu=nu,
+        )
+    return induced_velocities
+
+
+@njit(cache=True, fastmath=False)
+def collapsed_velocities_from_ring_vortices_chordwise_segments(
+    points,
+    back_right_vortex_vertices,
+    front_right_vortex_vertices,
+    front_left_vortex_vertices,
+    back_left_vortex_vertices,
+    strengths,
+    ages=None,
+    nu=0.0,
+):
+    """This function takes in a group of points, and the attributes of a group of
+    ring vortices. At every point, it finds the cumulative induced velocity due to
+    all the ring vortices' chordwise segments.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
+
+    :param points: 2D array of floats
+        This variable is an array of shape (N x 3), where N is the number of points.
+        Each row contains the x, y, and z float coordinates of that point's position
+        in meters.
+    :param back_right_vortex_vertices: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of ring
+        vortices. Each row contains the x, y, and z float coordinates of that ring
+        vortex's back right vertex's position in meters.
+    :param front_right_vortex_vertices: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of ring
+        vortices. Each row contains the x, y, and z float coordinates of that ring
+        vortex's front right vertex's position in meters.
+    :param front_left_vortex_vertices: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of ring
+        vortices. Each row contains the x, y, and z float coordinates of that ring
+        vortex's front left vertex's position in meters.
+    :param back_left_vortex_vertices: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of ring
+        vortices. Each row contains the x, y, and z float coordinates of that ring
+        vortex's front left vertex's position in meters.
+    :param strengths: 1D array of floats
+        This variable is an array of shape (, M), where M is the number of ring
+        vortices. Each holds the strength of that ring vortex in meters squared per
+        second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that ring vortex in seconds. This
+        is only relevant for vortices that have been shed into the wake. The default
+        value is None. If the age of a specific vortex is 0.0 seconds, then the
+        vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x 3), and it holds the cumulative induced
+        velocity at each of the N points due to all the ring vortices' spanwise
+        segments. The units are meters per second.
+    """
+    origins_list = [
+        back_right_vortex_vertices,
+        front_left_vortex_vertices,
+    ]
+    terminations_list = [
+        front_right_vortex_vertices,
+        back_left_vortex_vertices,
+    ]
+    induced_velocities = np.zeros((points.shape[0], 3))
+
+    # Get the velocity induced by each leg of the ring vortex.
+    for i in range(2):
         induced_velocities += collapsed_velocities_from_line_vortices(
             points=points,
             origins=origins_list[i],

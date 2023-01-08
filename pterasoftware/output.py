@@ -38,7 +38,6 @@ This module contains the following functions:
 import math
 
 import matplotlib.pyplot as plt
-from matplotlib import use as mpl_use
 import numpy as np
 import pyvista as pv
 import webp
@@ -101,9 +100,6 @@ marker_size = 8
 
 # Calculate the normalized spacing between the markers for the results plots.
 marker_spacing = 1.0 / num_markers
-
-# # Specify which interactive backend Matplotlib should use.
-# mpl_use("QtAgg")
 
 
 def draw(

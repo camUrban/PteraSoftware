@@ -102,8 +102,8 @@ marker_size = 8
 # Calculate the normalized spacing between the markers for the results plots.
 marker_spacing = 1.0 / num_markers
 
-# Specify which interactive backend Matplotlib should use.
-mpl_use("QtAgg")
+# # Specify which interactive backend Matplotlib should use.
+# mpl_use("QtAgg")
 
 
 def draw(

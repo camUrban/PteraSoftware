@@ -216,7 +216,7 @@ examples of the output you can expect to receive from each of them.
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.6.2, < 4.0.0
+* matplotlib >= 3.5.3, < 3.6.0
 * numpy >= 1.23.5, < 1.24.0
 * pyvista >= 0.37.0, < 1.0.0
 * scipy >= 1.10.0, < 2.0.0

@@ -13,4 +13,5 @@ install:
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
 script:
+  - coverage run --source=pterasoftware -m unittest discover -s tests
   - codecov

@@ -138,4 +138,5 @@ cython_debug/
 
 /build
 /dist
+/Output
 .spec

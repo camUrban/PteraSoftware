@@ -13,9 +13,17 @@ print("QTCore imported")
 from PySide2.QtGui import QPixmap
 
 print("QtGUI imported")
-from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
+from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 
 from pterasoftware.ui_resources.main_window import Ui_MainWindowDesign
+from pterasoftware.ui_resources.textdialog import Ui_TextAboutDialog
+
+class TextAboutDialog(QDialog):
+    def __init__(self, title):
+        super(TextAboutDialog, self).__init__()
+        self.ui = Ui_TextAboutDialog()
+        self.ui.setupUi(self)
+        self.setWindowTitle(title)
 
 
 class MainWindow(QMainWindow, Ui_MainWindowDesign):
@@ -57,6 +65,14 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.displayText = text
         self.printTerminalOutput(self, text)
 
+    def menuREADME(self):
+        from PySide2.QtGui import QTextDocument
+        self.dialog = TextAboutDialog('About Ptera Software')
+        doc = QTextDocument()
+        doc.setMarkdown(self._read_file('README.md'))
+        self.dialog.ui.textEdit.setDocument(doc)
+        self.dialog.show()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -74,6 +90,6 @@ if __name__ == "__main__":
     window.raise_()
     window.activateWindow()
     splash.finish(window)
-    print("Exiting")
     sys.exit(app.exec_())
+    print("Exiting")
 

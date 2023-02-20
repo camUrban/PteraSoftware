@@ -3,14 +3,12 @@ python:
   - "3.8"
 os: linux
 dist: xenial
-services:
-  - xvfb
 before_install:
   # configure a headless display
   - git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
   - source ./gl-ci-helpers/travis/setup_headless_display.sh
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements_dev.txt
+  - pip install -r requirements_ci.txt
 script:
+  - coverage run --source=pterasoftware -m unittest discover -s tests
   - codecov

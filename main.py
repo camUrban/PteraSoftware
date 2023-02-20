@@ -42,6 +42,8 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.actionExample_9.triggered.connect(lambda x: self.exampleMenu(8))
         self.actionExample_10.triggered.connect(lambda x: self.exampleMenu(9))
 
+        self.actionAbout.triggered.connect(self.menuREADME)
+
         self.displayText = ""
 
     def exampleMenu(self, ex_num):
@@ -72,6 +74,17 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         doc.setMarkdown(self._read_file('README.md'))
         self.dialog.ui.textEdit.setDocument(doc)
         self.dialog.show()
+
+    def _read_file(self, file_path: str) -> str:
+        from PySide2.QtCore import QFile
+        from PySide2.QtCore import QTextStream
+        from PySide2.QtCore import QIODevice
+
+        file = QFile(file_path)
+        file.open(QIODevice.ReadOnly)
+        ts = QTextStream(file)
+        string = ts.readAll()
+        return string
 
 
 if __name__ == "__main__":

@@ -345,8 +345,8 @@ def analyze_steady_convergence(
                     + str(max_ar_pc)
                 )
 
-            # If this isn't the first number of chordwise panels, the number of
-            # chordwise panels APE.
+            # If this isn't the first number of chordwise panels, calculate the
+            # number of chordwise panels APE.
             if chord_id > 0:
                 last_chord_force_coefficients = force_coefficients[
                     ar_id, chord_id - 1, :
@@ -1086,8 +1086,8 @@ def analyze_unsteady_convergence(
                             "ratio: " + str(max_ar_pc)
                         )
 
-                    # If this isn't the first number of chordwise panels, the number
-                    # of chordwise panels APE.
+                    # If this isn't the first number of chordwise panels, calculate
+                    # the number of chordwise panels APE.
                     if chord_id > 0:
                         last_chord_coefficients = coefficients[
                             wake_id, length_id, ar_id, chord_id - 1, :, :

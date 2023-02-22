@@ -13,9 +13,18 @@ print("QTCore imported")
 from PySide2.QtGui import QPixmap
 
 print("QtGUI imported")
-from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen
+from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 
 from pterasoftware.ui_resources.main_window import Ui_MainWindowDesign
+from pterasoftware.ui_resources.textdialog import Ui_TextAboutDialog
+
+
+class TextAboutDialog(QDialog):
+    def __init__(self, title):
+        super(TextAboutDialog, self).__init__()
+        self.ui = Ui_TextAboutDialog()
+        self.ui.setupUi(self)
+        self.setWindowTitle(title)
 
 
 class MainWindow(QMainWindow, Ui_MainWindowDesign):
@@ -33,6 +42,8 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.actionExample_8.triggered.connect(lambda x: self.exampleMenu(7))
         self.actionExample_9.triggered.connect(lambda x: self.exampleMenu(8))
         self.actionExample_10.triggered.connect(lambda x: self.exampleMenu(9))
+
+        self.actionAbout.triggered.connect(self.menuREADME)
 
         self.displayText = ""
 
@@ -56,6 +67,26 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
     def updateDisplayText(self, text):
         self.displayText = text
         self.printTerminalOutput(self, text)
+
+    def menuREADME(self):
+        from PySide2.QtGui import QTextDocument
+
+        self.dialog = TextAboutDialog("About Ptera Software")
+        doc = QTextDocument()
+        doc.setMarkdown(self._read_file("README.md"))
+        self.dialog.ui.textEdit.setDocument(doc)
+        self.dialog.show()
+
+    def _read_file(self, file_path: str) -> str:
+        from PySide2.QtCore import QFile
+        from PySide2.QtCore import QTextStream
+        from PySide2.QtCore import QIODevice
+
+        file = QFile(file_path)
+        file.open(QIODevice.ReadOnly)
+        ts = QTextStream(file)
+        string = ts.readAll()
+        return string
 
 
 if __name__ == "__main__":

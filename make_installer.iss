@@ -2,15 +2,18 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PteraSoftware"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "camUrban"
+#define MyAppVersion "3.0.0"
+#define MyAppPublisher "CamUrban"
 #define MyAppURL "https://github.com/camUrban/PteraSoftware"
 #define MyAppExeName "PteraSoftware.exe"
+#define MyAppAssocName MyAppName + " File"
+#define MyAppAssocExt ".myp"
+#define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={2F38E8AB-01DC-4428-AC65-CF5E2F7F787B}
+AppId={{F8405B7D-3F5B-4F81-BD8B-7C5D1F052165}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -22,11 +25,9 @@ DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 LicenseFile=C:\Users\zacht\PycharmProjects\PteraSoftware\LICENSE.txt
-InfoAfterFile=C:\Users\zacht\PycharmProjects\PteraSoftware\README.md
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=mysetup
+OutputBaseFilename=PteraSoftware_installer
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -38,7 +39,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\zacht\PycharmProjects\PteraSoftware\dist\main\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\zacht\PycharmProjects\PteraSoftware\dist\main\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]

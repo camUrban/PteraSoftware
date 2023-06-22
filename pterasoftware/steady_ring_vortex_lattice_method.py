@@ -84,7 +84,6 @@ class SteadyRingVortexLatticeMethodSolver:
         self.vortex_strengths = np.ones(self.num_panels)
         self.panel_normal_directions = np.zeros((self.num_panels, 3))
         self.panel_areas = np.zeros(self.num_panels)
-        self.panel_centers = np.zeros((self.num_panels, 3))
         self.panel_collocation_points = np.zeros((self.num_panels, 3))
         self.panel_back_right_vortex_vertices = np.zeros((self.num_panels, 3))
         self.panel_front_right_vortex_vertices = np.zeros((self.num_panels, 3))

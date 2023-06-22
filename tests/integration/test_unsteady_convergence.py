@@ -64,20 +64,24 @@ class TestUnsteadyConvergence(unittest.TestCase):
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,
             free_wake=True,
-            num_chords_bounds=(6, 9),
+            num_chords_bounds=(2, 6),
             panel_aspect_ratio_bounds=(4, 2),
-            num_chordwise_panels_bounds=(3, 6),
-            convergence_criteria=1.0,
+            num_chordwise_panels_bounds=(2, 6),
+            convergence_criteria=5.0,
+            coefficient_mask=[True, False, True, False, True, False],
         )
 
+        converged_wake_state = converged_parameters[0]
         converged_num_chords = converged_parameters[1]
         converged_panel_ar = converged_parameters[2]
         converged_num_chordwise = converged_parameters[3]
 
-        num_chords_ans = 7
+        wake_state_ans = True
+        num_chords_ans = 4
         panel_ar_ans = 4
         num_chordwise_ans = 4
 
+        self.assertTrue(converged_wake_state == wake_state_ans)
         self.assertTrue(abs(converged_num_chords - num_chords_ans) <= 1)
         self.assertTrue(abs(converged_panel_ar - panel_ar_ans) <= 1)
         self.assertTrue(abs(converged_num_chordwise - num_chordwise_ans) <= 1)

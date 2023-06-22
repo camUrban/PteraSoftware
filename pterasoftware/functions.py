@@ -547,9 +547,8 @@ def update_ring_vortex_solvers_panel_attributes(
 
     # Update the solver's list of attributes with this panel's attributes.
     solver.panels[global_panel_position] = panel
-    solver.panel_normal_directions[global_panel_position, :] = panel.normal_direction
+    solver.panel_normal_directions[global_panel_position, :] = panel.unit_normal
     solver.panel_areas[global_panel_position] = panel.area
-    solver.panel_centers[global_panel_position] = panel.center
     solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
     solver.panel_back_right_vortex_vertices[
         global_panel_position, :

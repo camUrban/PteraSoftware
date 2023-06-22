@@ -77,9 +77,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         the apparent flow velocity due to flapping at the centers of the current
         airplanes' bound ring vortices' left legs.
 
-        finalize_near_field_forces_and_moments: This function finds the final
-        cycle-averaged force, moments, force coefficients, and moment coefficients
-        for each of this problem's airplanes.
+        finalize_near_field_forces_and_moments: For cases with static geometry,
+        this function finds the final loads and load coefficients for each of the
+        problem's airplanes. For cases with variable geometry, it finds the final
+        cycle-averaged and cycle-root-mean-squared loads and load coefficients.
 
     This class contains the following class attributes:
         None
@@ -118,7 +119,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.panels = None
         self.panel_normal_directions = None
         self.panel_areas = None
-        self.panel_centers = None
         self.panel_collocation_points = None
         self.panel_back_right_vortex_vertices = None
         self.panel_front_right_vortex_vertices = None
@@ -364,7 +364,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panels = np.empty(self.num_panels, dtype=object)
                 self.panel_normal_directions = np.zeros((self.num_panels, 3))
                 self.panel_areas = np.zeros(self.num_panels)
-                self.panel_centers = np.zeros((self.num_panels, 3))
                 self.panel_collocation_points = np.zeros((self.num_panels, 3))
                 self.panel_back_right_vortex_vertices = np.zeros((self.num_panels, 3))
                 self.panel_front_right_vortex_vertices = np.zeros((self.num_panels, 3))
@@ -1593,15 +1592,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
 
     def finalize_near_field_forces_and_moments(self):
-        """This function finds the final cycle-averaged force, moments,
-        force coefficients, and moment coefficients for each of this problem's
-        airplanes.
+        """For cases with static geometry, this function finds the final loads and
+        load coefficients for each of the problem's airplanes. For cases with
+        variable geometry, it finds the final cycle-averaged and
+        cycle-root-mean-squared loads and load coefficients.
 
         :return: None
         """
         # Get this solver's time step characteristics. Note that the first time step (
         # time step 0), occurs at 0 seconds.
         num_steps_to_average = self.num_steps - self.first_averaging_step
+
+        # Determine if this problem's geometry is static or variable.
+        is_static = self.unsteady_problem.max_period == 0
 
         # Initialize matrices to hold the forces, moments, and coefficients at each of
         # the time steps that has results.
@@ -1648,81 +1651,85 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # For each airplane object, calculate and then save the final or
         # cycle-averaged forces, moments, force coefficients, and moment coefficients.
         for airplane_id, airplane in enumerate(self.steady_problems[0].airplanes):
-            these_mean_induced_drags = np.mean(
-                total_near_field_forces_wind_axes[airplane_id, 0, :]
-            )
-            these_mean_side_forces = np.mean(
-                total_near_field_forces_wind_axes[airplane_id, 1, :]
-            )
-            these_mean_lifts = np.mean(
-                total_near_field_forces_wind_axes[airplane_id, 2, :]
-            )
-            these_mean_rolling_moments = np.mean(
-                total_near_field_moments_wind_axes[airplane_id, 0, :]
-            )
-            these_mean_pitching_moments = np.mean(
-                total_near_field_moments_wind_axes[airplane_id, 1, :]
-            )
-            these_mean_yawing_moments = np.mean(
-                total_near_field_moments_wind_axes[airplane_id, 2, :]
-            )
-            these_mean_induced_drag_coefficients = np.mean(
-                total_near_field_force_coefficients_wind_axes[airplane_id, 0, :]
-            )
-            these_mean_side_force_coefficients = np.mean(
-                total_near_field_force_coefficients_wind_axes[airplane_id, 1, :]
-            )
-            these_mean_lift_coefficients = np.mean(
-                total_near_field_force_coefficients_wind_axes[airplane_id, 2, :]
-            )
-            these_mean_rolling_moment_coefficients = np.mean(
-                total_near_field_moment_coefficients_wind_axes[airplane_id, 0, :]
-            )
-            these_mean_pitching_moment_coefficients = np.mean(
-                total_near_field_moment_coefficients_wind_axes[airplane_id, 1, :]
-            )
-            these_mean_yawing_moment_coefficients = np.mean(
-                total_near_field_moment_coefficients_wind_axes[airplane_id, 2, :]
-            )
 
-            these_mean_forces = np.array(
-                [
-                    these_mean_induced_drags,
-                    these_mean_side_forces,
-                    these_mean_lifts,
-                ]
-            )
-            these_mean_force_coefficients = np.array(
-                [
-                    these_mean_induced_drag_coefficients,
-                    these_mean_side_force_coefficients,
-                    these_mean_lift_coefficients,
-                ]
-            )
-            these_mean_moments = np.array(
-                [
-                    these_mean_rolling_moments,
-                    these_mean_pitching_moments,
-                    these_mean_yawing_moments,
-                ]
-            )
-            these_mean_moment_coefficients = np.array(
-                [
-                    these_mean_rolling_moment_coefficients,
-                    these_mean_pitching_moment_coefficients,
-                    these_mean_yawing_moment_coefficients,
-                ]
-            )
+            if is_static:
+                self.unsteady_problem.final_near_field_forces_wind_axes.append(
+                    total_near_field_forces_wind_axes[airplane_id, :, -1]
+                )
+                self.unsteady_problem.final_near_field_force_coefficients_wind_axes.append(
+                    total_near_field_force_coefficients_wind_axes[airplane_id, :, -1]
+                )
+                self.unsteady_problem.final_near_field_moments_wind_axes.append(
+                    total_near_field_moments_wind_axes[airplane_id, :, -1]
+                )
+                self.unsteady_problem.final_near_field_moment_coefficients_wind_axes.append(
+                    total_near_field_moment_coefficients_wind_axes[airplane_id, :, -1]
+                )
+            else:
+                mean_forces = np.mean(
+                    total_near_field_forces_wind_axes[airplane_id], axis=-1
+                )
+                mean_force_coefficients = np.mean(
+                    total_near_field_force_coefficients_wind_axes[airplane_id], axis=-1
+                )
+                mean_moments = np.mean(
+                    total_near_field_moments_wind_axes[airplane_id], axis=-1
+                )
+                mean_moment_coefficients = np.mean(
+                    total_near_field_moment_coefficients_wind_axes[airplane_id], axis=-1
+                )
 
-            self.unsteady_problem.final_total_near_field_forces_wind_axes.append(
-                these_mean_forces
-            )
-            self.unsteady_problem.final_total_near_field_moments_wind_axes.append(
-                these_mean_moments
-            )
-            self.unsteady_problem.final_total_near_field_force_coefficients_wind_axes.append(
-                these_mean_force_coefficients
-            )
-            self.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes.append(
-                these_mean_moment_coefficients
-            )
+                rms_forces = np.sqrt(
+                    np.mean(
+                        np.square(total_near_field_forces_wind_axes[airplane_id]),
+                        axis=-1,
+                    )
+                )
+                rms_force_coefficients = np.sqrt(
+                    np.mean(
+                        np.square(
+                            total_near_field_force_coefficients_wind_axes[airplane_id]
+                        ),
+                        axis=-1,
+                    )
+                )
+                rms_moments = np.sqrt(
+                    np.mean(
+                        np.square(total_near_field_moments_wind_axes[airplane_id]),
+                        axis=-1,
+                    )
+                )
+                rms_moment_coefficients = np.sqrt(
+                    np.mean(
+                        np.square(
+                            total_near_field_moment_coefficients_wind_axes[airplane_id]
+                        ),
+                        axis=-1,
+                    )
+                )
+
+                self.unsteady_problem.final_mean_near_field_forces_wind_axes.append(
+                    mean_forces
+                )
+                self.unsteady_problem.final_mean_near_field_force_coefficients_wind_axes.append(
+                    mean_force_coefficients
+                )
+                self.unsteady_problem.final_mean_near_field_moments_wind_axes.append(
+                    mean_moments
+                )
+                self.unsteady_problem.final_mean_near_field_moment_coefficients_wind_axes.append(
+                    mean_moment_coefficients
+                )
+
+                self.unsteady_problem.final_rms_near_field_forces_wind_axes.append(
+                    rms_forces
+                )
+                self.unsteady_problem.final_rms_near_field_force_coefficients_wind_axes.append(
+                    rms_force_coefficients
+                )
+                self.unsteady_problem.final_rms_near_field_moments_wind_axes.append(
+                    rms_moments
+                )
+                self.unsteady_problem.final_rms_near_field_moment_coefficients_wind_axes.append(
+                    rms_moment_coefficients
+                )

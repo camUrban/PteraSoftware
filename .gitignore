@@ -133,3 +133,10 @@ cython_debug/
 /tests/integration/fixtures/_trial_temp/
 /tests/unit/_trial_temp/
 /tests/unit/fixtures/_trial_temp/
+
+# These are folders and files created by releasing.
+
+/build
+/dist
+/Output
+.spec

@@ -2,7 +2,7 @@
 
 ***
 
-![build](https://img.shields.io/travis/camUrban/PteraSoftware/master)
+![build](https://app.travis-ci.com/camUrban/PteraSoftware.svg?branch=master)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/master)
 ![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware/master)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
@@ -37,6 +37,10 @@ Through the combined efforts of Peter Sharpe, Suhas Kodali, and me, Ptera Softwa
 born. It is an easy-to-use, open-source, and actively-maintained UVLM package capable 
 of analyzing flapping-wing flight. Moreover, it's written in Python, is well 
 documented, tested, and validated.
+
+Beginning with version 3.0.0, Ptera Software also includes a GUI developed by Zach Tait.
+Although it is still rudimentary, we hope that it will help make this tool accessible to
+even more users.
 
 With your help, I hope we will increase the open-source community's interest and 
 understanding of biological flight.
@@ -77,7 +81,10 @@ understanding of biological flight.
    * Ptera Software is focused on developing features to facilitate designing 
    flapping-wing vehicles.
    * For example, use the functions in the trim module to automatically search for a 
-   trim operating point for steady and unsteady simulations of aircraft. 
+   trim operating point for steady and unsteady simulations of aircraft.
+8. A Basic GUI
+   * This is still in its beta stage, but we will be adding more functionality over the 
+   next several releases.
 
 ## Installation and Use
 
@@ -143,10 +150,10 @@ contribute to this, feel free to open a feature request issue and start a conver
 
 ### What If I'm Having Trouble Getting Set Up?
 
-Not to worry! I am working on a video that walks through getting Ptera Software up and 
-running. It will include every step, from downloading Python for the first time to 
-setting up your IDE to running the software. In the meantime, feel free to open an 
-issue for guidance.
+Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that walks through getting Ptera Software up and 
+running. It includes every step, from downloading Python for the first time to setting 
+up your IDE to running the software. If you still run into problems, feel free to open 
+an issue for guidance.
 
 ## Example Code
 
@@ -269,13 +276,9 @@ results. This means getting rid of all the "test_method_does_not_throw" tests.
 
 ### Features
 
-* We should create a setup tutorial video and add it to the documentation. This should 
-be geared toward a user who doesn't have Python, an IDE, or Ptera Software installed on 
-their computer yet.
 * We should implement a leading-edge model to account for flow separation. See 
 "Modified Unsteady Vortex-Lattice Method to Study Flapping Wings in Hover Flight." by 
 Bruno Roccia, Sergio Preidikman, Julio Massa, and Dean Mook for details.
-* We should create a command-line interface or GUI.
 * We should try to implement aeroelastic effects in Ptera Software's solvers.
 * Flapping wing controls is both fascinating and complicated. We should try to create a 
 workflow in Ptera Software for controls systems identification for flapping-wing 
@@ -289,6 +292,7 @@ where applicable.
 
 * Suhas Kodali
 * Peter Sharpe
+* Zach Tait
 * Ramesh Agarwal
 * Joseph Katz
 * Allen Plotkin

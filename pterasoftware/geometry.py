@@ -196,7 +196,7 @@ class Wing:
         symmetry_unit_normal_vector=np.array([0.0, 1.0, 0.0]),
         wing_cross_sections=None,
         symmetric=False,
-        chordwise_unit_vector=np.array([1.0, 0.0, 0.0]),
+        unit_chordwise_vector=np.array([1.0, 0.0, 0.0]),
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     ):
@@ -214,24 +214,21 @@ class Wing:
             This is the z coordinate of the leading edge of the wing, relative to the
             airplane's reference point. The default is 0.0.
         :param symmetry_unit_normal_vector: ndarray, optional
-
             This is an (3,) ndarray of floats that represents the unit normal vector
             of the wing's symmetry plane. It is also the direction vector that the
             wing's span will be assessed relative to. Additionally, this vector
-            crossed with the "chordwise_unit_vector" defines the normal vector of the
+            crossed with the "unit_chordwise_vector" defines the normal vector of the
             plane that the wing's projected area will reference. It must be
             equivalent to this wing's root wing cross section's "unit_normal_vector"
             attribute. The default is np.array([0.0, 1.0, 0.0]), which is the XZ
             plane's unit normal vector.
-
         :param wing_cross_sections: list of WingCrossSection objects, optional
             This is a list of WingCrossSection objects, that represent the wing's
             cross sections. The default is None.
         :param symmetric: bool, optional
             Set this to true if the wing is across the xz plane. Set it to false if
             not. The default is false.
-        :param chordwise_unit_vector: ndarray, optional
-
+        :param unit_chordwise_vector: ndarray, optional
             This is an (3,) ndarray of floats that represents the unit vector that
             defines the wing's chordwise direction. This vector crossed with the
             "symmetry_unit_normal_vector" defines the normal vector of the plane that
@@ -239,7 +236,6 @@ class Wing:
             the intersection of the wing's symmetry plane with each of its wing cross
             section's planes. The default is np.array([1.0, 0.0, 0.0]), which is the
             X unit vector.
-
         :param num_chordwise_panels: int, optional
             This is the number of chordwise panels to be used on this wing. The
             default is 8.
@@ -263,7 +259,7 @@ class Wing:
         # edge isn't offset from the wing's leading edge.
         if wing_cross_sections is None:
             wing_cross_sections = []
-        elif not np.is_equal(
+        elif not np.array_equal(
             symmetry_unit_normal_vector, wing_cross_sections[0].unit_normal_vector
         ):
             raise Exception(
@@ -279,7 +275,7 @@ class Wing:
         # Initialize the other attributes.
         self.wing_cross_sections = wing_cross_sections
         self.symmetric = symmetric
-        self.chordwise_unit_vector = chordwise_unit_vector
+        self.unit_chordwise_vector = unit_chordwise_vector
         self.num_chordwise_panels = num_chordwise_panels
         self.chordwise_spacing = chordwise_spacing
 
@@ -302,10 +298,10 @@ class Wing:
             # Find the vector parallel to the intersection of this wing cross
             # section's plane and the wing's symmetry plane.
             orthogonal_vector = np.cross(
-                self.symmetry_unit_normal_vector, wing_cross_section
+                self.symmetry_unit_normal_vector, wing_cross_section.unit_normal_vector
             )
 
-            if np.any(np.cross(orthogonal_vector, self.chordwise_unit_vector)):
+            if np.any(np.cross(orthogonal_vector, self.unit_chordwise_vector)):
                 raise Exception(
                     "Every wing cross section's plane must intersect with the wing's"
                     "symmetry plane along a line that is parallel with the wing's"
@@ -328,7 +324,7 @@ class Wing:
         # Define an attribute that is the normal vector of the plane that the
         # projected area will reference.
         self.projected_unit_normal_vector = np.cross(
-            chordwise_unit_vector, symmetry_unit_normal_vector
+            unit_chordwise_vector, symmetry_unit_normal_vector
         )
 
     # ToDo: Update this method's documentation.
@@ -502,6 +498,7 @@ class WingCrossSection:
         y_le=0.0,
         z_le=0.0,
         chord=1.0,
+        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
         twist=0.0,
         airfoil=None,
         control_surface_type="symmetric",
@@ -527,6 +524,14 @@ class WingCrossSection:
         :param chord: float, optional
             This is the chord of the wing at this cross section. The default value is
             1.0.
+        :param unit_normal_vector: ndarray, optional
+            This is an (3,) ndarray of floats that represents the unit normal vector
+            of the plane this wing cross section lies on. If this wing cross section
+            is a wing's root, this vector must be equal to the wing's
+            "symmetry_unit_normal_vector". Also, every wing cross section must have a
+            plane that intersects its parent wing's symmetry plane at a line parallel
+            to the parent wing's "unit_chordwise_vector". The default is np.array([
+            0.0, 1.0, 0.0]), which is the XZ plane's unit normal vector.
         :param twist: float, optional
             This is the twist of the cross section about the leading edge in degrees.
             The default value is 0.0.
@@ -560,6 +565,7 @@ class WingCrossSection:
         self.y_le = y_le
         self.z_le = z_le
         self.chord = chord
+        self.unit_normal_vector = unit_normal_vector
         self.twist = twist
         self.airfoil = airfoil
         self.control_surface_type = control_surface_type
@@ -581,6 +587,8 @@ class WingCrossSection:
         if self.spanwise_spacing not in ["cosine", "uniform"]:
             raise Exception("Invalid value of spanwise_spacing!")
 
+    # ToDo: This is wrong because it doesn't account for the wing's potentially
+    #  custom chordwise direction vector.
     @property
     def trailing_edge(self):
         """This method calculates the coordinates of the trailing edge of this wing
@@ -592,13 +600,15 @@ class WingCrossSection:
         """
 
         # Find the rotation matrix given the cross section's twist.
-        rotation_matrix = functions.angle_axis_rotation_matrix(
+        twist_rotation_matrix = functions.angle_axis_rotation_matrix(
             self.twist * np.pi / 180, np.array([0, 1, 0])
         )
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
         # trailing edge coordinates.
-        return self.leading_edge + rotation_matrix @ np.array([self.chord, 0.0, 0.0])
+        return self.leading_edge + twist_rotation_matrix @ np.array(
+            [self.chord, 0.0, 0.0]
+        )
 
 
 class Airfoil:

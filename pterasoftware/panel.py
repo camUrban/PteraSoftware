@@ -255,6 +255,23 @@ class Panel:
 
         return induced_velocity
 
+    # ToDo: Add this method to the documentation.
+    def calculate_projected_area(self, n_hat):
+        """
+
+        :param n_hat:
+        :return:
+        """
+        proj_n_hat_first_diag = np.dot(self._first_diagonal, n_hat) * n_hat
+        proj_n_hat_second_diag = np.dot(self._second_diagonal, n_hat) * n_hat
+
+        proj_plane_first_diag = self._first_diagonal - proj_n_hat_first_diag
+        proj_plane_second_diag = self._second_diagonal - proj_n_hat_second_diag
+
+        proj_cross = np.cross(proj_plane_first_diag, proj_plane_second_diag)
+
+        return np.linalg.norm(proj_cross) / 2
+
     def update_coefficients(self, dynamic_pressure):
         """This method updates the panel's force coefficients.
 

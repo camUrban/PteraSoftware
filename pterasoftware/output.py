@@ -946,13 +946,13 @@ def print_unsteady_results(unsteady_solver):
         This is the solver object with the results to be printed.
     :return: None
     """
-    forces = unsteady_solver.unsteady_problem.final_total_near_field_forces_wind_axes
-    moments = unsteady_solver.unsteady_problem.final_total_near_field_moments_wind_axes
+    forces = unsteady_solver.unsteady_problem.final_mean_near_field_forces_wind_axes
+    moments = unsteady_solver.unsteady_problem.final_mean_near_field_moments_wind_axes
     force_coefficients = (
-        unsteady_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes
+        unsteady_solver.unsteady_problem.final_mean_near_field_force_coefficients_wind_axes
     )
     moment_coefficients = (
-        unsteady_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes
+        unsteady_solver.unsteady_problem.final_mean_near_field_moment_coefficients_wind_axes
     )
 
     # For each airplane object, calculate and print the average force, moment,

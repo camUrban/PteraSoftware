@@ -223,9 +223,9 @@ examples of the output you can expect to receive from each of them.
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.7.1, < 4.0.0
-* numpy >= 1.24.3, < 1.25.0
-* pyvista >= 0.39.1, < 1.0.0
+* matplotlib >= 3.7.2, < 4.0.0
+* numpy >= 1.24.4, < 1.25.0
+* pyvista >= 0.40.0, < 1.0.0
 * scipy >= 1.10.1, < 2.0.0
 * numba >= 0.57.1, < 1.0.0
 * cmocean >= 3.0.3, < 4.0.0
@@ -240,7 +240,7 @@ Additionally, these packages are useful for continued development of the softwar
 * pre-commit >= 3.3.3, < 4.0.0
 * build >= 0.10.0, < 1.0.0
 * twine >= 4.0.2, < 5.0.0
-* PyInstaller >= 5.12.0, < 6.0.0
+* PyInstaller >= 5.13.0, < 6.0.0
 * setuptools >= 68.0.0, < 69.0.0
 * wheel >= 0.40.0, < 1.0.0
 

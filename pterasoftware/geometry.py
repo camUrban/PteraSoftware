@@ -294,8 +294,17 @@ class Wing:
 
             if np.any(np.cross(orthogonal_vector, self.unit_chordwise_vector)):
                 raise Exception(
-                    "Every wing cross section's plane must intersect with the wing's"
-                    "symmetry plane along a line that is parallel with the wing's"
+                    "Every wing cross section's plane must intersect with the wing's "
+                    "symmetry plane along a line that is parallel with the wing's "
+                    "chordwise direction."
+                )
+            if (
+                np.dot(self.unit_chordwise_vector, self.symmetry_unit_normal_vector)
+                != 0
+            ):
+                raise Exception(
+                    "Every wing cross section's plane must intersect with the wing's "
+                    "symmetry plane along a line that is parallel with the wing's "
                     "chordwise direction."
                 )
 

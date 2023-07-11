@@ -607,6 +607,9 @@ class WingCrossSection:
         # trailing edge coordinates.
         return self.leading_edge + twist_rotation_matrix @ chordwise_vector
 
+    # ToDo: Add properties for the wing cross section based on  what's needed in the
+    #  meshing.py functions.
+
 
 class Airfoil:
     """This class is used to contain the airfoil of a WingCrossSection object.

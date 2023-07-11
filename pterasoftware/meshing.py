@@ -11,17 +11,20 @@ This module contains the following functions:
     quadrilateral mesh of its geometry, and then populates the object's panels with
     the mesh data.
 
+    ToDo: Update this method's documentation.
     get_wing_cross_section_scaling_factors: Get the scaling factors for each wing
     cross section. These factors allow the cross sections to intersect correctly at
     dihedral breaks.
 
     get_panel_vertices: This function calculates the vertices of the panels on a wing.
 
+    ToDo: Update this method's documentation.
     get_normalized_projected_quarter_chords: This method returns the quarter chords
     of a collection of wing cross sections based on the coordinates of their leading
     and trailing edges. These quarter chords are also projected on to the YZ plane
     and normalized by their magnitudes.
 
+    ToDo: Update this method's documentation.
     get_transpose_mcl_vectors: This function takes in the inner and outer airfoils of
     a wing cross section and its chordwise coordinates. It returns a list of four
     vectors column vectors. They are, in order, the inner airfoil's local up
@@ -69,8 +72,6 @@ def mesh_wing(wing):
 
     # Iterate through the meshed wing cross sections and vertically stack the global
     # location of each wing cross sections leading and trailing edges.
-    # wing_cross_section.trailing_edge is a method that returns the wing cross section's
-    # trailing edge's coordinates.
     for wing_cross_section in wing.wing_cross_sections:
         wing_cross_sections_leading_edges = np.vstack(
             (
@@ -89,7 +90,7 @@ def mesh_wing(wing):
         wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
     )
 
-    # Get the number of wing cross sections.
+    # Get the number of wing cross sections and wing sections.
     num_wing_cross_sections = len(wing.wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
 
@@ -131,8 +132,7 @@ def mesh_wing(wing):
             )
         )
     else:
-        # Vertically stack the first normalized wing section quarter chord, and the
-        # last normalized wing section quarter chord.
+        # Vertically stack the first and last normalized wing section quarter chords.
         wing_sections_local_unit_normals = np.vstack(
             (
                 normalized_projected_quarter_chords[0, :],
@@ -140,11 +140,14 @@ def mesh_wing(wing):
             )
         )
 
+    # FixMe: The back direction is just the chord vector, which combines the
+    #  chord length and the unit chordwise vectors.
     # Then, construct the back directions for each wing cross section.
     wing_cross_sections_local_back_vectors = (
         wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges
     )
 
+    # FixMe: This should just be a list of the chords lengths.
     # Create a list of the wing cross section chord lengths.
     wing_cross_sections_chord_lengths = np.linalg.norm(
         wing_cross_sections_local_back_vectors, axis=1
@@ -155,6 +158,7 @@ def mesh_wing(wing):
         wing_cross_sections_chord_lengths, axis=1
     )
 
+    # FixMe: This should just be a list of the unit chordwise vectors.
     # Normalize the wing cross section back vectors by their magnitudes.
     wing_cross_sections_local_back_unit_vectors = (
         wing_cross_sections_local_back_vectors
@@ -168,6 +172,7 @@ def mesh_wing(wing):
         axis=1,
     )
 
+    # FixMe: Modify this to account for the new plane implementation.
     # If the wing is symmetric, set the local up position of the root cross section
     # to be the in local Z direction.
     if wing.symmetric:
@@ -203,7 +208,6 @@ def mesh_wing(wing):
             hinge_point=inner_wing_cross_section.control_surface_hinge_point,
         )
         outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
-            # The inner wing cross section dictates control surface deflections.
             deflection=inner_wing_cross_section.control_surface_deflection,
             hinge_point=inner_wing_cross_section.control_surface_hinge_point,
         )
@@ -291,7 +295,6 @@ def mesh_wing(wing):
                 )
                 outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
                     deflection=inner_wing_cross_section.control_surface_deflection,
-                    # The inner wing cross section dictates control surface deflections.
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
             else:
@@ -304,7 +307,6 @@ def mesh_wing(wing):
                 )
                 outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
                     deflection=-inner_wing_cross_section.control_surface_deflection,
-                    # The inner wing cross section dictates control surface deflections.
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
 
@@ -355,14 +357,15 @@ def mesh_wing(wing):
                 )
             )
 
+            # ToDo: Update this with the new plane formulation.
             # Reflect the vertices across the XZ plane.
             front_inner_vertices_reflected = front_inner_vertices * np.array([1, -1, 1])
             front_outer_vertices_reflected = front_outer_vertices * np.array([1, -1, 1])
             back_inner_vertices_reflected = back_inner_vertices * np.array([1, -1, 1])
             back_outer_vertices_reflected = back_outer_vertices * np.array([1, -1, 1])
 
-            # Shift the reflected vertices to account for the wing's leading edge
-            # position.
+            # ToDo: Update this with the new plane formulation.
+            # Shift the reflected vertices based on the wing's leading edge position.
             front_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
             front_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
             back_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
@@ -402,6 +405,7 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
+# ToDo: Update this method with the new plane formulation.
 def get_wing_cross_section_scaling_factors(
     symmetric, wing_section_quarter_chords_proj_yz_norm
 ):
@@ -640,6 +644,7 @@ def get_panel_vertices(
     ]
 
 
+# ToDo: Update this method with the new plane formulation.
 def get_normalized_projected_quarter_chords(
     wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
 ):
@@ -709,6 +714,7 @@ def get_normalized_projected_quarter_chords(
     return normalized_projected_quarter_chords
 
 
+# ToDo: Update this method with the new plane formulation.
 def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinates):
     """This function takes in the inner and outer airfoils of a wing cross section
     and its chordwise coordinates. It returns a list of four vectors column vectors.

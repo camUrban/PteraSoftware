@@ -94,89 +94,101 @@ def mesh_wing(wing):
     num_wing_cross_sections = len(wing.wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
 
-    # Then, construct the normal directions for each wing cross section. Make the
-    # normals for the inner wing cross sections, where we need to merge directions.
-    if num_wing_cross_sections > 2:
-        # Add together the adjacent normalized wing section quarter chords projected
-        # onto the YZ plane.
-        wing_sections_local_normals = (
-            normalized_projected_quarter_chords[:-1, :]
-            + normalized_projected_quarter_chords[1:, :]
-        )
+    # ToDo: Delete this commented section after testing.
+    # # Then, construct the normal directions for each wing cross section. Make the
+    # # normals for the inner wing cross sections, where we need to merge directions.
+    # if num_wing_cross_sections > 2:
+    #     # Add together the adjacent normalized wing section quarter chords projected
+    #     # onto the YZ plane.
+    #     wing_sections_local_normals = (
+    #         normalized_projected_quarter_chords[:-1, :]
+    #         + normalized_projected_quarter_chords[1:, :]
+    #     )
+    #
+    #     # Create a list of the magnitudes of the summed adjacent normalized wing
+    #     # section quarter chords projected onto the YZ plane.
+    #     wing_sections_local_normals_len = np.linalg.norm(
+    #         wing_sections_local_normals, axis=1
+    #     )
+    #
+    #     # Convert the list to a column vector.
+    #     transpose_wing_sections_local_normals_len = np.expand_dims(
+    #         wing_sections_local_normals_len, axis=1
+    #     )
+    #
+    #     # Normalize the summed adjacent normalized wing section quarter chords
+    #     # projected onto the YZ plane by their magnitudes.
+    #     wing_sections_local_unit_normals = (
+    #         wing_sections_local_normals / transpose_wing_sections_local_normals_len
+    #     )
+    #
+    #     # Vertically stack the first normalized wing section quarter chord, the inner
+    #     # normalized wing section quarter chords, and the last normalized wing
+    #     # section quarter chord.
+    #     wing_sections_local_unit_normals = np.vstack(
+    #         (
+    #             normalized_projected_quarter_chords[0, :],
+    #             wing_sections_local_unit_normals,
+    #             normalized_projected_quarter_chords[-1, :],
+    #         )
+    #     )
+    # else:
+    #     # Vertically stack the first and last normalized wing section quarter chords.
+    #     wing_sections_local_unit_normals = np.vstack(
+    #         (
+    #             normalized_projected_quarter_chords[0, :],
+    #             normalized_projected_quarter_chords[-1, :],
+    #         )
+    #     )
 
-        # Create a list of the magnitudes of the summed adjacent normalized wing
-        # section quarter chords projected onto the YZ plane.
-        wing_sections_local_normals_len = np.linalg.norm(
-            wing_sections_local_normals, axis=1
-        )
-
-        # Convert the list to a column vector.
-        transpose_wing_sections_local_normals_len = np.expand_dims(
-            wing_sections_local_normals_len, axis=1
-        )
-
-        # Normalize the summed adjacent normalized wing section quarter chords
-        # projected onto the YZ plane by their magnitudes.
-        wing_sections_local_unit_normals = (
-            wing_sections_local_normals / transpose_wing_sections_local_normals_len
-        )
-
-        # Vertically stack the first normalized wing section quarter chord, the inner
-        # normalized wing section quarter chords, and the last normalized wing
-        # section quarter chord.
-        wing_sections_local_unit_normals = np.vstack(
-            (
-                normalized_projected_quarter_chords[0, :],
-                wing_sections_local_unit_normals,
-                normalized_projected_quarter_chords[-1, :],
-            )
-        )
-    else:
-        # Vertically stack the first and last normalized wing section quarter chords.
-        wing_sections_local_unit_normals = np.vstack(
-            (
-                normalized_projected_quarter_chords[0, :],
-                normalized_projected_quarter_chords[-1, :],
-            )
-        )
-
-    # FixMe: The back direction is just the chord vector, which combines the
-    #  chord length and the unit chordwise vectors.
+    # ToDo: Delete this commented section after testing.
     # Then, construct the back directions for each wing cross section.
-    wing_cross_sections_local_back_vectors = (
-        wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges
-    )
+    # wing_cross_sections_local_back_vectors = (
+    #     wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges
+    # )
 
-    # FixMe: This should just be a list of the chords lengths.
+    # ToDo: Delete this commented section after testing.
     # Create a list of the wing cross section chord lengths.
-    wing_cross_sections_chord_lengths = np.linalg.norm(
-        wing_cross_sections_local_back_vectors, axis=1
-    )
+    # wing_cross_sections_chord_lengths = np.linalg.norm(
+    #     wing_cross_sections_local_back_vectors, axis=1
+    # )
+    wing_cross_sections_chord_lengths = [
+        wing_cross_section.chord for wing_cross_section in wing.wing_cross_sections
+    ]
 
     # Convert the list to a column vector.
-    transpose_wing_cross_sections_chord_lengths = np.expand_dims(
-        wing_cross_sections_chord_lengths, axis=1
-    )
+    # transpose_wing_cross_sections_chord_lengths = np.expand_dims(
+    #     wing_cross_sections_chord_lengths, axis=1
+    # )
 
-    # FixMe: This should just be a list of the unit chordwise vectors.
+    # ToDo: Delete this commented section after testing.
     # Normalize the wing cross section back vectors by their magnitudes.
-    wing_cross_sections_local_back_unit_vectors = (
-        wing_cross_sections_local_back_vectors
-        / transpose_wing_cross_sections_chord_lengths
-    )
+    # wing_cross_sections_local_back_unit_vectors = (
+    #     wing_cross_sections_local_back_vectors
+    #     / transpose_wing_cross_sections_chord_lengths
+    # )
+    wing_cross_sections_unit_back_vectors = [
+        wing_cross_section.unit_back_vector
+        for wing_cross_section in wing.wing_cross_sections
+    ]
 
+    # ToDo: Delete this commented section after testing.
     # Then, construct the up direction for each wing cross section.
-    wing_cross_sections_local_up_unit_vectors = np.cross(
-        wing_cross_sections_local_back_unit_vectors,
-        wing_sections_local_unit_normals,
-        axis=1,
-    )
+    # wing_cross_sections_local_up_unit_vectors = np.cross(
+    #     wing_cross_sections_local_back_unit_vectors,
+    #     wing_sections_local_unit_normals,
+    #     axis=1,
+    # )
+    wing_cross_sections_unit_up_vectors = [
+        wing_cross_section.unit_up_vector
+        for wing_cross_section in wing.wing_cross_sections
+    ]
 
-    # FixMe: Modify this to account for the new plane implementation.
+    # ToDo: Delete this commented section after testing.
     # If the wing is symmetric, set the local up position of the root cross section
     # to be the in local Z direction.
-    if wing.symmetric:
-        wing_cross_sections_local_up_unit_vectors[0] = np.array([0, 0, 1])
+    # if wing.symmetric:
+    #     wing_cross_sections_unit_up_vectors[0] = np.array([0, 0, 1])
 
     # Get the scaling factor (airfoils at dihedral breaks need to be "taller" to
     # compensate).
@@ -237,8 +249,8 @@ def mesh_wing(wing):
             back_outer_vertices,
         ] = get_panel_vertices(
             inner_wing_cross_section_num,
-            wing_cross_sections_local_back_unit_vectors,
-            wing_cross_sections_local_up_unit_vectors,
+            wing_cross_sections_unit_back_vectors,
+            wing_cross_sections_unit_up_vectors,
             wing_cross_sections_chord_lengths,
             wing_cross_sections_scaling_factors,
             wing_cross_sections_leading_edges,
@@ -324,8 +336,8 @@ def mesh_wing(wing):
                 back_outer_vertices,
             ] = get_panel_vertices(
                 inner_wing_cross_section_num,
-                wing_cross_sections_local_back_unit_vectors,
-                wing_cross_sections_local_up_unit_vectors,
+                wing_cross_sections_unit_back_vectors,
+                wing_cross_sections_unit_up_vectors,
                 wing_cross_sections_chord_lengths,
                 wing_cross_sections_scaling_factors,
                 wing_cross_sections_leading_edges,
@@ -357,19 +369,45 @@ def mesh_wing(wing):
                 )
             )
 
-            # ToDo: Update this with the new plane formulation.
-            # Reflect the vertices across the XZ plane.
-            front_inner_vertices_reflected = front_inner_vertices * np.array([1, -1, 1])
-            front_outer_vertices_reflected = front_outer_vertices * np.array([1, -1, 1])
-            back_inner_vertices_reflected = back_inner_vertices * np.array([1, -1, 1])
-            back_outer_vertices_reflected = back_outer_vertices * np.array([1, -1, 1])
-
-            # ToDo: Update this with the new plane formulation.
-            # Shift the reflected vertices based on the wing's leading edge position.
-            front_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
-            front_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
-            back_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
-            back_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            # ToDo: Delete the commented section after testing.
+            front_inner_vertices_reflected = np.apply_along_axis(
+                functions.reflect_point_across_plane,
+                -1,
+                front_inner_vertices,
+                wing.symmetry_unit_normal_vector,
+                wing.leading_edge,
+            )
+            front_outer_vertices_reflected = np.apply_along_axis(
+                functions.reflect_point_across_plane,
+                -1,
+                front_outer_vertices,
+                wing.symmetry_unit_normal_vector,
+                wing.leading_edge,
+            )
+            back_inner_vertices_reflected = np.apply_along_axis(
+                functions.reflect_point_across_plane,
+                -1,
+                back_inner_vertices,
+                wing.symmetry_unit_normal_vector,
+                wing.leading_edge,
+            )
+            back_outer_vertices_reflected = np.apply_along_axis(
+                functions.reflect_point_across_plane,
+                -1,
+                back_outer_vertices,
+                wing.symmetry_unit_normal_vector,
+                wing.leading_edge,
+            )
+            # # Reflect the vertices across the XZ plane.
+            # front_inner_vertices_reflected = front_inner_vertices * np.array([1, -1, 1])
+            # front_outer_vertices_reflected = front_outer_vertices * np.array([1, -1, 1])
+            # back_inner_vertices_reflected = back_inner_vertices * np.array([1, -1, 1])
+            # back_outer_vertices_reflected = back_outer_vertices * np.array([1, -1, 1])
+            # # Shift the reflected vertices based on the wing's leading edge position.
+            # front_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            # front_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            # back_inner_vertices_reflected[:, :, 1] += 2 * wing.y_le
+            # back_outer_vertices_reflected[:, :, 1] += 2 * wing.y_le
 
             # Get the reflected wing section's panels.
             wing_section_panels = get_wing_section_panels(

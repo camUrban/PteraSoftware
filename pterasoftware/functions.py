@@ -653,3 +653,26 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
             vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
         )
     return crosses
+
+
+# ToDo: Document this method.
+def reflect_point_across_plane(point, plane_unit_normal, plane_point):
+    """
+
+    :param point:
+    :param plane_unit_normal:
+    :param plane_point:
+    :return:
+    """
+    point = np.expand_dims(point, -1)
+    plane_unit_normal = np.expand_dims(plane_unit_normal, -1)
+    plane_point = np.expand_dims(plane_point, -1)
+
+    plane_unit_normal_transpose = np.transpose(plane_unit_normal)
+    identity = np.eye(point.size)
+
+    householder = identity - 2 * plane_unit_normal @ plane_unit_normal_transpose
+
+    reflected_point = plane_point + householder @ point
+
+    return np.squeeze(reflected_point)

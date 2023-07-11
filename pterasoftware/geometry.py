@@ -572,7 +572,7 @@ class WingCrossSection:
         self.leading_edge = np.array([x_le, y_le, z_le])
 
         # ToDo: Document this
-        self._unit_chordwise_vector = None
+        self.unit_chordwise_vector = None
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
@@ -601,14 +601,20 @@ class WingCrossSection:
             self.twist * np.pi / 180, np.array([0, 1, 0])
         )
 
-        chordwise_vector = self.chord * self._unit_chordwise_vector
+        chordwise_vector = self.chord * self.unit_chordwise_vector
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
         # trailing edge coordinates.
         return self.leading_edge + twist_rotation_matrix @ chordwise_vector
 
-    # ToDo: Add properties for the wing cross section based on  what's needed in the
-    #  meshing.py functions.
+    # ToDo: Document this
+    @property
+    def unit_up_vector(self):
+        """
+
+        :return:
+        """
+        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
 
 
 class Airfoil:

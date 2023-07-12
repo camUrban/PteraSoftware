@@ -664,15 +664,48 @@ def reflect_point_across_plane(point, plane_unit_normal, plane_point):
     :param plane_point:
     :return:
     """
-    point = np.expand_dims(point, -1)
-    plane_unit_normal = np.expand_dims(plane_unit_normal, -1)
-    plane_point = np.expand_dims(plane_point, -1)
+    [x, y, z] = point
+    [a, b, c] = plane_unit_normal
+    d = np.dot(-plane_point, plane_unit_normal)
 
-    plane_unit_normal_transpose = np.transpose(plane_unit_normal)
-    identity = np.eye(point.size)
+    ab = a * b
+    ac = a * c
+    ad = a * d
+    bc = b * c
+    bd = b * d
+    cd = c * d
 
-    householder = identity - 2 * plane_unit_normal @ plane_unit_normal_transpose
+    a2 = a**2
+    b2 = b**2
+    c2 = c**2
 
-    reflected_point = plane_point + householder @ point
+    transformation_matrix = np.array(
+        [
+            [1 - 2 * a2, -2 * ab, -2 * ac, -2 * ad],
+            [-2 * ab, 1 - 2 * b2, -2 * bc, -2 * bd],
+            [-2 * ac, -2 * bc, 1 - 2 * c2, -2 * cd],
+            [0, 0, 0, 1],
+        ]
+    )
+
+    expanded_coordinates = np.array([[x], [y], [z], [1]])
+
+    transformed_expanded_coordinates = transformation_matrix @ expanded_coordinates
+
+    [x_prime, y_prime, z_prime] = transformed_expanded_coordinates[:-1, 0]
+
+    return np.array([x_prime, y_prime, z_prime])
+    # point = np.expand_dims(point, -1)
+    # plane_unit_normal = np.expand_dims(plane_unit_normal, -1)
+    # plane_point = np.expand_dims(plane_point, -1)
+    #
+    # plane_unit_normal_transpose = np.transpose(plane_unit_normal)
+    # identity = np.eye(point.size)
+    #
+    # householder = identity - 2 * plane_unit_normal @ plane_unit_normal_transpose
+    #
+    # reflected_point = plane_point + householder @ point
+
+    # reflected_point = householder @ point
 
     return np.squeeze(reflected_point)

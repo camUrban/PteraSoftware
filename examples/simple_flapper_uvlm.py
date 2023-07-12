@@ -8,10 +8,12 @@ example_airplane = ps.geometry.Airplane(
     wings=[
         ps.geometry.Wing(
             name="Caudal Fin",
+            x_le=4,
+            y_le=3,
             symmetric=True,
             num_chordwise_panels=3,
             chordwise_spacing="uniform",
-            symmetry_unit_normal_vector=np.array([0, 1, 0]),
+            symmetry_unit_normal_vector=np.array([0, np.sqrt(2), np.sqrt(2)]),
             unit_chordwise_vector=np.array([1, 0, 0]),
             wing_cross_sections=[
                 ps.geometry.WingCrossSection(
@@ -19,12 +21,12 @@ example_airplane = ps.geometry.Airplane(
                     y_le=0.0,
                     z_le=0.0,
                     twist=0.0,
-                    unit_normal_vector=np.array([0, 1, 0]),
+                    unit_normal_vector=np.array([0, np.sqrt(2), np.sqrt(2)]),
                     num_spanwise_panels=3,
                     spanwise_spacing="cosine",
                     chord=1.0,
                     airfoil=ps.geometry.Airfoil(
-                        name="naca0012",
+                        name="naca2412",
                     ),
                 ),
                 ps.geometry.WingCrossSection(
@@ -35,7 +37,18 @@ example_airplane = ps.geometry.Airplane(
                     twist=0.0,
                     unit_normal_vector=np.array([0, 1, 0]),
                     airfoil=ps.geometry.Airfoil(
-                        name="naca0012",
+                        name="naca4012",
+                    ),
+                ),
+                ps.geometry.WingCrossSection(
+                    x_le=1.0,
+                    y_le=7.0,
+                    z_le=1.0,
+                    chord=1.0,
+                    twist=0.0,
+                    unit_normal_vector=np.array([0, 1, 0]),
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca4012",
                     ),
                 ),
             ],
@@ -56,8 +69,21 @@ main_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovemen
     heaving_spacing="sine",
 )
 
-main_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
+main_wing_mid_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+    sweeping_amplitude=0.0,
+    sweeping_period=0.0,
+    sweeping_spacing="sine",
+    pitching_amplitude=0.0,
+    pitching_period=0.0,
+    pitching_spacing="sine",
+    heaving_amplitude=0.0,
+    heaving_period=0.0,
+    heaving_spacing="sine",
+)
+
+main_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[2],
     sweeping_amplitude=0.0,
     sweeping_period=0.0,
     sweeping_spacing="sine",
@@ -73,6 +99,7 @@ main_wing_movement = ps.movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_sections_movements=[
         main_wing_root_wing_cross_section_movement,
+        main_wing_mid_wing_cross_section_movement,
         main_wing_tip_wing_cross_section_movement,
     ],
     x_le_amplitude=0.0,
@@ -147,21 +174,21 @@ example_solver.run(
     prescribed_wake=True,
 )
 
-# ps.output.animate(
-#     unsteady_solver=example_solver,
-#     scalar_type="lift",
-#     show_wake_vortices=True,
-#     save=False,
-# )
-
-ps.output.print_unsteady_results(unsteady_solver=example_solver)
-
-ps.output.draw(
-    solver=example_solver,
+ps.output.animate(
+    unsteady_solver=example_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=False,
 )
+
+# ps.output.print_unsteady_results(unsteady_solver=example_solver)
+
+# ps.output.draw(
+#     solver=example_solver,
+#     scalar_type="lift",
+#     show_wake_vortices=True,
+#     save=False,
+# )
 
 # ps.output.plot_results_versus_time(
 #     unsteady_solver=example_solver,

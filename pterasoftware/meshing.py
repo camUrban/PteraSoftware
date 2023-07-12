@@ -580,10 +580,10 @@ def get_panel_vertices(
     inner_wing_cross_section_mcl_up = (
         wing_cross_sections_unit_up_vectors[inner_wing_cross_section_num, :]
         * transpose_inner_mcl_up_vector
-        * wing_cross_sections_chord_lengths[inner_wing_cross_section_num],
-        # ToDo: Delete this line after testing.
-        # * wing_cross_sections_scaling_factors[inner_wing_cross_section_num]
+        * wing_cross_sections_chord_lengths[inner_wing_cross_section_num]
     )
+    # ToDo: Delete this line (was in the above equation) after testing.
+    # * wing_cross_sections_scaling_factors[inner_wing_cross_section_num]
 
     # Define the index of this wing section's outer wing cross section.
     outer_wing_cross_section_num = inner_wing_cross_section_num + 1

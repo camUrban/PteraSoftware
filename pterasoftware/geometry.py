@@ -312,7 +312,7 @@ class Wing:
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
         for wing_cross_section in wing_cross_sections:
-            wing_cross_section._unit_chordwise_vector = self.unit_chordwise_vector
+            wing_cross_section.unit_chordwise_vector = self.unit_chordwise_vector
 
         # Initialize the panels attribute. Then mesh the wing, which will
         # populate this attribute.

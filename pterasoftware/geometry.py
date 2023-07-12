@@ -252,14 +252,14 @@ class Wing:
             symmetry_unit_normal_vector, wing_cross_sections[0].unit_normal_vector
         ):
             raise Exception(
-                "The wing's symmetry plane must be the same as its root wing cross"
+                "The wing's symmetry plane must be the same as its root wing cross "
                 "section's plane."
             )
         # Check that the root wing cross section's leading edge isn't offset from the
         # wing's leading edge.
         if np.any(wing_cross_sections[0].leading_edge):
             raise Exception(
-                "The root wing cross section's leading edge must not be offset from"
+                "The root wing cross section's leading edge must not be offset from "
                 "the wing's leading edge."
             )
 

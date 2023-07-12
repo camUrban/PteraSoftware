@@ -314,6 +314,18 @@ class Wing:
         for wing_cross_section in wing_cross_sections:
             wing_cross_section.unit_chordwise_vector = self.unit_chordwise_vector
 
+        # ToDo: Delete these after debugging.
+        del wing_cross_section
+        del orthogonal_vector
+        del unit_chordwise_vector
+        del symmetry_unit_normal_vector
+
+        # Define an attribute that is the normal vector of the plane that the
+        # projected area will reference.
+        self.projected_unit_normal_vector = np.cross(
+            self.unit_chordwise_vector, self.symmetry_unit_normal_vector
+        )
+
         # Initialize the panels attribute. Then mesh the wing, which will
         # populate this attribute.
         self.panels = None
@@ -323,12 +335,6 @@ class Wing:
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
-
-        # Define an attribute that is the normal vector of the plane that the
-        # projected area will reference.
-        self.projected_unit_normal_vector = np.cross(
-            unit_chordwise_vector, symmetry_unit_normal_vector
-        )
 
     # ToDo: Update this method's documentation.
     @property

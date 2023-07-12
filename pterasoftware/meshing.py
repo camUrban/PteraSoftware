@@ -85,62 +85,63 @@ def mesh_wing(wing):
             )
         )
 
-    # ToDo: Delete this commented command after testing.
-    # wing_cross_sections_scaling_factors,
-    # normalized_projected_quarter_chords = get_normalized_projected_quarter_chords(
-    #     wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
-    # )
+    normalized_projected_quarter_chords = get_normalized_projected_quarter_chords(
+        wing_cross_sections_leading_edges,
+        wing_cross_sections_trailing_edges,
+        wing.unit_chordwise_vector,
+    )
 
     # Get the number of wing cross sections and wing sections.
     num_wing_cross_sections = len(wing.wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
 
-    # ToDo: Delete this commented section after testing.
-    # # Then, construct the normal directions for each wing cross section. Make the
-    # # normals for the inner wing cross sections, where we need to merge directions.
-    # if num_wing_cross_sections > 2:
-    #     # Add together the adjacent normalized wing section quarter chords projected
-    #     # onto the YZ plane.
-    #     wing_sections_local_normals = (
-    #         normalized_projected_quarter_chords[:-1, :]
-    #         + normalized_projected_quarter_chords[1:, :]
-    #     )
-    #
-    #     # Create a list of the magnitudes of the summed adjacent normalized wing
-    #     # section quarter chords projected onto the YZ plane.
-    #     wing_sections_local_normals_len = np.linalg.norm(
-    #         wing_sections_local_normals, axis=1
-    #     )
-    #
-    #     # Convert the list to a column vector.
-    #     transpose_wing_sections_local_normals_len = np.expand_dims(
-    #         wing_sections_local_normals_len, axis=1
-    #     )
-    #
-    #     # Normalize the summed adjacent normalized wing section quarter chords
-    #     # projected onto the YZ plane by their magnitudes.
-    #     wing_sections_local_unit_normals = (
-    #         wing_sections_local_normals / transpose_wing_sections_local_normals_len
-    #     )
-    #
-    #     # Vertically stack the first normalized wing section quarter chord, the inner
-    #     # normalized wing section quarter chords, and the last normalized wing
-    #     # section quarter chord.
-    #     wing_sections_local_unit_normals = np.vstack(
-    #         (
-    #             normalized_projected_quarter_chords[0, :],
-    #             wing_sections_local_unit_normals,
-    #             normalized_projected_quarter_chords[-1, :],
-    #         )
-    #     )
-    # else:
-    #     # Vertically stack the first and last normalized wing section quarter chords.
-    #     wing_sections_local_unit_normals = np.vstack(
-    #         (
-    #             normalized_projected_quarter_chords[0, :],
-    #             normalized_projected_quarter_chords[-1, :],
-    #         )
-    #     )
+    # ToDo: Change this part's language to remove YZ plane mentions.
+    # Then, construct the adjusted normal directions for each wing cross section.
+    # Make the normals for the inner wing cross sections, where we need to merge
+    # directions.
+    if num_wing_cross_sections > 2:
+        # Add together the adjacent normalized wing section quarter chords projected
+        # onto the YZ plane.
+        wing_sections_local_normals = (
+            normalized_projected_quarter_chords[:-1, :]
+            + normalized_projected_quarter_chords[1:, :]
+        )
+
+        # Create a list of the magnitudes of the summed adjacent normalized wing
+        # section quarter chords projected onto the YZ plane.
+        wing_sections_local_normals_len = np.linalg.norm(
+            wing_sections_local_normals, axis=1
+        )
+
+        # Convert the list to a column vector.
+        transpose_wing_sections_local_normals_len = np.expand_dims(
+            wing_sections_local_normals_len, axis=1
+        )
+
+        # Normalize the summed adjacent normalized wing section quarter chords
+        # projected onto the YZ plane by their magnitudes.
+        wing_sections_local_unit_normals = (
+            wing_sections_local_normals / transpose_wing_sections_local_normals_len
+        )
+
+        # Vertically stack the first normalized wing section quarter chord, the inner
+        # normalized wing section quarter chords, and the last normalized wing
+        # section quarter chord.
+        wing_sections_local_unit_normals = np.vstack(
+            (
+                normalized_projected_quarter_chords[0, :],
+                wing_sections_local_unit_normals,
+                normalized_projected_quarter_chords[-1, :],
+            )
+        )
+    else:
+        # Vertically stack the first and last normalized wing section quarter chords.
+        wing_sections_local_unit_normals = np.vstack(
+            (
+                normalized_projected_quarter_chords[0, :],
+                normalized_projected_quarter_chords[-1, :],
+            )
+        )
 
     # ToDo: Delete this commented section after testing.
     # Then, construct the back directions for each wing cross section.
@@ -182,25 +183,25 @@ def mesh_wing(wing):
     #     wing_sections_local_unit_normals,
     #     axis=1,
     # )
-    wing_cross_sections_unit_up_vectors = np.vstack(
-        [
-            wing_cross_section.unit_up_vector
-            for wing_cross_section in wing.wing_cross_sections
-        ]
+    adj_wing_cross_sections_unit_up_vectors = np.cross(
+        wing_cross_sections_unit_chordwise_vectors,
+        wing_sections_local_unit_normals,
+        axis=1,
     )
 
-    # ToDo: Delete this commented section after testing.
     # If the wing is symmetric, set the local up position of the root cross section
     # to be the in local Z direction.
-    # if wing.symmetric:
-    #     wing_cross_sections_unit_up_vectors[0] = np.array([0, 0, 1])
+    if wing.symmetric:
+        adj_wing_cross_sections_unit_up_vectors[0] = np.array([0, 0, 1])
 
-    # ToDo: Delete this commented line after testing.
     # Get the scaling factor (airfoils at dihedral breaks need to be "taller" to
     # compensate).
-    # wing_cross_sections_scaling_factors = get_wing_cross_section_scaling_factors(
-    #     wing.symmetric, normalized_projected_quarter_chords
-    # )
+    wing_cross_sections_scaling_factors = get_wing_cross_section_scaling_factors(
+        wing.symmetric,
+        normalized_projected_quarter_chords,
+        wing.projected_unit_normal_vector,
+        wing.leading_edge,
+    )
 
     # Initialize an empty array that will hold the panels of this wing. It currently
     # has 0 columns and M rows, where M is the number of the wing's chordwise panels.
@@ -256,10 +257,9 @@ def mesh_wing(wing):
         ] = get_panel_vertices(
             inner_wing_cross_section_num,
             wing_cross_sections_unit_chordwise_vectors,
-            wing_cross_sections_unit_up_vectors,
+            adj_wing_cross_sections_unit_up_vectors,
             wing_cross_sections_chord_lengths,
-            # ToDo: Delete this commented line after testing.
-            # wing_cross_sections_scaling_factors,
+            wing_cross_sections_scaling_factors,
             wing_cross_sections_leading_edges,
             transpose_mcl_vectors,
             spanwise_coordinates,
@@ -344,10 +344,9 @@ def mesh_wing(wing):
             ] = get_panel_vertices(
                 inner_wing_cross_section_num,
                 wing_cross_sections_unit_chordwise_vectors,
-                wing_cross_sections_unit_up_vectors,
+                adj_wing_cross_sections_unit_up_vectors,
                 wing_cross_sections_chord_lengths,
-                # ToDo: Delete this commented line after testing.
-                # wing_cross_sections_scaling_factors,
+                wing_cross_sections_scaling_factors,
                 wing_cross_sections_leading_edges,
                 transpose_mcl_vectors,
                 spanwise_coordinates,
@@ -502,13 +501,72 @@ def mesh_wing(wing):
 #     return wing_cross_section_scaling_factors
 
 
+# ToDo: Update this method's documentation
+def get_wing_cross_section_scaling_factors(
+    symmetric,
+    wing_section_quarter_chords_proj_yz_norm,
+    wing_projected_unit_normal_vector,
+    wing_leading_edge,
+):
+    """Get the scaling factors for each wing cross section. These factors allow the
+    cross sections to intersect correctly at dihedral breaks.
+
+    :param symmetric: bool
+        This parameter is True if the wing is symmetric and False otherwise.
+    :param wing_section_quarter_chords_proj_yz_norm: array
+        This parameter is a (N x 3) array of floats, where N is the number of wing
+        sections (1 less than the number of wing cross sections). For each wing
+        section, this parameter contains the 3 components of the normalized quarter
+        chord projected onto the YZ plane.
+    :return wing_cross_section_scaling_factors: array
+        This function returns a 1D array of floats of length (N + 1), where N is the
+        number of wing sections. These values are the corresponding scaling factor
+        for each of the wing's wing cross sections. These scaling factors stretch
+        their profiles to account for changes in dihedral at a give wing cross section.
+    """
+    num_wing_cross_sections = len(wing_section_quarter_chords_proj_yz_norm) + 1
+
+    # Get the scaling factor (airfoils at dihedral breaks need to be "taller" to
+    # compensate).
+    wing_cross_section_scaling_factors = np.ones(num_wing_cross_sections)
+
+    for i in range(num_wing_cross_sections):
+        if i == 0:
+            if symmetric:
+                first_chord_norm = wing_section_quarter_chords_proj_yz_norm[0]
+                mirrored_first_chord_norm = functions.reflect_point_across_plane(
+                    first_chord_norm,
+                    wing_projected_unit_normal_vector,
+                    wing_leading_edge,
+                )
+                # mirrored_first_chord_norm = first_chord_norm * np.array([1, 1, -1])
+
+                product = first_chord_norm * mirrored_first_chord_norm
+                collapsed_product = np.sum(product)
+                this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
+            else:
+                this_scaling_factor = 1
+        elif i == num_wing_cross_sections - 1:
+            this_scaling_factor = 1
+        else:
+            this_chord_norm = wing_section_quarter_chords_proj_yz_norm[i - 1, :]
+            next_chord_norm = wing_section_quarter_chords_proj_yz_norm[i, :]
+
+            product = this_chord_norm * next_chord_norm
+            collapsed_product = np.sum(product)
+            this_scaling_factor = 1 / np.sqrt((1 + collapsed_product) / 2)
+
+        wing_cross_section_scaling_factors[i] = this_scaling_factor
+
+    return wing_cross_section_scaling_factors
+
+
 def get_panel_vertices(
     inner_wing_cross_section_num,
     wing_cross_sections_unit_chordwise_vectors,
     wing_cross_sections_unit_up_vectors,
     wing_cross_sections_chord_lengths,
-    # ToDo: Delete this argument after testing.
-    # wing_cross_sections_scaling_factors,
+    wing_cross_sections_scaling_factors,
     wing_cross_sections_leading_edges,
     transpose_mcl_vectors,
     spanwise_coordinates,
@@ -531,12 +589,11 @@ def get_panel_vertices(
         This parameter is a 1D array of floats with length X, where X is this wing's
         number of wing cross sections. It holds the chord lengths of this wing's wing
         cross section in meters.
-    ToDo: Delete this commented parameter after testing
-    # :param wing_cross_sections_scaling_factors: array
-    #     This parameter is a 1D array of floats with length X, where X is this wing's
-    #     number of wing cross sections. It holds this wing's wing cross sections'
-    #     scaling factors. These factors stretch the shape of the wing cross sections
-    #     to account for changes in dihedral at a give wing cross section.
+    :param wing_cross_sections_scaling_factors: array
+        This parameter is a 1D array of floats with length X, where X is this wing's
+        number of wing cross sections. It holds this wing's wing cross sections'
+        scaling factors. These factors stretch the shape of the wing cross sections
+        to account for changes in dihedral at a give wing cross section.
     :param wing_cross_sections_leading_edges: array
         This parameter is an array of floats with size (Xx3), where X is this wing's
         number of wing cross sections. It holds the coordinates of the leading edge
@@ -581,9 +638,8 @@ def get_panel_vertices(
         wing_cross_sections_unit_up_vectors[inner_wing_cross_section_num, :]
         * transpose_inner_mcl_up_vector
         * wing_cross_sections_chord_lengths[inner_wing_cross_section_num]
+        * wing_cross_sections_scaling_factors[inner_wing_cross_section_num]
     )
-    # ToDo: Delete this line (was in the above equation) after testing.
-    # * wing_cross_sections_scaling_factors[inner_wing_cross_section_num]
 
     # Define the index of this wing section's outer wing cross section.
     outer_wing_cross_section_num = inner_wing_cross_section_num + 1
@@ -602,8 +658,7 @@ def get_panel_vertices(
         wing_cross_sections_unit_up_vectors[outer_wing_cross_section_num, :]
         * transpose_outer_mcl_up_vector
         * wing_cross_sections_chord_lengths[outer_wing_cross_section_num]
-        # ToDo: Delete this line after testing.
-        # * wing_cross_sections_scaling_factors[outer_wing_cross_section_num]
+        * wing_cross_sections_scaling_factors[outer_wing_cross_section_num]
     )
 
     # Convert the inner wing cross section's meshed wing coordinates to absolute
@@ -694,75 +749,80 @@ def get_panel_vertices(
     ]
 
 
-# ToDo: Delete this commented function after testing.
-# def get_normalized_projected_quarter_chords(
-#     wing_cross_sections_leading_edges, wing_cross_sections_trailing_edges
-# ):
-#     # ToDo: Update this docstring to swap mentions of YZ plane for the custom plane.
-#     """This method returns the quarter chords of a collection of wing cross sections
-#     based on the coordinates of their leading and trailing edges. These quarter
-#     chords are also projected on to the YZ plane and normalized by their magnitudes.
-#
-#     :param wing_cross_sections_leading_edges: array
-#         This parameter is an array of floats with size (X, 3), where X is this wing's
-#         number of wing cross sections. For each cross section, this array holds the
-#         body-frame coordinates of its leading edge point in meters.
-#     :param wing_cross_sections_trailing_edges: array
-#         This parameter is an array of floats with size (X, 3), where X is this wing's
-#         number of wing cross sections. For each cross section, this array holds the
-#         body-frame coordinates of its trailing edge point in meters.
-#     :return normalized_projected_quarter_chords: array
-#         This functions returns an array of floats with size (X - 1, 3), where X is
-#         this wing's number of wing cross sections. This array holds each wing
-#         section's quarter chords projected on to the YZ plane and normalized by their
-#         magnitudes.
-#     """
-#     # Get the location of each wing cross section's quarter chord point.
-#     wing_cross_sections_quarter_chord_points = (
-#         wing_cross_sections_leading_edges
-#         + 0.25
-#         * (wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges)
-#     )
-#
-#     # Get a (L - 1) x 3 array of vectors connecting the wing cross section quarter
-#     # chord points, where L is the number of wing cross sections.
-#     quarter_chords = (
-#         wing_cross_sections_quarter_chord_points[1:, :]
-#         - wing_cross_sections_quarter_chord_points[:-1, :]
-#     )
-#
-#     # Get directions for transforming 2D airfoil data to 3D by the following steps.
-#     #
-#     # Project quarter chords onto YZ plane and normalize.
-#     #
-#     # Create an L x 2 array with just the y and z components of this wing section's
-#     # quarter chord vectors.
-#     projected_quarter_chords = quarter_chords[:, 1:]
-#
-#     # Create a list of the lengths of each row of the projected_quarter_chords array.
-#     projected_quarter_chords_len = np.linalg.norm(projected_quarter_chords, axis=1)
-#
-#     # Convert projected_quarter_chords_len into a column vector.
-#     transpose_projected_quarter_chords_len = np.expand_dims(
-#         projected_quarter_chords_len, axis=1
-#     )
-#     # Normalize the coordinates by the magnitudes
-#     normalized_projected_quarter_chords = (
-#         projected_quarter_chords / transpose_projected_quarter_chords_len
-#     )
-#
-#     # Create a column vector of all zeros with height equal to the number of quarter
-#     # chord vectors
-#     column_of_zeros = np.zeros((len(quarter_chords), 1))
-#
-#     # Horizontally stack the zero column vector with the
-#     # normalized_projected_quarter_chords to give each normalized projected quarter
-#     # chord an X coordinate.
-#     normalized_projected_quarter_chords = np.hstack(
-#         (column_of_zeros, normalized_projected_quarter_chords)
-#     )
-#
-#     return normalized_projected_quarter_chords
+def get_normalized_projected_quarter_chords(
+    wing_cross_sections_leading_edges,
+    wing_cross_sections_trailing_edges,
+    wing_unit_chordwise_vector,
+):
+    # ToDo: Update this docstring to swap mentions of YZ plane for the custom plane.
+    """This method returns the quarter chords of a collection of wing cross sections
+    based on the coordinates of their leading and trailing edges. These quarter
+    chords are also projected on to the YZ plane and normalized by their magnitudes.
+
+    :param wing_cross_sections_leading_edges: array
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. For each cross section, this array holds the
+        body-frame coordinates of its leading edge point in meters.
+    :param wing_cross_sections_trailing_edges: array
+        This parameter is an array of floats with size (X, 3), where X is this wing's
+        number of wing cross sections. For each cross section, this array holds the
+        body-frame coordinates of its trailing edge point in meters.
+    :return normalized_projected_quarter_chords: array
+        This functions returns an array of floats with size (X - 1, 3), where X is
+        this wing's number of wing cross sections. This array holds each wing
+        section's quarter chords projected on to the YZ plane and normalized by their
+        magnitudes.
+    """
+    # Get the location of each wing cross section's quarter chord point.
+    wing_cross_sections_quarter_chord_points = (
+        wing_cross_sections_leading_edges
+        + 0.25
+        * (wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges)
+    )
+
+    # Get a (L - 1) x 3 array of vectors connecting the wing cross section quarter
+    # chord points, where L is the number of wing cross sections.
+    quarter_chords = (
+        wing_cross_sections_quarter_chord_points[1:, :]
+        - wing_cross_sections_quarter_chord_points[:-1, :]
+    )
+
+    # Get directions for transforming 2D airfoil data to 3D by the following steps.
+    #
+    # Project quarter chords onto YZ plane and normalize.
+    #
+    # Create an L x 2 array with just the y and z components of this wing section's
+    # quarter chord vectors.
+    # projected_quarter_chords = quarter_chords[:, 1:]
+    projected_quarter_chords = quarter_chords - (
+        (np.dot(quarter_chords, wing_unit_chordwise_vector))
+        * wing_unit_chordwise_vector
+    )
+
+    # Create a list of the lengths of each row of the projected_quarter_chords array.
+    projected_quarter_chords_len = np.linalg.norm(projected_quarter_chords, axis=1)
+
+    # Convert projected_quarter_chords_len into a column vector.
+    transpose_projected_quarter_chords_len = np.expand_dims(
+        projected_quarter_chords_len, axis=1
+    )
+    # Normalize the coordinates by the magnitudes
+    normalized_projected_quarter_chords = (
+        projected_quarter_chords / transpose_projected_quarter_chords_len
+    )
+
+    # # Create a column vector of all zeros with height equal to the number of quarter
+    # # chord vectors
+    # column_of_zeros = np.zeros((len(quarter_chords), 1))
+    #
+    # # Horizontally stack the zero column vector with the
+    # # normalized_projected_quarter_chords to give each normalized projected quarter
+    # # chord an X coordinate.
+    # normalized_projected_quarter_chords = np.hstack(
+    #     (column_of_zeros, normalized_projected_quarter_chords)
+    # )
+
+    return normalized_projected_quarter_chords
 
 
 def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinates):

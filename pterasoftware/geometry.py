@@ -312,7 +312,7 @@ class Wing:
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
         for wing_cross_section in wing_cross_sections:
-            wing_cross_section.unit_chordwise_vector = self.unit_chordwise_vector
+            wing_cross_section.wing_unit_chordwise_vector = self.unit_chordwise_vector
 
         # ToDo: Delete these after debugging.
         del wing_cross_section
@@ -578,7 +578,7 @@ class WingCrossSection:
         self.leading_edge = np.array([x_le, y_le, z_le])
 
         # ToDo: Document this
-        self.unit_chordwise_vector = None
+        self.wing_unit_chordwise_vector = None
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
@@ -592,6 +592,19 @@ class WingCrossSection:
         if self.spanwise_spacing not in ["cosine", "uniform"]:
             raise Exception("Invalid value of spanwise_spacing!")
 
+    # ToDo: Update this method's documentation.
+    @property
+    def unit_chordwise_vector(self):
+        # Find the rotation matrix given the cross section's twist.
+        twist_rotation_matrix = functions.angle_axis_rotation_matrix(
+            self.twist * np.pi / 180, self.unit_normal_vector
+        )
+
+        # Use the rotation matrix and the leading edge coordinates to calculate the
+        # unit chordwise vector.
+        return twist_rotation_matrix @ self.wing_unit_chordwise_vector
+
+    # ToDo: Update this method's documentation.
     @property
     def trailing_edge(self):
         """This method calculates the coordinates of the trailing edge of this wing
@@ -601,17 +614,9 @@ class WingCrossSection:
             This is a 1D array that contains the coordinates of this wing cross
             section's trailing edge.
         """
-
-        # Find the rotation matrix given the cross section's twist.
-        twist_rotation_matrix = functions.angle_axis_rotation_matrix(
-            self.twist * np.pi / 180, np.array([0, 1, 0])
-        )
-
         chordwise_vector = self.chord * self.unit_chordwise_vector
 
-        # Use the rotation matrix and the leading edge coordinates to calculate the
-        # trailing edge coordinates.
-        return self.leading_edge + twist_rotation_matrix @ chordwise_vector
+        return self.leading_edge + chordwise_vector
 
     # ToDo: Document this
     @property

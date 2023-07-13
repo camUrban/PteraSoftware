@@ -2,10 +2,11 @@
 
 Based on an identical XFLR5 testing case, the expected output for the single-wing case
 is:
-    CL:     0.790
-    CDi:    0.019
-    Cm:     -0.690
+    CL:     0.788
+    CDi:    0.020
+    Cm:     -0.685
 
+ToDo: Update these results with a new XFLR5 study.
 Based on an identical XFLR5 testing case, the expected output for the multi-wing case
 is:
     CL:     0.524
@@ -83,29 +84,29 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.steady_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
-        c_di_expected = 0.019
+        c_di_expected = 0.020
         c_di_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
             ].total_near_field_force_coefficients_wind_axes[0]
         )
-        c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
+        c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
-        c_l_expected = 0.790
+        c_l_expected = 0.788
         c_l_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
             ].total_near_field_force_coefficients_wind_axes[2]
         )
-        c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
+        c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
-        c_m_expected = -0.690
+        c_m_expected = -0.685
         c_m_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
             ].total_near_field_moment_coefficients_wind_axes[1]
         )
-        c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
+        c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
         # Set the allowable percent error.
         allowable_error = 0.10
@@ -114,13 +115,13 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             solver=self.steady_horseshoe_vortex_lattice_method_validation_solver,
             show_wake_vortices=False,
             show_streamlines=True,
-            scalar_type="side force",
+            scalar_type="lift",
         )
 
         # Assert that the percent errors are less than the allowable error.
-        self.assertTrue(abs(c_di_error) < allowable_error)
-        self.assertTrue(abs(c_l_error) < allowable_error)
-        self.assertTrue(abs(c_m_error) < allowable_error)
+        self.assertTrue(c_di_error < allowable_error)
+        self.assertTrue(c_l_error < allowable_error)
+        self.assertTrue(c_m_error < allowable_error)
 
     def test_method_multiple_wings(self):
         """This method tests the solver's output with multi-wing geometry.
@@ -138,7 +139,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         ].total_near_field_force_coefficients_wind_axes[
             0
         ]
-        c_di_error = abs(c_di_calculated - c_di_expected) / c_di_expected
+        c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
         c_l_expected = 0.524
         c_l_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
@@ -146,7 +147,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         ].total_near_field_force_coefficients_wind_axes[
             2
         ]
-        c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
+        c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
         c_m_expected = -0.350
         c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
@@ -154,7 +155,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         ].total_near_field_moment_coefficients_wind_axes[
             1
         ]
-        c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
+        c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
         # Set the allowable percent error.
         allowable_error = 0.10
@@ -167,6 +168,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         )
 
         # Assert that the percent errors are less than the allowable error.
-        self.assertTrue(abs(c_di_error) < allowable_error)
-        self.assertTrue(abs(c_l_error) < allowable_error)
-        self.assertTrue(abs(c_m_error) < allowable_error)
+        self.assertTrue(c_di_error < allowable_error)
+        self.assertTrue(c_l_error < allowable_error)
+        self.assertTrue(c_m_error < allowable_error)

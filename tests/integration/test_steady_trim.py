@@ -41,6 +41,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         :return: None
         """
 
+        # ToDo: Update these expected results.
         self.v_x_ans = 2.848
         self.alpha_ans = 1.943
         self.beta_ans = 0.000

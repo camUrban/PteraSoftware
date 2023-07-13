@@ -40,22 +40,35 @@ def make_steady_validation_airplane():
                 symmetric=True,
                 wing_cross_sections=[
                     ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(name="naca2412"),
+                        airfoil=ps.geometry.Airfoil(
+                            name="naca2412",
+                            repanel=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=20,
                     ),
                     ps.geometry.WingCrossSection(
                         x_le=1.0,
                         y_le=5.0,
                         twist=5.0,
                         chord=0.75,
-                        airfoil=ps.geometry.Airfoil(name="naca2412"),
+                        airfoil=ps.geometry.Airfoil(
+                            name="naca2412",
+                            repanel=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=20,
                     ),
                 ],
+                num_chordwise_panels=14,
             )
         ],
     )
     return steady_validation_airplane
 
 
+# ToDo: Update this airplane to be more representative of the XFLR5 simulation.
+# ToDo: Check that this test case has converged characteristics.
 def make_multiple_wing_steady_validation_airplane():
     """This function creates a multi-wing airplane object to be used as a fixture
     for testing steady solvers.
@@ -170,6 +183,8 @@ def make_multiple_wing_steady_validation_airplane():
     return multiple_wing_steady_validation_airplane
 
 
+# ToDo: Update this airplane to be more representative of the XFLR5 simulation.
+# ToDo: Check that this test case has converged characteristics.
 def make_asymmetric_unsteady_validation_airplane():
     """This function creates an asymmetric airplane object to be used as a fixture
     for testing unsteady solvers.
@@ -205,6 +220,8 @@ def make_asymmetric_unsteady_validation_airplane():
     return asymmetric_unsteady_validation_airplane
 
 
+# ToDo: Update this airplane to be more representative of the XFLR5 simulation.
+# ToDo: Check that this test case has converged characteristics.
 def make_symmetric_unsteady_validation_airplane():
     """This function creates a symmetric airplane object to be used as a fixture for
     testing unsteady solvers.
@@ -237,6 +254,8 @@ def make_symmetric_unsteady_validation_airplane():
     return symmetric_unsteady_validation_airplane
 
 
+# ToDo: Update this airplane to be more representative of the XFLR5 simulation.
+# ToDo: Check that this test case has converged characteristics.
 def make_symmetric_multiple_wing_unsteady_validation_airplane():
     """This function creates a multi-wing, symmetric airplane object to be used as a
     fixture for testing unsteady solvers.

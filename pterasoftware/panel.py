@@ -17,11 +17,31 @@ class Panel:
     """This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
-        calculate_collocation_point_location: This method calculates the location of
-        the collocation point.
+        right_leg: This method defines a property for the panel's right leg vector as
+        a (3,) array.
 
-        calculate_area_and_normal: This method calculates the panel's area and the
-        panel's normal unit vector.
+        front_leg: This method defines a property for the panel's front leg vector as
+        a (3,) array.
+
+        left_leg: This method defines a property for the panel's left leg vector as a
+        (3,) array.
+
+        back_leg: This method defines a property for the panel's back leg vector as a
+        (3,) array.
+
+        front_right_vortex_vertex: This method defines a property for the coordinates
+        of the front-right vertex of the ring vortex as a (3,) array.
+
+        front_left_vortex_vertex: This method defines a property for the coordinates
+        of the front-left vertex of the ring vortex as a (3,) array.
+
+        collocation_point: This method defines a property for the coordinates of the
+        panel's collocation point as a (3,) array.
+
+        area: This method defines a property which is an estimate of the panel's area.
+
+        unit_normal: This method defines a property for an estimate of the panel's
+        unit normal vector as a (3,) array.
 
         calculate_normalized_induced_velocity: This method calculates the velocity
         induced at a point by this panel's vortices, assuming a unit vortex strength.
@@ -49,16 +69,16 @@ class Panel:
     ):
         """This is the initialization method.
 
-        :param front_right_vertex: 1D array with three elements
+        :param front_right_vertex: (3,) array
             This is an array containing the x, y, and z coordinates of the panel's
             front right vertex.
-        :param front_left_vertex: 1D array with three elements
+        :param front_left_vertex: (3,) array
             This is an array containing the x, y, and z coordinates of the panel's
             front left vertex.
-        :param back_left_vertex: 1D array with three elements
+        :param back_left_vertex: (3,) array
             This is an array containing the x, y, and z coordinates of the panel's
             back left vertex.
-        :param back_right_vertex: 1D array with three elements
+        :param back_right_vertex: (3,) array
             This is an array containing the x, y, and z coordinates of the panel's
             back right vertex.
         :param is_leading_edge: bool
@@ -99,39 +119,81 @@ class Panel:
         self.side_force_coefficient = None
         self.lift_coefficient = None
 
-    # ToDo: Update this method's documentation.
     @property
     def right_leg(self):
+        """This method defines a property for the panel's right leg vector as a (3,
+        ) array.
+
+        :return: (3,) array of floats
+            This is the panel's right leg vector, which is defined from back to
+            front. The units are in meters.
+        """
         return self.front_right_vertex - self.back_right_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def front_leg(self):
+        """This method defines a property for the panel's front leg vector as a (3,
+        ) array.
+
+        :return: (3,) array of floats
+            This is the panel's front leg vector, which is defined from right to
+            left. The units are in meters.
+        """
         return self.front_left_vertex - self.front_right_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def left_leg(self):
+        """This method defines a property for the panel's left leg vector as a (3,
+        ) array.
+
+        :return: (3,) array of floats
+            This is the panel's left leg vector, which is defined from front to
+            back. The units are in meters.
+        """
         return self.back_left_vertex - self.front_left_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def back_leg(self):
+        """This method defines a property for the panel's back leg vector as a (3,
+        ) array.
+
+        :return: (3,) array of floats
+            This is the panel's back leg vector, which is defined from left to
+            right. The units are in meters.
+        """
         return self.back_right_vertex - self.back_left_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def front_right_vortex_vertex(self):
+        """This method defines a property for the coordinates of the front-right
+        vertex of the ring vortex as a (3,) array.
+
+        :return: (3,) array of floats
+            This is the coordinates of the ring vortex's front-right vertex. The
+            units are in meters.
+        """
         return self.back_right_vertex + 0.75 * self.right_leg
 
-    # ToDo: Update this method's documentation.
     @property
     def front_left_vortex_vertex(self):
+        """This method defines a property for the coordinates of the front-left
+        vertex of the ring vortex as a (3,) array.
+
+        :return: (3,) array of floats
+            This is the coordinates of the ring vortex's front-left vertex. The units
+            are in meters.
+        """
         return self.front_left_vertex + 0.25 * self.left_leg
 
-    # ToDo: Update this method's documentation.
     @property
     def collocation_point(self):
+        """This method defines a property for the coordinates of the panel's
+        collocation point as a (3,) array.
+
+        :return: (3,) array of floats
+            This is the coordinates of the panel's collocation point. The units are
+            in meters.
+        """
         # Find the location of points three quarters of the way down the left and
         # right legs of the panel.
         right_three_quarter_chord_mark = self.back_right_vertex + 0.25 * self.right_leg
@@ -148,14 +210,33 @@ class Panel:
         # populate the class attribute.
         return right_three_quarter_chord_mark + 0.5 * three_quarter_chord_vector
 
-    # ToDo: Update this method's documentation.
     @property
     def area(self):
+        """This method defines a property which is an estimate of the panel's area.
+
+        This is only an estimate because the surface defined by four line segments in
+        3-space is a hyperboloid, and there doesn't seem to be a close-form equation
+        for the surface area of a hyperboloid between four points. Instead,
+        we estimate the area using the cross product of panel's diagonal vectors,
+        which should be relatively accurate if the panel can be approximated as a
+        planar, convex quadrilateral.
+
+        :return: float
+            This is an estimate of the panel's area. The units are square meters.
+        """
         return np.linalg.norm(self._cross) / 2
 
-    # ToDo: Update this method's documentation.
     @property
     def unit_normal(self):
+        """This method defines a property for an estimate of the panel's unit
+        normal vector as a (3,) array.
+
+        :return: (3,) array of floats
+            This is an estimate of the panel's unit normal vector as a (3,) array.
+            The sign is determined via the right-hand rule given the orientation of
+            panel's leg vectors (front-right to front-left to back-left to
+            back-right). The units are in meters.
+        """
         return self._cross / np.linalg.norm(self._cross)
 
     # ToDo: Update this method's documentation.
@@ -163,7 +244,9 @@ class Panel:
     def unit_spanwise(self):
         front_spanwise = -self.front_leg
         back_spanwise = self.back_leg
+
         spanwise = (front_spanwise + back_spanwise) / 2
+
         return spanwise / np.linalg.norm(spanwise)
 
     # ToDo: Update this method's documentation.
@@ -171,6 +254,7 @@ class Panel:
     def average_span(self):
         front_leg_length = np.linalg.norm(self.front_leg)
         back_leg_length = np.linalg.norm(self.back_leg)
+
         return (front_leg_length + back_leg_length) / 2
 
     # ToDo: Update this method's documentation.
@@ -178,7 +262,9 @@ class Panel:
     def unit_chordwise(self):
         right_chordwise = -self.right_leg
         left_chordwise = self.left_leg
+
         chordwise = (right_chordwise + left_chordwise) / 2
+
         return chordwise / np.linalg.norm(chordwise)
 
     # ToDo: Update this method's documentation.
@@ -186,6 +272,7 @@ class Panel:
     def average_chord(self):
         right_leg_length = np.linalg.norm(self.right_leg)
         left_leg_length = np.linalg.norm(self.left_leg)
+
         return (right_leg_length + left_leg_length) / 2
 
     # ToDo: Update this method's documentation.

@@ -717,9 +717,6 @@ def interp_between_points(start_points, end_points, norm_spacings):
         end_point = end_points[i, :]
 
         vector = end_point - start_point
-        # vector_length = np.linalg.norm(vector)
-        #
-        # unit_vector = vector / vector_length
 
         for j in range(n):
             norm_spacing = norm_spacings[j]

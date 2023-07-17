@@ -695,17 +695,37 @@ def reflect_point_across_plane(point, plane_unit_normal, plane_point):
     [x_prime, y_prime, z_prime] = transformed_expanded_coordinates[:-1, 0]
 
     return np.array([x_prime, y_prime, z_prime])
-    # point = np.expand_dims(point, -1)
-    # plane_unit_normal = np.expand_dims(plane_unit_normal, -1)
-    # plane_point = np.expand_dims(plane_point, -1)
-    #
-    # plane_unit_normal_transpose = np.transpose(plane_unit_normal)
-    # identity = np.eye(point.size)
-    #
-    # householder = identity - 2 * plane_unit_normal @ plane_unit_normal_transpose
-    #
-    # reflected_point = plane_point + householder @ point
 
-    # reflected_point = householder @ point
 
-    return np.squeeze(reflected_point)
+# ToDo: Document this method.
+@njit(cache=True, fastmath=False)
+def interp_between_points(start_points, end_points, norm_spacings):
+    """
+
+    :param start_points:
+    :param end_points:
+    :param norm_spacings:
+    :return:
+    """
+    m = start_points.shape[0]
+    n = norm_spacings.size
+
+    points = np.zeros((m, n, 3))
+
+    for i in range(m):
+        start_point = start_points[i, :]
+        end_point = end_points[i, :]
+
+        vector = end_point - start_point
+        # vector_length = np.linalg.norm(vector)
+        #
+        # unit_vector = vector / vector_length
+
+        for j in range(n):
+            norm_spacing = norm_spacings[j]
+
+            spacing = norm_spacing * vector
+
+            points[i, j, :] = start_point + spacing
+
+    return points

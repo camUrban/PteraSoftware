@@ -12,7 +12,6 @@ This module contains the following functions:
 import numpy as np
 
 
-# ToDo: Update the list of methods for this class.
 class Panel:
     """This class is used to contain the panels of a wing.
 
@@ -43,11 +42,28 @@ class Panel:
         unit_normal: This method defines a property for an estimate of the panel's
         unit normal vector as a (3,) array.
 
+        unit_spanwise: This method defines a property for the panel's unit spanwise
+        vector as a ( 3,) array.
+
+        unit_chordwise:
+
+        average_span:
+
+        average_chord:
+
+        _first_diagonal:
+
+        _second_diagonal:
+
+        _cross:
+
         calculate_normalized_induced_velocity: This method calculates the velocity
         induced at a point by this panel's vortices, assuming a unit vortex strength.
 
         calculate_induced_velocity: This method calculates the velocity induced at a
         point by this panel's vortices with their given vortex strengths.
+
+        calculate_projected_area:
 
         update_coefficients: This method updates the panel's force coefficients.
 
@@ -239,23 +255,22 @@ class Panel:
         """
         return self._cross / np.linalg.norm(self._cross)
 
-    # ToDo: Update this method's documentation.
     @property
     def unit_spanwise(self):
+        """This method defines a property for the panel's unit spanwise vector as a (
+        3,) array.
+
+        :return: (3,) array of floats
+            This is the panel's unit spanwise vector as a (3,) array. The positive
+            direction is defined as left to right, which is opposite the direction of
+            the front leg. The units are in meters.
+        """
         front_spanwise = -self.front_leg
         back_spanwise = self.back_leg
 
         spanwise = (front_spanwise + back_spanwise) / 2
 
         return spanwise / np.linalg.norm(spanwise)
-
-    # ToDo: Update this method's documentation.
-    @property
-    def average_span(self):
-        front_leg_length = np.linalg.norm(self.front_leg)
-        back_leg_length = np.linalg.norm(self.back_leg)
-
-        return (front_leg_length + back_leg_length) / 2
 
     # ToDo: Update this method's documentation.
     @property
@@ -266,6 +281,14 @@ class Panel:
         chordwise = (right_chordwise + left_chordwise) / 2
 
         return chordwise / np.linalg.norm(chordwise)
+
+    # ToDo: Update this method's documentation.
+    @property
+    def average_span(self):
+        front_leg_length = np.linalg.norm(self.front_leg)
+        back_leg_length = np.linalg.norm(self.back_leg)
+
+        return (front_leg_length + back_leg_length) / 2
 
     # ToDo: Update this method's documentation.
     @property
@@ -342,7 +365,7 @@ class Panel:
 
         return induced_velocity
 
-    # ToDo: Add this method to the documentation.
+    # ToDo: Update this method's documentation.
     def calculate_projected_area(self, n_hat):
         """
 

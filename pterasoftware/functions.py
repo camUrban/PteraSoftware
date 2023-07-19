@@ -661,7 +661,6 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
     return crosses
 
 
-@njit(cache=True, fastmath=False)
 def reflect_point_across_plane(point, plane_unit_normal, plane_point):
     """This function finds the coordinates of the reflection of a point across a
     plane in 3D space.

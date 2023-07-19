@@ -5,8 +5,7 @@ This module contains the following classes:
 
     Wing: This is a class used to contain the wings of an Airplane object.
 
-    WingCrossSection: This class is used to contain the cross sections of a Wing
-    object.
+    WingCrossSection: This class is used to contain the cross sections of a Wing object.
 
     Airfoil: This class is used to contain the airfoil of a WingCrossSection object.
 

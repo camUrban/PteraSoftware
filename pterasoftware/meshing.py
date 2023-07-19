@@ -11,13 +11,8 @@ This module contains the following functions:
     quadrilateral mesh of its geometry, and then populates the object's panels with
     the mesh data.
 
-    get_panel_vertices: This function calculates the vertices of the panels on a wing.
-
-    ToDo: Update this method's documentation.
-    get_normalized_projected_quarter_chords: This method returns the quarter chords
-    of a collection of wing cross sections based on the coordinates of their leading
-    and trailing edges. These quarter chords are also projected on to the YZ plane
-    and normalized by their magnitudes.
+    get_panel_vertices: This function calculates the vertices of the panels on a wing
+    section.
 
     get_transpose_mcl_vectors: This function takes in the inner and outer airfoils of
     a wing cross section and its chordwise coordinates. It returns a list of four
@@ -47,7 +42,6 @@ def mesh_wing(wing):
         This is the wing to be meshed.
     :return: None
     """
-
     # Define the number of chordwise panels and points.
     num_chordwise_panels = wing.num_chordwise_panels
     num_chordwise_coordinates = num_chordwise_panels + 1
@@ -58,118 +52,9 @@ def mesh_wing(wing):
     else:
         chordwise_coordinates = functions.cosspace(0, 1, num_chordwise_coordinates)
 
-    # Initialize two empty 0 x 3 arrays to hold the corners of each wing cross
-    # section. They will eventually be L x 3 arrays, where L is number of wing cross
-    # sections.
-    wing_cross_sections_leading_edges = np.empty((0, 3))
-    wing_cross_sections_trailing_edges = np.empty((0, 3))
-
-    # Iterate through the meshed wing cross sections and vertically stack the global
-    # location of each wing cross sections leading and trailing edges.
-    for wing_cross_section in wing.wing_cross_sections:
-        wing_cross_sections_leading_edges = np.vstack(
-            (
-                wing_cross_sections_leading_edges,
-                wing_cross_section.leading_edge + wing.leading_edge,
-            )
-        )
-        wing_cross_sections_trailing_edges = np.vstack(
-            (
-                wing_cross_sections_trailing_edges,
-                wing_cross_section.trailing_edge + wing.leading_edge,
-            )
-        )
-
-    normalized_projected_quarter_chords = get_normalized_projected_quarter_chords(
-        wing_cross_sections_leading_edges,
-        wing_cross_sections_trailing_edges,
-        wing.unit_chordwise_vector,
-    )
-
     # Get the number of wing cross sections and wing sections.
     num_wing_cross_sections = len(wing.wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
-
-    # ToDo: Change this part's language to remove YZ plane mentions.
-    # Then, construct the adjusted normal directions for each wing cross section.
-    # Make the normals for the inner wing cross sections, where we need to merge
-    # directions.
-    if num_wing_cross_sections > 2:
-        # Add together the adjacent normalized wing section quarter chords projected
-        # onto the YZ plane.
-        wing_sections_local_normals = (
-            normalized_projected_quarter_chords[:-1, :]
-            + normalized_projected_quarter_chords[1:, :]
-        )
-
-        # Create a list of the magnitudes of the summed adjacent normalized wing
-        # section quarter chords projected onto the YZ plane.
-        wing_sections_local_normals_len = np.linalg.norm(
-            wing_sections_local_normals, axis=1
-        )
-
-        # Convert the list to a column vector.
-        transpose_wing_sections_local_normals_len = np.expand_dims(
-            wing_sections_local_normals_len, axis=1
-        )
-
-        # Normalize the summed adjacent normalized wing section quarter chords
-        # projected onto the YZ plane by their magnitudes.
-        wing_sections_local_unit_normals = (
-            wing_sections_local_normals / transpose_wing_sections_local_normals_len
-        )
-
-        # Vertically stack the first normalized wing section quarter chord, the inner
-        # normalized wing section quarter chords, and the last normalized wing
-        # section quarter chord.
-        wing_sections_local_unit_normals = np.vstack(
-            (
-                normalized_projected_quarter_chords[0, :],
-                wing_sections_local_unit_normals,
-                normalized_projected_quarter_chords[-1, :],
-            )
-        )
-    else:
-        # Vertically stack the first and last normalized wing section quarter chords.
-        wing_sections_local_unit_normals = np.vstack(
-            (
-                normalized_projected_quarter_chords[0, :],
-                normalized_projected_quarter_chords[-1, :],
-            )
-        )
-
-    # Create a list of the wing cross section chord lengths.
-    wing_cross_sections_chord_lengths = np.array(
-        [wing_cross_section.chord for wing_cross_section in wing.wing_cross_sections]
-    )
-
-    # Normalize the wing cross section back vectors by their magnitudes.
-    wing_cross_sections_unit_chordwise_vectors = np.vstack(
-        [
-            wing_cross_section.unit_chordwise_vector
-            for wing_cross_section in wing.wing_cross_sections
-        ]
-    )
-
-    # ToDo: Clarify these calculations' documentation.
-    # Then, construct the up direction for each wing cross section.
-    wing_cross_sections_unit_up_vectors = np.vstack(
-        [
-            wing_cross_section.unit_up_vector
-            for wing_cross_section in wing.wing_cross_sections
-        ]
-    )
-    adj_wing_cross_sections_unit_up_vectors = np.cross(
-        wing_cross_sections_unit_chordwise_vectors,
-        wing_sections_local_unit_normals,
-        axis=1,
-    )
-
-    # ToDo: This isn't correct for all situations now. Fix it.
-    # If the wing is symmetric, set the local up position of the root cross section
-    # to be the in local Z direction.
-    if wing.symmetric:
-        adj_wing_cross_sections_unit_up_vectors[0] = np.array([0, 0, 1])
 
     # Initialize an empty array that will hold the panels of this wing. It currently
     # has 0 columns and M rows, where M is the number of the wing's chordwise panels.
@@ -222,17 +107,15 @@ def mesh_wing(wing):
             front_outer_vertices,
             back_inner_vertices,
             back_outer_vertices,
-        ] = get_panel_vertices(
-            inner_wing_cross_section_num,
-            wing_cross_sections_unit_chordwise_vectors,
-            wing_cross_sections_unit_up_vectors,
-            wing_cross_sections_chord_lengths,
-            wing_cross_sections_leading_edges,
+        ] = get_wing_section_panel_vertices(
+            wing.leading_edge,
+            inner_wing_cross_section,
+            outer_wing_cross_section,
             transpose_mcl_vectors,
             spanwise_coordinates,
         )
 
-        # Compute a matrix that is M x N, where M and N are the number of chordwise
+        # Compute a matrix that is (M, N), where M and N are the number of chordwise
         # and spanwise panels. The values are either 1 if the panel at that location
         # is a trailing edge, or 0 if not.
         wing_section_is_trailing_edge = np.vstack(
@@ -242,7 +125,7 @@ def mesh_wing(wing):
             )
         )
 
-        # Compute a matrix that is M x N, where M and N are the number of chordwise
+        # Compute a matrix that is (M, N), where M and N are the number of chordwise
         # and spanwise panels. The values are either 1 if the panel at that location
         # is a leading edge, or 0 if not.
         wing_section_is_leading_edge = np.vstack(
@@ -308,17 +191,15 @@ def mesh_wing(wing):
                 front_outer_vertices,
                 back_inner_vertices,
                 back_outer_vertices,
-            ] = get_panel_vertices(
-                inner_wing_cross_section_num,
-                wing_cross_sections_unit_chordwise_vectors,
-                adj_wing_cross_sections_unit_up_vectors,
-                wing_cross_sections_chord_lengths,
-                wing_cross_sections_leading_edges,
+            ] = get_wing_section_panel_vertices(
+                wing.leading_edge,
+                inner_wing_cross_section,
+                outer_wing_cross_section,
                 transpose_mcl_vectors,
                 spanwise_coordinates,
             )
 
-            # Compute a matrix that is M x N, where M and N are the number of
+            # Compute a matrix that is (M, N), where M and N are the number of
             # chordwise and spanwise panels. The values are either 1 if the panel at
             # that location is a trailing edge, or 0 if not.
             wing_section_is_trailing_edge = np.vstack(
@@ -330,7 +211,7 @@ def mesh_wing(wing):
                 )
             )
 
-            # Compute a matrix that is M x N, where M and N are the number of
+            # Compute a matrix that is (M, N), where M and N are the number of
             # chordwise and spanwise panels. The values are either 1 if the panel at
             # that location is a leading edge, or 0 if not.
             wing_section_is_leading_edge = np.vstack(
@@ -405,55 +286,39 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
-def get_panel_vertices(
-    inner_wing_cross_section_num,
-    wing_cross_sections_unit_chordwise_vectors,
-    wing_cross_sections_unit_up_vectors,
-    wing_cross_sections_chord_lengths,
-    wing_cross_sections_leading_edges,
+def get_wing_section_panel_vertices(
+    wing_leading_edge,
+    inner_wing_cross_section,
+    outer_wing_cross_section,
     transpose_mcl_vectors,
     spanwise_coordinates,
 ):
-    # ToDo: Update this documentation.
-    """This function calculates the vertices of the panels on a wing.
+    """This function calculates the vertices of the panels on a wing section.
 
-    :param inner_wing_cross_section_num: int
-        This parameter is the integer index of this wing's section's inner wing cross
-        section.
-    :param wing_cross_sections_unit_chordwise_vectors: array
-        This parameter is an array of floats with size (X, 3), where X is this wing's
-        number of wing cross sections. It holds two unit vectors that correspond to
-        the wing cross sections' local-back directions, written in the body frame.
-    :param wing_cross_sections_unit_up_vectors: array
-        This parameter is an array of floats with size (X, 3), where X is this wing's
-        number of wing cross sections. It holds two unit vectors that correspond to
-        the wing cross sections' local-up directions, written in the body frame.
-    :param wing_cross_sections_chord_lengths: array
-        This parameter is a 1D array of floats with length X, where X is this wing's
-        number of wing cross sections. It holds the chord lengths of this wing's wing
-        cross section in meters.
-    :param wing_cross_sections_leading_edges: array
-        This parameter is an array of floats with size (Xx3), where X is this wing's
-        number of wing cross sections. It holds the coordinates of the leading edge
-        points of this wing's wing cross sections. The units are in meters.
-    :param transpose_mcl_vectors: list
-        This parameter is a list of 4 (M x 1) arrays of floats, where M is the number
-        of chordwise points. The first array contains the local-up component of the
-        mean-camber-line slope at each of the chordwise points along the inner wing
+    :param wing_leading_edge: (3,) array of floats
+        This is an array of the wing's leading edge coordinates. The units are meters.
+    :param inner_wing_cross_section: WingCrossSection
+        This is this wing section's inner Wing Cross Section object.
+    :param outer_wing_cross_section: WingCrossSection
+        This is this wing section's outer Wing Cross Section object.
+    :param transpose_mcl_vectors: list of 4 (M, 1) arrays of floats
+        This parameter is a list of 4 (M, 1) arrays where M is the number of
+        chordwise points. The first array contains the local-up component of the
+        mean-camber-line's slope at each of the chordwise points along the inner wing
         cross section. The second array contains the local-back component of the
-        mean-camber-line slope at each of the chordwise points along the inner wing
+        mean-camber-line's slope at each of the chordwise points along the inner wing
         cross section. The third and fourth arrays are the same but for the outer
-        wing cross section.
-    :param spanwise_coordinates: array
-        This parameter is a 1D array of floats with length N, where N is the number
-        of spanwise points. It holds the distances of each spanwise point along the
-        wing cross section and is normalized from 0 to 1.
-    :return: list
-        This function returns a list with four arrays. Each array is size (MxNx3),
-        where M is the number of chordwise points and N is the number of spanwise
-        points. The arrays are the body frame coordinates of this wing's panels'
-        front-inner, front-outer, back-inner, and back-outer vertices. The units are
-        in meters.
+        wing cross section instead of the inner wing cross section. The units are
+        meters.
+    :param spanwise_coordinates: (N, 1) array of floats
+        This parameter is a (N, 1) array of floats, where N is the number of spanwise
+        points. It holds the distances of each spanwise point along the wing section
+        and is normalized from 0 to 1. These values are unitless.
+    :return: list of 4 (M, N, 3) arrays of floats
+        This function returns a list with four (M, N, 3) arrays, where M is the
+        number of chordwise points and N is the number of spanwise points. The arrays
+        are the coordinates of this wing's panels' front-inner, front-outer,
+        back-inner, and back-outer vertices. The units are in meters.
     """
     [
         transpose_inner_mcl_up_vector,
@@ -465,57 +330,55 @@ def get_panel_vertices(
     # Convert the inner wing cross section's non dimensional local back airfoil frame
     # coordinates to meshed wing coordinates.
     inner_wing_cross_section_mcl_back = (
-        wing_cross_sections_unit_chordwise_vectors[inner_wing_cross_section_num, :]
+        inner_wing_cross_section.unit_chordwise_vector
+        * inner_wing_cross_section.chord
         * transpose_inner_mcl_back_vector
-        * wing_cross_sections_chord_lengths[inner_wing_cross_section_num]
     )
 
     # Convert the inner wing cross section's non dimensional local up airfoil frame
     # coordinates to meshed wing coordinates.
     inner_wing_cross_section_mcl_up = (
-        wing_cross_sections_unit_up_vectors[inner_wing_cross_section_num, :]
+        inner_wing_cross_section.unit_up_vector
+        * inner_wing_cross_section.chord
         * transpose_inner_mcl_up_vector
-        * wing_cross_sections_chord_lengths[inner_wing_cross_section_num]
-        # * wing_cross_sections_scaling_factors[inner_wing_cross_section_num]
     )
-
-    # Define the index of this wing section's outer wing cross section.
-    outer_wing_cross_section_num = inner_wing_cross_section_num + 1
 
     # Convert the outer wing cross section's non dimensional local back airfoil frame
     # coordinates to meshed wing coordinates.
     outer_wing_cross_section_mcl_back = (
-        wing_cross_sections_unit_chordwise_vectors[outer_wing_cross_section_num, :]
+        outer_wing_cross_section.unit_chordwise_vector
+        * outer_wing_cross_section.chord
         * transpose_outer_mcl_back_vector
-        * wing_cross_sections_chord_lengths[outer_wing_cross_section_num]
     )
 
     # Convert the outer wing cross section's non dimensional local up airfoil frame
     # coordinates to meshed wing coordinates.
     outer_wing_cross_section_mcl_up = (
-        wing_cross_sections_unit_up_vectors[outer_wing_cross_section_num, :]
+        outer_wing_cross_section.unit_up_vector
+        * outer_wing_cross_section.chord
         * transpose_outer_mcl_up_vector
-        * wing_cross_sections_chord_lengths[outer_wing_cross_section_num]
     )
 
     # Convert the inner wing cross section's meshed wing coordinates to absolute
-    # coordinates. This is size M x 3, where M is the number of chordwise points.
+    # coordinates. This is size (M, 3) where M is the number of chordwise points.
     inner_wing_cross_section_mcl = (
-        wing_cross_sections_leading_edges[inner_wing_cross_section_num, :]
+        wing_leading_edge
+        + inner_wing_cross_section.leading_edge
         + inner_wing_cross_section_mcl_back
         + inner_wing_cross_section_mcl_up
     )
 
     # Convert the outer wing cross section's meshed wing coordinates to absolute
-    # coordinates. This is size M x 3, where M is the number of chordwise points.
+    # coordinates. This is size (M, 3) where M is the number of chordwise points.
     outer_wing_cross_section_mcl = (
-        wing_cross_sections_leading_edges[outer_wing_cross_section_num, :]
+        wing_leading_edge
+        + outer_wing_cross_section.leading_edge
         + outer_wing_cross_section_mcl_back
         + outer_wing_cross_section_mcl_up
     )
 
     # Find the vertices of the points on this wing section with interpolation. This
-    # returns an M x N x 3 matrix, where M and N are the number of chordwise points
+    # returns an (M, N, 3) array, where M and N are the number of chordwise points
     # and spanwise points.
     wing_section_mcl_vertices = functions.interp_between_points(
         inner_wing_cross_section_mcl,
@@ -523,7 +386,7 @@ def get_panel_vertices(
         spanwise_coordinates,
     )
 
-    # Compute the corners of each panel.
+    # Extract the coordinates for corners of each panel.
     front_inner_vertices = wing_section_mcl_vertices[:-1, :-1, :]
     front_outer_vertices = wing_section_mcl_vertices[:-1, 1:, :]
     back_inner_vertices = wing_section_mcl_vertices[1:, :-1, :]
@@ -535,75 +398,6 @@ def get_panel_vertices(
         back_inner_vertices,
         back_outer_vertices,
     ]
-
-
-def get_normalized_projected_quarter_chords(
-    wing_cross_sections_leading_edges,
-    wing_cross_sections_trailing_edges,
-    wing_unit_chordwise_vector,
-):
-    # ToDo: Update this docstring to swap mentions of YZ plane for the custom plane.
-    """This method returns the quarter chords of a collection of wing cross sections
-    based on the coordinates of their leading and trailing edges. These quarter
-    chords are also projected on to the YZ plane and normalized by their magnitudes.
-
-    :param wing_cross_sections_leading_edges: array
-        This parameter is an array of floats with size (X, 3), where X is this wing's
-        number of wing cross sections. For each cross section, this array holds the
-        body-frame coordinates of its leading edge point in meters.
-    :param wing_cross_sections_trailing_edges: array
-        This parameter is an array of floats with size (X, 3), where X is this wing's
-        number of wing cross sections. For each cross section, this array holds the
-        body-frame coordinates of its trailing edge point in meters.
-    :param wing_unit_chordwise_vector
-    :return normalized_projected_quarter_chords: array
-        This functions returns an array of floats with size (X - 1, 3), where X is
-        this wing's number of wing cross sections. This array holds each wing
-        section's quarter chords projected on to the YZ plane and normalized by their
-        magnitudes.
-    """
-    # Get the location of each wing cross section's quarter chord point.
-    wing_cross_sections_quarter_chord_points = (
-        wing_cross_sections_leading_edges
-        + 0.25
-        * (wing_cross_sections_trailing_edges - wing_cross_sections_leading_edges)
-    )
-
-    # Get a (L - 1) x 3 array of vectors connecting the wing cross section quarter
-    # chord points, where L is the number of wing cross sections.
-    quarter_chords = (
-        wing_cross_sections_quarter_chord_points[1:, :]
-        - wing_cross_sections_quarter_chord_points[:-1, :]
-    )
-
-    # ToDo: Update this documentation.
-    # Get directions for transforming 2D airfoil data to 3D by the following steps.
-    # Project quarter chords onto YZ plane and normalize. Create an L x 2 array with
-    # just the y and z components of this wing section's quarter chord vectors.
-    quarter_chords_dot_wing_unit_chordwise_vector = np.einsum(
-        "ij,j->i", quarter_chords, wing_unit_chordwise_vector
-    )
-    c = np.expand_dims(wing_unit_chordwise_vector, axis=0)
-    b = np.einsum(
-        "j,ji->ji",
-        quarter_chords_dot_wing_unit_chordwise_vector,
-        c,
-    )
-    projected_quarter_chords = quarter_chords - b
-
-    # Create a list of the lengths of each row of the projected_quarter_chords array.
-    projected_quarter_chords_len = np.linalg.norm(projected_quarter_chords, axis=1)
-
-    # Convert projected_quarter_chords_len into a column vector.
-    transpose_projected_quarter_chords_len = np.expand_dims(
-        projected_quarter_chords_len, axis=1
-    )
-    # Normalize the coordinates by the magnitudes
-    normalized_projected_quarter_chords = (
-        projected_quarter_chords / transpose_projected_quarter_chords_len
-    )
-
-    return normalized_projected_quarter_chords
 
 
 def get_transpose_mcl_vectors(inner_airfoil, outer_airfoil, chordwise_coordinates):

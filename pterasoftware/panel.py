@@ -45,17 +45,13 @@ class Panel:
         unit_spanwise: This method defines a property for the panel's unit spanwise
         vector as a ( 3,) array.
 
-        unit_chordwise:
+        unit_chordwise: This method defines a property for the panel's unit chordwise
+        vector as a (3,) array.
 
-        average_span:
+        average_span: This method defines a property for the average span of the panel.
 
-        average_chord:
-
-        _first_diagonal:
-
-        _second_diagonal:
-
-        _cross:
+        average_chord: This method defines a property for the average chord of the
+        panel.
 
         calculate_normalized_induced_velocity: This method calculates the velocity
         induced at a point by this panel's vortices, assuming a unit vortex strength.
@@ -63,7 +59,8 @@ class Panel:
         calculate_induced_velocity: This method calculates the velocity induced at a
         point by this panel's vortices with their given vortex strengths.
 
-        calculate_projected_area:
+        calculate_projected_area: This method calculates the area of the panel
+        projected on some plane defined by its unit normal vector.
 
         update_coefficients: This method updates the panel's force coefficients.
 
@@ -272,9 +269,15 @@ class Panel:
 
         return spanwise / np.linalg.norm(spanwise)
 
-    # ToDo: Update this method's documentation.
     @property
     def unit_chordwise(self):
+        """This method defines a property for the panel's unit chordwise vector as a
+        (3,) array.
+
+        :return: (3,) array of floats
+            This is the panel's unit chordwise vector as a (3,) array. The positive
+            direction is defined as front to back. The units are in meters.
+        """
         right_chordwise = -self.right_leg
         left_chordwise = self.left_leg
 
@@ -282,35 +285,61 @@ class Panel:
 
         return chordwise / np.linalg.norm(chordwise)
 
-    # ToDo: Update this method's documentation.
     @property
     def average_span(self):
+        """This method defines a property for the average span of the panel.
+
+        :return: float
+            This is the average span, which is defined as the average of the front
+            and back leg lengths. The units are meters.
+        """
         front_leg_length = np.linalg.norm(self.front_leg)
         back_leg_length = np.linalg.norm(self.back_leg)
 
         return (front_leg_length + back_leg_length) / 2
 
-    # ToDo: Update this method's documentation.
     @property
     def average_chord(self):
+        """This method defines a property for the average chord of the panel.
+
+        :return: float
+            This is the average chord, which is defined as the average of the right
+            and left leg lengths. The units are meters.
+        """
         right_leg_length = np.linalg.norm(self.right_leg)
         left_leg_length = np.linalg.norm(self.left_leg)
 
         return (right_leg_length + left_leg_length) / 2
 
-    # ToDo: Update this method's documentation.
     @property
     def _first_diagonal(self):
+        """This method defines a property for the panel's first diagonal vector.
+
+        :return: (3,) array of floats
+            This is the first diagonal vector, which is defined as the vector from
+            the back-left vertex to the front-right vertex. The units are meters.
+        """
         return self.front_right_vertex - self.back_left_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def _second_diagonal(self):
+        """This method defines a property for the panel's second diagonal vector.
+
+        :return: (3,) array of floats
+            This is the second diagonal vector, which is defined as the vector from
+            the back-right vertex to the front-left vertex. The units are meters.
+        """
         return self.front_left_vertex - self.back_right_vertex
 
-    # ToDo: Update this method's documentation.
     @property
     def _cross(self):
+        """This method defines a property for cross product of the panel's first and
+        second diagonal vectors.
+
+        :return: (3,) array of floats
+            This is the cross product of the panel's first and second diagonal
+            vectors. The units are meters.
+        """
         return np.cross(self._first_diagonal, self._second_diagonal)
 
     def calculate_normalized_induced_velocity(self, point):
@@ -326,7 +355,6 @@ class Panel:
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """
-
         normalized_induced_velocity = np.zeros(3)
 
         if self.ring_vortex is not None:
@@ -353,7 +381,6 @@ class Panel:
             This is a vector containing the x, y, and z components of the induced
             velocity.
         """
-
         induced_velocity = np.zeros(3)
 
         if self.ring_vortex is not None:
@@ -365,21 +392,31 @@ class Panel:
 
         return induced_velocity
 
-    # ToDo: Update this method's documentation.
     def calculate_projected_area(self, n_hat):
-        """
+        """This method calculates the area of the panel projected on some plane
+        defined by its unit normal vector.
 
-        :param n_hat:
-        :return:
+        :param n_hat: (3,) array of floats
+            This is a (3,) array of the components of the projection plane's unit
+            normal vector. The vector must have a magnitude of one. The units are
+            meters.
+        :return: float
+            This is the area of the panel projected onto the plane defined by the
+            normal vector. The units are square meters.
         """
+        # Find the projections of the first and second diagonal vectors onto the
+        # plane's unit normal vector.
         proj_n_hat_first_diag = np.dot(self._first_diagonal, n_hat) * n_hat
         proj_n_hat_second_diag = np.dot(self._second_diagonal, n_hat) * n_hat
 
+        # Find the projection of the first and second diagonal onto the plane.
         proj_plane_first_diag = self._first_diagonal - proj_n_hat_first_diag
         proj_plane_second_diag = self._second_diagonal - proj_n_hat_second_diag
 
+        # The projected area is found by dividing the magnitude of cross product of
+        # the diagonal vectors by two. Read the area method for a more detailed
+        # explanation.
         proj_cross = np.cross(proj_plane_first_diag, proj_plane_second_diag)
-
         return np.linalg.norm(proj_cross) / 2
 
     def update_coefficients(self, dynamic_pressure):
@@ -387,7 +424,6 @@ class Panel:
 
         :return: None
         """
-
         induced_drag = -self.near_field_force_wind_axes[0]
         side_force = self.near_field_force_wind_axes[1]
         lift = -self.near_field_force_wind_axes[2]

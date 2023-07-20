@@ -2,16 +2,15 @@
 
 Based on an identical XFLR5 testing case, the expected output for the single-wing case
 is:
-    CL:     0.788
+    CL:     0.789
     CDi:    0.020
     Cm:     -0.685
 
-ToDo: Update these results with a new XFLR5 study.
 Based on an identical XFLR5 testing case, the expected output for the multi-wing case
 is:
-    CL:     0.524
-    CDi:    0.007
-    Cm:     -0.350
+    CL:     0.513
+    CDi:    0.008
+    Cm:     -0.336
 
 Note: The expected output was created using XFLR5's inviscid VLM1 analysis type,
 which is a horseshoe vortex lattice method solver.
@@ -92,7 +91,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         )
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
-        c_l_expected = 0.788
+        c_l_expected = 0.789
         c_l_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
@@ -133,7 +132,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
-        c_di_expected = 0.007
+        c_di_expected = 0.008
         c_di_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ].total_near_field_force_coefficients_wind_axes[
@@ -141,7 +140,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         ]
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
-        c_l_expected = 0.524
+        c_l_expected = 0.513
         c_l_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ].total_near_field_force_coefficients_wind_axes[
@@ -149,7 +148,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         ]
         c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
-        c_m_expected = -0.350
+        c_m_expected = -0.336
         c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ].total_near_field_moment_coefficients_wind_axes[

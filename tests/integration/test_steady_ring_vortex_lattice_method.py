@@ -1,7 +1,7 @@
 """This module is a testing case for the steady ring vortex lattice method solver.
 
 Based on an identical XFLR5 VLM2 testing case, the expected output for this case is:
-    CL:     0.783
+    CL:     0.784
     CDi:    0.019
     Cm:     -0.678
 
@@ -78,7 +78,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
-        c_l_expected = 0.783
+        c_l_expected = 0.784
         c_l_calculated = (
             self.steady_ring_vortex_lattice_method_validation_solver.airplanes[
                 0

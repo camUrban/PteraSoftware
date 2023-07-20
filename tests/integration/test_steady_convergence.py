@@ -73,7 +73,6 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
 
-        # ToDo: Update these expected results.
         panel_ar_ans = 4
         num_chordwise_ans = 4
 
@@ -98,7 +97,6 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
 
-        # ToDo: Update these expected results.
         panel_ar_ans = 4
         num_chordwise_ans = 5
 

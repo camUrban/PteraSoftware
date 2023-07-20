@@ -124,8 +124,9 @@ dmypy.json
 # This is the cython debug symbols to ignore.
 cython_debug/
 
-# This is a folder full of random tests to ignore.
+# These are folders for scripts in development to ignore.
 /testing_in_development/
+/experimental/
 
 # These are folders created by testing to ignore.
 /tests/_trial_temp/

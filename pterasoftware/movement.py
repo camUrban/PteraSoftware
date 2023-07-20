@@ -780,7 +780,9 @@ class WingMovement:
 
         # Generate the non-changing wing attributes.
         name = self.base_wing.name
+        symmetry_unit_normal_vector = self.base_wing.symmetry_unit_normal_vector
         symmetric = self.base_wing.symmetric
+        unit_chordwise_vector = self.base_wing.unit_chordwise_vector
         num_chordwise_panels = self.base_wing.num_chordwise_panels
         chordwise_spacing = self.base_wing.chordwise_spacing
 
@@ -795,12 +797,14 @@ class WingMovement:
 
             # Make a new wing object for this time step.
             this_wing = geometry.Wing(
+                wing_cross_sections=cross_sections,
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
-                wing_cross_sections=cross_sections,
+                symmetry_unit_normal_vector=symmetry_unit_normal_vector,
                 symmetric=symmetric,
+                unit_chordwise_vector=unit_chordwise_vector,
                 num_chordwise_panels=num_chordwise_panels,
                 chordwise_spacing=chordwise_spacing,
             )
@@ -1183,8 +1187,9 @@ class WingCrossSectionMovement:
         wing_cross_sections = []
 
         # Generate the non-changing wing cross section attributes.
-        chord = self.base_wing_cross_section.chord
         airfoil = self.base_wing_cross_section.airfoil
+        chord = self.base_wing_cross_section.chord
+        unit_normal_vector = self.base_wing_cross_section.unit_normal_vector
         control_surface_deflection = self.control_surface_deflection_base
         control_surface_type = self.base_wing_cross_section.control_surface_type
         control_surface_hinge_point = (
@@ -1203,12 +1208,13 @@ class WingCrossSectionMovement:
 
             # Make a new wing cross section object for this time step.
             this_wing_cross_section = geometry.WingCrossSection(
+                airfoil=airfoil,
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
                 chord=chord,
+                unit_normal_vector=unit_normal_vector,
                 twist=twist,
-                airfoil=airfoil,
                 control_surface_type=control_surface_type,
                 control_surface_hinge_point=control_surface_hinge_point,
                 control_surface_deflection=control_surface_deflection,

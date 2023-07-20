@@ -76,9 +76,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
         converged_panel_ar = converged_parameters[2]
         converged_num_chordwise = converged_parameters[3]
 
-        # ToDo: Update these expected results.
         wake_state_ans = True
-        num_chords_ans = 4
+        num_chords_ans = 3
         panel_ar_ans = 4
         num_chordwise_ans = 4
 

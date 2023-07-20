@@ -159,6 +159,10 @@ class Wing:
         Date of Retrieval:    04/24/2020
 
     This class contains the following public methods:
+        unit_up_vector: This method sets a property for the wing's up orientation
+        vector, which is defined as the cross product of its unit chordwise and unit
+        normal vectors.
+
         projected_area: This method defines a property for the area of the wing
         projected onto the plane defined by the projected unit normal vector.
 
@@ -186,7 +190,7 @@ class Wing:
         x_le=0.0,
         y_le=0.0,
         z_le=0.0,
-        symmetry_unit_normal_vector=np.array([0.0, 1.0, 0.0]),
+        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
         symmetric=False,
         unit_chordwise_vector=np.array([1.0, 0.0, 0.0]),
         num_chordwise_panels=8,
@@ -208,8 +212,8 @@ class Wing:
         :param z_le: float, optional
             This is the z coordinate of the leading edge of the wing, relative to the
             airplane's reference point. The default is 0.0.
-        :param symmetry_unit_normal_vector: ndarray, optional
-            This is an (3,) ndarray of floats that represents the unit normal vector
+        :param unit_normal_vector: array, optional
+            This is an (3,) array of floats that represents the unit normal vector
             of the wing's symmetry plane. It is also the direction vector that the
             wing's span will be assessed relative to. Additionally, this vector
             crossed with the "unit_chordwise_vector" defines the normal vector of the
@@ -220,10 +224,10 @@ class Wing:
         :param symmetric: bool, optional
             Set this to true if the wing is across the xz plane. Set it to false if
             not. The default is false.
-        :param unit_chordwise_vector: ndarray, optional
-            This is an (3,) ndarray of floats that represents the unit vector that
+        :param unit_chordwise_vector: array, optional
+            This is an (3,) array of floats that represents the unit vector that
             defines the wing's chordwise direction. This vector crossed with the
-            "symmetry_unit_normal_vector" defines the normal vector of the plane that
+            "unit_normal_vector" defines the normal vector of the plane that
             the wing's projected area will reference. This vector must be parallel to
             the intersection of the wing's symmetry plane with each of its wing cross
             section's planes. The default is np.array([1.0, 0.0, 0.0]), which is the
@@ -252,7 +256,7 @@ class Wing:
         self.x_le = x_le
         self.y_le = y_le
         self.z_le = z_le
-        self.symmetry_unit_normal_vector = symmetry_unit_normal_vector
+        self.unit_normal_vector = unit_normal_vector
         self.symmetric = symmetric
         self.unit_chordwise_vector = unit_chordwise_vector
         self.num_chordwise_panels = num_chordwise_panels
@@ -270,7 +274,7 @@ class Wing:
         # Check that the wing's symmetry plane is equal to its root wing cross
         # section's plane.
         if not np.array_equal(
-            self.symmetry_unit_normal_vector,
+            self.unit_normal_vector,
             self.wing_cross_sections[0].unit_normal_vector,
         ):
             raise Exception(
@@ -287,7 +291,7 @@ class Wing:
             )
 
         # Check that the wing's chordwise and normal directions are perpendicular.
-        if np.dot(self.unit_chordwise_vector, self.symmetry_unit_normal_vector) != 0:
+        if np.dot(self.unit_chordwise_vector, self.unit_normal_vector) != 0:
             raise Exception(
                 "Every wing cross section's plane must intersect with the wing's "
                 "symmetry plane along a line that is parallel with the wing's "
@@ -310,7 +314,7 @@ class Wing:
             # Find the vector parallel to the intersection of this wing cross
             # section's plane and the wing's symmetry plane.
             plane_intersection_vector = np.cross(
-                self.symmetry_unit_normal_vector, wing_cross_section.unit_normal_vector
+                self.unit_normal_vector, wing_cross_section.unit_normal_vector
             )
 
             # If this vector is not parallel to the wing's chordwise vector, raise an
@@ -328,12 +332,6 @@ class Wing:
         for wing_cross_section in self.wing_cross_sections:
             wing_cross_section.wing_unit_chordwise_vector = self.unit_chordwise_vector
 
-        # Define an attribute that is the normal vector of the plane that the
-        # projected area will reference.
-        self.projected_unit_normal_vector = np.cross(
-            self.unit_chordwise_vector, self.symmetry_unit_normal_vector
-        )
-
         # Initialize the panels attribute. Then mesh the wing, which will populate
         # this attribute.
         self.panels = None
@@ -343,6 +341,17 @@ class Wing:
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
+
+    @property
+    def unit_up_vector(self):
+        """This method sets a property for the wing's up orientation
+        vector, which is defined as the cross product of its unit chordwise and unit
+        normal vectors.
+
+        :return: (3,) array of floats
+            This is the wing's unit up vector. The units are meters.
+        """
+        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
 
     @property
     def projected_area(self):
@@ -363,7 +372,7 @@ class Wing:
             for spanwise_location in range(self.num_spanwise_panels):
                 projected_area += self.panels[
                     chordwise_location, spanwise_location
-                ].calculate_projected_area(self.projected_unit_normal_vector)
+                ].calculate_projected_area(self.unit_up_vector)
 
         return projected_area
 
@@ -406,8 +415,8 @@ class Wing:
         )
 
         projected_leading_edge = (
-            np.dot(root_to_tip_leading_edge, self.symmetry_unit_normal_vector)
-            * self.symmetry_unit_normal_vector
+            np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
+            * self.unit_normal_vector
         )
 
         span = np.linalg.norm(projected_leading_edge)
@@ -464,8 +473,8 @@ class Wing:
             )
 
             projected_section_leading_edge = (
-                np.dot(section_leading_edge, self.symmetry_unit_normal_vector)
-                * self.symmetry_unit_normal_vector
+                np.dot(section_leading_edge, self.unit_normal_vector)
+                * self.unit_normal_vector
             )
 
             section_span = np.linalg.norm(projected_section_leading_edge)
@@ -542,11 +551,11 @@ class WingCrossSection:
         :param chord: float, optional
             This is the chord of the wing at this wing cross section. The default
             value is 1.0.
-        :param unit_normal_vector: ndarray, optional
-            This is an (3,) ndarray of floats that represents the unit normal vector
+        :param unit_normal_vector: array, optional
+            This is an (3,) array of floats that represents the unit normal vector
             of the plane this wing cross section lies on. If this wing cross section
             is a wing's root, this vector must be equal to the wing's
-            symmetry_unit_normal_vector attribute. Also, every wing cross section
+            unit_normal_vector attribute. Also, every wing cross section
             must have a plane that intersects its parent wing's symmetry plane at a
             line parallel to the parent wing's "unit_chordwise_vector". The default
             is np.array([ 0.0, 1.0, 0.0]), which is the XZ plane's unit normal vector.

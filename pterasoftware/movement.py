@@ -663,25 +663,11 @@ class WingMovement:
             # Check if this is this wing's root cross section.
             if wing_cross_section_movement_location == 0:
 
-                # Get the root cross section's sweeping and heaving attributes.
-                first_wing_cross_section_movement_sweeping_amplitude = (
-                    wing_cross_section_movement.sweeping_amplitude
-                )
-                first_wing_cross_section_movement_sweeping_period = (
-                    wing_cross_section_movement.sweeping_period
-                )
-                first_wing_cross_section_movement_heaving_amplitude = (
-                    wing_cross_section_movement.heaving_amplitude
-                )
-                first_wing_cross_section_movement_heaving_period = (
-                    wing_cross_section_movement.heaving_period
-                )
-
                 # Check that the root cross section is not sweeping or heaving.
-                assert first_wing_cross_section_movement_sweeping_amplitude == 0
-                assert first_wing_cross_section_movement_sweeping_period == 0
-                assert first_wing_cross_section_movement_heaving_amplitude == 0
-                assert first_wing_cross_section_movement_heaving_period == 0
+                assert wing_cross_section_movement.sweeping_amplitude == 0
+                assert wing_cross_section_movement.sweeping_period == 0
+                assert wing_cross_section_movement.heaving_amplitude == 0
+                assert wing_cross_section_movement.heaving_period == 0
 
                 # Set the variables relating this wing cross section to the inner
                 # wing cross section to zero because this is the innermost wing cross
@@ -780,7 +766,7 @@ class WingMovement:
 
         # Generate the non-changing wing attributes.
         name = self.base_wing.name
-        symmetry_unit_normal_vector = self.base_wing.symmetry_unit_normal_vector
+        unit_normal_vector = self.base_wing.unit_normal_vector
         symmetric = self.base_wing.symmetric
         unit_chordwise_vector = self.base_wing.unit_chordwise_vector
         num_chordwise_panels = self.base_wing.num_chordwise_panels
@@ -802,7 +788,7 @@ class WingMovement:
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,
-                symmetry_unit_normal_vector=symmetry_unit_normal_vector,
+                unit_normal_vector=unit_normal_vector,
                 symmetric=symmetric,
                 unit_chordwise_vector=unit_chordwise_vector,
                 num_chordwise_panels=num_chordwise_panels,

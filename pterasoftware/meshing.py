@@ -228,28 +228,28 @@ def mesh_wing(wing):
                 functions.reflect_point_across_plane,
                 -1,
                 front_inner_vertices,
-                wing.symmetry_unit_normal_vector,
+                wing.unit_normal_vector,
                 wing.leading_edge,
             )
             front_outer_vertices_reflected = np.apply_along_axis(
                 functions.reflect_point_across_plane,
                 -1,
                 front_outer_vertices,
-                wing.symmetry_unit_normal_vector,
+                wing.unit_normal_vector,
                 wing.leading_edge,
             )
             back_inner_vertices_reflected = np.apply_along_axis(
                 functions.reflect_point_across_plane,
                 -1,
                 back_inner_vertices,
-                wing.symmetry_unit_normal_vector,
+                wing.unit_normal_vector,
                 wing.leading_edge,
             )
             back_outer_vertices_reflected = np.apply_along_axis(
                 functions.reflect_point_across_plane,
                 -1,
                 back_outer_vertices,
-                wing.symmetry_unit_normal_vector,
+                wing.unit_normal_vector,
                 wing.leading_edge,
             )
 

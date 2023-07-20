@@ -1164,7 +1164,7 @@ class WingCrossSectionMovement:
             x_le_list = np.ones(num_steps) * self.x_le_base
             y_le_list = np.ones(num_steps) * self.y_le_base
             z_le_list = np.ones(num_steps) * self.z_le_base
-            twist_list = np.ones(num_steps) * self.twist_base
+            twist_list = pitching_list
         else:
 
             # Find the list of new leading edge points. This uses a spherical

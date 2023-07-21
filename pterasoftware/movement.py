@@ -113,9 +113,7 @@ class Movement:
                     "Only specify the number of cycles if you haven't specified the "
                     "number of steps and the movement isn't static!"
                 )
-            self.num_cycles = num_cycles
-        else:
-            self.num_cycles = None
+        self.num_cycles = num_cycles
 
         # If the number of chords were specified, make sure that the number of steps
         # isn't also specified and that the movement is static.
@@ -125,9 +123,7 @@ class Movement:
                     "Only specify the number of chords if you haven't specified the "
                     "number of steps and the movement is static!"
                 )
-            self.num_chords = num_chords
-        else:
-            self.num_chords = None
+        self.num_chords = num_chords
 
         # Calculate default num_steps and delta_time values if the user hasn't passed
         # one in.
@@ -208,8 +204,8 @@ class Movement:
         )
 
     def get_max_period(self):
-        """This method returns the longest period of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """This method returns the longest period of this movement object's
+        sub-movement objects, sub-sub-movement objects, etc.
 
         :return: float
             The longest period in seconds.
@@ -425,20 +421,32 @@ class AirplaneMovement:
         # Create an empty list of airplanes.
         airplanes = []
 
-        # Generate the airplane name.
+        # Get the airplane's unchanging attributes.
         name = self.base_airplane.name
+        weight = self.base_airplane.weight
+        s_ref = self.base_airplane.s_ref
+        c_ref = self.base_airplane.c_ref
+        b_ref = self.base_airplane.b_ref
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            # Get the reference position at this time step.
-            x_ref = x_ref_list[step]
-            y_ref = y_ref_list[step]
-            z_ref = z_ref_list[step]
+            # Get the changing attributes at this time step.
             these_wings = wings[:, step]
+            this_x_ref = x_ref_list[step]
+            this_y_ref = y_ref_list[step]
+            this_z_ref = z_ref_list[step]
 
             # Make a new airplane object for this time step.
             this_airplane = geometry.Airplane(
-                name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
+                wings=these_wings,
+                name=name,
+                x_ref=this_x_ref,
+                y_ref=this_y_ref,
+                z_ref=this_z_ref,
+                weight=weight,
+                s_ref=s_ref,
+                c_ref=c_ref,
+                b_ref=b_ref,
             )
 
             # Add this new object to the list of airplanes.
@@ -448,8 +456,8 @@ class AirplaneMovement:
         return airplanes
 
     def get_max_period(self):
-        """This method returns the longest period of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """This method returns the longest period of this movement object's
+        sub-movement objects, sub-sub-movement objects, etc.
 
         :return max_period: float
             The longest period in seconds.
@@ -651,14 +659,14 @@ class WingMovement:
 
         # Initialize a variable to hold the inner wing cross section's list of wing
         # cross sections for each time step.
-        last_wing_cross_section_time_histories = None
+        inner_wing_cross_sections_time_history = None
 
         # Iterate through the wing cross section movement locations.
         for (
             wing_cross_section_movement_location,
             wing_cross_section_movement,
         ) in enumerate(self.wing_cross_section_movements):
-            wing_is_vertical = False
+            wing_section_is_vertical = False
 
             # Check if this is this wing's root cross section.
             if wing_cross_section_movement_location == 0:
@@ -672,49 +680,49 @@ class WingMovement:
                 # Set the variables relating this wing cross section to the inner
                 # wing cross section to zero because this is the innermost wing cross
                 # section
-                wing_cross_section_span = 0.0
-                base_wing_cross_section_sweep = 0.0
-                base_wing_cross_section_heave = 0.0
-                last_x_les = np.zeros(num_steps) * 0.0
-                last_y_les = np.zeros(num_steps) * 0.0
-                last_z_les = np.zeros(num_steps) * 0.0
+                base_wing_section_span = 0.0
+                base_wing_section_sweep = 0.0
+                base_wing_section_heave = 0.0
+                inner_x_les = np.zeros(num_steps)
+                inner_y_les = np.zeros(num_steps)
+                inner_z_les = np.zeros(num_steps)
 
             else:
-                this_base_wing_cross_section = (
+                base_wing_cross_section = (
                     wing_cross_section_movement.base_wing_cross_section
                 )
 
-                this_x_le = this_base_wing_cross_section.x_le
-                this_y_le = this_base_wing_cross_section.y_le
-                this_z_le = this_base_wing_cross_section.z_le
+                base_x_le = base_wing_cross_section.x_le
+                base_y_le = base_wing_cross_section.y_le
+                base_z_le = base_wing_cross_section.z_le
 
                 # Initialize variables to hold the inner wing cross section's time
                 # histories of its leading edge coordinates.
-                last_x_les = []
-                last_y_les = []
-                last_z_les = []
+                inner_x_les = []
+                inner_y_les = []
+                inner_z_les = []
 
                 # Iterate through the inner wing cross section's time history and
                 # populate the leading edge coordinate variables.
-                for last_wing_cross_section in last_wing_cross_section_time_histories:
-                    last_x_les.append(last_wing_cross_section.x_le)
-                    last_y_les.append(last_wing_cross_section.y_le)
-                    last_z_les.append(last_wing_cross_section.z_le)
+                for inner_wing_cross_section in inner_wing_cross_sections_time_history:
+                    inner_x_les.append(inner_wing_cross_section.x_le)
+                    inner_y_les.append(inner_wing_cross_section.y_le)
+                    inner_z_les.append(inner_wing_cross_section.z_le)
 
                 # Find the span between this wing cross section and the inner wing
-                # cross section.
-                wing_cross_section_span = np.sqrt(
-                    (this_x_le - last_x_les[0]) ** 2
-                    + (this_y_le - last_y_les[0]) ** 2
-                    + (this_z_le - last_z_les[0]) ** 2
+                # cross section at the first time step.
+                base_wing_section_span = np.sqrt(
+                    (base_x_le - inner_x_les[0]) ** 2
+                    + (base_y_le - inner_y_les[0]) ** 2
+                    + (base_z_le - inner_z_les[0]) ** 2
                 )
 
-                if this_y_le != last_y_les[0]:
+                if base_y_le != inner_y_les[0]:
                     # Find the base sweep angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_sweep = (
+                    base_wing_section_sweep = (
                         np.arctan(
-                            (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
+                            (base_z_le - inner_z_les[0]) / (base_y_le - inner_y_les[0])
                         )
                         * 180
                         / np.pi
@@ -722,49 +730,47 @@ class WingMovement:
 
                     # Find the base heave angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_heave = (
+                    base_wing_section_heave = (
                         np.arctan(
-                            (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
+                            (base_x_le - inner_x_les[0]) / (base_y_le - inner_y_les[0])
                         )
                         * 180
                         / np.pi
                     )
                 else:
-                    base_wing_cross_section_sweep = 0.0
-                    base_wing_cross_section_heave = 0.0
-                    wing_is_vertical = True
+                    base_wing_section_sweep = 0.0
+                    base_wing_section_heave = 0.0
+                    wing_section_is_vertical = True
 
             # Generate this wing cross section's vector of wing cross sections at
             # each time step based on its movement.
-            this_wing_cross_sections_list_of_wing_cross_sections = np.array(
+            wing_cross_sections_time_history = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
                     num_steps=num_steps,
                     delta_time=delta_time,
-                    cross_section_span=wing_cross_section_span,
-                    cross_section_sweep=base_wing_cross_section_sweep,
-                    cross_section_heave=base_wing_cross_section_heave,
-                    last_x_les=last_x_les,
-                    last_y_les=last_y_les,
-                    last_z_les=last_z_les,
-                    wing_is_vertical=wing_is_vertical,
+                    base_wing_section_span=base_wing_section_span,
+                    base_wing_section_sweep=base_wing_section_sweep,
+                    base_wing_section_heave=base_wing_section_heave,
+                    inner_x_les=inner_x_les,
+                    inner_y_les=inner_y_les,
+                    inner_z_les=inner_z_les,
+                    wing_section_is_vertical=wing_section_is_vertical,
                 )
             )
 
             # Add this vector the wing's array of wing cross section objects.
             wing_cross_sections[
                 wing_cross_section_movement_location, :
-            ] = this_wing_cross_sections_list_of_wing_cross_sections
+            ] = wing_cross_sections_time_history
 
             # Update the inner wing cross section's list of wing cross sections for
             # each time step.
-            last_wing_cross_section_time_histories = (
-                this_wing_cross_sections_list_of_wing_cross_sections
-            )
+            inner_wing_cross_sections_time_history = wing_cross_sections_time_history
 
         # Create an empty list of wings.
         wings = []
 
-        # Generate the non-changing wing attributes.
+        # Get the non-changing wing attributes.
         name = self.base_wing.name
         unit_normal_vector = self.base_wing.unit_normal_vector
         symmetric = self.base_wing.symmetric
@@ -774,20 +780,19 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-
-            # Get the reference position at this time step.
-            x_le = x_le_list[step]
-            y_le = y_le_list[step]
-            z_le = z_le_list[step]
-            cross_sections = wing_cross_sections[:, step]
+            # Get the changing wing attributes at this time step.
+            this_x_le = x_le_list[step]
+            this_y_le = y_le_list[step]
+            this_z_le = z_le_list[step]
+            these_cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
             this_wing = geometry.Wing(
-                wing_cross_sections=cross_sections,
+                wing_cross_sections=these_cross_sections,
                 name=name,
-                x_le=x_le,
-                y_le=y_le,
-                z_le=z_le,
+                x_le=this_x_le,
+                y_le=this_y_le,
+                z_le=this_z_le,
                 unit_normal_vector=unit_normal_vector,
                 symmetric=symmetric,
                 unit_chordwise_vector=unit_chordwise_vector,
@@ -963,13 +968,13 @@ class WingCrossSectionMovement:
         self,
         num_steps=10,
         delta_time=0.1,
-        last_x_les=None,
-        last_y_les=None,
-        last_z_les=None,
-        wing_is_vertical=False,
-        cross_section_span=0.0,
-        cross_section_sweep=0.0,
-        cross_section_heave=0.0,
+        inner_x_les=None,
+        inner_y_les=None,
+        inner_z_les=None,
+        wing_section_is_vertical=False,
+        base_wing_section_span=0.0,
+        base_wing_section_sweep=0.0,
+        base_wing_section_heave=0.0,
     ):
         """This method creates the wing cross section objects at each time
         current_step, and groups them into a list.
@@ -979,33 +984,33 @@ class WingCrossSectionMovement:
         :param delta_time: float, optional
             This is the time, in seconds, between each time step. The default value
             is 0.1 seconds.
-        :param last_x_les: float, optional
+        :param inner_x_les: float, optional
             This is an array of the x coordinates of the reference location of the
             previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
-        :param last_y_les: float, optional
+        :param inner_y_les: float, optional
             This is an array of the y coordinates of the reference location of the
             previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
-        :param last_z_les: float, optional
+        :param inner_z_les: float, optional
             This is an array of the z coordinates of the reference location of the
             previous cross section at each time step. Its units are in meters,
             and its default value is 0.0 meters.
-        :param wing_is_vertical: bool, optional
-            This flag is set to true if the wing containing this wing cross section
-            is vertical. If true, the cross section's movement will automatically be
-            eliminated. This is a temporary patch until vertical wing cross section
-            movement is supported. The default value is false.
-        :param cross_section_span: float, optional
+        :param wing_section_is_vertical: bool, optional
+            This flag is set to true if the wing section containing this wing cross
+            section is vertical. If true, the cross section's movement will
+            automatically be eliminated. This is a temporary patch until vertical
+            wing cross section movement is supported. The default value is false.
+        :param base_wing_section_span: float, optional
             This is the length, in meters, of the leading edge stretching between
             this wing cross section at the previous wing cross section. If this is
             the first cross section, it should be 0.0 meters. The default value is
             0.0 meters.
-        :param cross_section_sweep: float, optional
+        :param base_wing_section_sweep: float, optional
             This is the sweep, in degrees, of this wing cross section relative to the
             previous wing cross section. If this is the first cross section,
             it should be 0.0 degrees. The default value is 0.0 degrees.
-        :param cross_section_heave: float, optional
+        :param base_wing_section_heave: float, optional
             This is the heave, in degrees, of this wing cross section relative to the
             previous wing cross section. If this is the first cross section,
             it should be 0.0 degrees. The default value is 0.0 degrees.
@@ -1021,7 +1026,7 @@ class WingCrossSectionMovement:
             sweeping_list = oscillating_sinspace(
                 amplitude=self.sweeping_amplitude,
                 period=self.sweeping_period,
-                base_value=cross_section_sweep,
+                base_value=base_wing_section_sweep,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -1031,7 +1036,7 @@ class WingCrossSectionMovement:
             sweeping_list = oscillating_linspace(
                 amplitude=self.sweeping_amplitude,
                 period=self.sweeping_period,
-                base_value=cross_section_sweep,
+                base_value=base_wing_section_sweep,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -1048,7 +1053,7 @@ class WingCrossSectionMovement:
             sweeping_list = oscillating_customspace(
                 amplitude=self.sweeping_amplitude,
                 period=self.sweeping_period,
-                base_value=cross_section_sweep,
+                base_value=base_wing_section_sweep,
                 num_steps=num_steps,
                 delta_time=delta_time,
                 custom_function=self.custom_sweep_function,
@@ -1109,7 +1114,7 @@ class WingCrossSectionMovement:
             heaving_list = oscillating_sinspace(
                 amplitude=self.heaving_amplitude,
                 period=self.heaving_period,
-                base_value=cross_section_heave,
+                base_value=base_wing_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -1119,7 +1124,7 @@ class WingCrossSectionMovement:
             heaving_list = oscillating_linspace(
                 amplitude=self.heaving_amplitude,
                 period=self.heaving_period,
-                base_value=cross_section_heave,
+                base_value=base_wing_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
@@ -1136,7 +1141,7 @@ class WingCrossSectionMovement:
             heaving_list = oscillating_customspace(
                 amplitude=self.heaving_amplitude,
                 period=self.heaving_period,
-                base_value=cross_section_heave,
+                base_value=base_wing_section_heave,
                 num_steps=num_steps,
                 delta_time=delta_time,
                 custom_function=self.custom_heave_function,
@@ -1146,7 +1151,7 @@ class WingCrossSectionMovement:
             # Throw an exception if the spacing value is not "sine" or "uniform".
             raise Exception("Bad value of heaving_spacing!")
 
-        if wing_is_vertical:
+        if wing_section_is_vertical:
             x_le_list = np.ones(num_steps) * self.x_le_base
             y_le_list = np.ones(num_steps) * self.y_le_base
             z_le_list = np.ones(num_steps) * self.z_le_base
@@ -1158,13 +1163,13 @@ class WingCrossSectionMovement:
             # section's leading edge point (at each time step) as the origin. Also
             # convert the lists of sweep, pitch, and heave values to radians before
             # passing them into numpy's trigonometry functions.
-            x_le_list = last_x_les + cross_section_span * np.cos(
+            x_le_list = inner_x_les + base_wing_section_span * np.cos(
                 sweeping_list * np.pi / 180
             ) * np.sin(heaving_list * np.pi / 180)
-            y_le_list = last_y_les + cross_section_span * np.cos(
+            y_le_list = inner_y_les + base_wing_section_span * np.cos(
                 sweeping_list * np.pi / 180
             ) * np.cos(heaving_list * np.pi / 180)
-            z_le_list = last_z_les + cross_section_span * np.sin(
+            z_le_list = inner_z_les + base_wing_section_span * np.sin(
                 sweeping_list * np.pi / 180
             )
             twist_list = pitching_list

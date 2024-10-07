@@ -138,7 +138,9 @@ If you wish to use this package as a dependency in your own project, simply run:
 via the command prompt in your project's directory. Then, in a script that you'd like 
 to use features from Ptera Software, add:
 
-```import pterasoftware as ps```
+```python
+import pterasoftware as ps
+```
 
 If you haven't previously downloaded Ptera Software's source code, you can also learn 
 about the available functions by reading their docstrings, which should be fetched 
@@ -160,7 +162,7 @@ an issue for guidance.
 The following code snippet is all that is needed (after running pip install 
 pterasoftware) to run the steady horseshoe solver on an airplane with custom geometry.
 
-```
+```python
 import pterasoftware as ps
 
 airplane = ps.geometry.Airplane(

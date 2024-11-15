@@ -88,8 +88,7 @@ understanding of biological flight.
 
 ## Installation and Use
 
-First things first, you will need a copy of Python 3.8. Python 3.9 is not yet supported 
-due to a dependency issue in VTK. Download Python 3.8 from the official Python website. 
+First things first, you will need a copy of Python 3.10, which you can download from the official Python website. 
 At this time, I do not recommend using a version from the Anaconda distribution as it 
 could introduce compatibility issues with PyPI.
 
@@ -152,8 +151,9 @@ contribute to this, feel free to open a feature request issue and start a conver
 
 Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that walks through getting Ptera Software up and 
 running. It includes every step, from downloading Python for the first time to setting 
-up your IDE to running the software. If you still run into problems, feel free to open 
-an issue for guidance.
+up your IDE to running the software. However, I recorded this video a while ago, so in it
+I download Python 3.8. For all versions of Ptera Software 3.1.0 and on, use Python 3.10 
+instead. If you still run into problems, feel free to open an issue for guidance.
 
 ## Example Code
 
@@ -223,26 +223,26 @@ examples of the output you can expect to receive from each of them.
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.7.2, < 4.0.0
-* numpy >= 1.24.4, < 1.25.0
-* pyvista >= 0.40.0, < 1.0.0
-* scipy >= 1.10.1, < 2.0.0
-* numba >= 0.57.1, < 1.0.0
-* cmocean >= 3.0.3, < 4.0.0
-* tqdm >= 4.65.0, < 5.0.0
-* webp >= 0.1.6, < 1.0.0
+* matplotlib >= 3.9.2, < 4.0.0
+* numpy >= 1.26.4, < 2.0.0
+* pyvista >= 0.44.1, < 1.0.0
+* scipy >= 1.14.1, < 2.0.0
+* numba >= 0.60.0, < 1.0.0
+* cmocean >= 4.0.3, < 5.0.0
+* tqdm >= 4.67.0, < 5.0.0
+* webp >= 0.4.0, < 1.0.0
 * PySide2 >= 5.15.2.1, < 6.0.0.0
 
 Additionally, these packages are useful for continued development of the software:
 
 * codecov >= 2.1.13, < 3.0.0
-* black >= 23.3.0, < 24.0.0
-* pre-commit >= 3.3.3, < 4.0.0
-* build >= 0.10.0, < 1.0.0
-* twine >= 4.0.2, < 5.0.0
-* PyInstaller >= 5.13.0, < 6.0.0
-* setuptools >= 68.0.0, < 69.0.0
-* wheel >= 0.40.0, < 1.0.0
+* black >= 24.10.0, < 25.0.0
+* pre-commit >= 4.0.1, < 5.0.0
+* build >= 1.2.2, < 2.0.0
+* twine >= 5.1.1, < 6.0.0
+* PyInstaller >= 6.11.1, < 7.0.0
+* setuptools >= 75.5.0, < 76.0.0
+* wheel >= 0.45.0, < 1.0.0
 
 ## Validation
 

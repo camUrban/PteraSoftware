@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.10"
+  - "3.10-dev"
 os: linux
 dist: xenial
 before_install:

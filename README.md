@@ -2,7 +2,7 @@
 
 ***
 
-![build](https://github.com/camUrban/PteraSoftware/actions/workflows/format_and_test.yml/badge.svg?branch=release-3.1.0)
+![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=release-3.1.0)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/master)
 ![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware/master)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
@@ -300,7 +300,6 @@ where applicable.
 * AeroSandbox
 * Black
 * Codecov
-* Travis CI
 * NumPy
 * SciPy
 * PyVista

@@ -13,6 +13,7 @@ This module contains the following functions:
 
     analyze_unsteady_convergence: This function finds the converged parameters of an
     unsteady problem. """
+
 import logging
 import math
 import time
@@ -998,9 +999,9 @@ def analyze_unsteady_convergence(
 
                     # Populate the arrays that store information of all the
                     # iterations with the data from this iteration.
-                    coefficients[
-                        wake_id, length_id, ar_id, chord_id, :, :
-                    ] = these_coefficients
+                    coefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
+                        these_coefficients
+                    )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     convergence_logger.info(

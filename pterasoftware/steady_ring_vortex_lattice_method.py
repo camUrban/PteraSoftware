@@ -11,6 +11,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import numpy as np
 import logging
 
@@ -481,9 +482,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective right vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_right_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_right_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
 
                     else:
 
@@ -507,9 +508,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective front vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_front_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_front_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly in front of this panel.
@@ -532,9 +533,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective left vortex line strength from zero to
                         # this panel's ring vortex's strength.
-                        effective_left_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_left_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly to the left of this panel.

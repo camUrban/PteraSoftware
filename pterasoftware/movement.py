@@ -32,6 +32,7 @@ This module contains the following functions:
     calculated by inputting a vector of linearly spaced time steps into a custom
     function.
 """
+
 import math
 
 import numpy as np
@@ -765,9 +766,9 @@ class WingMovement:
             )
 
             # Add this vector the wing's array of wing cross section objects.
-            wing_cross_sections[
-                wing_cross_section_movement_location, :
-            ] = this_wing_cross_sections_list_of_wing_cross_sections
+            wing_cross_sections[wing_cross_section_movement_location, :] = (
+                this_wing_cross_sections_list_of_wing_cross_sections
+            )
 
             # Update the inner wing cross section's list of wing cross sections for
             # each time step.

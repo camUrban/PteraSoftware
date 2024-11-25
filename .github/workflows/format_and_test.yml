@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: psf/black@stable
+      - name: Run black formatter
+        uses: rickstaa/action-black@v1.3.3
   build:
     runs-on: ubuntu-latest
     steps:

@@ -9,6 +9,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     TestRingVortex: This is a class with functions to test ring vortex objects.
 """
+
 import unittest
 
 import numpy as np

@@ -39,6 +39,7 @@ This module contains the following functions:
     make_ring_vortex_fixture: This method makes a fixture that is a ring vortex
     object.
 """
+
 import numpy as np
 
 import pterasoftware as ps

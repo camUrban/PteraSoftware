@@ -23,6 +23,7 @@ This module contains the following functions:
     a multi-wing, symmetric airplane object to be used as a fixture for testing
     unsteady solvers.
 """
+
 import pterasoftware as ps
 
 

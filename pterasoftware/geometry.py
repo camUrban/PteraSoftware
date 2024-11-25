@@ -192,7 +192,6 @@ class Wing:
         y_le=0.0,
         z_le=0.0,
         wing_cross_sections=None,
-
         symmetric=False,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",

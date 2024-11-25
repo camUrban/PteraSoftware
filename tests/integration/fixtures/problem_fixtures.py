@@ -27,6 +27,7 @@ This module contains the following functions:
     function creates an unsteady problem object with multi-wing, variable geometry to
     be used as a fixture.
 """
+
 import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import movement_fixtures

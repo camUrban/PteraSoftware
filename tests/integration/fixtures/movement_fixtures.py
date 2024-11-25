@@ -19,6 +19,7 @@ This module contains the following functions:
     make_multiple_wing_variable_validation_movement: This function creates a movement
     object with variable, multi-wing geometry to be used as a fixture.
 """
+
 import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import operating_point_fixtures

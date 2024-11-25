@@ -1,13 +1,8 @@
-name: Format and Test
+name: Build
 
 on: [push]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run black formatter
-        uses: rickstaa/action-black@v1.3.3
   build:
     runs-on: ubuntu-latest
     steps:
@@ -22,8 +17,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements_ci.txt
-    - name: Run tests
+    - name: Format with Black
+      run: |
+        black pterasoftware
+    - name: Run tests with Coverage
       run: |
         coverage run --source=pterasoftware -m unittest discover -s tests
         codecov
-        black pterasoftware

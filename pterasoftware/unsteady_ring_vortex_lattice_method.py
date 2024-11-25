@@ -11,6 +11,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import logging
 
 import numpy as np
@@ -636,12 +637,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # Update the solver's list of attributes with this panel's
                         # attributes.
-                        self.last_panel_collocation_points[
-                            global_panel_position, :
-                        ] = panel.collocation_point
-                        self.last_panel_vortex_strengths[
-                            global_panel_position
-                        ] = panel.ring_vortex.strength
+                        self.last_panel_collocation_points[global_panel_position, :] = (
+                            panel.collocation_point
+                        )
+                        self.last_panel_vortex_strengths[global_panel_position] = (
+                            panel.ring_vortex.strength
+                        )
                         self.last_panel_back_right_vortex_vertices[
                             global_panel_position, :
                         ] = panel.ring_vortex.right_leg.origin
@@ -891,9 +892,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective right vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_right_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.current_vortex_strengths[global_panel_position]
+                        effective_right_vortex_line_strengths[global_panel_position] = (
+                            self.current_vortex_strengths[global_panel_position]
+                        )
 
                     else:
 
@@ -917,9 +918,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective front vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_front_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.current_vortex_strengths[global_panel_position]
+                        effective_front_vortex_line_strengths[global_panel_position] = (
+                            self.current_vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly in front of this panel.
@@ -942,9 +943,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective left vortex line strength from zero to
                         # this panel's ring vortex's strength.
-                        effective_left_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.current_vortex_strengths[global_panel_position]
+                        effective_left_vortex_line_strengths[global_panel_position] = (
+                            self.current_vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly to the left of this panel.
@@ -1633,15 +1634,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Iterate through this step's airplanes.
             for airplane_id, airplane in enumerate(these_airplanes):
-                total_near_field_forces_wind_axes[
-                    airplane_id, :, results_step
-                ] = airplane.total_near_field_force_wind_axes
+                total_near_field_forces_wind_axes[airplane_id, :, results_step] = (
+                    airplane.total_near_field_force_wind_axes
+                )
                 total_near_field_force_coefficients_wind_axes[
                     airplane_id, :, results_step
                 ] = airplane.total_near_field_force_coefficients_wind_axes
-                total_near_field_moments_wind_axes[
-                    airplane_id, :, results_step
-                ] = airplane.total_near_field_moment_wind_axes
+                total_near_field_moments_wind_axes[airplane_id, :, results_step] = (
+                    airplane.total_near_field_moment_wind_axes
+                )
                 total_near_field_moment_coefficients_wind_axes[
                     airplane_id, :, results_step
                 ] = airplane.total_near_field_moment_coefficients_wind_axes

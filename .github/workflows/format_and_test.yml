@@ -26,3 +26,4 @@ jobs:
       run: |
         coverage run --source=pterasoftware -m unittest discover -s tests
         codecov
+        black pterasoftware

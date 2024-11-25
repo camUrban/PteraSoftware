@@ -587,15 +587,15 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
         # Iterate through this step's airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            total_near_field_force_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_force_wind_axes
+            total_near_field_force_wind_axes[airplane_id, :, results_step] = (
+                airplane.total_near_field_force_wind_axes
+            )
             total_near_field_force_coefficients_wind_axes[
                 airplane_id, :, results_step
             ] = airplane.total_near_field_force_coefficients_wind_axes
-            total_near_field_moment_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_moment_wind_axes
+            total_near_field_moment_wind_axes[airplane_id, :, results_step] = (
+                airplane.total_near_field_moment_wind_axes
+            )
             total_near_field_moment_coefficients_wind_axes[
                 airplane_id, :, results_step
             ] = airplane.total_near_field_moment_coefficients_wind_axes

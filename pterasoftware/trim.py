@@ -20,6 +20,7 @@ This module contains the following functions:
     cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
     be found, it returns the trimmed operating point values. Otherwise, it logs an
     error. """
+
 import logging
 
 import numpy as np

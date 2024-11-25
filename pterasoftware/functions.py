@@ -42,6 +42,7 @@ This module contains the following functions:
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
 """
+
 import logging
 
 import numpy as np
@@ -550,42 +551,42 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_normal_directions[global_panel_position, :] = panel.unit_normal
     solver.panel_areas[global_panel_position] = panel.area
     solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
-    solver.panel_back_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.origin
-    solver.panel_front_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.termination
-    solver.panel_front_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.origin
-    solver.panel_back_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.termination
-    solver.panel_right_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.center
-    solver.panel_right_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.vector
-    solver.panel_front_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.center
-    solver.panel_front_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.vector
-    solver.panel_left_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.center
-    solver.panel_left_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.vector
-    solver.panel_back_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.center
-    solver.panel_back_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.vector
+    solver.panel_back_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.origin
+    )
+    solver.panel_front_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.termination
+    )
+    solver.panel_front_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.origin
+    )
+    solver.panel_back_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.termination
+    )
+    solver.panel_right_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.center
+    )
+    solver.panel_right_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.vector
+    )
+    solver.panel_front_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.center
+    )
+    solver.panel_front_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.vector
+    )
+    solver.panel_left_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.center
+    )
+    solver.panel_left_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.vector
+    )
+    solver.panel_back_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.center
+    )
+    solver.panel_back_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.vector
+    )
     solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge

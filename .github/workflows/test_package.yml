@@ -1,0 +1,30 @@
+name: Test package
+
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        
+        git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
+        source ./gl-ci-helpers/travis/setup_headless_display.sh
+        
+        pip install -r requirements_ci.txt
+    - name: Test
+      run: |
+        coverage run --source=pterasoftware -m unittest discover -s tests
+        codecov

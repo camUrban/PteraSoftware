@@ -1,6 +1,6 @@
-name: Build
+name: tests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -17,9 +17,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements_ci.txt
-    - name: Format with Black
-      run: |
-        black pterasoftware
     - name: Run tests with Coverage
       run: |
         coverage run --source=pterasoftware -m unittest discover -s tests

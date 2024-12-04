@@ -135,6 +135,7 @@ class Movement:
         if delta_time is None:
             delta_times = []
             for airplane_movement in self.airplane_movements:
+
                 # For a given airplane object, the ideal time step length is that
                 # which sheds ring vortices off the main wing that have roughly the
                 # same chord length as the panels on the main wing. This is based on
@@ -413,6 +414,7 @@ class AirplaneMovement:
 
         # Iterate through the wing movement locations.
         for wing_movement_location, wing_movement in enumerate(self.wing_movements):
+
             # Generate this wing's vector of other wing's based on its movement.
             this_wings_list_of_wings = np.array(
                 wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time)
@@ -785,6 +787,7 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
+
             # Get the reference position at this time step.
             x_le = x_le_list[step]
             y_le = y_le_list[step]

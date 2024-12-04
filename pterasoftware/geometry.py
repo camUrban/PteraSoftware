@@ -5,8 +5,7 @@ This module contains the following classes:
 
     Wing: This is a class used to contain the wings of an Airplane object.
 
-    WingCrossSection: This class is used to contain the cross sections of a Wing
-    object.
+    WingCrossSection: This class is used to contain the cross sections of a Wing object.
 
     Airfoil: This class is used to contain the airfoil of a WingCrossSection object.
 
@@ -37,7 +36,7 @@ class Airplane:
 
     This class contains the following public methods:
         set_reference_dimensions_from_wing: This method sets the reference dimensions
-        of the current_airplane from measurements obtained from the main wing.
+        of the airplane from measurements obtained from the main wing.
 
     This class contains the following class attributes:
         None
@@ -48,20 +47,23 @@ class Airplane:
 
     def __init__(
         self,
-        name="Untitled",
+        wings,
+        name="Untitled Airplane",
         x_ref=0.0,
         y_ref=0.0,
         z_ref=0.0,
         weight=0.0,
-        wings=None,
         s_ref=None,
         c_ref=None,
         b_ref=None,
     ):
         """This is the initialization method.
 
+        :param wings: list of Wing objects
+            This is a list of the airplane's wings defined as Wing objects. It must
+            contain at least one Wing object.
         :param name: str, optional
-            A sensible name for your current_airplane. The default is "Untitled".
+            A sensible name for your airplane. The default is "Untitled Airplane".
         :param x_ref: float, optional
             This is the x coordinate of the moment reference point. It should be the
             x coordinate of the center of gravity. The default is 0.0.
@@ -74,9 +76,6 @@ class Airplane:
         :param weight: float, optional
             This parameter holds the weight of the aircraft in Newtons. This is used
             by the trim functions. The default value is 0.0.
-        :param wings: list of Wing objects, optional
-            This is a list of the current_airplane's wings defined as Wing objects.
-            The default is None, which this method converts to an empty list.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first
             wing object.
@@ -87,26 +86,24 @@ class Airplane:
             This is the reference calculate_span. If not set, it populates from first
             wing object.
         """
+        # Initialize the list of wings or raise an exception if it is empty.
+        if len(wings) > 0:
+            self.wings = wings
+        else:
+            raise Exception("An airplane's list of wings must have at least one entry.")
 
-        # Initialize the name and the moment reference point.
+        # Initialize the name, moment reference point coordinates, and weight.
         self.name = name
         self.x_ref = x_ref
         self.y_ref = y_ref
         self.z_ref = z_ref
-        self.xyz_ref = np.array([self.x_ref, self.y_ref, self.z_ref])
-
-        # Initialize the weight.
         self.weight = weight
 
-        # If wings was passed as None, set wings to an empty list.
-        if wings is None:
-            wings = []
-        self.wings = wings
+        # Create a (3,) array to hold the moment reference point coordinates.
+        self.xyz_ref = np.array([self.x_ref, self.y_ref, self.z_ref])
 
-        # If the wing list is not empty, set the wing reference dimensions to be the
-        # main wing's reference dimensions.
-        if len(self.wings) > 0:
-            self.set_reference_dimensions_from_main_wing()
+        # Set the wing reference dimensions to be the main wing's reference dimensions.
+        self.set_reference_dimensions_from_main_wing()
 
         # If any of the passed reference dimensions are not None, set that reference
         # dimension to be what was passed.
@@ -130,7 +127,7 @@ class Airplane:
         self.total_near_field_moment_coefficients_wind_axes = None
 
     def set_reference_dimensions_from_main_wing(self):
-        """This method sets the reference dimensions of the current_airplane from
+        """This method sets the reference dimensions of the airplane from
         measurements obtained from the main wing.
 
         This method assumes the main wing to be the first wing in the wings list
@@ -153,9 +150,9 @@ class Airplane:
 class Wing:
     """This is a class used to contain the wings of an Airplane object.
 
-    If the wing is symmetric across the XZ plane, just define the right half and
-    supply "symmetric=True" in the constructor. If the wing is not symmetric across
-    the XZ plane, just define the wing.
+    If the wing is symmetric about some plane, just define the right half,
+    supply "symmetric=True" in the constructor, and include the symmetry plane's
+    normal vector in the "symmetry_plane_normal" attribute.
 
     Citation:
         Adapted from:         geometry.Wing in AeroSandbox
@@ -163,14 +160,16 @@ class Wing:
         Date of Retrieval:    04/24/2020
 
     This class contains the following public methods:
-        projected_area: This method calculates the projected area of the wing and
-        assigns it to the projected_area attribute.
+        unit_up_vector: This method sets a property for the wing's up orientation
+        vector, which is defined as the cross product of its unit chordwise and unit
+        normal vectors.
 
-        wetted_area: This method calculates the wetted area of the wing based on the
-        areas of its panels and assigns it to the wetted_area attribute.
+        projected_area: This method defines a property for the area of the wing
+        projected onto the plane defined by the projected unit normal vector.
 
-        span: This method calculates the span of the wing and assigns it to the span
-        attribute.
+        wetted_area: This method defines a property for the wing's wetted area.
+
+        span: This method defines a property for the wing's span.
 
         standard_mean_chord: This method calculates the standard mean chord of the
         wing and assigns it to the standard_mean_chord attribute.
@@ -187,84 +186,155 @@ class Wing:
 
     def __init__(
         self,
+        wing_cross_sections,
         name="Untitled Wing",
         x_le=0.0,
         y_le=0.0,
         z_le=0.0,
-        wing_cross_sections=None,
+        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
         symmetric=False,
+        unit_chordwise_vector=np.array([1.0, 0.0, 0.0]),
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     ):
         """This is the initialization method.
 
+        :param wing_cross_sections: list of WingCrossSection objects
+            This is a list of WingCrossSection objects, that represent the wing's
+            cross sections.
         :param name: str, optional
             This is a sensible name for the wing. The default is "Untitled Wing".
         :param x_le: float, optional
             This is the x coordinate of the leading edge of the wing, relative to the
-            current_airplane's reference
-            point. The default is 0.0.
+            airplane's reference point. The default is 0.0.
         :param y_le: float, optional
             This is the y coordinate of the leading edge of the wing, relative to the
-            current_airplane's reference
-            point. The default is 0.0.
+            airplane's reference point. The default is 0.0.
         :param z_le: float, optional
             This is the z coordinate of the leading edge of the wing, relative to the
-            current_airplane's reference
-            point. The default is 0.0.
-        :param wing_cross_sections: list of WingCrossSection objects, optional
-            This is a list of WingCrossSection objects, that represent the wing's
-            cross sections. The default is None.
+            airplane's reference point. The default is 0.0.
+        :param unit_normal_vector: array, optional
+            This is an (3,) array of floats that represents the unit normal vector
+            of the wing's symmetry plane. It is also the direction vector that the
+            wing's span will be assessed relative to. Additionally, this vector
+            crossed with the "unit_chordwise_vector" defines the normal vector of the
+            plane that the wing's projected area will reference. It must be
+            equivalent to this wing's root wing cross section's "unit_normal_vector"
+            attribute. The default is np.array([0.0, 1.0, 0.0]), which is the XZ
+            plane's unit normal vector.
         :param symmetric: bool, optional
             Set this to true if the wing is across the xz plane. Set it to false if
             not. The default is false.
+        :param unit_chordwise_vector: array, optional
+            This is an (3,) array of floats that represents the unit vector that
+            defines the wing's chordwise direction. This vector crossed with the
+            "unit_normal_vector" defines the normal vector of the plane that
+            the wing's projected area will reference. This vector must be parallel to
+            the intersection of the wing's symmetry plane with each of its wing cross
+            section's planes. The default is np.array([1.0, 0.0, 0.0]), which is the
+            X unit vector.
         :param num_chordwise_panels: int, optional
             This is the number of chordwise panels to be used on this wing. The
             default is 8.
         :param chordwise_spacing: str, optional
             This is the type of spacing between the wing's chordwise panels. It can
-            be set to "cosine" or "uniform".
-            Cosine is highly recommended. The default is cosine.
+            be set to "cosine" or "uniform". Using a cosine spacing is highly
+            recommended for steady simulations and a uniform spacing is highly
+            recommended for unsteady simulations. The default is "cosine".
         """
+        # Initialize the list of wing cross sections or raise an exception if it
+        # contains less than two entries.
+        if len(wing_cross_sections) >= 2:
+            self.wing_cross_sections = wing_cross_sections
+        else:
+            raise Exception(
+                "An wing's list of wing cross sections must have at least "
+                "two entries."
+            )
+
         # Initialize the name and the position of the wing's leading edge.
         self.name = name
         self.x_le = x_le
         self.y_le = y_le
         self.z_le = z_le
+        self.unit_normal_vector = unit_normal_vector
+        self.symmetric = symmetric
+        self.unit_chordwise_vector = unit_chordwise_vector
+        self.num_chordwise_panels = num_chordwise_panels
+
+        # If the value for the chordwise spacing valid, initial it. Otherwise,
+        # raise an exception.
+        if chordwise_spacing in ["cosine", "uniform"]:
+            self.chordwise_spacing = chordwise_spacing
+        else:
+            raise Exception('The chordwise spacing must be "cosine" or "uniform".')
+
+        # Create a (3,) array to hold the leading edge's coordinates.
         self.leading_edge = np.array([self.x_le, self.y_le, self.z_le])
 
-        # If wing_cross_sections is set to None, set it to an empty list.
-        if wing_cross_sections is None:
-            wing_cross_sections = []
+        # Check that the wing's symmetry plane is equal to its root wing cross
+        # section's plane.
+        if not np.array_equal(
+            self.unit_normal_vector,
+            self.wing_cross_sections[0].unit_normal_vector,
+        ):
+            raise Exception(
+                "The wing's symmetry plane must be the same as its root wing cross "
+                "section's plane."
+            )
 
-        # Initialize the other attributes.
-        self.wing_cross_sections = wing_cross_sections
-        self.symmetric = symmetric
-        self.num_chordwise_panels = num_chordwise_panels
-        self.chordwise_spacing = chordwise_spacing
+        # Check that the root wing cross section's leading edge isn't offset from the
+        # wing's leading edge.
+        if np.any(self.wing_cross_sections[0].leading_edge):
+            raise Exception(
+                "The root wing cross section's leading edge must not be offset from "
+                "the wing's leading edge."
+            )
 
-        # Catch invalid values of chordwise_spacing.
-        if self.chordwise_spacing not in ["cosine", "uniform"]:
-            raise Exception("Invalid value of chordwise_spacing!")
+        # Check that the wing's chordwise and normal directions are perpendicular.
+        if np.dot(self.unit_chordwise_vector, self.unit_normal_vector) != 0:
+            raise Exception(
+                "Every wing cross section's plane must intersect with the wing's "
+                "symmetry plane along a line that is parallel with the wing's "
+                "chordwise direction."
+            )
 
         # Find the number of spanwise panels on the wing by adding each cross
         # section's number of spanwise panels. Exclude the last cross section's
         # number of spanwise panels as this is irrelevant. If the wing is symmetric,
         # multiply the summation by two.
         self.num_spanwise_panels = 0
-        for cross_section in self.wing_cross_sections[:-1]:
-            self.num_spanwise_panels += cross_section.num_spanwise_panels
+        for wing_cross_section in self.wing_cross_sections[:-1]:
+            self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
         if self.symmetric:
             self.num_spanwise_panels *= 2
 
-        if self.symmetric and self.wing_cross_sections[0].y_le != 0:
-            raise Exception("Symmetric wing with root wing cross section off XZ plane!")
+        # Check that all the wing cross sections have valid unit normal vectors.
+        for wing_cross_section in self.wing_cross_sections:
+
+            # Find the vector parallel to the intersection of this wing cross
+            # section's plane and the wing's symmetry plane.
+            plane_intersection_vector = np.cross(
+                self.unit_normal_vector, wing_cross_section.unit_normal_vector
+            )
+
+            # If this vector is not parallel to the wing's chordwise vector, raise an
+            # exception.
+            if np.any(np.cross(plane_intersection_vector, self.unit_chordwise_vector)):
+                raise Exception(
+                    "Every wing cross section's plane must intersect with the wing's "
+                    "symmetry plane along a line that is parallel with the wing's "
+                    "chordwise direction."
+                )
 
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-        # Initialize the panels attribute. Then mesh the wing, which will
-        # populate this attribute.
+        for wing_cross_section in self.wing_cross_sections:
+            wing_cross_section.wing_unit_chordwise_vector = self.unit_chordwise_vector
+
+        # Initialize the panels attribute. Then mesh the wing, which will populate
+        # this attribute.
         self.panels = None
         meshing.mesh_wing(self)
 
@@ -274,11 +344,22 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
     @property
-    def projected_area(self):
-        """This method calculates the projected area of the wing and assigns it to
-        the projected_area attribute.
+    def unit_up_vector(self):
+        """This method sets a property for the wing's up orientation
+        vector, which is defined as the cross product of its unit chordwise and unit
+        normal vectors.
 
-        If the wing is symmetrical, the area of the mirrored half is included.
+        :return: (3,) array of floats
+            This is the wing's unit up vector. The units are meters.
+        """
+        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+
+    @property
+    def projected_area(self):
+        """This method defines a property for the area of the wing projected onto the
+        plane defined by the projected unit normal vector.
+
+        If the wing is symmetric, the area of the mirrored half is included.
 
         :return projected_area: float
             This attribute is the projected area of the wing. It has units of square
@@ -286,33 +367,19 @@ class Wing:
         """
         projected_area = 0
 
-        # Iterate through the wing cross sections and add the area of their
-        # corresponding wing sections to the total projected area.
-        for wing_cross_section_id, wing_cross_section in enumerate(
-            self.wing_cross_sections[:-1]
-        ):
-            next_wing_cross_section = self.wing_cross_sections[
-                wing_cross_section_id + 1
-            ]
-
-            span = abs(next_wing_cross_section.y_le - wing_cross_section.y_le)
-
-            chord = wing_cross_section.chord
-            next_chord = next_wing_cross_section.chord
-            mean_chord = (chord + next_chord) / 2
-
-            projected_area += mean_chord * span
-
-        # If the wing is symmetric, double the projected area.
-        if self.symmetric:
-            projected_area *= 2
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total projected area.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                projected_area += self.panels[
+                    chordwise_location, spanwise_location
+                ].calculate_projected_area(self.unit_up_vector)
 
         return projected_area
 
     @property
     def wetted_area(self):
-        """This method calculates the wetted area of the wing based on the areas of
-        its panels and assigns it to the wetted_area attribute.
+        """This method defines a property for the wing's wetted area.
 
         If the wing is symmetrical, the area of the mirrored half is included.
 
@@ -326,24 +393,34 @@ class Wing:
         # their area to the total wetted area.
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
-                # Add each panel's area to the total wetted area of the wing.
                 wetted_area += self.panels[chordwise_location, spanwise_location].area
 
         return wetted_area
 
     @property
     def span(self):
-        """This method calculates the span of the wing and assigns it to the span
-        attribute.
+        """This method defines a property for the wing's span.
 
-        If the wing is symmetrical, this method includes the span of the mirrored half.
+        The span is found by first finding vector connecting the leading edges of the
+        root and tip wing cross sections. Then, this vector is projected onto the
+        symmetry plane's unit normal vector. The span is defined as the magnitude of
+        this projection. If the wing is symmetrical, this method includes the span of
+        the mirrored half.
 
         :return span: float
-            This attribute is the wingspan. It has units of meters.
+            This is the wing's span. It has units of meters.
         """
-        # Calculate the span (y-distance between the root and the tip) of the entire
-        # wing.
-        span = self.wing_cross_sections[-1].y_le - self.wing_cross_sections[0].y_le
+        root_to_tip_leading_edge = (
+            self.wing_cross_sections[-1].leading_edge
+            - self.wing_cross_sections[0].leading_edge
+        )
+
+        projected_leading_edge = (
+            np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
+            * self.unit_normal_vector
+        )
+
+        span = np.linalg.norm(projected_leading_edge)
 
         # If the wing is symmetric, multiply the span by two.
         if self.symmetric:
@@ -354,7 +431,9 @@ class Wing:
     @property
     def standard_mean_chord(self):
         """This method calculates the standard mean chord of the wing and assigns it
-        to the standard_mean_chord attribute.
+        to the standard_mean_chord attribute. The standard mean chord is defined as
+        the projected area divided by the span. See their respective methods for the
+        definitions of span and projected area.
 
         :return: float
             This is the standard mean chord of the wing. It has units of meters.
@@ -387,14 +466,26 @@ class Wing:
 
             root_chord = wing_cross_section.chord
             tip_chord = next_wing_cross_section.chord
-            section_length = next_wing_cross_section.y_le - wing_cross_section.y_le
+
+            # Find this section's span by following the same procedure as for the
+            # overall wing span.
+            section_leading_edge = (
+                next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
+            )
+
+            projected_section_leading_edge = (
+                np.dot(section_leading_edge, self.unit_normal_vector)
+                * self.unit_normal_vector
+            )
+
+            section_span = np.linalg.norm(projected_section_leading_edge)
 
             # Each wing section is, by definition, trapezoidal (at least when
-            # projected on to the body-frame's XY plane). For a trapezoid,
+            # projected on to the wing's projection plane). For a trapezoid,
             # the integral from the cited equation can be shown to evaluate to the
             # following.
             integral += (
-                section_length
+                section_span
                 * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
                 / 3
             )
@@ -414,8 +505,14 @@ class WingCrossSection:
         Date of Retrieval:    04/26/2020
 
     This class contains the following public methods:
-        trailing_edge: This method calculates the coordinates of the trailing edge of
-        this wing cross section and assigns them to the trailing_edge attribute.
+        unit_chordwise_vector: This method defines a property for the wing cross
+        section's unit chordwise vector.
+
+        unit_up_vector: This method defines a property for the wing cross section's
+        unit up vector.
+
+        trailing_edge: This method defines a property for the coordinates of this
+        wing cross section's trailing edge.
 
     This class contains the following class attributes:
         None
@@ -426,12 +523,13 @@ class WingCrossSection:
 
     def __init__(
         self,
+        airfoil,
         x_le=0.0,
         y_le=0.0,
         z_le=0.0,
         chord=1.0,
+        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
         twist=0.0,
-        airfoil=None,
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
@@ -440,54 +538,56 @@ class WingCrossSection:
     ):
         """This is the initialization method.
 
+        :param airfoil: Airfoil
+            This is the airfoil to be used at this wing cross section.
         :param x_le: float, optional
-            This is the x coordinate of the leading edge of the cross section
-            relative to the wing's datum. The default
-            value is 0.0.
+            This is the x coordinate of the leading edge of the wing cross section
+            relative to the wing's datum. The default value is 0.0.
         :param y_le: float, optional
-            This is the y coordinate of the leading edge of the cross section
-            relative to the wing's datum. The default
-            value is 0.0.
+            This is the y coordinate of the leading edge of the wing cross section
+            relative to the wing's leading edge. The default value is 0.0.
         :param z_le: float, optional
-            This is the z coordinate of the leading edge of the cross section
-            relative to the wing's datum. The default
-            value is 0.0.
+            This is the z coordinate of the leading edge of the wing cross section
+            relative to the wing's datum. The default value is 0.0.
         :param chord: float, optional
-            This is the chord of the wing at this cross section. The default value is
-            1.0.
+            This is the chord of the wing at this wing cross section. The default
+            value is 1.0.
+        :param unit_normal_vector: array, optional
+            This is an (3,) array of floats that represents the unit normal vector
+            of the plane this wing cross section lies on. If this wing cross section
+            is a wing's root, this vector must be equal to the wing's
+            unit_normal_vector attribute. Also, every wing cross section
+            must have a plane that intersects its parent wing's symmetry plane at a
+            line parallel to the parent wing's "unit_chordwise_vector". The default
+            is np.array([ 0.0, 1.0, 0.0]), which is the XZ plane's unit normal vector.
         :param twist: float, optional
             This is the twist of the cross section about the leading edge in degrees.
             The default value is 0.0.
-        :param airfoil: Airfoil, optional
-            This is the airfoil to be used at this cross section. The default value
-            is None.
         :param control_surface_type: str, optional
-            This is type of control surfaces for this cross section. It can be
-            "symmetric" or "asymmetric". An example
-            of symmetric control surfaces are flaps. An example of asymmetric control
-            surfaces are ailerons. The default
-            value is "symmetric".
+            This is type of control surfaces for this wing cross section. It can be
+            "symmetric" or "asymmetric". An example of symmetric control surfaces are
+            flaps. An example of asymmetric control surfaces are ailerons. The
+            default value is "symmetric".
         :param control_surface_hinge_point: float, optional
             This is the location of the control surface hinge from the leading edge
             as a fraction of chord. The default value is 0.75.
         :param control_surface_deflection: float, optional
-            This is the Control deflection in degrees. Deflection downwards is
-            positive. The default value is 0.0
-            degrees.
+            This is the control deflection in degrees. Deflection downwards is
+            positive. The default value is 0.0 degrees.
         :param num_spanwise_panels: int, optional
-            This is the number of spanwise panels to be used between this cross
-            section and the next one. The default
-            value is 8.
+            This is the number of spanwise panels to be used between this wing cross
+            section and the next one. The default value is 8.
         :param spanwise_spacing: str, optional
-            This can be 'cosine' or 'uniform'. Using cosine spacing is highly
-            recommended. The default value is 'cosine'.
+            This can be "cosine" or "uniform". Using cosine spacing is highly
+            recommended. The default value is "cosine".
         """
 
-        # Initialize all the class attributes.
+        # Initialize all the user-provided attributes.
         self.x_le = x_le
         self.y_le = y_le
         self.z_le = z_le
         self.chord = chord
+        self.unit_normal_vector = unit_normal_vector
         self.twist = twist
         self.airfoil = airfoil
         self.control_surface_type = control_surface_type
@@ -495,38 +595,76 @@ class WingCrossSection:
         self.control_surface_deflection = control_surface_deflection
         self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
+
+        # Create a (3,) array to hold the leading edge's coordinates.
         self.leading_edge = np.array([x_le, y_le, z_le])
+
+        # Define an attribute for the parent wing's unit chordwise vector, which will
+        # be set by this wing cross section's parent wing's initialization method.
+        self.wing_unit_chordwise_vector = None
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
-            raise Exception("Invalid value of chord")
+            raise Exception("A wing cross section's chord length must be positive.")
 
-        # Catch invalid values of control_surface_type.
+        # Catch invalid values of the control surface type.
         if self.control_surface_type not in ["symmetric", "asymmetric"]:
-            raise Exception("Invalid value of control_surface_type")
+            raise Exception(
+                'A wing cross section\'s control surface type must be "symmetric" or '
+                '"asymmetric".'
+            )
 
-        # Catch invalid values of spanwise_spacing.
+        # Catch invalid values of the spanwise spacing.
         if self.spanwise_spacing not in ["cosine", "uniform"]:
-            raise Exception("Invalid value of spanwise_spacing!")
+            raise Exception(
+                'A wing cross section\'s spanwise spacing must be "cosine" or '
+                '"uniform".'
+            )
 
     @property
-    def trailing_edge(self):
-        """This method calculates the coordinates of the trailing edge of this wing
-        cross section and assigns them to the trailing_edge attribute.
+    def unit_chordwise_vector(self):
+        """This method defines a property for the wing cross section's unit chordwise
+        vector.
 
-        :return: array
-            This is a 1D array that contains the coordinates of this wing cross
-            section's trailing edge.
+        The unit chordwise vector is defined as the parent wing's unit chordwise
+        vector, rotated by the wing cross section's twist about the wing cross
+        section's normal vector.
+
+        :return: (3,) array of floats
+            This is the unit vector for the wing cross section's chordwise direction.
+            The units are meters.
         """
-
         # Find the rotation matrix given the cross section's twist.
-        rotation_matrix = functions.angle_axis_rotation_matrix(
-            self.twist * np.pi / 180, np.array([0, 1, 0])
+        twist_rotation_matrix = functions.angle_axis_rotation_matrix(
+            self.twist * np.pi / 180, self.unit_normal_vector
         )
 
         # Use the rotation matrix and the leading edge coordinates to calculate the
-        # trailing edge coordinates.
-        return self.leading_edge + rotation_matrix @ np.array([self.chord, 0.0, 0.0])
+        # unit chordwise vector.
+        return twist_rotation_matrix @ self.wing_unit_chordwise_vector
+
+    @property
+    def unit_up_vector(self):
+        """This method defines a property for the wing cross section's unit up vector.
+
+        :return: (3,) array of floats
+            This is the unit vector for the wing cross section's chordwise direction.
+            The units are meters.
+        """
+        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+
+    @property
+    def trailing_edge(self):
+        """This method defines a property for the coordinates of this wing cross
+        section's trailing edge.
+
+        :return: (3,) array of floats
+            This is an array of the coordinates of this wing cross section's trailing
+            edge.
+        """
+        chordwise_vector = self.chord * self.unit_chordwise_vector
+
+        return self.leading_edge + chordwise_vector
 
 
 class Airfoil:
@@ -613,21 +751,23 @@ class Airfoil:
             self.coordinates = coordinates
         else:
             # If not, populate the coordinates from the directory.
-            self.populate_coordinates()  # populates self.coordinates
+            self.populate_coordinates()
+
+        # Initialize other user-supplied attributes.
+        self.repanel = repanel
+        self.n_points_per_side = n_points_per_side
 
         # Check that the coordinates have been set.
         assert hasattr(self, "coordinates")
 
-        # Initialize other attributes.
-        self.repanel = repanel
-        self.mcl_coordinates = None
-        self.upper_minus_mcl = None
-        self.thickness = None
-        self.n_points_per_side = n_points_per_side
-
         # If repanel is True, repanel the airfoil.
         if self.repanel:
             self.repanel_current_airfoil(n_points_per_side=self.n_points_per_side)
+
+        # Initialize other attributes that will be set by populate_mcl_coordinates.
+        self.mcl_coordinates = None
+        self.upper_minus_mcl = None
+        self.thickness = None
 
         # Populate the mean camber line attributes.
         self.populate_mcl_coordinates()

@@ -48,7 +48,6 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.displayText = ""
 
     def exampleMenu(self, ex_num):
-
         files = []
         for i, filename in enumerate(os.listdir("examples")):
             f = "examples." + filename

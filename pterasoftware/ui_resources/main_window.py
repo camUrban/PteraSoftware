@@ -1208,7 +1208,8 @@ class Ui_MainWindowDesign(object):
         self.Logo.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                '<html><head/><body><p><img src="docs/Black_Text_Logo.png"/></p></body></html>',
+                "<html><head/><body><p><img "
+                'src="docs/Black_Text_Logo.png"/></p></body></html>',
                 None,
             )
         )

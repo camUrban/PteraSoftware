@@ -39,15 +39,8 @@ class Panel:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        front_right_vertex,
-        front_left_vertex,
-        back_left_vertex,
-        back_right_vertex,
-        is_leading_edge,
-        is_trailing_edge,
-    ):
+    def __init__(self, front_right_vertex, front_left_vertex, back_left_vertex,
+            back_right_vertex, is_leading_edge, is_trailing_edge, ):
         """This is the initialization method.
 
         :param front_right_vertex: 1D array with three elements
@@ -141,8 +134,7 @@ class Panel:
         # Find the vector between the points three quarters of the way down the left
         # and right legs of the panel.
         three_quarter_chord_vector = (
-            left_three_quarter_chord_mark - right_three_quarter_chord_mark
-        )
+                left_three_quarter_chord_mark - right_three_quarter_chord_mark)
 
         # Find the collocation point, which is halfway between the points three
         # quarters of the way down the left and right legs of the panel. Then
@@ -222,12 +214,11 @@ class Panel:
 
         if self.ring_vortex is not None:
             normalized_induced_velocity += (
-                self.ring_vortex.calculate_normalized_induced_velocity(point=point)
-            )
+                self.ring_vortex.calculate_normalized_induced_velocity(point=point))
         if self.horseshoe_vortex is not None:
             normalized_induced_velocity += (
-                self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
-            )
+                self.horseshoe_vortex.calculate_normalized_induced_velocity(
+                    point=point))
 
         return normalized_induced_velocity
 
@@ -251,8 +242,7 @@ class Panel:
             induced_velocity += self.ring_vortex.calculate_induced_velocity(point=point)
         if self.horseshoe_vortex is not None:
             induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(
-                point=point
-            )
+                point=point)
 
         return induced_velocity
 

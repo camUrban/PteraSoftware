@@ -256,8 +256,7 @@ def analyze_steady_convergence(
                         # this airplane's mesh.
                         s_ref=None,
                         c_ref=None,
-                        b_ref=None,
-                        # This value changes.
+                        b_ref=None,  # This value changes.
                         wings=these_wings,
                     )
                 )
@@ -899,8 +898,7 @@ def analyze_unsteady_convergence(
                             # with this airplane's mesh.
                             s_ref=None,
                             c_ref=None,
-                            b_ref=None,
-                            # This value changes.
+                            b_ref=None,  # This value changes.
                             wings=these_base_wings,
                         )
 

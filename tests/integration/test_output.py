@@ -1,6 +1,7 @@
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test the output against an expected output. Instead,
+Note: Most of the tests in this case do not currently test the output against an
+expected output. Instead,
 they test that the methods to create the output don't throw any errors.
 
 This module contains the following classes:
@@ -48,8 +49,7 @@ class TestOutput(unittest.TestCase):
 
         # Set up the constructing fixtures.
         self.unsteady_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
-        )
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry())
 
     def tearDown(self):
         """This method is automatically called before each testing method to tear down the fixtures.
@@ -68,9 +68,8 @@ class TestOutput(unittest.TestCase):
 
         # Call the plot_results_versus_time method on the solver fixture. The show flag is set to False,
         # so the figures will not be displayed.
-        ps.output.plot_results_versus_time(
-            unsteady_solver=self.unsteady_solver, show=False
-        )
+        ps.output.plot_results_versus_time(unsteady_solver=self.unsteady_solver,
+            show=False)
 
     def test_animate_does_not_throw(self):
         """This method tests that the animate method does not throw any errors.
@@ -79,12 +78,8 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the animate function on the unsteady solver fixture.
-        ps.output.animate(
-            unsteady_solver=self.unsteady_solver,
-            scalar_type=None,
-            show_wake_vortices=False,
-            save=False,
-        )
+        ps.output.animate(unsteady_solver=self.unsteady_solver, scalar_type=None,
+            show_wake_vortices=False, save=False, )
 
     def test_draw_does_not_throw(self):
         """This method tests that the draw method does not throw any errors.
@@ -93,9 +88,5 @@ class TestOutput(unittest.TestCase):
         """
 
         # Call the draw function on the unsteady solver fixture.
-        ps.output.draw(
-            solver=self.unsteady_solver,
-            scalar_type=None,
-            show_wake_vortices=False,
-            show_streamlines=False,
-        )
+        ps.output.draw(solver=self.unsteady_solver, scalar_type=None,
+            show_wake_vortices=False, show_streamlines=False, )

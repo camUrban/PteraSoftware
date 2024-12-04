@@ -96,7 +96,8 @@ movement = ps.movement.Movement(
 del airplane_movement
 del operating_point_movement
 
-example_problem = ps.problems.UnsteadyProblem(movement=movement, only_final_results=True)
+example_problem = ps.problems.UnsteadyProblem(movement=movement, 
+only_final_results=True)
 
 unsteady_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
     unsteady_problem=example_problem,

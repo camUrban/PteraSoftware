@@ -45,7 +45,8 @@ class TestSteadyConvergence(unittest.TestCase):
 
         # Create the steady problem.
         self.steady_validation_problem = (
-            problem_fixtures.make_steady_validation_problem())
+            problem_fixtures.make_steady_validation_problem()
+        )
 
     def tearDown(self):
         """This method tears down the test.
@@ -65,8 +66,10 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
-            panel_aspect_ratio_bounds=(4, 1), num_chordwise_panels_bounds=(3, 10),
-            convergence_criteria=1.0, )
+            panel_aspect_ratio_bounds=(4, 1),
+            num_chordwise_panels_bounds=(3, 10),
+            convergence_criteria=1.0,
+        )
 
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
@@ -87,8 +90,10 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",
-            panel_aspect_ratio_bounds=(4, 1), num_chordwise_panels_bounds=(3, 10),
-            convergence_criteria=1.0, )
+            panel_aspect_ratio_bounds=(4, 1),
+            num_chordwise_panels_bounds=(3, 10),
+            convergence_criteria=1.0,
+        )
 
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]

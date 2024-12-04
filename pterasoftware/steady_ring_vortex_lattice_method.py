@@ -79,7 +79,8 @@ class SteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.wing_wing_influences = np.zeros((self.num_panels, self.num_panels))
         self.freestream_velocity = (
-            self.operating_point.calculate_freestream_velocity_geometry_axes())
+            self.operating_point.calculate_freestream_velocity_geometry_axes()
+        )
         self.freestream_wing_influences = np.zeros(self.num_panels)
         self.vortex_strengths = np.ones(self.num_panels)
         self.panel_normal_directions = np.zeros((self.num_panels, 3))
@@ -132,7 +133,8 @@ class SteadyRingVortexLatticeMethodSolver:
         """
         # Configure the problem's logger.
         logging_level_value = functions.convert_logging_level_name_to_value(
-            logging_level)
+            logging_level
+        )
         logging.basicConfig(level=logging_level_value)
 
         # Initialize this problem's panels to have vortices congruent with this
@@ -189,7 +191,8 @@ class SteadyRingVortexLatticeMethodSolver:
         """
         # Find the freestream direction in geometry axes.
         freestream_direction = (
-            self.operating_point.calculate_freestream_direction_geometry_axes())
+            self.operating_point.calculate_freestream_direction_geometry_axes()
+        )
 
         # Iterate through each airplane's wings.
         for airplane in self.airplanes:
@@ -216,16 +219,21 @@ class SteadyRingVortexLatticeMethodSolver:
                         # whether the panel is along the trailing edge or not.
                         if not panel.is_trailing_edge:
                             next_chordwise_panel = wing.panels[
-                                chordwise_position + 1, spanwise_position]
+                                chordwise_position + 1, spanwise_position
+                            ]
                             back_left_vortex_vertex = (
-                                next_chordwise_panel.front_left_vortex_vertex)
+                                next_chordwise_panel.front_left_vortex_vertex
+                            )
                             back_right_vortex_vertex = (
-                                next_chordwise_panel.front_right_vortex_vertex)
+                                next_chordwise_panel.front_right_vortex_vertex
+                            )
                         else:
                             back_left_vortex_vertex = front_left_vortex_vertex + (
-                                    panel.back_left_vertex - panel.front_left_vertex)
+                                panel.back_left_vertex - panel.front_left_vertex
+                            )
                             back_right_vortex_vertex = front_right_vortex_vertex + (
-                                    panel.back_right_vertex - panel.front_right_vertex)
+                                panel.back_right_vertex - panel.front_right_vertex
+                            )
 
                             # If the panel is along the trailing edge, initialize its
                             # horseshoe vortex.
@@ -234,14 +242,17 @@ class SteadyRingVortexLatticeMethodSolver:
                                 finite_leg_termination=back_left_vortex_vertex,
                                 strength=None,
                                 infinite_leg_direction=freestream_direction,
-                                infinite_leg_length=infinite_leg_length, )
+                                infinite_leg_length=infinite_leg_length,
+                            )
 
                         # Initialize the panel's ring vortex.
                         panel.ring_vortex = aerodynamics.RingVortex(
                             front_right_vertex=front_right_vortex_vertex,
                             front_left_vertex=front_left_vortex_vertex,
                             back_left_vertex=back_left_vortex_vertex,
-                            back_right_vertex=back_right_vortex_vertex, strength=None, )
+                            back_right_vertex=back_right_vortex_vertex,
+                            strength=None,
+                        )
 
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
@@ -265,23 +276,29 @@ class SteadyRingVortexLatticeMethodSolver:
 
                     # Update the solver's list of attributes with this panel's
                     # attributes.
-                    functions.update_ring_vortex_solvers_panel_attributes(solver=self,
-                        global_panel_position=global_panel_position, panel=panel,
-                        airplane=airplane, )
+                    functions.update_ring_vortex_solvers_panel_attributes(
+                        solver=self,
+                        global_panel_position=global_panel_position,
+                        panel=panel,
+                        airplane=airplane,
+                    )
 
                     if panel.is_trailing_edge:
                         # Also, update the attribute lists horseshoe vortex
                         # attributes at this position with this panel's horseshoe
                         # vortex attributes
                         self.horseshoe_vortex_back_right_vertex[
-                            global_panel_position] = (
-                            panel.horseshoe_vortex.right_leg.origin)
+                            global_panel_position
+                        ] = panel.horseshoe_vortex.right_leg.origin
                         self.horseshoe_vortex_front_right_vertex[
-                            global_panel_position] = panel.horseshoe_vortex.right_leg.termination
+                            global_panel_position
+                        ] = panel.horseshoe_vortex.right_leg.termination
                         self.horseshoe_vortex_front_left_vertex[
-                            global_panel_position] = panel.horseshoe_vortex.left_leg.origin
+                            global_panel_position
+                        ] = panel.horseshoe_vortex.left_leg.origin
                         self.horseshoe_vortex_back_left_vertex[
-                            global_panel_position] = panel.horseshoe_vortex.left_leg.termination
+                            global_panel_position
+                        ] = panel.horseshoe_vortex.left_leg.termination
 
                         # Set the horseshoe vortex strength at this position to 1.0.
                         # This will be updated after the correct vortex strengths are
@@ -307,7 +324,8 @@ class SteadyRingVortexLatticeMethodSolver:
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
             front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
             back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-            strengths=self.vortex_strengths, )
+            strengths=self.vortex_strengths,
+        )
 
         # Find the matrix of normalized velocities induced at every panel's
         # collocation point by every panel's horseshoe vortex. The answer is
@@ -323,7 +341,9 @@ class SteadyRingVortexLatticeMethodSolver:
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
                 front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
                 back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
-                strengths=self.horseshoe_vortex_strengths, ))
+                strengths=self.horseshoe_vortex_strengths,
+            )
+        )
 
         # Calculate the total normalized influences, which is the sum of the
         # influences by the ring vortices and by the horseshoe vortices.
@@ -332,8 +352,11 @@ class SteadyRingVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized velocities with each panel's
         # normal direction. This is now the problem's matrix of wing-wing influence
         # coefficients.
-        self.wing_wing_influences = np.einsum("...k,...k->...", total_influences,
-            np.expand_dims(self.panel_normal_directions, axis=1), )
+        self.wing_wing_influences = np.einsum(
+            "...k,...k->...",
+            total_influences,
+            np.expand_dims(self.panel_normal_directions, axis=1),
+        )
 
     def calculate_vortex_strengths(self):
         """Solve for each panel's vortex strengths.
@@ -341,8 +364,9 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         # Solve for the strength of each panel's vortex.
-        self.vortex_strengths = np.linalg.solve(self.wing_wing_influences,
-            -self.freestream_wing_influences)
+        self.vortex_strengths = np.linalg.solve(
+            self.wing_wing_influences, -self.freestream_wing_influences
+        )
 
         # Iterate through the panels and update their vortex strengths.
         for panel_num in range(self.panels.size):
@@ -358,7 +382,8 @@ class SteadyRingVortexLatticeMethodSolver:
                 # Update the panel's horseshoe vortex strength.
                 panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_num])
                 self.horseshoe_vortex_strengths[panel_num] = self.vortex_strengths[
-                    panel_num]
+                    panel_num
+                ]
 
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
@@ -390,7 +415,8 @@ class SteadyRingVortexLatticeMethodSolver:
             front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
             front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
             back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
-            strengths=self.vortex_strengths, )
+            strengths=self.vortex_strengths,
+        )
 
         # Find the matrix of velocities induced at every panel's collocation point by
         # every panel's horseshoe vortex. This can be called in a batch fashion,
@@ -399,12 +425,15 @@ class SteadyRingVortexLatticeMethodSolver:
         # zero, which eliminates their effects. The effect of every horseshoe vortex
         # on each point will be summed.
         horseshoe_vortex_influences = (
-            aerodynamics.collapsed_velocities_from_horseshoe_vortices(points=points,
+            aerodynamics.collapsed_velocities_from_horseshoe_vortices(
+                points=points,
                 back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
                 front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
                 front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
                 back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
-                strengths=self.horseshoe_vortex_strengths, ))
+                strengths=self.horseshoe_vortex_strengths,
+            )
+        )
 
         # Find the total influence of the vortices, which is the sum of the influence
         # due to the ring vortices and the horseshoe vortices.
@@ -453,21 +482,25 @@ class SteadyRingVortexLatticeMethodSolver:
                         # Change the effective right vortex line strength from zero
                         # to this panel's ring vortex's strength.
                         effective_right_vortex_line_strengths[global_panel_position] = (
-                            self.vortex_strengths[global_panel_position])
+                            self.vortex_strengths[global_panel_position]
+                        )
 
                     else:
 
                         # Get the panel directly to the right of this panel.
                         panel_to_right = wing.panels[
-                            panel.local_chordwise_position, panel.local_spanwise_position + 1,]
+                            panel.local_chordwise_position,
+                            panel.local_spanwise_position + 1,
+                        ]
 
                         # Change the effective right vortex line strength from zero
                         # to the difference between this panel's ring vortex's
                         # strength, and the ring vortex strength of the panel to the
                         # right of it.
                         effective_right_vortex_line_strengths[global_panel_position] = (
-                                self.vortex_strengths[
-                                    global_panel_position] - panel_to_right.ring_vortex.strength)
+                            self.vortex_strengths[global_panel_position]
+                            - panel_to_right.ring_vortex.strength
+                        )
 
                     # Check if this panel is on its wing's leading edge.
                     if panel.is_leading_edge:
@@ -475,20 +508,24 @@ class SteadyRingVortexLatticeMethodSolver:
                         # Change the effective front vortex line strength from zero
                         # to this panel's ring vortex's strength.
                         effective_front_vortex_line_strengths[global_panel_position] = (
-                            self.vortex_strengths[global_panel_position])
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly in front of this panel.
                         panel_to_front = wing.panels[
-                            panel.local_chordwise_position - 1, panel.local_spanwise_position,]
+                            panel.local_chordwise_position - 1,
+                            panel.local_spanwise_position,
+                        ]
 
                         # Change the effective front vortex line strength from zero
                         # to the difference between this panel's ring vortex's
                         # strength, and the ring vortex strength of the panel in
                         # front of it.
                         effective_front_vortex_line_strengths[global_panel_position] = (
-                                self.vortex_strengths[
-                                    global_panel_position] - panel_to_front.ring_vortex.strength)
+                            self.vortex_strengths[global_panel_position]
+                            - panel_to_front.ring_vortex.strength
+                        )
 
                     # Check if this panel is on its wing's left edge.
                     if panel.is_left_edge:
@@ -496,19 +533,23 @@ class SteadyRingVortexLatticeMethodSolver:
                         # Change the effective left vortex line strength from zero to
                         # this panel's ring vortex's strength.
                         effective_left_vortex_line_strengths[global_panel_position] = (
-                            self.vortex_strengths[global_panel_position])
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly to the left of this panel.
                         panel_to_left = wing.panels[
-                            panel.local_chordwise_position, panel.local_spanwise_position - 1,]
+                            panel.local_chordwise_position,
+                            panel.local_spanwise_position - 1,
+                        ]
 
                         # Change the effective left vortex line strength from zero to
                         # the difference between this panel's ring vortex's strength,
                         # and the ring vortex strength of the panel to the left of it.
                         effective_left_vortex_line_strengths[global_panel_position] = (
-                                self.vortex_strengths[
-                                    global_panel_position] - panel_to_left.ring_vortex.strength)
+                            self.vortex_strengths[global_panel_position]
+                            - panel_to_left.ring_vortex.strength
+                        )
 
                     # Increment the global panel position.
                     global_panel_position += 1
@@ -516,53 +557,82 @@ class SteadyRingVortexLatticeMethodSolver:
         # Calculate the solution velocities at the centers of the panel's front leg,
         # left leg, and right leg.
         velocities_at_ring_vortex_front_leg_centers = self.calculate_solution_velocity(
-            points=self.panel_front_vortex_centers)
+            points=self.panel_front_vortex_centers
+        )
         velocities_at_ring_vortex_left_leg_centers = self.calculate_solution_velocity(
-            points=self.panel_left_vortex_centers)
+            points=self.panel_left_vortex_centers
+        )
         velocities_at_ring_vortex_right_leg_centers = self.calculate_solution_velocity(
-            points=self.panel_right_vortex_centers)
+            points=self.panel_right_vortex_centers
+        )
 
         # Using the effective line vortex strengths, and the Kutta-Joukowski theorem
         # to find the near field force in geometry axes on the front leg, left leg,
         # and right leg.
         near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
-                self.operating_point.density * np.expand_dims(
-            effective_right_vortex_line_strengths, axis=1) * np.cross(
-            velocities_at_ring_vortex_right_leg_centers,
-            self.panel_right_vortex_vectors, axis=-1, ))
+            self.operating_point.density
+            * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
+            * np.cross(
+                velocities_at_ring_vortex_right_leg_centers,
+                self.panel_right_vortex_vectors,
+                axis=-1,
+            )
+        )
         near_field_forces_on_ring_vortex_front_legs_geometry_axes = (
-                self.operating_point.density * np.expand_dims(
-            effective_front_vortex_line_strengths, axis=1) * np.cross(
-            velocities_at_ring_vortex_front_leg_centers,
-            self.panel_front_vortex_vectors, axis=-1, ))
+            self.operating_point.density
+            * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
+            * np.cross(
+                velocities_at_ring_vortex_front_leg_centers,
+                self.panel_front_vortex_vectors,
+                axis=-1,
+            )
+        )
         near_field_forces_on_ring_vortex_left_legs_geometry_axes = (
-                self.operating_point.density * np.expand_dims(
-            effective_left_vortex_line_strengths, axis=1) * np.cross(
-            velocities_at_ring_vortex_left_leg_centers, self.panel_left_vortex_vectors,
-            axis=-1, ))
+            self.operating_point.density
+            * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
+            * np.cross(
+                velocities_at_ring_vortex_left_leg_centers,
+                self.panel_left_vortex_vectors,
+                axis=-1,
+            )
+        )
 
         # Sum the forces on the legs to calculate the total near field force,
         # in geometry axes, on each panel.
         near_field_forces_geometry_axes = (
-                near_field_forces_on_ring_vortex_front_legs_geometry_axes + near_field_forces_on_ring_vortex_left_legs_geometry_axes + near_field_forces_on_ring_vortex_right_legs_geometry_axes)
+            near_field_forces_on_ring_vortex_front_legs_geometry_axes
+            + near_field_forces_on_ring_vortex_left_legs_geometry_axes
+            + near_field_forces_on_ring_vortex_right_legs_geometry_axes
+        )
 
         # Find the near field moment in geometry axes on the front leg, left leg,
         # and right leg.
         near_field_moments_on_ring_vortex_front_legs_geometry_axes = np.cross(
             self.panel_front_vortex_centers - self.panel_moment_references,
-            near_field_forces_on_ring_vortex_front_legs_geometry_axes, axis=-1, )
+            near_field_forces_on_ring_vortex_front_legs_geometry_axes,
+            axis=-1,
+        )
         near_field_moments_on_ring_vortex_left_legs_geometry_axes = np.cross(
             self.panel_left_vortex_centers - self.panel_moment_references,
-            near_field_forces_on_ring_vortex_left_legs_geometry_axes, axis=-1, )
+            near_field_forces_on_ring_vortex_left_legs_geometry_axes,
+            axis=-1,
+        )
         near_field_moments_on_ring_vortex_right_legs_geometry_axes = np.cross(
             self.panel_right_vortex_centers - self.panel_moment_references,
-            near_field_forces_on_ring_vortex_right_legs_geometry_axes, axis=-1, )
+            near_field_forces_on_ring_vortex_right_legs_geometry_axes,
+            axis=-1,
+        )
 
         # Sum the moments on the legs to calculate the total near field moment,
         # in geometry axes, on each panel.
         near_field_moments_geometry_axes = (
-                near_field_moments_on_ring_vortex_front_legs_geometry_axes + near_field_moments_on_ring_vortex_left_legs_geometry_axes + near_field_moments_on_ring_vortex_right_legs_geometry_axes)
+            near_field_moments_on_ring_vortex_front_legs_geometry_axes
+            + near_field_moments_on_ring_vortex_left_legs_geometry_axes
+            + near_field_moments_on_ring_vortex_right_legs_geometry_axes
+        )
 
-        functions.process_steady_solver_forces(steady_solver=self,
+        functions.process_steady_solver_forces(
+            steady_solver=self,
             near_field_forces_geometry_axes=near_field_forces_geometry_axes,
-            near_field_moments_geometry_axes=near_field_moments_geometry_axes, )
+            near_field_moments_geometry_axes=near_field_moments_geometry_axes,
+        )

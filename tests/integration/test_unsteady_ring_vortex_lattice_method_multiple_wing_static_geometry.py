@@ -48,7 +48,8 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry())
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry()
+        )
 
     def tearDown(self):
         """This method tears down the test.
@@ -66,8 +67,12 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            prescribed_wake=True, )
+            prescribed_wake=True,
+        )
 
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            show_wake_vortices=True, scalar_type="side force", save=False, )
+            show_wake_vortices=True,
+            scalar_type="side force",
+            save=False,
+        )

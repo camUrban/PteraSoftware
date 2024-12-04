@@ -36,8 +36,15 @@ trim_logger.setLevel(logging.DEBUG)
 
 
 # ToDo: Document this function.
-def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
-        external_thrust_bounds, objective_cut_off=0.01, num_calls=100, ):
+def analyze_steady_trim(
+    problem,
+    velocity_bounds,
+    alpha_bounds,
+    beta_bounds,
+    external_thrust_bounds,
+    objective_cut_off=0.01,
+    num_calls=100,
+):
     """This function attempts to calculate a trim condition of a steady solver by
     varying the operating point's velocity, angle of attack, angle of sideslip,
     and external thrust until the net force and net moment on the aircraft are
@@ -48,7 +55,8 @@ def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
     """
     if len(problem.airplanes) != 1:
         trim_logger.error(
-            "The problem objects for trim analyses must have only one airplane.")
+            "The problem objects for trim analyses must have only one airplane."
+        )
 
     weight = problem.airplanes[0].weight
     base_velocity = problem.operating_point.velocity
@@ -59,18 +67,24 @@ def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
     if base_velocity < velocity_bounds[0] or base_velocity > velocity_bounds[1]:
         raise Exception(
             "The operating point's velocity must be within the specified velocity "
-            "bounds.")
+            "bounds."
+        )
     if base_alpha < alpha_bounds[0] or base_alpha > alpha_bounds[1]:
         raise Exception(
-            "The operating point's alpha must be within the specified alpha bounds.")
+            "The operating point's alpha must be within the specified alpha bounds."
+        )
     if base_beta < beta_bounds[0] or base_beta > beta_bounds[1]:
         raise Exception(
-            "The operating point's beta must be within the specified beta bounds.")
-    if (base_external_thrust < external_thrust_bounds[0] or base_external_thrust >
-            external_thrust_bounds[1]):
+            "The operating point's beta must be within the specified beta bounds."
+        )
+    if (
+        base_external_thrust < external_thrust_bounds[0]
+        or base_external_thrust > external_thrust_bounds[1]
+    ):
         raise Exception(
             "The operating point's external thrust must be within the specified "
-            "external thrust bounds.")
+            "external thrust bounds."
+        )
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
@@ -96,18 +110,21 @@ def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
         external_forces = np.array([external_thrust, 0, weight])
         external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
-        solver = (steady_horseshoe_vortex_lattice_method
-        .SteadyHorseshoeVortexLatticeMethodSolver(
-            steady_problem=problem))
+        solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem=problem
+        )
 
         solver.run()
 
         airplane = solver.airplanes[0]
 
         net_force_coefficient = np.linalg.norm(
-            airplane.total_near_field_force_coefficients_wind_axes - external_force_coefficients)
+            airplane.total_near_field_force_coefficients_wind_axes
+            - external_force_coefficients
+        )
         net_moment_coefficient = np.linalg.norm(
-            airplane.total_near_field_moment_coefficients_wind_axes)
+            airplane.total_near_field_moment_coefficients_wind_axes
+        )
 
         objective = (abs(net_force_coefficient) + abs(net_moment_coefficient)) / 2
 
@@ -118,7 +135,15 @@ def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
         o_str = str(round(objective, 3))
 
         state_msg = (
-                "State: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str + ", external thrust=" + t_str)
+            "State: velocity="
+            + v_str
+            + ", alpha="
+            + a_str
+            + ", beta="
+            + b_str
+            + ", external thrust="
+            + t_str
+        )
         obj_msg = "Objective: " + o_str
 
         trim_logger.info(state_msg)
@@ -133,36 +158,58 @@ def analyze_steady_trim(problem, velocity_bounds, alpha_bounds, beta_bounds,
         return objective
 
     initial_guess = np.array(
-        [base_velocity, base_alpha, base_beta, base_external_thrust])
+        [base_velocity, base_alpha, base_beta, base_external_thrust]
+    )
     bounds = (velocity_bounds, alpha_bounds, beta_bounds, external_thrust_bounds)
 
     trim_logger.info("Starting local search.")
     try:
-        scipy.optimize.minimize(fun=objective_function, x0=initial_guess, bounds=bounds,
-            method="L-BFGS-B", options={"maxfun": num_calls, "eps": 0.01}, )
+        scipy.optimize.minimize(
+            fun=objective_function,
+            x0=initial_guess,
+            bounds=bounds,
+            method="L-BFGS-B",
+            options={"maxfun": num_calls, "eps": 0.01},
+        )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
         return current_arguments
 
     trim_logger.warning(
-        "No acceptable value reached with local search. Starting global search.")
+        "No acceptable value reached with local search. Starting global search."
+    )
     try:
-        scipy.optimize.dual_annealing(func=objective_function, bounds=bounds,
-            x0=initial_guess, maxfun=num_calls, minimizer_kwargs={"method": "L-BFGS-B",
-                "options": {"maxfun": num_calls, "eps": 0.01}, }, )
+        scipy.optimize.dual_annealing(
+            func=objective_function,
+            bounds=bounds,
+            x0=initial_guess,
+            maxfun=num_calls,
+            minimizer_kwargs={
+                "method": "L-BFGS-B",
+                "options": {"maxfun": num_calls, "eps": 0.01},
+            },
+        )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")
         return current_arguments
 
     trim_logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
-        "iterations.")
+        "iterations."
+    )
     return [np.nan, np.nan, np.nan, np.nan]
 
 
 # ToDo: Document this function.
-def analyze_unsteady_trim(airplane_movement, operating_point, velocity_bounds,
-        alpha_bounds, beta_bounds, objective_cut_off=0.01, num_calls=100, ):
+def analyze_unsteady_trim(
+    airplane_movement,
+    operating_point,
+    velocity_bounds,
+    alpha_bounds,
+    beta_bounds,
+    objective_cut_off=0.01,
+    num_calls=100,
+):
     """This function attempts to calculate a trim condition of an unsteady solver by
     varying the operating point's velocity, angle of attack, angle of sideslip,
     and external thrust until the net cycle-averaged force and net cycle-averaged
@@ -179,13 +226,16 @@ def analyze_unsteady_trim(airplane_movement, operating_point, velocity_bounds,
     if base_velocity < velocity_bounds[0] or base_velocity > velocity_bounds[1]:
         trim_logger.error(
             "The operating point's velocity must be within the specified velocity "
-            "bounds.")
+            "bounds."
+        )
     if base_alpha < alpha_bounds[0] or base_alpha > alpha_bounds[1]:
         trim_logger.error(
-            "The operating point's alpha must be within the specified alpha bounds.")
+            "The operating point's alpha must be within the specified alpha bounds."
+        )
     if base_beta < beta_bounds[0] or base_beta > beta_bounds[1]:
         trim_logger.error(
-            "The operating point's beta must be within the specified beta bounds.")
+            "The operating point's beta must be within the specified beta bounds."
+        )
 
     current_arguments = [np.nan, np.nan, np.nan]
 
@@ -212,27 +262,36 @@ def analyze_unsteady_trim(airplane_movement, operating_point, velocity_bounds,
         external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
         operating_point_movement = movement.OperatingPointMovement(
-            base_operating_point=operating_point)
+            base_operating_point=operating_point
+        )
 
-        this_movement = movement.Movement(airplane_movements=[airplane_movement],
-            operating_point_movement=operating_point_movement, )
+        this_movement = movement.Movement(
+            airplane_movements=[airplane_movement],
+            operating_point_movement=operating_point_movement,
+        )
 
-        this_problem = problems.UnsteadyProblem(movement=this_movement,
-            only_final_results=True)
+        this_problem = problems.UnsteadyProblem(
+            movement=this_movement, only_final_results=True
+        )
 
         this_solver = (
             unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                unsteady_problem=this_problem))
+                unsteady_problem=this_problem
+            )
+        )
 
         this_solver.run(logging_level="Critical")
 
         force_coefficients = (
-            this_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes)
+            this_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes
+        )
         moment_coefficients = (
-            this_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes)
+            this_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes
+        )
 
         net_force_coefficients = np.linalg.norm(
-            force_coefficients - external_force_coefficients)
+            force_coefficients - external_force_coefficients
+        )
         net_moment_coefficients = np.linalg.norm(moment_coefficients)
 
         objective = (abs(net_force_coefficients) + abs(net_moment_coefficients)) / 2
@@ -261,23 +320,37 @@ def analyze_unsteady_trim(airplane_movement, operating_point, velocity_bounds,
 
     trim_logger.info("Starting local search.")
     try:
-        scipy.optimize.minimize(fun=objective_function, x0=initial_guess, bounds=bounds,
-            method="L-BFGS-B", options={"maxfun": num_calls, "eps": 0.01}, )
+        scipy.optimize.minimize(
+            fun=objective_function,
+            x0=initial_guess,
+            bounds=bounds,
+            method="L-BFGS-B",
+            options={"maxfun": num_calls, "eps": 0.01},
+        )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
         return current_arguments
 
     trim_logger.warning(
-        "No acceptable value reached with local search. Starting global search.")
+        "No acceptable value reached with local search. Starting global search."
+    )
     try:
-        scipy.optimize.dual_annealing(func=objective_function, bounds=bounds,
-            x0=initial_guess, maxfun=num_calls, minimizer_kwargs={"method": "L-BFGS-B",
-                "options": {"maxfun": num_calls, "eps": 0.01}, }, )
+        scipy.optimize.dual_annealing(
+            func=objective_function,
+            bounds=bounds,
+            x0=initial_guess,
+            maxfun=num_calls,
+            minimizer_kwargs={
+                "method": "L-BFGS-B",
+                "options": {"maxfun": num_calls, "eps": 0.01},
+            },
+        )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")
         return current_arguments
 
     trim_logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
-        "iterations.")
+        "iterations."
+    )
     return [np.nan, np.nan, np.nan]

@@ -48,7 +48,8 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry())
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry()
+        )
 
     def tearDown(self):
         """This method tears down the test.
@@ -65,12 +66,18 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         """
         # Run the unsteady solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            prescribed_wake=True, )
+            prescribed_wake=True,
+        )
 
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            scalar_type="lift", show_wake_vortices=True, save=False, )
+            scalar_type="lift",
+            show_wake_vortices=True,
+            save=False,
+        )
 
         ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            show=False, save=False, )
+            show=False,
+            save=False,
+        )

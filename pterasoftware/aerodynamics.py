@@ -48,14 +48,13 @@ from numba import njit
 
 from . import functions
 
-
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
 # at which they grow. The value of this parameter is slightly controversial. It
 # dramatically affects the stability of the result. I'm using this value, as cited
 # for use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
 # Modeling of Rotor Wakes" (Ananthan and Leishman, 2004). It is unitless.
-squire = 10**-4
+squire = 10 ** -4
 
 # Set the value of Lamb's constant that will be used by the induced velocity
 # functions. Lamb's constant relates to the size of the vortex cores and the rate at
@@ -118,14 +117,8 @@ class HorseshoeVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        finite_leg_origin,
-        finite_leg_termination,
-        strength,
-        infinite_leg_direction,
-        infinite_leg_length,
-    ):
+    def __init__(self, finite_leg_origin, finite_leg_termination, strength,
+            infinite_leg_direction, infinite_leg_length, ):
         """This is the initialization method.
 
         :param finite_leg_origin: 1D array
@@ -151,28 +144,18 @@ class HorseshoeVortex:
         self.infinite_leg_direction = infinite_leg_direction
         self.infinite_leg_length = infinite_leg_length
         self.right_leg_origin = (
-            self.finite_leg_origin + infinite_leg_direction * infinite_leg_length
-        )
+                self.finite_leg_origin + infinite_leg_direction * infinite_leg_length)
         self.left_leg_termination = (
-            self.finite_leg_termination + infinite_leg_direction * infinite_leg_length
-        )
+                self.finite_leg_termination + infinite_leg_direction *
+                infinite_leg_length)
 
         # Initialize a line vortex to represent the horseshoe's finite leg.
-        self.right_leg = LineVortex(
-            origin=self.right_leg_origin,
-            termination=self.finite_leg_origin,
-            strength=self.strength,
-        )
-        self.finite_leg = LineVortex(
-            origin=self.finite_leg_origin,
-            termination=self.finite_leg_termination,
-            strength=self.strength,
-        )
-        self.left_leg = LineVortex(
-            origin=self.finite_leg_termination,
-            termination=self.left_leg_termination,
-            strength=self.strength,
-        )
+        self.right_leg = LineVortex(origin=self.right_leg_origin,
+            termination=self.finite_leg_origin, strength=self.strength, )
+        self.finite_leg = LineVortex(origin=self.finite_leg_origin,
+            termination=self.finite_leg_termination, strength=self.strength, )
+        self.left_leg = LineVortex(origin=self.finite_leg_termination,
+            termination=self.left_leg_termination, strength=self.strength, )
 
     def update_strength(self, strength):
         """This method updates the strength of this horseshoe vortex object, and the
@@ -206,14 +189,8 @@ class RingVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        front_left_vertex,
-        front_right_vertex,
-        back_left_vertex,
-        back_right_vertex,
-        strength,
-    ):
+    def __init__(self, front_left_vertex, front_right_vertex, back_left_vertex,
+            back_right_vertex, strength, ):
         """This is the initialization method.
 
         :param front_left_vertex: 1D array
@@ -238,34 +215,18 @@ class RingVortex:
         self.strength = strength
 
         # Initialize the line vortices that make up the ring vortex.
-        self.front_leg = LineVortex(
-            origin=self.front_right_vertex,
-            termination=self.front_left_vertex,
-            strength=self.strength,
-        )
-        self.left_leg = LineVortex(
-            origin=self.front_left_vertex,
-            termination=self.back_left_vertex,
-            strength=self.strength,
-        )
-        self.back_leg = LineVortex(
-            origin=self.back_left_vertex,
-            termination=self.back_right_vertex,
-            strength=self.strength,
-        )
-        self.right_leg = LineVortex(
-            origin=self.back_right_vertex,
-            termination=self.front_right_vertex,
-            strength=self.strength,
-        )
+        self.front_leg = LineVortex(origin=self.front_right_vertex,
+            termination=self.front_left_vertex, strength=self.strength, )
+        self.left_leg = LineVortex(origin=self.front_left_vertex,
+            termination=self.back_left_vertex, strength=self.strength, )
+        self.back_leg = LineVortex(origin=self.back_left_vertex,
+            termination=self.back_right_vertex, strength=self.strength, )
+        self.right_leg = LineVortex(origin=self.back_right_vertex,
+            termination=self.front_right_vertex, strength=self.strength, )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = functions.numba_centroid_of_quadrilateral(
-            self.front_left_vertex,
-            self.front_right_vertex,
-            self.back_left_vertex,
-            self.back_right_vertex,
-        )
+        self.center = functions.numba_centroid_of_quadrilateral(self.front_left_vertex,
+            self.front_right_vertex, self.back_left_vertex, self.back_right_vertex, )
 
         # Initialize a variable to hold the age of the ring vortex in seconds.
         self.age = 0
@@ -285,9 +246,8 @@ class RingVortex:
         self.left_leg.strength = strength
         self.back_leg.strength = strength
 
-    def update_position(
-        self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
-    ):
+    def update_position(self, front_left_vertex, front_right_vertex, back_left_vertex,
+            back_right_vertex):
         """This method updates the position of the ring vortex, and the positions of
         all its attributes.
 
@@ -311,47 +271,24 @@ class RingVortex:
         self.back_right_vertex = back_right_vertex
 
         # Initialize the line vortices that make up the ring vortex.
-        self.front_leg = LineVortex(
-            origin=self.front_right_vertex,
-            termination=self.front_left_vertex,
-            strength=self.strength,
-        )
-        self.left_leg = LineVortex(
-            origin=self.front_left_vertex,
-            termination=self.back_left_vertex,
-            strength=self.strength,
-        )
-        self.back_leg = LineVortex(
-            origin=self.back_left_vertex,
-            termination=self.back_right_vertex,
-            strength=self.strength,
-        )
-        self.right_leg = LineVortex(
-            origin=self.back_right_vertex,
-            termination=self.front_right_vertex,
-            strength=self.strength,
-        )
+        self.front_leg = LineVortex(origin=self.front_right_vertex,
+            termination=self.front_left_vertex, strength=self.strength, )
+        self.left_leg = LineVortex(origin=self.front_left_vertex,
+            termination=self.back_left_vertex, strength=self.strength, )
+        self.back_leg = LineVortex(origin=self.back_left_vertex,
+            termination=self.back_right_vertex, strength=self.strength, )
+        self.right_leg = LineVortex(origin=self.back_right_vertex,
+            termination=self.front_right_vertex, strength=self.strength, )
 
         # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = functions.numba_centroid_of_quadrilateral(
-            self.front_left_vertex,
-            self.front_right_vertex,
-            self.back_left_vertex,
-            self.back_right_vertex,
-        )
+        self.center = functions.numba_centroid_of_quadrilateral(self.front_left_vertex,
+            self.front_right_vertex, self.back_left_vertex, self.back_right_vertex, )
 
 
 @njit(cache=True, fastmath=False)
-def collapsed_velocities_from_horseshoe_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def collapsed_velocities_from_horseshoe_vortices(points, back_right_vortex_vertices,
+        front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, strengths, ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the cumulative induced velocity due
     to all the horseshoe vortices.
@@ -400,42 +337,24 @@ def collapsed_velocities_from_horseshoe_vortices(
         velocity at each of the N points due to all the horseshoe vortices. The units
         are meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
+    origins_list = [back_right_vortex_vertices, front_right_vortex_vertices,
+        front_left_vortex_vertices, ]
+    terminations_list = [front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, ]
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(3):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
+        induced_velocities += collapsed_velocities_from_line_vortices(points=points,
+            origins=origins_list[i], terminations=terminations_list[i],
+            strengths=strengths, ages=ages, nu=nu, )
     return induced_velocities
 
 
 @njit(cache=True, fastmath=False)
-def expanded_velocities_from_horseshoe_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def expanded_velocities_from_horseshoe_vortices(points, back_right_vortex_vertices,
+        front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, strengths, ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     horseshoe vortices. At every point, it finds the induced velocity due to each
     horseshoe vortex.
@@ -484,42 +403,24 @@ def expanded_velocities_from_horseshoe_vortices(
         the velocity induced at one point by one of the horseshoe vortices. The units
         are meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
+    origins_list = [back_right_vortex_vertices, front_right_vortex_vertices,
+        front_left_vortex_vertices, ]
+    terminations_list = [front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, ]
     induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(3):
-        induced_velocities += expanded_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
+        induced_velocities += expanded_velocities_from_line_vortices(points=points,
+            origins=origins_list[i], terminations=terminations_list[i],
+            strengths=strengths, ages=ages, nu=nu, )
     return induced_velocities
 
 
 @njit(cache=True, fastmath=False)
-def collapsed_velocities_from_ring_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def collapsed_velocities_from_ring_vortices(points, back_right_vortex_vertices,
+        front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, strengths, ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the cumulative induced velocity due to
     all the ring vortices.
@@ -568,44 +469,25 @@ def collapsed_velocities_from_ring_vortices(
         velocity at each of the N points due to all the ring vortices. The units are
         meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-        back_right_vortex_vertices,
-    ]
+    origins_list = [back_right_vortex_vertices, front_right_vortex_vertices,
+        front_left_vortex_vertices, back_left_vortex_vertices, ]
+    terminations_list = [front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, back_right_vortex_vertices, ]
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(4):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
+        induced_velocities += collapsed_velocities_from_line_vortices(points=points,
+            origins=origins_list[i], terminations=terminations_list[i],
+            strengths=strengths, ages=ages, nu=nu, )
     return induced_velocities
 
 
 @njit(cache=True, fastmath=False)
-def collapsed_velocities_from_ring_vortices_chordwise_segments(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def collapsed_velocities_from_ring_vortices_chordwise_segments(points,
+        back_right_vortex_vertices, front_right_vortex_vertices,
+        front_left_vortex_vertices, back_left_vortex_vertices, strengths, ages=None,
+        nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the cumulative induced velocity due to
     all the ring vortices' chordwise segments.
@@ -654,40 +536,22 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         velocity at each of the N points due to all the ring vortices' spanwise
         segments. The units are meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
+    origins_list = [back_right_vortex_vertices, front_left_vortex_vertices, ]
+    terminations_list = [front_right_vortex_vertices, back_left_vortex_vertices, ]
     induced_velocities = np.zeros((points.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(2):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
+        induced_velocities += collapsed_velocities_from_line_vortices(points=points,
+            origins=origins_list[i], terminations=terminations_list[i],
+            strengths=strengths, ages=ages, nu=nu, )
     return induced_velocities
 
 
 @njit(cache=True, fastmath=False)
-def expanded_velocities_from_ring_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def expanded_velocities_from_ring_vortices(points, back_right_vortex_vertices,
+        front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, strengths, ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     ring vortices. At every point, it finds the induced velocity due to each ring
     vortex.
@@ -736,42 +600,23 @@ def expanded_velocities_from_ring_vortices(
         the velocity induced at one point by one of the ring vortices. The units are
         meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-        back_right_vortex_vertices,
-    ]
+    origins_list = [back_right_vortex_vertices, front_right_vortex_vertices,
+        front_left_vortex_vertices, back_left_vortex_vertices, ]
+    terminations_list = [front_right_vortex_vertices, front_left_vortex_vertices,
+        back_left_vortex_vertices, back_right_vortex_vertices, ]
     induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
     # Get the velocity induced by each leg of the ring vortex.
     for i in range(4):
-        induced_velocities += expanded_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
+        induced_velocities += expanded_velocities_from_line_vortices(points=points,
+            origins=origins_list[i], terminations=terminations_list[i],
+            strengths=strengths, ages=ages, nu=nu, )
     return induced_velocities
 
 
 @njit(cache=True, fastmath=False)
-def collapsed_velocities_from_line_vortices(
-    points,
-    origins,
-    terminations,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def collapsed_velocities_from_line_vortices(points, origins, terminations, strengths,
+        ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     line vortices. At every point, it finds the cumulative induced velocity due to
     all the line vortices.
@@ -847,10 +692,10 @@ def collapsed_velocities_from_line_vortices(
         r_0_z = termination[2] - origin[2]
 
         # Find the r_0 vector's length.
-        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
+        r_0 = math.sqrt(r_0_x ** 2 + r_0_y ** 2 + r_0_z ** 2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0**2 * r_c**2
+        c_2 = r_0 ** 2 * r_c ** 2
 
         for point_id in range(num_points):
             point = points[point_id]
@@ -871,9 +716,9 @@ def collapsed_velocities_from_line_vortices(
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
 
             # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
-            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
-            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
+            r_1 = math.sqrt(r_1_x ** 2 + r_1_y ** 2 + r_1_z ** 2)
+            r_2 = math.sqrt(r_2_x ** 2 + r_2_y ** 2 + r_2_z ** 2)
+            r_3 = math.sqrt(r_3_x ** 2 + r_3_y ** 2 + r_3_z ** 2)
 
             c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
 
@@ -881,12 +726,11 @@ def collapsed_velocities_from_line_vortices(
             # within machine epsilon), there is a removable discontinuity. In this
             # case, continue to the next point because there is no velocity induced
             # by the current vortex at this point.
-            if r_1 < eps or r_2 < eps or r_3**2 < eps:
+            if r_1 < eps or r_2 < eps or r_3 ** 2 < eps:
                 continue
             else:
-                c_4 = (
-                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
-                )
+                c_4 = (c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (
+                            r_1 * r_2 * (r_3 ** 2 + c_2)))
                 velocities[point_id, 0] += c_4 * r_3_x
                 velocities[point_id, 1] += c_4 * r_3_y
                 velocities[point_id, 2] += c_4 * r_3_z
@@ -895,14 +739,8 @@ def collapsed_velocities_from_line_vortices(
 
 
 @njit(cache=True, fastmath=False)
-def expanded_velocities_from_line_vortices(
-    points,
-    origins,
-    terminations,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
+def expanded_velocities_from_line_vortices(points, origins, terminations, strengths,
+        ages=None, nu=0.0, ):
     """This function takes in a group of points, and the attributes of a group of
     line vortices. At every point, it finds the induced velocity due to each line
     vortex.
@@ -978,10 +816,10 @@ def expanded_velocities_from_line_vortices(
         r_0_z = termination[2] - origin[2]
 
         # Find the r_0 vector's length.
-        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
+        r_0 = math.sqrt(r_0_x ** 2 + r_0_y ** 2 + r_0_z ** 2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0**2 * r_c**2
+        c_2 = r_0 ** 2 * r_c ** 2
 
         for point_id in range(num_points):
             point = points[point_id]
@@ -1002,9 +840,9 @@ def expanded_velocities_from_line_vortices(
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
 
             # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
-            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
-            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
+            r_1 = math.sqrt(r_1_x ** 2 + r_1_y ** 2 + r_1_z ** 2)
+            r_2 = math.sqrt(r_2_x ** 2 + r_2_y ** 2 + r_2_z ** 2)
+            r_3 = math.sqrt(r_3_x ** 2 + r_3_y ** 2 + r_3_z ** 2)
 
             c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
 
@@ -1012,12 +850,11 @@ def expanded_velocities_from_line_vortices(
             # within machine epsilon), there is a removable discontinuity. In this
             # case, set the velocity components to their true values, which are 0.0
             # meters per second.
-            if r_1 < eps or r_2 < eps or r_3**2 < eps:
+            if r_1 < eps or r_2 < eps or r_3 ** 2 < eps:
                 continue
             else:
-                c_4 = (
-                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
-                )
+                c_4 = (c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (
+                            r_1 * r_2 * (r_3 ** 2 + c_2)))
                 velocities[point_id, vortex_id, 0] = c_4 * r_3_x
                 velocities[point_id, vortex_id, 1] = c_4 * r_3_y
                 velocities[point_id, vortex_id, 2] = c_4 * r_3_z

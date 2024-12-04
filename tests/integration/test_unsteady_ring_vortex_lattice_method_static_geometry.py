@@ -6,7 +6,8 @@ Based on an equivalent XFLR5 testing case, the expected output for this case is:
     CDi:    0.011
     Cm:     -0.197
 
-Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which is a ring vortex lattice
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
+which is a ring vortex lattice
 method solver. The geometry in this case is static. Therefore, the results of this unsteady solver should converge to
 be close to XFLR5's static result.
 
@@ -53,8 +54,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
-        )
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry())
 
     def tearDown(self):
         """This method tears down the test.
@@ -72,8 +72,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            prescribed_wake=True
-        )
+            prescribed_wake=True)
 
         this_solver = self.unsteady_ring_vortex_lattice_method_validation_solver
         this_airplane = this_solver.current_airplanes[0]
@@ -96,16 +95,11 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            show_wake_vortices=True,
-            scalar_type="lift",
-            save=False,
-        )
+            show_wake_vortices=True, scalar_type="lift", save=False, )
 
         ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            show=False,
-            save=False,
-        )
+            show=False, save=False, )
 
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(abs(c_di_error) < allowable_error)

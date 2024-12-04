@@ -291,7 +291,6 @@ def process_steady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
@@ -337,7 +336,6 @@ def process_steady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in steady_solver.airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]
@@ -424,7 +422,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind
         # axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
@@ -471,7 +468,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in unsteady_solver.current_airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]

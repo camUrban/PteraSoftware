@@ -46,15 +46,12 @@ class TestLineVortex(unittest.TestCase):
 
         # Create the constructing fixtures.
         self.line_vortex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_line_vortex_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_line_vortex_fixture())
         self.origin_fixture = tests.unit.fixtures.vortex_fixtures.make_origin_fixture()
         self.termination_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_termination_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_termination_fixture())
         self.strength_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_strength_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_strength_fixture())
 
     def tearDown(self):
         """This method is automatically called before each testing method to tear
@@ -80,19 +77,15 @@ class TestLineVortex(unittest.TestCase):
 
         # Test that the vortex's coordinates were correctly set.
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.origin, self.origin_fixture)
-        )
+            np.allclose(self.line_vortex_fixture.origin, self.origin_fixture))
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.termination, self.termination_fixture)
-        )
+            np.allclose(self.line_vortex_fixture.termination, self.termination_fixture))
 
         # Test that the vortex's strength was correctly set.
         self.assertEqual(self.line_vortex_fixture.strength, self.strength_fixture)
 
         # Test that the vortex's center and vector were correctly calculated.
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.center, np.array([0.5, 0.5, 0.5]))
-        )
+            np.allclose(self.line_vortex_fixture.center, np.array([0.5, 0.5, 0.5])))
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.vector, np.array([1, 1, 1]))
-        )
+            np.allclose(self.line_vortex_fixture.vector, np.array([1, 1, 1])))

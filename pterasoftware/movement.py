@@ -57,15 +57,8 @@ class Movement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        airplane_movements,
-        operating_point_movement,
-        num_steps=None,
-        num_cycles=None,
-        num_chords=None,
-        delta_time=None,
-    ):
+    def __init__(self, airplane_movements, operating_point_movement, num_steps=None,
+            num_cycles=None, num_chords=None, delta_time=None, ):
         """This is the initialization method.
 
         :param airplane_movements: list of AirplaneMovement objects
@@ -112,8 +105,7 @@ class Movement:
             if num_steps is not None or self.get_max_period() == 0:
                 raise Exception(
                     "Only specify the number of cycles if you haven't specified the "
-                    "number of steps and the movement isn't static!"
-                )
+                    "number of steps and the movement isn't static!")
             self.num_cycles = num_cycles
         else:
             self.num_cycles = None
@@ -124,8 +116,7 @@ class Movement:
             if num_steps is not None or self.get_max_period() != 0:
                 raise Exception(
                     "Only specify the number of chords if you haven't specified the "
-                    "number of steps and the movement is static!"
-                )
+                    "number of steps and the movement is static!")
             self.num_chords = num_chords
         else:
             self.num_chords = None
@@ -135,17 +126,15 @@ class Movement:
         if delta_time is None:
             delta_times = []
             for airplane_movement in self.airplane_movements:
-
                 # For a given airplane object, the ideal time step length is that
                 # which sheds ring vortices off the main wing that have roughly the
                 # same chord length as the panels on the main wing. This is based on
                 # the base airplane's reference chord length, its main wing's number
                 # of chordwise panels, and its base operating point's velocity.
-                delta_times.append(
-                    airplane_movement.base_airplane.c_ref
-                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                    / operating_point_movement.base_operating_point.velocity
-                )
+                delta_times.append(airplane_movement.base_airplane.c_ref /
+                                   airplane_movement.base_airplane.wings[
+                                       0].num_chordwise_panels /
+                                       operating_point_movement.base_operating_point.velocity)
 
             # Set the delta time to be the average of the airplanes' ideal delta times.
             delta_time = sum(delta_times) / len(delta_times)
@@ -173,9 +162,7 @@ class Movement:
                 # that the wake extends back by some number of reference chord lengths.
                 wake_length = self.num_chords * max_c_ref
                 panel_length = (
-                    delta_time
-                    * self.operating_point_movement.base_operating_point.velocity
-                )
+                        delta_time * self.operating_point_movement.base_operating_point.velocity)
                 num_steps = math.ceil(wake_length / panel_length)
             else:
 
@@ -197,16 +184,13 @@ class Movement:
         self.airplanes = []
         for airplane_movement in self.airplane_movements:
             self.airplanes.append(
-                airplane_movement.generate_airplanes(
-                    num_steps=self.num_steps, delta_time=self.delta_time
-                )
-            )
+                airplane_movement.generate_airplanes(num_steps=self.num_steps,
+                    delta_time=self.delta_time))
 
         # Generate a lists of operating point objects that are the steps through the
         # movement of this problem's operating point.
         self.operating_points = operating_point_movement.generate_operating_points(
-            num_steps=self.num_steps, delta_time=self.delta_time
-        )
+            num_steps=self.num_steps, delta_time=self.delta_time)
 
     def get_max_period(self):
         """This method returns the longest period of this movement object's sub-
@@ -224,10 +208,8 @@ class Movement:
 
         # The global max period is the maximum of the max airplane period and the max
         # operating point period.
-        return max(
-            max_airplane_period,
-            self.operating_point_movement.get_max_period(),
-        )
+        return max(max_airplane_period,
+            self.operating_point_movement.get_max_period(), )
 
 
 class AirplaneMovement:
@@ -247,20 +229,10 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        base_airplane,
-        wing_movements,
-        x_ref_amplitude=0.0,
-        x_ref_period=0.0,
-        x_ref_spacing="sine",
-        y_ref_amplitude=0.0,
-        y_ref_period=0.0,
-        y_ref_spacing="sine",
-        z_ref_amplitude=0.0,
-        z_ref_period=0.0,
-        z_ref_spacing="sine",
-    ):
+    def __init__(self, base_airplane, wing_movements, x_ref_amplitude=0.0,
+            x_ref_period=0.0, x_ref_spacing="sine", y_ref_amplitude=0.0,
+            y_ref_period=0.0, y_ref_spacing="sine", z_ref_amplitude=0.0,
+            z_ref_period=0.0, z_ref_spacing="sine", ):
         """This is the initialization method.
 
         :param base_airplane: Airplane
@@ -334,23 +306,15 @@ class AirplaneMovement:
         if self.x_ref_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            x_ref_list = oscillating_sinspace(
-                amplitude=self.x_ref_amplitude,
-                period=self.x_ref_period,
-                base_value=self.x_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            x_ref_list = oscillating_sinspace(amplitude=self.x_ref_amplitude,
+                period=self.x_ref_period, base_value=self.x_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.x_ref_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            x_ref_list = oscillating_linspace(
-                amplitude=self.x_ref_amplitude,
-                period=self.x_ref_period,
-                base_value=self.x_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            x_ref_list = oscillating_linspace(amplitude=self.x_ref_amplitude,
+                period=self.x_ref_period, base_value=self.x_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -360,23 +324,15 @@ class AirplaneMovement:
         if self.y_ref_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            y_ref_list = oscillating_sinspace(
-                amplitude=self.y_ref_amplitude,
-                period=self.y_ref_period,
-                base_value=self.y_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            y_ref_list = oscillating_sinspace(amplitude=self.y_ref_amplitude,
+                period=self.y_ref_period, base_value=self.y_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.y_ref_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            y_ref_list = oscillating_linspace(
-                amplitude=self.y_ref_amplitude,
-                period=self.y_ref_period,
-                base_value=self.y_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            y_ref_list = oscillating_linspace(amplitude=self.y_ref_amplitude,
+                period=self.y_ref_period, base_value=self.y_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -386,23 +342,15 @@ class AirplaneMovement:
         if self.z_ref_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            z_ref_list = oscillating_sinspace(
-                amplitude=self.z_ref_amplitude,
-                period=self.z_ref_period,
-                base_value=self.z_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            z_ref_list = oscillating_sinspace(amplitude=self.z_ref_amplitude,
+                period=self.z_ref_period, base_value=self.z_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.z_ref_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            z_ref_list = oscillating_linspace(
-                amplitude=self.z_ref_amplitude,
-                period=self.z_ref_period,
-                base_value=self.z_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            z_ref_list = oscillating_linspace(amplitude=self.z_ref_amplitude,
+                period=self.z_ref_period, base_value=self.z_ref_base,
+                num_steps=num_steps, delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -414,11 +362,10 @@ class AirplaneMovement:
 
         # Iterate through the wing movement locations.
         for wing_movement_location, wing_movement in enumerate(self.wing_movements):
-
             # Generate this wing's vector of other wing's based on its movement.
             this_wings_list_of_wings = np.array(
-                wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time)
-            )
+                wing_movement.generate_wings(num_steps=num_steps,
+                                             delta_time=delta_time))
 
             # Add this vector the airplane's array of wing objects.
             wings[wing_movement_location, :] = this_wings_list_of_wings
@@ -438,9 +385,8 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = geometry.Airplane(
-                name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
-            )
+            this_airplane = geometry.Airplane(name=name, x_ref=x_ref, y_ref=y_ref,
+                z_ref=z_ref, wings=these_wings)
 
             # Add this new object to the list of airplanes.
             airplanes.append(this_airplane)
@@ -461,12 +407,8 @@ class AirplaneMovement:
             wing_movement_max_periods.append(wing_movement.get_max_period())
         max_wing_movement_period = max(wing_movement_max_periods)
 
-        max_period = max(
-            max_wing_movement_period,
-            self.x_ref_period,
-            self.y_ref_period,
-            self.z_ref_period,
-        )
+        max_period = max(max_wing_movement_period, self.x_ref_period, self.y_ref_period,
+            self.z_ref_period, )
 
         return max_period
 
@@ -488,20 +430,10 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        base_wing,
-        wing_cross_sections_movements,
-        x_le_amplitude=0.0,
-        x_le_period=0.0,
-        x_le_spacing="sine",
-        y_le_amplitude=0.0,
-        y_le_period=0.0,
-        y_le_spacing="sine",
-        z_le_amplitude=0.0,
-        z_le_period=0.0,
-        z_le_spacing="sine",
-    ):
+    def __init__(self, base_wing, wing_cross_sections_movements, x_le_amplitude=0.0,
+            x_le_period=0.0, x_le_spacing="sine", y_le_amplitude=0.0, y_le_period=0.0,
+            y_le_spacing="sine", z_le_amplitude=0.0, z_le_period=0.0,
+            z_le_spacing="sine", ):
         """This is the initialization method.
 
         :param base_wing: Wing
@@ -570,23 +502,15 @@ class WingMovement:
         if self.x_le_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            x_le_list = oscillating_sinspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            x_le_list = oscillating_sinspace(amplitude=self.x_le_amplitude,
+                period=self.x_le_period, base_value=self.x_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         elif self.x_le_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            x_le_list = oscillating_linspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            x_le_list = oscillating_linspace(amplitude=self.x_le_amplitude,
+                period=self.x_le_period, base_value=self.x_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -596,23 +520,15 @@ class WingMovement:
         if self.y_le_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            y_le_list = oscillating_sinspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            y_le_list = oscillating_sinspace(amplitude=self.y_le_amplitude,
+                period=self.y_le_period, base_value=self.y_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         elif self.y_le_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            y_le_list = oscillating_linspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            y_le_list = oscillating_linspace(amplitude=self.y_le_amplitude,
+                period=self.y_le_period, base_value=self.y_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -622,23 +538,15 @@ class WingMovement:
         if self.z_le_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            z_le_list = oscillating_sinspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            z_le_list = oscillating_sinspace(amplitude=self.z_le_amplitude,
+                period=self.z_le_period, base_value=self.z_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         elif self.z_le_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            z_le_list = oscillating_linspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            z_le_list = oscillating_linspace(amplitude=self.z_le_amplitude,
+                period=self.z_le_period, base_value=self.z_le_base, num_steps=num_steps,
+                delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -647,18 +555,16 @@ class WingMovement:
         # Create an empty array that will hold each of the wing's wing cross
         # section's vector of other wing cross section's based its movement.
         wing_cross_sections = np.empty(
-            (len(self.wing_cross_section_movements), num_steps), dtype=object
-        )
+            (len(self.wing_cross_section_movements), num_steps), dtype=object)
 
         # Initialize a variable to hold the inner wing cross section's list of wing
         # cross sections for each time step.
         last_wing_cross_section_time_histories = None
 
         # Iterate through the wing cross section movement locations.
-        for (
-            wing_cross_section_movement_location,
-            wing_cross_section_movement,
-        ) in enumerate(self.wing_cross_section_movements):
+        for (wing_cross_section_movement_location,
+             wing_cross_section_movement,) in enumerate(
+            self.wing_cross_section_movements):
             wing_is_vertical = False
 
             # Check if this is this wing's root cross section.
@@ -666,17 +572,13 @@ class WingMovement:
 
                 # Get the root cross section's sweeping and heaving attributes.
                 first_wing_cross_section_movement_sweeping_amplitude = (
-                    wing_cross_section_movement.sweeping_amplitude
-                )
+                    wing_cross_section_movement.sweeping_amplitude)
                 first_wing_cross_section_movement_sweeping_period = (
-                    wing_cross_section_movement.sweeping_period
-                )
+                    wing_cross_section_movement.sweeping_period)
                 first_wing_cross_section_movement_heaving_amplitude = (
-                    wing_cross_section_movement.heaving_amplitude
-                )
+                    wing_cross_section_movement.heaving_amplitude)
                 first_wing_cross_section_movement_heaving_period = (
-                    wing_cross_section_movement.heaving_period
-                )
+                    wing_cross_section_movement.heaving_period)
 
                 # Check that the root cross section is not sweeping or heaving.
                 assert first_wing_cross_section_movement_sweeping_amplitude == 0
@@ -696,8 +598,7 @@ class WingMovement:
 
             else:
                 this_base_wing_cross_section = (
-                    wing_cross_section_movement.base_wing_cross_section
-                )
+                    wing_cross_section_movement.base_wing_cross_section)
 
                 this_x_le = this_base_wing_cross_section.x_le
                 this_y_le = this_base_wing_cross_section.y_le
@@ -718,32 +619,22 @@ class WingMovement:
 
                 # Find the span between this wing cross section and the inner wing
                 # cross section.
-                wing_cross_section_span = np.sqrt(
-                    (this_x_le - last_x_les[0]) ** 2
-                    + (this_y_le - last_y_les[0]) ** 2
-                    + (this_z_le - last_z_les[0]) ** 2
-                )
+                wing_cross_section_span = np.sqrt((this_x_le - last_x_les[0]) ** 2 + (
+                            this_y_le - last_y_les[0]) ** 2 + (this_z_le - last_z_les[
+                    0]) ** 2)
 
                 if this_y_le != last_y_les[0]:
                     # Find the base sweep angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_sweep = (
-                        np.arctan(
-                            (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
-                        )
-                        * 180
-                        / np.pi
-                    )
+                    base_wing_cross_section_sweep = (np.arctan(
+                        (this_z_le - last_z_les[0]) / (
+                                    this_y_le - last_y_les[0])) * 180 / np.pi)
 
                     # Find the base heave angle of this wing cross section compared
                     # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_heave = (
-                        np.arctan(
-                            (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
-                        )
-                        * 180
-                        / np.pi
-                    )
+                    base_wing_cross_section_heave = (np.arctan(
+                        (this_x_le - last_x_les[0]) / (
+                                    this_y_le - last_y_les[0])) * 180 / np.pi)
                 else:
                     base_wing_cross_section_sweep = 0.0
                     base_wing_cross_section_heave = 0.0
@@ -753,28 +644,21 @@ class WingMovement:
             # each time step based on its movement.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
-                    num_steps=num_steps,
-                    delta_time=delta_time,
+                    num_steps=num_steps, delta_time=delta_time,
                     cross_section_span=wing_cross_section_span,
                     cross_section_sweep=base_wing_cross_section_sweep,
                     cross_section_heave=base_wing_cross_section_heave,
-                    last_x_les=last_x_les,
-                    last_y_les=last_y_les,
-                    last_z_les=last_z_les,
-                    wing_is_vertical=wing_is_vertical,
-                )
-            )
+                    last_x_les=last_x_les, last_y_les=last_y_les, last_z_les=last_z_les,
+                    wing_is_vertical=wing_is_vertical, ))
 
             # Add this vector the wing's array of wing cross section objects.
             wing_cross_sections[wing_cross_section_movement_location, :] = (
-                this_wing_cross_sections_list_of_wing_cross_sections
-            )
+                this_wing_cross_sections_list_of_wing_cross_sections)
 
             # Update the inner wing cross section's list of wing cross sections for
             # each time step.
             last_wing_cross_section_time_histories = (
-                this_wing_cross_sections_list_of_wing_cross_sections
-            )
+                this_wing_cross_sections_list_of_wing_cross_sections)
 
         # Create an empty list of wings.
         wings = []
@@ -787,7 +671,6 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-
             # Get the reference position at this time step.
             x_le = x_le_list[step]
             y_le = y_le_list[step]
@@ -795,16 +678,10 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = geometry.Wing(
-                name=name,
-                x_le=x_le,
-                y_le=y_le,
-                z_le=z_le,
-                wing_cross_sections=cross_sections,
-                symmetric=symmetric,
+            this_wing = geometry.Wing(name=name, x_le=x_le, y_le=y_le, z_le=z_le,
+                wing_cross_sections=cross_sections, symmetric=symmetric,
                 num_chordwise_panels=num_chordwise_panels,
-                chordwise_spacing=chordwise_spacing,
-            )
+                chordwise_spacing=chordwise_spacing, )
 
             # Add this new object to the list of wings.
             wings.append(this_wing)
@@ -823,18 +700,12 @@ class WingMovement:
         wing_cross_section_movement_max_periods = []
         for wing_cross_section_movement in self.wing_cross_section_movements:
             wing_cross_section_movement_max_periods.append(
-                wing_cross_section_movement.get_max_period()
-            )
+                wing_cross_section_movement.get_max_period())
         max_wing_cross_section_movement_period = max(
-            wing_cross_section_movement_max_periods
-        )
+            wing_cross_section_movement_max_periods)
 
-        max_period = max(
-            max_wing_cross_section_movement_period,
-            self.x_le_period,
-            self.y_le_period,
-            self.z_le_period,
-        )
+        max_period = max(max_wing_cross_section_movement_period, self.x_le_period,
+            self.y_le_period, self.z_le_period, )
 
         return max_period
 
@@ -857,22 +728,11 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        base_wing_cross_section,
-        sweeping_amplitude=0.0,
-        sweeping_period=0.0,
-        sweeping_spacing="sine",
-        custom_sweep_function=None,
-        pitching_amplitude=0.0,
-        pitching_period=0.0,
-        pitching_spacing="sine",
-        custom_pitch_function=None,
-        heaving_amplitude=0.0,
-        heaving_period=0.0,
-        heaving_spacing="sine",
-        custom_heave_function=None,
-    ):
+    def __init__(self, base_wing_cross_section, sweeping_amplitude=0.0,
+            sweeping_period=0.0, sweeping_spacing="sine", custom_sweep_function=None,
+            pitching_amplitude=0.0, pitching_period=0.0, pitching_spacing="sine",
+            custom_pitch_function=None, heaving_amplitude=0.0, heaving_period=0.0,
+            heaving_spacing="sine", custom_heave_function=None, ):
         """This is the initialization method.
 
         :param base_wing_cross_section: WingCrossSection
@@ -967,21 +827,11 @@ class WingCrossSectionMovement:
         self.z_le_base = self.base_wing_cross_section.z_le
         self.twist_base = self.base_wing_cross_section.twist
         self.control_surface_deflection_base = (
-            self.base_wing_cross_section.control_surface_deflection
-        )
+            self.base_wing_cross_section.control_surface_deflection)
 
-    def generate_wing_cross_sections(
-        self,
-        num_steps=10,
-        delta_time=0.1,
-        last_x_les=None,
-        last_y_les=None,
-        last_z_les=None,
-        wing_is_vertical=False,
-        cross_section_span=0.0,
-        cross_section_sweep=0.0,
-        cross_section_heave=0.0,
-    ):
+    def generate_wing_cross_sections(self, num_steps=10, delta_time=0.1,
+            last_x_les=None, last_y_les=None, last_z_les=None, wing_is_vertical=False,
+            cross_section_span=0.0, cross_section_sweep=0.0, cross_section_heave=0.0, ):
         """This method creates the wing cross section objects at each time
         current_step, and groups them into a list.
 
@@ -1029,41 +879,28 @@ class WingCrossSectionMovement:
         if self.sweeping_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            sweeping_list = oscillating_sinspace(
-                amplitude=self.sweeping_amplitude,
-                period=self.sweeping_period,
-                base_value=cross_section_sweep,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            sweeping_list = oscillating_sinspace(amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period, base_value=cross_section_sweep,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.sweeping_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            sweeping_list = oscillating_linspace(
-                amplitude=self.sweeping_amplitude,
-                period=self.sweeping_period,
-                base_value=cross_section_sweep,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            sweeping_list = oscillating_linspace(amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period, base_value=cross_section_sweep,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.sweeping_spacing == "custom":
 
             # Raise an exception if the user did not declare a custom sweep function.
             if self.custom_sweep_function is None:
                 raise Exception(
                     "You can't declare custom sweep spacing without providing a "
-                    "custom sweep function."
-                )
+                    "custom sweep function.")
 
             # Create an array of points with a uniform spacing.
-            sweeping_list = oscillating_customspace(
-                amplitude=self.sweeping_amplitude,
-                period=self.sweeping_period,
-                base_value=cross_section_sweep,
-                num_steps=num_steps,
-                delta_time=delta_time,
-                custom_function=self.custom_sweep_function,
-            )
+            sweeping_list = oscillating_customspace(amplitude=self.sweeping_amplitude,
+                period=self.sweeping_period, base_value=cross_section_sweep,
+                num_steps=num_steps, delta_time=delta_time,
+                custom_function=self.custom_sweep_function, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -1073,41 +910,28 @@ class WingCrossSectionMovement:
         if self.pitching_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            pitching_list = oscillating_sinspace(
-                amplitude=self.pitching_amplitude,
-                period=self.pitching_period,
-                base_value=self.pitching_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            pitching_list = oscillating_sinspace(amplitude=self.pitching_amplitude,
+                period=self.pitching_period, base_value=self.pitching_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.pitching_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            pitching_list = oscillating_linspace(
-                amplitude=self.pitching_amplitude,
-                period=self.pitching_period,
-                base_value=self.pitching_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            pitching_list = oscillating_linspace(amplitude=self.pitching_amplitude,
+                period=self.pitching_period, base_value=self.pitching_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.pitching_spacing == "custom":
 
             # Raise an exception if the user did not declare a custom pitch function.
             if self.custom_pitch_function is None:
                 raise Exception(
                     "You can't declare custom pitch spacing without providing a "
-                    "custom pitch function."
-                )
+                    "custom pitch function.")
 
             # Create an array of points with a uniform spacing.
-            pitching_list = oscillating_customspace(
-                amplitude=self.pitching_amplitude,
-                period=self.pitching_period,
-                base_value=self.pitching_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-                custom_function=self.custom_pitch_function,
-            )
+            pitching_list = oscillating_customspace(amplitude=self.pitching_amplitude,
+                period=self.pitching_period, base_value=self.pitching_base,
+                num_steps=num_steps, delta_time=delta_time,
+                custom_function=self.custom_pitch_function, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -1117,41 +941,28 @@ class WingCrossSectionMovement:
         if self.heaving_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            heaving_list = oscillating_sinspace(
-                amplitude=self.heaving_amplitude,
-                period=self.heaving_period,
-                base_value=cross_section_heave,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            heaving_list = oscillating_sinspace(amplitude=self.heaving_amplitude,
+                period=self.heaving_period, base_value=cross_section_heave,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.heaving_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            heaving_list = oscillating_linspace(
-                amplitude=self.heaving_amplitude,
-                period=self.heaving_period,
-                base_value=cross_section_heave,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            heaving_list = oscillating_linspace(amplitude=self.heaving_amplitude,
+                period=self.heaving_period, base_value=cross_section_heave,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.heaving_spacing == "custom":
 
             # Raise an exception if the user did not declare a custom heave function.
             if self.custom_heave_function is None:
                 raise Exception(
                     "You can't declare custom heave spacing without providing a "
-                    "custom heave function."
-                )
+                    "custom heave function.")
 
             # Create an array of points with custom spacing.
-            heaving_list = oscillating_customspace(
-                amplitude=self.heaving_amplitude,
-                period=self.heaving_period,
-                base_value=cross_section_heave,
-                num_steps=num_steps,
-                delta_time=delta_time,
-                custom_function=self.custom_heave_function,
-            )
+            heaving_list = oscillating_customspace(amplitude=self.heaving_amplitude,
+                period=self.heaving_period, base_value=cross_section_heave,
+                num_steps=num_steps, delta_time=delta_time,
+                custom_function=self.custom_heave_function, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -1170,14 +981,11 @@ class WingCrossSectionMovement:
             # convert the lists of sweep, pitch, and heave values to radians before
             # passing them into numpy's trigonometry functions.
             x_le_list = last_x_les + cross_section_span * np.cos(
-                sweeping_list * np.pi / 180
-            ) * np.sin(heaving_list * np.pi / 180)
+                sweeping_list * np.pi / 180) * np.sin(heaving_list * np.pi / 180)
             y_le_list = last_y_les + cross_section_span * np.cos(
-                sweeping_list * np.pi / 180
-            ) * np.cos(heaving_list * np.pi / 180)
+                sweeping_list * np.pi / 180) * np.cos(heaving_list * np.pi / 180)
             z_le_list = last_z_les + cross_section_span * np.sin(
-                sweeping_list * np.pi / 180
-            )
+                sweeping_list * np.pi / 180)
             twist_list = pitching_list
 
         # Create an empty list of wing cross sections.
@@ -1189,8 +997,7 @@ class WingCrossSectionMovement:
         control_surface_deflection = self.control_surface_deflection_base
         control_surface_type = self.base_wing_cross_section.control_surface_type
         control_surface_hinge_point = (
-            self.base_wing_cross_section.control_surface_hinge_point
-        )
+            self.base_wing_cross_section.control_surface_hinge_point)
         num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
         spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
 
@@ -1203,19 +1010,13 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = geometry.WingCrossSection(
-                x_le=x_le,
-                y_le=y_le,
-                z_le=z_le,
-                chord=chord,
-                twist=twist,
-                airfoil=airfoil,
+            this_wing_cross_section = geometry.WingCrossSection(x_le=x_le, y_le=y_le,
+                z_le=z_le, chord=chord, twist=twist, airfoil=airfoil,
                 control_surface_type=control_surface_type,
                 control_surface_hinge_point=control_surface_hinge_point,
                 control_surface_deflection=control_surface_deflection,
                 num_spanwise_panels=num_spanwise_panels,
-                spanwise_spacing=spanwise_spacing,
-            )
+                spanwise_spacing=spanwise_spacing, )
 
             # Add this new object to the list of wing cross sections.
             wing_cross_sections.append(this_wing_cross_section)
@@ -1230,9 +1031,8 @@ class WingCrossSectionMovement:
             The longest period in seconds.
         """
 
-        max_period = max(
-            self.sweeping_period, self.pitching_period, self.heaving_period
-        )
+        max_period = max(self.sweeping_period, self.pitching_period,
+            self.heaving_period)
 
         return max_period
 
@@ -1255,13 +1055,8 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        base_operating_point,
-        velocity_amplitude=0.0,
-        velocity_period=0.0,
-        velocity_spacing="sine",
-    ):
+    def __init__(self, base_operating_point, velocity_amplitude=0.0,
+            velocity_period=0.0, velocity_spacing="sine", ):
         """This is the initialization method.
 
         :param base_operating_point: OperatingPoint
@@ -1303,23 +1098,15 @@ class OperatingPointMovement:
         if self.velocity_spacing == "sine":
 
             # Create an array of points with a sinusoidal spacing.
-            velocity_list = oscillating_sinspace(
-                amplitude=self.velocity_amplitude,
-                period=self.velocity_period,
-                base_value=self.velocity_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            velocity_list = oscillating_sinspace(amplitude=self.velocity_amplitude,
+                period=self.velocity_period, base_value=self.velocity_base,
+                num_steps=num_steps, delta_time=delta_time, )
         elif self.velocity_spacing == "uniform":
 
             # Create an array of points with a uniform spacing.
-            velocity_list = oscillating_linspace(
-                amplitude=self.velocity_amplitude,
-                period=self.velocity_period,
-                base_value=self.velocity_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+            velocity_list = oscillating_linspace(amplitude=self.velocity_amplitude,
+                period=self.velocity_period, base_value=self.velocity_base,
+                num_steps=num_steps, delta_time=delta_time, )
         else:
 
             # Throw an exception if the spacing value is not "sine" or "uniform".
@@ -1339,9 +1126,8 @@ class OperatingPointMovement:
             velocity = velocity_list[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = operating_point.OperatingPoint(
-                density=density, velocity=velocity, alpha=alpha, beta=beta
-            )
+            this_operating_point = operating_point.OperatingPoint(density=density,
+                velocity=velocity, alpha=alpha, beta=beta)
 
             # Add this new object to the list of operating points.
             operating_points.append(this_operating_point)
@@ -1437,9 +1223,8 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     return a * signal.sawtooth((b * times + h), 0.5) + k
 
 
-def oscillating_customspace(
-    amplitude, period, base_value, num_steps, delta_time, custom_function
-):
+def oscillating_customspace(amplitude, period, base_value, num_steps, delta_time,
+        custom_function):
     """This function returns a 1D array of values that are calculated by inputting a
     vector of linearly spaced time steps into a custom function.
 

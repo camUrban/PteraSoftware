@@ -49,21 +49,16 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         # Get the constructing fixtures.
         self.horseshoe_vortex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_horseshoe_vortex_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_horseshoe_vortex_fixture())
         self.origin_fixture = tests.unit.fixtures.vortex_fixtures.make_origin_fixture()
         self.termination_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_termination_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_termination_fixture())
         self.strength_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_strength_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_strength_fixture())
         self.infinite_leg_direction_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_direction_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_direction_fixture())
         self.infinite_leg_length_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_length_fixture()
-        )
+            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_length_fixture())
 
     def tearDown(self):
         """This method is automatically called before each testing method to tear
@@ -87,68 +82,38 @@ class TestHorseshoeVortex(unittest.TestCase):
         """
 
         # Test that the objects are all the right type.
-        self.assertIsInstance(
-            self.horseshoe_vortex_fixture,
-            ps.aerodynamics.HorseshoeVortex,
-        )
-        self.assertIsInstance(
-            self.horseshoe_vortex_fixture.finite_leg,
-            ps.aerodynamics.LineVortex,
-        )
-        self.assertIsInstance(
-            self.horseshoe_vortex_fixture.left_leg,
-            ps.aerodynamics.LineVortex,
-        )
-        self.assertIsInstance(
-            self.horseshoe_vortex_fixture.right_leg,
-            ps.aerodynamics.LineVortex,
-        )
+        self.assertIsInstance(self.horseshoe_vortex_fixture,
+            ps.aerodynamics.HorseshoeVortex, )
+        self.assertIsInstance(self.horseshoe_vortex_fixture.finite_leg,
+            ps.aerodynamics.LineVortex, )
+        self.assertIsInstance(self.horseshoe_vortex_fixture.left_leg,
+            ps.aerodynamics.LineVortex, )
+        self.assertIsInstance(self.horseshoe_vortex_fixture.right_leg,
+            ps.aerodynamics.LineVortex, )
 
         # Test that the vortex objects' coordinates were correctly set.
+        self.assertTrue(np.allclose(self.horseshoe_vortex_fixture.finite_leg_origin,
+            self.origin_fixture))
         self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.finite_leg_origin, self.origin_fixture
-            )
-        )
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.finite_leg_termination,
-                self.termination_fixture,
-            )
-        )
+            np.allclose(self.horseshoe_vortex_fixture.finite_leg_termination,
+                self.termination_fixture, ))
 
         # Test that the horseshoe vortex object's strength was set correctly.
         self.assertEqual(self.horseshoe_vortex_fixture.strength, self.strength_fixture)
 
         # Test that other class attributes were correctly set.
         self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.infinite_leg_direction,
-                self.infinite_leg_direction_fixture,
-            )
-        )
-        self.assertEqual(
-            self.horseshoe_vortex_fixture.infinite_leg_length,
-            self.infinite_leg_length_fixture,
-        )
+            np.allclose(self.horseshoe_vortex_fixture.infinite_leg_direction,
+                self.infinite_leg_direction_fixture, ))
+        self.assertEqual(self.horseshoe_vortex_fixture.infinite_leg_length,
+            self.infinite_leg_length_fixture, )
 
         # Test that the infinite legs' coordinates are correct.
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.right_leg_origin,
-                self.horseshoe_vortex_fixture.finite_leg_origin
-                + self.horseshoe_vortex_fixture.infinite_leg_direction
-                * self.horseshoe_vortex_fixture.infinite_leg_length,
-            )
-        )
-        self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.left_leg_termination,
-                self.horseshoe_vortex_fixture.finite_leg_termination
-                + self.horseshoe_vortex_fixture.infinite_leg_direction
-                * self.horseshoe_vortex_fixture.infinite_leg_length,
-            )
-        )
+        self.assertTrue(np.allclose(self.horseshoe_vortex_fixture.right_leg_origin,
+            self.horseshoe_vortex_fixture.finite_leg_origin +
+            self.horseshoe_vortex_fixture.infinite_leg_direction * self.horseshoe_vortex_fixture.infinite_leg_length, ))
+        self.assertTrue(np.allclose(self.horseshoe_vortex_fixture.left_leg_termination,
+            self.horseshoe_vortex_fixture.finite_leg_termination + self.horseshoe_vortex_fixture.infinite_leg_direction * self.horseshoe_vortex_fixture.infinite_leg_length, ))
 
     def test_update_strength(self):
         """This method tests the update_strength method.
@@ -165,15 +130,12 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         # Test that all the strength's have been updated correctly.
         self.assertEqual(self.horseshoe_vortex_fixture.strength, new_strength_fixture)
-        self.assertEqual(
-            self.horseshoe_vortex_fixture.right_leg.strength, new_strength_fixture
-        )
-        self.assertEqual(
-            self.horseshoe_vortex_fixture.finite_leg.strength, new_strength_fixture
-        )
-        self.assertEqual(
-            self.horseshoe_vortex_fixture.left_leg.strength, new_strength_fixture
-        )
+        self.assertEqual(self.horseshoe_vortex_fixture.right_leg.strength,
+            new_strength_fixture)
+        self.assertEqual(self.horseshoe_vortex_fixture.finite_leg.strength,
+            new_strength_fixture)
+        self.assertEqual(self.horseshoe_vortex_fixture.left_leg.strength,
+            new_strength_fixture)
 
         # Revert the change.
         self.horseshoe_vortex_fixture.update_strength(strength=old_strength_fixture)

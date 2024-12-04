@@ -1,4 +1,5 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with variable, multi-wing geometry.
+"""This is a testing case for the unsteady ring vortex lattice method solver with
+variable, multi-wing geometry.
 
 Note: This case does not currently test the solver's output against an expected output. Instead, it just tests that
 the solver doesn't throw an error.
@@ -22,8 +23,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
-    unittest.TestCase
-):
+    unittest.TestCase):
     """This is a class for testing the unsteady ring vortex lattice method solver on
     multi-wing, variable geometry.
 
@@ -50,8 +50,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
 
         # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
-            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry()
-        )
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry())
 
     def tearDown(self):
         """This method tears down the test.
@@ -69,12 +68,8 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
 
         # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
-            prescribed_wake=True,
-        )
+            prescribed_wake=True, )
 
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
-            scalar_type="induced drag",
-            show_wake_vortices=True,
-            save=False,
-        )
+            scalar_type="induced drag", show_wake_vortices=True, save=False, )

@@ -43,11 +43,9 @@ num_flaps_list = [i for i in range(min_num_flaps, max_num_flaps + 1)]
 num_chord_list = [i for i in range(min_num_chord, max_num_chord + 1)]
 
 rms_lifts = np.zeros(
-    (len(wake_state_list), len(num_flaps_list), len(num_chord_list), num_airplanes)
-)
+    (len(wake_state_list), len(num_flaps_list), len(num_chord_list), num_airplanes))
 rms_drags = np.zeros(
-    (len(wake_state_list), len(num_flaps_list), len(num_chord_list), num_airplanes)
-)
+    (len(wake_state_list), len(num_flaps_list), len(num_chord_list), num_airplanes))
 iter_times = np.zeros((len(wake_state_list), len(num_flaps_list), len(num_chord_list)))
 
 iteration = 0
@@ -67,13 +65,9 @@ single_chord = None
 wake_saturated = None
 this_solver = None
 
-this_operating_point = ps.operating_point.OperatingPoint(
-    velocity=speed,
-    alpha=0.0,
-)
+this_operating_point = ps.operating_point.OperatingPoint(velocity=speed, alpha=0.0, )
 this_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=this_operating_point,
-)
+    base_operating_point=this_operating_point, )
 del this_operating_point
 
 for wake_state_id, prescribed_wake in enumerate(wake_state_list):
@@ -90,11 +84,9 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             mid_to_tip_panel_chord = mid_to_tip_chord / num_chord
 
             root_to_mid_num_span = round(
-                root_to_mid_span / (aspect_ratio * root_to_mid_panel_chord)
-            )
+                root_to_mid_span / (aspect_ratio * root_to_mid_panel_chord))
             mid_to_tip_num_span = round(
-                mid_to_tip_span / (aspect_ratio * mid_to_tip_panel_chord)
-            )
+                mid_to_tip_span / (aspect_ratio * mid_to_tip_panel_chord))
 
             these_airplane_movements = []
             row = None
@@ -117,76 +109,44 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
 
                 offset = row - 1
 
-                this_airplane = ps.geometry.Airplane(
-                    name=this_name,
-                    x_ref=offset * x_spacing,
-                    y_ref=offset_sign * offset * y_spacing,
-                    wings=[
-                        ps.geometry.Wing(
-                            name="Main Wing",
-                            symmetric=True,
-                            chordwise_spacing="uniform",
-                            x_le=offset * x_spacing,
-                            y_le=offset_sign * offset * y_spacing,
-                            num_chordwise_panels=num_chord,
-                            wing_cross_sections=[
-                                ps.geometry.WingCrossSection(
-                                    twist=alpha,
-                                    chord=root_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
-                                    num_spanwise_panels=root_to_mid_num_span,
-                                    spanwise_spacing="cosine",
-                                ),
-                                ps.geometry.WingCrossSection(
-                                    twist=alpha,
-                                    y_le=root_to_mid_span,
-                                    chord=root_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
-                                    num_spanwise_panels=mid_to_tip_num_span,
-                                    spanwise_spacing="cosine",
-                                ),
-                                ps.geometry.WingCrossSection(
-                                    twist=alpha,
-                                    y_le=root_to_mid_span + mid_to_tip_span,
-                                    chord=tip_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
-                                ),
-                            ],
-                        ),
-                    ],
-                )
+                this_airplane = ps.geometry.Airplane(name=this_name,
+                    x_ref=offset * x_spacing, y_ref=offset_sign * offset * y_spacing,
+                    wings=[ps.geometry.Wing(name="Main Wing", symmetric=True,
+                        chordwise_spacing="uniform", x_le=offset * x_spacing,
+                        y_le=offset_sign * offset * y_spacing,
+                        num_chordwise_panels=num_chord, wing_cross_sections=[
+                            ps.geometry.WingCrossSection(twist=alpha, chord=root_chord,
+                                airfoil=ps.geometry.Airfoil(name="naca0012"),
+                                num_spanwise_panels=root_to_mid_num_span,
+                                spanwise_spacing="cosine", ),
+                            ps.geometry.WingCrossSection(twist=alpha,
+                                y_le=root_to_mid_span, chord=root_chord,
+                                airfoil=ps.geometry.Airfoil(name="naca0012"),
+                                num_spanwise_panels=mid_to_tip_num_span,
+                                spanwise_spacing="cosine", ),
+                            ps.geometry.WingCrossSection(twist=alpha,
+                                y_le=root_to_mid_span + mid_to_tip_span,
+                                chord=tip_chord, airfoil=ps.geometry.Airfoil(
+                                    name="naca0012"), ), ], ), ], )
 
                 this_airplane_movement = ps.movement.AirplaneMovement(
-                    base_airplane=this_airplane,
-                    wing_movements=[
-                        ps.movement.WingMovement(
-                            base_wing=this_airplane.wings[0],
+                    base_airplane=this_airplane, wing_movements=[
+                        ps.movement.WingMovement(base_wing=this_airplane.wings[0],
                             wing_cross_sections_movements=[
                                 ps.movement.WingCrossSectionMovement(
-                                    base_wing_cross_section=this_airplane.wings[
-                                        0
-                                    ].wing_cross_sections[0],
-                                ),
+                                    base_wing_cross_section=
+                                    this_airplane.wings[0].wing_cross_sections[0], ),
                                 ps.movement.WingCrossSectionMovement(
-                                    base_wing_cross_section=this_airplane.wings[
-                                        0
-                                    ].wing_cross_sections[1],
+                                    base_wing_cross_section=
+                                    this_airplane.wings[0].wing_cross_sections[1],
+                                    sweeping_amplitude=flapping_amplitude,
+                                    sweeping_period=period, sweeping_spacing="sine", ),
+                                ps.movement.WingCrossSectionMovement(
+                                    base_wing_cross_section=
+                                    this_airplane.wings[0].wing_cross_sections[2],
                                     sweeping_amplitude=flapping_amplitude,
                                     sweeping_period=period,
-                                    sweeping_spacing="sine",
-                                ),
-                                ps.movement.WingCrossSectionMovement(
-                                    base_wing_cross_section=this_airplane.wings[
-                                        0
-                                    ].wing_cross_sections[2],
-                                    sweeping_amplitude=flapping_amplitude,
-                                    sweeping_period=period,
-                                    sweeping_spacing="sine",
-                                ),
-                            ],
-                        )
-                    ],
-                )
+                                    sweeping_spacing="sine", ), ], )], )
 
                 these_airplane_movements.append(this_airplane_movement)
 
@@ -195,34 +155,26 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
 
             this_movement = ps.movement.Movement(
                 airplane_movements=these_airplane_movements,
-                operating_point_movement=this_operating_point_movement,
-                num_steps=None,
-                num_cycles=num_flaps,
-                delta_time=None,
-            )
+                operating_point_movement=this_operating_point_movement, num_steps=None,
+                num_cycles=num_flaps, delta_time=None, )
 
             del these_airplane_movements
 
-            this_problem = ps.problems.UnsteadyProblem(
-                movement=this_movement,
-                only_final_results=True,
-            )
+            this_problem = ps.problems.UnsteadyProblem(movement=this_movement,
+                only_final_results=True, )
 
             del this_movement
 
-            this_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                unsteady_problem=this_problem,
-            )
+            this_solver = (
+            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                unsteady_problem=this_problem, ))
 
             del this_problem
 
             iter_start = time.time()
 
-            this_solver.run(
-                logging_level="Critical",
-                prescribed_wake=prescribed_wake,
-                calculate_streamlines=False,
-            )
+            this_solver.run(logging_level="Critical", prescribed_wake=prescribed_wake,
+                calculate_streamlines=False, )
 
             iter_stop = time.time()
             iter_time = round((iter_stop - iter_start), 2)
@@ -241,11 +193,9 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                 airplanes = this_solver.steady_problems[step].airplanes
                 for airplane_id, airplane in enumerate(airplanes):
                     total_forces[airplane_id, :, results_step] = (
-                        airplane.total_near_field_force_wind_axes
-                    )
+                        airplane.total_near_field_force_wind_axes)
                     total_moments[airplane_id, :, results_step] = (
-                        airplane.total_near_field_moment_wind_axes
-                    )
+                        airplane.total_near_field_moment_wind_axes)
                 results_step += 1
 
             these_s_drags = total_forces[:, 0, :] ** 2
@@ -254,8 +204,8 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             these_ms_drags = np.mean(these_s_drags, axis=-1)
             these_ms_lifts = np.mean(these_s_lifts, axis=-1)
 
-            these_rms_drags = these_ms_drags**0.5
-            these_rms_lifts = these_ms_lifts**0.5
+            these_rms_drags = these_ms_drags ** 0.5
+            these_rms_lifts = these_ms_lifts ** 0.5
 
             rms_drags[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_drags
             rms_lifts[wake_state_id, num_flaps_id, num_chord_id, :] = these_rms_lifts
@@ -265,80 +215,56 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             max_chord_rmspc = np.inf
 
             if wake_state_id > 0:
-                last_wake_rms_lifts = rms_lifts[
-                    wake_state_id - 1, num_flaps_id, num_chord_id, :
-                ]
-                last_wake_rms_drags = rms_drags[
-                    wake_state_id - 1, num_flaps_id, num_chord_id, :
-                ]
+                last_wake_rms_lifts = rms_lifts[wake_state_id - 1, num_flaps_id,
+                                      num_chord_id, :]
+                last_wake_rms_drags = rms_drags[wake_state_id - 1, num_flaps_id,
+                                      num_chord_id, :]
                 wake_lift_rmspcs = 100 * np.abs(
-                    (these_rms_lifts - last_wake_rms_lifts) / last_wake_rms_lifts
-                )
+                    (these_rms_lifts - last_wake_rms_lifts) / last_wake_rms_lifts)
                 wake_drag_rmspcs = 100 * np.abs(
-                    (these_rms_drags - last_wake_rms_drags) / last_wake_rms_drags
-                )
+                    (these_rms_drags - last_wake_rms_drags) / last_wake_rms_drags)
                 max_wake_lift_rmspc = np.max(wake_lift_rmspcs)
                 max_wake_drag_rmspc = np.max(wake_drag_rmspcs)
                 max_wake_rmspc = max(max_wake_lift_rmspc, max_wake_drag_rmspc)
 
-                print(
-                    "\t\t\t\tMax Wake RMSPC: ",
-                    round(max_wake_rmspc, 2),
-                    "%",
-                    sep="",
-                )
+                print("\t\t\t\tMax Wake RMSPC: ", round(max_wake_rmspc, 2), "%",
+                    sep="", )
             else:
                 print("\t\t\t\tMax Wake RMSPC:", max_wake_rmspc)
 
             if num_flaps_id > 0:
-                last_flap_rms_lifts = rms_lifts[
-                    wake_state_id, num_flaps_id - 1, num_chord_id, :
-                ]
-                last_flap_rms_drags = rms_drags[
-                    wake_state_id, num_flaps_id - 1, num_chord_id, :
-                ]
+                last_flap_rms_lifts = rms_lifts[wake_state_id, num_flaps_id - 1,
+                                      num_chord_id, :]
+                last_flap_rms_drags = rms_drags[wake_state_id, num_flaps_id - 1,
+                                      num_chord_id, :]
                 flap_lift_rmspcs = 100 * np.abs(
-                    (these_rms_lifts - last_flap_rms_lifts) / last_flap_rms_lifts
-                )
+                    (these_rms_lifts - last_flap_rms_lifts) / last_flap_rms_lifts)
                 flap_drag_rmspcs = 100 * np.abs(
-                    (these_rms_drags - last_flap_rms_drags) / last_flap_rms_drags
-                )
+                    (these_rms_drags - last_flap_rms_drags) / last_flap_rms_drags)
                 max_flap_lift_rmspc = np.max(flap_lift_rmspcs)
                 max_flap_drag_rmspc = np.max(flap_drag_rmspcs)
                 max_flap_rmspc = max(max_flap_lift_rmspc, max_flap_drag_rmspc)
 
-                print(
-                    "\t\t\t\tMax Flap RMSPC: ",
-                    round(max_flap_rmspc, 2),
-                    "%",
-                    sep="",
-                )
+                print("\t\t\t\tMax Flap RMSPC: ", round(max_flap_rmspc, 2), "%",
+                    sep="", )
             else:
                 print("\t\t\t\tMax Flap RMSPC:", max_flap_rmspc)
 
             if num_chord_id > 0:
-                last_chord_rms_lifts = rms_lifts[
-                    wake_state_id, num_flaps_id, num_chord_id - 1, :
-                ]
-                last_chord_rms_drags = rms_drags[
-                    wake_state_id, num_flaps_id, num_chord_id - 1, :
-                ]
+                last_chord_rms_lifts = rms_lifts[wake_state_id, num_flaps_id,
+                                       num_chord_id - 1, :]
+                last_chord_rms_drags = rms_drags[wake_state_id, num_flaps_id,
+                                       num_chord_id - 1, :]
                 chord_lift_rmspcs = 100 * np.abs(
-                    (these_rms_lifts - last_chord_rms_lifts) / last_chord_rms_lifts
-                )
+                    (these_rms_lifts - last_chord_rms_lifts) / last_chord_rms_lifts)
                 chord_drag_rmspcs = 100 * np.abs(
-                    (these_rms_drags - last_chord_rms_drags) / last_chord_rms_drags
-                )
+                    (these_rms_drags - last_chord_rms_drags) / last_chord_rms_drags)
                 max_chord_lift_rmspc = np.max(chord_lift_rmspcs)
                 max_chord_drag_rmspc = np.max(chord_drag_rmspcs)
                 max_chord_rmspc = max(max_chord_lift_rmspc, max_chord_drag_rmspc)
 
-                print(
-                    "\t\t\t\tMax Chord RMSPC: ",
-                    round(max_chord_rmspc, 2),
-                    "%",
-                    sep="",
-                )
+                print("\t\t\t\tMax Chord RMSPC: ", round(max_chord_rmspc, 2), "%",
+                    sep="", )
             else:
                 print("\t\t\t\tMax Chord RMSPC:", max_chord_rmspc)
 
@@ -404,10 +330,7 @@ if converged:
     converged_num_flaps = num_flaps_list[converged_num_flaps_id]
     converged_num_chord = num_chord_list[converged_num_chord_id]
     this_iter_time = iter_times[
-        converged_wake_state_id,
-        converged_num_flaps_id,
-        converged_num_chord_id,
-    ]
+        converged_wake_state_id, converged_num_flaps_id, converged_num_chord_id,]
 
     plot_wake_state_id = converged_wake_state_id
     plot_num_flaps_id = converged_num_flaps_id
@@ -433,33 +356,15 @@ if not single_chord:
         else:
             continue
 
-        these_rms_lifts = rms_lifts[
-            plot_wake_state_id,
-            plot_num_flaps_id,
-            : (plot_num_chord_id + 2),
-            airplane_id,
-        ]
-        these_rms_drags = rms_drags[
-            plot_wake_state_id,
-            plot_num_flaps_id,
-            : (plot_num_chord_id + 2),
-            airplane_id,
-        ]
+        these_rms_lifts = rms_lifts[plot_wake_state_id, plot_num_flaps_id,
+                          : (plot_num_chord_id + 2), airplane_id, ]
+        these_rms_drags = rms_drags[plot_wake_state_id, plot_num_flaps_id,
+                          : (plot_num_chord_id + 2), airplane_id, ]
 
-        lift_axes.plot(
-            num_chord_list[: (plot_num_chord_id + 2)],
-            these_rms_lifts,
-            label="Row " + str(row),
-            marker="o",
-            linestyle="--",
-        )
-        drag_axes.plot(
-            num_chord_list[: (plot_num_chord_id + 2)],
-            these_rms_drags,
-            label="Row " + str(row),
-            marker="o",
-            linestyle="--",
-        )
+        lift_axes.plot(num_chord_list[: (plot_num_chord_id + 2)], these_rms_lifts,
+            label="Row " + str(row), marker="o", linestyle="--", )
+        drag_axes.plot(num_chord_list[: (plot_num_chord_id + 2)], these_rms_drags,
+            label="Row " + str(row), marker="o", linestyle="--", )
 
     lift_axes.set_xlabel("Number of Chordwise Panels")
     drag_axes.set_xlabel("Number of Chordwise Panels")
@@ -495,33 +400,15 @@ if not single_flap:
         else:
             continue
 
-        these_rms_lifts = rms_lifts[
-            plot_wake_state_id,
-            : (plot_num_flaps_id + 2),
-            plot_num_chord_id,
-            airplane_id,
-        ]
-        these_rms_drags = rms_drags[
-            plot_wake_state_id,
-            : (plot_num_flaps_id + 2),
-            plot_num_chord_id,
-            airplane_id,
-        ]
+        these_rms_lifts = rms_lifts[plot_wake_state_id, : (plot_num_flaps_id + 2),
+                          plot_num_chord_id, airplane_id, ]
+        these_rms_drags = rms_drags[plot_wake_state_id, : (plot_num_flaps_id + 2),
+                          plot_num_chord_id, airplane_id, ]
 
-        lift_axes.plot(
-            num_flaps_list[: (plot_num_flaps_id + 2)],
-            these_rms_lifts,
-            label="Row " + str(row),
-            marker="o",
-            linestyle="--",
-        )
-        drag_axes.plot(
-            num_flaps_list[: (plot_num_flaps_id + 2)],
-            these_rms_drags,
-            label="Row " + str(row),
-            marker="o",
-            linestyle="--",
-        )
+        lift_axes.plot(num_flaps_list[: (plot_num_flaps_id + 2)], these_rms_lifts,
+            label="Row " + str(row), marker="o", linestyle="--", )
+        drag_axes.plot(num_flaps_list[: (plot_num_flaps_id + 2)], these_rms_drags,
+            label="Row " + str(row), marker="o", linestyle="--", )
 
     lift_axes.set_xlabel("Number of Flap Cycles")
     drag_axes.set_xlabel("Number of Flap Cycles")

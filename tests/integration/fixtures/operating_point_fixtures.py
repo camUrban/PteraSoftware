@@ -22,5 +22,12 @@ def make_validation_operating_point():
     """
 
     # Create and return an operating point fixture.
-    operating_point_fixture = ps.operating_point.OperatingPoint()
+    operating_point_fixture = ps.operating_point.OperatingPoint(
+        density=1.225,
+        velocity=10.0,
+        alpha=5.0,
+        beta=0.0,
+        external_thrust=0.0,
+        nu=15.06e-6,
+    )
     return operating_point_fixture

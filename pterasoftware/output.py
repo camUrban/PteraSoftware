@@ -137,8 +137,10 @@ def draw(
     :return: None
     """
 
-    # Initialize the plotter.
+    # Initialize the plotter and set it to use parallel projection (instead of
+    # perspective).
     plotter = pv.Plotter(window_size=window_size, lighting=None)
+    plotter.enable_parallel_projection()
 
     # Get the solver's geometry.
     if isinstance(

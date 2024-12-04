@@ -35,12 +35,18 @@ This module contains the following functions:
     update_ring_vortex_solvers_panel_attributes: This function populates a ring
     vortex solver's attributes with the attributes of a given panel.
 
-    calculate_steady_freestream_wing_influences: This method finds the vector of
+    calculate_steady_freestream_wing_influences: This function finds the vector of
     freestream-wing influence coefficients associated with this problem.
 
     numba_1d_explicit_cross: This function takes in two arrays, each of which contain
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
+
+    reflect_point_across_plane: This function finds the coordinates of the reflection
+    of a point across a plane in 3D space.
+
+    interp_between_points: This function finds the MxN points between M pairs of
+    points in 3D space given an array of N normalized spacings.
 """
 
 import logging
@@ -602,7 +608,7 @@ def update_ring_vortex_solvers_panel_attributes(
 
 
 def calculate_steady_freestream_wing_influences(steady_solver):
-    """This method finds the vector of freestream-wing influence coefficients
+    """This function finds the vector of freestream-wing influence coefficients
     associated with this problem.
 
     :return: None
@@ -650,3 +656,102 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
             vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
         )
     return crosses
+
+
+def reflect_point_across_plane(point, plane_unit_normal, plane_point):
+    """This function finds the coordinates of the reflection of a point across a
+    plane in 3D space.
+
+    As the plane doesn't necessarily include the origin, this is an affine
+    transformation. The transformation matrix and details are discussed in the
+    following source: https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2
+
+    :param point: (3,) array of floats
+        This is a (3,) array of the coordinates of the point to reflect. The units
+        are meters.
+    :param plane_unit_normal: (3,) array of floats
+        This is a (3,) array of the components of the plane's unit normal vector. It
+        must have unit magnitude. The units are meters.
+    :param plane_point: (3,) array of floats
+        This is a (3,) array of the coordinates of a point on the plane. The units
+        are meters.
+    :return: (3,) array of floats
+        This is a (3,) array of the components of the reflected point. The units are
+        meters.
+    """
+    [x, y, z] = point
+    [a, b, c] = plane_unit_normal
+
+    # Find the dot product between the point on the plane and unit normal.
+    d = np.dot(-plane_point, plane_unit_normal)
+
+    # To make the transformation matrix readable, define new variables for the
+    # products of the vector components and the dot product.
+    ab = a * b
+    ac = a * c
+    ad = a * d
+    bc = b * c
+    bd = b * d
+    cd = c * d
+    a2 = a**2
+    b2 = b**2
+    c2 = c**2
+
+    # Define the affine transformation matrix. See the citation in the docstring for
+    # details.
+    transformation_matrix = np.array(
+        [
+            [1 - 2 * a2, -2 * ab, -2 * ac, -2 * ad],
+            [-2 * ab, 1 - 2 * b2, -2 * bc, -2 * bd],
+            [-2 * ac, -2 * bc, 1 - 2 * c2, -2 * cd],
+            [0, 0, 0, 1],
+        ]
+    )
+
+    expanded_coordinates = np.array([[x], [y], [z], [1]])
+
+    transformed_expanded_coordinates = transformation_matrix @ expanded_coordinates
+
+    # Extract the reflected coordinates in 3D space.
+    [x_prime, y_prime, z_prime] = transformed_expanded_coordinates[:-1, 0]
+
+    return np.array([x_prime, y_prime, z_prime])
+
+
+@njit(cache=True, fastmath=False)
+def interp_between_points(start_points, end_points, norm_spacings):
+    """This function finds the MxN points between M pairs of points in 3D space given
+    an array of N normalized spacings.
+
+    :param start_points: (M, 3) array of floats
+        This is the (M, 3) array containing the coordinates of the M starting points.
+        The units are meters.
+    :param end_points: (M, 3) array of floats
+        This is the (M, 3) array containing the coordinates of the M ending points.
+        The units are meters.
+    :param norm_spacings: (N,) array of floats
+        This is the (N,) array of the N spacings between the starting points and
+        ending points. The values are unitless and must be normalized from 0 to 1.
+    :return points: (M, N, 3) array of floats
+        This is the (M, N, 3) array of the coordinates of the MxN interpolated
+        points. The units are meters.
+    """
+    m = start_points.shape[0]
+    n = norm_spacings.size
+
+    points = np.zeros((m, n, 3))
+
+    for i in range(m):
+        start_point = start_points[i, :]
+        end_point = end_points[i, :]
+
+        vector = end_point - start_point
+
+        for j in range(n):
+            norm_spacing = norm_spacings[j]
+
+            spacing = norm_spacing * vector
+
+            points[i, j, :] = start_point + spacing
+
+    return points

@@ -82,8 +82,9 @@ class UnsteadyProblem:
         if self.max_period == 0:
             self.first_averaging_step = self.num_steps - 1
         else:
-            self.first_averaging_step = max(0,
-                math.floor(self.num_steps - (self.max_period / self.delta_time)))
+            self.first_averaging_step = max(
+                0, math.floor(self.num_steps - (self.max_period / self.delta_time))
+            )
 
         # If the user only wants to calculate forces and moments for the final cycle
         # (for cyclic motion) or for the final time step (for static movement) set
@@ -134,8 +135,9 @@ class UnsteadyProblem:
             this_operating_point = movement.operating_points[step_id]
 
             # Initialize the steady problem object at this time step.
-            this_steady_problem = SteadyProblem(airplanes=these_airplanes,
-                operating_point=this_operating_point)
+            this_steady_problem = SteadyProblem(
+                airplanes=these_airplanes, operating_point=this_operating_point
+            )
 
             # Append this steady problem to the list of steady problems.
             self.steady_problems.append(this_steady_problem)

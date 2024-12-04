@@ -90,8 +90,11 @@ def make_line_vortex_fixture():
     strength_fixture = make_strength_fixture()
 
     # Create the line vortex object.
-    line_vortex_fixture = ps.aerodynamics.LineVortex(origin=origin_fixture,
-        termination=termination_fixture, strength=strength_fixture, )
+    line_vortex_fixture = ps.aerodynamics.LineVortex(
+        origin=origin_fixture,
+        termination=termination_fixture,
+        strength=strength_fixture,
+    )
 
     # Delete the constructing fixtures.
     del origin_fixture
@@ -139,10 +142,12 @@ def make_horseshoe_vortex_fixture():
 
     # Create the horseshoe vortex object.
     horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
-        finite_leg_origin=origin_fixture, finite_leg_termination=termination_fixture,
+        finite_leg_origin=origin_fixture,
+        finite_leg_termination=termination_fixture,
         strength=strength_fixture,
         infinite_leg_direction=infinite_leg_direction_fixture,
-        infinite_leg_length=infinite_leg_length_fixture, )
+        infinite_leg_length=infinite_leg_length_fixture,
+    )
 
     # Delete the constructing fixtures.
     del origin_fixture
@@ -217,7 +222,9 @@ def make_ring_vortex_fixture():
         front_left_vertex=front_left_vertex_fixture,
         front_right_vertex=front_right_vertex_fixture,
         back_left_vertex=back_left_vertex_fixture,
-        back_right_vertex=back_right_vertex_fixture, strength=strength_fixture, )
+        back_right_vertex=back_right_vertex_fixture,
+        strength=strength_fixture,
+    )
 
     # Delete the constructing fixtures.
     del front_left_vertex_fixture

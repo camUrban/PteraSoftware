@@ -43,8 +43,15 @@ class OperatingPoint:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, density=1.225, velocity=10.0, alpha=5.0, beta=0.0,
-            external_thrust=0.0, nu=15.06e-6, ):
+    def __init__(
+        self,
+        density=1.225,
+        velocity=10.0,
+        alpha=5.0,
+        beta=0.0,
+        external_thrust=0.0,
+        nu=15.06e-6,
+    ):
         """This is the initialization method.
 
         :param density: float, optional
@@ -88,7 +95,7 @@ class OperatingPoint:
         """
 
         # Calculate and return the freestream dynamic pressure
-        dynamic_pressure = 0.5 * self.density * self.velocity ** 2
+        dynamic_pressure = 0.5 * self.density * self.velocity**2
         return dynamic_pressure
 
     def calculate_rotation_matrix_wind_to_geometry(self):
@@ -106,19 +113,28 @@ class OperatingPoint:
         eye = np.eye(3)
 
         alpha_rotation = np.array(
-            [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]])
+            [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]]
+        )
         beta_rotation = np.array(
-            [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]])
+            [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
+        )
 
         # Flip the axes because in geometry axes x is downstream by convention,
         # while in wind axes x is upstream by convention. Same with z being up/down
         # respectively.
-        axes_flip = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1], ])
+        axes_flip = np.array(
+            [
+                [-1, 0, 0],
+                [0, 1, 0],
+                [0, 0, -1],
+            ]
+        )
 
         # Calculate and return the rotation matrix to convert wind axes to geometry
         # axes.
         rotation_matrix_wind_axes_to_geometry_axes = (
-                axes_flip @ alpha_rotation @ beta_rotation @ eye)
+            axes_flip @ alpha_rotation @ beta_rotation @ eye
+        )
         return rotation_matrix_wind_axes_to_geometry_axes
 
     def calculate_freestream_direction_geometry_axes(self):
@@ -131,8 +147,9 @@ class OperatingPoint:
 
         velocity_direction_wind_axes = np.array([-1, 0, 0])
         velocity_direction_geometry_axes = (
-                self.calculate_rotation_matrix_wind_to_geometry() @
-                velocity_direction_wind_axes)
+            self.calculate_rotation_matrix_wind_to_geometry()
+            @ velocity_direction_wind_axes
+        )
         return velocity_direction_geometry_axes
 
     def calculate_freestream_velocity_geometry_axes(self):
@@ -144,5 +161,6 @@ class OperatingPoint:
         """
 
         freestream_velocity_geometry_axes = (
-                self.calculate_freestream_direction_geometry_axes() * self.velocity)
+            self.calculate_freestream_direction_geometry_axes() * self.velocity
+        )
         return freestream_velocity_geometry_axes

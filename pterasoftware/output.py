@@ -58,9 +58,28 @@ window_size = [1024, 768]
 
 # For the figure lines, use the "Prism" qualitative color map from
 # carto.com/carto-colors.
-prism = ["#5F4690", "#1D6996", "#38A6A5", "#0F8554", "#73AF48", "#EDAD08", "#E17C05",
-    "#CC503E", "#94346E", "#6F4070", "#994E95", "#666666", ]
-[drag_color, side_color, lift_color, roll_color, pitch_color, yaw_color, ] = prism[3:9]
+prism = [
+    "#5F4690",
+    "#1D6996",
+    "#38A6A5",
+    "#0F8554",
+    "#73AF48",
+    "#EDAD08",
+    "#E17C05",
+    "#CC503E",
+    "#94346E",
+    "#6F4070",
+    "#994E95",
+    "#666666",
+]
+[
+    drag_color,
+    side_color,
+    lift_color,
+    roll_color,
+    pitch_color,
+    yaw_color,
+] = prism[3:9]
 
 # Set constants for the color maps, scalar bars, and text boxes.
 color_map_num_sig = 3
@@ -83,8 +102,13 @@ marker_size = 8
 marker_spacing = 1.0 / num_markers
 
 
-def draw(solver, scalar_type=None, show_streamlines=False, show_wake_vortices=False,
-        save=False, ):
+def draw(
+    solver,
+    scalar_type=None,
+    show_streamlines=False,
+    show_wake_vortices=False,
+    save=False,
+):
     """Draw the geometry of the airplanes in a solver object.
 
     Citation:
@@ -117,9 +141,10 @@ def draw(solver, scalar_type=None, show_streamlines=False, show_wake_vortices=Fa
     plotter = pv.Plotter(window_size=window_size, lighting=None)
 
     # Get the solver's geometry.
-    if isinstance(solver,
-            unsteady_ring_vortex_lattice_method
-            .UnsteadyRingVortexLatticeMethodSolver, ):
+    if isinstance(
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
         draw_step = solver.num_steps - 1
         airplanes = solver.steady_problems[draw_step].airplanes
 
@@ -127,15 +152,22 @@ def draw(solver, scalar_type=None, show_streamlines=False, show_wake_vortices=Fa
         # plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(solver, draw_step)
-            plotter.add_mesh(wake_ring_vortex_surfaces, show_edges=True,
-                smooth_shading=False, color=wake_vortex_color, )
+            plotter.add_mesh(
+                wake_ring_vortex_surfaces,
+                show_edges=True,
+                smooth_shading=False,
+                color=wake_vortex_color,
+            )
     else:
         airplanes = solver.airplanes
 
     # Check if the user wants to show scalars on the wing panels.
     show_scalars = False
     if (
-            scalar_type == "induced drag" or scalar_type == "side force" or scalar_type == "lift"):
+        scalar_type == "induced drag"
+        or scalar_type == "side force"
+        or scalar_type == "lift"
+    ):
         show_scalars = True
 
     # Get the panel surfaces.
@@ -156,20 +188,35 @@ def draw(solver, scalar_type=None, show_streamlines=False, show_wake_vortices=Fa
             color_map = sequential_color_map
             c_min = max(
                 np.mean(these_scalars) - color_map_num_sig * np.std(these_scalars),
-                np.min(these_scalars), )
+                np.min(these_scalars),
+            )
             c_max = min(
                 np.mean(these_scalars) + color_map_num_sig * np.std(these_scalars),
-                np.max(these_scalars), )
+                np.max(these_scalars),
+            )
         else:
             color_map = diverging_color_map
             c_min = -color_map_num_sig * np.std(these_scalars)
             c_max = color_map_num_sig * np.std(these_scalars)
 
-        plot_scalars(plotter, these_scalars, scalar_type, min_scalar, max_scalar,
-            color_map, c_min, c_max, panel_surfaces, )
+        plot_scalars(
+            plotter,
+            these_scalars,
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            c_min,
+            c_max,
+            panel_surfaces,
+        )
     else:
-        plotter.add_mesh(panel_surfaces, show_edges=True, color=panel_color,
-            smooth_shading=False, )
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=panel_color,
+            smooth_shading=False,
+        )
 
     # Check if the user wants to plot streamlines.
     if show_streamlines:
@@ -191,30 +238,52 @@ def draw(solver, scalar_type=None, show_streamlines=False, show_wake_vortices=Fa
                     last_point = streamline_point_column[point_index - 1, :]
 
                     # Add a line to make this segment of the streamline.
-                    plotter.add_mesh(pv.Line(last_point, point, ), show_edges=True,
-                        color=streamline_color, line_width=2, smooth_shading=False, )
+                    plotter.add_mesh(
+                        pv.Line(
+                            last_point,
+                            point,
+                        ),
+                        show_edges=True,
+                        color=streamline_color,
+                        line_width=2,
+                        smooth_shading=False,
+                    )
 
     # Set the plotter's background color and camera position. Then show the plotter
     # so the user can adjust the camera position and window. When the user closes the
     # window, the plotter object won't be closed so that it can be saved as an image
     # if the user wants.
     plotter.set_background(color=plotter_background_color)
-    plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False, )
+    plotter.show(
+        cpos=(-1, -1, 1),
+        full_screen=False,
+        auto_close=False,
+    )
 
     # If the user wants to save the image, take a screenshot, convert it into an
     # image object, and save it as a WebP.
     if save:
         image = webp.Image.fromarray(
-            plotter.screenshot(filename=None, transparent_background=True,
-                return_img=True, ))
-        webp.save_image(img=image, file_path="Draw.webp", lossless=False,
-            quality=quality)
+            plotter.screenshot(
+                filename=None,
+                transparent_background=True,
+                return_img=True,
+            )
+        )
+        webp.save_image(
+            img=image, file_path="Draw.webp", lossless=False, quality=quality
+        )
 
     # Close all the plotters.
     pv.close_all()
 
 
-def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=False, ):
+def animate(
+    unsteady_solver,
+    scalar_type=None,
+    show_wake_vortices=False,
+    save=False,
+):
     """Create an animation of a solver's geometries.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
@@ -262,14 +331,21 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
     if save:
         # Add text to the animation that display's its speed relative to the true
         # speed.
-        plotter.add_text(text="Speed: " + str(round(100 * speed)) + "%",
-            position=text_speed_position, font_size=text_font_size, viewport=True,
-            color=text_color, )
+        plotter.add_text(
+            text="Speed: " + str(round(100 * speed)) + "%",
+            position=text_speed_position,
+            font_size=text_font_size,
+            viewport=True,
+            color=text_color,
+        )
 
     # Check if the user wants to show scalars on the wing panels.
     show_scalars = False
     if (
-            scalar_type == "induced drag" or scalar_type == "side force" or scalar_type == "lift"):
+        scalar_type == "induced drag"
+        or scalar_type == "side force"
+        or scalar_type == "lift"
+    ):
         show_scalars = True
 
     # Initialize variables to hold the problems' scalars and their attributes.
@@ -291,10 +367,14 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
         # have different signs (diverging color map).
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
             color_map = sequential_color_map
-            c_min = max(np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
-                np.min(all_scalars), )
-            c_max = min(np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
-                np.max(all_scalars), )
+            c_min = max(
+                np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
+                np.min(all_scalars),
+            )
+            c_max = min(
+                np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
+                np.max(all_scalars),
+            )
         else:
             color_map = diverging_color_map
             c_min = -color_map_num_sig * np.std(all_scalars)
@@ -311,27 +391,51 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
     if show_scalars and first_results_step == 0:
         these_scalars = get_scalars(step_airplanes[0], scalar_type)
 
-        plot_scalars(plotter, these_scalars, scalar_type, min_scalar, max_scalar,
-            color_map, c_min, c_max, panel_surfaces, )
+        plot_scalars(
+            plotter,
+            these_scalars,
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            c_min,
+            c_max,
+            panel_surfaces,
+        )
     else:
-        plotter.add_mesh(panel_surfaces, show_edges=True, color=panel_color,
-            smooth_shading=False, )
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=panel_color,
+            smooth_shading=False,
+        )
 
     # Set the plotter background color and show the plotter.
     plotter.set_background(color=plotter_background_color)
 
     # Print a message to the console on how to set up the window.
     print(
-        'Orient the view, then press "q" to close the window and produce the animation.')
+        'Orient the view, then press "q" to close the window and produce the animation.'
+    )
 
     # Show the plotter so the user can set up the camera. Then, they will close the
     # window, but the plotter object will stay open off-screen.
-    plotter.show(title="Rendering speed not to scale.", cpos=(-1, -1, 1),
-        full_screen=False, auto_close=False, )
+    plotter.show(
+        title="Rendering speed not to scale.",
+        cpos=(-1, -1, 1),
+        full_screen=False,
+        auto_close=False,
+    )
 
     # Start a list which will hold a WebP image of each frame.
-    images = [webp.Image.fromarray(
-        plotter.screenshot(transparent_background=True, return_img=True, ))]
+    images = [
+        webp.Image.fromarray(
+            plotter.screenshot(
+                transparent_background=True,
+                return_img=True,
+            )
+        )
+    ]
 
     # Initialize a variable to keep track of which step we are on.
     current_step = 1
@@ -346,17 +450,26 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
         panel_surfaces = get_panel_surfaces(airplanes)
 
         if save:
-            plotter.add_text(text="Speed: " + str(round(100 * speed)) + "%",
-                position=text_speed_position, font_size=text_font_size, viewport=True,
-                color=text_color, )
+            plotter.add_text(
+                text="Speed: " + str(round(100 * speed)) + "%",
+                position=text_speed_position,
+                font_size=text_font_size,
+                viewport=True,
+                color=text_color,
+            )
 
         # If the user wants to show the wake ring vortices, then get their surfaces
         # and plot them.
         if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(unsteady_solver,
-                current_step)
-            plotter.add_mesh(wake_ring_vortex_surfaces, show_edges=True,
-                smooth_shading=False, color=wake_vortex_color, )
+            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
+                unsteady_solver, current_step
+            )
+            plotter.add_mesh(
+                wake_ring_vortex_surfaces,
+                show_edges=True,
+                smooth_shading=False,
+                color=wake_vortex_color,
+            )
 
         # Check if the user wants to plot scalars and this step is equal to or
         # greater than the first step with calculated results. If so, add the panel
@@ -365,18 +478,37 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
 
             these_scalars = get_scalars(airplanes, scalar_type)
 
-            plot_scalars(plotter, these_scalars, scalar_type, min_scalar, max_scalar,
-                color_map, c_min, c_max, panel_surfaces, )
+            plot_scalars(
+                plotter,
+                these_scalars,
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                c_min,
+                c_max,
+                panel_surfaces,
+            )
         else:
-            plotter.add_mesh(panel_surfaces, show_edges=True, color=panel_color,
-                smooth_shading=False, )
+            plotter.add_mesh(
+                panel_surfaces,
+                show_edges=True,
+                color=panel_color,
+                smooth_shading=False,
+            )
 
         # Append a WebP image of this frame to the list of frame images if the user
         # wants to save an animation.
         if save:
-            images.append(webp.Image.fromarray(
-                plotter.screenshot(filename=None, transparent_background=True,
-                    return_img=True, )))
+            images.append(
+                webp.Image.fromarray(
+                    plotter.screenshot(
+                        filename=None,
+                        transparent_background=True,
+                        return_img=True,
+                    )
+                )
+            )
 
         # Increment the step number tracker.
         current_step += 1
@@ -384,8 +516,9 @@ def animate(unsteady_solver, scalar_type=None, show_wake_vortices=False, save=Fa
     # If the user wants to save the file, save the list of images as an animated WebP.
     if save:
         # Convert the list of WebP images to a WebP animation.
-        webp.save_images(images, "Animate.webp", fps=actual_fps, lossless=False,
-            quality=quality)
+        webp.save_images(
+            images, "Animate.webp", fps=actual_fps, lossless=False, quality=quality
+        )
 
     # Close all the plotters.
     pv.close_all()
@@ -421,19 +554,27 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
     # Create a 1D array with the time at each time step where results have been
     # calculated.
-    times = np.linspace(first_results_time_step_time, final_time_step_time,
-        num_steps_to_average, endpoint=True, )
+    times = np.linspace(
+        first_results_time_step_time,
+        final_time_step_time,
+        num_steps_to_average,
+        endpoint=True,
+    )
 
     # Initialize matrices to hold the forces, moments, and coefficients at each time
     # step which has results.
     total_near_field_force_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average))
+        (num_airplanes, 3, num_steps_to_average)
+    )
     total_near_field_force_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average))
+        (num_airplanes, 3, num_steps_to_average)
+    )
     total_near_field_moment_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average))
+        (num_airplanes, 3, num_steps_to_average)
+    )
     total_near_field_moment_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average))
+        (num_airplanes, 3, num_steps_to_average)
+    )
 
     # Initialize a variable to track position in the results arrays.
     results_step = 0
@@ -447,13 +588,17 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         # Iterate through this step's airplanes.
         for airplane_id, airplane in enumerate(airplanes):
             total_near_field_force_wind_axes[airplane_id, :, results_step] = (
-                airplane.total_near_field_force_wind_axes)
-            total_near_field_force_coefficients_wind_axes[airplane_id, :,
-            results_step] = airplane.total_near_field_force_coefficients_wind_axes
+                airplane.total_near_field_force_wind_axes
+            )
+            total_near_field_force_coefficients_wind_axes[
+                airplane_id, :, results_step
+            ] = airplane.total_near_field_force_coefficients_wind_axes
             total_near_field_moment_wind_axes[airplane_id, :, results_step] = (
-                airplane.total_near_field_moment_wind_axes)
-            total_near_field_moment_coefficients_wind_axes[airplane_id, :,
-            results_step] = airplane.total_near_field_moment_coefficients_wind_axes
+                airplane.total_near_field_moment_wind_axes
+            )
+            total_near_field_moment_coefficients_wind_axes[
+                airplane_id, :, results_step
+            ] = airplane.total_near_field_moment_coefficients_wind_axes
 
         results_step += 1
 
@@ -515,60 +660,114 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         moment_coefficients_axes.set_facecolor(figure_background_color)
 
         # Populate the plots.
-        force_axes.plot(times, total_near_field_force_wind_axes[airplane_id, 0],
-            label="Induced Drag", color=drag_color, marker=".",
+        force_axes.plot(
+            times,
+            total_near_field_force_wind_axes[airplane_id, 0],
+            label="Induced Drag",
+            color=drag_color,
+            marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size, )
-        force_axes.plot(times, total_near_field_force_wind_axes[airplane_id, 1],
-            label="Side Force", color=side_color, marker=".",
+            markersize=marker_size,
+        )
+        force_axes.plot(
+            times,
+            total_near_field_force_wind_axes[airplane_id, 1],
+            label="Side Force",
+            color=side_color,
+            marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size, )
-        force_axes.plot(times, total_near_field_force_wind_axes[airplane_id, 2],
-            label="Lift", color=lift_color, marker=".",
+            markersize=marker_size,
+        )
+        force_axes.plot(
+            times,
+            total_near_field_force_wind_axes[airplane_id, 2],
+            label="Lift",
+            color=lift_color,
+            marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size, )
-        force_coefficients_axes.plot(times,
+            markersize=marker_size,
+        )
+        force_coefficients_axes.plot(
+            times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 0],
-            label="Induced Drag", color=drag_color, marker=".",
+            label="Induced Drag",
+            color=drag_color,
+            marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size, )
-        force_coefficients_axes.plot(times,
+            markersize=marker_size,
+        )
+        force_coefficients_axes.plot(
+            times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 1],
-            label="Side Force", color=side_color, marker=".",
+            label="Side Force",
+            color=side_color,
+            marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size, )
-        force_coefficients_axes.plot(times,
-            total_near_field_force_coefficients_wind_axes[airplane_id, 2], label="Lift",
-            color=lift_color, marker=".",
+            markersize=marker_size,
+        )
+        force_coefficients_axes.plot(
+            times,
+            total_near_field_force_coefficients_wind_axes[airplane_id, 2],
+            label="Lift",
+            color=lift_color,
+            marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_axes.plot(times, total_near_field_moment_wind_axes[airplane_id, 0],
-            label="Roll", color=roll_color, marker=".",
+            markersize=marker_size,
+        )
+        moment_axes.plot(
+            times,
+            total_near_field_moment_wind_axes[airplane_id, 0],
+            label="Roll",
+            color=roll_color,
+            marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_axes.plot(times, total_near_field_moment_wind_axes[airplane_id, 1],
-            label="Pitch", color=pitch_color, marker=".",
+            markersize=marker_size,
+        )
+        moment_axes.plot(
+            times,
+            total_near_field_moment_wind_axes[airplane_id, 1],
+            label="Pitch",
+            color=pitch_color,
+            marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_axes.plot(times, total_near_field_moment_wind_axes[airplane_id, 2],
-            label="Yaw", color=yaw_color, marker=".",
+            markersize=marker_size,
+        )
+        moment_axes.plot(
+            times,
+            total_near_field_moment_wind_axes[airplane_id, 2],
+            label="Yaw",
+            color=yaw_color,
+            marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_coefficients_axes.plot(times,
+            markersize=marker_size,
+        )
+        moment_coefficients_axes.plot(
+            times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 0],
-            label="Roll", color=roll_color, marker=".",
+            label="Roll",
+            color=roll_color,
+            marker=".",
             markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_coefficients_axes.plot(times,
+            markersize=marker_size,
+        )
+        moment_coefficients_axes.plot(
+            times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 1],
-            label="Pitch", color=pitch_color, marker=".",
+            label="Pitch",
+            color=pitch_color,
+            marker=".",
             markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size, )
-        moment_coefficients_axes.plot(times,
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 2], label="Yaw",
-            color=yaw_color, marker=".",
+            markersize=marker_size,
+        )
+        moment_coefficients_axes.plot(
+            times,
+            total_near_field_moment_coefficients_wind_axes[airplane_id, 2],
+            label="Yaw",
+            color=yaw_color,
+            marker=".",
             markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size, )
+            markersize=marker_size,
+        )
 
         # Find and format this airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
@@ -592,23 +791,45 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         moment_coefficients_axes.set_title(moment_coefficient_title, color=text_color)
 
         # Format the plots' legends.
-        force_axes.legend(facecolor=figure_background_color,
-            edgecolor=figure_background_color, labelcolor=text_color, )
-        force_coefficients_axes.legend(facecolor=figure_background_color,
-            edgecolor=figure_background_color, labelcolor=text_color, )
-        moment_axes.legend(facecolor=figure_background_color,
-            edgecolor=figure_background_color, labelcolor=text_color, )
-        moment_coefficients_axes.legend(facecolor=figure_background_color,
-            edgecolor=figure_background_color, labelcolor=text_color, )
+        force_axes.legend(
+            facecolor=figure_background_color,
+            edgecolor=figure_background_color,
+            labelcolor=text_color,
+        )
+        force_coefficients_axes.legend(
+            facecolor=figure_background_color,
+            edgecolor=figure_background_color,
+            labelcolor=text_color,
+        )
+        moment_axes.legend(
+            facecolor=figure_background_color,
+            edgecolor=figure_background_color,
+            labelcolor=text_color,
+        )
+        moment_coefficients_axes.legend(
+            facecolor=figure_background_color,
+            edgecolor=figure_background_color,
+            labelcolor=text_color,
+        )
 
         # Save the figures as PNGs if the user wants to do so.
         if save:
-            force_figure.savefig(airplane_name + " Forces.png", dpi=300, )
-            force_coefficients_figure.savefig(airplane_name + " Force Coefficients.png",
-                dpi=300, )
-            moment_figure.savefig(airplane_name + " Moments.png", dpi=300, )
+            force_figure.savefig(
+                airplane_name + " Forces.png",
+                dpi=300,
+            )
+            force_coefficients_figure.savefig(
+                airplane_name + " Force Coefficients.png",
+                dpi=300,
+            )
+            moment_figure.savefig(
+                airplane_name + " Moments.png",
+                dpi=300,
+            )
             moment_coefficients_figure.savefig(
-                airplane_name + " Moment Coefficients.png", dpi=300, )
+                airplane_name + " Moment Coefficients.png",
+                dpi=300,
+            )
 
         # If the user wants to show the plots, do so.
         if show:
@@ -635,45 +856,81 @@ def print_steady_results(steady_solver):
 
         # Print out this airplane's forces.
         print("\tForces in Wind Axes:")
-        print("\t\tInduced Drag:\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[0], 3), " N", sep="", )
-        print("\t\tSide Force:\t\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[1], 3), " N", sep="", )
-        print("\t\tLift:\t\t\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[2], 3), " N", sep="", )
+        print(
+            "\t\tInduced Drag:\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[0], 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tSide Force:\t\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[1], 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tLift:\t\t\t\t\t",
+            np.round(airplane.total_near_field_force_wind_axes[2], 3),
+            " N",
+            sep="",
+        )
 
         # Print out this airplane's moments.
         print("\n\tMoments in Wind Axes:")
-        print("\t\tRolling Moment:\t\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[0], 3), " Nm", sep="", )
-        print("\t\tPitching Moment:\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[1], 3), " Nm", sep="", )
-        print("\t\tYawing Moment:\t\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[2], 3), " Nm", sep="", )
+        print(
+            "\t\tRolling Moment:\t\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[0], 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tPitching Moment:\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[1], 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tYawing Moment:\t\t\t",
+            np.round(airplane.total_near_field_moment_wind_axes[2], 3),
+            " Nm",
+            sep="",
+        )
 
         # Print out this airplane's force coefficients.
         print("\n\tForce Coefficients in Wind Axes:")
-        print("\t\tCDi:\t\t\t\t\t",
+        print(
+            "\t\tCDi:\t\t\t\t\t",
             np.round(airplane.total_near_field_force_coefficients_wind_axes[0], 3),
-            sep="", )
-        print("\t\tCY:\t\t\t\t\t\t",
+            sep="",
+        )
+        print(
+            "\t\tCY:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_force_coefficients_wind_axes[1], 3),
-            sep="", )
-        print("\t\tCL:\t\t\t\t\t\t",
+            sep="",
+        )
+        print(
+            "\t\tCL:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_force_coefficients_wind_axes[2], 3),
-            sep="", )
+            sep="",
+        )
 
         # Print out this airplane's moment coefficients.
         print("\n\tMoment Coefficients in Wind Axes:")
-        print("\t\tCl:\t\t\t\t\t\t",
+        print(
+            "\t\tCl:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_moment_coefficients_wind_axes[0], 3),
-            sep="", )
-        print("\t\tCm:\t\t\t\t\t\t",
+            sep="",
+        )
+        print(
+            "\t\tCm:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_moment_coefficients_wind_axes[1], 3),
-            sep="", )
-        print("\t\tCn:\t\t\t\t\t\t",
+            sep="",
+        )
+        print(
+            "\t\tCn:\t\t\t\t\t\t",
             np.round(airplane.total_near_field_moment_coefficients_wind_axes[2], 3),
-            sep="", )
+            sep="",
+        )
 
         # If the results from more airplanes are going to be printed, print new line
         # to separate them.
@@ -692,14 +949,17 @@ def print_unsteady_results(unsteady_solver):
     forces = unsteady_solver.unsteady_problem.final_mean_near_field_forces_wind_axes
     moments = unsteady_solver.unsteady_problem.final_mean_near_field_moments_wind_axes
     force_coefficients = (
-        unsteady_solver.unsteady_problem.final_mean_near_field_force_coefficients_wind_axes)
+        unsteady_solver.unsteady_problem.final_mean_near_field_force_coefficients_wind_axes
+    )
     moment_coefficients = (
-        unsteady_solver.unsteady_problem.final_mean_near_field_moment_coefficients_wind_axes)
+        unsteady_solver.unsteady_problem.final_mean_near_field_moment_coefficients_wind_axes
+    )
 
     # For each airplane object, calculate and print the average force, moment,
     # force coefficient, and moment coefficient values.
     for airplane_id, airplane in enumerate(
-            unsteady_solver.steady_problems[0].airplanes):
+        unsteady_solver.steady_problems[0].airplanes
+    ):
         these_forces = forces[airplane_id]
         these_moments = moments[airplane_id]
         these_force_coefficients = force_coefficients[airplane_id]
@@ -723,34 +983,81 @@ def print_unsteady_results(unsteady_solver):
 
         # Print out this airplane's average forces.
         print("\tFinal Forces in Wind Axes:")
-        print("\t\tInduced Drag:\t\t\t", np.round(this_induced_drag, 3), " N", sep="", )
-        print("\t\tSide Force:\t\t\t\t", np.round(this_side_force, 3), " N", sep="", )
-        print("\t\tLift:\t\t\t\t\t", np.round(this_lift, 3), " N", sep="", )
+        print(
+            "\t\tInduced Drag:\t\t\t",
+            np.round(this_induced_drag, 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tSide Force:\t\t\t\t",
+            np.round(this_side_force, 3),
+            " N",
+            sep="",
+        )
+        print(
+            "\t\tLift:\t\t\t\t\t",
+            np.round(this_lift, 3),
+            " N",
+            sep="",
+        )
 
         # Print out this airplane's average moments.
         print("\n\tFinal Moments in Wind Axes:")
-        print("\t\tRolling Moment:\t\t\t", np.round(this_rolling_moment, 3), " Nm",
-            sep="", )
-        print("\t\tPitching Moment:\t\t", np.round(this_pitching_moment, 3), " Nm",
-            sep="", )
-        print("\t\tYawing Moment:\t\t\t", np.round(this_yawing_moment, 3), " Nm",
-            sep="", )
+        print(
+            "\t\tRolling Moment:\t\t\t",
+            np.round(this_rolling_moment, 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tPitching Moment:\t\t",
+            np.round(this_pitching_moment, 3),
+            " Nm",
+            sep="",
+        )
+        print(
+            "\t\tYawing Moment:\t\t\t",
+            np.round(this_yawing_moment, 3),
+            " Nm",
+            sep="",
+        )
 
         # Print out this airplane's average force coefficients.
         print("\n\tFinal Force Coefficients in Wind Axes:")
-        print("\t\tCDi:\t\t\t\t\t", np.round(this_induced_drag_coefficient, 3),
-            sep="", )
-        print("\t\tCY:\t\t\t\t\t\t", np.round(this_side_force_coefficient, 3), sep="", )
-        print("\t\tCL:\t\t\t\t\t\t", np.round(this_lift_coefficient, 3), sep="", )
+        print(
+            "\t\tCDi:\t\t\t\t\t",
+            np.round(this_induced_drag_coefficient, 3),
+            sep="",
+        )
+        print(
+            "\t\tCY:\t\t\t\t\t\t",
+            np.round(this_side_force_coefficient, 3),
+            sep="",
+        )
+        print(
+            "\t\tCL:\t\t\t\t\t\t",
+            np.round(this_lift_coefficient, 3),
+            sep="",
+        )
 
         # Print out this airplane's average moment coefficients.
         print("\n\tFinal Moment Coefficients in Wind Axes:")
-        print("\t\tCl:\t\t\t\t\t\t", np.round(this_rolling_moment_coefficient, 3),
-            sep="", )
-        print("\t\tCm:\t\t\t\t\t\t", np.round(this_pitching_moment_coefficient, 3),
-            sep="", )
-        print("\t\tCn:\t\t\t\t\t\t", np.round(this_yawing_moment_coefficient, 3),
-            sep="", )
+        print(
+            "\t\tCl:\t\t\t\t\t\t",
+            np.round(this_rolling_moment_coefficient, 3),
+            sep="",
+        )
+        print(
+            "\t\tCm:\t\t\t\t\t\t",
+            np.round(this_pitching_moment_coefficient, 3),
+            sep="",
+        )
+        print(
+            "\t\tCn:\t\t\t\t\t\t",
+            np.round(this_yawing_moment_coefficient, 3),
+            sep="",
+        )
 
         # If the results from more airplanes are going to be printed, print new line
         # to separate them.
@@ -758,7 +1065,9 @@ def print_unsteady_results(unsteady_solver):
             print("")
 
 
-def get_panel_surfaces(airplanes, ):
+def get_panel_surfaces(
+    airplanes,
+):
     """This function returns a PolyData representation of the wing panel surfaces
     associated with all the airplanes in a given list.
 
@@ -784,12 +1093,23 @@ def get_panel_surfaces(airplanes, ):
             for panel in panels:
                 # Stack this panel's vertices and faces. Look through the PolyData
                 # documentation for more details.
-                panel_vertices_to_add = np.vstack((
-                    panel.front_left_vertex, panel.front_right_vertex,
-                    panel.back_right_vertex, panel.back_left_vertex,))
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
+                )
                 panel_face_to_add = np.array(
-                    [4, (panel_num * 4), (panel_num * 4) + 1, (panel_num * 4) + 2,
-                                         (panel_num * 4) + 3, ])
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
 
                 # Stack this panel's vertices and faces with the array of all the
                 # vertices and faces.
@@ -817,13 +1137,17 @@ def get_wake_ring_vortex_surfaces(solver, step):
     """
     num_wake_ring_vortices = solver.num_wake_ring_vortices_list[step]
     wake_ring_vortex_front_right_vertices = (
-        solver.wake_ring_vortex_front_right_vertices_list[step])
+        solver.wake_ring_vortex_front_right_vertices_list[step]
+    )
     wake_ring_vortex_front_left_vertices = (
-        solver.wake_ring_vortex_front_left_vertices_list[step])
+        solver.wake_ring_vortex_front_left_vertices_list[step]
+    )
     wake_ring_vortex_back_left_vertices = (
-        solver.wake_ring_vortex_back_left_vertices_list[step])
+        solver.wake_ring_vortex_back_left_vertices_list[step]
+    )
     wake_ring_vortex_back_right_vertices = (
-        solver.wake_ring_vortex_back_right_vertices_list[step])
+        solver.wake_ring_vortex_back_right_vertices_list[step]
+    )
 
     # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
     wake_ring_vortex_vertices = np.zeros((0, 3), dtype=int)
@@ -831,27 +1155,43 @@ def get_wake_ring_vortex_surfaces(solver, step):
 
     for wake_ring_vortex_num in range(num_wake_ring_vortices):
         this_front_right_vertex = wake_ring_vortex_front_right_vertices[
-            wake_ring_vortex_num]
+            wake_ring_vortex_num
+        ]
         this_front_left_vertex = wake_ring_vortex_front_left_vertices[
-            wake_ring_vortex_num]
+            wake_ring_vortex_num
+        ]
         this_back_left_vertex = wake_ring_vortex_back_left_vertices[
-            wake_ring_vortex_num]
+            wake_ring_vortex_num
+        ]
         this_back_right_vertex = wake_ring_vortex_back_right_vertices[
-            wake_ring_vortex_num]
+            wake_ring_vortex_num
+        ]
 
-        wake_ring_vortex_vertices_to_add = np.vstack((
-            this_front_left_vertex, this_front_right_vertex, this_back_right_vertex,
-            this_back_left_vertex,))
+        wake_ring_vortex_vertices_to_add = np.vstack(
+            (
+                this_front_left_vertex,
+                this_front_right_vertex,
+                this_back_right_vertex,
+                this_back_left_vertex,
+            )
+        )
         wake_ring_vortex_face_to_add = np.array(
-            [4, (wake_ring_vortex_num * 4), (wake_ring_vortex_num * 4) + 1,
-                                            (wake_ring_vortex_num * 4) + 2,
-                                            (wake_ring_vortex_num * 4) + 3, ])
+            [
+                4,
+                (wake_ring_vortex_num * 4),
+                (wake_ring_vortex_num * 4) + 1,
+                (wake_ring_vortex_num * 4) + 2,
+                (wake_ring_vortex_num * 4) + 3,
+            ]
+        )
 
         # Stack this wake ring vortex's vertices and faces.
         wake_ring_vortex_vertices = np.vstack(
-            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add))
+            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
+        )
         wake_ring_vortex_faces = np.hstack(
-            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add))
+            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
+        )
 
         # Increment the wake ring vortex counter.
         wake_ring_vortex_num += 1
@@ -860,7 +1200,10 @@ def get_wake_ring_vortex_surfaces(solver, step):
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
-def get_scalars(airplanes, scalar_type, ):
+def get_scalars(
+    airplanes,
+    scalar_type,
+):
     """This function gets the coefficient values from a problem's airplane objects,
     and puts them into a 1D array to be used as scalars for display by other output
     methods.
@@ -898,8 +1241,17 @@ def get_scalars(airplanes, scalar_type, ):
     return scalars
 
 
-def plot_scalars(plotter, these_scalars, scalar_type, min_scalar, max_scalar, color_map,
-        c_min, c_max, panel_surfaces, ):
+def plot_scalars(
+    plotter,
+    these_scalars,
+    scalar_type,
+    min_scalar,
+    max_scalar,
+    color_map,
+    c_min,
+    c_max,
+    panel_surfaces,
+):
     """This function plots a scalar bars, the mesh panels with a particular set of
     scalars, and labels for the minimum and maximum scalar values.
 
@@ -914,15 +1266,38 @@ def plot_scalars(plotter, these_scalars, scalar_type, min_scalar, max_scalar, co
     :param panel_surfaces:
     :return:
     """
-    scalar_bar_args = dict(title=scalar_type.title() + " Coefficient",
-        title_font_size=bar_title_font_size, label_font_size=bar_label_font_size,
-        width=bar_width, position_x=bar_position_x, position_y=bar_position_y,
-        n_labels=bar_n_labels, fmt="%.2f", color=text_color, )
-    plotter.add_mesh(panel_surfaces, show_edges=True, cmap=color_map,
-        clim=[c_min, c_max], scalars=these_scalars, smooth_shading=False,
-        scalar_bar_args=scalar_bar_args, )
-    plotter.add_text(text="Max: " + str(max_scalar), position=text_max_position,
-        font_size=text_font_size, viewport=True, color=text_color, )
-    plotter.add_text(text="Min: " + str(min_scalar), position=text_min_position,
-        font_size=text_font_size, viewport=True, color=text_color, )
+    scalar_bar_args = dict(
+        title=scalar_type.title() + " Coefficient",
+        title_font_size=bar_title_font_size,
+        label_font_size=bar_label_font_size,
+        width=bar_width,
+        position_x=bar_position_x,
+        position_y=bar_position_y,
+        n_labels=bar_n_labels,
+        fmt="%.2f",
+        color=text_color,
+    )
+    plotter.add_mesh(
+        panel_surfaces,
+        show_edges=True,
+        cmap=color_map,
+        clim=[c_min, c_max],
+        scalars=these_scalars,
+        smooth_shading=False,
+        scalar_bar_args=scalar_bar_args,
+    )
+    plotter.add_text(
+        text="Max: " + str(max_scalar),
+        position=text_max_position,
+        font_size=text_font_size,
+        viewport=True,
+        color=text_color,
+    )
+    plotter.add_text(
+        text="Min: " + str(min_scalar),
+        position=text_min_position,
+        font_size=text_font_size,
+        viewport=True,
+        color=text_color,
+    )
     plotter.update_scalars(these_scalars)

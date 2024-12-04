@@ -12,16 +12,55 @@ example_logger.setLevel(logging.DEBUG)
 
 # Create an airplane object. Read through the solver examples for more details on
 # creating this object.
-default_airplane = ps.geometry.Airplane(weight=250, wings=[
-    ps.geometry.Wing(symmetric=True, wing_cross_sections=[
-        ps.geometry.WingCrossSection(airfoil=ps.geometry.Airfoil(name="naca2412", ), ),
-        ps.geometry.WingCrossSection(x_le=0.0, y_le=5.0, z_le=0.0, chord=1.0,
-            airfoil=ps.geometry.Airfoil(name="naca2412", ), ), ], ),
-    ps.geometry.Wing(x_le=7.50, z_le=0.25, symmetric=True, wing_cross_sections=[
-        ps.geometry.WingCrossSection(x_le=0.0, y_le=0.0, chord=0.5, twist=-5.0,
-            airfoil=ps.geometry.Airfoil(name="naca0012", ), ),
-        ps.geometry.WingCrossSection(x_le=0.0, y_le=1.0, chord=0.5, twist=-5.0,
-            airfoil=ps.geometry.Airfoil(name="naca0012", ), ), ], ), ], )
+default_airplane = ps.geometry.Airplane(
+    weight=250,
+    wings=[
+        ps.geometry.Wing(
+            symmetric=True,
+            wing_cross_sections=[
+                ps.geometry.WingCrossSection(
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca2412",
+                    ),
+                ),
+                ps.geometry.WingCrossSection(
+                    x_le=0.0,
+                    y_le=5.0,
+                    z_le=0.0,
+                    chord=1.0,
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca2412",
+                    ),
+                ),
+            ],
+        ),
+        ps.geometry.Wing(
+            x_le=7.50,
+            z_le=0.25,
+            symmetric=True,
+            wing_cross_sections=[
+                ps.geometry.WingCrossSection(
+                    x_le=0.0,
+                    y_le=0.0,
+                    chord=0.5,
+                    twist=-5.0,
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
+                ),
+                ps.geometry.WingCrossSection(
+                    x_le=0.0,
+                    y_le=1.0,
+                    chord=0.5,
+                    twist=-5.0,
+                    airfoil=ps.geometry.Airfoil(
+                        name="naca0012",
+                    ),
+                ),
+            ],
+        ),
+    ],
+)
 
 # Create an operating point object for this example's problem. Be sure to specify an
 # external thrust because this aircraft is not flapping, and will therefore generate
@@ -30,15 +69,20 @@ default_airplane = ps.geometry.Airplane(weight=250, wings=[
 default_operating_point = ps.operating_point.OperatingPoint(external_thrust=5)
 
 # Construct this example's problem object.
-default_problem = ps.problems.SteadyProblem(airplanes=[default_airplane],
-    operating_point=default_operating_point)
+default_problem = ps.problems.SteadyProblem(
+    airplanes=[default_airplane], operating_point=default_operating_point
+)
 
 # Call the analyze_steady_trim function to search for a trim condition (thrust
 # balances drag, weight balances lift, and all moments are close to zero) within a
 # certain set of bounds.
-trim_conditions = ps.trim.analyze_steady_trim(problem=default_problem,
-    velocity_bounds=(5, 15), alpha_bounds=(-10, 10), beta_bounds=(-1, 1),
-    external_thrust_bounds=(0, 10), )
+trim_conditions = ps.trim.analyze_steady_trim(
+    problem=default_problem,
+    velocity_bounds=(5, 15),
+    alpha_bounds=(-10, 10),
+    beta_bounds=(-1, 1),
+    external_thrust_bounds=(0, 10),
+)
 
 # Log the trim conditions. If these display "nan", then the trim function couldn't
 # find a trimmed state.

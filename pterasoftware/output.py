@@ -1080,7 +1080,7 @@ def get_panel_surfaces(
     """
 
     # Initialize empty arrays to hold the panel vertices and faces.
-    panel_vertices = np.empty((0, 3), dtype=int)
+    panel_vertices = np.empty((0, 3), dtype=float)
     panel_faces = np.empty(0, dtype=int)
 
     # Initialize a variable to keep track of how many panels have been added thus far.
@@ -1152,7 +1152,7 @@ def get_wake_ring_vortex_surfaces(solver, step):
     )
 
     # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
-    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=int)
+    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
     wake_ring_vortex_faces = np.zeros(0, dtype=int)
 
     for wake_ring_vortex_num in range(num_wake_ring_vortices):

@@ -4,7 +4,7 @@
 import os
 import sys
 
-import PySide2
+import PySide6
 import shiboken2
 import cmocean
 from PyInstaller.building.api import PYZ, EXE, COLLECT
@@ -16,20 +16,20 @@ one_dir_mode = True
 
 binaries = []
 if sys.platform.startswith('win'):
-    qt_plugins_path = os.path.join(PySide2.__path__[0], "plugins")
+    qt_plugins_path = os.path.join(PySide6.__path__[0], "Qt", "plugins")
     binaries = [
-        (os.path.join(PySide2.__path__[0], "plugins"), 'PySide2')
+        (os.path.join(PySide6.__path__[0], "Qt", "plugins"), "PySide6")
     ]
 elif sys.platform.startswith('linux'):
-    qt_plugins_path = os.path.join(PySide2.__path__[0], "Qt", "plugins", "platforms")
+    qt_plugins_path = os.path.join(PySide6.__path__[0], "Qt", "plugins", "platforms")
     binaries = [
         (os.path.join(sys.base_prefix, "lib", "libspatialindex_c.so"), '.'),
-        # (os.path.join(PySide2.__path__[0], "Qt", "plugins", "platforms"), '.')
+        # (os.path.join(PySide6.__path__[0], "Qt", "plugins", "platforms"), '.')
     ]
 
 upx = False  # UPX does not play with anything Qt
 upx_exclude = [
-    'PySide2',
+    'PySide6',
     'shiboken2',
     'qwindows.dll'
 ]

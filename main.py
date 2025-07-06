@@ -104,5 +104,5 @@ if __name__ == "__main__":
     window.raise_()
     window.activateWindow()
     splash.finish(window)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
     print("Exiting")

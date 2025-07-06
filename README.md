@@ -245,7 +245,7 @@ Additionally, these packages are useful for continued development of the softwar
 * twine >= 6.1.0, < 7.0.0
 * PyInstaller >= 6.11.1, < 7.0.0
 * setuptools >= 80.9.0, < 81.0.0
-* wheel >= 0.45.1, < 0.45.1
+* wheel >= 0.45.1, < 0.45.2
 
 ## Validation
 

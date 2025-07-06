@@ -210,9 +210,9 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
         initial points). It can be increased for higher fidelity visuals. The default
         value is 25.
     :param delta_time: float, optional
-        This is the time in seconds between each time current_step It can be
+        This is the time in seconds between each time step It can be
         decreased for higher fidelity visuals or to make the streamlines shorter.
-        It's default value is 0.02 seconds.
+        Its default value is 0.02 seconds.
     :return: None
     """
     # Initialize an array to hold this solver's matrix of streamline points.
@@ -595,7 +595,7 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
     solver.panel_moment_references[global_panel_position, :] = airplane.xyz_ref
 
-    # Check if this panel is on the trailing edge. If it is, calculate it's
+    # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.
     if panel.is_trailing_edge:
         solver.seed_points = np.vstack(

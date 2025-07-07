@@ -82,7 +82,7 @@ example_airplane = ps.geometry.Airplane(
                     # The default value is "symmetric".
                     control_surface_type="symmetric",
                     # Define the point on the airfoil where the control surface
-                    # hinges. This is expressed as a faction of the chord length,
+                    # hinges. This is expressed as a fraction of the chord length,
                     # back from the leading edge. The default value is 0.75.
                     control_surface_hinge_point=0.75,
                     # Define the deflection of the control surface in degrees. The
@@ -193,7 +193,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 example_problem = ps.problems.SteadyProblem(
     # Set this steady problem's airplane object to be the one we just created.
     airplanes=[example_airplane],
-    # Set this steady problem's operating point object ot be the one we just created.
+    # Set this steady problem's operating point object to be the one we just created.
     operating_point=example_operating_point,
 )
 

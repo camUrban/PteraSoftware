@@ -1,7 +1,8 @@
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
-    None
+    Nonedf
+    Nond
 
 This package contains the following directories:
     airfoils: This folder contains a collection of airfoils whose coordinates are

@@ -3,14 +3,68 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+from PySide6.QtCore import (
+    QCoreApplication,
+    QDate,
+    QDateTime,
+    QLocale,
+    QMetaObject,
+    QObject,
+    QPoint,
+    QRect,
+    QSize,
+    QTime,
+    QUrl,
+    Qt,
+)
+from PySide6.QtGui import (
+    QAction,
+    QBrush,
+    QColor,
+    QConicalGradient,
+    QCursor,
+    QFont,
+    QFontDatabase,
+    QGradient,
+    QIcon,
+    QImage,
+    QKeySequence,
+    QLinearGradient,
+    QPainter,
+    QPalette,
+    QPixmap,
+    QRadialGradient,
+    QTransform,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QFrame,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+    QProgressBar,
+    QPushButton,
+    QSizePolicy,
+    QStatusBar,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class Ui_MainWindowDesign(object):
@@ -18,7 +72,9 @@ class Ui_MainWindowDesign(object):
         if not MainWindowDesign.objectName():
             MainWindowDesign.setObjectName("MainWindowDesign")
         MainWindowDesign.resize(1145, 880)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindowDesign.sizePolicy().hasHeightForWidth())
@@ -75,7 +131,9 @@ class Ui_MainWindowDesign(object):
 
         self.tabWidget = QTabWidget(self.centralWidget)
         self.tabWidget.setObjectName("tabWidget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1 = QSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
@@ -92,7 +150,9 @@ class Ui_MainWindowDesign(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.label_13 = QLabel(self.aircraftParametersTab)
         self.label_13.setObjectName("label_13")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        sizePolicy2 = QSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum
+        )
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.label_13.sizePolicy().hasHeightForWidth())
@@ -100,7 +160,6 @@ class Ui_MainWindowDesign(object):
         font = QFont()
         font.setPointSize(12)
         font.setBold(True)
-        font.setWeight(75)
         self.label_13.setFont(font)
         self.label_13.setAlignment(Qt.AlignCenter)
 
@@ -113,14 +172,15 @@ class Ui_MainWindowDesign(object):
         font1 = QFont()
         font1.setPointSize(10)
         font1.setBold(True)
-        font1.setWeight(75)
         self.label_14.setFont(font1)
 
         self.verticalLayout_2.addWidget(self.label_14)
 
         self.nameInput = QLineEdit(self.aircraftParametersTab)
         self.nameInput.setObjectName("nameInput")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy3 = QSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
+        )
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.nameInput.sizePolicy().hasHeightForWidth())
@@ -138,7 +198,9 @@ class Ui_MainWindowDesign(object):
 
         self.label_16 = QLabel(self.aircraftParametersTab)
         self.label_16.setObjectName("label_16")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        sizePolicy4 = QSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum
+        )
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.label_16.sizePolicy().hasHeightForWidth())
@@ -151,7 +213,7 @@ class Ui_MainWindowDesign(object):
 
         self.x_CofG = QDoubleSpinBox(self.aircraftParametersTab)
         self.x_CofG.setObjectName("x_CofG")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Maximum)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(0)
         sizePolicy5.setHeightForWidth(self.x_CofG.sizePolicy().hasHeightForWidth())
@@ -170,7 +232,7 @@ class Ui_MainWindowDesign(object):
 
         self.y_CofG = QDoubleSpinBox(self.aircraftParametersTab)
         self.y_CofG.setObjectName("y_CofG")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy6.setHorizontalStretch(0)
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.y_CofG.sizePolicy().hasHeightForWidth())
@@ -246,7 +308,9 @@ class Ui_MainWindowDesign(object):
 
         self.label_5 = QLabel(self.groupBox)
         self.label_5.setObjectName("label_5")
-        sizePolicy7 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy7 = QSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred
+        )
         sizePolicy7.setHorizontalStretch(0)
         sizePolicy7.setVerticalStretch(0)
         sizePolicy7.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
@@ -300,7 +364,9 @@ class Ui_MainWindowDesign(object):
 
         self.MainWingLabel = QLabel(self.groupBox)
         self.MainWingLabel.setObjectName("MainWingLabel")
-        sizePolicy8 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        sizePolicy8 = QSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum
+        )
         sizePolicy8.setHorizontalStretch(0)
         sizePolicy8.setVerticalStretch(0)
         sizePolicy8.setHeightForWidth(
@@ -308,7 +374,6 @@ class Ui_MainWindowDesign(object):
         )
         self.MainWingLabel.setSizePolicy(sizePolicy8)
         self.MainWingLabel.setFont(font)
-        self.MainWingLabel.setContextMenuPolicy(Qt.PreventContextMenu)
         self.MainWingLabel.setFrameShadow(QFrame.Sunken)
         self.MainWingLabel.setLineWidth(1)
         self.MainWingLabel.setAlignment(Qt.AlignCenter)
@@ -319,7 +384,9 @@ class Ui_MainWindowDesign(object):
 
         self.tabWidget_2 = QTabWidget(self.aircraftParametersTab)
         self.tabWidget_2.setObjectName("tabWidget_2")
-        sizePolicy9 = QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Expanding)
+        sizePolicy9 = QSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
+        )
         sizePolicy9.setHorizontalStretch(0)
         sizePolicy9.setVerticalStretch(0)
         sizePolicy9.setHeightForWidth(self.tabWidget_2.sizePolicy().hasHeightForWidth())
@@ -370,13 +437,15 @@ class Ui_MainWindowDesign(object):
 
         self.label_69 = QLabel(self.groupBox_8)
         self.label_69.setObjectName("label_69")
-        self.label_69.setFont(font1)
+        font3 = QFont()
+        font3.setPointSize(10)
+        font3.setBold(False)
+        self.label_69.setFont(font3)
 
         self.gridLayout_11.addWidget(self.label_69, 12, 0, 1, 1)
 
         self.label_75 = QLabel(self.groupBox_8)
         self.label_75.setObjectName("label_75")
-        self.label_75.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_11.addWidget(self.label_75, 13, 1, 1, 1)
 
@@ -387,7 +456,6 @@ class Ui_MainWindowDesign(object):
 
         self.label_79 = QLabel(self.groupBox_8)
         self.label_79.setObjectName("label_79")
-        self.label_79.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_11.addWidget(self.label_79, 15, 1, 1, 1)
 
@@ -405,7 +473,7 @@ class Ui_MainWindowDesign(object):
         self.label_70.setObjectName("label_70")
         sizePolicy2.setHeightForWidth(self.label_70.sizePolicy().hasHeightForWidth())
         self.label_70.setSizePolicy(sizePolicy2)
-        self.label_70.setFont(font1)
+        self.label_70.setFont(font3)
 
         self.gridLayout_11.addWidget(self.label_70, 7, 0, 1, 1)
 
@@ -430,7 +498,7 @@ class Ui_MainWindowDesign(object):
         self.label_77.setObjectName("label_77")
         sizePolicy2.setHeightForWidth(self.label_77.sizePolicy().hasHeightForWidth())
         self.label_77.setSizePolicy(sizePolicy2)
-        self.label_77.setFont(font1)
+        self.label_77.setFont(font3)
 
         self.gridLayout_11.addWidget(self.label_77, 2, 0, 1, 2)
 
@@ -464,11 +532,11 @@ class Ui_MainWindowDesign(object):
             self.MainWingLabel_6.sizePolicy().hasHeightForWidth()
         )
         self.MainWingLabel_6.setSizePolicy(sizePolicy8)
-        self.MainWingLabel_6.setFont(font)
-        self.MainWingLabel_6.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.MainWingLabel_6.setFrameShadow(QFrame.Sunken)
+        font4 = QFont()
+        font4.setPointSize(12)
+        font4.setBold(False)
+        self.MainWingLabel_6.setFont(font4)
         self.MainWingLabel_6.setLineWidth(1)
-        self.MainWingLabel_6.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_11.addWidget(self.MainWingLabel_6, 0, 0, 1, 2)
 
@@ -482,7 +550,6 @@ class Ui_MainWindowDesign(object):
         sizePolicy.setHeightForWidth(self.label_23.sizePolicy().hasHeightForWidth())
         self.label_23.setSizePolicy(sizePolicy)
         self.label_23.setToolTipDuration(0)
-        self.label_23.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_11.addWidget(self.label_23, 16, 1, 1, 1)
 
@@ -546,7 +613,7 @@ class Ui_MainWindowDesign(object):
 
         self.label_58 = QLabel(self.groupBox_7)
         self.label_58.setObjectName("label_58")
-        self.label_58.setFont(font1)
+        self.label_58.setFont(font3)
 
         self.gridLayout_10.addWidget(self.label_58, 12, 0, 1, 1)
 
@@ -556,11 +623,8 @@ class Ui_MainWindowDesign(object):
             self.MainWingLabel_5.sizePolicy().hasHeightForWidth()
         )
         self.MainWingLabel_5.setSizePolicy(sizePolicy8)
-        self.MainWingLabel_5.setFont(font)
-        self.MainWingLabel_5.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.MainWingLabel_5.setFrameShadow(QFrame.Sunken)
+        self.MainWingLabel_5.setFont(font4)
         self.MainWingLabel_5.setLineWidth(1)
-        self.MainWingLabel_5.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_10.addWidget(self.MainWingLabel_5, 0, 0, 1, 2)
 
@@ -585,7 +649,7 @@ class Ui_MainWindowDesign(object):
         self.label_66.setObjectName("label_66")
         sizePolicy2.setHeightForWidth(self.label_66.sizePolicy().hasHeightForWidth())
         self.label_66.setSizePolicy(sizePolicy2)
-        self.label_66.setFont(font1)
+        self.label_66.setFont(font3)
 
         self.gridLayout_10.addWidget(self.label_66, 2, 0, 1, 2)
 
@@ -601,7 +665,6 @@ class Ui_MainWindowDesign(object):
 
         self.label_64 = QLabel(self.groupBox_7)
         self.label_64.setObjectName("label_64")
-        self.label_64.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_10.addWidget(self.label_64, 13, 1, 1, 1)
 
@@ -609,7 +672,7 @@ class Ui_MainWindowDesign(object):
         self.label_59.setObjectName("label_59")
         sizePolicy2.setHeightForWidth(self.label_59.sizePolicy().hasHeightForWidth())
         self.label_59.setSizePolicy(sizePolicy2)
-        self.label_59.setFont(font1)
+        self.label_59.setFont(font3)
 
         self.gridLayout_10.addWidget(self.label_59, 7, 0, 1, 1)
 
@@ -637,13 +700,11 @@ class Ui_MainWindowDesign(object):
 
         self.label_68 = QLabel(self.groupBox_7)
         self.label_68.setObjectName("label_68")
-        self.label_68.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_10.addWidget(self.label_68, 15, 1, 1, 1)
 
         self.label_20 = QLabel(self.groupBox_7)
         self.label_20.setObjectName("label_20")
-        self.label_20.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_10.addWidget(self.label_20, 16, 1, 1, 1)
 
@@ -815,7 +876,9 @@ class Ui_MainWindowDesign(object):
 
         self.terminalOutput = QListWidget(self.frame_2)
         self.terminalOutput.setObjectName("terminalOutput")
-        sizePolicy10 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy10 = QSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         sizePolicy10.setHorizontalStretch(5)
         sizePolicy10.setVerticalStretch(0)
         sizePolicy10.setHeightForWidth(
@@ -915,35 +978,41 @@ class Ui_MainWindowDesign(object):
         self.actionExample_4.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                "Example 4: Steady horseshoe vortex lattice method solver",
+                "Example 4: Steady horseshoe vortex lattice method solver\n"
+                "                ",
                 None,
             )
         )
         self.actionExample_5.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                "Example 5: Steady ring vortex lattice method solver static",
+                "Example 5: Steady ring vortex lattice method solver static\n"
+                "                ",
                 None,
             )
         )
         self.actionExample_6.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                "Example 6: Unsteady ring vortex lattice method solver static",
+                "Example 6: Unsteady ring vortex lattice method solver static\n"
+                "                ",
                 None,
             )
         )
         self.actionExample_7.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                "Example 7: Unsteady ring vortex lattice method solver variable",
+                "Example 7: Unsteady ring vortex lattice method solver variable\n"
+                "                ",
                 None,
             )
         )
         self.actionExample_8.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                "Example 8: Unsteady ring vortex lattice method solver variable formation",
+                "Example 8: Unsteady ring vortex lattice method solver variable\n"
+                "                    formation\n"
+                "                ",
                 None,
             )
         )
@@ -975,7 +1044,10 @@ class Ui_MainWindowDesign(object):
         self.label_18.setText(QCoreApplication.translate("MainWindowDesign", "Z", None))
         self.label_19.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Other Options go here", None
+                "MainWindowDesign",
+                "Other Options go here\n"
+                "                                                    ",
+                None,
             )
         )
         self.saveAircraftButtom.setText(
@@ -986,21 +1058,39 @@ class Ui_MainWindowDesign(object):
         self.label_2.setText(QCoreApplication.translate("MainWindowDesign", "y", None))
         self.label_11.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Leading Edge Location", None
+                "MainWindowDesign",
+                "Leading Edge Location\n"
+                "                                                        ",
+                None,
             )
         )
         self.LE_loc_x.setSuffix("")
         self.label_5.setText(
-            QCoreApplication.translate("MainWindowDesign", "Number of Panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Number of Panels\n"
+                "                                                        ",
+                None,
+            )
         )
         self.mainWingSymmetryCheckbox.setText(
             QCoreApplication.translate("MainWindowDesign", "Symmetric?", None)
         )
         self.label_4.setText(
-            QCoreApplication.translate("MainWindowDesign", "Panel Spacing Option", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Panel Spacing Option\n"
+                "                                                        ",
+                None,
+            )
         )
         self.label_12.setText(
-            QCoreApplication.translate("MainWindowDesign", "Chord-wise Panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Chord-wise Panels\n"
+                "                                                        ",
+                None,
+            )
         )
         self.CWPanelSpcaing.setItemText(
             0, QCoreApplication.translate("MainWindowDesign", "Uniform", None)
@@ -1009,7 +1099,13 @@ class Ui_MainWindowDesign(object):
             1, QCoreApplication.translate("MainWindowDesign", "Cosine", None)
         )
         self.CWPanelSpcaing.setItemText(
-            2, QCoreApplication.translate("MainWindowDesign", "Reverse Cosine", None)
+            2,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Reverse Cosine\n"
+                "                                                            ",
+                None,
+            ),
         )
 
         self.label_3.setText(
@@ -1022,25 +1118,67 @@ class Ui_MainWindowDesign(object):
         )
         self.groupBox_8.setTitle("")
         self.label_74.setText(
-            QCoreApplication.translate("MainWindowDesign", "Number of Panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Number\n"
+                "                                                                            of Panels\n"
+                "                                                                        ",
+                None,
+            )
         )
-        self.label_78.setText(QCoreApplication.translate("MainWindowDesign", "x", None))
+        self.label_78.setText(
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "x\n"
+                "                                                                        ",
+                None,
+            )
+        )
         self.label_69.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Chord and Control Surface", None
+                "MainWindowDesign",
+                "Chord\n"
+                "                                                                            and Control\n"
+                "                                                                            Surface\n"
+                "                                                                        ",
+                None,
             )
         )
         self.label_75.setText(
-            QCoreApplication.translate("MainWindowDesign", "Chord", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Chord\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_79.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Control Surface Deflection", None
+                "MainWindowDesign",
+                "Control\n"
+                "                                                                            Surface\n"
+                "                                                                            Deflection\n"
+                "                                                                        ",
+                None,
             )
         )
-        self.label_73.setText(QCoreApplication.translate("MainWindowDesign", "y", None))
+        self.label_73.setText(
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "y\n"
+                "                                                                        ",
+                None,
+            )
+        )
         self.label_70.setText(
-            QCoreApplication.translate("MainWindowDesign", "Span-wise panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Span-wise\n"
+                "                                                                            panels\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_72.setText(
             QCoreApplication.translate(
@@ -1048,37 +1186,95 @@ class Ui_MainWindowDesign(object):
             )
         )
         self.label_71.setText(
-            QCoreApplication.translate("MainWindowDesign", "Panel Spacing Option", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Panel\n"
+                "                                                                            Spacing\n"
+                "                                                                            Option\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_77.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Leading Edge Location", None
+                "MainWindowDesign",
+                "Leading\n"
+                "                                                                            Edge\n"
+                "                                                                            Location\n"
+                "                                                                        ",
+                None,
             )
         )
         self.label_76.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Control Surface Hinge Point", None
+                "MainWindowDesign",
+                "Control\n"
+                "                                                                            Surface\n"
+                "                                                                            Hinge Point\n"
+                "                                                                        ",
+                None,
             )
         )
         self.WRCW_LE_loc_x.setSuffix("")
         self.SWPanelSpcaing.setItemText(
-            0, QCoreApplication.translate("MainWindowDesign", "Uniform", None)
+            0,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Uniform\n"
+                "                                                                            ",
+                None,
+            ),
         )
         self.SWPanelSpcaing.setItemText(
-            1, QCoreApplication.translate("MainWindowDesign", "Cosine", None)
+            1,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Cosine\n"
+                "                                                                            ",
+                None,
+            ),
         )
         self.SWPanelSpcaing.setItemText(
-            2, QCoreApplication.translate("MainWindowDesign", "Reverse Cosine", None)
+            2,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Reverse\n"
+                "                                                                                Cosine\n"
+                "                                                                            ",
+                None,
+            ),
         )
 
         self.WRCS_S_symCheckbox.setText(
-            QCoreApplication.translate("MainWindowDesign", "Symmetric?", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Symmetric?\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.MainWingLabel_6.setText(
-            QCoreApplication.translate("MainWindowDesign", "Root Cross Section", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Root\n"
+                "                                                                            Cross\n"
+                "                                                                            Section\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_23.setText(
-            QCoreApplication.translate("MainWindowDesign", "Aerofoil", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Aerofoil\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.tabWidget_2.setTabText(
             self.tabWidget_2.indexOf(self.tab_7),
@@ -1087,51 +1283,140 @@ class Ui_MainWindowDesign(object):
             ),
         )
         self.groupBox_7.setTitle("")
-        self.label_62.setText(QCoreApplication.translate("MainWindowDesign", "y", None))
+        self.label_62.setText(
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "y\n"
+                "                                                                        ",
+                None,
+            )
+        )
         self.label_60.setText(
-            QCoreApplication.translate("MainWindowDesign", "Panel Spacing Option", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Panel\n"
+                "                                                                            Spacing\n"
+                "                                                                            Option\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.WTCW_LE_loc_x.setSuffix("")
         self.label_63.setText(
-            QCoreApplication.translate("MainWindowDesign", "Number of Panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Number\n"
+                "                                                                            of Panels\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.SWPanelSpcaing_WTCS.setItemText(
-            0, QCoreApplication.translate("MainWindowDesign", "Uniform", None)
+            0,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Uniform\n"
+                "                                                                            ",
+                None,
+            ),
         )
         self.SWPanelSpcaing_WTCS.setItemText(
-            1, QCoreApplication.translate("MainWindowDesign", "Cosine", None)
+            1,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Cosine\n"
+                "                                                                            ",
+                None,
+            ),
         )
         self.SWPanelSpcaing_WTCS.setItemText(
-            2, QCoreApplication.translate("MainWindowDesign", "Reverse Cosine", None)
+            2,
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                                Reverse\n"
+                "                                                                                Cosine\n"
+                "                                                                            ",
+                None,
+            ),
         )
 
         self.label_58.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Chord and Control Surface", None
+                "MainWindowDesign",
+                "Chord\n"
+                "                                                                            and Control\n"
+                "                                                                            Surface\n"
+                "                                                                        ",
+                None,
             )
         )
         self.MainWingLabel_5.setText(
-            QCoreApplication.translate("MainWindowDesign", "Root Cross Section", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Root\n"
+                "                                                                            Cross\n"
+                "                                                                            Section\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_65.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Control Surface Hinge Point", None
+                "MainWindowDesign",
+                "Control\n"
+                "                                                                            Surface\n"
+                "                                                                            Hinge Point\n"
+                "                                                                        ",
+                None,
             )
         )
         self.label_66.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Leading Edge Location", None
+                "MainWindowDesign",
+                "Leading\n"
+                "                                                                            Edge\n"
+                "                                                                            Location\n"
+                "                                                                        ",
+                None,
             )
         )
         self.WTCS_S_symCheckbox.setText(
-            QCoreApplication.translate("MainWindowDesign", "Symmetric?", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Symmetric?\n"
+                "                                                                        ",
+                None,
+            )
         )
-        self.label_67.setText(QCoreApplication.translate("MainWindowDesign", "x", None))
+        self.label_67.setText(
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "x\n"
+                "                                                                        ",
+                None,
+            )
+        )
         self.label_64.setText(
-            QCoreApplication.translate("MainWindowDesign", "Chord", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "Chord\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_59.setText(
-            QCoreApplication.translate("MainWindowDesign", "Span-wise Panels", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Span-wise\n"
+                "                                                                            Panels\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.label_61.setText(
             QCoreApplication.translate(
@@ -1140,11 +1425,22 @@ class Ui_MainWindowDesign(object):
         )
         self.label_68.setText(
             QCoreApplication.translate(
-                "MainWindowDesign", "Control Surface Deflection", None
+                "MainWindowDesign",
+                "Control\n"
+                "                                                                            Surface\n"
+                "                                                                            Deflection\n"
+                "                                                                        ",
+                None,
             )
         )
         self.label_20.setText(
-            QCoreApplication.translate("MainWindowDesign", "Aerofoil", None)
+            QCoreApplication.translate(
+                "MainWindowDesign",
+                "\n"
+                "                                                                            Aerofoil\n"
+                "                                                                        ",
+                None,
+            )
         )
         self.tabWidget_2.setTabText(
             self.tabWidget_2.indexOf(self.tab_8),
@@ -1161,7 +1457,7 @@ class Ui_MainWindowDesign(object):
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.modellingTab),
-            QCoreApplication.translate("MainWindowDesign", "Model ", None),
+            QCoreApplication.translate("MainWindowDesign", "Model", None),
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.tab_4),
@@ -1208,7 +1504,9 @@ class Ui_MainWindowDesign(object):
         self.Logo.setText(
             QCoreApplication.translate(
                 "MainWindowDesign",
-                '<html><head/><body><p><img src="docs/Black_Text_Logo.png"/></p></body></html>',
+                "<html><head/><body><p><img\n"
+                '                                            src="docs/Black_Text_Logo.png"/></p></body></html>\n'
+                "                                        ",
                 None,
             )
         )

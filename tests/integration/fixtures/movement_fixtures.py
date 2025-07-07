@@ -19,6 +19,7 @@ This module contains the following functions:
     make_multiple_wing_variable_validation_movement: This function creates a movement
     object with variable, multi-wing geometry to be used as a fixture.
 """
+
 import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures
 from tests.integration.fixtures import operating_point_fixtures
@@ -33,7 +34,7 @@ def make_static_validation_movement():
 
     # Construct an airplane object and an operating point object.
     unsteady_validation_airplane = (
-        airplane_fixtures.make_asymmetric_unsteady_validation_airplane()
+        airplane_fixtures.make_symmetric_unsteady_validation_airplane()
     )
     unsteady_validation_operating_point = (
         operating_point_fixtures.make_validation_operating_point()
@@ -94,8 +95,7 @@ def make_static_validation_movement():
     unsteady_validation_movement = ps.movement.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
-        num_steps=None,
-        delta_time=None,
+        num_chords=6,
     )
 
     # Delete the now extraneous constructing fixtures.

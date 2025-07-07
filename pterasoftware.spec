@@ -4,8 +4,8 @@
 import os
 import sys
 
-import PySide2
-import shiboken2
+import PySide6
+import shiboken6
 import cmocean
 from PyInstaller.building.api import PYZ, EXE, COLLECT
 from PyInstaller.building.build_main import Analysis
@@ -16,21 +16,21 @@ one_dir_mode = True
 
 binaries = []
 if sys.platform.startswith('win'):
-    qt_plugins_path = os.path.join(PySide2.__path__[0], "plugins")
+    qt_plugins_path = os.path.join(PySide6.__path__[0], "Qt", "plugins")
     binaries = [
-        (os.path.join(PySide2.__path__[0], "plugins"), 'PySide2')
+        (os.path.join(PySide6.__path__[0], "Qt", "plugins"), "PySide6")
     ]
 elif sys.platform.startswith('linux'):
-    qt_plugins_path = os.path.join(PySide2.__path__[0], "Qt", "plugins", "platforms")
+    qt_plugins_path = os.path.join(PySide6.__path__[0], "Qt", "plugins", "platforms")
     binaries = [
         (os.path.join(sys.base_prefix, "lib", "libspatialindex_c.so"), '.'),
-        # (os.path.join(PySide2.__path__[0], "Qt", "plugins", "platforms"), '.')
+        # (os.path.join(PySide6.__path__[0], "Qt", "plugins", "platforms"), '.')
     ]
 
 upx = False  # UPX does not play with anything Qt
 upx_exclude = [
-    'PySide2',
-    'shiboken2',
+    'PySide6',
+    'shiboken6',
     'qwindows.dll'
 ]
 a = Analysis(
@@ -52,7 +52,7 @@ a = Analysis(
                  ('examples/unsteady_ring_vortex_lattice_method_solver_variable_formation.py', 'examples'),
                  ('examples/unsteady_static_convergence_example.py', 'examples'),
                  ('examples/unsteady_variable_convergence_example.py', 'examples'),
-                 (shiboken2.__path__[0], "shiboken2"),
+                 (shiboken6.__path__[0], "shiboken6"),
                  (cmocean.__path__[0], "cmocean")
                  ],
     hiddenimports=['vtkmodules','vtkmodules.all','vtkmodules.qt.QVTKRenderWindowInteractor','vtkmodules.util','vtkmodules.util.numpy_support', 'examples'],

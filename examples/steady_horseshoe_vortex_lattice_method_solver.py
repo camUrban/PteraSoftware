@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's steady horseshoe
-vortex lattice method solver on a custom airplane. """
+vortex lattice method solver on a custom airplane."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
@@ -74,8 +74,7 @@ example_airplane = ps.geometry.Airplane(
                     # This will be fixed in a future release. The default value is
                     # 0.0 degrees. Positive twist corresponds to positive rotation
                     # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,
-                    # Define the type of control surface. The options are "symmetric"
+                    twist=0.0,  # Define the type of control surface. The options are "symmetric"
                     # and "asymmetric". This is only applicable if your wing is also
                     # symmetric. If so, symmetric control surfaces will deflect in
                     # the same direction, like flaps, while asymmetric control
@@ -83,7 +82,7 @@ example_airplane = ps.geometry.Airplane(
                     # The default value is "symmetric".
                     control_surface_type="symmetric",
                     # Define the point on the airfoil where the control surface
-                    # hinges. This is expressed as a faction of the chord length,
+                    # hinges. This is expressed as a fraction of the chord length,
                     # back from the leading edge. The default value is 0.75.
                     control_surface_hinge_point=0.75,
                     # Define the deflection of the control surface in degrees. The
@@ -194,7 +193,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 example_problem = ps.problems.SteadyProblem(
     # Set this steady problem's airplane object to be the one we just created.
     airplanes=[example_airplane],
-    # Set this steady problem's operating point object ot be the one we just created.
+    # Set this steady problem's operating point object to be the one we just created.
     operating_point=example_operating_point,
 )
 

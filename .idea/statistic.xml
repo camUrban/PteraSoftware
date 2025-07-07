@@ -5,7 +5,9 @@
       <list>
         <option value="$PROJECT_DIR$/.github" />
         <option value="$PROJECT_DIR$/.idea" />
-        <option value="$PROJECT_DIR$/venv_3.8" />
+        <option value="$PROJECT_DIR$/testing_in_development" />
+        <option value="$PROJECT_DIR$/venv" />
+        <option value="$PROJECT_DIR$/pterasoftware/airfoils" />
       </list>
     </option>
   </component>

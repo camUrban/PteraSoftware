@@ -11,6 +11,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import numpy as np
 import logging
 
@@ -180,7 +181,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         Panels that are at the trailing edge of a wing have a horseshoe vortex in
         addition to their ring vortex. The horseshoe vortex's finite leg runs along
-        the ring vortex's back leg but in the opposite direction. It's infinite legs
+        the ring vortex's back leg but in the opposite direction. Its infinite legs
         point backwards in the direction of the freestream. The ring vortex and
         horseshoe vortex have the same strength, so the back leg of the effects of
         the ring vortex's back leg and the horseshoe vortex's finite leg cancel each
@@ -283,7 +284,6 @@ class SteadyRingVortexLatticeMethodSolver:
                     )
 
                     if panel.is_trailing_edge:
-
                         # Also, update the attribute lists horseshoe vortex
                         # attributes at this position with this panel's horseshoe
                         # vortex attributes
@@ -481,9 +481,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective right vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_right_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_right_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
 
                     else:
 
@@ -507,9 +507,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective front vortex line strength from zero
                         # to this panel's ring vortex's strength.
-                        effective_front_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_front_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly in front of this panel.
@@ -532,9 +532,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Change the effective left vortex line strength from zero to
                         # this panel's ring vortex's strength.
-                        effective_left_vortex_line_strengths[
-                            global_panel_position
-                        ] = self.vortex_strengths[global_panel_position]
+                        effective_left_vortex_line_strengths[global_panel_position] = (
+                            self.vortex_strengths[global_panel_position]
+                        )
                     else:
 
                         # Get the panel directly to the left of this panel.

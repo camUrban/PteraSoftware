@@ -2,7 +2,7 @@
 lattice method solver on a three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the
 single-airplane examples for readability. I recommend you read and understand those
-examples before reading this example. """
+examples before reading this example."""
 
 import pterasoftware as ps
 
@@ -19,7 +19,8 @@ class unsteadyRingVortexLatticeSolver:
         lead_airplane = ps.geometry.Airplane(
             name="Lead Airplane",
             # Specify the location of the lead airplane's center of gravity. This is the
-            # point around about which the solver will calculate the moments on the airplane.
+            # point around about which the solver will calculate the moments on the
+            # airplane.
             # These three values default to 0.0 meters. Note: these values are relative to
             # the global coordinate system fixed front left corner of the first airplane's
             # first wing's root wing cross section.
@@ -82,8 +83,7 @@ class unsteadyRingVortexLatticeSolver:
         # Now define the lead airplane's movement object.
         lead_airplane_movement = ps.movement.AirplaneMovement(
             base_airplane=lead_airplane,
-            wing_movements=[
-                # Define the main wing's movement.
+            wing_movements=[  # Define the main wing's movement.
                 ps.movement.WingMovement(
                     base_wing=lead_airplane.wings[0],
                     # Add the list of wing cross section movement objects.
@@ -322,5 +322,4 @@ class unsteadyRingVortexLatticeSolver:
             save=False,
         )
 
-        # Compare the output you see with the expected outputs saved in the "docs/examples
-        # expected output" directory.
+        # Compare the output you see with the expected outputs saved in the "docs/examples  # expected output" directory.

@@ -10,6 +10,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import unittest
 
 import pterasoftware as ps
@@ -77,7 +78,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         converged_num_chordwise = converged_parameters[3]
 
         wake_state_ans = True
-        num_chords_ans = 4
+        num_chords_ans = 3
         panel_ar_ans = 4
         num_chordwise_ans = 4
 

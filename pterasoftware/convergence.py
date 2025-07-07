@@ -496,7 +496,7 @@ def analyze_unsteady_convergence(
     resultant force and moment coefficients are stored. The force coefficients are
     combined by taking the vector norm. This is repeated for the moment coefficients.
     Then, absolute percent change (APE) of the resultant force coefficient is found
-    between this interation, and the iterations with the incrementally coarser meshes
+    between this iteration, and the iterations with the incrementally coarser meshes
     in all four parameters (wake state, wake length, panel aspect ratio,
     and number of chordwise panels). The process is repeated for to find the
     resultant moment coefficient APE.

@@ -23,6 +23,7 @@ This module contains the following functions:
     get_wing_section_panels: This function takes in arrays panel attributes and
     returns a 2D array of panel objects.
 """
+
 import numpy as np
 
 from . import functions

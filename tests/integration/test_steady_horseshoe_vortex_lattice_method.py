@@ -25,6 +25,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import unittest
 
 import pterasoftware as ps
@@ -129,7 +130,9 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         """
 
         # Run the solver.
-        self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
+        (
+            self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
+        )
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.008

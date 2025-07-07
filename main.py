@@ -7,13 +7,13 @@ import time
 import importlib
 
 print("Builtin modules imported")
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 
 print("QTCore imported")
-from PySide2.QtGui import QPixmap
+from PySide6.QtGui import QPixmap
 
 print("QtGUI imported")
-from PySide2.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
+from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 
 from pterasoftware.ui_resources.main_window import Ui_MainWindowDesign
 from pterasoftware.ui_resources.textdialog import Ui_TextAboutDialog
@@ -48,7 +48,6 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.displayText = ""
 
     def exampleMenu(self, ex_num):
-
         files = []
         for i, filename in enumerate(os.listdir("examples")):
             f = "examples." + filename
@@ -69,7 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.printTerminalOutput(self, text)
 
     def menuREADME(self):
-        from PySide2.QtGui import QTextDocument
+        from PySide6.QtGui import QTextDocument
 
         self.dialog = TextAboutDialog("About Ptera Software")
         doc = QTextDocument()
@@ -78,9 +77,9 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
         self.dialog.show()
 
     def _read_file(self, file_path: str) -> str:
-        from PySide2.QtCore import QFile
-        from PySide2.QtCore import QTextStream
-        from PySide2.QtCore import QIODevice
+        from PySide6.QtCore import QFile
+        from PySide6.QtCore import QTextStream
+        from PySide6.QtCore import QIODevice
 
         file = QFile(file_path)
         file.open(QIODevice.ReadOnly)
@@ -105,5 +104,5 @@ if __name__ == "__main__":
     window.raise_()
     window.activateWindow()
     splash.finish(window)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
     print("Exiting")

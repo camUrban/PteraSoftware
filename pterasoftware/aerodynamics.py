@@ -40,13 +40,13 @@ This module contains the following functions:
     and the attributes of a group of line vortices. At every point, it finds the
     induced velocity due to each line vortex.
 """
+
 import math
 
 import numpy as np
 from numba import njit
 
 from . import functions
-
 
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
@@ -884,10 +884,7 @@ def collapsed_velocities_from_line_vortices(
                 continue
             else:
                 c_4 = (
-                    c_1
-                    * (r_1 + r_2)
-                    * (r_1 * r_2 - c_3)
-                    / (r_1 * r_2 * (r_3**2 + c_2))
+                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
                 )
                 velocities[point_id, 0] += c_4 * r_3_x
                 velocities[point_id, 1] += c_4 * r_3_y
@@ -1018,10 +1015,7 @@ def expanded_velocities_from_line_vortices(
                 continue
             else:
                 c_4 = (
-                    c_1
-                    * (r_1 + r_2)
-                    * (r_1 * r_2 - c_3)
-                    / (r_1 * r_2 * (r_3**2 + c_2))
+                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
                 )
                 velocities[point_id, vortex_id, 0] = c_4 * r_3_x
                 velocities[point_id, vortex_id, 1] = c_4 * r_3_y

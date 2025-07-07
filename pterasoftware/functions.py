@@ -48,6 +48,7 @@ This module contains the following functions:
     interp_between_points: This function finds the MxN points between M pairs of
     points in 3D space given an array of N normalized spacings.
 """
+
 import logging
 
 import numpy as np
@@ -209,9 +210,9 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
         initial points). It can be increased for higher fidelity visuals. The default
         value is 25.
     :param delta_time: float, optional
-        This is the time in seconds between each time current_step It can be
+        This is the time in seconds between each time step It can be
         decreased for higher fidelity visuals or to make the streamlines shorter.
-        It's default value is 0.02 seconds.
+        Its default value is 0.02 seconds.
     :return: None
     """
     # Initialize an array to hold this solver's matrix of streamline points.
@@ -296,7 +297,6 @@ def process_steady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
@@ -342,7 +342,6 @@ def process_steady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in steady_solver.airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]
@@ -429,7 +428,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind
         # axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
@@ -476,7 +474,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in unsteady_solver.current_airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]
@@ -556,49 +553,49 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_normal_directions[global_panel_position, :] = panel.unit_normal
     solver.panel_areas[global_panel_position] = panel.area
     solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
-    solver.panel_back_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.origin
-    solver.panel_front_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.termination
-    solver.panel_front_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.origin
-    solver.panel_back_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.termination
-    solver.panel_right_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.center
-    solver.panel_right_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.vector
-    solver.panel_front_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.center
-    solver.panel_front_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.vector
-    solver.panel_left_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.center
-    solver.panel_left_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.vector
-    solver.panel_back_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.center
-    solver.panel_back_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.vector
+    solver.panel_back_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.origin
+    )
+    solver.panel_front_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.termination
+    )
+    solver.panel_front_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.origin
+    )
+    solver.panel_back_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.termination
+    )
+    solver.panel_right_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.center
+    )
+    solver.panel_right_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.vector
+    )
+    solver.panel_front_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.center
+    )
+    solver.panel_front_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.vector
+    )
+    solver.panel_left_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.center
+    )
+    solver.panel_left_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.vector
+    )
+    solver.panel_back_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.center
+    )
+    solver.panel_back_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.vector
+    )
     solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
     solver.panel_moment_references[global_panel_position, :] = airplane.xyz_ref
 
-    # Check if this panel is on the trailing edge. If it is, calculate it's
+    # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.
     if panel.is_trailing_edge:
         solver.seed_points = np.vstack(

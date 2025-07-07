@@ -12,7 +12,8 @@ This module contains the following functions:
     steady problem.
 
     analyze_unsteady_convergence: This function finds the converged parameters of an
-    unsteady problem. """
+    unsteady problem."""
+
 import logging
 import math
 import time
@@ -49,7 +50,7 @@ def analyze_steady_convergence(
     resultant force and moment coefficients are stored. The force coefficients are
     combined by taking the vector norm. This is repeated for the moment coefficients.
     Then, absolute percent change (APE) of the resultant force coefficient is found
-    between this interation, and the iterations with incrementally coarser meshes
+    between this iteration, and the iterations with incrementally coarser meshes
     in both the number of chordwise panels and panel aspect ratio. The process is
     repeated for to find the resultant moment coefficient APE.
 
@@ -258,8 +259,7 @@ def analyze_steady_convergence(
                         # this airplane's mesh.
                         s_ref=None,
                         c_ref=None,
-                        b_ref=None,
-                        # This value changes.
+                        b_ref=None,  # This value changes.
                         wings=these_wings,
                     )
                 )
@@ -496,7 +496,7 @@ def analyze_unsteady_convergence(
     resultant force and moment coefficients are stored. The force coefficients are
     combined by taking the vector norm. This is repeated for the moment coefficients.
     Then, absolute percent change (APE) of the resultant force coefficient is found
-    between this interation, and the iterations with the incrementally coarser meshes
+    between this iteration, and the iterations with the incrementally coarser meshes
     in all four parameters (wake state, wake length, panel aspect ratio,
     and number of chordwise panels). The process is repeated for to find the
     resultant moment coefficient APE.
@@ -904,8 +904,7 @@ def analyze_unsteady_convergence(
                             # with this airplane's mesh.
                             s_ref=None,
                             c_ref=None,
-                            b_ref=None,
-                            # This value changes.
+                            b_ref=None,  # This value changes.
                             wings=these_base_wings,
                         )
 
@@ -1004,9 +1003,9 @@ def analyze_unsteady_convergence(
 
                     # Populate the arrays that store information of all the
                     # iterations with the data from this iteration.
-                    coefficients[
-                        wake_id, length_id, ar_id, chord_id, :, :
-                    ] = these_coefficients
+                    coefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
+                        these_coefficients
+                    )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     convergence_logger.info(

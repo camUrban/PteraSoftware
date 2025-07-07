@@ -9,6 +9,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import numpy as np
 
 
@@ -228,7 +229,7 @@ class Panel:
         """This method defines a property which is an estimate of the panel's area.
 
         This is only an estimate because the surface defined by four line segments in
-        3-space is a hyperboloid, and there doesn't seem to be a close-form equation
+        3-space is a hyperboloid, and there doesn't seem to be a closed-form equation
         for the surface area of a hyperboloid between four points. Instead,
         we estimate the area using the cross product of panel's diagonal vectors,
         which should be relatively accurate if the panel can be approximated as a

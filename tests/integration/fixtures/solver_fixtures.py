@@ -34,6 +34,7 @@ This module contains the following functions:
     This function creates a solver object with multi-wing, variable geometry using
     the unsteady ring vortex lattice method to be used as a fixture.
 """
+
 import pterasoftware as ps
 from tests.integration.fixtures import problem_fixtures
 

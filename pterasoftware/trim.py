@@ -19,7 +19,8 @@ This module contains the following functions:
     angle of sideslip, and external thrust until the net cycle-averaged force and net
     cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
     be found, it returns the trimmed operating point values. Otherwise, it logs an
-    error. """
+    error."""
+
 import logging
 
 import numpy as np
@@ -29,7 +30,6 @@ from . import steady_horseshoe_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
 from . import movement
 from . import problems
-
 
 trim_logger = logging.getLogger("trim")
 trim_logger.setLevel(logging.DEBUG)

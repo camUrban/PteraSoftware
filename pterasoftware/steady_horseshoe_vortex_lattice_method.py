@@ -11,6 +11,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import logging
 
 import numpy as np
@@ -212,34 +213,34 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # Update the solver's list of attributes with this panel's
                     # attributes.
                     self.panels[global_panel_position] = panel
-                    self.panel_normal_directions[
-                        global_panel_position, :
-                    ] = panel.unit_normal
+                    self.panel_normal_directions[global_panel_position, :] = (
+                        panel.unit_normal
+                    )
                     self.panel_areas[global_panel_position] = panel.area
-                    self.panel_collocation_points[
-                        global_panel_position, :
-                    ] = panel.collocation_point
-                    self.panel_back_right_vortex_vertices[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.right_leg.origin
-                    self.panel_front_right_vortex_vertices[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.right_leg.termination
-                    self.panel_front_left_vortex_vertices[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.left_leg.origin
-                    self.panel_back_left_vortex_vertices[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.left_leg.termination
-                    self.panel_bound_vortex_centers[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.finite_leg.center
-                    self.panel_bound_vortex_vectors[
-                        global_panel_position, :
-                    ] = panel.horseshoe_vortex.finite_leg.vector
-                    self.panel_moment_references[
-                        global_panel_position, :
-                    ] = airplane.xyz_ref
+                    self.panel_collocation_points[global_panel_position, :] = (
+                        panel.collocation_point
+                    )
+                    self.panel_back_right_vortex_vertices[global_panel_position, :] = (
+                        panel.horseshoe_vortex.right_leg.origin
+                    )
+                    self.panel_front_right_vortex_vertices[global_panel_position, :] = (
+                        panel.horseshoe_vortex.right_leg.termination
+                    )
+                    self.panel_front_left_vortex_vertices[global_panel_position, :] = (
+                        panel.horseshoe_vortex.left_leg.origin
+                    )
+                    self.panel_back_left_vortex_vertices[global_panel_position, :] = (
+                        panel.horseshoe_vortex.left_leg.termination
+                    )
+                    self.panel_bound_vortex_centers[global_panel_position, :] = (
+                        panel.horseshoe_vortex.finite_leg.center
+                    )
+                    self.panel_bound_vortex_vectors[global_panel_position, :] = (
+                        panel.horseshoe_vortex.finite_leg.vector
+                    )
+                    self.panel_moment_references[global_panel_position, :] = (
+                        airplane.xyz_ref
+                    )
 
                     # Check if this panel is on the trailing edge.
                     if panel.is_trailing_edge:
@@ -295,7 +296,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Iterate through the panels and update their vortex strengths.
         for panel_num, panel in enumerate(self.panels):
-
             # Update this panel's horseshoe vortex strength.
             panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_num])
 

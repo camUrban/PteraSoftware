@@ -35,13 +35,20 @@ This module contains the following functions:
     update_ring_vortex_solvers_panel_attributes: This function populates a ring
     vortex solver's attributes with the attributes of a given panel.
 
-    calculate_steady_freestream_wing_influences: This method finds the vector of
+    calculate_steady_freestream_wing_influences: This function finds the vector of
     freestream-wing influence coefficients associated with this problem.
 
     numba_1d_explicit_cross: This function takes in two arrays, each of which contain
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
+
+    reflect_point_across_plane: This function finds the coordinates of the reflection
+    of a point across a plane in 3D space.
+
+    interp_between_points: This function finds the MxN points between M pairs of
+    points in 3D space given an array of N normalized spacings.
 """
+
 import logging
 
 import numpy as np
@@ -203,9 +210,9 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
         initial points). It can be increased for higher fidelity visuals. The default
         value is 25.
     :param delta_time: float, optional
-        This is the time in seconds between each time current_step It can be
+        This is the time in seconds between each time step It can be
         decreased for higher fidelity visuals or to make the streamlines shorter.
-        It's default value is 0.02 seconds.
+        Its default value is 0.02 seconds.
     :return: None
     """
     # Initialize an array to hold this solver's matrix of streamline points.
@@ -290,7 +297,6 @@ def process_steady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
@@ -336,7 +342,6 @@ def process_steady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in steady_solver.airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]
@@ -423,7 +428,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
-
         # Get this panel's near field forces and moments in geometry axes and wind
         # axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
@@ -470,7 +474,6 @@ def process_unsteady_solver_forces(
 
     # Iterate through the airplanes and calculate each one's coefficients.
     for airplane in unsteady_solver.current_airplanes:
-
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
             -airplane.total_near_field_force_wind_axes[0]
@@ -550,49 +553,49 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_normal_directions[global_panel_position, :] = panel.unit_normal
     solver.panel_areas[global_panel_position] = panel.area
     solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
-    solver.panel_back_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.origin
-    solver.panel_front_right_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.termination
-    solver.panel_front_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.origin
-    solver.panel_back_left_vortex_vertices[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.termination
-    solver.panel_right_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.center
-    solver.panel_right_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.right_leg.vector
-    solver.panel_front_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.center
-    solver.panel_front_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.front_leg.vector
-    solver.panel_left_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.center
-    solver.panel_left_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.left_leg.vector
-    solver.panel_back_vortex_centers[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.center
-    solver.panel_back_vortex_vectors[
-        global_panel_position, :
-    ] = panel.ring_vortex.back_leg.vector
+    solver.panel_back_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.origin
+    )
+    solver.panel_front_right_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.termination
+    )
+    solver.panel_front_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.origin
+    )
+    solver.panel_back_left_vortex_vertices[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.termination
+    )
+    solver.panel_right_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.center
+    )
+    solver.panel_right_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.vector
+    )
+    solver.panel_front_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.center
+    )
+    solver.panel_front_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.vector
+    )
+    solver.panel_left_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.center
+    )
+    solver.panel_left_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.vector
+    )
+    solver.panel_back_vortex_centers[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.center
+    )
+    solver.panel_back_vortex_vectors[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.vector
+    )
     solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
     solver.panel_moment_references[global_panel_position, :] = airplane.xyz_ref
 
-    # Check if this panel is on the trailing edge. If it is, calculate it's
+    # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.
     if panel.is_trailing_edge:
         solver.seed_points = np.vstack(
@@ -605,7 +608,7 @@ def update_ring_vortex_solvers_panel_attributes(
 
 
 def calculate_steady_freestream_wing_influences(steady_solver):
-    """This method finds the vector of freestream-wing influence coefficients
+    """This function finds the vector of freestream-wing influence coefficients
     associated with this problem.
 
     :return: None
@@ -653,3 +656,102 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
             vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
         )
     return crosses
+
+
+def reflect_point_across_plane(point, plane_unit_normal, plane_point):
+    """This function finds the coordinates of the reflection of a point across a
+    plane in 3D space.
+
+    As the plane doesn't necessarily include the origin, this is an affine
+    transformation. The transformation matrix and details are discussed in the
+    following source: https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2
+
+    :param point: (3,) array of floats
+        This is a (3,) array of the coordinates of the point to reflect. The units
+        are meters.
+    :param plane_unit_normal: (3,) array of floats
+        This is a (3,) array of the components of the plane's unit normal vector. It
+        must have unit magnitude. The units are meters.
+    :param plane_point: (3,) array of floats
+        This is a (3,) array of the coordinates of a point on the plane. The units
+        are meters.
+    :return: (3,) array of floats
+        This is a (3,) array of the components of the reflected point. The units are
+        meters.
+    """
+    [x, y, z] = point
+    [a, b, c] = plane_unit_normal
+
+    # Find the dot product between the point on the plane and unit normal.
+    d = np.dot(-plane_point, plane_unit_normal)
+
+    # To make the transformation matrix readable, define new variables for the
+    # products of the vector components and the dot product.
+    ab = a * b
+    ac = a * c
+    ad = a * d
+    bc = b * c
+    bd = b * d
+    cd = c * d
+    a2 = a**2
+    b2 = b**2
+    c2 = c**2
+
+    # Define the affine transformation matrix. See the citation in the docstring for
+    # details.
+    transformation_matrix = np.array(
+        [
+            [1 - 2 * a2, -2 * ab, -2 * ac, -2 * ad],
+            [-2 * ab, 1 - 2 * b2, -2 * bc, -2 * bd],
+            [-2 * ac, -2 * bc, 1 - 2 * c2, -2 * cd],
+            [0, 0, 0, 1],
+        ]
+    )
+
+    expanded_coordinates = np.array([[x], [y], [z], [1]])
+
+    transformed_expanded_coordinates = transformation_matrix @ expanded_coordinates
+
+    # Extract the reflected coordinates in 3D space.
+    [x_prime, y_prime, z_prime] = transformed_expanded_coordinates[:-1, 0]
+
+    return np.array([x_prime, y_prime, z_prime])
+
+
+@njit(cache=True, fastmath=False)
+def interp_between_points(start_points, end_points, norm_spacings):
+    """This function finds the MxN points between M pairs of points in 3D space given
+    an array of N normalized spacings.
+
+    :param start_points: (M, 3) array of floats
+        This is the (M, 3) array containing the coordinates of the M starting points.
+        The units are meters.
+    :param end_points: (M, 3) array of floats
+        This is the (M, 3) array containing the coordinates of the M ending points.
+        The units are meters.
+    :param norm_spacings: (N,) array of floats
+        This is the (N,) array of the N spacings between the starting points and
+        ending points. The values are unitless and must be normalized from 0 to 1.
+    :return points: (M, N, 3) array of floats
+        This is the (M, N, 3) array of the coordinates of the MxN interpolated
+        points. The units are meters.
+    """
+    m = start_points.shape[0]
+    n = norm_spacings.size
+
+    points = np.zeros((m, n, 3))
+
+    for i in range(m):
+        start_point = start_points[i, :]
+        end_point = end_points[i, :]
+
+        vector = end_point - start_point
+
+        for j in range(n):
+            norm_spacing = norm_spacings[j]
+
+            spacing = norm_spacing * vector
+
+            points[i, j, :] = start_point + spacing
+
+    return points

@@ -1,7 +1,8 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with variable geometry.
+"""This is a testing case for the unsteady ring vortex lattice method solver with
+variable geometry.
 
-Note: This case does not currently test the solver's output against an expected output. Instead, it just tests that
-the solver doesn't throw an error.
+Note: This case does not currently test the solver's output against an expected
+output. Instead, it just tests that the solver doesn't throw an error.
 
 This module contains the following classes:
     TestUnsteadyRingVortexLatticeMethodVariableGeometry: This is a class for testing
@@ -13,6 +14,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import unittest
 
 import pterasoftware as ps

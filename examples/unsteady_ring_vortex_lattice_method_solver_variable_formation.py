@@ -2,7 +2,7 @@
 lattice method solver on three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the
 single-airplane examples for readability. I recommend you read and understand those
-examples before reading this example. """
+examples before reading this example."""
 
 import pterasoftware as ps
 
@@ -76,8 +76,7 @@ lead_airplane = ps.geometry.Airplane(
 # Now define the lead airplane's movement object.
 lead_airplane_movement = ps.movement.AirplaneMovement(
     base_airplane=lead_airplane,
-    wing_movements=[
-        # Define the main wing's movement.
+    wing_movements=[  # Define the main wing's movement.
         ps.movement.WingMovement(
             base_wing=lead_airplane.wings[0],
             # Add the list of wing cross section movement objects.
@@ -87,8 +86,7 @@ lead_airplane_movement = ps.movement.AirplaneMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         0
                     ],
-                ),
-                # Define the tip wing cross section's movement object.
+                ),  # Define the tip wing cross section's movement object.
                 ps.movement.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         1

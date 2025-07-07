@@ -33,7 +33,7 @@ This module contains the following functions:
     output methods.
 
     plot_scalars: This function plots a scalar bars, the mesh panels with a
-    particular set of scalars, and labels for the minimum and maximum scalar values. """
+    particular set of scalars, and labels for the minimum and maximum scalar values."""
 
 import math
 
@@ -536,7 +536,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
     :param show: bool, Optional
         This boolean determines if the plots will be shown. If False, no plots will be
         shown, which is useful for testing when the user wants to know that the plots
-        were created without having to show them. It's default value is True.
+        were created without having to show them. Its default value is True.
     :param save: bool, Optional
         This boolean determines if the plots will be saved as WebP images. The
         default value is False.

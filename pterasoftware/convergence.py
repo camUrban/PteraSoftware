@@ -12,7 +12,7 @@ This module contains the following functions:
     steady problem.
 
     analyze_unsteady_convergence: This function finds the converged parameters of an
-    unsteady problem. """
+    unsteady problem."""
 
 import logging
 import math
@@ -50,7 +50,7 @@ def analyze_steady_convergence(
     resultant force and moment coefficients are stored. The force coefficients are
     combined by taking the vector norm. This is repeated for the moment coefficients.
     Then, absolute percent change (APE) of the resultant force coefficient is found
-    between this interation, and the iterations with incrementally coarser meshes
+    between this iteration, and the iterations with incrementally coarser meshes
     in both the number of chordwise panels and panel aspect ratio. The process is
     repeated for to find the resultant moment coefficient APE.
 

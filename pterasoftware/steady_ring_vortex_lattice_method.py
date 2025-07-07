@@ -181,7 +181,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         Panels that are at the trailing edge of a wing have a horseshoe vortex in
         addition to their ring vortex. The horseshoe vortex's finite leg runs along
-        the ring vortex's back leg but in the opposite direction. It's infinite legs
+        the ring vortex's back leg but in the opposite direction. Its infinite legs
         point backwards in the direction of the freestream. The ring vortex and
         horseshoe vortex have the same strength, so the back leg of the effects of
         the ring vortex's back leg and the horseshoe vortex's finite leg cancel each

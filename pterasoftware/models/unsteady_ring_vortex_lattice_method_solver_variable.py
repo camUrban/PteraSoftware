@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a custom airplane with variable geometry. """
+lattice method solver on a custom airplane with variable geometry."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip
@@ -84,7 +84,7 @@ example_airplane = ps.geometry.Airplane(
                     # The default value is "symmetric".
                     control_surface_type="symmetric",
                     # Define the point on the airfoil where the control surface
-                   # hinges. This is expressed as a fraction of the chord length,
+                    # hinges. This is expressed as a fraction of the chord length,
                     # back from the leading edge. The default value is 0.75.
                     control_surface_hinge_point=0.75,
                     # Define the deflection of the control surface in degrees. The

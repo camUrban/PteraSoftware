@@ -8,3 +8,4 @@ repos:
     hooks:
       - id: codespell
         args: ["--ignore-words=.codespell-ignore.txt"]
+        exclude: '.*\.dat$'

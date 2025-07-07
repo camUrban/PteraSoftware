@@ -240,12 +240,12 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
             for step in range(first_results_step, num_steps):
                 airplanes = this_solver.steady_problems[step].airplanes
                 for airplane_id, airplane in enumerate(airplanes):
-                    total_forces[
-                        airplane_id, :, results_step
-                    ] = airplane.total_near_field_force_wind_axes
-                    total_moments[
-                        airplane_id, :, results_step
-                    ] = airplane.total_near_field_moment_wind_axes
+                    total_forces[airplane_id, :, results_step] = (
+                        airplane.total_near_field_force_wind_axes
+                    )
+                    total_moments[airplane_id, :, results_step] = (
+                        airplane.total_near_field_moment_wind_axes
+                    )
                 results_step += 1
 
             these_s_drags = total_forces[:, 0, :] ** 2

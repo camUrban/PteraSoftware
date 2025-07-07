@@ -1,6 +1,7 @@
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test the output against an expected output. Instead,
+Note: Most of the tests in this case do not currently test the output against an
+expected output. Instead,
 they test that the methods to create the output don't throw any errors.
 
 This module contains the following classes:
@@ -12,6 +13,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import unittest
 
 import pterasoftware as ps

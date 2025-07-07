@@ -33,7 +33,7 @@ This module contains the following functions:
     output methods.
 
     plot_scalars: This function plots a scalar bars, the mesh panels with a
-    particular set of scalars, and labels for the minimum and maximum scalar values. """
+    particular set of scalars, and labels for the minimum and maximum scalar values."""
 
 import math
 
@@ -536,7 +536,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
     :param show: bool, Optional
         This boolean determines if the plots will be shown. If False, no plots will be
         shown, which is useful for testing when the user wants to know that the plots
-        were created without having to show them. It's default value is True.
+        were created without having to show them. Its default value is True.
     :param save: bool, Optional
         This boolean determines if the plots will be saved as WebP images. The
         default value is False.
@@ -589,15 +589,15 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
         # Iterate through this step's airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            total_near_field_force_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_force_wind_axes
+            total_near_field_force_wind_axes[airplane_id, :, results_step] = (
+                airplane.total_near_field_force_wind_axes
+            )
             total_near_field_force_coefficients_wind_axes[
                 airplane_id, :, results_step
             ] = airplane.total_near_field_force_coefficients_wind_axes
-            total_near_field_moment_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_moment_wind_axes
+            total_near_field_moment_wind_axes[airplane_id, :, results_step] = (
+                airplane.total_near_field_moment_wind_axes
+            )
             total_near_field_moment_coefficients_wind_axes[
                 airplane_id, :, results_step
             ] = airplane.total_near_field_moment_coefficients_wind_axes
@@ -1080,7 +1080,7 @@ def get_panel_surfaces(
     """
 
     # Initialize empty arrays to hold the panel vertices and faces.
-    panel_vertices = np.empty((0, 3), dtype=int)
+    panel_vertices = np.empty((0, 3), dtype=float)
     panel_faces = np.empty(0, dtype=int)
 
     # Initialize a variable to keep track of how many panels have been added thus far.
@@ -1152,7 +1152,7 @@ def get_wake_ring_vortex_surfaces(solver, step):
     )
 
     # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
-    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=int)
+    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
     wake_ring_vortex_faces = np.zeros(0, dtype=int)
 
     for wake_ring_vortex_num in range(num_wake_ring_vortices):

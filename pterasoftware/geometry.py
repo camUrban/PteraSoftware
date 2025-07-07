@@ -15,6 +15,7 @@ This module contains the following exceptions:
 This module contains the following functions:
     None
 """
+
 import importlib.resources
 
 import matplotlib.pyplot as plt
@@ -778,7 +779,8 @@ class Airfoil:
         4-series airfoil, or loaded from the airfoil database (a folder named
         "airfoils" in this directory, that contains a library of dat files for
         airfoil coordinates). NACA 4-series airfoil generation is an adaptation of:
-        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
+        https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4
+        -digit_NACA_airfoil.
 
         :return: None
         """

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PteraSoftware"
-#define MyAppVersion "3.0.1"
+#define MyAppVersion "3.1.0"
 #define MyAppPublisher "CamUrban"
 #define MyAppURL "https://github.com/camUrban/PteraSoftware"
 #define MyAppExeName "PteraSoftware.exe"
@@ -24,7 +24,8 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\zacht\PycharmProjects\PteraSoftware\LICENSE.txt
+; Use a relative path to allow building the installer from any checkout
+LicenseFile=LICENSE.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=PteraSoftware_installer
@@ -39,8 +40,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\zacht\PycharmProjects\PteraSoftware\dist\main\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zacht\PycharmProjects\PteraSoftware\dist\main\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Use relative paths so the installer can be built from any checkout
+Source: "dist\\main\\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\\main\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]

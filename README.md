@@ -299,6 +299,7 @@ where applicable.
 * Joseph Katz
 * Allen Plotkin
 * Austin Stover
+* E. Farrell Helbling
 * AeroSandbox
 * Black
 * Codecov
@@ -316,6 +317,7 @@ where applicable.
 * Twine
 * SemVer
 * GitFlow
+* GitHub Flow
 * Cmocean
 * Tqdm
 * WebP
@@ -324,6 +326,8 @@ where applicable.
 ## Notes
 
 To the best of my ability, I am following SemVer conventions in naming my releases. I
-am also using the GitFlow method of branching for this project's development. This
-means that nightly builds will be available on the develop branch. The latest stable
-releases can be found on the master branch.
+am also using the 
+[GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow) method 
+of branching for this project's development, with a version bump and deployment to 
+GitHub and PyPI about once per month, plus on-demand releases for critical bug 
+fixes.

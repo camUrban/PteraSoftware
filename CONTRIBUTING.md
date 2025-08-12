@@ -1,95 +1,169 @@
 # Contributing Guidelines
 
-We are excited to welcome new users, so thank you for considering contributing to Ptera
-Software! Hopefully this help you get started. If you have any questions not answered
-here, open an issue request. We'll respond and to help out!
+We are excited that you are interested in contributing to **Ptera Software**! This 
+guide will help you get started. If you have any questions not answered here, please 
+[open an issue](https://github.com/camUrban/PteraSoftware/issues) and we will respond.  
+
+---
 
 ## Before Contributing
 
-Before contributing, you should check out Ptera Software's other reference documents (
-listed in recommended reading order):
+Please review the following documents before making contributions:  
 
-* [README](README.md)
-* [Code of Conduct](CODE_OF_CONDUCT.md)
-* [Security Policy](SECURITY.md)
-* [License](LICENSE.txt)
+1. [README](README.md)  
+2. [Code of Conduct](CODE_OF_CONDUCT.md)  
+3. [Security Policy](SECURITY.md)  
+4. [License](LICENSE.txt)  
 
-## Contributing
+---
 
-There are three pathways to contributing: [reporting a bug](#reporting-a-bug),
-[requesting an enhancement](#requesting-an-enhancement),
-and [creating an enhancement](#creating-an-enhancement).
+## Ways to Contribute
+
+There are three main ways you can contribute:  
+
+1. [**Report a bug**](#reporting-a-bug)  
+   - Identify and document issues that prevent Ptera Software from working as 
+   expected.  
+   - This includes errors, crashes, incorrect outputs, or unexpected behavior.  
+
+2. [**Request an enhancement**](#requesting-an-enhancement)  
+   - Suggest new features, improvements to existing functionality, or usability 
+   changes.  
+   - This can be small quality-of-life improvements or larger feature proposals.  
+
+3. [**Contribute code**](#contributing-code)  
+   - Submit changes that add new features, fix bugs, improve performance, or enhance 
+   documentation.  
+   - Code contributions can address your own ideas or work on existing open issues.  
+   - If you find an issue labeled `help wanted` or `good first issue` that you want to 
+   work on, **comment on the issue to claim it** before starting work. This prevents 
+   duplicate efforts.  
+
+---
 
 ### Reporting a Bug
 
-**If the bug you've found is a security vulnerability, please do not post it as an
-issue. Instead, follow the guidelines in our [security policy](SECURITY.md).**
+**If the bug is a security vulnerability, do not post it as a public issue**. Follow 
+the [security policy](SECURITY.md) instead.  
 
-If you discover a bug in Ptera Software, head over to our
-[issues page](https://github.com/camUrban/PteraSoftware/issues). Then, use to search bar
-to check that it doesn't already have an open issue. If there is an open issue, feel
-free to comment on this issue or use one of the emoji reactions. This will let us know
-the problem is being experienced by multiple users, and make us move extra quickly to
-fixing it!
+For all other bugs:  
+1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to check 
+   if it's already been reported.  
+   - If it exists, you can comment or add an emoji reaction to indicate that you are 
+   also affected.  
+2. If it has not been reported, open a new issue using the 
+   [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).  
+3. Add the `bug` and `help wanted` labels and any other relevant labels.  
 
-If no one else has reported this bug, do so by creating a new issue! Please use our
-[bug report template](.github/ISSUE_TEMPLATE/bug_report.md) so that we get all the
-information we need to help you ASAP. Also, add the `bug` and `help wanted ` labels (and
-any other applicable labels) to the issue.
+---
 
 ### Requesting an Enhancement
 
-As with bugs, the best way to request a feature or to suggest an enhancement is to open
-issue. Again, make sure you search
-the [issues page](https://github.com/camUrban/PteraSoftware/issues) to see if anyone
-else has requested the same thing before creating a new issue. If there is an open
-issue, feel free to comment on this issue or use one of the emoji reactions. This will
-let us know that multiple users would benefit from this change, and we'll try extra hard
-to implement it quickly!
+For feature requests or enhancements:  
+1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to avoid 
+   duplicates.  
+   - If it exists, comment or react to indicate interest.  
+2. If it has not been requested, open a new issue using the 
+   [feature request template](.github/ISSUE_TEMPLATE/feature_request.md).  
+3. Add the `enhancement` and `help wanted` labels plus any others that apply.  
 
-If no one else has requested this change, do so by creating a new issue! Please use our
-[feature request template](.github/ISSUE_TEMPLATE/feature_request.md) so that we get all
-the information we need to help you ASAP. Also, add the `enhancement` and `help wanted`
-labels (and any other applicable labels) to the issue.
+---
 
-### Creating an Enhancement
+### Contributing Code
 
-If you can't think of a particular enhancement you'd benefit from, search for issues
-labeled `help wanted` or `good first issue` for inspiration.
+Ptera Software now uses the GitHub Flow to manage code contributions. If this is new to 
+you, it's a good idea to read through 
+[this guide](https://docs.github.com/en/get-started/using-github/github-flow) first. 
+Once you understand the process, here's how to implement it:
 
-If you have your own idea for an enhancement, we recommend searching the
-[issues page](https://github.com/camUrban/PteraSoftware/issues) to make sure there is no
-other active development on this enhancement. If you find someone else working on the
-same feature or change, add a comment letting them know you'd like to help out!
+1. **Choose what to work on**
+   - Look for issues labeled `help wanted` or `good first issue`.  
+     - If you want to work on one, check that no one else has already commented 
+     claiming it. If unclaimed, comment on the issue to claim it.  
+     - If you want to work on a claimed issue that hasn't been updated in a while, 
+     write a comment asking if the user who originally claimed it is still actively 
+     working on it.
+   - If you have your own idea, search the issues to ensure it hasn't already been 
+   proposed.  
+     - If you can't find anything, open a new issue describing your change and state 
+     that you will be implementing it.  
 
-If you do not see anything on the issues page, we recommend opening an enhancement issue
-as its possible the feature you're about to implement already exists, and we'll comment
-letting you know! Also, be sure to indicate in your post that you'll take charge of
-implementing this change (otherwise, someone else might start working on your request).
+2. **Set up your local environment**
+   - Fork the repository on GitHub to your own account.  
+   - Clone your fork to your local machine:  
+     ```shell
+     git clone https://github.com/<your-username>/PteraSoftware.git
+     cd PteraSoftware
+     ```  
+   - Add the main repository as a remote named `upstream` so you can keep your fork up to date:  
+     ```shell
+     git remote add upstream https://github.com/camUrban/PteraSoftware.git
+     ```  
+   - Create a virtual environment and install dependencies for development:  
+     ```shell
+     python -m venv .venv
+     .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
+     python -m pip install --upgrade pip setuptools wheel
+     pip install -r requirements.txt # Install dependencies for running simulations
+     pip install -r requirements_dev.txt # Install dependencies for development (e.g. black, codespell, etc.)
+     deactivate
+     ```  
 
-Next, we recommend you clone the Ptera Software repository, and then create new feature
-branch from your develop branch. You should create a different feature branch for each
-enhancement you are working on. Follow the
-[GitFlow methodology](https://nvie.com/posts/a-successful-git-branching-model/?fbclid=IwAR3F9IwEXG1T6oMn5Bnk84_u0mv_RAEI5qTJQE7Puovj0hbGZcA8ly_KXYI)
-for creating and managing feature branches.
+3. **Create a new branch**
+   - Branch from `main` for each change.  
+   - Use descriptive branch names, such as `feature/add-new-plot` or 
+   `bugfix/fix-units`.  
+   ```shell
+   git checkout main
+   git branch <branch-name>
+   git checkout <branch-name>
+   git commit -m "Created a new branch for <description>"
+   git push origin <branch-name>
+   ```  
 
-In this feature branch, implement your enhancement. Be sure to commit frequently and
-write detailed commit messages. Additionally, please try to use the follow style guide:
+4. **Make your changes**  
+   - Commit frequently with clear, descriptive messages.  
+   - Follow the [code style and standards](#code-style-and-standards).  
+   - Run automated checks locally before pushing:  
+     ```shell
+     .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
+     codespell --ignore-words=.codespell-ignore.txt --skip="*.dat"
+     black .
+     python -m unittest discover -s tests
+     ```  
 
-* Always use S.I. units for all calculations and results.
-* Format your code using the [black](https://github.com/psf/black).
-* Use a line length of 88 (which is black's default).
-* All modules, scripts, classes, methods, and functions should have
-  [docstrings](https://realpython.com/documenting-python-code/#docstring-types).
-* Use the reStructuredText docstring format.
-* Your code itself should be well documented using block comments.
-* Use tagging (`TODO`, `BUG`, etc.) to mark areas of the code that need changing.
-* Major new functionality should also include new tests, which you should add to the
-  tests package.
-* If you use any code or equations from someone else, please be sure to cite your
-  sources in a comment or docstring.
+5. **Push your changes and open a pull request**  
+   - Push your branch to your fork:  
+     ```shell
+     git push origin <branch-name>
+     ```  
+   - Open a pull request (PR) from your branch to the `main` branch of the upstream repository.  
+   - You can open the PR as a **Draft** to get feedback early before the work is complete.  
+   - In the PR description, follow the [pull request template](.github/pull_request_template.md) and link any related issues.
 
-Once you've finished implementing the enhancement, push your feature branch to your
-clone of Ptera Software. Then, make a pull request to merge your feature branch with the
-original Ptera Software's develop branch using our
-[pull request template](.github/pull_request_template.md).
+6. **Keeping your branch up to date**  
+   - If `main` changes before your PR is merged, sync your branch to avoid merge conflicts:  
+     ```shell
+     git fetch upstream
+     git merge upstream/main # Or git rebase upstream/main
+     ```  
+
+7. **Review and approval process**  
+   - Only the repository owner (currently @camUrban) can approve merges to `main`.  
+   - Your PR will be reviewed, and changes may be requested.  
+   - Once approved, it will be merged into `main` and included in the next release.
+
+---
+
+## Code Style and Standards
+
+- Always use S.I. units in calculations and results.  
+- Format code using [black](https://github.com/psf/black) with a line length of 88.  
+- Include **docstrings** in reStructuredText format for all modules, classes, 
+  functions, and methods.  
+- Use block comments where needed for clarity.  
+- Tag comments with `TODO`, `BUG`, or similar where applicable.  
+- Cite any external sources such as code, equations, or algorithms in comments or 
+  docstrings.
+
+---

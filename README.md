@@ -2,9 +2,9 @@
 
 ***
 
-![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=release-3.1.0)
-![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/main)
-![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware/main)
+![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=main)
+![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
+![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![code style](https://img.shields.io/badge/code%20style-black-black)

@@ -159,8 +159,8 @@ Once you understand the process, here's how to implement it:
 
 - Always use S.I. units in calculations and results.  
 - Format code using [black](https://github.com/psf/black) with a line length of 88.  
-- Include **docstrings** in reStructuredText format for all modules, classes, 
-  functions, and methods.  
+- Include docstrings for all new modules, classes, functions, and methods in 
+[reStructuredText format](https://realpython.com/documenting-python-code/).  
 - Use block comments where needed for clarity.  
 - Tag comments with `TODO`, `BUG`, or similar where applicable.  
 - Cite any external sources such as code, equations, or algorithms in comments or 

@@ -1,34 +1,45 @@
 # Description
 
+Provide a concise description of the changes in this pull request.
+
 ## Motivation
-Please describe your motivation for making these changes.
+Explain why you are making these changes and what problem they solve.
 
 ## Relevant Issues
-* List any issues relating to this pull request.
+Link any related issues using GitHub's syntax, e.g., `Fixes #123` or `Closes #456`.
 
 ## Changes
-* List the changes you made.
+List the changes you made in bullet points.
 
 ## New Dependencies
-* List any new dependencies required to implement these changes.
+List any new dependencies (including dev dependencies) added in this PR.
 
 ## Change Magnitude
-Indicate if the magnitude of your enhancement is a major, minor, or patch. For 
-clarification on these terms, please read the 
-[semantic versioning guide](https://semver.org/?fbclid=IwAR1xgl6Hioqq9BOE9a8FdU6pVdPU3CAPeOUTldSZU1rIEv9d4Jw6ZyE0v9g)
-documentation.
+Select the option that best describes the size and impact of your change:
+
+- **Major**: Large change that adds significant new functionality, changes existing 
+behavior, or may affect many parts of the codebase.
+- **Moderate**: Medium-sized change that adds or modifies a feature without large-scale 
+impact.
+- **Minor**: Small change such as a bug fix, small enhancement, or documentation update.
+
+---
 
 # Checklist
 
-- [ ] You've created an issue with an enhancement label detailing these changes.
+- [ ] I have created or claimed an issue for this work as described in 
+[Contributing Code](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md#contributing-code).
+- [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
 - [ ] All calculations use S.I. units.
-- [ ] You've formatted your code using black.
-- [ ] You've used a line-length of 88.
-- [ ] All modules, scripts, classes, methods, and functions you've written have 
+- [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
+- [ ] All new modules, classes, functions, and methods have docstrings in 
+[reStructuredText format](https://realpython.com/documenting-python-code/).
+- [ ] Code is well documented with block comments where appropriate.
+- [ ] Code passes local automated checks (`codespell`, `black`, and `unittests`).
+- [ ] If any major functionality was added or significantly changed, I have added or 
+updated tests in the `tests` package.
+- [ ] Any external code, algorithms, or equations used have been cited in comments or 
 docstrings.
-- [ ] Your docstrings use the reStructuredText format.
-- [ ] Your code is well documented using block comments.
-- [ ] If you've made any major changes, you've also created new tests in the tests 
-package.
-- [ ] If you use any code or equations from someone else, you've cited your sources in 
-a comment or docstring.
+- [ ] PR description links all relevant issues and follows this template.
+
+---

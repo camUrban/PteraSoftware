@@ -1,17 +1,17 @@
-![Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/Logo.png)
+![Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/Logo.png)
 
 ***
 
 ![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=release-3.1.0)
-![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/master)
-![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware/master)
+![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware/main)
+![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware/main)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
 
 ***
 
-![Example Unsteady Formation Flight](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20formation/Animate.webp)
+![Example Unsteady Formation Flight](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20variable%20formation/Animate.webp)
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing
 flapping-wing flight.
@@ -116,11 +116,15 @@ described in the PyCharm tutorial.
 
 Then, open a command prompt window in your project's directory and enter:
 
-```pip install -r requirements.txt```
+```shell
+pip install -r requirements.txt
+```
 
 via the command prompt in your fork's directory. You may also want to run:
 
-```pip install -r requirements_dev.txt```
+```shell
+pip install -r requirements_dev.txt
+```
 
 if you plan on making significant changes to the software.
 
@@ -132,12 +136,16 @@ then run them to admire their pretty output!
 
 If you wish to use this package as a dependency in your own project, simply run:
 
-```pip install pterasoftware```
+```shell
+pip install pterasoftware
+```
 
 via the command prompt in your project's directory. Then, in a script that you'd like
 to use features from Ptera Software, add:
 
-```import pterasoftware as ps```
+```python
+import pterasoftware as ps
+```
 
 If you haven't previously downloaded Ptera Software's source code, you can also learn
 about the available functions by reading their docstrings, which should be fetched
@@ -206,19 +214,19 @@ examples of the output you can expect to receive from each of them.
 
 ### Steady Horseshoe VLM
 
-![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver/Draw.webp)
+![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/steady%20horseshoe%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Steady Ring VLM
 
-![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver/Draw.webp)
+![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/steady%20ring%20vortex%20lattice%20method%20solver/Draw.webp)
 
 ### Unsteady Ring VLM
 
-![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Animate.webp)
+![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Animate.webp)
 
-![Example Unsteady Ring VLM Force Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Force%20Coefficients.png)
+![Example Unsteady Ring VLM Force Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Force%20Coefficients.png)
 
-![Example Unsteady Ring VLM Moment Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/master/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Moment%20Coefficients.png)
+![Example Unsteady Ring VLM Moment Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples%20expected%20output/unsteady%20ring%20vortex%20lattice%20method%20solver%20static/Example%20Airplane%20Moment%20Coefficients.png)
 
 ## Requirements
 

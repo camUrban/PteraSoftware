@@ -7,7 +7,7 @@ here, open an issue request. We'll respond and to help out!
 ## Before Contributing
 
 Before contributing, you should check out Ptera Software's other reference documents (
-listed in recommended reading order :wink:):
+listed in recommended reading order):
 
 * [README](README.md)
 * [Code of Conduct](CODE_OF_CONDUCT.md)

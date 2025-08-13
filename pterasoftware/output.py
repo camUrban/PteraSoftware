@@ -32,7 +32,7 @@ This module contains the following functions:
     objects, and puts them into a 1D array to be used as scalars for display by other
     output methods.
 
-    plot_scalars: This function plots a scalar bars, the mesh panels with a
+    plot_scalars: This function plots a scalar bar, the mesh panels with a
     particular set of scalars, and labels for the minimum and maximum scalar values."""
 
 import math
@@ -1243,6 +1243,7 @@ def get_scalars(
     return scalars
 
 
+# ToDo: Update this function's docstring.
 def plot_scalars(
     plotter,
     these_scalars,
@@ -1254,7 +1255,7 @@ def plot_scalars(
     c_max,
     panel_surfaces,
 ):
-    """This function plots a scalar bars, the mesh panels with a particular set of
+    """This function plots a scalar bar, the mesh panels with a particular set of
     scalars, and labels for the minimum and maximum scalar values.
 
     :param plotter:
@@ -1302,4 +1303,3 @@ def plot_scalars(
         viewport=True,
         color=text_color,
     )
-    plotter.update_scalars(these_scalars)

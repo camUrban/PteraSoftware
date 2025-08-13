@@ -147,15 +147,17 @@ def analyze_steady_convergence(
 
     # Begin iterating through the outer loop of panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-        convergence_logger.info("Panel aspect ratio: " + str(panel_aspect_ratio))
+        convergence_logger.info("\tPanel aspect ratio: " + str(panel_aspect_ratio))
 
         # Begin iterating through the inner loop of number of chordwise panels.
         for chord_id, num_chordwise_panels in enumerate(num_chordwise_panels_list):
-            convergence_logger.info("\tChordwise panels: " + str(num_chordwise_panels))
+            convergence_logger.info(
+                "\t\tChordwise panels: " + str(num_chordwise_panels)
+            )
 
             iteration += 1
             convergence_logger.info(
-                "\t\tIteration Number: " + str(iteration) + "/" + str(num_iterations)
+                "\t\t\tIteration Number: " + str(iteration) + "/" + str(num_iterations)
             )
 
             # Initialize an empty list to hold this iteration's problem's airplanes.
@@ -302,13 +304,13 @@ def analyze_steady_convergence(
                 )
 
             # Populate the arrays that store information of all the iterations with
-            # the data from this iteration..
+            # the data from this iteration.
             force_coefficients[ar_id, chord_id, :] = these_force_coefficients
             moment_coefficients[ar_id, chord_id, :] = these_moment_coefficients
             iter_times[ar_id, chord_id] = this_iter_time
 
             convergence_logger.info(
-                "\t\tIteration Time: " + str(round(this_iter_time, 3)) + " s"
+                "\t\t\tIteration Time: " + str(round(this_iter_time, 3)) + " s"
             )
 
             max_ar_pc = np.inf
@@ -338,13 +340,13 @@ def analyze_steady_convergence(
                 max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                 convergence_logger.info(
-                    "\t\tMaximum coefficient change from panel aspect ratio: "
+                    "\t\t\tMaximum coefficient change from panel aspect ratio: "
                     + str(round(max_ar_pc, 2))
                     + "%"
                 )
             else:
                 convergence_logger.info(
-                    "\t\tMaximum coefficient change from panel aspect ratio: "
+                    "\t\t\tMaximum coefficient change from panel aspect ratio: "
                     + str(max_ar_pc)
                 )
 
@@ -374,13 +376,13 @@ def analyze_steady_convergence(
                 max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 convergence_logger.info(
-                    "\t\tMaximum coefficient change from chordwise panels: "
+                    "\t\t\tMaximum coefficient change from chordwise panels: "
                     + str(round(max_chord_pc, 2))
                     + "%"
                 )
             else:
                 convergence_logger.info(
-                    "\t\tMaximum coefficient change from chordwise panels: "
+                    "\t\t\tMaximum coefficient change from chordwise panels: "
                     + str(max_chord_pc)
                 )
 
@@ -641,21 +643,21 @@ def analyze_unsteady_convergence(
     # Begin iterating through the first loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
-            convergence_logger.info("Wake type: prescribed")
+            convergence_logger.info("\tWake type: prescribed")
         else:
-            convergence_logger.info("Wake type: free")
+            convergence_logger.info("\tWake type: free")
 
         # Begin iterating through the second loop of wake lengths.
         for length_id, wake_length in enumerate(wake_lengths_list):
             if is_static:
-                convergence_logger.info("\tChord lengths: " + str(wake_length))
+                convergence_logger.info("\t\tChord lengths: " + str(wake_length))
             else:
-                convergence_logger.info("\tCycles: " + str(wake_length))
+                convergence_logger.info("\t\tCycles: " + str(wake_length))
 
             # Begin iterating through the third loop of panel aspect ratios.
             for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
                 convergence_logger.info(
-                    "\t\tPanel aspect ratio: " + str(panel_aspect_ratio)
+                    "\t\t\tPanel aspect ratio: " + str(panel_aspect_ratio)
                 )
 
                 # Begin iterating through the fourth and innermost loop of number of
@@ -664,12 +666,12 @@ def analyze_unsteady_convergence(
                     num_chordwise_panels_list
                 ):
                     convergence_logger.info(
-                        "\t\t\tChordwise panels: " + str(num_chordwise_panels)
+                        "\t\t\t\tChordwise panels: " + str(num_chordwise_panels)
                     )
 
                     iteration += 1
                     convergence_logger.info(
-                        "\t\t\t\tIteration Number: "
+                        "\t\t\t\t\tIteration Number: "
                         + str(iteration)
                         + "/"
                         + str(num_iterations)
@@ -961,7 +963,7 @@ def analyze_unsteady_convergence(
                     )
                     iter_start = time.time()
                     this_solver.run(
-                        logging_level="Warning",
+                        logging_level="Critical",
                         prescribed_wake=wake,
                         calculate_streamlines=False,
                     )
@@ -1009,7 +1011,7 @@ def analyze_unsteady_convergence(
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     convergence_logger.info(
-                        "\t\t\t\tIteration Time: "
+                        "\t\t\t\t\tIteration Time: "
                         + str(round(this_iter_time, 3))
                         + " s"
                     )
@@ -1033,13 +1035,13 @@ def analyze_unsteady_convergence(
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from wake type: "
+                            "\t\t\t\t\tMaximum coefficient change from wake type: "
                             + str(round(max_wake_pc, 2))
                             + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from wake type: "
+                            "\t\t\t\t\tMaximum coefficient change from wake type: "
                             + str(max_wake_pc)
                         )
 
@@ -1057,13 +1059,13 @@ def analyze_unsteady_convergence(
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from wake length: "
+                            "\t\t\t\t\tMaximum coefficient change from wake length: "
                             + str(round(max_length_pc, 2))
                             + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from wake length: "
+                            "\t\t\t\t\tMaximum coefficient change from wake length: "
                             + str(max_length_pc)
                         )
 
@@ -1082,12 +1084,12 @@ def analyze_unsteady_convergence(
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from panel aspect "
+                            "\t\t\t\t\tMaximum coefficient change from panel aspect "
                             "ratio: " + str(round(max_ar_pc, 2)) + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from panel aspect "
+                            "\t\t\t\t\tMaximum coefficient change from panel aspect "
                             "ratio: " + str(max_ar_pc)
                         )
 
@@ -1106,13 +1108,13 @@ def analyze_unsteady_convergence(
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from chordwise panels: "
+                            "\t\t\t\t\tMaximum coefficient change from chordwise panels: "
                             + str(round(max_chord_pc, 2))
                             + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\tMaximum coefficient change from chordwise panels: "
+                            "\t\t\t\t\tMaximum coefficient change from chordwise panels: "
                             + str(max_chord_pc)
                         )
 

@@ -32,8 +32,8 @@ This module contains the following functions:
     objects, and puts them into a 1D array to be used as scalars for display by other
     output methods.
 
-    plot_scalars: This function plots a scalar bar, the mesh panels with a
-    particular set of scalars, and labels for the minimum and maximum scalar values."""
+    plot_scalars: This function plots a scalar bar, the mesh panels with a particular
+    set of scalars, and labels for the minimum and maximum scalar values."""
 
 import math
 import time
@@ -371,7 +371,7 @@ def animate(
         show_scalars = True
 
     # Initialize variables to hold the problems' scalars and their attributes.
-    all_scalars = np.empty(0, dtype=int)
+    all_scalars = np.empty(0, dtype=float)
     min_scalar = None
     max_scalar = None
 
@@ -1247,12 +1247,12 @@ def get_scalars(
         This variable determines which scalar values will be returned. Acceptable
         inputs are "induced drag", "side force", and "lift", which respectively
         return each panel's induced drag, side force, or lift coefficient.
-    :return scalars: 1D array of ints
-        This is the 1D array of integers for each panel's coefficient value.
+    :return scalars: 1D array of floats
+        This is the 1D array of floats for each panel's coefficient value.
     """
 
     # Initialize an empty array to hold the scalars.
-    scalars = np.empty(0, dtype=int)
+    scalars = np.empty(0, dtype=float)
 
     # Increment through the airplanes' wings.
     for airplane in airplanes:
@@ -1274,7 +1274,6 @@ def get_scalars(
     return scalars
 
 
-# ToDo: Update this function's docstring.
 def plot_scalars(
     plotter,
     these_scalars,
@@ -1289,16 +1288,27 @@ def plot_scalars(
     """This function plots a scalar bar, the mesh panels with a particular set of
     scalars, and labels for the minimum and maximum scalar values.
 
-    :param plotter:
-    :param these_scalars:
-    :param scalar_type:
-    :param min_scalar:
-    :param max_scalar:
-    :param color_map:
-    :param c_min:
-    :param c_max:
-    :param panel_surfaces:
-    :return:
+    :param plotter: `pyvista.Plotter`
+        The plotter object used for visualization.
+    :param these_scalars: 1D array of floats
+        This is the 1D array of floats for each panel's coefficient value.
+    :param scalar_type: str
+        This variable determines which scalar values will be returned. Acceptable
+        inputs are "induced drag", "side force", and "lift", which respectively
+        return each panel's induced drag, side force, or lift coefficient.
+    :param min_scalar: float
+        Minimum scalar value, which is displayed as text on the plotter.
+    :param max_scalar: float
+        Maximum scalar value, which is displayed as text on the plotter.
+    :param color_map: str
+        Name of the colormap to use for scalar visualization.
+    :param c_min: float
+        Lower bound for the colormap scaling.
+    :param c_max: float
+        Upper bound for the colormap scaling.
+    :param panel_surfaces: `pyvista.PolyData`
+        PolyData object representing the mesh panel surfaces.
+    :return: None
     """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",

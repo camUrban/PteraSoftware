@@ -74,6 +74,7 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             scalar_type="lift",
             show_wake_vortices=True,
             save=False,
+            testing=True,
         )
 
         ps.output.plot_results_versus_time(

@@ -33,6 +33,7 @@ from . import problems
 
 trim_logger = logging.getLogger("trim")
 trim_logger.setLevel(logging.DEBUG)
+logging.basicConfig()
 
 
 # ToDo: Document this function.
@@ -135,7 +136,7 @@ def analyze_steady_trim(
         o_str = str(round(objective, 3))
 
         state_msg = (
-            "State: velocity="
+            "\tState: velocity="
             + v_str
             + ", alpha="
             + a_str
@@ -144,7 +145,7 @@ def analyze_steady_trim(
             + ", external thrust="
             + t_str
         )
-        obj_msg = "Objective: " + o_str
+        obj_msg = "\t\tObjective: " + o_str
 
         trim_logger.info(state_msg)
         trim_logger.info(obj_msg)
@@ -301,8 +302,10 @@ def analyze_unsteady_trim(
         b_str = str(round(beta, 2))
         o_str = str(round(objective, 3))
 
-        state_msg = "State: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
-        obj_msg = "Objective: " + o_str
+        state_msg = (
+            "\tState: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
+        )
+        obj_msg = "\t\tObjective: " + o_str
 
         trim_logger.info(state_msg)
         trim_logger.info(obj_msg)

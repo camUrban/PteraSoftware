@@ -78,4 +78,5 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
             scalar_type="induced drag",
             show_wake_vortices=True,
             save=False,
+            testing=True,
         )

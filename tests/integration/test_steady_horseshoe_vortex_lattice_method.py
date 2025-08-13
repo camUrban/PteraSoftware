@@ -116,6 +116,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             show_wake_vortices=False,
             show_streamlines=True,
             scalar_type="lift",
+            testing=True,
         )
 
         # Assert that the percent errors are less than the allowable error.
@@ -167,6 +168,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             scalar_type="induced drag",
             show_streamlines=True,
             show_wake_vortices=False,
+            testing=True,
         )
 
         # Assert that the percent errors are less than the allowable error.

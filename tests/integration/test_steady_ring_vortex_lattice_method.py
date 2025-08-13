@@ -103,6 +103,7 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
             show_wake_vortices=False,
             show_streamlines=True,
             scalar_type="lift",
+            testing=True,
         )
 
         # Assert that the percent errors are less than the allowable error.

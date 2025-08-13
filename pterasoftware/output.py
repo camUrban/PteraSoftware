@@ -36,6 +36,7 @@ This module contains the following functions:
     particular set of scalars, and labels for the minimum and maximum scalar values."""
 
 import math
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,6 +109,7 @@ def draw(
     show_streamlines=False,
     show_wake_vortices=False,
     save=False,
+    testing=False,
 ):
     """Draw the geometry of the airplanes in a solver object.
 
@@ -134,6 +136,9 @@ def draw(
     :param save: bool, optional
         Set this variable to True to save the image as a WebP. The default value is
         False.
+    :param testing: bool, optional
+        Set this variable to True to close the image after 1 second, which is useful
+        for running test suites. The default value is False.
     :return: None
     """
 
@@ -251,16 +256,27 @@ def draw(
                         smooth_shading=False,
                     )
 
-    # Set the plotter's background color and camera position. Then show the plotter
-    # so the user can adjust the camera position and window. When the user closes the
-    # window, the plotter object won't be closed so that it can be saved as an image
-    # if the user wants.
+    # Set the plotter's background color.
     plotter.set_background(color=plotter_background_color)
-    plotter.show(
-        cpos=(-1, -1, 1),
-        full_screen=False,
-        auto_close=False,
-    )
+    if not testing:
+        # Show the plotter so the user can adjust the camera position and window.
+        # When the user closes the window, the plotter object itself won't close so
+        # that it can be saved as an image if the user wants.
+        plotter.show(
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            auto_close=False,
+        )
+    else:
+        # Show the plotter for 1 second, then proceed automatically. This is useful
+        # for testing.
+        plotter.show(
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            interactive=False,
+            auto_close=False,
+        )
+        time.sleep(1)
 
     # If the user wants to save the image, take a screenshot, convert it into an
     # image object, and save it as a WebP.
@@ -285,6 +301,7 @@ def animate(
     scalar_type=None,
     show_wake_vortices=False,
     save=False,
+    testing=False,
 ):
     """Create an animation of a solver's geometries.
 
@@ -302,6 +319,9 @@ def animate(
     :param save: bool, optional
         Set this variable to True in order to save the resulting WebP animation. The
         default value is False.
+    :param testing: bool, optional
+        Set this variable to True to close the image after 1 second, which is useful
+        for running test suites. The default value is False.
     :return: None
     """
 
@@ -415,19 +435,30 @@ def animate(
     # Set the plotter background color and show the plotter.
     plotter.set_background(color=plotter_background_color)
 
-    # Print a message to the console on how to set up the window.
-    print(
-        'Orient the view, then press "q" to close the window and produce the animation.'
-    )
+    if not testing:
+        # If not testing, print a message to the console on how to set up the window.
+        print(
+            'Orient the view, then press "q" to close the window and produce the animation.'
+        )
 
-    # Show the plotter so the user can set up the camera. Then, they will close the
-    # window, but the plotter object will stay open off-screen.
-    plotter.show(
-        title="Rendering speed not to scale.",
-        cpos=(-1, -1, 1),
-        full_screen=False,
-        auto_close=False,
-    )
+        # Show the plotter so the user can set up the camera. Then, they will close the
+        # window, starting the animation, but the plotter object will stay open.
+        plotter.show(
+            title="Rendering speed not to scale.",
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            auto_close=False,
+        )
+    else:
+        # If we are testing, show the plotter for 1 second, then start the animation.
+        plotter.show(
+            title="Rendering speed not to scale.",
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            interactive=False,
+            auto_close=False,
+        )
+        time.sleep(1)
 
     # Start a list which will hold a WebP image of each frame.
     images = [

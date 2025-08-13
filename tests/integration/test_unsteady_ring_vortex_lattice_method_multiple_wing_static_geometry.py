@@ -76,4 +76,5 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
             show_wake_vortices=True,
             scalar_type="side force",
             save=False,
+            testing=True,
         )

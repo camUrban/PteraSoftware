@@ -158,18 +158,18 @@ contribute to this, feel free to open a feature request issue and start a conver
 ### What If I'm Having Trouble Getting Set Up?
 
 Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that
-walks through getting Ptera Software up and
-running. It includes every step, from downloading Python for the first time to setting
-up your IDE to running the software. However, I recorded this video a while ago, so in
-it I download Python 3.8. For all versions of Ptera Software 3.1.0 and on, use Python 
-3.10 instead. If you still run into problems, feel free to open an issue for guidance.
+walks through getting Ptera Software up and running. It includes every step, from 
+downloading Python for the first time to setting up your IDE to running the software. 
+Please note that the video demonstrates installation with Python 3.8, but for Ptera 
+Software version 3.1.0 and later, you should use Python 3.10. If you still run into 
+problems, feel free to open an issue for guidance.
 
 ## Example Code
 
 The following code snippet is all that is needed (after running pip install
 pterasoftware) to run the steady horseshoe solver on an airplane with custom geometry.
 
-```
+```python
 import pterasoftware as ps
 
 airplane = ps.geometry.Airplane(
@@ -267,6 +267,9 @@ community's understanding and appreciation for unsteady aerodynamics in general 
 flapping-wing flight in particular. This will only happen through your participation.
 Feel free to request features, report bugs or security issues, and provide suggestions.
 No comment is too big or small!
+
+Before contributing, make sure to read through the
+[CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to best help out.
 
 Here is a list of changes I would like to make in the coming releases. If you want to
 contribute and don't know where to start, this is for you!

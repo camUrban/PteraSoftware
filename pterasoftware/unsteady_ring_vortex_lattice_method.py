@@ -534,19 +534,34 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # of "Modeling of aerodynamic forces in flapping
                                 # flight with the Unsteady Vortex Lattice Method" by
                                 # Thomas Lambert.
+
+                                # Bug: I'm pretty sure this is wrong!
+
+                                # back_left_vortex_vertex = (
+                                #     front_left_vortex_vertex
+                                #     + (panel.back_left_vertex - panel.front_left_vertex)
+                                #     + this_freestream_velocity_geometry_axes
+                                #     * self.delta_time
+                                #     * 0.25
+                                # )
+                                # back_right_vortex_vertex = (
+                                #     front_right_vortex_vertex
+                                #     + (
+                                #         panel.back_right_vertex
+                                #         - panel.front_right_vertex
+                                #     )
+                                #     + this_freestream_velocity_geometry_axes
+                                #     * self.delta_time
+                                #     * 0.25
+                                # )
                                 back_left_vortex_vertex = (
-                                    front_left_vortex_vertex
-                                    + (panel.back_left_vertex - panel.front_left_vertex)
+                                    panel.back_left_vertex
                                     + this_freestream_velocity_geometry_axes
                                     * self.delta_time
                                     * 0.25
                                 )
                                 back_right_vortex_vertex = (
-                                    front_right_vortex_vertex
-                                    + (
-                                        panel.back_right_vertex
-                                        - panel.front_right_vertex
-                                    )
+                                    panel.back_right_vertex
                                     + this_freestream_velocity_geometry_axes
                                     * self.delta_time
                                     * 0.25

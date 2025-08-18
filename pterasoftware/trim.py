@@ -284,10 +284,12 @@ def analyze_unsteady_trim(
         this_solver.run(logging_level="Critical")
 
         force_coefficients = (
-            this_solver.unsteady_problem.final_total_near_field_force_coefficients_wind_axes
+            this_solver.unsteady_problem
+            .final_mean_near_field_force_coefficients_wind_axes
         )
         moment_coefficients = (
-            this_solver.unsteady_problem.final_total_near_field_moment_coefficients_wind_axes
+            this_solver.unsteady_problem
+            .final_mean_near_field_moment_coefficients_wind_axes
         )
 
         net_force_coefficients = np.linalg.norm(

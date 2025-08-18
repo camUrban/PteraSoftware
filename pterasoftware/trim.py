@@ -89,6 +89,9 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
+    # Create a mutable counter to track the current iteration number.
+    iteration_counter = [0]
+
     # ToDo: Document this function.
     def objective_function(arguments):
         """
@@ -96,6 +99,9 @@ def analyze_steady_trim(
         :param arguments:
         :return:
         """
+        # Increment the mutable iteration counter.
+        iteration_counter[0] += 1
+
         velocity, alpha, beta, external_thrust = arguments
 
         current_arguments.clear()
@@ -136,16 +142,11 @@ def analyze_steady_trim(
         o_str = str(round(objective, 3))
 
         state_msg = (
-            "\tState: velocity="
-            + v_str
-            + ", alpha="
-            + a_str
-            + ", beta="
-            + b_str
-            + ", external thrust="
-            + t_str
+            f"\tIteration: {iteration_counter[0]}/{num_calls} | "
+            f"\tState: velocity={v_str} m/s, alpha={a_str}°, beta={b_str}°, external "
+            f"thrust={t_str} N"
         )
-        obj_msg = "\t\tObjective: " + o_str
+        obj_msg = f"\t\tObjective: {o_str}"
 
         trim_logger.info(state_msg)
         trim_logger.info(obj_msg)
@@ -180,6 +181,9 @@ def analyze_steady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
+        # Restart the iteration counter
+        iteration_counter[0] = 0
+
         scipy.optimize.dual_annealing(
             func=objective_function,
             bounds=bounds,
@@ -240,6 +244,9 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan]
 
+    # Create a mutable counter to track the current iteration number.
+    iteration_counter = [0]
+
     # ToDo: Document this function.
     def objective_function(arguments):
         """
@@ -247,6 +254,9 @@ def analyze_unsteady_trim(
         :param arguments:
         :return:
         """
+        # Increment the mutable iteration counter.
+        iteration_counter[0] += 1
+
         velocity, alpha, beta = arguments
 
         current_arguments.clear()
@@ -305,9 +315,10 @@ def analyze_unsteady_trim(
         o_str = str(round(objective, 3))
 
         state_msg = (
-            "\tState: velocity=" + v_str + ", alpha=" + a_str + ", beta=" + b_str
+            f"\tIteration: {iteration_counter[0]}/{num_calls} | "
+            f"State: velocity={v_str} m/s, alpha={a_str}°, beta={b_str}°"
         )
-        obj_msg = "\t\tObjective: " + o_str
+        obj_msg = f"\t\tObjective: {o_str}"
 
         trim_logger.info(state_msg)
         trim_logger.info(obj_msg)
@@ -340,6 +351,9 @@ def analyze_unsteady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
+        # Restart the iteration counter
+        iteration_counter[0] = 0
+
         scipy.optimize.dual_annealing(
             func=objective_function,
             bounds=bounds,

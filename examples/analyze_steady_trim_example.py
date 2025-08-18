@@ -87,12 +87,12 @@ trim_conditions = ps.trim.analyze_steady_trim(
 # Log the trim conditions. If these display "nan", then the trim function couldn't
 # find a trimmed state.
 example_logger.info("Trim Velocity:\t\t\t%.2f m/s" % trim_conditions[0])
-example_logger.info("Trim Alpha:\t\t\t%.2f deg" % trim_conditions[1])
-example_logger.info("Trim Beta:\t\t\t\t%.2f deg" % trim_conditions[2])
+example_logger.info("Trim Alpha:\t\t\t%.2f°" % trim_conditions[1])
+example_logger.info("Trim Beta:\t\t\t\t%.2f°" % trim_conditions[2])
 example_logger.info("Trim External Thrust:\t%.2f N" % trim_conditions[3])
 
 # The expected results are:
 # Trim Velocity: 10.02 m/s
-# Trim Alpha: 3.00 deg
-# Trim Beta: -0.00 deg
+# Trim Alpha: 3.00°
+# Trim Beta: -0.00°
 # Trim External Thrust: 4.98 N

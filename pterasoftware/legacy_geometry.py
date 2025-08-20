@@ -524,9 +524,12 @@ class WingCrossSection:
     def __init__(
         self,
         airfoil,
+        x_le=0.0,
+        y_le=0.0,
+        z_le=0.0,
         chord=1.0,
-        local_position=np.array([0.0, 0.0, 0.0]),
-        local_rotations=np.array([0.0, 0.0, 0.0]),
+        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
+        twist=0.0,
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
@@ -536,27 +539,32 @@ class WingCrossSection:
         """This is the initialization method.
 
         :param airfoil: Airfoil
-            This is the Airfoil object to be used at this WingCrossSection object.
+            This is the airfoil to be used at this wing cross section.
+        :param x_le: float, optional
+            This is the x coordinate of the leading edge of the wing cross section
+            relative to the wing's datum. The default value is 0.0.
+        :param y_le: float, optional
+            This is the y coordinate of the leading edge of the wing cross section
+            relative to the wing's leading edge. The default value is 0.0.
+        :param z_le: float, optional
+            This is the z coordinate of the leading edge of the wing cross section
+            relative to the wing's datum. The default value is 0.0.
         :param chord: float, optional
-            This is the chord of the wing at this WingCrossSection object. The units are
-            meters. The default value is 1.0.
-        :param local_position: array, optional
-            This is a (3,) array of floats [x, y, z] representing the position of this 
-            WingCrossSection object's leading edge relative to the previous WingCrossSection 
-            object's leading edge, expressed in the previous WingCrossSection object's 
-            coordinate frame. For the root WingCrossSection object, this is relative to 
-            the Wing object's coordinate frame. The units are meters. The default is 
-            np.array([0.0, 0.0, 0.0]).
-        :param local_rotations: array, optional
-            This is a (3,) array of floats [roll, pitch, yaw] of rotation angles in degrees
-            that define this WingCrossSection object's orientation relative to the previous
-            WingCrossSection object's coordinate frame. For the root WingCrossSection object, 
-            this is relative to the Wing object's coordinate frame. Roll is rotation about 
-            the local x-axis (streamwise), pitch is about the local y-axis (spanwise), and 
-            yaw is about the local z-axis (normal). The units are degrees. The default is 
-            np.array([0.0, 0.0, 0.0]).
+            This is the chord of the wing at this wing cross section. The default
+            value is 1.0.
+        :param unit_normal_vector: array, optional
+            This is an (3,) array of floats that represents the unit normal vector
+            of the plane this wing cross section lies on. If this wing cross section
+            is a wing's root, this vector must be equal to the wing's
+            unit_normal_vector attribute. Also, every wing cross section
+            must have a plane that intersects its parent wing's symmetry plane at a
+            line parallel to the parent wing's "unit_chordwise_vector". The default
+            is np.array([ 0.0, 1.0, 0.0]), which is the XZ plane's unit normal vector.
+        :param twist: float, optional
+            This is the twist of the cross section about the leading edge in degrees.
+            The default value is 0.0.
         :param control_surface_type: str, optional
-            This is type of control surfaces for this WingCrossSection object. It can be
+            This is type of control surfaces for this wing cross section. It can be
             "symmetric" or "asymmetric". An example of symmetric control surfaces are
             flaps. An example of asymmetric control surfaces are ailerons. The
             default value is "symmetric".
@@ -567,8 +575,8 @@ class WingCrossSection:
             This is the control deflection in degrees. Deflection downwards is
             positive. The default value is 0.0 degrees.
         :param num_spanwise_panels: int, optional
-            This is the number of spanwise panels to be used between this WingCrossSection
-            object and the next one. The default value is 8.
+            This is the number of spanwise panels to be used between this wing cross
+            section and the next one. The default value is 8.
         :param spanwise_spacing: str, optional
             This can be "cosine" or "uniform". Using cosine spacing is highly
             recommended. The default value is "cosine".

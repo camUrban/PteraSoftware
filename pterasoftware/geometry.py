@@ -291,6 +291,12 @@ class Wing:
                 "the wing's leading edge."
             )
 
+        # Validate root WingCrossSection constraints.
+        self.wing_cross_sections[0].validate_root_constraints()
+
+        # Validate tip WingCrossSection constraints.
+        self.wing_cross_sections[-1].validate_tip_constraints()
+
         # Check that the wing's chordwise and normal directions are perpendicular.
         if np.dot(self.unit_chordwise_vector, self.unit_normal_vector) != 0:
             raise Exception(
@@ -505,14 +511,11 @@ class WingCrossSection:
         Date of Retrieval:    04/26/2020
 
     This class contains the following public methods:
-        unit_chordwise_vector: This method defines a property for the wing cross
-        section's unit chordwise vector.
+        validate_root_constraints: This method validates constraints specific to
+        root WingCrossSection objects.
 
-        unit_up_vector: This method defines a property for the wing cross section's
-        unit up vector.
-
-        trailing_edge: This method defines a property for the coordinates of this
-        wing cross section's trailing edge.
+        validate_tip_constraints: This method validates constraints specific to
+        tip WingCrossSection objects.
 
     This class contains the following class attributes:
         None
@@ -524,63 +527,66 @@ class WingCrossSection:
     def __init__(
         self,
         airfoil,
+        num_spanwise_panels,
         chord=1.0,
         local_position=np.array([0.0, 0.0, 0.0]),
         local_rotations=np.array([0.0, 0.0, 0.0]),
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
-        num_spanwise_panels=8,
         spanwise_spacing="cosine",
     ):
         """This is the initialization method.
 
         :param airfoil: Airfoil
             This is the Airfoil object to be used at this WingCrossSection object.
+        :param num_spanwise_panels: int or None
+            This is the number of spanwise panels to be used between this
+            WingCrossSection object and the next one. For tip WingCrossSection objects,
+            this must be None. For all other WingCrossSection objects, this must be a
+            positive integer.
         :param chord: float, optional
             This is the chord of the wing at this WingCrossSection object. The units are
-            meters. The default value is 1.0.
-        :param local_position: array, optional
-            This is a (3,) array of floats [x, y, z] representing the position of this 
-            WingCrossSection object's leading edge relative to the previous WingCrossSection 
-            object's leading edge, expressed in the previous WingCrossSection object's 
-            coordinate frame. For the root WingCrossSection object, this is relative to 
-            the Wing object's coordinate frame. The units are meters. The default is 
+            meters. It must be greater than 0.0. The default value is 1.0.
+        :param local_position: (3,) ndarray of floats, optional
+            This is the position [x, y, z] of this WingCrossSection leading edge
+            relative to the previous WingCrossSection leading edge, expressed in the
+            previous WingCrossSection axes. For the root WingCrossSection, this is
+            relative to its Wing's axes and must be np.array([0.0, 0.0, 0.0]). All
+            components must be non-negative. The units are meters. The default is
             np.array([0.0, 0.0, 0.0]).
-        :param local_rotations: array, optional
-            This is a (3,) array of floats [roll, pitch, yaw] of rotation angles in degrees
-            that define this WingCrossSection object's orientation relative to the previous
-            WingCrossSection object's coordinate frame. For the root WingCrossSection object, 
-            this is relative to the Wing object's coordinate frame. Roll is rotation about 
-            the local x-axis (streamwise), pitch is about the local y-axis (spanwise), and 
-            yaw is about the local z-axis (normal). The units are degrees. The default is 
+        :param local_rotations: (3,) ndarray of floats, optional
+            This is the rotation angles [roll, pitch, yaw] in degrees that define
+            this WingCrossSection axes relative to the previous WingCrossSection
+            axes. For the root WingCrossSection, this is relative to its Wing's axes
+            and must be np.array([ 0.0, 0.0, 0.0]). All angles must be in the range [
+            0, 90) degrees. Roll is rotation about the local x-axis (streamwise),
+            pitch is about the local y-axis (spanwise), and yaw is about the local
+            z-axis (normal). Rotations are intrinsic, and follow the Euler angle
+            order convention of z-y'-x''. The units are degrees. The default is
             np.array([0.0, 0.0, 0.0]).
         :param control_surface_type: str, optional
-            This is type of control surfaces for this WingCrossSection object. It can be
-            "symmetric" or "asymmetric". An example of symmetric control surfaces are
-            flaps. An example of asymmetric control surfaces are ailerons. The
+            This is type of control surfaces for this WingCrossSection object. It can
+            be "symmetric" or "asymmetric". An example of symmetric control surfaces
+            are flaps. An example of asymmetric control surfaces are ailerons. The
             default value is "symmetric".
         :param control_surface_hinge_point: float, optional
             This is the location of the control surface hinge from the leading edge
-            as a fraction of chord. The default value is 0.75.
+            as a fraction of chord. It must be on the range (0.0, 1.0). The default
+            value is 0.75.
         :param control_surface_deflection: float, optional
             This is the control deflection in degrees. Deflection downwards is
-            positive. The default value is 0.0 degrees.
-        :param num_spanwise_panels: int, optional
-            This is the number of spanwise panels to be used between this WingCrossSection
-            object and the next one. The default value is 8.
+            positive. Must be in the range (-90, 90) degrees. The default value is
+            0.0 degrees.
         :param spanwise_spacing: str, optional
             This can be "cosine" or "uniform". Using cosine spacing is highly
             recommended. The default value is "cosine".
         """
 
         # Initialize all the user-provided attributes.
-        self.x_le = x_le
-        self.y_le = y_le
-        self.z_le = z_le
         self.chord = chord
-        self.unit_normal_vector = unit_normal_vector
-        self.twist = twist
+        self.local_position = np.array(local_position, dtype=float)
+        self.local_rotations = np.array(local_rotations, dtype=float)
         self.airfoil = airfoil
         self.control_surface_type = control_surface_type
         self.control_surface_hinge_point = control_surface_hinge_point
@@ -588,8 +594,15 @@ class WingCrossSection:
         self.num_spanwise_panels = num_spanwise_panels
         self.spanwise_spacing = spanwise_spacing
 
-        # Create a (3,) array to hold the leading edge's coordinates.
-        self.leading_edge = np.array([x_le, y_le, z_le])
+        # Catch invalid local rotation angles.
+        if not np.all((0.0 <= self.local_rotations) & (self.local_rotations < 90.0)):
+            raise Exception(
+                "All local rotation angles must be in the range [0, 90) degrees."
+            )
+
+        # Catch negative local position components.
+        if np.any(self.local_position < 0.0):
+            raise Exception("All local_position components must be non-negative.")
 
         # Define an attribute for the parent wing's unit chordwise vector, which will
         # be set by this wing cross section's parent wing's initialization method.
@@ -597,7 +610,21 @@ class WingCrossSection:
 
         # Catch bad values of the chord length.
         if self.chord <= 0:
-            raise Exception("A wing cross section's chord length must be positive.")
+            raise Exception("A wing cross section's chord length must be >0.0 m.")
+
+        # Catch invalid control surface hinge points.
+        if not (0.0 < self.control_surface_hinge_point < 1.0):
+            raise Exception(
+                "A wing cross section's control surface hinge point must be on the "
+                "range (0.0, 1.0)."
+            )
+
+        # Catch invalid control surface deflections.
+        if not (-90.0 < self.control_surface_deflection < 90.0):
+            raise Exception(
+                "A wing cross section's control surface deflection must be on the "
+                "range (-90.0, 90.0) degrees."
+            )
 
         # Catch invalid values of the control surface type.
         if self.control_surface_type not in ["symmetric", "asymmetric"]:
@@ -613,50 +640,81 @@ class WingCrossSection:
                 '"uniform".'
             )
 
-    @property
-    def unit_chordwise_vector(self):
-        """This method defines a property for the wing cross section's unit chordwise
-        vector.
+    def validate_root_constraints(self):
+        """Validate constraints specific to root WingCrossSection objects.
 
-        The unit chordwise vector is defined as the parent wing's unit chordwise
-        vector, rotated by the wing cross section's twist about the wing cross
-        section's normal vector.
+        Root WingCrossSection objects must have local_position and local_rotations
+        set to zero arrays.
 
-        :return: (3,) array of floats
-            This is the unit vector for the wing cross section's chordwise direction.
-            The units are meters.
+        :raises Exception: If root constraints are violated.
         """
-        # Find the rotation matrix given the cross section's twist.
-        twist_rotation_matrix = functions.angle_axis_rotation_matrix(
-            self.twist * np.pi / 180, self.unit_normal_vector
-        )
+        if not np.allclose(self.local_position, np.array([0.0, 0.0, 0.0])):
+            raise Exception(
+                "The root wing cross section's local position coordinates must be "
+                "np.array([0.0, 0.0, 0.0])."
+            )
+        if not np.allclose(self.local_rotations, np.array([0.0, 0.0, 0.0])):
+            raise Exception(
+                "The root wing cross section's local rotation angles must be "
+                "np.array([0.0, 0.0, 0.0])."
+            )
 
-        # Use the rotation matrix and the leading edge coordinates to calculate the
-        # unit chordwise vector.
-        return twist_rotation_matrix @ self.wing_unit_chordwise_vector
+    def validate_tip_constraints(self):
+        """Validate constraints specific to tip WingCrossSection objects.
 
-    @property
-    def unit_up_vector(self):
-        """This method defines a property for the wing cross section's unit up vector.
+        Tip WingCrossSection objects must have num_spanwise_panels set to None.
 
-        :return: (3,) array of floats
-            This is the unit vector for the wing cross section's chordwise direction.
-            The units are meters.
+        :raises Exception: If tip constraints are violated.
         """
-        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+        if self.num_spanwise_panels is not None:
+            raise Exception(
+                "The tip wing cross section must have num_spanwise_panels=None."
+            )
 
-    @property
-    def trailing_edge(self):
-        """This method defines a property for the coordinates of this wing cross
-        section's trailing edge.
+    # @property
+    # def unit_chordwise_vector(self):
+    #     """This method defines a property for the wing cross section's unit chordwise
+    #     vector.
+    #
+    #     The unit chordwise vector is defined as the parent wing's unit chordwise
+    #     vector, rotated by the wing cross section's twist about the wing cross
+    #     section's normal vector.
+    #
+    #     :return: (3,) array of floats
+    #         This is the unit vector for the wing cross section's chordwise direction.
+    #         The units are meters.
+    #     """
+    #     # Find the rotation matrix given the cross section's twist.
+    #     twist_rotation_matrix = functions.angle_axis_rotation_matrix(
+    #         self.twist * np.pi / 180, self.unit_normal_vector
+    #     )
+    #
+    #     # Use the rotation matrix and the leading edge coordinates to calculate the
+    #     # unit chordwise vector.
+    #     return twist_rotation_matrix @ self.wing_unit_chordwise_vector
 
-        :return: (3,) array of floats
-            This is an array of the coordinates of this wing cross section's trailing
-            edge.
-        """
-        chordwise_vector = self.chord * self.unit_chordwise_vector
+    # @property
+    # def unit_up_vector(self):
+    #     """This method defines a property for the wing cross section's unit up vector.
+    #
+    #     :return: (3,) array of floats
+    #         This is the unit vector for the wing cross section's chordwise direction.
+    #         The units are meters.
+    #     """
+    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
 
-        return self.leading_edge + chordwise_vector
+    # @property
+    # def trailing_edge(self):
+    #     """This method defines a property for the coordinates of this wing cross
+    #     section's trailing edge.
+    #
+    #     :return: (3,) array of floats
+    #         This is an array of the coordinates of this wing cross section's trailing
+    #         edge.
+    #     """
+    #     chordwise_vector = self.chord * self.unit_chordwise_vector
+    #
+    #     return self.leading_edge + chordwise_vector
 
 
 class Airfoil:

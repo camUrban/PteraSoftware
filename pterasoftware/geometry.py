@@ -150,10 +150,6 @@ class Airplane:
 class Wing:
     """This is a class used to contain the wings of an Airplane object.
 
-    If the wing is symmetric about some plane, just define the right half,
-    supply "symmetric=True" in the constructor, and include the symmetry plane's
-    normal vector in the "symmetry_plane_normal" attribute.
-
     Citation:
         Adapted from:         geometry.Wing in AeroSandbox
         Author:               Peter Sharpe
@@ -182,65 +178,170 @@ class Wing:
 
     Subclassing:
         This class is not meant to be subclassed.
+
+    Every wing has its axis system, known as wing axes. The user sets the
+    relationship between these axes and geometry axes with the local_position and
+    local_rotations parameters. However, the steps for transforming a vector from
+    geometry axes to wing axes, and the interpretation of the wing axes orientation
+    and position relative to a Wing's geometry, also depend on the parameters
+    symmetric, mirror_only, symmetry_plane, and symmetry_point:
+        1. symmetric is False
+            A. mirror_only is False
+                I. The symmetry plane must be undefined (symmetry_plane_normal and
+                symmetry_plane_point must be None)
+                    Scenario 1:
+                    - local_position is the final location of leading edge of this
+                    Wing's root WingCrossSection, as defined in geometry axes.
+                    - local_position is also the final location of the origin of this
+                    Wing's wing axes, as defined in geometry axes.
+                    - Translation by local_position followed by rotations by
+                    local_rotations fully define this Wing's wing axes with respect
+                    to the geometry axes. The wing axes will also retain the
+                    handedness of the geometry axes.
+            B. mirror_only is True
+                I. The symmetry plane is coincident with this Wing's wing axes' xz-plane
+                    Scenario 2:
+                    - local_position is the final location of leading edge of this
+                    Wing's root WingCrossSection, as defined in geometry axes.
+                    - local_position is also the final location of the origin of this
+                    Wing's wing axes, as defined in geometry axes.
+                    - Translation by local_position followed by rotations by
+                    local_rotations does not fully define orientation of this Wing's
+                    wing axes with respect to the geometry axes. After translation
+                    and rotation, the coordinate system also needs to be reflected
+                    across the symmetry plane, which will flip the wing axes'
+                    handedness to be opposite that of geometry axes.
+                II. The symmetry plane is not coincident with this Wing's wing axes'
+                xz-plane
+                    Scenario 3:
+                    - local_position is not final location of leading edge of this
+                    Wing's root WingCrossSection, as defined in geometry axes.
+                    - local_position is not the final location of the origin of this
+                    Wing's wing axes, as defined in geometry axes.
+                    - Translation by local_position followed by rotations by
+                    local_rotations does not fully define orientation of this Wing's
+                    wing axes with respect to the geometry axes. After translation
+                    and rotation, the coordinate system also needs to be reflected
+                    across the symmetry plane, which will flip the wing axes'
+                    handedness to be opposite that of geometry axes.
+        2. symmetric is True
+            A. mirror_only must be False
+                I. the symmetry plane is coincident with this Wing's wing axes' xz-plane
+                    Scenario 4:
+                    - local_position is the final location of leading edge of this
+                    Wing's root WingCrossSection, as defined in geometry axes.
+                    However, while the root WingCrossSection is the still the first
+                    item in the wing_cross_sections list, when meshed, panels will
+                    extend from the root in both the +y and -y wing axis directions.
+                    The length of the wing_cross_sections list remains unchanged.
+                    - local_position is also the final location of the origin of this
+                    Wing's wing axes, as defined in geometry axes.
+                    - Translation by local_position followed by rotations by
+                    local_rotations fully define this Wing's wing axes with respect
+                    to the geometry axes. The wing axes will also retain the
+                    handedness of the geometry axes.
+                II. the symmetry plane is not coincident with this Wing's wing axes'
+                xz-plane
+                    Scenario 5:
+                    - This Wing's Airplane will set this Wing's symmetric parameter
+                    to False, its mirror_only parameter to False,
+                    its symmetry_plane_normal parameter to None and its
+                    symmetry_plane_point parameter to None. These changes turn this
+                    Wing into a "Scenario 1 Wing."
+                    - The Airplane will also create a new Wing, and add it to its
+                    wings list immediately after the current Wing. The new Wing will
+                    have the same name as this Wing, but with the prefix "Reflected
+                    ". The new Wing also will have all the same parameters as this
+                    Wing, except that symmetric will be False and mirrored_only will
+                    be True, which means that it will be a "Scenario 3 Wing."
+                    - Also, if the control_surface_type is "asymmetric" for any of
+                    this Wing's WingCrossSections, the reflected Wing's corresponding
+                    WingCrossSections will have their control_surface_deflection
+                    values multiplied by negative one.
     """
 
     def __init__(
         self,
         wing_cross_sections,
         name="Untitled Wing",
-        x_le=0.0,
-        y_le=0.0,
-        z_le=0.0,
-        unit_normal_vector=np.array([0.0, 1.0, 0.0]),
+        local_position=np.array([0.0, 0.0, 0.0]),
+        local_rotations=np.array([0.0, 0.0, 0.0]),
         symmetric=False,
-        unit_chordwise_vector=np.array([1.0, 0.0, 0.0]),
+        mirror_only=False,
+        symmetry_plane_normal=None,
+        symmetry_plane_point=None,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     ):
         """This is the initialization method.
 
         :param wing_cross_sections: list of WingCrossSection objects
-            This is a list of WingCrossSection objects, that represent the wing's
-            cross sections.
+
+            This is a list of WingCrossSection that represent the wing's cross
+            sections in order from root to tip. It must contain at least two
+            WingCrossSections.
+
         :param name: str, optional
             This is a sensible name for the wing. The default is "Untitled Wing".
-        :param x_le: float, optional
-            This is the x coordinate of the leading edge of the wing, relative to the
-            airplane's reference point. The default is 0.0.
-        :param y_le: float, optional
-            This is the y coordinate of the leading edge of the wing, relative to the
-            airplane's reference point. The default is 0.0.
-        :param z_le: float, optional
-            This is the z coordinate of the leading edge of the wing, relative to the
-            airplane's reference point. The default is 0.0.
-        :param unit_normal_vector: array, optional
-            This is an (3,) array of floats that represents the unit normal vector
-            of the wing's symmetry plane. It is also the direction vector that the
-            wing's span will be assessed relative to. Additionally, this vector
-            crossed with the "unit_chordwise_vector" defines the normal vector of the
-            plane that the wing's projected area will reference. It must be
-            equivalent to this wing's root wing cross section's "unit_normal_vector"
-            attribute. The default is np.array([0.0, 1.0, 0.0]), which is the XZ
-            plane's unit normal vector.
+        :param local_position: (3,) ndarray of floats, optional
+            This is the initial position [x, y, z] of the origin of this Wing's wing
+            axes in geometry axes. The final position may vary depending on other
+            parameters, as explained in the class docstring. The units are meters.
+            The default is np.array([0.0, 0.0, 0.0]).
+        :param local_rotations: (3,) ndarray of floats, optional
+            This is the rotation angles [roll, pitch, yaw] in degrees that define the
+            initial orientation of this Wing's wing axes relative to the geometry
+            axes. All angles must be in the range (-90, 90) degrees. Roll is rotation
+            about x, pitch is rotation about y, and yaw is rotation about z.
+            Rotations are intrinsic, and proceed in the z-y'-x'' order conventional
+            for Euler angles. The units are degrees. The default is np.array([0.0,
+            0.0, 0.0]).
         :param symmetric: bool, optional
-            Set this to true if the wing is across the xz plane. Set it to false if
-            not. The default is false.
-        :param unit_chordwise_vector: array, optional
-            This is an (3,) array of floats that represents the unit vector that
-            defines the wing's chordwise direction. This vector crossed with the
-            "unit_normal_vector" defines the normal vector of the plane that
-            the wing's projected area will reference. This vector must be parallel to
-            the intersection of the wing's symmetry plane with each of its wing cross
-            section's planes. The default is np.array([1.0, 0.0, 0.0]), which is the
-            X unit vector.
+            Set this to True if the Wing's geometry should be mirrored across the
+            symmetry plane while retaining the non-mirrored side. If mirror_only is
+            True, symmetric must be False. If symmetric is true, then neither
+            symmetry_plane_normal nor symmetry_plane_point can be None. If the
+            symmetry plane is coincident with this Wing's wing axes' xz-plane,
+            the mirrored and non-mirrored geometry will be meshed as a single wing.
+            If not, this Wing's Airplane will automatically create another Wing with
+            the mirrored geometry, modify both Wings' parameters, and add the
+            reflected Wing to its list of wings immediately following this one. For
+            more details on how that process, and how this parameter interacts with
+            symmetry_plane_normal, symmetry_plane_point, and mirror_only, see the
+            class docstring. The default is False.
+        :param mirror_only: bool, optional
+            Set this to True if the Wing's geometry should be reflected about the
+            symmetry plane without retaining the non-reflected geometry. If symmetric
+            is True, mirror_only must be False. If mirror_only is true, then neither
+            symmetry_plane_normal nor symmetry_plane_point can be None. For more
+            details on how this parameter interacts with symmetry_plane_normal,
+            symmetry_plane_point, and symmetric, see the class docstring. The default
+            is False.
+        :param symmetry_plane_normal: (3,) ndarray of floats or None, optional
+            The unit normal vector in geometry axes that, together with
+            symmetry_plane_point, defines the plane used for symmetry or mirroring.
+            Note that reversing the normal direction (using the antiparallel vector)
+            defines the same plane and produces the same result. This value must be
+            None if both symmetric and mirror_only are False, and cannot be None if
+            either are True. For more details on how this parameter interacts with
+            symmetry_plane_point, symmetric, and mirror_only, see the class
+            docstring. The default is None.
+        :param symmetry_plane_point: (3,) ndarray of floats or None, optional
+            This is the coordinates of a point in geometry axes that, along with
+            symmetry_plane_normal, define the location of the plane about which
+            symmetry or mirroring is applied. This value must be None if both
+            symmetric and mirror_only are False, and cannot be None if either are
+            True. For more details on how this parameter interacts with
+            symmetry_plane_normal, symmetric, and mirror_only, see the class
+            docstring. The default is None.
         :param num_chordwise_panels: int, optional
-            This is the number of chordwise panels to be used on this wing. The
-            default is 8.
+            This is the number of chordwise panels to be used on this wing,
+            which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: str, optional
             This is the type of spacing between the wing's chordwise panels. It can
-            be set to "cosine" or "uniform". Using a cosine spacing is highly
-            recommended for steady simulations and a uniform spacing is highly
-            recommended for unsteady simulations. The default is "cosine".
+            be "cosine" or "uniform". Using cosine spacing is highly recommended for
+            steady simulations and uniform spacing is highly recommended for unsteady
+            simulations. The default is "cosine".
         """
         # Initialize the list of wing cross sections or raise an exception if it
         # contains less than two entries.
@@ -252,14 +353,14 @@ class Wing:
                 "two entries."
             )
 
-        # Initialize the name and the position of the wing's leading edge.
+        # Initialize the wing's attributes.
         self.name = name
-        self.x_le = x_le
-        self.y_le = y_le
-        self.z_le = z_le
-        self.unit_normal_vector = unit_normal_vector
+        self.local_position = np.array(local_position, dtype=float)
+        self.local_rotations = np.array(local_rotations, dtype=float)
         self.symmetric = symmetric
-        self.unit_chordwise_vector = unit_chordwise_vector
+        self.mirror_only = mirror_only
+        self.symmetry_plane_normal = symmetry_plane_normal
+        self.symmetry_plane_point = symmetry_plane_point
         self.num_chordwise_panels = num_chordwise_panels
 
         # If the value for the chordwise spacing valid, initial it. Otherwise,
@@ -269,27 +370,46 @@ class Wing:
         else:
             raise Exception('The chordwise spacing must be "cosine" or "uniform".')
 
-        # Create a (3,) array to hold the leading edge's coordinates.
-        self.leading_edge = np.array([self.x_le, self.y_le, self.z_le])
-
-        # Check that the wing's symmetry plane is equal to its root wing cross
-        # section's plane.
-        if not np.array_equal(
-            self.unit_normal_vector,
-            self.wing_cross_sections[0].unit_normal_vector,
-        ):
+        # Catch invalid local rotation angles.
+        if not np.all((-90.0 < self.local_rotations) & (self.local_rotations < 90.0)):
             raise Exception(
-                "The wing's symmetry plane must be the same as its root wing cross "
-                "section's plane."
+                "All local rotation angles must be in the range (-90, 90) degrees."
             )
 
-        # Check that the root wing cross section's leading edge isn't offset from the
-        # wing's leading edge.
-        if np.any(self.wing_cross_sections[0].leading_edge):
-            raise Exception(
-                "The root wing cross section's leading edge must not be offset from "
-                "the wing's leading edge."
+        # Catch negative local position components.
+        if np.any(self.local_position < 0.0):
+            raise Exception("All local_position components must be non-negative.")
+
+        # Add mutual exclusivity validation for symmetric and mirror_only.
+        if self.symmetric and self.mirror_only:
+            raise Exception("symmetric and mirror_only cannot both be True.")
+
+        # Validate symmetry plane parameters based on symmetric/mirror_only flags.
+        if self.symmetric or self.mirror_only:
+            if self.symmetry_plane_normal is None:
+                raise Exception(
+                    "symmetry_plane_normal cannot be None when symmetric or mirror_only is True."
+                )
+            if self.symmetry_plane_point is None:
+                raise Exception(
+                    "symmetry_plane_point cannot be None when symmetric or mirror_only is True."
+                )
+            # Convert to numpy arrays and validate unit vector.
+            self.symmetry_plane_normal = np.array(
+                self.symmetry_plane_normal, dtype=float
             )
+            self.symmetry_plane_point = np.array(self.symmetry_plane_point, dtype=float)
+            if not np.isclose(np.linalg.norm(self.symmetry_plane_normal), 1.0):
+                raise Exception("The symmetry_plane_normal must be a unit vector.")
+        else:
+            if self.symmetry_plane_normal is not None:
+                raise Exception(
+                    "symmetry_plane_normal must be None when both symmetric and mirror_only are False."
+                )
+            if self.symmetry_plane_point is not None:
+                raise Exception(
+                    "symmetry_plane_point must be None when both symmetric and mirror_only are False."
+                )
 
         # Validate root WingCrossSection constraints.
         self.wing_cross_sections[0].validate_root_constraints()
@@ -297,209 +417,211 @@ class Wing:
         # Validate tip WingCrossSection constraints.
         self.wing_cross_sections[-1].validate_tip_constraints()
 
-        # Check that the wing's chordwise and normal directions are perpendicular.
-        if np.dot(self.unit_chordwise_vector, self.unit_normal_vector) != 0:
-            raise Exception(
-                "Every wing cross section's plane must intersect with the wing's "
-                "symmetry plane along a line that is parallel with the wing's "
-                "chordwise direction."
-            )
+        # TODO: Determine which reflection "Wing Scenario" applies
 
-        # Find the number of spanwise panels on the wing by adding each cross
-        # section's number of spanwise panels. Exclude the last cross section's
-        # number of spanwise panels as this is irrelevant. If the wing is symmetric,
-        # multiply the summation by two.
-        self.num_spanwise_panels = 0
-        for wing_cross_section in self.wing_cross_sections[:-1]:
-            self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
-        if self.symmetric:
-            self.num_spanwise_panels *= 2
+        # TODO: Uncomment this once we've determined which "Wing Scenario" applies
+        # # Find the number of spanwise panels on the wing by adding each cross
+        # # section's number of spanwise panels. Exclude the last cross section's
+        # # number of spanwise panels as this is irrelevant. If the wing is symmetric,
+        # # multiply the summation by two.
+        # self.num_spanwise_panels = 0
+        # for wing_cross_section in self.wing_cross_sections[:-1]:
+        #     self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
+        # if self.symmetric:
+        #     self.num_spanwise_panels *= 2
+        #
+        # # Calculate the number of panels on this wing.
+        # self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-        # Check that all the wing cross sections have valid unit normal vectors.
-        for wing_cross_section in self.wing_cross_sections:
+        # TODO: Set up coordinate transformations for new system
 
-            # Find the vector parallel to the intersection of this wing cross
-            # section's plane and the wing's symmetry plane.
-            plane_intersection_vector = np.cross(
-                self.unit_normal_vector, wing_cross_section.unit_normal_vector
-            )
-
-            # If this vector is not parallel to the wing's chordwise vector, raise an
-            # exception.
-            if np.any(np.cross(plane_intersection_vector, self.unit_chordwise_vector)):
-                raise Exception(
-                    "Every wing cross section's plane must intersect with the wing's "
-                    "symmetry plane along a line that is parallel with the wing's "
-                    "chordwise direction."
-                )
-
-        # Calculate the number of panels on this wing.
-        self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
-
-        for wing_cross_section in self.wing_cross_sections:
-            wing_cross_section.wing_unit_chordwise_vector = self.unit_chordwise_vector
-
-        # Initialize the panels attribute. Then mesh the wing, which will populate
-        # this attribute.
-        self.panels = None
-        meshing.mesh_wing(self)
+        # TODO: Check that meshing works correctly
+        # # Initialize the panels attribute. Then mesh the wing, which will populate
+        # # this attribute.
+        # self.panels = None
+        # meshing.mesh_wing(self)
 
         # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
-    @property
-    def unit_up_vector(self):
-        """This method sets a property for the wing's up orientation
-        vector, which is defined as the cross product of its unit chordwise and unit
-        normal vectors.
+    # ToDo: Create a new property to hold the transformation matrix between this
+    #  Wing's wing axes and geometry axes.
 
-        :return: (3,) array of floats
-            This is the wing's unit up vector. The units are meters.
-        """
-        return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+    # ToDo: Redefine these properties using the new transformation matrix property
+    # @property
+    # def unit_chordwise_vector(self):
+    #     """This method sets a property for the wing's chordwise (x-axis) orientation
+    #     vector in geometry axes.
+    #
+    #     :return: (3,) array of floats
+    #         This is the wing's unit up vector. The units are meters.
+    #     """
+    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+    #
+    # @property
+    # def unit_spanwise_vector(self):
+    #     """This method sets a property for the wing's spanwise (y-axis) orientation
+    #     vector in geometry axes.
+    #
+    #     :return: (3,) array of floats
+    #         This is the wing's unit up vector. The units are meters.
+    #     """
+    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+    #
+    # @property
+    # def unit_up_vector(self):
+    #     """This method sets a property for the wing's up (z-axis) orientation
+    #     vector in geometry axes.
+    #
+    #     :return: (3,) array of floats
+    #         This is the wing's unit up vector. The units are meters.
+    #     """
+    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
 
-    @property
-    def projected_area(self):
-        """This method defines a property for the area of the wing projected onto the
-        plane defined by the projected unit normal vector.
-
-        If the wing is symmetric, the area of the mirrored half is included.
-
-        :return projected_area: float
-            This attribute is the projected area of the wing. It has units of square
-            meters.
-        """
-        projected_area = 0
-
-        # Iterate through the chordwise and spanwise indices of the panels and add
-        # their area to the total projected area.
-        for chordwise_location in range(self.num_chordwise_panels):
-            for spanwise_location in range(self.num_spanwise_panels):
-                projected_area += self.panels[
-                    chordwise_location, spanwise_location
-                ].calculate_projected_area(self.unit_up_vector)
-
-        return projected_area
-
-    @property
-    def wetted_area(self):
-        """This method defines a property for the wing's wetted area.
-
-        If the wing is symmetrical, the area of the mirrored half is included.
-
-        :return wetted_area: float
-            This attribute is the wetted area of the wing. It has units of square
-            meters.
-        """
-        wetted_area = 0
-
-        # Iterate through the chordwise and spanwise indices of the panels and add
-        # their area to the total wetted area.
-        for chordwise_location in range(self.num_chordwise_panels):
-            for spanwise_location in range(self.num_spanwise_panels):
-                wetted_area += self.panels[chordwise_location, spanwise_location].area
-
-        return wetted_area
-
-    @property
-    def span(self):
-        """This method defines a property for the wing's span.
-
-        The span is found by first finding vector connecting the leading edges of the
-        root and tip wing cross sections. Then, this vector is projected onto the
-        symmetry plane's unit normal vector. The span is defined as the magnitude of
-        this projection. If the wing is symmetrical, this method includes the span of
-        the mirrored half.
-
-        :return span: float
-            This is the wing's span. It has units of meters.
-        """
-        root_to_tip_leading_edge = (
-            self.wing_cross_sections[-1].leading_edge
-            - self.wing_cross_sections[0].leading_edge
-        )
-
-        projected_leading_edge = (
-            np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
-            * self.unit_normal_vector
-        )
-
-        span = np.linalg.norm(projected_leading_edge)
-
-        # If the wing is symmetric, multiply the span by two.
-        if self.symmetric:
-            span *= 2
-
-        return span
-
-    @property
-    def standard_mean_chord(self):
-        """This method calculates the standard mean chord of the wing and assigns it
-        to the standard_mean_chord attribute. The standard mean chord is defined as
-        the projected area divided by the span. See their respective methods for the
-        definitions of span and projected area.
-
-        :return: float
-            This is the standard mean chord of the wing. It has units of meters.
-        """
-        return self.projected_area / self.span
-
-    @property
-    def mean_aerodynamic_chord(self):
-        """This method calculates the mean aerodynamic chord of the wing and assigns
-        it to the mean_aerodynamic_chord attribute.
-
-        :return: float
-            This is the mean aerodynamic chord of the wing. It has units of meters.
-        """
-        # This method is based on the equation for the mean aerodynamic chord of a
-        # wing, which can be found here:
-        # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
-        # This equation integrates the squared chord from the wing center to the wing
-        # tip. We will perform this integral piecewise for each section of the wing.
-        integral = 0
-
-        # Iterate through the wing cross sections to add the contribution of their
-        # corresponding wing section to the piecewise integral.
-        for wing_cross_section_id, wing_cross_section in enumerate(
-            self.wing_cross_sections[:-1]
-        ):
-            next_wing_cross_section = self.wing_cross_sections[
-                wing_cross_section_id + 1
-            ]
-
-            root_chord = wing_cross_section.chord
-            tip_chord = next_wing_cross_section.chord
-
-            # Find this section's span by following the same procedure as for the
-            # overall wing span.
-            section_leading_edge = (
-                next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
-            )
-
-            projected_section_leading_edge = (
-                np.dot(section_leading_edge, self.unit_normal_vector)
-                * self.unit_normal_vector
-            )
-
-            section_span = np.linalg.norm(projected_section_leading_edge)
-
-            # Each wing section is, by definition, trapezoidal (at least when
-            # projected on to the wing's projection plane). For a trapezoid,
-            # the integral from the cited equation can be shown to evaluate to the
-            # following.
-            integral += (
-                section_span
-                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-                / 3
-            )
-
-        # Multiply the integral's value by the coefficients from the cited equation.
-        if self.symmetric:
-            return 2 * integral / self.projected_area
-        return integral / self.projected_area
+    # ToDo: Uncomment these properties once we've properly defined the local unit
+    #  vectors in geometry axes.
+    # @property
+    # def projected_area(self):
+    #     """This method defines a property for the area of the wing projected onto the
+    #     plane defined by the projected unit normal vector.
+    #
+    #     If the wing is symmetric, the area of the mirrored half is included.
+    #
+    #     :return projected_area: float
+    #         This attribute is the projected area of the wing. It has units of square
+    #         meters.
+    #     """
+    #     projected_area = 0
+    #
+    #     # Iterate through the chordwise and spanwise indices of the panels and add
+    #     # their area to the total projected area.
+    #     for chordwise_location in range(self.num_chordwise_panels):
+    #         for spanwise_location in range(self.num_spanwise_panels):
+    #             projected_area += self.panels[
+    #                 chordwise_location, spanwise_location
+    #             ].calculate_projected_area(self.unit_up_vector)
+    #
+    #     return projected_area
+    #
+    # @property
+    # def wetted_area(self):
+    #     """This method defines a property for the wing's wetted area.
+    #
+    #     If the wing is symmetrical, the area of the mirrored half is included.
+    #
+    #     :return wetted_area: float
+    #         This attribute is the wetted area of the wing. It has units of square
+    #         meters.
+    #     """
+    #     wetted_area = 0
+    #
+    #     # Iterate through the chordwise and spanwise indices of the panels and add
+    #     # their area to the total wetted area.
+    #     for chordwise_location in range(self.num_chordwise_panels):
+    #         for spanwise_location in range(self.num_spanwise_panels):
+    #             wetted_area += self.panels[chordwise_location, spanwise_location].area
+    #
+    #     return wetted_area
+    #
+    # @property
+    # def span(self):
+    #     """This method defines a property for the wing's span.
+    #
+    #     The span is found by first finding vector connecting the leading edges of the
+    #     root and tip wing cross sections. Then, this vector is projected onto the
+    #     symmetry plane's unit normal vector. The span is defined as the magnitude of
+    #     this projection. If the wing is symmetrical, this method includes the span of
+    #     the mirrored half.
+    #
+    #     :return span: float
+    #         This is the wing's span. It has units of meters.
+    #     """
+    #     root_to_tip_leading_edge = (
+    #         self.wing_cross_sections[-1].leading_edge
+    #         - self.wing_cross_sections[0].leading_edge
+    #     )
+    #
+    #     projected_leading_edge = (
+    #         np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
+    #         * self.unit_normal_vector
+    #     )
+    #
+    #     span = np.linalg.norm(projected_leading_edge)
+    #
+    #     # If the wing is symmetric, multiply the span by two.
+    #     if self.symmetric:
+    #         span *= 2
+    #
+    #     return span
+    #
+    # @property
+    # def standard_mean_chord(self):
+    #     """This method calculates the standard mean chord of the wing and assigns it
+    #     to the standard_mean_chord attribute. The standard mean chord is defined as
+    #     the projected area divided by the span. See their respective methods for the
+    #     definitions of span and projected area.
+    #
+    #     :return: float
+    #         This is the standard mean chord of the wing. It has units of meters.
+    #     """
+    #     return self.projected_area / self.span
+    #
+    # @property
+    # def mean_aerodynamic_chord(self):
+    #     """This method calculates the mean aerodynamic chord of the wing and assigns
+    #     it to the mean_aerodynamic_chord attribute.
+    #
+    #     :return: float
+    #         This is the mean aerodynamic chord of the wing. It has units of meters.
+    #     """
+    #     # This method is based on the equation for the mean aerodynamic chord of a
+    #     # wing, which can be found here:
+    #     # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
+    #     # This equation integrates the squared chord from the wing center to the wing
+    #     # tip. We will perform this integral piecewise for each section of the wing.
+    #     integral = 0
+    #
+    #     # Iterate through the wing cross sections to add the contribution of their
+    #     # corresponding wing section to the piecewise integral.
+    #     for wing_cross_section_id, wing_cross_section in enumerate(
+    #         self.wing_cross_sections[:-1]
+    #     ):
+    #         next_wing_cross_section = self.wing_cross_sections[
+    #             wing_cross_section_id + 1
+    #         ]
+    #
+    #         root_chord = wing_cross_section.chord
+    #         tip_chord = next_wing_cross_section.chord
+    #
+    #         # Find this section's span by following the same procedure as for the
+    #         # overall wing span.
+    #         section_leading_edge = (
+    #             next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
+    #         )
+    #
+    #         projected_section_leading_edge = (
+    #             np.dot(section_leading_edge, self.unit_normal_vector)
+    #             * self.unit_normal_vector
+    #         )
+    #
+    #         section_span = np.linalg.norm(projected_section_leading_edge)
+    #
+    #         # Each wing section is, by definition, trapezoidal (at least when
+    #         # projected on to the wing's projection plane). For a trapezoid,
+    #         # the integral from the cited equation can be shown to evaluate to the
+    #         # following.
+    #         integral += (
+    #             section_span
+    #             * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
+    #             / 3
+    #         )
+    #
+    #     # Multiply the integral's value by the coefficients from the cited equation.
+    #     if self.symmetric:
+    #         return 2 * integral / self.projected_area
+    #     return integral / self.projected_area
 
 
 class WingCrossSection:
@@ -522,6 +644,23 @@ class WingCrossSection:
 
     Subclassing:
         This class is not meant to be subclassed.
+
+    The first WingCrossSection in a Wing's wing_cross_section list is known as the
+    root WingCrossSection. The last is known as the tip WingCrossSection.
+
+    Every WingCrossSection has its own wing cross section axes. For root
+    WingCrossSections, their wing cross section axes are identical in position,
+    orientation, and handedness to their Wing's wing axes. For all other
+    WingCrossSections, their wing cross section axes are defined relative to the axes
+    of the previous WingCrossSection. Locally, the x-axis points from a cross
+    section's leading point to its trailing point, the y-axis points spanwise in the
+    general direction of the next WingCrossSection, and the z-axis points upwards.
+
+    Things can get a little confusing with respect to WingCrossSections for Wings
+    with symmetric or mirror_only set to True. For more details, look in the Wing
+    class's docstring. Also remember that WingCrossSections themselves aren't used
+    for any simulations, they are merely one of the Wing attributes that help explain
+    how to the meshing function how we'd like to generate its Panels.
     """
 
     def __init__(
@@ -549,22 +688,23 @@ class WingCrossSection:
             This is the chord of the wing at this WingCrossSection object. The units are
             meters. It must be greater than 0.0. The default value is 1.0.
         :param local_position: (3,) ndarray of floats, optional
-            This is the position [x, y, z] of this WingCrossSection leading edge
-            relative to the previous WingCrossSection leading edge, expressed in the
-            previous WingCrossSection axes. For the root WingCrossSection, this is
-            relative to its Wing's axes and must be np.array([0.0, 0.0, 0.0]). All
-            components must be non-negative. The units are meters. The default is
-            np.array([0.0, 0.0, 0.0]).
+            This is the position [x, y, z] of this WingCrossSection's leading edge in
+            the previous WingCrossSection's wing cross section axes. This is also the
+            position of the origin of this WingCrossSection's wing cross section axes
+            in the previous WingCrossSection's wing cross section axes. If this is
+            the root WingCrossSection object, this is relative to its Wing's axes and
+            must be np.array([0.0, 0.0, 0.0]). All components must be non-negative.
+            The units are meters. The default is np.array([0.0, 0.0, 0.0]).
         :param local_rotations: (3,) ndarray of floats, optional
-            This is the rotation angles [roll, pitch, yaw] in degrees that define
-            this WingCrossSection axes relative to the previous WingCrossSection
-            axes. For the root WingCrossSection, this is relative to its Wing's axes
-            and must be np.array([ 0.0, 0.0, 0.0]). All angles must be in the range [
-            0, 90) degrees. Roll is rotation about the local x-axis (streamwise),
-            pitch is about the local y-axis (spanwise), and yaw is about the local
-            z-axis (normal). Rotations are intrinsic, and follow the Euler angle
-            order convention of z-y'-x''. The units are degrees. The default is
-            np.array([0.0, 0.0, 0.0]).
+            This is the rotation angles [roll, pitch, yaw] in degrees that define the
+            orientation of this WingCrossSection's wing cross section axes relative
+            to the previous WingCrossSection's wing cross section axes. For the root
+            WingCrossSection object, the orientation is relative to its Wing's wing
+            axes and must be np.array([0.0, 0.0, 0.0]). All angles must be in the
+            range (-90, 90) degrees. Roll is rotation about x, pitch is rotation about
+            y, and yaw is rotation about z. Rotations are intrinsic, and proceed in
+            the z-y'-x'' order conventional for Euler angles. The units are degrees.
+            The default is np.array([0.0, 0.0, 0.0]).
         :param control_surface_type: str, optional
             This is type of control surfaces for this WingCrossSection object. It can
             be "symmetric" or "asymmetric". An example of symmetric control surfaces
@@ -595,9 +735,9 @@ class WingCrossSection:
         self.spanwise_spacing = spanwise_spacing
 
         # Catch invalid local rotation angles.
-        if not np.all((0.0 <= self.local_rotations) & (self.local_rotations < 90.0)):
+        if not np.all((-90.0 < self.local_rotations) & (self.local_rotations < 90.0)):
             raise Exception(
-                "All local rotation angles must be in the range [0, 90) degrees."
+                "All local rotation angles must be in the range (-90, 90) degrees."
             )
 
         # Catch negative local position components.

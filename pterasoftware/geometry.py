@@ -252,7 +252,7 @@ class Wing:
                     wings list immediately after the current Wing. The new Wing will
                     have the same name as this Wing, but with the prefix "Reflected
                     ". The new Wing also will have all the same parameters as this
-                    Wing, except that symmetric will be False and mirrored_only will
+                    Wing, except that symmetric will be False and mirror_only will
                     be True, which means that it will be a "Scenario 3 Wing."
                     - Also, if the control_surface_type is "asymmetric" for any of
                     this Wing's WingCrossSections, the reflected Wing's corresponding
@@ -433,8 +433,6 @@ class Wing:
         # # Calculate the number of panels on this wing.
         # self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-        # TODO: Set up coordinate transformations for new system
-
         # TODO: Check that meshing works correctly
         # # Initialize the panels attribute. Then mesh the wing, which will populate
         # # this attribute.
@@ -446,182 +444,264 @@ class Wing:
         self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
-    # ToDo: Create a new property to hold the transformation matrix between this
-    #  Wing's wing axes and geometry axes.
+    @property
+    def geometry_to_wing_axes_transformation_matrix(self):
+        """This method creates the 4x4 homogeneous transformation matrix from geometry axes to wing axes.
 
-    # ToDo: Redefine these properties using the new transformation matrix property
-    # @property
-    # def unit_chordwise_vector(self):
-    #     """This method sets a property for the wing's chordwise (x-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) array of floats
-    #         This is the wing's unit up vector. The units are meters.
-    #     """
-    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
-    #
-    # @property
-    # def unit_spanwise_vector(self):
-    #     """This method sets a property for the wing's spanwise (y-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) array of floats
-    #         This is the wing's unit up vector. The units are meters.
-    #     """
-    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
-    #
-    # @property
-    # def unit_up_vector(self):
-    #     """This method sets a property for the wing's up (z-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) array of floats
-    #         This is the wing's unit up vector. The units are meters.
-    #     """
-    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
+        The transformation applies the 5 scenarios described in the class docstring.
+        Transforms homogeneous coordinates [x, y, z, 1] from geometry axes to wing axes.
 
-    # ToDo: Uncomment these properties once we've properly defined the local unit
-    #  vectors in geometry axes.
-    # @property
-    # def projected_area(self):
-    #     """This method defines a property for the area of the wing projected onto the
-    #     plane defined by the projected unit normal vector.
-    #
-    #     If the wing is symmetric, the area of the mirrored half is included.
-    #
-    #     :return projected_area: float
-    #         This attribute is the projected area of the wing. It has units of square
-    #         meters.
-    #     """
-    #     projected_area = 0
-    #
-    #     # Iterate through the chordwise and spanwise indices of the panels and add
-    #     # their area to the total projected area.
-    #     for chordwise_location in range(self.num_chordwise_panels):
-    #         for spanwise_location in range(self.num_spanwise_panels):
-    #             projected_area += self.panels[
-    #                 chordwise_location, spanwise_location
-    #             ].calculate_projected_area(self.unit_up_vector)
-    #
-    #     return projected_area
-    #
-    # @property
-    # def wetted_area(self):
-    #     """This method defines a property for the wing's wetted area.
-    #
-    #     If the wing is symmetrical, the area of the mirrored half is included.
-    #
-    #     :return wetted_area: float
-    #         This attribute is the wetted area of the wing. It has units of square
-    #         meters.
-    #     """
-    #     wetted_area = 0
-    #
-    #     # Iterate through the chordwise and spanwise indices of the panels and add
-    #     # their area to the total wetted area.
-    #     for chordwise_location in range(self.num_chordwise_panels):
-    #         for spanwise_location in range(self.num_spanwise_panels):
-    #             wetted_area += self.panels[chordwise_location, spanwise_location].area
-    #
-    #     return wetted_area
-    #
-    # @property
-    # def span(self):
-    #     """This method defines a property for the wing's span.
-    #
-    #     The span is found by first finding vector connecting the leading edges of the
-    #     root and tip wing cross sections. Then, this vector is projected onto the
-    #     symmetry plane's unit normal vector. The span is defined as the magnitude of
-    #     this projection. If the wing is symmetrical, this method includes the span of
-    #     the mirrored half.
-    #
-    #     :return span: float
-    #         This is the wing's span. It has units of meters.
-    #     """
-    #     root_to_tip_leading_edge = (
-    #         self.wing_cross_sections[-1].leading_edge
-    #         - self.wing_cross_sections[0].leading_edge
-    #     )
-    #
-    #     projected_leading_edge = (
-    #         np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
-    #         * self.unit_normal_vector
-    #     )
-    #
-    #     span = np.linalg.norm(projected_leading_edge)
-    #
-    #     # If the wing is symmetric, multiply the span by two.
-    #     if self.symmetric:
-    #         span *= 2
-    #
-    #     return span
-    #
-    # @property
-    # def standard_mean_chord(self):
-    #     """This method calculates the standard mean chord of the wing and assigns it
-    #     to the standard_mean_chord attribute. The standard mean chord is defined as
-    #     the projected area divided by the span. See their respective methods for the
-    #     definitions of span and projected area.
-    #
-    #     :return: float
-    #         This is the standard mean chord of the wing. It has units of meters.
-    #     """
-    #     return self.projected_area / self.span
-    #
-    # @property
-    # def mean_aerodynamic_chord(self):
-    #     """This method calculates the mean aerodynamic chord of the wing and assigns
-    #     it to the mean_aerodynamic_chord attribute.
-    #
-    #     :return: float
-    #         This is the mean aerodynamic chord of the wing. It has units of meters.
-    #     """
-    #     # This method is based on the equation for the mean aerodynamic chord of a
-    #     # wing, which can be found here:
-    #     # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
-    #     # This equation integrates the squared chord from the wing center to the wing
-    #     # tip. We will perform this integral piecewise for each section of the wing.
-    #     integral = 0
-    #
-    #     # Iterate through the wing cross sections to add the contribution of their
-    #     # corresponding wing section to the piecewise integral.
-    #     for wing_cross_section_id, wing_cross_section in enumerate(
-    #         self.wing_cross_sections[:-1]
-    #     ):
-    #         next_wing_cross_section = self.wing_cross_sections[
-    #             wing_cross_section_id + 1
-    #         ]
-    #
-    #         root_chord = wing_cross_section.chord
-    #         tip_chord = next_wing_cross_section.chord
-    #
-    #         # Find this section's span by following the same procedure as for the
-    #         # overall wing span.
-    #         section_leading_edge = (
-    #             next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
-    #         )
-    #
-    #         projected_section_leading_edge = (
-    #             np.dot(section_leading_edge, self.unit_normal_vector)
-    #             * self.unit_normal_vector
-    #         )
-    #
-    #         section_span = np.linalg.norm(projected_section_leading_edge)
-    #
-    #         # Each wing section is, by definition, trapezoidal (at least when
-    #         # projected on to the wing's projection plane). For a trapezoid,
-    #         # the integral from the cited equation can be shown to evaluate to the
-    #         # following.
-    #         integral += (
-    #             section_span
-    #             * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-    #             / 3
-    #         )
-    #
-    #     # Multiply the integral's value by the coefficients from the cited equation.
-    #     if self.symmetric:
-    #         return 2 * integral / self.projected_area
-    #     return integral / self.projected_area
+        :return: (4,4) ndarray of floats
+            4x4 homogeneous transformation matrix from geometry axes to wing axes.
+        """
+        # Step 1: Create translation matrix T_translate = [I, d; 0, 1]
+        d = self.local_position
+        T_translate = np.eye(4)
+        T_translate[:3, 3] = d
+
+        # Step 2: Create rotation matrix T_rotate = [R, 0; 0, 1]
+        roll, pitch, yaw = np.radians(self.local_rotations)
+
+        # Z rotation (yaw)
+        R_z = np.array(
+            [[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]]
+        )
+
+        # Y rotation (pitch)
+        R_y = np.array(
+            [
+                [np.cos(pitch), 0, np.sin(pitch)],
+                [0, 1, 0],
+                [-np.sin(pitch), 0, np.cos(pitch)],
+            ]
+        )
+
+        # X rotation (roll)
+        R_x = np.array(
+            [
+                [1, 0, 0],
+                [0, np.cos(roll), -np.sin(roll)],
+                [0, np.sin(roll), np.cos(roll)],
+            ]
+        )
+
+        # Combined rotation: R = R_x * R_y * R_z (for intrinsic rotations)
+        R = R_x @ R_y @ R_z
+        T_rotate = np.eye(4)
+        T_rotate[:3, :3] = R
+
+        # Step 3: Create reflection matrix T_reflect = [H, c; 0, 1] if needed
+        if self.mirror_only:
+            # Reflection across arbitrary plane defined by normal n and point P
+            # Using H = I - 2*n@n^T and c = 2*n@n^T@P
+            n = self.symmetry_plane_normal  # Already normalized unit vector
+            P = self.symmetry_plane_point
+
+            # Create reflection matrix H = I - 2*n@n^T
+            I = np.eye(3)
+            n_outer = np.outer(n, n)  # n @ n^T
+            H = I - 2 * n_outer
+
+            # Calculate translation component c = 2*n@n^T@P
+            c = 2 * n_outer @ P
+
+            # Construct 4x4 reflection matrix T_reflect = [H, c; 0, 1]
+            T_reflect = np.eye(4)
+            T_reflect[:3, :3] = H
+            T_reflect[:3, 3] = c
+        else:
+            T_reflect = np.eye(4)
+
+        # Step 4: Combine transformations: T_final = T_reflect @ T_rotate @ T_translate
+        T = T_reflect @ T_rotate @ T_translate
+
+        return T
+
+    @property
+    def unit_chordwise_vector(self):
+        """This method sets a property for the wing's chordwise (x-axis) orientation
+        vector in geometry axes.
+
+        :return: (3,) ndarray of floats
+            This is the wing's unit chordwise vector in geometry axes.
+        """
+        # Wing x-axis in wing coordinates is [1, 0, 0, 0] in homogeneous coordinates
+        wing_x_axis = np.array([1.0, 0.0, 0.0, 0.0])
+        # Transform to geometry coordinates (only rotation, not translation)
+        T = self.geometry_to_wing_axes_transformation_matrix
+        geometry_vector = T @ wing_x_axis
+        return geometry_vector[:3]  # Return only xyz components
+
+    @property
+    def unit_spanwise_vector(self):
+        """This method sets a property for the wing's spanwise (y-axis) orientation
+        vector in geometry axes.
+
+        :return: (3,) ndarray of floats
+            This is the wing's unit spanwise vector in geometry axes.
+        """
+        # Wing y-axis in wing coordinates is [0, 1, 0, 0] in homogeneous coordinates
+        wing_y_axis = np.array([0.0, 1.0, 0.0, 0.0])
+        # Transform to geometry coordinates (only rotation, not translation)
+        T = self.geometry_to_wing_axes_transformation_matrix
+        geometry_vector = T @ wing_y_axis
+        return geometry_vector[:3]  # Return only xyz components
+
+    @property
+    def unit_up_vector(self):
+        """This method sets a property for the wing's up (z-axis) orientation
+        vector in geometry axes.
+
+        :return: (3,) ndarray of floats
+            This is the wing's unit up vector in geometry axes.
+        """
+        # Wing z-axis in wing coordinates is [0, 0, 1, 0] in homogeneous coordinates
+        wing_z_axis = np.array([0.0, 0.0, 1.0, 0.0])
+        # Transform to geometry coordinates (only rotation, not translation)
+        T = self.geometry_to_wing_axes_transformation_matrix
+        geometry_vector = T @ wing_z_axis
+        return geometry_vector[:3]  # Return only xyz components
+
+    @property
+    def projected_area(self):
+        """This method defines a property for the area of the wing projected onto the
+        plane defined by the projected unit normal vector.
+
+        If the wing is symmetric, the area of the mirrored half is included.
+
+        :return projected_area: float
+            This attribute is the projected area of the wing. It has units of square
+            meters.
+        """
+        projected_area = 0
+
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total projected area.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                projected_area += self.panels[
+                    chordwise_location, spanwise_location
+                ].calculate_projected_area(self.unit_up_vector)
+
+        return projected_area
+
+    @property
+    def wetted_area(self):
+        """This method defines a property for the wing's wetted area.
+
+        If the wing is symmetrical, the area of the mirrored half is included.
+
+        :return wetted_area: float
+            This attribute is the wetted area of the wing. It has units of square
+            meters.
+        """
+        wetted_area = 0
+
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total wetted area.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                wetted_area += self.panels[chordwise_location, spanwise_location].area
+
+        return wetted_area
+
+    @property
+    def span(self):
+        """This method defines a property for the wing's span.
+
+        The span is found by first finding vector connecting the leading edges of the
+        root and tip wing cross sections. Then, this vector is projected onto the
+        symmetry plane's unit normal vector. The span is defined as the magnitude of
+        this projection. If the wing is symmetrical, this method includes the span of
+        the mirrored half.
+
+        :return span: float
+            This is the wing's span. It has units of meters.
+        """
+        root_to_tip_leading_edge = (
+            self.wing_cross_sections[-1].leading_edge
+            - self.wing_cross_sections[0].leading_edge
+        )
+
+        projected_leading_edge = (
+            np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
+            * self.unit_normal_vector
+        )
+
+        span = np.linalg.norm(projected_leading_edge)
+
+        # If the wing is symmetric, multiply the span by two.
+        if self.symmetric:
+            span *= 2
+
+        return span
+
+    @property
+    def standard_mean_chord(self):
+        """This method calculates the standard mean chord of the wing and assigns it
+        to the standard_mean_chord attribute. The standard mean chord is defined as
+        the projected area divided by the span. See their respective methods for the
+        definitions of span and projected area.
+
+        :return: float
+            This is the standard mean chord of the wing. It has units of meters.
+        """
+        return self.projected_area / self.span
+
+    @property
+    def mean_aerodynamic_chord(self):
+        """This method calculates the mean aerodynamic chord of the wing and assigns
+        it to the mean_aerodynamic_chord attribute.
+
+        :return: float
+            This is the mean aerodynamic chord of the wing. It has units of meters.
+        """
+        # This method is based on the equation for the mean aerodynamic chord of a
+        # wing, which can be found here:
+        # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
+        # This equation integrates the squared chord from the wing center to the wing
+        # tip. We will perform this integral piecewise for each section of the wing.
+        integral = 0
+
+        # Iterate through the wing cross sections to add the contribution of their
+        # corresponding wing section to the piecewise integral.
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
+
+            root_chord = wing_cross_section.chord
+            tip_chord = next_wing_cross_section.chord
+
+            # Find this section's span by following the same procedure as for the
+            # overall wing span.
+            section_leading_edge = (
+                next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
+            )
+
+            projected_section_leading_edge = (
+                np.dot(section_leading_edge, self.unit_normal_vector)
+                * self.unit_normal_vector
+            )
+
+            section_span = np.linalg.norm(projected_section_leading_edge)
+
+            # Each wing section is, by definition, trapezoidal (at least when
+            # projected on to the wing's projection plane). For a trapezoid,
+            # the integral from the cited equation can be shown to evaluate to the
+            # following.
+            integral += (
+                section_span
+                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
+                / 3
+            )
+
+        # Multiply the integral's value by the coefficients from the cited equation.
+        if self.symmetric:
+            return 2 * integral / self.projected_area
+        return integral / self.projected_area
 
 
 class WingCrossSection:

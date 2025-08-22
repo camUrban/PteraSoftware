@@ -35,23 +35,45 @@ class Airplane:
         Date of Retrieval:    04/23/2020
 
     This class contains the following public methods:
-        set_reference_dimensions_from_wing: This method sets the reference dimensions
-        of the airplane from measurements obtained from the main wing.
+        set_reference_dimensions_from_main_wing: This method sets the reference
+        dimensions of the airplane from measurements obtained from the main wing.
+
+        process_wing_symmetry: This method processes Wing objects with symmetric=True
+        and converts them to separate Wing objects when needed (Scenario 5).
+
+        validate_first_airplane_constraints: This method validates that the first 
+        Airplane in a simulation has Cgi_E_I set to zeros, as required by the 
+        definition of the simulation starting point.
 
     This class contains the following class attributes:
         None
 
     Subclassing:
         This class is not meant to be subclassed.
+
+    The Airplane class serves as the root coordinate system for the aircraft geometry.
+    All coordinate systems are ultimately defined relative to the Airplane's local
+    geometry axes, which represent the aircraft's primary reference frame. The Airplane
+    class is responsible for:
+
+    1. Defining the local geometry axes as the root coordinate system
+    2. Managing Wing objects and their coordinate transformations
+    3. Processing symmetric Wing objects and converting them to separate wings when
+       the symmetry plane is not coincident with the Wing's XZ plane (Scenario 5)
+    4. Providing reference dimensions for aerodynamic calculations
+    5. Managing the moment reference point for force and moment calculations
+
+    Local geometry axes convention:
+    - +x: Points aft along fuselage
+    - +y: Points to the right (starboard direction)
+    - +z: Points upward (completing right-handed coordinate system)
     """
 
     def __init__(
         self,
         wings,
         name="Untitled Airplane",
-        x_ref=0.0,
-        y_ref=0.0,
-        z_ref=0.0,
+        Cgi_E_I=np.array([0.0, 0.0, 0.0]),
         weight=0.0,
         s_ref=None,
         c_ref=None,
@@ -61,18 +83,17 @@ class Airplane:
 
         :param wings: list of Wing objects
             This is a list of the airplane's wings defined as Wing objects. It must
-            contain at least one Wing object.
+            contain at least one Wing object. Wings with symmetric=True and non-coincident
+            symmetry planes will be automatically processed into separate Wing objects
+            during initialization (Scenario 5).
         :param name: str, optional
             A sensible name for your airplane. The default is "Untitled Airplane".
-        :param x_ref: float, optional
-            This is the x coordinate of the moment reference point. It should be the
-            x coordinate of the center of gravity. The default is 0.0.
-        :param y_ref: float, optional
-            This is the y coordinate of the moment reference point. It should be the
-            y coordinate of the center of gravity. The default is 0.0.
-        :param z_ref: float, optional
-            This is the z coordinate of the moment reference point. It should be the
-            z coordinate of the center of gravity. The default is 0.0.
+        :param Cgi_E_I: (3,) ndarray of floats, optional
+            Position of the local starting point (earth axes) relative to the
+            simulation starting point. For the first Airplane in a simulation,
+            this must be np.array([0.0, 0.0, 0.0]) since the simulation starting
+            point is defined as the first Airplane's starting point (the location of
+            its CG at t=0). The default is np.array([0.0, 0.0, 0.0]).
         :param weight: float, optional
             This parameter holds the weight of the aircraft in Newtons. This is used
             by the trim functions. The default value is 0.0.
@@ -92,15 +113,10 @@ class Airplane:
         else:
             raise Exception("An airplane's list of wings must have at least one entry.")
 
-        # Initialize the name, moment reference point coordinates, and weight.
+        # Initialize the name, starting point coordinates, and weight.
         self.name = name
-        self.x_ref = x_ref
-        self.y_ref = y_ref
-        self.z_ref = z_ref
+        self.Cgi_E_I = np.array(Cgi_E_I, dtype=float)
         self.weight = weight
-
-        # Create a (3,) array to hold the moment reference point coordinates.
-        self.xyz_ref = np.array([self.x_ref, self.y_ref, self.z_ref])
 
         # Set the wing reference dimensions to be the main wing's reference dimensions.
         self.set_reference_dimensions_from_main_wing()
@@ -145,6 +161,44 @@ class Airplane:
         self.s_ref = main_wing.projected_area
         self.b_ref = main_wing.span
         self.c_ref = main_wing.mean_aerodynamic_chord
+
+    def validate_first_airplane_constraints(self):
+        """This method validates constraints specific to the first Airplane in a simulation.
+        
+        The first Airplane in a simulation must have Cgi_E_I set to zeros since the 
+        simulation starting point is defined as the first Airplane's CG at t=0.
+        
+        This method should be called by SteadyProblem or UnsteadyProblem classes.
+        
+        :raises Exception: If first Airplane constraints are violated.
+        """
+        if not np.allclose(self.Cgi_E_I, np.array([0.0, 0.0, 0.0])):
+            raise Exception(
+                "The first Airplane in a simulation must have Cgi_E_I set to "
+                "np.array([0.0, 0.0, 0.0]) since the simulation starting point "
+                "is defined as the first Airplane's CG at t=0."
+            )
+
+    def process_wing_symmetry(self):
+        """This method processes Wing objects with symmetric=True for Scenario 5 conversion.
+        
+        For Wings with symmetric=True and symmetry planes not coincident with the Wing's 
+        XZ plane, this method:
+        1. Modifies the original Wing to become a "Scenario 1 Wing"
+        2. Creates a new reflected Wing as a "Scenario 3 Wing"  
+        3. Adds the reflected Wing to the wings list immediately after the original
+        4. Handles asymmetric control surface deflection sign flipping
+        
+        :return: None
+        """
+        # TODO: Implement Scenario 5 wing processing
+        # This will involve:
+        # 1. Identify Wings with symmetric=True and non-coincident symmetry planes
+        # 2. Modify original Wing parameters (set symmetric=False, etc.)  
+        # 3. Create reflected Wing with mirror_only=True
+        # 4. Handle control surface deflection sign flipping for asymmetric surfaces
+        # 5. Insert reflected Wing into wings list
+        pass
 
 
 class Wing:

@@ -20,11 +20,15 @@
       <w>bambino</w>
       <w>bergey</w>
       <w>bfgs</w>
+      <w>bhvp</w>
+      <w>bhvr</w>
       <w>bleriot</w>
+      <w>brvp</w>
       <w>camberline</w>
       <w>cambre</w>
       <w>carto</w>
       <w>chordwise</w>
+      <w>clvpf</w>
       <w>cmocean</w>
       <w>coanda</w>
       <w>colormaps</w>
@@ -53,8 +57,17 @@
       <w>fauvel</w>
       <w>firebee</w>
       <w>flyer</w>
+      <w>frbhvp</w>
+      <w>frbhvpr</w>
+      <w>frbrvp</w>
+      <w>frbrvpr</w>
       <w>freestream</w>
       <w>friedrichshafen</w>
+      <w>frpp</w>
+      <w>frppr</w>
+      <w>frwhvp</w>
+      <w>frwrvp</w>
+      <w>frwrvpr</w>
       <w>genese</w>
       <w>giii</w>
       <w>hacklinger</w>
@@ -141,6 +154,7 @@
       <w>sexualized</w>
       <w>sideslip</w>
       <w>sinspace</w>
+      <w>slvp</w>
       <w>socio</w>
       <w>sokolov</w>
       <w>spanwise</w>
@@ -163,11 +177,14 @@
       <w>vortices</w>
       <w>vstab</w>
       <w>vstack</w>
+      <w>wcsp</w>
       <w>weisstein</w>
       <w>wetted</w>
       <w>whitcomb</w>
+      <w>whvp</w>
       <w>wikipedia</w>
       <w>wortmann</w>
+      <w>wrvp</w>
       <w>xflr</w>
       <w>xfoil</w>
       <w>xsec</w>

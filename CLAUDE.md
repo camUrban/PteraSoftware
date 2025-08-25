@@ -9,13 +9,16 @@ When writing as a package to be imported, use ```import pterasoftware as ps```
 - **"cross section"**: Always write as two words, never hyphenated 
 (not "cross-section")  
 - **Object references**: When referring to code objects, use proper class naming 
-convention. This will illustrate that we are talking about a code object, not an 
-abstraction. Therefore, don't include the "object" suffix (e.g. "this WingCrossSection 
-object") unless it is needed for clarity. In summary, when talking about code objects:
+convention. The capitalization indicates that we are talking about a code object, not an 
+abstraction. You don't need to add "object" or "objects" after the class name since the 
+capitalization already makes this clear (e.g. "update the Wings" instead of "update the 
+Wing objects"). In summary, when talking about code objects:
   - ✅ "the previous WingCrossSection"
   - ❌ "the previous cross section"
   - ✅ "this Wing"
   - ❌ "this wing"
+  - ✅ "update the Wings"
+  - ❌ "update the Wing objects" (unnecessary)
 - **Abstract references**: When referring to abstractions, use lowercase and separate 
 individual words with a space (e.g. "an airplane's wings are used to generate lift" and 
 "the cross section of a wing typically has a streamlined shape known as an airfoil"). 
@@ -57,5 +60,10 @@ abbreviation indicating their reference frame. The reference frames used are:
 - Avoid abbreviations unless they are well-known in the context  
 - In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use 
 hyphens (-) for clarity  
+- **Coordinate and axis references**: When referring to axes, coordinates, or planes, use 
+lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", 
+"y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and 
+"axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes"). 
+Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, or docstrings
 - Read through @docs\AXES_COORDINATES_FRAMES.md before starting work

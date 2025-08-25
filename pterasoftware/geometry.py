@@ -3,11 +3,11 @@
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
 
-    Wing: This is a class used to contain the wings of an Airplane object.
+    Wing: This is a class used to contain the wings of an Airplane.
 
-    WingCrossSection: This class is used to contain the cross sections of a Wing object.
+    WingCrossSection: This class is used to contain the cross sections of a Wing.
 
-    Airfoil: This class is used to contain the airfoil of a WingCrossSection object.
+    Airfoil: This class is used to contain the airfoil of a WingCrossSection.
 
 This module contains the following exceptions:
     None
@@ -38,8 +38,8 @@ class Airplane:
         set_reference_dimensions_from_main_wing: This method sets the reference
         dimensions of the airplane from measurements obtained from the main wing.
 
-        process_wing_symmetry: This method processes Wing objects with symmetric=True
-        and converts them to separate Wing objects when needed (Scenario 5).
+        process_wing_symmetry: This method processes Wings with symmetric=True
+        and converts them to separate Wings when needed (Scenario 5).
 
         validate_first_airplane_constraints: This method validates that the first 
         Airplane in a simulation has Cgi_E_I set to zeros, as required by the 
@@ -57,9 +57,9 @@ class Airplane:
     class is responsible for:
 
     1. Defining the local geometry axes as the root coordinate system
-    2. Managing Wing objects and their coordinate transformations
-    3. Processing symmetric Wing objects and converting them to separate wings when
-       the symmetry plane is not coincident with the Wing's XZ plane (Scenario 5)
+    2. Managing Wings and their coordinate transformations
+    3. Processing symmetric Wings and converting them to separate wings when
+       the symmetry plane is not coincident with the Wing's xz-plane (Scenario 5)
     4. Providing reference dimensions for aerodynamic calculations
     5. Managing the moment reference point for force and moment calculations
 
@@ -74,6 +74,7 @@ class Airplane:
         wings,
         name="Untitled Airplane",
         Cgi_E_I=np.array([0.0, 0.0, 0.0]),
+        anglesi_E_to_B_i321=np.array([0.0, 0.0, 0.0]),
         weight=0.0,
         s_ref=None,
         c_ref=None,
@@ -81,31 +82,42 @@ class Airplane:
     ):
         """This is the initialization method.
 
-        :param wings: list of Wing objects
-            This is a list of the airplane's wings defined as Wing objects. It must
-            contain at least one Wing object. Wings with symmetric=True and non-coincident
-            symmetry planes will be automatically processed into separate Wing objects
+        :param wings: list of Wings
+            This is a list of the airplane's wings defined as Wings. It must
+            contain at least one Wing. Wings with symmetric=True and non-coincident
+            symmetry planes will be automatically processed into separate Wings
             during initialization (Scenario 5).
         :param name: str, optional
             A sensible name for your airplane. The default is "Untitled Airplane".
         :param Cgi_E_I: (3,) ndarray of floats, optional
-            Position of the local starting point (earth axes) relative to the
-            simulation starting point. For the first Airplane in a simulation,
+            Position of the starting point (in Earth axes, relative to the
+            simulation's starting point). For the first Airplane in a simulation,
             this must be np.array([0.0, 0.0, 0.0]) since the simulation starting
             point is defined as the first Airplane's starting point (the location of
             its CG at t=0). The default is np.array([0.0, 0.0, 0.0]).
+        :param anglesi_E_to_B_i321: (3,) ndarray of floats, optional
+            Angles from Earth axes to body axes using an intrinsic 3-2'-1" sequence
+            at t=0. This defines the initial orientation of the airplane's body axes
+            relative to Earth axes. Note that body axes differ from geometry axes:
+            body axes point forward/right/down while geometry axes point
+            aft/right/up. The units are degrees. All angles must fall in the range
+            The first angle must lie in the range (-180, 180] degrees,
+            the second in [-60, 60] degrees, and the third in (-90,
+            90) degrees. This is to reduce the chance of edge cases, and to eliminate
+            the risk of gimbal lock. The default is np.array([0.0, 0.0, 0.0]).
         :param weight: float, optional
             This parameter holds the weight of the aircraft in Newtons. This is used
-            by the trim functions. The default value is 0.0.
+            by the trim functions. It must be greater than or equal to zero. The
+            default value is 0.0.
         :param s_ref: float, optional if more than one wing is in the wings list.
             This is the reference wetted area. If not set, it populates from first
-            wing object.
+            Wing. The units are square meters.
         :param c_ref: float, optional if more than one wing is in the wings list.
             This is the reference chord length. If not set, it populates from first
-            wing object.
+            Wing. The units are meters.
         :param b_ref: float, optional if more than one wing is in the wings list.
-            This is the reference calculate_span. If not set, it populates from first
-            wing object.
+            This is the reference span. If not set, it populates from first
+            Wing. The units are meters.
         """
         # Initialize the list of wings or raise an exception if it is empty.
         if len(wings) > 0:
@@ -113,9 +125,12 @@ class Airplane:
         else:
             raise Exception("An airplane's list of wings must have at least one entry.")
 
-        # Initialize the name, starting point coordinates, and weight.
+        # Initialize the name, starting point coordinates, body orientation, and weight.
         self.name = name
         self.Cgi_E_I = np.array(Cgi_E_I, dtype=float)
+
+        # ToDo: Implement validation methods for these two parameters.
+        self.anglesi_E_to_B_i321 = np.array(anglesi_E_to_B_i321, dtype=float)
         self.weight = weight
 
         # Set the wing reference dimensions to be the main wing's reference dimensions.
@@ -155,7 +170,7 @@ class Airplane:
         # Define the main wing to be the first wing in the wings list.
         main_wing = self.wings[0]
 
-        # Set the objects reference dimension attributes to be the reference
+        # Set the object's reference dimension attributes to be the reference
         # dimension attributes of the main wing. These attributes are calculated via
         # methods in the Wing class.
         self.s_ref = main_wing.projected_area
@@ -180,12 +195,12 @@ class Airplane:
             )
 
     def process_wing_symmetry(self):
-        """This method processes Wing objects with symmetric=True for Scenario 5 conversion.
+        """This method processes Wings with symmetric=True for Scenario 5 conversion.
         
         For Wings with symmetric=True and symmetry planes not coincident with the Wing's 
-        XZ plane, this method:
+        xz-plane, this method:
         1. Modifies the original Wing to become a "Scenario 1 Wing"
-        2. Creates a new reflected Wing as a "Scenario 3 Wing"  
+        2. Creates a new reflected Wing as a "Scenario 3 Wing"
         3. Adds the reflected Wing to the wings list immediately after the original
         4. Handles asymmetric control surface deflection sign flipping
         
@@ -202,7 +217,7 @@ class Airplane:
 
 
 class Wing:
-    """This is a class used to contain the wings of an Airplane object.
+    """This is a class used to contain the wings of an Airplane.
 
     Citation:
         Adapted from:         geometry.Wing in AeroSandbox
@@ -329,9 +344,8 @@ class Wing:
     ):
         """This is the initialization method.
 
-        :param wing_cross_sections: list of WingCrossSection objects
-
-            This is a list of WingCrossSection that represent the wing's cross
+        :param wing_cross_sections: list of WingCrossSections
+            This is a list of WingCrossSections that represent the wing's cross
             sections in order from root to tip. It must contain at least two
             WingCrossSections.
 
@@ -339,14 +353,14 @@ class Wing:
             This is a sensible name for the wing. The default is "Untitled Wing".
         :param local_position: (3,) ndarray of floats, optional
             This is the initial position [x, y, z] of the origin of this Wing's wing
-            axes in geometry axes. The final position may vary depending on other
+            axes (in geometry axes). The final position may vary depending on other
             parameters, as explained in the class docstring. The units are meters.
             The default is np.array([0.0, 0.0, 0.0]).
         :param local_rotations: (3,) ndarray of floats, optional
             This is the rotation angles [roll, pitch, yaw] in degrees that define the
             initial orientation of this Wing's wing axes relative to the geometry
             axes. All angles must be in the range (-90, 90) degrees. Roll is rotation
-            about x, pitch is rotation about y, and yaw is rotation about z.
+            about the x-axis, pitch is rotation about the y-axis, and yaw is rotation about the z-axis.
             Rotations are intrinsic, and proceed in the z-y'-x'' order conventional
             for Euler angles. The units are degrees. The default is np.array([0.0,
             0.0, 0.0]).
@@ -372,7 +386,7 @@ class Wing:
             symmetry_plane_point, and symmetric, see the class docstring. The default
             is False.
         :param symmetry_plane_normal: (3,) ndarray of floats or None, optional
-            The unit normal vector in geometry axes that, together with
+            The unit normal vector (in geometry axes) that, together with
             symmetry_plane_point, defines the plane used for symmetry or mirroring.
             Note that reversing the normal direction (using the antiparallel vector)
             defines the same plane and produces the same result. This value must be
@@ -381,13 +395,13 @@ class Wing:
             symmetry_plane_point, symmetric, and mirror_only, see the class
             docstring. The default is None.
         :param symmetry_plane_point: (3,) ndarray of floats or None, optional
-            This is the coordinates of a point in geometry axes that, along with
+            This is the coordinates of a point (in geometry axes) that, along with
             symmetry_plane_normal, define the location of the plane about which
             symmetry or mirroring is applied. This value must be None if both
             symmetric and mirror_only are False, and cannot be None if either are
             True. For more details on how this parameter interacts with
             symmetry_plane_normal, symmetric, and mirror_only, see the class
-            docstring. The default is None.
+            docstring. The units are meters. The default is None.
         :param num_chordwise_panels: int, optional
             This is the number of chordwise panels to be used on this wing,
             which must be set to a positive integer. The default is 8.
@@ -403,7 +417,7 @@ class Wing:
             self.wing_cross_sections = wing_cross_sections
         else:
             raise Exception(
-                "An wing's list of wing cross sections must have at least "
+                "A wing's list of wing cross sections must have at least "
                 "two entries."
             )
 
@@ -417,7 +431,7 @@ class Wing:
         self.symmetry_plane_point = symmetry_plane_point
         self.num_chordwise_panels = num_chordwise_panels
 
-        # If the value for the chordwise spacing valid, initial it. Otherwise,
+        # If the value for the chordwise spacing is valid, initialize it. Otherwise,
         # raise an exception.
         if chordwise_spacing in ["cosine", "uniform"]:
             self.chordwise_spacing = chordwise_spacing
@@ -759,7 +773,7 @@ class Wing:
 
 
 class WingCrossSection:
-    """This class is used to contain the cross sections of a Wing object.
+    """This class is used to contain the cross sections of a Wing.
 
     Citation:
         Adapted from:         geometry.WingXSec in AeroSandbox
@@ -768,10 +782,10 @@ class WingCrossSection:
 
     This class contains the following public methods:
         validate_root_constraints: This method validates constraints specific to
-        root WingCrossSection objects.
+        root WingCrossSections.
 
         validate_tip_constraints: This method validates constraints specific to
-        tip WingCrossSection objects.
+        tip WingCrossSections.
 
     This class contains the following class attributes:
         None
@@ -812,35 +826,35 @@ class WingCrossSection:
         """This is the initialization method.
 
         :param airfoil: Airfoil
-            This is the Airfoil object to be used at this WingCrossSection object.
+            This is the Airfoil to be used at this WingCrossSection.
         :param num_spanwise_panels: int or None
             This is the number of spanwise panels to be used between this
-            WingCrossSection object and the next one. For tip WingCrossSection objects,
-            this must be None. For all other WingCrossSection objects, this must be a
+            WingCrossSection and the next one. For tip WingCrossSections,
+            this must be None. For all other WingCrossSections, this must be a
             positive integer.
         :param chord: float, optional
-            This is the chord of the wing at this WingCrossSection object. The units are
+            This is the chord of the wing at this WingCrossSection. The units are
             meters. It must be greater than 0.0. The default value is 1.0.
         :param local_position: (3,) ndarray of floats, optional
             This is the position [x, y, z] of this WingCrossSection's leading edge in
             the previous WingCrossSection's wing cross section axes. This is also the
             position of the origin of this WingCrossSection's wing cross section axes
             in the previous WingCrossSection's wing cross section axes. If this is
-            the root WingCrossSection object, this is relative to its Wing's axes and
+            the root WingCrossSection, this is relative to its Wing's axes and
             must be np.array([0.0, 0.0, 0.0]). All components must be non-negative.
             The units are meters. The default is np.array([0.0, 0.0, 0.0]).
         :param local_rotations: (3,) ndarray of floats, optional
             This is the rotation angles [roll, pitch, yaw] in degrees that define the
             orientation of this WingCrossSection's wing cross section axes relative
             to the previous WingCrossSection's wing cross section axes. For the root
-            WingCrossSection object, the orientation is relative to its Wing's wing
+            WingCrossSection, the orientation is relative to its Wing's wing
             axes and must be np.array([0.0, 0.0, 0.0]). All angles must be in the
-            range (-90, 90) degrees. Roll is rotation about x, pitch is rotation about
-            y, and yaw is rotation about z. Rotations are intrinsic, and proceed in
+            range (-90, 90) degrees. Roll is rotation about the x-axis, pitch is rotation about
+            the y-axis, and yaw is rotation about the z-axis. Rotations are intrinsic, and proceed in
             the z-y'-x'' order conventional for Euler angles. The units are degrees.
             The default is np.array([0.0, 0.0, 0.0]).
         :param control_surface_type: str, optional
-            This is type of control surfaces for this WingCrossSection object. It can
+            This is type of control surfaces for this WingCrossSection. It can
             be "symmetric" or "asymmetric". An example of symmetric control surfaces
             are flaps. An example of asymmetric control surfaces are ailerons. The
             default value is "symmetric".
@@ -915,9 +929,9 @@ class WingCrossSection:
             )
 
     def validate_root_constraints(self):
-        """Validate constraints specific to root WingCrossSection objects.
+        """Validate constraints specific to root WingCrossSections.
 
-        Root WingCrossSection objects must have local_position and local_rotations
+        Root WingCrossSections must have local_position and local_rotations
         set to zero arrays.
 
         :raises Exception: If root constraints are violated.
@@ -934,9 +948,9 @@ class WingCrossSection:
             )
 
     def validate_tip_constraints(self):
-        """Validate constraints specific to tip WingCrossSection objects.
+        """Validate constraints specific to tip WingCrossSections.
 
-        Tip WingCrossSection objects must have num_spanwise_panels set to None.
+        Tip WingCrossSections must have num_spanwise_panels set to None.
 
         :raises Exception: If tip constraints are violated.
         """
@@ -992,7 +1006,7 @@ class WingCrossSection:
 
 
 class Airfoil:
-    """This class is used to contain the airfoil of a WingCrossSection object.
+    """This class is used to contain the airfoil of a WingCrossSection.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox

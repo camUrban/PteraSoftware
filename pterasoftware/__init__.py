@@ -15,8 +15,8 @@ This package contains the following modules:
     convergence.py: This module contains functions for analyzing the convergence of
     steady and unsteady problems.
 
-    functions.py: This module contains functions shared by other modules in the src
-    package.
+    functions.py: This module contains functions shared by other modules in the
+    pterasoftware package.
 
     geometry.py: This module contains useful class definitions for different types of
     geometries.
@@ -42,6 +42,8 @@ This package contains the following modules:
     steady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's steady ring vortex lattice solver.
 
+    transformations.py This module contains functions use for geometric transformations.
+
     trim.py: This module contains functions to analyze the trim conditions of steady
     and unsteady solvers.
 
@@ -62,5 +64,6 @@ import pterasoftware.panel
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
+import pterasoftware.transformations
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method

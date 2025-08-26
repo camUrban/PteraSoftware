@@ -1,7 +1,13 @@
-"""This module contains a class to test functions in the functions module.
+"""This module contains classes to test functions in the transformations module.
 
 This module contains the following classes:
+    TestGenerateHomog: This class contains methods for testing the generate_homog
+    function.
     TestGenerateR: This class contains methods for testing the generate_R function.
+    TestGenerateTRot: This class contains methods for testing the generate_T_rot
+    function.
+    TestGenerateTTrans: This class contains methods for testing the generate_T_trans
+    function.
 
 This module contains the following exceptions:
     None
@@ -58,7 +64,7 @@ class TestGenerateR(unittest.TestCase):
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
-                        R = ps.functions.generate_R(
+                        R = ps.transformations.generate_R(
                             zero_angles, passive, intrinsic, order
                         )
                         npt.assert_allclose(R, np.eye(3), atol=1e-14)
@@ -73,8 +79,12 @@ class TestGenerateR(unittest.TestCase):
         for intrinsic in [True, False]:
             for order in ["123", "132", "213", "231", "312", "321"]:
                 with self.subTest(intrinsic=intrinsic, order=order):
-                    R_passive = ps.functions.generate_R(angles, True, intrinsic, order)
-                    R_active = ps.functions.generate_R(angles, False, intrinsic, order)
+                    R_passive = ps.transformations.generate_R(
+                        angles, True, intrinsic, order
+                    )
+                    R_active = ps.transformations.generate_R(
+                        angles, False, intrinsic, order
+                    )
                     npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
     def test_intrinsic_vs_extrinsic_relationship(self):
@@ -104,10 +114,10 @@ class TestGenerateR(unittest.TestCase):
                     intrinsic_order=intrinsic_order,
                     extrinsic_order=extrinsic_order,
                 ):
-                    R_intrinsic = ps.functions.generate_R(
+                    R_intrinsic = ps.transformations.generate_R(
                         angles, passive, True, intrinsic_order
                     )
-                    R_extrinsic = ps.functions.generate_R(
+                    R_extrinsic = ps.transformations.generate_R(
                         angles, passive, False, extrinsic_order
                     )
                     npt.assert_allclose(R_intrinsic, R_extrinsic, atol=1e-14)
@@ -141,7 +151,7 @@ class TestGenerateR(unittest.TestCase):
                             intrinsic=intrinsic,
                             order=order,
                         ):
-                            R = ps.functions.generate_R(
+                            R = ps.transformations.generate_R(
                                 angles, passive, intrinsic, order
                             )
 
@@ -166,21 +176,21 @@ class TestGenerateR(unittest.TestCase):
         angles_x90 = np.array([90.0, 0.0, 0.0])
         R_act_x90_expected = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
 
-        R_act_x90 = ps.functions.generate_R(angles_x90, False, True, "123")
+        R_act_x90 = ps.transformations.generate_R(angles_x90, False, True, "123")
         npt.assert_allclose(R_act_x90, R_act_x90_expected, atol=1e-14)
 
         # Test 90-degree rotation about y-axis (order "123", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         R_act_y90_expected = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
 
-        R_act_y90 = ps.functions.generate_R(angles_y90, False, True, "123")
+        R_act_y90 = ps.transformations.generate_R(angles_y90, False, True, "123")
         npt.assert_allclose(R_act_y90, R_act_y90_expected, atol=1e-14)
 
         # Test 90-degree rotation about z-axis (order "123", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         R_act_z90_expected = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
-        R_act_z90 = ps.functions.generate_R(angles_z90, False, True, "123")
+        R_act_z90 = ps.transformations.generate_R(angles_z90, False, True, "123")
         npt.assert_allclose(R_act_z90, R_act_z90_expected, atol=1e-14)
 
     def test_specific_known_passive_rotations(self):
@@ -193,7 +203,7 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([0.0, 1.0, 0.0])
         v_B_expected = np.array([0.0, 0.0, -1.0])
 
-        R_pas_x90 = ps.functions.generate_R(angles_x90, True, True, "123")
+        R_pas_x90 = ps.transformations.generate_R(angles_x90, True, True, "123")
         v_B = R_pas_x90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -202,7 +212,7 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([0.0, 0.0, 1.0])
         v_B_expected = np.array([-1.0, 0.0, 0.0])
 
-        R_pas_y90 = ps.functions.generate_R(angles_y90, True, True, "123")
+        R_pas_y90 = ps.transformations.generate_R(angles_y90, True, True, "123")
         v_B = R_pas_y90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -211,7 +221,7 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([1.0, 0.0, 0.0])
         v_B_expected = np.array([0.0, -1.0, 0])
 
-        R_pas_z90 = ps.functions.generate_R(angles_z90, True, True, "123")
+        R_pas_z90 = ps.transformations.generate_R(angles_z90, True, True, "123")
         v_B = R_pas_z90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -230,8 +240,8 @@ class TestGenerateR(unittest.TestCase):
         angles2 = np.array([0.0, 45.0, 0.0])
 
         # Get individual rotation matrices
-        R1 = ps.functions.generate_R(angles1, False, True, "123")
-        R2 = ps.functions.generate_R(angles2, False, True, "123")
+        R1 = ps.transformations.generate_R(angles1, False, True, "123")
+        R2 = ps.transformations.generate_R(angles2, False, True, "123")
 
         # Apply rotations sequentially
         v_rotated_sequential = R2 @ (R1 @ test_vector)
@@ -263,10 +273,10 @@ class TestGenerateR(unittest.TestCase):
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
-                        R_large = ps.functions.generate_R(
+                        R_large = ps.transformations.generate_R(
                             large_angles, passive, intrinsic, order
                         )
-                        R_equivalent = ps.functions.generate_R(
+                        R_equivalent = ps.transformations.generate_R(
                             equivalent_angles, passive, intrinsic, order
                         )
 
@@ -287,7 +297,9 @@ class TestGenerateR(unittest.TestCase):
             with self.subTest(order=order):
                 for passive in [True, False]:
                     for intrinsic in [True, False]:
-                        R = ps.functions.generate_R(angles, passive, intrinsic, order)
+                        R = ps.transformations.generate_R(
+                            angles, passive, intrinsic, order
+                        )
 
                         # Should be a valid rotation matrix
                         det = np.linalg.det(R)
@@ -314,7 +326,7 @@ class TestGenerateR(unittest.TestCase):
         for angles in edge_case_angles:
             with self.subTest(angles=angles):
                 for passive in [True, False]:
-                    R = ps.functions.generate_R(angles, passive, True, "123")
+                    R = ps.transformations.generate_R(angles, passive, True, "123")
 
                     # Should be a valid rotation matrix
                     det = np.linalg.det(R)

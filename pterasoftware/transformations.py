@@ -21,7 +21,10 @@ This module contains the following functions:
     generate_T_trans: This function generates either a passive or active
     translational transformation matrix using a vector and a parameter specifying if
     the transformation should be passive or active.
-"""
+
+    generate_T_reflect: This function generates either a passive or active
+    reflectional transformation matrix about a plane which is defined by a point (in
+    "A" axes, relative to point "a") and a normal unit vector (in "A" axes)."""
 
 import numpy as np
 
@@ -49,11 +52,13 @@ def generate_homog(vector_A, has_point):
         fourth component is 1. For direction vectors, the fourth component is 0.
         The units are the same as the input vector.
     """
+    vector_A = np.asarray(vector_A, dtype=float)
     vector_A_homo = np.zeros(4, dtype=float)
+
     vector_A_homo[:3] = vector_A
 
     if has_point:
-        vector_A_homo[-1] = 1
+        vector_A_homo[-1] = 1.0
 
     return vector_A_homo
 
@@ -104,29 +109,29 @@ def generate_R(angles, passive, intrinsic, order):
     :return: (3, 3) ndarray of floats
         This is the rotation matrix.
     """
-    angles = np.array(angles, dtype=float)
+    angles = np.asarray(angles, dtype=float)
 
     angle_1_rad, angle_2_rad, angle_3_rad = np.radians(angles)
 
     R_act_1 = np.array(
         [
-            [1, 0, 0],
-            [0, np.cos(angle_1_rad), -np.sin(angle_1_rad)],
-            [0, np.sin(angle_1_rad), np.cos(angle_1_rad)],
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(angle_1_rad), -np.sin(angle_1_rad)],
+            [0.0, np.sin(angle_1_rad), np.cos(angle_1_rad)],
         ]
     )
     R_act_2 = np.array(
         [
-            [np.cos(angle_2_rad), 0, np.sin(angle_2_rad)],
-            [0, 1, 0],
-            [-np.sin(angle_2_rad), 0, np.cos(angle_2_rad)],
+            [np.cos(angle_2_rad), 0.0, np.sin(angle_2_rad)],
+            [0.0, 1.0, 0.0],
+            [-np.sin(angle_2_rad), 0.0, np.cos(angle_2_rad)],
         ]
     )
     R_act_3 = np.array(
         [
             [np.cos(angle_3_rad), -np.sin(angle_3_rad), 0],
             [np.sin(angle_3_rad), np.cos(angle_3_rad), 0],
-            [0, 0, 1],
+            [0.0, 0.0, 1.0],
         ]
     )
 
@@ -139,7 +144,7 @@ def generate_R(angles, passive, intrinsic, order):
 
     order_ids = [order_num - 1 for order_num in order_nums]
 
-    R_act = np.eye(3)
+    R_act = np.eye(3, dtype=float)
     for order_id in order_ids:
         R_act = R_act_components[order_id] @ R_act
 
@@ -161,7 +166,9 @@ def generate_T_rot(R):
     :return: (4, 4) ndarray of floats
         This is the transformation matrix.
     """
-    T_rot = np.eye(4)
+    R = np.asarray(R, dtype=float)
+    T_rot = np.eye(4, dtype=float)
+
     T_rot[:3, :3] = R
     return T_rot
 
@@ -175,15 +182,15 @@ def generate_T_trans(translations, passive):
     "c", (in "A" axes, relative to the "a" point). We want to find `c_A_b`,
     which describes the location of "c", relative to the "b" point. The position of
     "b" is defined by 'translations' (in "A" axes, relative to the point a). Then:
-    `T_trans_pas_a_to_b = generate_T_trans(translate, True)`, `c_A_b_homo =
-    T_trans_pas_a_to_b @ generate_homog(c_A_b, True)`, and `c_A_b = c_A_b_homo[:3]`.
+    `T_trans_pas_a_to_b = generate_T_trans(translate, True)`, `cHomog_A_b =
+    T_trans_pas_a_to_b @ generate_homog(c_A_b, True)`, and `c_A_b = cHomog_A_b[ :3]`.
 
     Active Use-Case: Let `c_A_a` be a vector which describes the location of point
     "c" (in "A" axes, relative to the "a" point). We want to find `cPrime_A_a`,
     which is the position of "cPrime", which is point "c" offset by `translations` (
     in "A" axes). Then: `T_trans_act = generate_T_trans( translations, False)`,
-    `cPrime_A_a_homo = T_trans_act @ generate_homog(c_A_a, True)`, and `cPrime_A_a =
-    cPrime_A_a_homo[:3]`.
+    `cPrimeHomog_A_a = T_trans_act @ generate_homog(c_A_a, True)`, and `cPrime_A_a =
+    cPrimeHomog_A_a[:3]`.
 
     :param translations: (3,) ndarray of floats
         For `passive=True`, this is the position of the "b" point (in "A" axes,
@@ -191,13 +198,74 @@ def generate_T_trans(translations, passive):
         axes) of the offset point "cPrime" relative to the original "c" point.
     :param passive: bool
         If True, returns a matrix that changes reference point of a vector in
-        homogeneous coordinates (`r_A_b_homo = T_trans @ r_A_a_homo`). If False,
+        homogeneous coordinates (`rHomog_A_b = T_trans @ rHomog_A_a`). If False,
         returns the position vector of point offset from an original position,
-        still relative to the same point (`cPrime_A_a_homo = T_trans @ c_A_a_homo`).
+        still relative to the same point (`cPrimeHomog_A_a = T_trans @ cHomog_A_a`).
     :return: (4, 4) ndarray of floats
         This is the transformation matrix.
     """
-    T_trans = np.eye(4)
-    T_trans[:3, 3] = -translations if passive else translations
+    p = np.asarray(translations, dtype=float)
+    T_trans = np.eye(4, dtype=float)
 
+    T_trans[:3, 3] = -p if passive else p
     return T_trans
+
+
+def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
+    """This function generates either a passive or active reflectional transformation
+    matrix about a plane which is defined by a point (in "A" axes, relative to point
+    "a") and a normal vector (in "A" axes).
+
+    Note: This function generates identical matrices for both passive and active
+    cases, which is correct. However, it retains the `passive` flag for API
+    consistency and also as a reminder to think about what the final matrix represents.
+
+    Passive Use-Case: Let `c_A_a` be a vector which describes the location of point
+    "c", (in "A" axes, relative to the "a" point). We want to find `c_B_b`,
+    which describes the location of "c" in "B" axes, relative to the "b" point. The
+    orientation of "B" is "A" reflected across the plane defined by plane_point_A_a
+    and plane_normal_A. The "b" point is located at the "a" point's position,
+    reflected across the same plane. Then: `T_reflect_pas_A_a_to_B_b =
+    generate_T_reflect(plane_point_A_a, plane_normal_A, True)`, `cHomog_B_b =
+    T_reflect_pas_A_a_to_B_b @ generate_homog(c_A_a, True)`, and `c_B_b = cHomog_B_b[
+    :3]`.
+
+    Active Use-Case: Let `c_A_a` be a vector which describes the location of point
+    "c" (in "A" axes, relative to the "a" point). We want to find `cPrime_A_a`,
+    which is the position of "cPrime", point "c" reflected across the plane defined
+    by plane_point_A_a and plane_normal_A. Then: `T_reflect_act = generate_T_reflect(
+    plane_point_A_a, plane_normal_A, False)`, `cPrimeHomog_A_a = T_reflect_act @
+    generate_homog(c_A_a, True)`, and `cPrime_A_a = cPrimeHomog_A_a[:3]`.
+
+    :param plane_point_A_a: (3,) ndarray of floats
+        This is a point on the reflection plane (in "A" axes, relative to the "a"
+        point). It is in units of meters.
+    :param plane_normal_A: (3,) ndarray of floats
+        This is the normal vector of the reflection plane (in "A" axes). It is
+        normalized internally. It must have a non-zero length.
+    :param passive: bool
+        If True, returns a matrix that changes reference point and axes of a vector
+        in homogeneous coordinates to a reference point and axes reflected about the
+        specified plane (`cHomog_B_b = T_reflect @ cHomog_A_a`). If False, it returns
+        a matrix that reflects a vector (in its original axes) about a specified
+        plane (`cPrimeHomog_A_a = T_reflect @ cHomog_A_a`).
+    :return: (4, 4) ndarray of floats
+        This is the transformation matrix.
+    """
+    T_reflect = np.eye(4, dtype=float)
+
+    d = np.asarray(plane_point_A_a, dtype=float)
+    n = np.asarray(plane_normal_A, dtype=float)
+
+    n_norm = np.linalg.norm(n)
+    if n_norm == 0:
+        raise ValueError("plane_normal_A must have a non-zero length.")
+    n_hat = n / n_norm
+
+    S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)
+    d = 2 * (np.dot(d, n_hat)) * n_hat
+
+    T_reflect[:3, :3] = S
+    T_reflect[:3, 3] = d
+
+    return T_reflect

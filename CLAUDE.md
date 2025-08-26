@@ -1,9 +1,79 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Ptera Software Development Guidelines for Claude
 
-## Context
-@README.md  
-@docs\AXES_COORDINATES_AND_FRAMES.md  
-@docs\ANGLE_VECTORS_AND_TRANSFORMATIONS.md  
+## Before Starting, Please Read
+README.md  
+docs\AXES_COORDINATES_AND_FRAMES.md  
+docs\ANGLE_VECTORS_AND_TRANSFORMATIONS.md  
+
+## Development Commands
+
+### Testing
+```bash
+# Run all tests with coverage
+coverage run --source=pterasoftware -m unittest discover -s tests
+
+# Run unit tests only
+python -m unittest discover -s tests/unit
+
+# Run integration tests only  
+python -m unittest discover -s tests/integration
+
+# Run a specific test file
+python -m unittest tests.unit.test_vortex
+```
+
+### Code Quality
+```bash
+# Format code (handled by pre-commit hooks)
+black .
+
+# Build package for distribution
+python -m build
+
+# Install development dependencies
+pip install -r requirements_dev.txt
+
+# Install package in development mode
+pip install -e .
+```
+
+### GUI Development
+```bash
+# Run GUI application
+python main.py
+
+# Build GUI executable
+python -O -m PyInstaller --noconfirm "pterasoftware.spec"
+```
+
+## Architecture Overview
+
+### Core Package Structure
+- **pterasoftware/**: Main package with modular solver architecture
+  - **Geometry**: `geometry.py` (Airplane → Wing → WingCrossSection → Airfoil hierarchy)
+  - **Solvers**: Three VLM implementations (steady horseshoe, steady ring, unsteady ring)
+  - **Problems**: `problems.py` (SteadyProblem, UnsteadyProblem classes)
+  - **Support**: meshing, movement, output, trim, convergence modules
+
+### Solver Architecture Pattern
+1. **Problem Definition** - Combine geometry with operating conditions
+2. **Automatic Meshing** - Panel discretization from geometry
+3. **VLM Computation** - Matrix-based influence coefficient methods
+4. **Post-processing** - Force/moment calculation and visualization
+
+### Key Dependencies
+- **NumPy/SciPy**: Core numerical computations
+- **Numba**: JIT compilation for performance-critical loops
+- **PyVista**: 3D mesh processing and visualization
+- **PySide6**: GUI framework
+- **Matplotlib**: 2D plotting and analysis output
+
+### Python Version Constraint
+Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibility)  
 
 ## Writing Style Guidelines
 

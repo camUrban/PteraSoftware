@@ -1,4 +1,4 @@
-# Axes, Points, and Frames in Ptera Software
+# Axes, Points, and Frames
 
 Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames. The notation and terminology I use is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
 
@@ -15,6 +15,8 @@ Consider the arbitrary vector **r**, which exists in 3D space. For now, let’s 
 Due to the nested structure of Ptera Software’s geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. An example of this next structure for an unsteady vortex lattice method simulation is shown below.
 
 <img src="ObjectHierarchy.jpg" alt="Object Hierarchy" width="400"/>
+
+For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](https://raw.githubusercontent.com/camUrban/PteraSoftware/feature/improved_geometry_definitions/docs/ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
 
 # Specifying Axes, Points, and Frames
 

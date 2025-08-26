@@ -1,5 +1,10 @@
 # Ptera Software Development Guidelines for Claude
 
+## Context
+@README.md  
+@docs\AXES_COORDINATES_AND_FRAMES.md  
+@docs\ANGLE_VECTORS_AND_TRANSFORMATIONS.md  
+
 ## Writing Style Guidelines
 
 ### Terminology
@@ -66,4 +71,3 @@ lowercase letters with hyphens between coordinate letters and descriptors (e.g.,
 "axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes"). 
 Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, or docstrings
-- Read through @docs\AXES_COORDINATES_FRAMES.md before starting work

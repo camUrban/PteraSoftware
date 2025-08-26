@@ -9,6 +9,9 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
+    test_functions.py: This module contains a class to test functions in the
+    functions module.
+
     test_horseshoe_vortex.py: This module contains a class to test horseshoe vortex
     objects.
 
@@ -17,6 +20,7 @@ This package contains the following modules:
     test_ring_vortex.py: This module contains a class to test ring vortex objects.
 """
 
+import tests.unit.test_functions
 import tests.unit.test_horseshoe_vortex
 import tests.unit.test_line_vortex
 import tests.unit.test_ring_vortex

@@ -8,6 +8,8 @@ This module contains the following classes:
     function.
     TestGenerateTTrans: This class contains methods for testing the generate_T_trans
     function.
+    TestGenerateTReflect: This class contains methods for testing the
+    generate_T_reflect function.
 
 This module contains the following exceptions:
     None
@@ -558,10 +560,10 @@ class TestGenerateTTrans(unittest.TestCase):
         b_A_a = np.array([1.0, 2.0, 3.0])
         c_A_a = np.array([5.0, 6.0, 7.0])
 
-        T_pas_trans = ps.transformations.generate_T_trans(b_A_a, True)
+        T_trans_pas = ps.transformations.generate_T_trans(b_A_a, True)
         cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
 
-        cHomog_A_b = T_pas_trans @ cHomog_A_a
+        cHomog_A_b = T_trans_pas @ cHomog_A_a
         c_A_b = cHomog_A_b[:3]
 
         # For passive transformation: new_position = old_position - translation
@@ -578,10 +580,10 @@ class TestGenerateTTrans(unittest.TestCase):
         c_A_a = np.array([5.0, 6.0, 7.0])
 
         # Test active transformation with position vector
-        T_act_trans = ps.transformations.generate_T_trans(cPrime_A_c, False)
+        T_trans_act = ps.transformations.generate_T_trans(cPrime_A_c, False)
         cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
 
-        cPrimeHomog_A_a = T_act_trans @ cHomog_A_a
+        cPrimeHomog_A_a = T_trans_act @ cHomog_A_a
         cPrime_A_a = cPrimeHomog_A_a[:3]
 
         # For active transformation: new_position = old_position + translation
@@ -636,19 +638,212 @@ class TestGenerateTTrans(unittest.TestCase):
 
         # Generate passive and active transformation matrices.
         translation = np.array([1.0, 2.0, 3.0])
-        T_pas_trans = ps.transformations.generate_T_trans(translation, True)
-        T_act_trans = ps.transformations.generate_T_trans(translation, False)
+        T_trans_pas = ps.transformations.generate_T_trans(translation, True)
+        T_trans_act = ps.transformations.generate_T_trans(translation, False)
 
         # Test that direction vectors are unaffected by translation
         direction = np.array([1.0, 0.0, 0.0])
         directionHomog = ps.transformations.generate_homog(direction, False)
 
-        passive_transformed_directionHomog = T_pas_trans @ directionHomog
-        active_transformed_directionHomog = T_act_trans @ directionHomog
+        passive_transformed_directionHomog = T_trans_pas @ directionHomog
+        active_transformed_directionHomog = T_trans_act @ directionHomog
 
         # Direction vectors should be unchanged by pure translation
         npt.assert_array_equal(passive_transformed_directionHomog[:3], direction)
         npt.assert_array_equal(active_transformed_directionHomog[:3], direction)
+
+
+class TestGenerateTReflect(unittest.TestCase):
+    """This class contains methods for testing the generate_T_reflect function.
+
+    This class contains the following public methods:
+        test_reflection_about_origin_planes: Tests reflection about planes through
+        origin.
+        test_reflection_about_offset_planes: Tests reflection about offset planes.
+        test_zero_length_normal_error: Tests error handling for zero-length normals.
+        test_transformation_properties: Tests properties of transformation matrices.
+        test_symmetric_reflections: Tests that double reflections return original.
+        test_normal_vector_normalization: Tests that non-unit normal vectors are
+        correctly normalized.
+        test_active_passive_equivalence: Tests that passive and active modes produce
+        identical matrices.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_reflection_about_origin_planes(self):
+        """Tests reflection about planes passing through the origin.
+
+        :return: None
+        """
+        # Test reflection about xy-plane (z=0, normal=[0,0,1])
+        plane_point = np.array([0.0, 0.0, 0.0])
+        plane_normal = np.array([0.0, 0.0, 1.0])
+
+        T_reflect_act = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, False
+        )
+
+        # Point [1, 2, 3] should reflect to [1, 2, -3]
+        test_point = np.array([1.0, 2.0, 3.0])
+        homog_point = ps.transformations.generate_homog(test_point, True)
+        reflected_homog = T_reflect_act @ homog_point
+        reflected_point = reflected_homog[:3]
+
+        expected_reflected = np.array([1.0, 2.0, -3.0])
+        npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
+
+        # Test reflection about xz-plane (y=0, normal=[0,1,0])
+        plane_normal_y = np.array([0.0, 1.0, 0.0])
+        T_reflect_act_y = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal_y, False
+        )
+
+        reflected_homog_y = T_reflect_act_y @ homog_point
+        reflected_point_y = reflected_homog_y[:3]
+
+        expected_reflected_y = np.array([1.0, -2.0, 3.0])
+        npt.assert_allclose(reflected_point_y, expected_reflected_y, atol=1e-14)
+
+    def test_reflection_about_offset_planes(self):
+        """Tests reflection about planes not passing through the origin.
+
+        :return: None
+        """
+        # Test reflection about plane z=2 (normal=[0,0,1], point=[0,0,2])
+        plane_point = np.array([0.0, 0.0, 2.0])
+        plane_normal = np.array([0.0, 0.0, 1.0])
+
+        T_reflect_act = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, False
+        )
+
+        # Point [1, 2, 5] should reflect to [1, 2, -1]
+        test_point = np.array([1.0, 2.0, 5.0])
+        homog_point = ps.transformations.generate_homog(test_point, True)
+        reflected_homog = T_reflect_act @ homog_point
+        reflected_point = reflected_homog[:3]
+
+        expected_reflected = np.array([1.0, 2.0, -1.0])
+        npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
+
+        # Point on the plane should remain unchanged
+        plane_test_point = np.array([3.0, 4.0, 2.0])
+        homog_plane_point = ps.transformations.generate_homog(plane_test_point, True)
+        reflected_plane_homog = T_reflect_act @ homog_plane_point
+        reflected_plane_point = reflected_plane_homog[:3]
+
+        npt.assert_allclose(reflected_plane_point, plane_test_point, atol=1e-14)
+
+    def test_zero_length_normal_error(self):
+        """Tests error handling for zero-length normal vectors.
+
+        :return: None
+        """
+        plane_point = np.array([0.0, 0.0, 0.0])
+        zero_normal = np.array([0.0, 0.0, 0.0])
+
+        with self.assertRaises(ValueError) as context:
+            ps.transformations.generate_T_reflect(plane_point, zero_normal, False)
+
+        self.assertIn(
+            "plane_normal_A must have a non-zero length", str(context.exception)
+        )
+
+    def test_transformation_properties(self):
+        """Tests properties of reflection transformation matrices.
+
+        :return: None
+        """
+        plane_point = np.array([1.0, 1.0, 1.0])
+        plane_normal = np.array([1.0, 1.0, 1.0])  # Will be normalized internally
+
+        for passive in [True, False]:
+            with self.subTest(passive=passive):
+                T = ps.transformations.generate_T_reflect(
+                    plane_point, plane_normal, passive
+                )
+
+                # Test output shape
+                self.assertEqual(T.shape, (4, 4))
+
+                # Test that bottom row is [0, 0, 0, 1]
+                expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+                npt.assert_array_equal(T[3, :], expected_bottom)
+
+                # Test determinant is -1 (proper reflection)
+                det = np.linalg.det(T)
+                self.assertAlmostEqual(det, -1.0, places=12)
+
+                # Reflection part should have determinant -1
+                reflection_det = np.linalg.det(T[:3, :3])
+                self.assertAlmostEqual(reflection_det, -1.0, places=12)
+
+    def test_symmetric_reflections(self):
+        """Tests that double reflections return the original point.
+
+        :return: None
+        """
+        plane_point = np.array([1.0, 2.0, 3.0])
+        plane_normal = np.array([0.0, 1.0, 0.0])
+
+        T_reflect_act = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, False
+        )
+
+        test_point = np.array([5.0, 8.0, -2.0])
+        homog_point = ps.transformations.generate_homog(test_point, True)
+
+        # Apply reflection twice
+        reflected_once = T_reflect_act @ homog_point
+        reflected_twice = T_reflect_act @ reflected_once
+
+        final_point = reflected_twice[:3]
+        npt.assert_allclose(final_point, test_point, atol=1e-14)
+
+    def test_normal_vector_normalization(self):
+        """Tests that non-unit normal vectors are correctly normalized.
+
+        :return: None
+        """
+        plane_point = np.array([0.0, 0.0, 0.0])
+        # Use non-unit normal vector - should be normalized internally
+        plane_normal = np.array([0.0, 0.0, 5.0])  # Should normalize to [0,0,1]
+
+        T_reflect_act = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, False
+        )
+
+        test_point = np.array([1.0, 2.0, 3.0])
+        homog_point = ps.transformations.generate_homog(test_point, True)
+        reflected_homog = T_reflect_act @ homog_point
+        reflected_point = reflected_homog[:3]
+
+        # Should give same result as unit normal [0,0,1]
+        expected_reflected = np.array([1.0, 2.0, -3.0])
+        npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
+
+    def test_passive_active_equivalence(self):
+        """Tests that passive and active modes produce identical matrices.
+
+        :return: None
+        """
+        plane_point = np.array([1.0, 2.0, 3.0])
+        plane_normal = np.array([1.0, 0.0, 1.0])
+
+        T_reflect_pas = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, True
+        )
+        T_reflect_act = ps.transformations.generate_T_reflect(
+            plane_point, plane_normal, False
+        )
+
+        # Matrices should be identical for reflections
+        npt.assert_array_equal(T_reflect_pas, T_reflect_act)
 
 
 if __name__ == "__main__":

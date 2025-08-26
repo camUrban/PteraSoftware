@@ -254,7 +254,7 @@ def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
     """
     T_reflect = np.eye(4, dtype=float)
 
-    d = np.asarray(plane_point_A_a, dtype=float)
+    p = np.asarray(plane_point_A_a, dtype=float)
     n = np.asarray(plane_normal_A, dtype=float)
 
     n_norm = np.linalg.norm(n)
@@ -263,7 +263,7 @@ def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
     n_hat = n / n_norm
 
     S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)
-    d = 2 * (np.dot(d, n_hat)) * n_hat
+    d = 2 * (np.dot(p, n_hat)) * n_hat
 
     T_reflect[:3, :3] = S
     T_reflect[:3, 3] = d

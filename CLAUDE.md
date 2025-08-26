@@ -186,7 +186,7 @@ There are three useful combinations of axes, points, and frames. Variables are d
    `[variable name]_[axes ID]_[point ID]`  
    "[variable name] (in [axes name], relative to the [point name])"
 
-**Naming Convention:** IDs move from most specific to least specific scope. Names move from least specific to most specific.
+**Naming Convention:** IDs move in scope from most to least specific. Names move from least to most specific.
 
 ### ID Abbreviations and Names
 

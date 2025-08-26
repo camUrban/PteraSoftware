@@ -513,10 +513,10 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
     @property
-    def T_G_Cg_to_Wn_Ler(self):
-        """This method makes the transformation matrix T, which maps in homogeneous
-        coordinates from geometry axes relative to the CG point to wing axes relative
-        to the leading edge root point.
+    def T_pas_G_Cg_to_Wn_Ler(self):
+        """This method makes the passive transformation matrix T, which maps in
+        homogeneous coordinates from geometry axes relative to the CG point to wing
+        axes relative to the leading edge root point.
 
         The transformation applies the 5 scenarios described in the class docstring.
 

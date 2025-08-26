@@ -48,10 +48,20 @@ This module contains the following functions:
     interp_between_points: This function finds the MxN points between M pairs of
     points in 3D space given an array of N normalized spacings.
 
-    generate_r: This function generates either a passive or active rotation matrix
+    generate_homo: This function converts a 3D vector to homogeneous coordinates
+    for use with 4x4 transformation matrices.
+
+    generate_R: This function generates either a passive or active rotation matrix
     using an angle vector, and parameters specifying if the matrix should be passive
     or active, intrinsic or extrinsic, and the order by which to apply the rotations
     about each axis.
+
+    generate_T_rot: This function converts a rotation matrix to a rotational
+    transformation matrix for use with homogeneous coordinates.
+
+    generate_T_trans: This function generates either a passive or active
+    translational transformation matrix using a vector and a parameter specifying if
+    the transformation should be passive or active.
 """
 
 import logging
@@ -762,6 +772,38 @@ def interp_between_points(start_points, end_points, norm_spacings):
     return points
 
 
+def generate_homo(vector_A, has_point):
+    """This function converts a 3D vector to homogeneous coordinates for use with
+    4x4 transformation matrices.
+
+    Homogeneous coordinates extend 3D vectors to 4D by adding a fourth component.
+    For position vectors (points), the fourth component is 1. For direction
+    vectors (such as velocity or force vectors), the fourth component is 0. This
+    allows 4x4 transformation matrices to handle both translations and rotations
+    in a unified framework.
+
+    :param vector_A: (3,) ndarray of floats
+        This is the 3D vector to convert to homogeneous coordinates. The units
+        depend on the type of vector (meters for position, meters/second for
+        velocity, etc.).
+    :param has_point: bool
+        If True, treats the vector as a position vector (point) and sets the
+        fourth component to 1. If False, treats the vector as a direction vector
+        and sets the fourth component to 0.
+    :return: (4,) ndarray of floats
+        This is the vector in homogeneous coordinates. For position vectors, the
+        fourth component is 1. For direction vectors, the fourth component is 0.
+        The units are the same as the input vector.
+    """
+    vector_A_homo = np.zeros(4, dtype=float)
+    vector_A_homo[:3] = vector_A
+
+    if has_point:
+        vector_A_homo[-1] = 1
+
+    return vector_A_homo
+
+
 def generate_R(angles, passive, intrinsic, order):
     """This function generates either a passive or active rotation matrix using an
     angle vector, and parameters specifying if the matrix should be passive or
@@ -786,13 +828,13 @@ def generate_R(angles, passive, intrinsic, order):
     `r_A_prime = R_act @ r_A`.
 
     :param angles: (3,) ndarray of floats
-        This is the angle vector in with signs defined using the
-        right-hand rule. For a `passive=True`, it describes the orientation of "B" axes
-        with respect to "A" axes. For `passive=False`, it prescribes the angles by
-        which to rotate a vector in "A" axes. In both cases, the rotations' type is
-        specified by the intrinsic parameter. Angles are always listed as [about
-        axis 1, about axis 2, about axis 3], but are applied in the sequence given
-        by `order` (e.g., order="312" applies angles[2], angles[0], angles[1]).
+        This is the angle vector in with signs defined using the right-hand rule. For
+        `passive=True`, it describes the orientation of "B" axes with respect to "A"
+        axes. For `passive=False`, it prescribes the angles by which to rotate a
+        vector in "A" axes. In both cases, the rotations' type is specified by the
+        intrinsic parameter. Angles are always listed as [about axis 1, about axis 2,
+        about axis 3], but are applied in the sequence given by `order` (e.g.,
+        order="312" applies angles[2], angles[0], angles[1]).
     :param passive: bool
         If True, returns a matrix that changes coordinates from "A" to "B" axes (`r_B
         = R @ r_A`). If False, returns a matrix that rotates vectors in "A" axes (
@@ -850,3 +892,58 @@ def generate_R(angles, passive, intrinsic, order):
     if passive:
         return R_act.T
     return R_act
+
+
+def generate_T_rot(R):
+    """This function converts a rotation matrix to a rotational transformation matrix
+    for use with homogeneous coordinates.
+
+    Notes: This function doesn't validate inputs.
+
+    :param (3, 3) ndarray of floats
+        This is the rotation matrix. It can be active or passive, intrinsic or
+        extrinsic, and perform rotations in any order. The generated transformation
+        matrix will retain these same attributes.
+    :return: (4, 4) ndarray of floats
+        This is the transformation matrix.
+    """
+    T_rot = np.eye(4)
+    T_rot[:3, :3] = R
+    return T_rot
+
+
+def generate_T_trans(translations, passive):
+    """This function generates either a passive or active translational
+    transformation matrix using a vector and a parameter specifying if the
+    transformation should be passive or active.
+
+    Passive Use-Case: Let `c_A_a` be a vector which describes the location of point
+    "c", (in "A" axes, relative to the "a" point). We want to find `c_A_b`,
+    which describes the location of "c", relative to the "b" point. The position of
+    "b" is defined by 'translations' (in "A" axes, relative to the point a). Then:
+    `T_trans_pas_a_to_b = generate_T_trans(translate, True)`, `c_A_b_homo =
+    T_trans_pas_a_to_b @ generate_homo(c_A_b, True)`, and `c_A_b = c_A_b_homo[:3]`.
+
+    Active Use-Case: Let `c_A_a` be a vector which describes the location of point
+    "c" (in "A" axes, relative to the "a" point). We want to find `cPrime_A_a`,
+    which is the position of "cPrime", which is point "c" offset by `translations` (
+    in "A" axes). Then: `T_trans_act = generate_T_trans( translations, False)`,
+    `cPrime_A_a_homo = T_trans_act @ generate_homo(c_A_a, True)`, and `cPrime_A_a =
+    cPrime_A_a_homo[:3]`.
+
+    :param translations: (3,) ndarray of floats
+        For `passive=True`, this is the position of the "b" point (in "A" axes,
+        relative to the "a" point). For `passive=False`, this is the position (in "A"
+        axes) of the offset point "cPrime" relative to the original "c" point.
+    :param passive: bool
+        If True, returns a matrix that changes reference point of a vector in
+        homogeneous coordinates (`r_A_b_homo = T_trans @ r_A_a_homo`). If False,
+        returns the position vector of point offset from an original position,
+        still relative to the same point (`cPrime_A_a_homo = T_trans @ c_A_a_homo`).
+    :return: (4, 4) ndarray of floats
+        This is the transformation matrix.
+    """
+    T_trans = np.eye(4)
+    T_trans[:3, 3] = -translations if passive else translations
+
+    return T_trans

@@ -38,6 +38,10 @@ class Airplane:
 
     This class contains the following public methods:
 
+        validate_first_airplane_constraints: This method validates that the first
+        Airplane in a simulation has Cgi_E_I set to zeros, as required by the
+        definition of the simulation's starting point.
+
         process_wing_symmetry: This method processes a Wing to determine what type of
         symmetry it has. If necessary, it then modifies the Wing. If type 5 symmetry
         is detected, it also creates a second reflected Wing. Finally, a list of
@@ -45,10 +49,6 @@ class Airplane:
         Wing, but for type 5 symmetry it contains the modified Wing followed by the
         new reflected Wing. Before returning them, this method also calls each Wing's
         generate_mesh method, preparing them for use simulation.
-
-        validate_first_airplane_constraints: This method validates that the first
-        Airplane in a simulation has Cgi_E_I set to zeros, as required by the
-        definition of the simulation's starting point.
 
     This class contains the following class attributes:
         None
@@ -199,6 +199,23 @@ class Airplane:
         self.total_near_field_moment_W = None
         self.total_near_field_moment_coefficients_W = None
 
+    def validate_first_airplane_constraints(self):
+        """This method validates constraints specific to the first Airplane in a simulation.
+
+        The first Airplane in a simulation must have Cgi_E_I set to zeros since the
+        simulation starting point is defined as the first Airplane's starting point.
+
+        This method should be called by SteadyProblem or UnsteadyProblem classes.
+
+        :raises Exception: If first Airplane constraints are violated.
+        """
+        if not np.allclose(self.Cgi_E_I, np.array([0.0, 0.0, 0.0])):
+            raise ValueError(
+                "The first Airplane in a simulation must have Cgi_E_I set to"
+                "np.array([0.0, 0.0, 0.0]) since the simulation starting point "
+                "is defined as the first Airplane's CG at t=0."
+            )
+
     @staticmethod
     def process_wing_symmetry(wing):
         """This method processes a Wing to determine what type of symmetry it has. If
@@ -288,8 +305,10 @@ class Airplane:
                             airfoil=reflected_airfoil,
                             num_spanwise_panels=wing_cross_section.num_spanwise_panels,
                             chord=wing_cross_section.chord,
-                            local_position=np.copy(wing_cross_section.local_positions),
-                            local_rotations=np.copy(wing_cross_section.local_rotations),
+                            Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpps),
+                            angles_Wcsp_to_Wcs_i321=np.copy(
+                                wing_cross_section.angles_Wcsp_to_Wcs_i321
+                            ),
                             control_surface_type=wing_cross_section.control_surface_type,
                             control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
                             control_surface_deflection=reflected_control_surface_deflection,
@@ -320,23 +339,6 @@ class Airplane:
                 wing.generate_mesh(symmetry_type=1)
                 reflected_wing.generate_mesh(symmetry_type=3)
                 return [wing, reflected_wing]
-
-    def validate_first_airplane_constraints(self):
-        """This method validates constraints specific to the first Airplane in a simulation.
-
-        The first Airplane in a simulation must have Cgi_E_I set to zeros since the
-        simulation starting point is defined as the first Airplane's starting point.
-
-        This method should be called by SteadyProblem or UnsteadyProblem classes.
-
-        :raises Exception: If first Airplane constraints are violated.
-        """
-        if not np.allclose(self.Cgi_E_I, np.array([0.0, 0.0, 0.0])):
-            raise ValueError(
-                "The first Airplane in a simulation must have Cgi_E_I set to"
-                "np.array([0.0, 0.0, 0.0]) since the simulation starting point "
-                "is defined as the first Airplane's CG at t=0."
-            )
 
 
 class Wing:
@@ -964,8 +966,8 @@ class Wing:
         # ToDo: Modify this logic to account for the chained translations and
         #  rotations down the list of WingCrossSections.
         tipLep_G_rootLep = (
-            self.wing_cross_sections[-1].local_position
-            - self.wing_cross_sections[0].local_position
+            self.wing_cross_sections[-1].Lp_Wcsp_Lpp
+            - self.wing_cross_sections[0].Lp_Wcsp_Lpp
         )
 
         projected_tipLep_G_rootLep = np.dot(tipLep_G_rootLep, self.WnY_G) * self.WnY_G
@@ -1034,8 +1036,7 @@ class Wing:
             # Find this section's span by following the same procedure as for the
             # overall Wing's span.
             nextLep_G_Lep = (
-                next_wing_cross_section.local_position
-                - wing_cross_section.local_position
+                next_wing_cross_section.Lp_Wcsp_Lpp - wing_cross_section.Lp_Wcsp_Lpp
             )
 
             projected_nextLep_G_Lep = np.dot(nextLep_G_Lep, self.WnZ_G) * self.WnZ_G
@@ -1068,11 +1069,12 @@ class WingCrossSection:
         Date of Retrieval:    04/26/2020
 
     This class contains the following public methods:
-        validate_root_constraints: This method validates constraints specific to
-        root WingCrossSections.
 
-        validate_tip_constraints: This method validates constraints specific to
-        tip WingCrossSections.
+        validate_root_constraints: This method is called by the parent Wing to
+        validate constraints specific to root WingCrossSections.
+
+        validate_tip_constraints: This method is called by the parent Wing to
+        validate constraints specific to tip WingCrossSections.
 
     This class contains the following class attributes:
         None
@@ -1103,147 +1105,219 @@ class WingCrossSection:
         airfoil,
         num_spanwise_panels,
         chord=1.0,
-        local_position=np.array([0.0, 0.0, 0.0]),
-        local_rotations=np.array([0.0, 0.0, 0.0]),
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_i321=np.array([0.0, 0.0, 0.0]),
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
-        spanwise_spacing="cosine",
+        spanwise_spacing=None,
     ):
         """This is the initialization method.
 
         :param airfoil: Airfoil
+
             This is the Airfoil to be used at this WingCrossSection.
+
         :param num_spanwise_panels: int or None
+
             This is the number of spanwise panels to be used between this
             WingCrossSection and the next one. For tip WingCrossSections,
             this must be None. For all other WingCrossSections, this must be a
             positive integer.
+
         :param chord: float, optional
+
             This is the chord of the wing at this WingCrossSection. The units are
             meters. It must be greater than 0.0. The default value is 1.0.
-        :param local_position: (3,) ndarray of floats, optional
-            This is the position [x, y, z] of this WingCrossSection's leading edge in
-            the previous WingCrossSection's wing cross section axes. This is also the
-            position of the origin of this WingCrossSection's wing cross section axes
-            in the previous WingCrossSection's wing cross section axes. If this is
-            the root WingCrossSection, this is relative to its Wing's axes and
-            must be np.array([0.0, 0.0, 0.0]). All components must be non-negative.
-            The units are meters. The default is np.array([0.0, 0.0, 0.0]).
-        :param local_rotations: (3,) ndarray of floats, optional
-            This is the rotation angles [roll, pitch, yaw] in degrees that define the
-            orientation of this WingCrossSection's wing cross section axes relative
-            to the previous WingCrossSection's wing cross section axes. For the root
-            WingCrossSection, the orientation is relative to its Wing's wing
-            axes and must be np.array([0.0, 0.0, 0.0]). All angles must be in the
-            range (-90, 90) degrees. Roll is rotation about the x-axis, pitch is rotation about
-            the y-axis, and yaw is rotation about the z-axis. Rotations are intrinsic, and proceed in
-            the z-y'-x'' order conventional for Euler angles. The units are degrees.
-            The default is np.array([0.0, 0.0, 0.0]).
+
+        :param Lp_Wcsp_Lpp: (3,) ndarray of floats, optional
+
+            This is the position in meters of this WingCrossSection's leading edge in
+            parent wing cross section axes, relative to the parent leading edge
+            point. If this is the root WingCrossSection, the parent wing cross
+            section axes are the wing axes and the parent leading edge point is the
+            Wing's leading edge root point. If not, the parent axes and point are
+            those of the previous WingCrossSection. If this is the root
+            WingCrossSection, it must be np.array([0.0, 0.0, 0.0]). The second array
+            component must be non-negative. The default is np.array([0.0, 0.0, 0.0]).
+
+        :param angles_Wcsp_to_Wcs_i321: (3,) ndarray of floats, optional
+
+            This is the angle vector of rotation angles [roll, pitch, yaw] in degrees
+            that define the orientation of this WingCrossSection's axes relative to
+            the parent wing cross section axes. If this is a root WingCrossSection,
+            these are the wing axes. If not, the parent axes are the previous
+            WingCrossSection's axes. For the root WingCrossSection, this must be
+            np.array([0.0, 0.0, 0.0]). For other WingCrossSections, all angles must
+            be in the range (-90, 90) degrees. Roll is rotation about the x-axis,
+            pitch is rotation about the y-axis, and yaw is rotation about the z-axis.
+            Rotations are intrinsic, and proceed in the z-y'-x'' order conventional
+            for Euler angles. The units are degrees. The default is np.array([0.0,
+            0.0, 0.0]).
+
         :param control_surface_type: str, optional
+
             This is type of control surfaces for this WingCrossSection. It can
             be "symmetric" or "asymmetric". An example of symmetric control surfaces
             are flaps. An example of asymmetric control surfaces are ailerons. The
-            default value is "symmetric".
+            default value is "symmetric". This value only affects a Wing's geometry
+            if it has type 4 or 5 symmetry.
+
         :param control_surface_hinge_point: float, optional
+
             This is the location of the control surface hinge from the leading edge
             as a fraction of chord. It must be on the range (0.0, 1.0). The default
             value is 0.75.
+
         :param control_surface_deflection: float, optional
+
             This is the control deflection in degrees. Deflection downwards is
             positive. Must be in the range (-90, 90) degrees. The default value is
             0.0 degrees.
-        :param spanwise_spacing: str, optional
-            This can be "cosine" or "uniform". Using cosine spacing is highly
-            recommended. The default value is "cosine".
-        """
 
-        # Initialize all the user-provided attributes.
-        self.chord = chord
-        self.local_position = np.array(local_position, dtype=float)
-        self.local_rotations = np.array(local_rotations, dtype=float)
+        :param spanwise_spacing: str or None, optional
+
+            For non-tip WingCrossSections, this can be "cosine" or "uniform". Using
+            cosine spacing is highly recommended. For tip WingCrossSections it must
+            be None.
+        """
+        # Validate airfoil.
+        if not isinstance(airfoil, Airfoil):
+            raise TypeError("airfoil must be an Airfoil.")
         self.airfoil = airfoil
-        self.control_surface_type = control_surface_type
-        self.control_surface_hinge_point = control_surface_hinge_point
-        self.control_surface_deflection = control_surface_deflection
+
+        # Perform a preliminary validation for num_spanwise_panels. The parent Wing
+        # will later check that this is None if this WingCrossSection is a tip
+        # WingCrossSection.
+        if num_spanwise_panels is not None:
+            num_spanwise_panels = parameter_validation.validate_positive_scalar_int(
+                num_spanwise_panels, "Non-None num_spanwise"
+            )
         self.num_spanwise_panels = num_spanwise_panels
+
+        # Validate chord.
+        self.chord = parameter_validation.validate_positive_scalar_float(chord, "chord")
+
+        # Perform a preliminary validation for Lp_Wcsp_Lpp. The parent Wing will
+        # later check that this is a zero vector if this WingCrossSection is a root
+        # WingCrossSection.
+        Lp_Wcsp_Lpp = parameter_validation.validate_3d_vector_float(
+            Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
+        )
+        Lp_Wcsp_Lpp[1] = parameter_validation.validate_non_negative_scalar_float(
+            Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]"
+        )
+        self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
+
+        # Perform a preliminary validation for angles_Wcsp_to_Wcs_i321. The parent
+        # Wing will later check that this is a zero vector if this WingCrossSection
+        # is a root WingCrossSection.
+        angles_Wcsp_to_Wcs_i321 = parameter_validation.validate_3d_vector_float(
+            angles_Wcsp_to_Wcs_i321, "angles_Wcsp_to_Wcs_i321"
+        )
+        for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_i321):
+            angles_Wcsp_to_Wcs_i321[angle_id] = (
+                parameter_validation.validate_scalar_in_range_float(
+                    angle,
+                    f"angles_Wcsp_to_Wcs_i321[{angle_id}]",
+                    -90.0,
+                    False,
+                    90.0,
+                    False,
+                )
+            )
+        self.angles_Wcsp_to_Wcs_i321 = angles_Wcsp_to_Wcs_i321
+
+        # Validate control surface type.
+        control_surface_type = parameter_validation.validate_string(
+            control_surface_type, "control_surface_type"
+        )
+        valid_control_surface_types = ["symmetric", "asymmetric"]
+        if control_surface_type not in valid_control_surface_types:
+            raise ValueError(
+                f"control_surface_type must be one of {valid_control_surface_types}."
+            )
+        self.control_surface_type = control_surface_type
+
+        # Validate control_surface_hinge_point and control_surface_deflection.
+        self.control_surface_hinge_point = (
+            parameter_validation.validate_scalar_in_range_float(
+                control_surface_hinge_point,
+                "control_surface_hinge_point",
+                0.0,
+                False,
+                1.0,
+                False,
+            )
+        )
+        self.control_surface_deflection = (
+            parameter_validation.validate_scalar_in_range_float(
+                control_surface_deflection,
+                "control_surface_deflection",
+                -90.0,
+                False,
+                90.0,
+                False,
+            )
+        )
+
+        # Perform a preliminary validation for spanwise_spacing. The parent Wing will
+        # later check that this is None if this WingCrossSection is a tip
+        # WingCrossSection.
+        if spanwise_spacing is not None:
+            spanwise_spacing = parameter_validation.validate_string(
+                spanwise_spacing, "spanwise_spacing"
+            )
+            valid_non_none_spanwise_spacings = ["cosine", "uniform"]
+            if spanwise_spacing not in valid_non_none_spanwise_spacings:
+                raise ValueError(
+                    f"Values for non-None spanwise_spacing must be one of "
+                    f"{valid_non_none_spanwise_spacings}."
+                )
         self.spanwise_spacing = spanwise_spacing
 
-        # Catch invalid local rotation angles.
-        if not np.all((-90.0 < self.local_rotations) & (self.local_rotations < 90.0)):
-            raise Exception(
-                "All local rotation angles must be in the range (-90, 90) degrees."
-            )
-
-        # Catch negative local position components.
-        if np.any(self.local_position < 0.0):
-            raise Exception("All local_position components must be non-negative.")
-
-        # Define an attribute for the parent wing's unit chordwise vector, which will
-        # be set by this wing cross section's parent wing's initialization method.
-        self.wing_unit_chordwise_vector = None
-
-        # Catch bad values of the chord length.
-        if self.chord <= 0:
-            raise Exception("A wing cross section's chord length must be >0.0 m.")
-
-        # Catch invalid control surface hinge points.
-        if not (0.0 < self.control_surface_hinge_point < 1.0):
-            raise Exception(
-                "A wing cross section's control surface hinge point must be on the "
-                "range (0.0, 1.0)."
-            )
-
-        # Catch invalid control surface deflections.
-        if not (-90.0 < self.control_surface_deflection < 90.0):
-            raise Exception(
-                "A wing cross section's control surface deflection must be on the "
-                "range (-90.0, 90.0) degrees."
-            )
-
-        # Catch invalid values of the control surface type.
-        if self.control_surface_type not in ["symmetric", "asymmetric"]:
-            raise Exception(
-                'A wing cross section\'s control surface type must be "symmetric" or '
-                '"asymmetric".'
-            )
-
-        # Catch invalid values of the spanwise spacing.
-        if self.spanwise_spacing not in ["cosine", "uniform"]:
-            raise Exception(
-                'A wing cross section\'s spanwise spacing must be "cosine" or '
-                '"uniform".'
-            )
+        # ToDo: Determine if we still need this attribute. If so, uncomment it and
+        #  modify Wing to set it.
+        # Define an attribute for the parent Wing's unit chordwise vector, which will
+        # be set by this WingCrossSection's parent Wing's initialization method.
+        # self.wing_unit_chordwise_vector = None
 
     def validate_root_constraints(self):
-        """Validate constraints specific to root WingCrossSections.
+        """This method is called by the parent Wing to validate constraints specific
+        to root WingCrossSections.
 
-        Root WingCrossSections must have local_position and local_rotations
-        set to zero arrays.
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_i321
+        set to zero vectors.
 
-        :raises Exception: If root constraints are violated.
+        :raises ValueError: If root constraints are violated.
         """
-        if not np.allclose(self.local_position, np.array([0.0, 0.0, 0.0])):
-            raise Exception(
-                "The root wing cross section's local position coordinates must be "
-                "np.array([0.0, 0.0, 0.0])."
+        # These checks are sufficient because the types were already validated by the
+        # initialization method.
+        if not np.allclose(self.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])):
+            raise ValueError(
+                "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, 0.0])."
             )
-        if not np.allclose(self.local_rotations, np.array([0.0, 0.0, 0.0])):
-            raise Exception(
-                "The root wing cross section's local rotation angles must be "
-                "np.array([0.0, 0.0, 0.0])."
+        if not np.allclose(self.angles_Wcsp_to_Wcs_i321, np.array([0.0, 0.0, 0.0])):
+            raise ValueError(
+                "The root WingCrossSection's angles_Wcsp_to_Wcs_i321 must be np.array([0.0, 0.0, 0.0])."
             )
 
     def validate_tip_constraints(self):
-        """Validate constraints specific to tip WingCrossSections.
+        """This method is called by the parent Wing to validate constraints specific
+        to tip WingCrossSections.
 
-        Tip WingCrossSections must have num_spanwise_panels set to None.
+        Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set
+        to None.
 
-        :raises Exception: If tip constraints are violated.
+        :raises ValueError: If tip constraints are violated.
         """
         if self.num_spanwise_panels is not None:
-            raise Exception(
-                "The tip wing cross section must have num_spanwise_panels=None."
+            raise ValueError(
+                "The tip WingCrossSection must have num_spanwise_panels=None."
+            )
+        if self.spanwise_spacing is not None:
+            raise ValueError(
+                "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
     # @property

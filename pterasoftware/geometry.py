@@ -363,22 +363,27 @@ class Wing:
         relative to the leading edge root point to geometry axes relative to the CG
         point. This is set to None if the Wing's symmetry type hasn't been defined yet.
 
-        unit_up_vector: This method sets a property for the Wing's up orientation
-        vector, which is defined as the cross product of its unit chordwise and unit
-        normal vectors.
+        WnX_G: This method sets a property for the wing axes' first basis vector (in
+        geometry axes).
 
-        projected_area: This method defines a property for the area of the Wing
-        projected onto the plane defined by the projected unit normal vector.
+        WnY_G: This method sets a property for the wing axes' second basis vector (in
+        geometry axes).
 
-        wetted_area: This method defines a property for the Wing's wetted area.
+        WnZ_G: This method sets a property for the wing axes' third basis vector (in
+        geometry axes).
 
-        span: This method defines a property for the Wing's span.
+        projected_area: This method sets a property for the area of the Wing
+        projected onto the plane defined by the wing axes' xy-plane.
 
-        standard_mean_chord: This method calculates the standard mean chord of the
-        Wing and assigns it to the standard_mean_chord attribute.
+        wetted_area: This method sets a property for the Wing's wetted area.
 
-        mean_aerodynamic_chord: This method calculates the mean aerodynamic chord of
-        the Wing and assigns it to the mean_aerodynamic_chord attribute.
+        span: This method sets a property for the Wing's span.
+
+        standard_mean_chord: This method sets a property for the standard mean chord
+        of the Wing.
+
+        mean_aerodynamic_chord: This method sets a property for the mean aerodynamic
+        chord of the Wing.
 
     This class contains the following class attributes:
         None
@@ -750,7 +755,7 @@ class Wing:
 
         :return: (4,4) ndarray of floats or None
             4x4 transformation matrix or None in cases where the Wing's symmetry type
-            hasn't been defined yet
+            hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -807,8 +812,7 @@ class Wing:
 
         :return: (4,4) ndarray of floats or None
             4x4 transformation matrix or None in cases where the Wing's symmetry type
-            hasn't been defined yet
-
+            hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -817,131 +821,168 @@ class Wing:
 
         return np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler)
 
-    # ToDo: Uncomment and update these parameter methods after checking that wings
-    #  are meshed correctly.
-    # @property
-    # def unit_chordwise_vector(self):
-    #     """This method sets a property for the wing's chordwise (x-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) ndarray of floats
-    #         This is the wing's unit chordwise vector in geometry axes.
-    #     """
-    #     # Wing x-axis in wing coordinates is [1, 0, 0, 0] in homogeneous coordinates
-    #     wing_x_axis = np.array([1.0, 0.0, 0.0, 0.0])
-    #     # Transform to geometry coordinates (only rotation, not translation)
-    #     T = self.geometry_to_wing_axes_transformation_matrix
-    #     geometry_vector = T @ wing_x_axis
-    #     return geometry_vector[:3]  # Return only xyz components
-    #
-    # @property
-    # def unit_spanwise_vector(self):
-    #     """This method sets a property for the wing's spanwise (y-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) ndarray of floats
-    #         This is the wing's unit spanwise vector in geometry axes.
-    #     """
-    #     # Wing y-axis in wing coordinates is [0, 1, 0, 0] in homogeneous coordinates
-    #     wing_y_axis = np.array([0.0, 1.0, 0.0, 0.0])
-    #     # Transform to geometry coordinates (only rotation, not translation)
-    #     T = self.geometry_to_wing_axes_transformation_matrix
-    #     geometry_vector = T @ wing_y_axis
-    #     return geometry_vector[:3]  # Return only xyz components
-    #
-    # @property
-    # def unit_up_vector(self):
-    #     """This method sets a property for the wing's up (z-axis) orientation
-    #     vector in geometry axes.
-    #
-    #     :return: (3,) ndarray of floats
-    #         This is the wing's unit up vector in geometry axes.
-    #     """
-    #     # Wing z-axis in wing coordinates is [0, 0, 1, 0] in homogeneous coordinates
-    #     wing_z_axis = np.array([0.0, 0.0, 1.0, 0.0])
-    #     # Transform to geometry coordinates (only rotation, not translation)
-    #     T = self.geometry_to_wing_axes_transformation_matrix
-    #     geometry_vector = T @ wing_z_axis
-    #     return geometry_vector[:3]  # Return only xyz components
-    #
-    # @property
-    # def projected_area(self):
-    #     """This method defines a property for the area of the wing projected onto the
-    #     plane defined by the projected unit normal vector.
-    #
-    #     If the wing is symmetric, the area of the mirrored half is included.
-    #
-    #     :return projected_area: float
-    #         This attribute is the projected area of the wing. It has units of square
-    #         meters.
-    #     """
-    #     projected_area = 0
-    #
-    #     # Iterate through the chordwise and spanwise indices of the panels and add
-    #     # their area to the total projected area.
-    #     for chordwise_location in range(self.num_chordwise_panels):
-    #         for spanwise_location in range(self.num_spanwise_panels):
-    #             projected_area += self.panels[
-    #                 chordwise_location, spanwise_location
-    #             ].calculate_projected_area(self.unit_up_vector)
-    #
-    #     return projected_area
-    #
-    # @property
-    # def wetted_area(self):
-    #     """This method defines a property for the wing's wetted area.
-    #
-    #     If the wing is symmetrical, the area of the mirrored half is included.
-    #
-    #     :return wetted_area: float
-    #         This attribute is the wetted area of the wing. It has units of square
-    #         meters.
-    #     """
-    #     wetted_area = 0
-    #
-    #     # Iterate through the chordwise and spanwise indices of the panels and add
-    #     # their area to the total wetted area.
-    #     for chordwise_location in range(self.num_chordwise_panels):
-    #         for spanwise_location in range(self.num_spanwise_panels):
-    #             wetted_area += self.panels[chordwise_location, spanwise_location].area
-    #
-    #     return wetted_area
-    #
-    # @property
-    # def span(self):
-    #     """This method defines a property for the wing's span.
-    #
-    #     The span is found by first finding vector connecting the leading edges of the
-    #     root and tip wing cross sections. Then, this vector is projected onto the
-    #     symmetry plane's unit normal vector. The span is defined as the magnitude of
-    #     this projection. If the wing is symmetrical, this method includes the span of
-    #     the mirrored half.
-    #
-    #     :return span: float
-    #         This is the wing's span. It has units of meters.
-    #     """
-    #     root_to_tip_leading_edge = (
-    #         self.wing_cross_sections[-1].leading_edge
-    #         - self.wing_cross_sections[0].leading_edge
-    #     )
-    #
-    #     projected_leading_edge = (
-    #         np.dot(root_to_tip_leading_edge, self.unit_normal_vector)
-    #         * self.unit_normal_vector
-    #     )
-    #
-    #     span = np.linalg.norm(projected_leading_edge)
-    #
-    #     # If the wing is symmetric, multiply the span by two.
-    #     if self.symmetric:
-    #         span *= 2
-    #
-    #     return span
-    #
+    @property
+    def WnX_G(self):
+        """This method sets a property for the wing axes' first basis vector (in
+        geometry axes).
+
+        :return: (3,) ndarray of floats or None
+            This is the wing axes' first basis vector (in geometry axes) or None in
+            cases where the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        WnX_Wn = np.array([1.0, 0.0, 0.0])
+
+        WnXHomog_Wn = transformations.generate_homog(WnX_Wn, has_point=False)
+
+        WnXHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnXHomog_Wn
+
+        return WnXHomog_G[:3]
+
+    @property
+    def WnY_G(self):
+        """This method sets a property for the wing axes' second basis vector (in
+        geometry axes).
+
+        :return: (3,) ndarray of floats or None
+            This is the wing axes' second basis vector (in geometry axes) or None in
+            cases where the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        WnY_Wn = np.array([0.0, 1.0, 0.0])
+
+        WnYHomog_Wn = transformations.generate_homog(WnY_Wn, has_point=False)
+
+        WnYHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnYHomog_Wn
+
+        return WnYHomog_G[:3]
+
+    @property
+    def WnZ_G(self):
+        """This method sets a property for the wing axes' third basis vector (in
+        geometry axes).
+
+        :return: (3,) ndarray of floats or None
+            This is the wing axes' third basis vector (in geometry axes) or None in
+            cases where the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        WnZ_Wn = np.array([0.0, 0.0, 1.0])
+
+        WnZHomog_Wn = transformations.generate_homog(WnZ_Wn, has_point=False)
+
+        WnZHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnZHomog_Wn
+
+        return WnZHomog_G[:3]
+
+    @property
+    def projected_area(self):
+        """This method sets a property for the area of the Wing projected onto the
+        plane defined by the wing axes' xy-plane.
+
+        If the Wing is symmetric and continuous, the area of the mirrored half is
+        included.
+
+        :return projected_area: float or None
+            This attribute is the projected area of the wing. It has units of square
+            meters. If the Wing hasn't been meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self.panels is None:
+            return None
+
+        projected_area = 0
+
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total projected area.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                projected_area += self.panels[
+                    chordwise_location, spanwise_location
+                ].calculate_projected_area(self.WnZ_G)
+
+        return projected_area
+
+    @property
+    def wetted_area(self):
+        """This method sets a property for the Wing's wetted area.
+
+        If the Wing is symmetric and continuous, the area of the mirrored half is
+        included.
+
+        :return wetted_area: float or None
+            This attribute is the wetted area of the wing. It has units of square
+            meters. If the Wing hasn't been meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self.panels is None:
+            return None
+
+        wetted_area = 0
+
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total wetted area.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                wetted_area += self.panels[chordwise_location, spanwise_location].area
+
+        return wetted_area
+
+    @property
+    def span(self):
+        """This method sets a property for the Wing's span.
+
+        The span is found by first finding vector connecting the leading edges of the
+        root and tip WingCrossSections. Then, this vector is projected onto the wing
+        axes' third basis vector. The span is defined as the magnitude of this
+        projection.
+
+        If the Wing is symmetric and continuous, this method includes the span of
+        the mirrored half.
+
+        :return span: float or None
+            This is the Wing's span. It has units of meters. None is returned in
+            cases where the Wing's symmetry type hasn't been defined yet
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        tipLep_G_rootLep = (
+            self.wing_cross_sections[-1].local_position
+            - self.wing_cross_sections[0].local_position
+        )
+
+        projected_tipLep_G_rootLep = np.dot(tipLep_G_rootLep, self.WnY_G) * self.WnY_G
+
+        span = np.linalg.norm(projected_tipLep_G_rootLep)
+
+        # If the wing is symmetric and continuous, multiply the span by two.
+        if self.symmetry_type == 4:
+            span *= 2
+
+        return span
+
+    # ToDo: Refactor these methods.
     # @property
     # def standard_mean_chord(self):
-    #     """This method calculates the standard mean chord of the wing and assigns it
-    #     to the standard_mean_chord attribute. The standard mean chord is defined as
+    #     """This method sets a property for the standard mean chord
+    #         of the Wing.
+    #
+    #         The standard mean chord is defined as
     #     the projected area divided by the span. See their respective methods for the
     #     definitions of span and projected area.
     #
@@ -952,8 +993,8 @@ class Wing:
     #
     # @property
     # def mean_aerodynamic_chord(self):
-    #     """This method calculates the mean aerodynamic chord of the wing and assigns
-    #     it to the mean_aerodynamic_chord attribute.
+    #     """This method sets a property for the mean aerodynamic
+    #         chord of the Wing.
     #
     #     :return: float
     #         This is the mean aerodynamic chord of the wing. It has units of meters.

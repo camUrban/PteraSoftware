@@ -811,7 +811,8 @@ class Wing:
     def T_pas_Wn_Ler_to_G_Cg(self):
         """This method defines a property for the passive transformation matrix which
         maps in homogeneous coordinates from wing axes relative to the leading edge
-        root point to geometry axes relative to the CG point. This is set to None if
+        root point to geometry axe
+        s relative to the CG point. This is set to None if
         the Wing's symmetry type hasn't been defined yet.
 
         :return: (4,4) ndarray of floats or None
@@ -965,16 +966,32 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
+        ################################################################################
         # ToDo: Modify this logic to account for the chained translations and
         #  rotations down the list of WingCrossSections.
-        tipLp_G_rootLp = (
+        # Old Method: This is definitely wrong
+        tipLp_G_Ler = (
             self.wing_cross_sections[-1].Lp_Wcsp_Lpp
             - self.wing_cross_sections[0].Lp_Wcsp_Lpp
         )
+        # Attempted Corrected Method: Stuck on how to convert tipLpHomog_G_Cg to
+        # tipLp_G_Ler
+        T_pas_tipWcs_tipLp_to_Wn_Ler = np.eye(4, dtype=float)
+        for wing_cross_section in reversed(self.wing_cross_sections):
+            T_pas_tipWcs_tipLp_to_Wn_Ler = (
+                T_pas_tipWcs_tipLp_to_Wn_Ler
+                @ wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+            )
+        tipLpHomog_Wn_Ler = (
+            T_pas_tipWcs_tipLp_to_Wn_Ler
+            @ transformations.generate_homog(np.array([0.0, 0.0, 0.0]), True)
+        )
+        tipLpHomog_G_Cg = self.T_pas_Wn_Ler_to_G_Cg @ tipLpHomog_Wn_Ler
+        ################################################################################
 
-        projected_tipLp_G_rootLp = np.dot(tipLp_G_rootLp, self.WnY_G) * self.WnY_G
+        projected_tipLp_G_Ler = np.dot(tipLp_G_Ler, self.WnY_G) * self.WnY_G
 
-        span = np.linalg.norm(projected_tipLp_G_rootLp)
+        span = np.linalg.norm(projected_tipLp_G_Ler)
 
         # If the wing is symmetric and continuous, multiply the span by two.
         if self.symmetry_type == 4:
@@ -1030,16 +1047,28 @@ class Wing:
                 wing_cross_section_id + 1
             ]
 
-            root_chord = wing_cross_section.chord
-            tip_chord = next_wing_cross_section.chord
+            chord = wing_cross_section.chord
+            next_chord = next_wing_cross_section.chord
 
-            # ToDo: Modify this logic to account for the chained translations and
-            #  rotations down the list of WingCrossSections.
             # Find this section's span by following the same procedure as for the
             # overall Wing's span.
+            ############################################################################
+            # ToDo: Modify this logic to account for the chained translations and
+            #  rotations down the list of WingCrossSections.
+            # Old Method: This is definitely wrong
             nextLp_G_Lp = (
                 next_wing_cross_section.Lp_Wcsp_Lpp - wing_cross_section.Lp_Wcsp_Lpp
             )
+            # Attempted Corrected Method: Stuck on how to convert nextLpHomog_Wcs_Lp to
+            # nextLp_G_Lp
+            T_pas_nextWcs_nextLp_to_Wcs_Lp = (
+                next_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+            )
+            nextLpHomog_Wcs_Lp = (
+                T_pas_nextWcs_nextLp_to_Wcs_Lp
+                @ transformations.generate_homog(np.array([0.0, 0.0, 0.0]), True)
+            )
+            ############################################################################
 
             projected_nextLp_G_Lp = np.dot(nextLp_G_Lp, self.WnZ_G) * self.WnZ_G
 
@@ -1050,9 +1079,7 @@ class Wing:
             # the integral from the cited equation can be shown to evaluate to the
             # following.
             integral += (
-                section_span
-                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-                / 3
+                section_span * (chord**2 + chord * next_chord + next_chord**2) / 3
             )
 
         # Multiply the integral's value by the coefficients from the cited equation.
@@ -1370,10 +1397,7 @@ class WingCrossSection:
             )
         )
 
-        return (
-            T_rot_pas_Wcsp_to_Wcs
-            @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
-        )
+        return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
 
     @property
     def T_pas_Wcs_Lp_to_Wcsp_Lpp(self):
@@ -1441,6 +1465,9 @@ class WingCrossSection:
     #     return self.leading_edge + chordwise_vector
 
 
+# ToDo: Update this class's nomenclature to comply with the new standards discussed
+#  in docs\ANGLE_VECTORS_AND_TRANSFORMATIONS.md and docs\AXES_POINTS_AND_FRAMES.md.
+#  It works fine as is, so I'm leaving it alone for now.
 class Airfoil:
     """This class is used to contain the airfoil of a WingCrossSection.
 

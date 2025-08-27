@@ -238,7 +238,7 @@ class Airplane:
         # this is done in Wing's init method.
         coincident_symmetry_plane = True
         if (
-            wing.symmetry_point_prelimWn_prelimLer
+            wing.symmetry_point_prelimWn_prelimLer is None
             or wing.symmetry_normal_prelimWn is None
         ):
             coincident_symmetry_plane = False
@@ -282,10 +282,10 @@ class Airplane:
                 # symmetric=True, coincident_symmetry_plane=False
                 reflected_wing_cross_sections = []
                 for wing_cross_section in wing.wing_cross_sections:
-                    airfoil = wing_cross_section.Airfoil
+                    airfoil = wing_cross_section.airfoil
 
                     reflected_airfoil = Airfoil(
-                        name=airfoil.Name,
+                        name=airfoil.name,
                         coordinates=np.copy(airfoil.coordinates),
                         repanel=airfoil.repanel,
                         n_points_per_side=airfoil.n_points_per_side,
@@ -305,7 +305,7 @@ class Airplane:
                             airfoil=reflected_airfoil,
                             num_spanwise_panels=wing_cross_section.num_spanwise_panels,
                             chord=wing_cross_section.chord,
-                            Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpps),
+                            Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
                             angles_Wcsp_to_Wcs_i321=np.copy(
                                 wing_cross_section.angles_Wcsp_to_Wcs_i321
                             ),

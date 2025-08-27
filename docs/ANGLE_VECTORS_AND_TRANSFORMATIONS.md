@@ -32,7 +32,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 #### Variable Name Pattern
 
-\[variable name, default to “angles”\]\_pas\_\[source axes ID\]\_to\_\[target axes ID\]\_\[sequence ID\]
+\[variable name, default to “angles”\]\_\[source axes ID\]\_to\_\[target axes ID\]\_\[sequence ID\]
 
 #### Text Reference Pattern
 
@@ -42,22 +42,22 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 #### Local reference examples
 
-* Variables: angles\_pas\_E\_to\_B\_i321  
+* Variables: angles\_E\_to\_B\_i321  
 * Text: …angles describing the orientation of the Earth axes relative to the body axes using an intrinsic 3-2’-1” sequence…
 
 #### Wing-local reference examples
 
-* Variables: angles\_pas\_Wcs1\_to\_Wn\_i321  
+* Variables: angles\_Wcs1\_to\_Wn\_i321  
 * Text: …angles describing the orientation of the wing axes from the first wing cross section's axes using an intrinsic 3-2’-1” sequence…
 
 #### Airplane-local reference examples
 
-* Variables: angles\_pas\_Wn2\_to\_G\_i321  
+* Variables: angles\_Wn2\_to\_G\_i321  
 * Text: …angles describing the orientation of the geometry axes from the second wing's axes using an intrinsic 3-2’-1” sequence…
 
 #### Non-local reference examples
 
-* Variables: angles\_pas\_BP1\_to\_E\_e123  
+* Variables: angles\_BP1\_to\_E\_e123  
 * Text: …angles describing the orientation of the Earth axes from the first airplane's body axes using an extrinsic 1-2-3 sequence…
 
 ## Active Angle Vectors

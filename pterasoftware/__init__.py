@@ -33,6 +33,8 @@ This package contains the following modules:
 
     panel.py: This module contains the Panel class.
 
+    parameter_validation.py: This module contains common parameter validation functions.
+
     problems.py: This module contains the class definitions for different types of
     problems.
 
@@ -61,6 +63,7 @@ import pterasoftware.movement
 import pterasoftware.operating_point
 import pterasoftware.output
 import pterasoftware.panel
+import pterasoftware.parameter_validation
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method

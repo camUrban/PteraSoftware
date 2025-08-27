@@ -24,6 +24,7 @@ import scipy.interpolate as sp_interp
 
 from . import functions
 from . import meshing
+from . import parameter_validation
 
 
 class Airplane:
@@ -35,11 +36,13 @@ class Airplane:
         Date of Retrieval:    04/23/2020
 
     This class contains the following public methods:
-        set_reference_dimensions_from_main_wing: This method sets the reference
-        dimensions of the Airplane from measurements obtained from its first Wing.
 
-        process_wing_symmetry: This method processes Wings with symmetric=True
-        and converts them to separate Wings when needed (Scenario 5).
+        process_wing_symmetry: This method processes a Wing to determine what type of
+        symmetry it has. If necessary, it then modifies the Wing. If type 5 symmetry
+        is detected, it also creates a second reflected Wing. Finally, a list of
+        Wings is returned. For types 1-4 symmetry this contains only the one modified
+        Wing, but for type 5 symmetry it contains the modified Wing followed by the
+        new reflected Wing.
 
         validate_first_airplane_constraints: This method validates that the first
         Airplane in a simulation has Cgi_E_I set to zeros, as required by the
@@ -51,10 +54,7 @@ class Airplane:
     Subclassing:
         This class is not meant to be subclassed.
 
-    The Airplane class serves as the root coordinate system for the aircraft geometry.
-    All coordinate systems are ultimately defined relative to the Airplane's local
-    geometry axes, which represent the aircraft's primary reference frame. The Airplane
-    class is responsible for:
+    The Airplane class is responsible for:
 
     1. Defining the local geometry axes as the root coordinate system
     2. Managing Wings and their coordinate transformations
@@ -63,7 +63,7 @@ class Airplane:
     4. Providing reference dimensions for aerodynamic calculations
     5. Managing the moment reference point for force and moment calculations
 
-    Local geometry axes convention:
+    Every Airplane has a geometry axis system, where:
     - +x: Points aft along fuselage
     - +y: Points to the right (starboard direction)
     - +z: Points upward (completing right-handed coordinate system)
@@ -83,12 +83,16 @@ class Airplane:
         """This is the initialization method.
 
         :param wings: list of Wings
-            This is a list of the airplane's wings defined as Wings. It must
-            contain at least one Wing. Wings with symmetric=True and non-coincident
-            symmetry planes will be automatically processed into separate Wings
-            during initialization (Scenario 5).
+
+            This is a list of the airplane's wings defined as Wings. It must contain
+            at least one Wing. Wings with symmetric=True and non-coincident symmetry
+            planes will be automatically processed into separate Wings during
+            initialization (Scenario 5).
+
         :param name: str, optional
+
             A sensible name for your airplane. The default is "Untitled Airplane".
+
         :param Cgi_E_I: (3,) ndarray of floats, optional
 
             Position of this Airplane's starting point (in Earth axes, relative to
@@ -103,78 +107,204 @@ class Airplane:
             This defines the orientation of the airplane's body axes relative to
             Earth axes. Note that body axes differ from geometry axes: body axes
             point forward/right/down while geometry axes point aft/right/up. The
-            units are degrees. The first angle must lie in the range (-180,
-            180] degrees, the second in [-60, 60] degrees, and the third in (-90,
-            90) degrees. This is to reduce the chance of edge cases, and to eliminate
-            the risk of gimbal lock. The default is np.array( [0.0, 0.0, 0.0]).
+            units are degrees. The first angle must lie in the range (-180.0,
+            180.0] degrees, the second in [-60.0, 60.0] degrees, and the third in (
+            -90.0, 90.0) degrees. This is to reduce the chance of edge cases,
+            and to eliminate the risk of gimbal lock. The default is np.array([0.0,
+            0.0, 0.0]).
 
         :param weight: float, optional
+
             This parameter holds the weight of the aircraft in Newtons. This is used
             by the trim functions. It must be greater than or equal to zero. The
             default value is 0.0.
+
         :param s_ref: float, optional if more than one Wing is in the wings list.
+
             This is the reference wetted area. If not set, it populates from first
-            Wing. The units are square meters.
+            Wing. If set, it must be greater than zero. The units are square meters.
+
         :param c_ref: float, optional if more than one Wing is in the wings list.
+
             This is the reference chord length. If not set, it populates from first
-            Wing. The units are meters.
+            Wing. If set, it must be greater than zero. The units are meters.
+
         :param b_ref: float, optional if more than one Wing is in the wings list.
+
             This is the reference span. If not set, it populates from first
-            Wing. The units are meters.
+            Wing. If set, it must be greater than zero. The units are meters.
         """
-        # Initialize the list of wings or raise an exception if it is empty.
-        if len(wings) > 0:
-            self.wings = wings
+        wings = parameter_validation.validate_non_empty_list(wings, "wings")
+        processed_wings = []
+        for wing in wings:
+            if not isinstance(wing, Wing):
+                raise TypeError("Every element in wings must be a Wing")
+            processed_wings.extend(self.process_wing_symmetry(wing))
+        self.wings = processed_wings
+
+        self.name = parameter_validation.validate_string(name, "name")
+        self.Cgi_E_I = parameter_validation.validate_3d_vector_float(Cgi_E_I, "Cgi_E_I")
+
+        angles_E_to_B_i321 = parameter_validation.validate_3d_vector_float(
+            angles_E_to_B_i321, "angles_E_to_B_i321"
+        )
+        angles_E_to_B_i321[0] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_i321[0], "angles_E_to_B_i321[0]", -180.0, False, 180.0, True
+        )
+        angles_E_to_B_i321[1] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_i321[1], "angles_E_to_B_i321[1]", -60.0, True, 60.0, True
+        )
+        angles_E_to_B_i321[2] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_i321[2], "angles_E_to_B_i321[2]", -90.0, False, 90.0, False
+        )
+        self.angles_E_to_B_i321 = angles_E_to_B_i321
+
+        self.weight = parameter_validation.validate_non_negative_scalar_float(
+            weight, "weight"
+        )
+
+        # If any of the passed reference dimensions are None, set them to first Wing's
+        # corresponding reference. Otherwise, set them to the passed dimension after
+        # checking that it is valid.
+        if s_ref is None:
+            self.s_ref = self.wings[0].projected_area
         else:
-            raise Exception("An Airplane's list of wings must have at least one entry.")
+            self.s_ref = parameter_validation.validate_non_negative_scalar_float(
+                s_ref, "s_ref"
+            )
+        if c_ref is None:
+            self.c_ref = self.wings[0].mean_aerodynamic_chord
+        else:
+            self.c_ref = parameter_validation.validate_non_negative_scalar_float(
+                c_ref, "c_ref"
+            )
+        if b_ref is None:
+            self.b_ref = self.wings[0].span
+        else:
+            self.b_ref = parameter_validation.validate_non_negative_scalar_float(
+                b_ref, "b_ref"
+            )
 
-        # Initialize the name, starting point coordinates, body orientation, and weight.
-        self.name = name
-        self.Cgi_E_I = np.array(Cgi_E_I, dtype=float)
-
-        # ToDo: Implement validation methods for these two parameters.
-        self.anglesi_E_to_B_i321 = np.array(angles_E_to_B_i321, dtype=float)
-        self.weight = weight
-
-        # Set the reference dimensions to be the first Wing's reference dimensions.
-        self.set_reference_dimensions_from_main_wing()
-
-        # If any of the passed reference dimensions are not None, set that reference
-        # dimension to be what was passed.
-        if s_ref is not None:
-            self.s_ref = s_ref
-        if c_ref is not None:
-            self.c_ref = c_ref
-        if b_ref is not None:
-            self.b_ref = b_ref
-
-        # Calculate the total number of panels of all the Wings in this Airplane.
+        # Mesh each wing and add up the total number of panels of all the Wings.
         self.num_panels = 0
-        for wing_position, wing in enumerate(self.wings):
+        for wing in self.wings:
+            meshing.mesh_wing(wing)
             self.num_panels += wing.num_panels
 
         # Initialize empty class attributes to hold the force, moment,
         # force coefficients, and moment coefficients this Airplane experiences.
-        self.total_near_field_force_wind_axes = None
-        self.total_near_field_force_coefficients_wind_axes = None
-        self.total_near_field_moment_wind_axes = None
-        self.total_near_field_moment_coefficients_wind_axes = None
+        self.total_near_field_force_W = None
+        self.total_near_field_force_coefficients_W = None
+        self.total_near_field_moment_W = None
+        self.total_near_field_moment_coefficients_W = None
 
-    def set_reference_dimensions_from_main_wing(self):
-        """This method sets the reference dimensions of the Airplane from
-        measurements obtained from the first Wing.
+    @staticmethod
+    def process_wing_symmetry(wing):
+        """This method processes a Wing to determine what type of symmetry it has. If
+        necessary, it then modifies the Wing. If type 5 symmetry is detected,
+        it also creates a second reflected Wing. Finally, a list of Wings is
+        returned. For types 1-4 symmetry this contains only the one modified Wing,
+        but for type 5 symmetry it contains the modified Wing followed by the new
+        reflected Wing.
 
-        :return: None
+        :return: list of Wings
         """
+        # TODO: Implement Scenario 5 Wing processing
+        # This will involve:
+        # 1. Identify Wings with symmetric=True and non-coincident symmetry planes
+        # 2. Modify original Wing parameters (set symmetric=False, etc.)
+        # 3. Create reflected Wing with mirror_only=True
+        # 4. Handle control surface deflection sign flipping for asymmetric surfaces
+        # 5. Insert reflected Wing into wings list
 
-        main_wing = self.wings[0]
+        if not wing.symmetric:
+            if not wing.mirror_only:
+                # Type 1 Symmetry:
+                # symmetric=False, mirror_only=False
+                wing.symmetry_type = 1
+                return [wing]
+            else:
+                # ToDo: Create a method for determining if this Wing's symmetry plane
+                #  is coincident with its wing axes' xz-plane. Use it to set the
+                #  value of coincident_planes.
+                coincident_planes = True
+                if coincident_planes:
+                    # Type 2 Symmetry:
+                    # symmetric=False, mirror_only=True, coincident_planes=True
+                    wing.symmetry_type = 2
+                    return [wing]
+                else:
+                    # Type 3 Symmetry:
+                    # symmetric=False, mirror_only=True, coincident_planes=False
+                    wing.symmetry_type = 3
+                    return [wing]
+        else:
+            # ToDo: Once it's implemented, use the coincident planes method to set
+            #  the value of coincident_planes.
+            coincident_planes = True
+            if coincident_planes:
+                # Type 4 Symmetry:
+                # symmetric=True, coincident_planes=True
+                wing.symmetry_type = 4
+                return [wing]
+            else:
+                # Type 5 Symmetry:
+                # symmetric=True, coincident_planes=False
+                reflected_wing_cross_sections = []
+                for wing_cross_section in wing.wing_cross_sections:
+                    airfoil = wing_cross_section.Airfoil
 
-        # Set the object's reference dimension attributes to be the reference
-        # dimension attributes of the first Wing. These attributes are calculated via
-        # methods in the Wing class.
-        self.s_ref = main_wing.projected_area
-        self.b_ref = main_wing.span
-        self.c_ref = main_wing.mean_aerodynamic_chord
+                    reflected_airfoil = Airfoil(
+                        name=airfoil.Name,
+                        coordinates=np.copy(airfoil.coordinates),
+                        repanel=airfoil.repanel,
+                        n_points_per_side=airfoil.n_points_per_side,
+                    )
+
+                    if wing_cross_section.control_surface_type == "asymmetric":
+                        reflected_control_surface_deflection = (
+                            -1 * wing_cross_section.control_surface_deflection
+                        )
+                    else:
+                        reflected_control_surface_deflection = (
+                            wing_cross_section.control_surface_deflection
+                        )
+
+                    reflected_wing_cross_sections.append(
+                        WingCrossSection(
+                            airfoil=reflected_airfoil,
+                            num_spanwise_panels=wing_cross_section.num_spanwise_panels,
+                            chord=wing_cross_section.chord,
+                            local_position=np.copy(wing_cross_section.local_positions),
+                            local_rotations=np.copy(wing_cross_section.local_rotations),
+                            control_surface_type=wing_cross_section.control_surface_type,
+                            control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
+                            control_surface_deflection=reflected_control_surface_deflection,
+                            spanwise_spacing=wing_cross_section.spanwise_spacing,
+                        )
+                    )
+
+                reflected_wing = Wing(
+                    wing_cross_sections=reflected_wing_cross_sections,
+                    name=f"Reflected {wing.name}",
+                    prelim_Ler_G_Cg=np.copy(wing.prelim_Ler_G_Cg),
+                    angles_G_to_prelim_Wn=np.copy(wing.angles_G_to_prelim_Wn),
+                    symmetric=False,
+                    mirror_only=True,
+                    symmetry_normal_G=np.copy(wing.symmetry_normal_G),
+                    symmetry_point_G_Cg=np.copy(wing.symmetry_point_G_Cg),
+                    num_chordwise_panels=wing.num_chordwise_panels,
+                    chordwise_spacing=wing.chordwise_spacing,
+                )
+                reflected_wing.symmetry_type = 3
+
+                wing.symmetric = False
+                wing.mirror_only = False
+                wing.symmetry_normal_G = None
+                wing.symmetry_point_G_Cg = None
+                wing.symmetry_type = 1
+
+                return [wing, reflected_wing]
 
     def validate_first_airplane_constraints(self):
         """This method validates constraints specific to the first Airplane in a simulation.
@@ -187,32 +317,11 @@ class Airplane:
         :raises Exception: If first Airplane constraints are violated.
         """
         if not np.allclose(self.Cgi_E_I, np.array([0.0, 0.0, 0.0])):
-            raise Exception(
-                "The first Airplane in a simulation must have Cgi_E_I set to "
+            raise ValueError(
+                "The first Airplane in a simulation must have Cgi_E_I set to"
                 "np.array([0.0, 0.0, 0.0]) since the simulation starting point "
                 "is defined as the first Airplane's CG at t=0."
             )
-
-    def process_wing_symmetry(self):
-        """This method processes Wings with symmetric=True for Scenario 5 conversion.
-
-        For Wings with symmetric=True and symmetry planes not coincident with the Wing's
-        xz-plane, this method:
-        1. Modifies the original Wing to become a "Scenario 1 Wing"
-        2. Creates a new reflected Wing as a "Scenario 3 Wing"
-        3. Adds the reflected Wing to the wings list immediately after the original
-        4. Handles asymmetric control surface deflection sign flipping
-
-        :return: None
-        """
-        # TODO: Implement Scenario 5 Wing processing
-        # This will involve:
-        # 1. Identify Wings with symmetric=True and non-coincident symmetry planes
-        # 2. Modify original Wing parameters (set symmetric=False, etc.)
-        # 3. Create reflected Wing with mirror_only=True
-        # 4. Handle control surface deflection sign flipping for asymmetric surfaces
-        # 5. Insert reflected Wing into wings list
-        pass
 
 
 class Wing:
@@ -224,6 +333,11 @@ class Wing:
         Date of Retrieval:    04/24/2020
 
     This class contains the following public methods:
+
+        generate_mesh: This method generates this Wing's mesh, which finishes the
+        process of preparing the Wing to be used in a simulation. It is called by the
+        Wing's parent Airplane, after it's determined its symmetry type.
+
         unit_up_vector: This method sets a property for the Wing's up orientation
         vector, which is defined as the cross product of its unit chordwise and unit
         normal vectors.
@@ -248,78 +362,109 @@ class Wing:
         This class is not meant to be subclassed.
 
     Every Wing has its axis system, known as wing axes. The user sets the
-    relationship between these axes and geometry axes with the local_position and
-    local_rotations parameters. However, the steps for transforming a vector from
-    geometry axes to wing axes, and the interpretation of the wing axes orientation
-    and position relative to a Wing's geometry, also depend on the parameters
-    symmetric, mirror_only, symmetry_normal_G, and symmetry_point_G_Cg:
+    relationship between these axes and geometry axes with the prelim_Ler_G_Cg and
+    angles_G_to_prelim_Wn parameters. However, the steps for transforming a vector
+    from geometry axes to wing axes, and the interpretation of the wing axes
+    orientation and position relative to a Wing's geometry, also depend on the
+    parameters symmetric, mirror_only, symmetry_normal_G, and symmetry_point_G_Cg:
+
         1. symmetric is False
+
             A. mirror_only is False
+
                 I. The symmetry plane must be undefined (symmetry_normal_G and
                 symmetry_point_G_Cg must be None)
+
                     Scenario 1:
-                    - local_position is the final location of leading edge of this
-                    Wing's root WingCrossSection, as defined in geometry axes.
-                    - local_position is also the final location of the origin of this
-                    Wing's axes, as defined in geometry axes.
-                    - Translation by local_position followed by rotations by
-                    local_rotations fully define this Wing's axes with respect to the
-                    geometry axes. The wing axes will also retain the handedness of
-                    the geometry axes.
+
+                    - prelim_Ler_G_Cg is the final location of the leading edge of
+                    this Wing's root WingCrossSection, as defined in geometry axes.
+
+                    - prelim_Ler_G_Cg is also the final location of the origin of
+                    this Wing's axes, as defined in geometry axes.
+
+                    - Translation by prelim_Ler_G_Cg followed by rotations by
+                    angles_G_to_prelim_Wn fully define this Wing's axes with respect
+                    to the geometry axes. The wing axes will also retain the
+                    handedness of the geometry axes.
+
             B. mirror_only is True
+
                 I. The symmetry plane is coincident with this Wing's axes' xz-plane
+
                     Scenario 2:
-                    - local_position is the final location of leading edge of this
-                    Wing's root WingCrossSection, as defined in geometry axes.
-                    - local_position is also the final location of the origin of this
-                    Wing's axes, as defined in geometry axes.
-                    - Translation by local_position followed by rotations by
-                    local_rotations does not fully define orientation of this Wing's
-                    axes with respect to the geometry axes. After translation and
-                    rotation, the coordinate system also needs to be reflected across
-                    the symmetry plane, which will flip the wing axes' handedness to
-                    be opposite that of geometry axes.
+
+                    - prelim_Ler_G_Cg is the final location of the leading edge of
+                    this Wing's root WingCrossSection, as defined in geometry axes.
+
+                    - prelim_Ler_G_Cg is also the final location of the origin of
+                    this Wing's axes, as defined in geometry axes.
+
+                    - Translation by prelim_Ler_G_Cg followed by rotations by
+                    angles_G_to_prelim_Wn does not fully define the orientation of
+                    this Wing's axes with respect to the geometry axes. After
+                    translation and rotation, the coordinate system also needs to be
+                    reflected across the symmetry plane, which will flip the wing
+                    axes' handedness to be opposite that of geometry axes.
+
                 II. The symmetry plane is not coincident with this Wing's axes'
-                xz-plane Scenario 3:
-                    - local_position is not final location of leading edge of this
-                    Wing's root WingCrossSection, as defined in geometry axes.
-                    - local_position is not the final location of the origin of this
+                xz-plane
+
+                    Scenario 3:
+
+                    - prelim_Ler_G_Cg is not final location of the leading edge of
+                    this Wing's root WingCrossSection, as defined in geometry axes.
+
+                    - prelim_Ler_G_Cg is not the final location of the origin of this
                     Wing's axes, as defined in geometry axes.
-                    - Translation by local_position followed by rotations by
-                    local_rotations does not fully define orientation of this Wing's
-                    axes with respect to the geometry axes. After translation and
-                    rotation, the coordinate system also needs to be reflected across
-                    the symmetry plane, which will flip the wing axes' handedness to
-                    be opposite that of geometry axes.
+
+                    - Translation by prelim_Ler_G_Cg followed by rotations by
+                    angles_G_to_prelim_Wn does not fully define orientation of this
+                    Wing's axes with respect to the geometry axes. After translation
+                    and rotation, the coordinate system also needs to be reflected
+                    across the symmetry plane, which will flip the wing axes'
+                    handedness to be opposite that of geometry axes.
+
         2. symmetric is True
+
             A. mirror_only must be False
+
                 I. the symmetry plane is coincident with this Wing's axes' xz-plane
+
                     Scenario 4:
-                    - local_position is the final location of leading edge of this
-                    Wing's root WingCrossSection, as defined in geometry axes.
+
+                    - prelim_Ler_G_Cg is the final location of the leading edge of
+                    this Wing's root WingCrossSection, as defined in geometry axes.
                     However, while the root WingCrossSection is the still the first
                     item in the wing_cross_sections list, when meshed, panels will
                     extend from the root in both the +y and -y wing axis directions.
                     The length of the wing_cross_sections list remains unchanged.
-                    - local_position is also the final location of the origin of this
-                    Wing's axes, as defined in geometry axes.
-                    - Translation by local_position followed by rotations by
-                    local_rotations fully define this Wing's axes with respect to the
-                    geometry axes. The wing axes will also retain the handedness of
-                    the geometry axes.
+
+                    - prelim_Ler_G_Cg is also the final location of the origin of
+                    this Wing's axes, as defined in geometry axes.
+
+                    - Translation by prelim_Ler_G_Cg followed by rotations by
+                    angles_G_to_prelim_Wn fully define this Wing's axes with respect
+                    to the geometry axes. The wing axes will also retain the
+                    handedness of the geometry axes.
+
                 II. the symmetry plane is not coincident with this Wing's axes' xz-plane
+
                     Scenario 5:
+
                     - This Wing's Airplane will set this Wing's symmetric parameter
                     to False, its mirror_only parameter to False,
                     its symmetry_normal_G parameter to None and its
                     symmetry_point_G_Cg parameter to None. These changes turn this
                     Wing into a "Scenario 1 Wing."
+
                     - The Airplane will also create a new Wing, and add it to its
-                    wings list immediately after the current Wing. The new Wing will
-                    have the same name as this Wing, but with the prefix "Reflected
-                    ". The new Wing also will have all the same parameters as this
-                    Wing, except that symmetric will be False and mirror_only will
-                    be True, which means that it will be a "Scenario 3 Wing."
+                    wings list immediately after this Wing. The new Wing will have
+                    the same name as this Wing, but with the prefix "Reflected ". The
+                    new Wing also will have all the same parameters as this Wing,
+                    except that symmetric will be False and mirror_only will be True,
+                    which means that it will be a "Scenario 3 Wing."
+
                     - Also, if the control_surface_type is "asymmetric" for any of
                     this Wing's WingCrossSections, the reflected Wing's corresponding
                     WingCrossSections will have their control_surface_deflection
@@ -481,36 +626,57 @@ class Wing:
         # Validate tip WingCrossSection constraints.
         self.wing_cross_sections[-1].validate_tip_constraints()
 
-        # TODO: Determine which reflection "Wing Scenario" applies
+        # These attributes will be initialized or populated once this Wing's parent
+        # Airplane calls generate_mesh.
+        self.symmetry_type = None
+        self.num_spanwise_panels = None
+        self.num_panels = None
+        self.wake_ring_vortex_vertices = None
+        self.wake_ring_vortices = None
+        self.Panels = None
 
-        # TODO: Uncomment this once we've determined which "Wing Scenario" applies
-        # # Find the number of spanwise panels on the wing by adding each cross
-        # # section's number of spanwise panels. Exclude the last cross section's
-        # # number of spanwise panels as this is irrelevant. If the wing is symmetric,
-        # # multiply the summation by two.
-        # self.num_spanwise_panels = 0
-        # for wing_cross_section in self.wing_cross_sections[:-1]:
-        #     self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
-        # if self.symmetric:
-        #     self.num_spanwise_panels *= 2
-        #
-        # # Calculate the number of panels on this wing.
-        # self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
+    def generate_mesh(self, symmetry_type):
+        """This method generates this Wing's mesh, which finishes the process of
+        preparing the Wing to be used in a simulation. It is called by the Wing's
+        parent Airplane, after it's determined its symmetry type.
 
-        # TODO: Change these if we are a "Scenario 5" Wing.
-        self.Ler_G_Cg = self.prelim_Ler_G_Cg
-        self.angles_G_to_Wn = self.angles_G_to_prelim_Wn
+        :param symmetry_type:
+        :return:
+        """
+        symmetry_type = parameter_validation.validate_scalar_int(
+            symmetry_type, "symmetry_type"
+        )
 
-        # TODO: Check that meshing works correctly
-        # # Initialize the panels attribute. Then mesh the wing, which will populate
-        # # this attribute.
-        # self.panels = None
-        # meshing.mesh_wing(self)
+        # 5 isn't a valid symmetry type, because the parent Airplane should have
+        # modified a Wing that initially had type 5 symmetry to have type 1 symmetry,
+        # and then made a new reflected Wing with type 3 symmetry.
+        valid_symmetry_types = [1, 2, 3, 4]
+        if symmetry_type not in valid_symmetry_types:
+            raise ValueError(f"symmetry_type must be one of {valid_symmetry_types}")
+        self.symmetry_type = symmetry_type
+
+        # Find the number of spanwise panels on the wing by adding each cross
+        # section's number of spanwise panels. Exclude the last cross section's
+        # number of spanwise panels as this is irrelevant. If the wing has type 4
+        # symmetry multiply the summation by two.
+        self.num_spanwise_panels = 0
+        for wing_cross_section in self.wing_cross_sections[:-1]:
+            self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
+        if self.symmetry_type == 4:
+            self.num_spanwise_panels *= 2
+
+        # Calculate the number of panels on this wing.
+        self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize an empty array to hold this wing's wake ring vortices and its
         # wake ring vortex vertices.
-        self.wake_ring_vortex_vertices = np.empty((0, self.num_spanwise_panels + 1, 3))
+        self.wake_ring_vortex_vertices = np.empty(
+            (0, self.num_spanwise_panels + 1, 3), dtype=float
+        )
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
+
+        # Generate the wing's mesh, which populates the Panels attribute.
+        meshing.mesh_wing(self)
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self):

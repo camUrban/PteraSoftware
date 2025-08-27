@@ -629,6 +629,8 @@ class Wing:
             elif wing_cross_section_id == num_wing_cross_sections - 1:
                 # Validate tip WingCrossSection constraints.
                 wing_cross_section.validate_tip_constraints()
+            # Set the validated flag for this WingCrossSection.
+            wing_cross_section.validated = True
         self.wing_cross_sections = wing_cross_sections
 
         # Validate name and prelimLer_G_Cg.
@@ -965,14 +967,14 @@ class Wing:
 
         # ToDo: Modify this logic to account for the chained translations and
         #  rotations down the list of WingCrossSections.
-        tipLep_G_rootLep = (
+        tipLp_G_rootLp = (
             self.wing_cross_sections[-1].Lp_Wcsp_Lpp
             - self.wing_cross_sections[0].Lp_Wcsp_Lpp
         )
 
-        projected_tipLep_G_rootLep = np.dot(tipLep_G_rootLep, self.WnY_G) * self.WnY_G
+        projected_tipLp_G_rootLp = np.dot(tipLp_G_rootLp, self.WnY_G) * self.WnY_G
 
-        span = np.linalg.norm(projected_tipLep_G_rootLep)
+        span = np.linalg.norm(projected_tipLp_G_rootLp)
 
         # If the wing is symmetric and continuous, multiply the span by two.
         if self.symmetry_type == 4:
@@ -1035,13 +1037,13 @@ class Wing:
             #  rotations down the list of WingCrossSections.
             # Find this section's span by following the same procedure as for the
             # overall Wing's span.
-            nextLep_G_Lep = (
+            nextLp_G_Lp = (
                 next_wing_cross_section.Lp_Wcsp_Lpp - wing_cross_section.Lp_Wcsp_Lpp
             )
 
-            projected_nextLep_G_Lep = np.dot(nextLep_G_Lep, self.WnZ_G) * self.WnZ_G
+            projected_nextLp_G_Lp = np.dot(nextLp_G_Lp, self.WnZ_G) * self.WnZ_G
 
-            section_span = np.linalg.norm(projected_nextLep_G_Lep)
+            section_span = np.linalg.norm(projected_nextLp_G_Lp)
 
             # Each Wing section is, by definition, trapezoidal (at least when
             # projected on to the wing's projection plane). For a trapezoid,
@@ -1075,6 +1077,18 @@ class WingCrossSection:
 
         validate_tip_constraints: This method is called by the parent Wing to
         validate constraints specific to tip WingCrossSections.
+
+        T_pas_Wcsp_Lpp_to_Wcs_Lp: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from parent wing
+        cross section axes relative to the parent leading point to wing cross section
+        axes relative to the leading point. This is set to None if the
+        WingCrossSection hasn't been fully validated yet.
+
+        T_pas_Wcs_Lp_to_Wcsp_Lpp: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from wing cross
+        section axes relative to the leading point to parent wing cross section axes
+        relative to the parent leading point. This is set to None if the
+        WingCrossSection hasn't been fully validated yet.
 
     This class contains the following class attributes:
         None
@@ -1135,7 +1149,7 @@ class WingCrossSection:
             This is the position in meters of this WingCrossSection's leading edge in
             parent wing cross section axes, relative to the parent leading edge
             point. If this is the root WingCrossSection, the parent wing cross
-            section axes are the wing axes and the parent leading edge point is the
+            section axes are the wing axes and the parent leading point is the
             Wing's leading edge root point. If not, the parent axes and point are
             those of the previous WingCrossSection. If this is the root
             WingCrossSection, it must be np.array([0.0, 0.0, 0.0]). The second array
@@ -1276,6 +1290,11 @@ class WingCrossSection:
                 )
         self.spanwise_spacing = spanwise_spacing
 
+        # Define a flag for if this WingCrossSection has been fully validated. This
+        # will be set by the parent Wing after calling its additional validation
+        # methods.
+        self.validated = False
+
         # ToDo: Determine if we still need this attribute. If so, uncomment it and
         #  modify Wing to set it.
         # Define an attribute for the parent Wing's unit chordwise vector, which will
@@ -1320,6 +1339,62 @@ class WingCrossSection:
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
+    @property
+    def T_pas_Wcsp_Lpp_to_Wcs_Lp(self):
+        """This method defines a property for the passive transformation matrix which
+        maps in homogeneous coordinates from parent wing cross section axes relative
+        to the parent leading point to wing cross section axes relative to the
+        leading point. This is set to None if the WingCrossSection hasn't been
+        fully validated yet.
+
+        :return: (4,4) ndarray of floats or None
+            4x4 transformation matrix or None if self.validated=False.
+        """
+        if not self.validated:
+            return None
+
+        # Step 1: Create T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, which maps in homogenous
+        # coordinates from parent wing cross section axes relative to the parent
+        # leading point to parent wing cross section axes relative to the leading
+        # point. This is the translation step.
+        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = transformations.generate_T_trans(
+            self.Lp_Wcsp_Lpp, passive=True
+        )
+
+        # Step 2: Create T_rot_pas_Wcsp_to_Wcs, which maps in homogeneous coordinates
+        # from parent wing cross section axes to wing cross section axes This is the
+        # rotation step.
+        T_rot_pas_Wcsp_to_Wcs = transformations.generate_T_rot(
+            transformations.generate_R(
+                self.angles_Wcsp_to_Wcs_i321, passive=True, intrinsic=True, order="321"
+            )
+        )
+
+        return (
+            T_rot_pas_Wcsp_to_Wcs
+            @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
+        )
+
+    @property
+    def T_pas_Wcs_Lp_to_Wcsp_Lpp(self):
+        """This method defines a property for the passive transformation matrix which
+        maps in homogeneous coordinates from wing cross section axes relative to the
+        leading point to parent wing cross section axes relative to the parent
+        leading point. This is set to None if the WingCrossSection hasn't been fully
+        validated yet.
+
+        :return: (4,4) ndarray of floats or None
+            4x4 transformation matrix or None if self.validated=False.
+        """
+        if not self.validated:
+            return None
+
+        return np.linalg.inv(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+
+    # ToDo: I'm going to try and replace the need for these properties by calculating
+    #  them directly in the meshing function. In the new set up, they require
+    #  information about the parent wing cross section axes and parent leading point,
+    #  which we don't have access to.
     # @property
     # def unit_chordwise_vector(self):
     #     """This method defines a property for the wing cross section's unit chordwise

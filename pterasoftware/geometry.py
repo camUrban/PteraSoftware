@@ -961,6 +961,8 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
+        # ToDo: Modify this logic to account for the chained translations and
+        #  rotations down the list of WingCrossSections.
         tipLep_G_rootLep = (
             self.wing_cross_sections[-1].local_position
             - self.wing_cross_sections[0].local_position
@@ -976,75 +978,88 @@ class Wing:
 
         return span
 
-    # ToDo: Refactor these methods.
-    # @property
-    # def standard_mean_chord(self):
-    #     """This method sets a property for the standard mean chord
-    #         of the Wing.
-    #
-    #         The standard mean chord is defined as
-    #     the projected area divided by the span. See their respective methods for the
-    #     definitions of span and projected area.
-    #
-    #     :return: float
-    #         This is the standard mean chord of the wing. It has units of meters.
-    #     """
-    #     return self.projected_area / self.span
-    #
-    # @property
-    # def mean_aerodynamic_chord(self):
-    #     """This method sets a property for the mean aerodynamic
-    #         chord of the Wing.
-    #
-    #     :return: float
-    #         This is the mean aerodynamic chord of the wing. It has units of meters.
-    #     """
-    #     # This method is based on the equation for the mean aerodynamic chord of a
-    #     # wing, which can be found here:
-    #     # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord.
-    #     # This equation integrates the squared chord from the wing center to the wing
-    #     # tip. We will perform this integral piecewise for each section of the wing.
-    #     integral = 0
-    #
-    #     # Iterate through the wing cross sections to add the contribution of their
-    #     # corresponding wing section to the piecewise integral.
-    #     for wing_cross_section_id, wing_cross_section in enumerate(
-    #         self.wing_cross_sections[:-1]
-    #     ):
-    #         next_wing_cross_section = self.wing_cross_sections[
-    #             wing_cross_section_id + 1
-    #         ]
-    #
-    #         root_chord = wing_cross_section.chord
-    #         tip_chord = next_wing_cross_section.chord
-    #
-    #         # Find this section's span by following the same procedure as for the
-    #         # overall wing span.
-    #         section_leading_edge = (
-    #             next_wing_cross_section.leading_edge - wing_cross_section.leading_edge
-    #         )
-    #
-    #         projected_section_leading_edge = (
-    #             np.dot(section_leading_edge, self.unit_normal_vector)
-    #             * self.unit_normal_vector
-    #         )
-    #
-    #         section_span = np.linalg.norm(projected_section_leading_edge)
-    #
-    #         # Each wing section is, by definition, trapezoidal (at least when
-    #         # projected on to the wing's projection plane). For a trapezoid,
-    #         # the integral from the cited equation can be shown to evaluate to the
-    #         # following.
-    #         integral += (
-    #             section_span
-    #             * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-    #             / 3
-    #         )
-    #
-    #     # Multiply the integral's value by the coefficients from the cited equation.
-    #     if self.symmetric:
-    #         return 2 * integral / self.projected_area
-    #     return integral / self.projected_area
+    @property
+    def standard_mean_chord(self):
+        """This method sets a property for the standard mean chord of the Wing.
+
+        The standard mean chord is defined as the projected area divided by the span.
+        See their respective methods for the definitions of span and projected area.
+
+        :return: float or None
+            This is the standard mean chord of the Wing. It has units of meters. None
+            is returned in cases where the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        return self.projected_area / self.span
+
+    @property
+    def mean_aerodynamic_chord(self):
+        """This method sets a property for the mean aerodynamic chord of the Wing.
+
+        :return: float or None
+            This is the mean aerodynamic chord of the Wing. It has units of meters.
+            None is returned in cases where the Wing's symmetry type hasn't been
+            defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # This method is based on the equation for the mean aerodynamic chord of a
+        # wing, which can be found here: https://en.wikipedia.org/wiki/Chord_(
+        # aeronautics)#Mean_aerodynamic_chord. This equation integrates the squared
+        # chord from the Wing's center to the Wing's tip. We will perform this
+        # integral piecewise for each section of the Wing.
+        integral = 0
+
+        # Iterate through the WingCrossSections to add the contribution of their
+        # corresponding Wing section to the piecewise integral.
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
+
+            root_chord = wing_cross_section.chord
+            tip_chord = next_wing_cross_section.chord
+
+            # ToDo: Modify this logic to account for the chained translations and
+            #  rotations down the list of WingCrossSections.
+            # Find this section's span by following the same procedure as for the
+            # overall Wing's span.
+            nextLep_G_Lep = (
+                next_wing_cross_section.local_position -
+                wing_cross_section.local_position
+            )
+
+            projected_nextLep_G_Lep = (
+                np.dot(nextLep_G_Lep, self.WnZ_G)
+                * self.WnZ_G
+            )
+
+            section_span = np.linalg.norm(projected_nextLep_G_Lep)
+
+            # Each Wing section is, by definition, trapezoidal (at least when
+            # projected on to the wing's projection plane). For a trapezoid,
+            # the integral from the cited equation can be shown to evaluate to the
+            # following.
+            integral += (
+                section_span
+                * (root_chord**2 + root_chord * tip_chord + tip_chord**2)
+                / 3
+            )
+
+        # Multiply the integral's value by the coefficients from the cited equation.
+        # Double if the wing is symmetric and continuous.
+        if self.symmetry_type == 4:
+            return 2 * integral / self.projected_area
+        return integral / self.projected_area
 
 
 class WingCrossSection:

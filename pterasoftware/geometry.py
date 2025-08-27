@@ -748,7 +748,9 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
         # Generate the wing's mesh, which populates the Panels attribute.
-        meshing.mesh_wing(self)
+        # ToDo: Uncomment this once meshing has been fixed for the refactored
+        #  geometry definitions.
+        # meshing.mesh_wing(self)
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self):
@@ -966,32 +968,45 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        ################################################################################
-        # ToDo: Modify this logic to account for the chained translations and
-        #  rotations down the list of WingCrossSections.
-        # Old Method: This is definitely wrong
-        tipLp_G_Ler = (
-            self.wing_cross_sections[-1].Lp_Wcsp_Lpp
-            - self.wing_cross_sections[0].Lp_Wcsp_Lpp
-        )
-        # Attempted Corrected Method: Stuck on how to convert tipLpHomog_G_Cg to
-        # tipLp_G_Ler
-        T_pas_tipWcs_tipLp_to_Wn_Ler = np.eye(4, dtype=float)
-        for wing_cross_section in reversed(self.wing_cross_sections):
-            T_pas_tipWcs_tipLp_to_Wn_Ler = (
-                T_pas_tipWcs_tipLp_to_Wn_Ler
-                @ wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        # Calculate the tip WingCrossSection's leading point position by chaining
+        # transformations through all WingCrossSections from root to tip.
+
+        # Start at root leading point (wing axes origin)
+        current_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
+
+        # For each subsequent WingCrossSection, accumulate its displacement
+        for i in range(1, len(self.wing_cross_sections)):
+            wing_cross_section = self.wing_cross_sections[i]
+
+            # Get displacement in parent axes (WingCrossSection[i-1]'s axes)
+            displacement_parent = wing_cross_section.Lp_Wcsp_Lpp
+
+            # Compute transformation from parent axes to wing axes
+            T_parent_to_wing = np.eye(4, dtype=float)
+            for j in range(i - 1, 0, -1):  # Go backwards from parent to root
+                T_parent_to_wing = (
+                    self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
+                    @ T_parent_to_wing
+                )
+
+            # Transform displacement from parent axes to wing axes
+            displacementHomog_parent = transformations.generate_homog(
+                displacement_parent, has_point=False
             )
-        tipLpHomog_Wn_Ler = (
-            T_pas_tipWcs_tipLp_to_Wn_Ler
-            @ transformations.generate_homog(np.array([0.0, 0.0, 0.0]), True)
-        )
-        tipLpHomog_G_Cg = self.T_pas_Wn_Ler_to_G_Cg @ tipLpHomog_Wn_Ler
-        ################################################################################
+            displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
 
-        projected_tipLp_G_Ler = np.dot(tipLp_G_Ler, self.WnY_G) * self.WnY_G
+            # Add to accumulated position
+            current_position_Wn_Ler += displacementHomog_wing[:3]
 
-        span = np.linalg.norm(projected_tipLp_G_Ler)
+        # Now we have tip position in wing axes relative to Ler
+        tipLp_Wn_Ler = current_position_Wn_Ler
+
+        # Project the tip position onto the wing axes' y-direction (spanwise direction)
+        projected_tipLp_Wn_Ler = np.dot(
+            tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
+        ) * np.array([0.0, 1.0, 0.0])
+
+        span = np.linalg.norm(projected_tipLp_Wn_Ler)
 
         # If the wing is symmetric and continuous, multiply the span by two.
         if self.symmetry_type == 4:
@@ -1050,29 +1065,58 @@ class Wing:
             chord = wing_cross_section.chord
             next_chord = next_wing_cross_section.chord
 
-            # Find this section's span by following the same procedure as for the
-            # overall Wing's span.
-            ############################################################################
-            # ToDo: Modify this logic to account for the chained translations and
-            #  rotations down the list of WingCrossSections.
-            # Old Method: This is definitely wrong
-            nextLp_G_Lp = (
-                next_wing_cross_section.Lp_Wcsp_Lpp - wing_cross_section.Lp_Wcsp_Lpp
-            )
-            # Attempted Corrected Method: Stuck on how to convert nextLpHomog_Wcs_Lp to
-            # nextLp_G_Lp
-            T_pas_nextWcs_nextLp_to_Wcs_Lp = (
-                next_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
-            )
-            nextLpHomog_Wcs_Lp = (
-                T_pas_nextWcs_nextLp_to_Wcs_Lp
-                @ transformations.generate_homog(np.array([0.0, 0.0, 0.0]), True)
-            )
-            ############################################################################
+            # Find this section's span by calculating the positions of both
+            # WingCrossSections in wing axes, then finding the distance between them.
 
-            projected_nextLp_G_Lp = np.dot(nextLp_G_Lp, self.WnZ_G) * self.WnZ_G
+            # Calculate current WingCrossSection's position in wing axes
+            current_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
+            for k in range(1, wing_cross_section_id + 1):
+                wcs = self.wing_cross_sections[k]
+                displacement_parent = wcs.Lp_Wcsp_Lpp
 
-            section_span = np.linalg.norm(projected_nextLp_G_Lp)
+                # Transform from parent axes to wing axes
+                T_parent_to_wing = np.eye(4, dtype=float)
+                for j in range(k - 1, 0, -1):
+                    T_parent_to_wing = (
+                        self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
+                        @ T_parent_to_wing
+                    )
+
+                displacementHomog_parent = transformations.generate_homog(
+                    displacement_parent, has_point=False
+                )
+                displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
+                current_position_Wn_Ler += displacementHomog_wing[:3]
+
+            # Calculate next WingCrossSection's position in wing axes
+            next_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
+            for k in range(1, wing_cross_section_id + 2):
+                wcs = self.wing_cross_sections[k]
+                displacement_parent = wcs.Lp_Wcsp_Lpp
+
+                # Transform from parent axes to wing axes
+                T_parent_to_wing = np.eye(4, dtype=float)
+                for j in range(k - 1, 0, -1):
+                    T_parent_to_wing = (
+                        self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
+                        @ T_parent_to_wing
+                    )
+
+                displacementHomog_parent = transformations.generate_homog(
+                    displacement_parent, has_point=False
+                )
+                displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
+                next_position_Wn_Ler += displacementHomog_wing[:3]
+
+            # Find the section vector and project it onto spanwise direction
+            section_vector_Wn = next_position_Wn_Ler - current_position_Wn_Ler
+
+            # Project section vector onto spanwise direction (wing axes y-direction)
+            projected_section_vector = np.dot(
+                section_vector_Wn, np.array([0.0, 1.0, 0.0])
+            ) * np.array([0.0, 1.0, 0.0])
+
+            section_span = np.linalg.norm(projected_section_vector)
 
             # Each Wing section is, by definition, trapezoidal (at least when
             # projected on to the wing's projection plane). For a trapezoid,

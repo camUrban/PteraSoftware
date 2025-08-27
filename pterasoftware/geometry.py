@@ -25,6 +25,7 @@ import scipy.interpolate as sp_interp
 from . import functions
 from . import meshing
 from . import parameter_validation
+from . import transformations
 
 
 class Airplane:
@@ -352,6 +353,16 @@ class Wing:
         process of preparing the Wing to be used in a simulation. It is called by the
         Wing's parent Airplane, after it's determined its symmetry type.
 
+        T_pas_G_Cg_to_Wn_Ler: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from geometry
+        axes relative to the CG point to wing axes relative to the leading edge root
+        point. This is set to None if the Wing's symmetry type hasn't been defined yet.
+
+        T_pas_Wn_Ler_to_G_Cg: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from wing axes
+        relative to the leading edge root point to geometry axes relative to the CG
+        point. This is set to None if the Wing's symmetry type hasn't been defined yet.
+
         unit_up_vector: This method sets a property for the Wing's up orientation
         vector, which is defined as the cross product of its unit chordwise and unit
         normal vectors.
@@ -568,7 +579,8 @@ class Wing:
             parameter interacts with symmetry_point_prelimWn_prelimLer, symmetric,
             and mirror_only, see the class docstring. The default is None.
 
-        :param symmetry_point_prelimWn_prelimLer: (3,) ndarray of floats or None, optional
+        :param symmetry_point_prelimWn_prelimLer: (3,) ndarray of floats or None,
+        optional
 
             A point (in preliminary wing axes, relative to the preliminary leading
             edge root point) that, along with symmetry_normal_prelimWn, defines the
@@ -729,91 +741,84 @@ class Wing:
         # Generate the wing's mesh, which populates the Panels attribute.
         meshing.mesh_wing(self)
 
+    @property
+    def T_pas_G_Cg_to_Wn_Ler(self):
+        """This method defines a property for the passive transformation matrix which
+        maps in homogeneous coordinates from geometry axes relative to the CG point
+        to wing axes relative to the leading edge root point. This is set to None if
+        the Wing's symmetry type hasn't been defined yet.
+
+        :return: (4,4) ndarray of floats or None
+            4x4 transformation matrix or None in cases where the Wing's symmetry type
+            hasn't been defined yet
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Step 1: Create T_trans_pas_G_Cg_to_G_prelimLer, which maps in homogenous
+        # coordinates from geometry axes relative to the CG point to geometry axes
+        # relative to the preliminary leading edge root point. This is the
+        # translation step.
+        T_trans_pas_G_Cg_to_G_prelimLer = transformations.generate_T_trans(
+            self.prelimLer_G_Cg, passive=True
+        )
+
+        # Step 2: Create T_rot_pas_G_to_prelimWn, which maps in homogeneous
+        # coordinates from geometry axes to preliminary wing axes. This is the
+        # rotation step.
+        T_rot_pas_G_to_prelimWn = transformations.generate_T_rot(
+            transformations.generate_R(
+                self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="321"
+            )
+        )
+
+        # Step 3: Create T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler, which maps from
+        # which maps in homogeneous coordinates from preliminary wing axes relative
+        # to the preliminary leading edge root point to wing axes relative to the
+        # leading edge root point. This is the reflection step.
+        if (
+            self.symmetry_normal_prelimWn is not None
+            and self.symmetry_point_prelimWn_prelimLer is not None
+        ):
+            T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = (
+                transformations.generate_T_reflect(
+                    self.symmetry_point_prelimWn_prelimLer,
+                    self.symmetry_normal_prelimWn,
+                    passive=True,
+                )
+            )
+        else:
+            T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = np.eye(4, dtype=float)
+
+        return (
+            T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler
+            @ T_rot_pas_G_to_prelimWn
+            @ T_trans_pas_G_Cg_to_G_prelimLer
+        )
+
+    @property
+    def T_pas_Wn_Ler_to_G_Cg(self):
+        """This method defines a property for the passive transformation matrix which
+        maps in homogeneous coordinates from wing axes relative to the leading edge
+        root point to geometry axes relative to the CG point. This is set to None if
+        the Wing's symmetry type hasn't been defined yet.
+
+        :return: (4,4) ndarray of floats or None
+            4x4 transformation matrix or None in cases where the Wing's symmetry type
+            hasn't been defined yet
+
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        return np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler)
+
     # ToDo: Uncomment and update these parameter methods after checking that wings
     #  are meshed correctly.
-    # @property
-    # def T_pas_G_Cg_to_Wn_Ler(self):
-    #     """This method makes the passive transformation matrix T, which maps in
-    #     homogeneous coordinates from geometry axes relative to the CG point to wing
-    #     axes relative to the leading edge root point.
-    #
-    #     The transformation applies the 5 scenarios described in the class docstring.
-    #
-    #     :return: (4,4) ndarray of floats
-    #         4x4 transformation matrix
-    #     """
-    #
-    #     # Step 1: Create T_G_Cg_to_G_prelim_Ler = [I, prelimLer_G_Cg; 0, 1]. This
-    #     # matrix maps in homogeneous coordinates from geometry axes relative to the
-    #     # CG point to geometry axes relative to the preliminary (i.e. non-reflected)
-    #     # leading edge root point. This is the translation step.
-    #     T_G_Cg_to_G_prelim_Ler = np.eye(4)
-    #     T_G_Cg_to_G_prelim_Ler[:3, 3] = self.prelimLer_G_Cg
-    #
-    #     # Step 2: Create R_G_to_prelim_Wn, which maps from which maps from geometry
-    #     # axes to preliminary (i.e. non-reflected) wing axes. It will be formed from
-    #     # using the angles from geometry axes to preliminary wing axes, applied
-    #     # intrinsically in the order z-y'-x".
-    #     roll_rad, pitch_rad, yaw_rad = np.radians(self.angles_G_to_prelimWn)
-    #
-    #     R_z = np.array(
-    #         [
-    #             [np.cos(yaw_rad), -np.sin(yaw_rad), 0],
-    #             [np.sin(yaw_rad), np.cos(yaw_rad), 0],
-    #             [0, 0, 1],
-    #         ]
-    #     )
-    #     R_y = np.array(
-    #         [
-    #             [np.cos(pitch_rad), 0, np.sin(pitch_rad)],
-    #             [0, 1, 0],
-    #             [-np.sin(pitch_rad), 0, np.cos(pitch_rad)],
-    #         ]
-    #     )
-    #     R_x = np.array(
-    #         [
-    #             [1, 0, 0],
-    #             [0, np.cos(roll_rad), -np.sin(roll_rad)],
-    #             [0, np.sin(roll_rad), np.cos(roll_rad)],
-    #         ]
-    #     )
-    #
-    #     # Combined rotation: R_G_to_prelim_Wn = R_x * R_y * R_z (for intrinsic
-    #     # rotations)
-    #     R_G_to_prelim_Wn = R_x @ R_y @ R_z
-    #
-    #     # Step 3: Create T_G_to_prelim_Wn = [R_G_to_prelim_Wn, 0; 0, 1]. This matrix
-    #     # maps in homogeneous coordinates from geometry axes to preliminary (i.e.
-    #     # non-reflected) wing axes.
-    #     T_G_to_prelim_Wn = np.eye(4)
-    #     T_G_to_prelim_Wn[:3, :3] = R_G_to_prelim_Wn
-    #
-    #     # Step 3: Create reflection matrix T_prelim_Wn_Ler_to_Wn_Ler = [H, c; 0,
-    #     # 1] if needed
-    #     if self.mirror_only:
-    #         # Reflection across arbitrary plane defined by normal n and point P
-    #         # Using H = I - 2*n@n^T and c = 2*n@n^T@P
-    #         n = self.symmetry_normal_prelimWn  # Already normalized unit vector
-    #         P = self.symmetry_point_prelimWn_prelimLer
-    #
-    #         # Create reflection matrix H = I - 2*n@n^T
-    #         I = np.eye(3)
-    #         n_outer = np.outer(n, n)  # n @ n^T
-    #         H = I - 2 * n_outer
-    #
-    #         # Calculate translation component c = 2*n@n^T@P
-    #         c = 2 * n_outer @ P
-    #
-    #         # Construct 4x4 reflection matrix T_reflect = [H, c; 0, 1]
-    #         T_reflect = np.eye(4)
-    #         T_reflect[:3, :3] = H
-    #         T_reflect[:3, 3] = c
-    #     else:
-    #         T_reflect = np.eye(4)
-    #
-    #     # Step 4: Combine transformations: T_G_Cg_to_Wn_Ler = T_reflect @ T_rotate @ T_translate
-    #     return T_reflect @ prelim_T_G_to_Wn @ prelim_T_G_Cg_to_G_Ler
-    #
     # @property
     # def unit_chordwise_vector(self):
     #     """This method sets a property for the wing's chordwise (x-axis) orientation
@@ -1036,8 +1041,8 @@ class WingCrossSection:
     Things can get a little confusing with respect to WingCrossSections for Wings
     with symmetric or mirror_only set to True. For more details, look in the Wing
     class's docstring. Also remember that WingCrossSections themselves aren't used
-    for any simulations, they are merely one of the Wing attributes that help explain
-    how to the meshing function how we'd like to generate its Panels.
+    for any simulations, they are merely one of the Wing attributes that tell the
+    meshing function how we'd like to generate the Wing's Panels.
     """
 
     def __init__(

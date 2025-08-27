@@ -150,7 +150,7 @@ def validate_3d_unit_vector_norm_float(vector, name):
 
     norm = np.linalg.norm(vector)
     if norm == 0:
-        raise ValueError(f"{name} cannot have length zero.")
+        raise ValueError(f"{name} must have a non-zero length.")
     elif not np.isclose(norm, 1.0):
         return vector / norm
     return vector

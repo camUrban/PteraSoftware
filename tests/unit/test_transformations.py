@@ -751,7 +751,7 @@ class TestGenerateTReflect(unittest.TestCase):
             ps.transformations.generate_T_reflect(plane_point, zero_normal, False)
 
         self.assertIn(
-            "plane_normal_A must have a non-zero length", str(context.exception)
+            "plane_normal_A must have a non-zero length.", str(context.exception)
         )
 
     def test_transformation_properties(self):

@@ -28,6 +28,8 @@ This module contains the following functions:
 
 import numpy as np
 
+from . import parameter_validation
+
 
 def generate_homog(vector_A, has_point):
     """This function converts a 3D vector to homogeneous coordinates for use with
@@ -52,7 +54,7 @@ def generate_homog(vector_A, has_point):
         fourth component is 1. For direction vectors, the fourth component is 0.
         The units are the same as the input vector.
     """
-    vector_A = np.asarray(vector_A, dtype=float)
+    vector_A = parameter_validation.validate_3d_vector_float(vector_A, "vector_A")
     vector_A_homo = np.zeros(4, dtype=float)
 
     vector_A_homo[:3] = vector_A
@@ -109,7 +111,10 @@ def generate_R(angles, passive, intrinsic, order):
     :return: (3, 3) ndarray of floats
         This is the rotation matrix.
     """
-    angles = np.asarray(angles, dtype=float)
+    angles = parameter_validation.validate_3d_vector_float(angles, "angles")
+    passive = parameter_validation.validate_boolean(passive, "passive")
+    intrinsic = parameter_validation.validate_boolean(intrinsic, "intrinsic")
+    order = parameter_validation.validate_rotation_order(order, "order")
 
     angle_1_rad, angle_2_rad, angle_3_rad = np.radians(angles)
 
@@ -166,7 +171,7 @@ def generate_T_rot(R):
     :return: (4, 4) ndarray of floats
         This is the transformation matrix.
     """
-    R = np.asarray(R, dtype=float)
+    R = parameter_validation.validate_3_by_3_matrix_float(R, "R")
     T_rot = np.eye(4, dtype=float)
 
     T_rot[:3, :3] = R
@@ -204,7 +209,8 @@ def generate_T_trans(translations, passive):
     :return: (4, 4) ndarray of floats
         This is the transformation matrix.
     """
-    p = np.asarray(translations, dtype=float)
+    p = parameter_validation.validate_3d_vector_float(translations, "translations")
+    passive = parameter_validation.validate_boolean(passive, "passive")
     T_trans = np.eye(4, dtype=float)
 
     T_trans[:3, 3] = -p if passive else p
@@ -252,15 +258,15 @@ def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
     :return: (4, 4) ndarray of floats
         This is the transformation matrix.
     """
+    p = parameter_validation.validate_3d_vector_float(
+        plane_point_A_a, "plane_point_A_a"
+    )
+    n_hat = parameter_validation.validate_3d_unit_vector_norm_float(
+        plane_normal_A, "plane_normal_A"
+    )
+    passive = parameter_validation.validate_boolean(passive, "passive")
+
     T_reflect = np.eye(4, dtype=float)
-
-    p = np.asarray(plane_point_A_a, dtype=float)
-    n = np.asarray(plane_normal_A, dtype=float)
-
-    n_norm = np.linalg.norm(n)
-    if n_norm == 0:
-        raise ValueError("plane_normal_A must have a non-zero length.")
-    n_hat = n / n_norm
 
     S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)
     d = 2 * (np.dot(p, n_hat)) * n_hat

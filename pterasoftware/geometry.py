@@ -1034,14 +1034,11 @@ class Wing:
             # Find this section's span by following the same procedure as for the
             # overall Wing's span.
             nextLep_G_Lep = (
-                next_wing_cross_section.local_position -
-                wing_cross_section.local_position
+                next_wing_cross_section.local_position
+                - wing_cross_section.local_position
             )
 
-            projected_nextLep_G_Lep = (
-                np.dot(nextLep_G_Lep, self.WnZ_G)
-                * self.WnZ_G
-            )
+            projected_nextLep_G_Lep = np.dot(nextLep_G_Lep, self.WnZ_G) * self.WnZ_G
 
             section_span = np.linalg.norm(projected_nextLep_G_Lep)
 

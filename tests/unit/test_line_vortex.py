@@ -15,7 +15,7 @@ import unittest
 import numpy as np
 
 import pterasoftware as ps
-import tests.unit.fixtures.vortex_fixtures
+from tests.unit.fixtures import vortex_fixtures
 
 
 class TestLineVortex(unittest.TestCase):
@@ -45,16 +45,10 @@ class TestLineVortex(unittest.TestCase):
         """
 
         # Create the constructing fixtures.
-        self.line_vortex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_line_vortex_fixture()
-        )
-        self.origin_fixture = tests.unit.fixtures.vortex_fixtures.make_origin_fixture()
-        self.termination_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_termination_fixture()
-        )
-        self.strength_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_strength_fixture()
-        )
+        self.line_vortex_fixture = vortex_fixtures.make_line_vortex_fixture()
+        self.origin_fixture = vortex_fixtures.make_origin_fixture()
+        self.termination_fixture = vortex_fixtures.make_termination_fixture()
+        self.strength_fixture = vortex_fixtures.make_strength_fixture()
 
     def tearDown(self):
         """This method is automatically called before each testing method to tear

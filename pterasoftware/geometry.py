@@ -75,8 +75,8 @@ class Airplane:
         self,
         wings,
         name="Untitled Airplane",
-        Cgi_E_I=np.array([0.0, 0.0, 0.0]),
-        angles_E_to_B_i321=np.array([0.0, 0.0, 0.0]),
+        Cgi_E_I=(0.0, 0.0, 0.0),
+        angles_E_to_B_i321=(0.0, 0.0, 0.0),
         weight=0.0,
         s_ref=None,
         c_ref=None,
@@ -95,46 +95,53 @@ class Airplane:
 
             A sensible name for your airplane. The default is "Untitled Airplane".
 
-        :param Cgi_E_I: (3,) ndarray of floats, optional
+        :param Cgi_E_I: array-like of 3 numbers, optional
 
-            Position of this Airplane's starting point (in Earth axes, relative to
-            the simulation's starting point). For the first Airplane in a simulation,
-            this must be np.array([0.0, 0.0, 0.0]) since the simulation's starting
-            point is defined as the first Airplane's starting point (the location of
-            its CG at t=0). The default is np.array([0.0, 0.0, 0.0]).
+            Position [x, y, z] of this Airplane's starting point (in Earth axes,
+            relative to the simulation's starting point). Can be a list, tuple,
+            or numpy array of numbers (int or float). Values are converted to floats
+            internally. For the first Airplane in a simulation, this must be [0.0,
+            0.0, 0.0] since the simulation's starting point is defined as the first
+            Airplane's starting point (the location of its CG at t=0). The default is
+            (0.0, 0.0, 0.0).
 
-        :param angles_E_to_B_i321: (3,) ndarray of floats, optional
+        :param angles_E_to_B_i321: array-like of 3 numbers, optional
 
-            Angles from Earth axes to body axes using an intrinsic 3-2'-1" sequence.
-            This defines the orientation of the airplane's body axes relative to
-            Earth axes. Note that body axes differ from geometry axes: body axes
-            point forward/right/down while geometry axes point aft/right/up. The
-            units are degrees. The first angle must lie in the range (-180.0,
-            180.0] degrees, the second in [-60.0, 60.0] degrees, and the third in (
-            -90.0, 90.0) degrees. This is to reduce the chance of edge cases,
-            and to eliminate the risk of gimbal lock. The default is np.array([0.0,
-            0.0, 0.0]).
+            Angles [angle1, angle2, angle3] from Earth axes to body axes using an
+            intrinsic 3-2'-1" sequence. Can be a tuple, list, or numpy array of
+            numbers (int or float). Values are converted to floats internally. This
+            defines the orientation of the airplane's body axes relative to Earth axes.
+            Note that body axes differ from geometry axes: body axes point forward/right/down
+            while geometry axes point aft/right/up. The units are degrees. The first angle
+            must lie in the range (-180.0, 180.0] degrees, the second in [-60.0, 60.0]
+            degrees, and the third in (-90.0, 90.0) degrees. This is to reduce the chance
+            of edge cases, and to eliminate the risk of gimbal lock. The default is
+            (0.0, 0.0, 0.0).
 
-        :param weight: float, optional
+        :param weight: number, optional
 
-            This parameter holds the weight of the aircraft in Newtons. This is used
-            by the trim functions. It must be greater than or equal to zero. The
-            default value is 0.0.
+            This parameter is a number (int or float) that represents the weight of
+            the aircraft in Newtons. This is used by the trim functions. It must be
+            greater than or equal to zero. The default value is 0.0.
 
-        :param s_ref: float, optional if more than one Wing is in the wings list.
+        :param s_ref: number, optional
 
-            This is the reference wetted area. If not set, it populates from first
-            Wing. If set, it must be greater than zero. The units are square meters.
+           This parameter is a number (int or float) that represents the reference
+           wetted area. If not set or set to None (the default value), it populates
+           from first Wing. If set, it must be greater than zero. The units are
+           square meters.
 
-        :param c_ref: float, optional if more than one Wing is in the wings list.
+        :param c_ref: float, optional
 
-            This is the reference chord length. If not set, it populates from first
-            Wing. If set, it must be greater than zero. The units are meters.
+            This parameter is a number (int or float) that represents the reference
+            chord length. If not set or set to None (the default value), it populates
+            from first Wing. If set, it must be greater than zero. The units are meters.
 
-        :param b_ref: float, optional if more than one Wing is in the wings list.
+        :param b_ref: float, optional
 
-            This is the reference span. If not set, it populates from first
-            Wing. If set, it must be greater than zero. The units are meters.
+            This parameter is a number (int or float) that represents the reference
+            span. If not set or set to None (the default value), it populates from
+            first Wing. If set, it must be greater than zero. The units are meters.
         """
         wings = parameter_validation.validate_non_empty_list(wings, "wings")
         processed_wings = []
@@ -508,8 +515,8 @@ class Wing:
         self,
         wing_cross_sections,
         name="Untitled Wing",
-        prelimLer_G_Cg=np.array([0.0, 0.0, 0.0]),
-        angles_G_to_prelimWn=np.array([0.0, 0.0, 0.0]),
+        prelimLer_G_Cg=(0.0, 0.0, 0.0),
+        angles_G_to_prelimWn=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
         symmetry_normal_prelimWn=None,
@@ -529,25 +536,27 @@ class Wing:
 
             This is a sensible name for the Wing. The default is "Untitled Wing".
 
-        :param prelimLer_G_Cg: (3,) ndarray of floats, optional
+        :param prelimLer_G_Cg: array-like of 3 numbers, optional
 
             This is the position [x, y, z] of the origin of this Wing's axes (in
             geometry axes, relative to the starting point) before any symmetry or
-            mirror has been applied. It may differ from the actual position as
-            explained in the class docstring. The units are meters. The default is
-            np.array([0.0, 0.0, 0.0]).
+            mirror has been applied. Can be a tuple, list, or numpy array of numbers
+            (int or float). Values are converted to floats internally. It may differ
+            from the actual position as explained in the class docstring. The units are
+            meters. The default is (0.0, 0.0, 0.0).
 
-        :param angles_G_to_prelimWn: (3,) ndarray of floats, optional
+        :param angles_G_to_prelimWn: array-like of 3 numbers, optional
 
             This is the rotation angles [roll, pitch, yaw] in degrees that define the
             orientation of this Wing's axes relative to the geometry axes before any
-            symmetry or mirror has been applied. All angles must be in the range (
-            -90, 90) degrees. Roll is rotation about the x-axis, pitch is rotation
-            about the y-axis, and yaw is rotation about the z-axis. Rotations are
-            intrinsic, and proceed in the z-y'-x'' order conventional for Euler
-            angles. It may differ from the actual position as explained in the class
-            docstring. The units are meters. The default is np.array([0.0, 0.0,
-            0.0]). The units are degrees. The default is np.array([0.0, 0.0, 0.0]).
+            symmetry or mirror has been applied. Can be a tuple, list, or numpy array
+            of numbers (int or float). Values are converted to floats internally. All
+            angles must be in the range (-90, 90) degrees. Roll is rotation about the
+            x-axis, pitch is rotation about the y-axis, and yaw is rotation about the
+            z-axis. Rotations are intrinsic, and proceed in the z-y'-x'' order
+            conventional for Euler angles. It may differ from the actual position as
+            explained in the class docstring. The units are degrees. The default is (
+            0.0, 0.0, 0.0).
 
         :param symmetric: bool, optional
 
@@ -575,28 +584,31 @@ class Wing:
             symmetry_normal_prelimWn, symmetry_point_prelimWn_prelimLer,
             and symmetric, see the class docstring. The default is False.
 
-        :param symmetry_normal_prelimWn: (3,) ndarray of floats or None, optional
+        :param symmetry_normal_prelimWn: array-like of 3 numbers or None, optional
 
             The unit normal vector (in preliminary wing axes) that, together with
             symmetry_point_prelimWn_prelimLer, defines the plane used for symmetry or
-            mirroring. Note that reversing the normal direction (using the
+            mirroring. Can be a tuple, list, or numpy array of numbers (int or
+            float), or None. Values are converted to floats and normalized
+            internally. Note that reversing the normal direction (using the
             antiparallel vector) defines the same plane and produces the same result.
             This value must be None if both symmetric and mirror_only are False,
             and cannot be None if either are True. For more details on how this
             parameter interacts with symmetry_point_prelimWn_prelimLer, symmetric,
             and mirror_only, see the class docstring. The default is None.
 
-        :param symmetry_point_prelimWn_prelimLer: (3,) ndarray of floats or None,
+        :param symmetry_point_prelimWn_prelimLer: array-like of 3 numbers or None,
         optional
 
-            A point (in preliminary wing axes, relative to the preliminary leading
-            edge root point) that, along with symmetry_normal_prelimWn, defines the
-            location of the plane about which symmetry or mirroring is applied. This
-            value must be None if both symmetric and mirror_only are False,
-            and cannot be None if either are True. For more details on how this
-            parameter interacts with symmetry_normal_prelimWn, symmetric,
-            and mirror_only, see the class docstring. The units are meters. The
-            default is None.
+            A point [x, y, z] (in preliminary wing axes, relative to the preliminary
+            leading edge root point) that, along with symmetry_normal_prelimWn,
+            defines the location of the plane about which symmetry or mirroring is
+            applied. Can be a list, tuple, or numpy array of numbers (int or float),
+            or None. Values are converted to floats internally. This value must be
+            None if both symmetric and mirror_only are False, and cannot be None if
+            either are True. For more details on how this parameter interacts with
+            symmetry_normal_prelimWn, symmetric, and mirror_only, see the class
+            docstring. The units are meters. The default is None.
 
         :param num_chordwise_panels: int, optional
 
@@ -1190,8 +1202,8 @@ class WingCrossSection:
         airfoil,
         num_spanwise_panels,
         chord=1.0,
-        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
-        angles_Wcsp_to_Wcs_i321=np.array([0.0, 0.0, 0.0]),
+        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_i321=(0.0, 0.0, 0.0),
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
@@ -1210,35 +1222,39 @@ class WingCrossSection:
             this must be None. For all other WingCrossSections, this must be a
             positive integer.
 
-        :param chord: float, optional
+        :param chord: number, optional
 
             This is the chord of the wing at this WingCrossSection. The units are
-            meters. It must be greater than 0.0. The default value is 1.0.
+            meters. It must be greater than 0.0 and a number (int or float). The
+            default value is 1.0.
 
-        :param Lp_Wcsp_Lpp: (3,) ndarray of floats, optional
+        :param Lp_Wcsp_Lpp: array-like of 3 numbers, optional
 
-            This is the position in meters of this WingCrossSection's leading edge in
-            parent wing cross section axes, relative to the parent leading edge
-            point. If this is the root WingCrossSection, the parent wing cross
-            section axes are the wing axes and the parent leading point is the
-            Wing's leading edge root point. If not, the parent axes and point are
-            those of the previous WingCrossSection. If this is the root
-            WingCrossSection, it must be np.array([0.0, 0.0, 0.0]). The second array
-            component must be non-negative. The default is np.array([0.0, 0.0, 0.0]).
+            This is the position [x, y, z] in meters of this WingCrossSection's
+            leading edge in parent wing cross section axes, relative to the parent
+            leading edge point. Can be a tuple, list, or numpy array of numbers (int
+            or float). Values are converted to floats internally. If this is the root
+            WingCrossSection, the parent wing cross section axes are the wing axes
+            and the parent leading point is the Wing's leading edge root point. If
+            not, the parent axes and point are those of the previous
+            WingCrossSection. If this is the root WingCrossSection, it must be a zero
+            vector. The second component must be non-negative. The default is (0.0,
+            0.0, 0.0).
 
-        :param angles_Wcsp_to_Wcs_i321: (3,) ndarray of floats, optional
+        :param angles_Wcsp_to_Wcs_i321: array-like of 3 numbers, optional
 
             This is the angle vector of rotation angles [roll, pitch, yaw] in degrees
             that define the orientation of this WingCrossSection's axes relative to
-            the parent wing cross section axes. If this is a root WingCrossSection,
-            these are the wing axes. If not, the parent axes are the previous
-            WingCrossSection's axes. For the root WingCrossSection, this must be
-            np.array([0.0, 0.0, 0.0]). For other WingCrossSections, all angles must
-            be in the range (-90, 90) degrees. Roll is rotation about the x-axis,
-            pitch is rotation about the y-axis, and yaw is rotation about the z-axis.
-            Rotations are intrinsic, and proceed in the z-y'-x'' order conventional
-            for Euler angles. The units are degrees. The default is np.array([0.0,
-            0.0, 0.0]).
+            the parent wing cross section axes. Can be a tuple, list, or numpy array
+            of numbers (int or float). Values are converted to floats internally. If
+            this is a root WingCrossSection, these are the wing axes. If not,
+            the parent axes are the previous WingCrossSection's axes. For the root
+            WingCrossSection, this must be a zero vector. For other
+            WingCrossSections, all angles must be in the range (-90, 90) degrees.
+            Roll is rotation about the x-axis, pitch is rotation about the y-axis,
+            and yaw is rotation about the z-axis. Rotations are intrinsic,
+            and proceed in the z-y'-x'' order conventional for Euler angles. The
+            units are degrees. The default is (0.0, 0.0, 0.0).
 
         :param control_surface_type: str, optional
 
@@ -1248,17 +1264,17 @@ class WingCrossSection:
             default value is "symmetric". This value only affects a Wing's geometry
             if it has type 4 or 5 symmetry.
 
-        :param control_surface_hinge_point: float, optional
+        :param control_surface_hinge_point: number, optional
 
             This is the location of the control surface hinge from the leading edge
-            as a fraction of chord. It must be on the range (0.0, 1.0). The default
-            value is 0.75.
+            as a fraction of chord. It must be a number (int or float) the range (
+            0.0, 1.0). The default value is 0.75.
 
-        :param control_surface_deflection: float, optional
+        :param control_surface_deflection: number, optional
 
             This is the control deflection in degrees. Deflection downwards is
-            positive. Must be in the range (-90, 90) degrees. The default value is
-            0.0 degrees.
+            positive. It must be a number (int or float) in the range (-90.0,
+            90.0) degrees. The default value is 0.0 degrees.
 
         :param spanwise_spacing: str or None, optional
 
@@ -1569,23 +1585,31 @@ class Airfoil:
         """This is the initialization method.
 
         :param name: str, optional
+
             This is the name of the airfoil. It should correspond to the name in the
             airfoils directory unless you are passing in your own coordinates. The
             default is "Untitled Airfoil".
-        :param coordinates: array, optional
-            This is an N x 2 array of the airfoil's coordinates, where N is the
-            number of coordinates. Treat this as an immutable, don't edit directly
-            after initialization. If you wish to load coordinates from the airfoil
-            directory, leave this as None. The default is None. Make sure that any
-            airfoil coordinates used range in x from 0 to 1.
+
+        :param coordinates: (N,2) array-like of numbers, optional
+
+            This is a Nx2 array of the airfoil's coordinates, where N is the number
+            of coordinates. Treat this as an immutable, don't edit directly after
+            initialization. If you wish to load coordinates from the airfoil
+            directory, leave this as None, which is the default. If not, it must be
+            an Nx2 numpy array of numbers (int or float). Make sure that any airfoil
+            coordinates used range in x from 0 to 1.
+
         :param repanel: bool, optional
+
             This is the variable that determines whether you would like to repanel
             the airfoil coordinates. This applies to coordinates passed in by the
             user or to the directory coordinates. I highly recommended setting this
             to True. The default is True.
+
         :param n_points_per_side: int, optional
-            This is number of points to use when repaneling the airfoil. It is
-            ignored if the repanel is False. The default is 400.
+
+            This is number of points to use when repaneling the airfoil. It must be a
+            positive int. It is ignored if repanel=False. The default is 400.
         """
 
         # Initialize the airfoil name.

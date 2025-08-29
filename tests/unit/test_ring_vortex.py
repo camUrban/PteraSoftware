@@ -15,7 +15,7 @@ import unittest
 import numpy as np
 
 import pterasoftware as ps
-import tests.unit.fixtures.vortex_fixtures
+from tests.unit.fixtures import vortex_fixtures
 
 
 class TestRingVortex(unittest.TestCase):
@@ -49,23 +49,17 @@ class TestRingVortex(unittest.TestCase):
         """
 
         # Set up the constructing fixtures.
-        self.ring_vortex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_ring_vortex_fixture()
-        )
-        self.strength_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_strength_fixture()
-        )
+        self.ring_vortex_fixture = vortex_fixtures.make_ring_vortex_fixture()
+        self.strength_fixture = vortex_fixtures.make_strength_fixture()
         self.front_left_vertex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_front_left_vertex_fixture()
+            vortex_fixtures.make_front_left_vertex_fixture()
         )
         self.front_right_vertex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_front_right_vertex_fixture()
+            vortex_fixtures.make_front_right_vertex_fixture()
         )
-        self.back_left_vertex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_back_left_vertex_fixture()
-        )
+        self.back_left_vertex_fixture = vortex_fixtures.make_back_left_vertex_fixture()
         self.back_right_vertex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_back_right_vertex_fixture()
+            vortex_fixtures.make_back_right_vertex_fixture()
         )
 
     def tearDown(self):

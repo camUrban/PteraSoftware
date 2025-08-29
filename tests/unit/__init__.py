@@ -18,9 +18,13 @@ This package contains the following modules:
     test_line_vortex.py: This module contains a class to test line vortex objects.
 
     test_ring_vortex.py: This module contains a class to test ring vortex objects.
+
+    test_wing_cross_section.py: This module contains a class to test WingCrossSection
+    objects.
 """
 
 import tests.unit.test_transformations
 import tests.unit.test_horseshoe_vortex
 import tests.unit.test_line_vortex
 import tests.unit.test_ring_vortex
+import tests.unit.test_wing_cross_section

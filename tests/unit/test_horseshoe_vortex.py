@@ -16,7 +16,7 @@ import unittest
 import numpy as np
 
 import pterasoftware as ps
-import tests.unit.fixtures.vortex_fixtures
+from tests.unit.fixtures import vortex_fixtures
 
 
 class TestHorseshoeVortex(unittest.TestCase):
@@ -48,21 +48,15 @@ class TestHorseshoeVortex(unittest.TestCase):
         """
 
         # Get the constructing fixtures.
-        self.horseshoe_vortex_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_horseshoe_vortex_fixture()
-        )
-        self.origin_fixture = tests.unit.fixtures.vortex_fixtures.make_origin_fixture()
-        self.termination_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_termination_fixture()
-        )
-        self.strength_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_strength_fixture()
-        )
+        self.horseshoe_vortex_fixture = vortex_fixtures.make_horseshoe_vortex_fixture()
+        self.origin_fixture = vortex_fixtures.make_origin_fixture()
+        self.termination_fixture = vortex_fixtures.make_termination_fixture()
+        self.strength_fixture = vortex_fixtures.make_strength_fixture()
         self.infinite_leg_direction_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_direction_fixture()
+            vortex_fixtures.make_infinite_leg_direction_fixture()
         )
         self.infinite_leg_length_fixture = (
-            tests.unit.fixtures.vortex_fixtures.make_infinite_leg_length_fixture()
+            vortex_fixtures.make_infinite_leg_length_fixture()
         )
 
     def tearDown(self):

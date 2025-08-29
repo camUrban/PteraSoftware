@@ -23,7 +23,8 @@ import numpy as np
 import scipy.interpolate as sp_interp
 
 from . import functions
-from . import meshing
+# ToDo: Uncomment this line once we uncomment the meshing command.
+# from . import meshing
 from . import parameter_validation
 from . import transformations
 
@@ -1595,8 +1596,8 @@ class Airfoil:
             This is a Nx2 array of the airfoil's coordinates, where N is the number
             of coordinates. Treat this as an immutable, don't edit directly after
             initialization. If you wish to load coordinates from the airfoil
-            directory, leave this as None, which is the default. If not, it must be
-            an Nx2 numpy array of numbers (int or float). Make sure that any airfoil
+            directory, leave this as None, which is the default. If not, it must be a
+            Nx2 numpy array of numbers (int or float). Make sure that any airfoil
             coordinates used range in x from 0 to 1.
 
         :param repanel: bool, optional

@@ -20,4 +20,4 @@ jobs:
     - name: Run tests with Coverage
       run: |
         coverage run --source=pterasoftware -m unittest discover -s tests
-        codecov
+        codecov codecov -t ${{ secrets.CODECOV_TOKEN }}

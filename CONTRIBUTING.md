@@ -26,7 +26,7 @@ There are three main ways you can contribute:
    expected.  
    - This includes errors, crashes, incorrect outputs, or unexpected behavior.  
 
-2. [**Request an enhancement**](#requesting-an-enhancement)  
+2. [**Request a feature**](#requesting-a-feature)  
    - Suggest new features, improvements to existing functionality, or usability 
    changes.  
    - This can be small quality-of-life improvements or larger feature proposals.  
@@ -57,7 +57,7 @@ For all other bugs:
 
 ---
 
-### Requesting an Enhancement
+### Requesting a Feature
 
 For feature requests or enhancements:  
 1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to avoid 
@@ -65,7 +65,7 @@ For feature requests or enhancements:
    - If it exists, comment or react to indicate interest.  
 2. If it has not been requested, open a new issue using the 
    [feature request template](.github/ISSUE_TEMPLATE/feature_request.md).  
-3. Add the `enhancement` and `help wanted` labels plus any others that apply.  
+3. Add the `feature` and `help wanted` labels plus any others that apply.  
 
 ---
 
@@ -110,9 +110,9 @@ Once you understand the process, here's how to implement it:
      ```  
 
 3. **Create a new branch**
-   - Branch from `main` for each change.  
-   - Use descriptive branch names, such as `feature/add-new-plot` or 
-   `bugfix/fix-units`.  
+   - Branch from main for each change.  
+   - Use descriptive branch names, such as feature/add-new-plot or 
+   bugfix/fix-units.  
    ```shell
    git checkout main
    git branch <branch-name>
@@ -137,21 +137,21 @@ Once you understand the process, here's how to implement it:
      ```shell
      git push origin <branch-name>
      ```  
-   - Open a pull request (PR) from your branch to the `main` branch of the upstream repository.  
+   - Open a pull request (PR) from your branch to the main branch of the upstream repository.  
    - You can open the PR as a **Draft** to get feedback early before the work is complete.  
    - In the PR description, follow the [pull request template](.github/pull_request_template.md) and link any related issues.
 
 6. **Keeping your branch up to date**  
-   - If `main` changes before your PR is merged, sync your branch to avoid merge conflicts:  
+   - If main changes before your PR is merged, sync your branch to avoid merge conflicts:  
      ```shell
      git fetch upstream
      git merge upstream/main # Or git rebase upstream/main
      ```  
 
 7. **Review and approval process**  
-   - Only the repository owner (currently @camUrban) can approve merges to `main`.  
+   - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  
-   - Once approved, it will be merged into `main` and included in the next release.
+   - Once approved, it will be merged into main and included in the next release.
 
 ---
 

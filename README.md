@@ -88,7 +88,7 @@ understanding of biological flight.
 
 ## Installation and Use
 
-First things first, you will need a copy of Python 3.10, which you can download from the
+First things first, you will need a copy of Python 3.13, which you can download from the
 official Python website. At this time, I do not recommend using a version from the 
 Anaconda distribution as it could introduce compatibility issues with PyPI.
 
@@ -161,7 +161,7 @@ Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) t
 walks through getting Ptera Software up and running. It includes every step, from 
 downloading Python for the first time to setting up your IDE to running the software. 
 Please note that the video demonstrates installation with Python 3.8, but for Ptera 
-Software version 3.1.0 and later, you should use Python 3.10. If you still run into 
+Software version 3.2.0 and later, you should use Python 3.13. If you still run into 
 problems, feel free to open an issue for guidance.
 
 ## Example Code

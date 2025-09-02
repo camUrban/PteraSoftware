@@ -3,7 +3,8 @@
   <component name="Black">
     <option name="enabledOnReformat" value="true" />
     <option name="enabledOnSave" value="true" />
-    <option name="sdkName" value="Python 3.10 (PteraSoftware)" />
+    <option name="pathToExecutable" value="C:\Users\camer\AppData\Local\Programs\Python\Python313\Scripts\black.exe" />
+    <option name="sdkName" value="Python 3.13 (PteraSoftware)" />
   </component>
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />

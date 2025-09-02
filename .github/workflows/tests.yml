@@ -12,6 +12,7 @@ jobs:
       with:
         python-version: "3.13"
         cache: 'pip'
+        cache-dependency-path: requirements_ci.txt
     - name: Setup headless display
       uses: pyvista/setup-headless-display-action@v3
     - name: Install dependencies
@@ -28,3 +29,4 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
+        fail_ci_if_error: true

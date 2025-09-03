@@ -35,7 +35,7 @@ impact.
 - [ ] All new modules, classes, functions, and methods have docstrings in 
 [reStructuredText format](https://realpython.com/documenting-python-code/).
 - [ ] Code is well documented with block comments where appropriate.
-- [ ] Code passes local automated checks (`codespell`, `black`, and `unittests`).
+- [ ] Code passes local automated checks (`codespell`, `black`, and `tests`).
 - [ ] If any major functionality was added or significantly changed, I have added or 
 updated tests in the `tests` package.
 - [ ] Any external code, algorithms, or equations used have been cited in comments or 

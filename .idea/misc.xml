@@ -3,7 +3,8 @@
   <component name="Black">
     <option name="enabledOnReformat" value="true" />
     <option name="enabledOnSave" value="true" />
-    <option name="sdkName" value="Python 3.10 virtualenv at C:\Users\camer\Documents\GitHub\PteraSoftware\.venv" />
+    <option name="pathToExecutable" value="C:\Users\camer\AppData\Local\Programs\Python\Python313\Scripts\black.exe" />
+    <option name="sdkName" value="Python 3.13 (PteraSoftware)" />
   </component>
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
@@ -11,5 +12,5 @@
   <component name="ProjectPlainTextFileTypeManager">
     <file url="file://$PROJECT_DIR$/LICENSE.txt" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 virtualenv at C:\Users\camer\Documents\GitHub\PteraSoftware\.venv" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (PteraSoftware)" project-jdk-type="Python SDK" />
 </project>

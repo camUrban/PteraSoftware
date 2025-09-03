@@ -1,10 +1,10 @@
 [build-system]
 requires = [
-    "setuptools>=75.5.0",
-    "wheel>=0.45.0"
+    "setuptools>=80.9.0",
+    "wheel>=0.45.1"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py313']
 include = '\.pyi?$'

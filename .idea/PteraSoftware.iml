@@ -10,8 +10,12 @@
       <excludeFolder url="file://$MODULE_DIR$/.github" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv3.10" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv310" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv311" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv312" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv313" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 virtualenv at C:\Users\camer\Documents\GitHub\PteraSoftware\.venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (PteraSoftware)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

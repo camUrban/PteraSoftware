@@ -87,8 +87,8 @@ profile_default/
 ipython_config.py
 
 # These are the environmental files to ignore.
-.env
-.venv
+.env*
+.venv*
 env/
 venv/
 /venv/

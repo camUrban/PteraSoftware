@@ -49,17 +49,21 @@ class Airplane:
 
     The Airplane class is responsible for:
 
-    1. Defining the local geometry axes as the root coordinate system
+    1. Defining the local body axes and geometry axes
     2. Managing Wings and their coordinate transformations
-    3. Processing symmetric Wings and converting them to separate wings when
-       the symmetry plane is not coincident with the Wing's xz-plane (Scenario 5)
+    3. Processing symmetric Wings and converting them to separate wings when the
+    symmetry plane is not coincident with the Wing's axes xz-plane (type 5 symmetry)
     4. Providing reference dimensions for aerodynamic calculations
-    5. Managing the moment reference point for force and moment calculations
+
+    Every Airplane has a body axis system, where:
+    - +x: Points forward along fuselage
+    - +y: Points to the right (starboard direction)
+    - +z: Points downward (completing right-handed system)
 
     Every Airplane has a geometry axis system, where:
     - +x: Points aft along fuselage
     - +y: Points to the right (starboard direction)
-    - +z: Points upward (completing right-handed coordinate system)
+    - +z: Points upward (completing right-handed system)
     """
 
     def __init__(
@@ -80,7 +84,7 @@ class Airplane:
             This is a list of the airplane's wings defined as Wings. It must contain
             at least one Wing. Wings with symmetric=True and non-coincident symmetry
             planes will be automatically processed into separate Wings during
-            initialization (Scenario 5).
+            initialization (type 5 symmetry).
 
         :param name: str, optional
 
@@ -104,10 +108,8 @@ class Airplane:
             defines the orientation of the airplane's body axes relative to Earth
             axes. Note that body axes differ from geometry axes: body axes point
             forward/right/down while geometry axes point aft/right/up. The units are
-            degrees. The first angle must lie in the range (-180.0, 180.0] degrees,
-            the second in [-60.0, 60.0] degrees, and the third in (-90.0,
-            90.0) degrees. This is to reduce the chance of edge cases,
-            and to eliminate the risk of gimbal lock. The default is (0.0, 0.0, 0.0).
+            degrees. All angles must lie in the range (-180.0, 180.0] degrees. The
+            default is (0.0, 0.0, 0.0).
 
         :param weight: number, optional
 

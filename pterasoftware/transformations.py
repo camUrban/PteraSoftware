@@ -93,9 +93,9 @@ def generate_R(angles, passive, intrinsic, order):
         `passive=True`, it describes the orientation of "B" axes with respect to "A"
         axes. For `passive=False`, it prescribes the angles by which to rotate a
         vector in "A" axes. In both cases, the rotations' type is specified by the
-        intrinsic parameter. Angles are always listed as [about axis 1, about axis 2,
-        about axis 3], but are applied in the sequence given by `order` (e.g.,
-        order="312" applies angles[2], angles[0], angles[1]).
+        intrinsic parameter. Angles are always listed as [about x-axis, about y-axis,
+        about z-axis], but are applied in the sequence given by `order` (e.g.,
+        order="zxy" applies angles[2], angles[0], angles[1]).
     :param passive: bool
         If True, returns a matrix that changes coordinates from "A" to "B" axes (`r_B
         = R @ r_A`). If False, returns a matrix that rotates vectors in "A" axes (
@@ -106,7 +106,7 @@ def generate_R(angles, passive, intrinsic, order):
         "A" axes.
     :param order: string of length 3
         This is the string of three characters that represents the rotation order.
-        Each character can be '1', '2', or '3'. Only Tait-Bryan angles are accepted
+        Each character can be 'x', 'y', or 'z'. Only Tait-Bryan angles are accepted
         so all accepted characters must be distinct.
     :return: (3, 3) ndarray of floats
         This is the rotation matrix.
@@ -116,33 +116,33 @@ def generate_R(angles, passive, intrinsic, order):
     intrinsic = parameter_validation.validate_boolean(intrinsic, "intrinsic")
     order = parameter_validation.validate_rotation_order(order, "order")
 
-    angle_1_rad, angle_2_rad, angle_3_rad = np.radians(angles)
+    angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
 
-    R_act_1 = np.array(
+    R_act_x = np.array(
         [
             [1.0, 0.0, 0.0],
-            [0.0, np.cos(angle_1_rad), -np.sin(angle_1_rad)],
-            [0.0, np.sin(angle_1_rad), np.cos(angle_1_rad)],
+            [0.0, np.cos(angleX_rad), -np.sin(angleX_rad)],
+            [0.0, np.sin(angleX_rad), np.cos(angleX_rad)],
         ]
     )
-    R_act_2 = np.array(
+    R_act_y = np.array(
         [
-            [np.cos(angle_2_rad), 0.0, np.sin(angle_2_rad)],
+            [np.cos(angleY_rad), 0.0, np.sin(angleY_rad)],
             [0.0, 1.0, 0.0],
-            [-np.sin(angle_2_rad), 0.0, np.cos(angle_2_rad)],
+            [-np.sin(angleY_rad), 0.0, np.cos(angleY_rad)],
         ]
     )
-    R_act_3 = np.array(
+    R_act_z = np.array(
         [
-            [np.cos(angle_3_rad), -np.sin(angle_3_rad), 0],
-            [np.sin(angle_3_rad), np.cos(angle_3_rad), 0],
+            [np.cos(angleZ_rad), -np.sin(angleZ_rad), 0],
+            [np.sin(angleZ_rad), np.cos(angleZ_rad), 0],
             [0.0, 0.0, 1.0],
         ]
     )
 
-    R_act_components = [R_act_1, R_act_2, R_act_3]
+    R_act_components = [R_act_x, R_act_y, R_act_z]
 
-    order_nums = [ord(order_num) - ord("0") for order_num in order]
+    order_nums = [{"x": 1, "y": 2, "z": 3}[order_char] for order_char in order]
 
     if intrinsic:
         order_nums.reverse()

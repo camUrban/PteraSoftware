@@ -242,7 +242,7 @@ def validate_rotation_order(order, name):
     if len(order) != 3:
         raise ValueError(f"{name} must have 3 characters.")
 
-    valid_orders = ["123", "132", "213", "231", "312", "321"]
+    valid_orders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]
     if order not in valid_orders:
         raise ValueError(f"{name} must be one of {valid_orders}.")
 

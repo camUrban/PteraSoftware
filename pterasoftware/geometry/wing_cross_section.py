@@ -326,7 +326,7 @@ class WingCrossSection:
         # rotation step.
         T_rot_pas_Wcsp_to_Wcs = transformations.generate_T_rot(
             transformations.generate_R(
-                self.angles_Wcsp_to_Wcs_i321, passive=True, intrinsic=True, order="321"
+                self.angles_Wcsp_to_Wcs_i321, passive=True, intrinsic=True, order="zyx"
             )
         )
 

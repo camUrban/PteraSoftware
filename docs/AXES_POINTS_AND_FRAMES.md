@@ -1,16 +1,18 @@
 # Axes, Points, and Frames
 
-Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames. The notation and terminology I use is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
+In simulating flapping-wing dynamics and aerodynamics, Ptera Software uses several vector-valued quantities. To avoid ambiguity, these vectors often require additional details about their interpretation, such as axis systems, reference points, and reference frames.
+
+This document lays out Ptera Software's notation for defining vectors using these constructs. The notation and terminology I use is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
 
 ## Axis Systems vs. Reference Points vs. Reference Frames
 
-An axis system, also called "axes," contains information about three directions. An axis system can be cartesian (three linear directions), polar (two linear directions and one angular direction), or spherical (one linear direction and two angular directions).
+An axis system, also called "axes," contains information about three directions. In Ptera Software, all axes are Cartesian, meaning their three basis directions are linear, not angular.
 
 Reference points, also called "points," contain information about the location of a particular point in space.
 
 Lastly, a reference frame, also called a "frame," contains information about the location of an "observer," and their motion relative to what is observed.
 
-Consider the arbitrary vector **r**, which exists in 3D space. For now, let's say that **r** is a force vector. In order to express **r** using components, we must, at a minimum, pick an axis system. If instead **r** is a position vector, we need both axes and a reference point to serve as an origin, so we must pick both before writing down **r**'s three components. The same is true if **r** is a moment, but now the reference point no longer serves as an origin, but instead the point about which the moment acts. Lastly, if **r** is some time derivative of position, such as a velocity or acceleration vector, then we no longer need a reference point, but we do require both an axis system and a reference frame.
+Consider the arbitrary vector **r**, which exists in 3D space. For now, let's say that **r** is a force vector. In order to express **r** using components (x, y, z), we must, at a minimum, pick an axis system. If instead **r** is a position vector, we need both axes and a reference point to serve as an origin, so we must pick both before writing down **r**'s three components. The same is true if **r** is a moment, but now the reference point no longer serves as an origin, but instead the point about which the moment acts. Lastly, if **r** is some time derivative of position, such as a velocity or acceleration vector, then we no longer need a reference point, but we do require both an axis system and a reference frame.
 
 Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. An example of this next structure for an unsteady vortex lattice method simulation is shown below.
 
@@ -50,9 +52,9 @@ The standard abbreviations and names are given below for reference. See the sect
 * G: geometry  
 * Wn: wing  
 * Wcs: wing cross section  
-* Wcsp: wing cross section's parent  
+* Wcsp: wing cross section parent  
 * A: airfoil  
-* I: simulation's starting point  
+* I: simulation starting point  
 * Cgi: starting point  
 * Cg: CG point  
 * Ler: leading edge root point  
@@ -239,12 +241,12 @@ The two angles α and β are referred to as the angle of attack and the angle of
 
 # Reference Points
 
-## 1. Simulation's starting point
+## 1. Simulation starting point
 
 * Position of the first Airplane's CG at the start of the simulation  
 * Ownership: None  
 * Reference examples  
-  * Text: …relative to the simulation's starting point…  
+  * Text: …relative to the simulation starting point…  
   * Variables: …\_I
 
 ## 2. Starting point

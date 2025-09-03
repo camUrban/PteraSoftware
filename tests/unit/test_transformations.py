@@ -147,7 +147,7 @@ class TestGenerateR(unittest.TestCase):
         # Test all combinations of passive/active and intrinsic/extrinsic
         for passive in [True, False]:
             for intrinsic in [True, False]:
-                for order in ["123", "132", "213", "231", "312", "321"]:
+                for order in ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]:
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
@@ -164,7 +164,7 @@ class TestGenerateR(unittest.TestCase):
         angles = np.array([30.0, 45.0, 60.0])
 
         for intrinsic in [True, False]:
-            for order in ["123", "132", "213", "231", "312", "321"]:
+            for order in ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]:
                 with self.subTest(intrinsic=intrinsic, order=order):
                     R_passive = ps.transformations.generate_R(
                         angles, True, intrinsic, order
@@ -186,12 +186,12 @@ class TestGenerateR(unittest.TestCase):
 
         # Test pairs of orders that should be equivalent
         order_pairs = [
-            ("123", "321"),
-            ("132", "231"),
-            ("213", "312"),
-            ("231", "132"),
-            ("312", "213"),
-            ("321", "123"),
+            ("xyz", "zyx"),
+            ("xzy", "yzx"),
+            ("yxz", "zxy"),
+            ("yzx", "xzy"),
+            ("zxy", "yxz"),
+            ("zyx", "xyz"),
         ]
 
         for passive in [True, False]:
@@ -231,7 +231,7 @@ class TestGenerateR(unittest.TestCase):
         for angles in test_angles:
             for passive in [True, False]:
                 for intrinsic in [True, False]:
-                    for order in ["123", "321"]:  # Test representative orders
+                    for order in ["xyz", "zyx"]:  # Test representative orders
                         with self.subTest(
                             angles=angles,
                             passive=passive,
@@ -259,25 +259,25 @@ class TestGenerateR(unittest.TestCase):
 
         :return: None
         """
-        # Test 90-degree rotation about x-axis (order "123", only first angle)
+        # Test 90-degree rotation about x-axis (order "xyz", only first angle)
         angles_x90 = np.array([90.0, 0.0, 0.0])
         R_act_x90_expected = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
 
-        R_act_x90 = ps.transformations.generate_R(angles_x90, False, True, "123")
+        R_act_x90 = ps.transformations.generate_R(angles_x90, False, True, "xyz")
         npt.assert_allclose(R_act_x90, R_act_x90_expected, atol=1e-14)
 
-        # Test 90-degree rotation about y-axis (order "123", only second angle)
+        # Test 90-degree rotation about y-axis (order "xyz", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         R_act_y90_expected = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
 
-        R_act_y90 = ps.transformations.generate_R(angles_y90, False, True, "123")
+        R_act_y90 = ps.transformations.generate_R(angles_y90, False, True, "xyz")
         npt.assert_allclose(R_act_y90, R_act_y90_expected, atol=1e-14)
 
-        # Test 90-degree rotation about z-axis (order "123", only third angle)
+        # Test 90-degree rotation about z-axis (order "xyz", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         R_act_z90_expected = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
-        R_act_z90 = ps.transformations.generate_R(angles_z90, False, True, "123")
+        R_act_z90 = ps.transformations.generate_R(angles_z90, False, True, "xyz")
         npt.assert_allclose(R_act_z90, R_act_z90_expected, atol=1e-14)
 
     def test_specific_known_passive_rotations(self):
@@ -285,30 +285,30 @@ class TestGenerateR(unittest.TestCase):
 
         :return: None
         """
-        # Test 90-degree rotation about x-axis (order "123", only first angle)
+        # Test 90-degree rotation about x-axis (order "xyz", only first angle)
         angles_x90 = np.array([90.0, 0.0, 0.0])
         v_A = np.array([0.0, 1.0, 0.0])
         v_B_expected = np.array([0.0, 0.0, -1.0])
 
-        R_pas_x90 = ps.transformations.generate_R(angles_x90, True, True, "123")
+        R_pas_x90 = ps.transformations.generate_R(angles_x90, True, True, "xyz")
         v_B = R_pas_x90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
-        # Test 90-degree rotation about y-axis (order "123", only second angle)
+        # Test 90-degree rotation about y-axis (order "xyz", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         v_A = np.array([0.0, 0.0, 1.0])
         v_B_expected = np.array([-1.0, 0.0, 0.0])
 
-        R_pas_y90 = ps.transformations.generate_R(angles_y90, True, True, "123")
+        R_pas_y90 = ps.transformations.generate_R(angles_y90, True, True, "xyz")
         v_B = R_pas_y90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
-        # Test 90-degree rotation about z-axis (order "123", only third angle)
+        # Test 90-degree rotation about z-axis (order "xyz", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         v_A = np.array([1.0, 0.0, 0.0])
         v_B_expected = np.array([0.0, -1.0, 0])
 
-        R_pas_z90 = ps.transformations.generate_R(angles_z90, True, True, "123")
+        R_pas_z90 = ps.transformations.generate_R(angles_z90, True, True, "xyz")
         v_B = R_pas_z90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -327,8 +327,8 @@ class TestGenerateR(unittest.TestCase):
         angles2 = np.array([0.0, 45.0, 0.0])
 
         # Get individual rotation matrices
-        R1 = ps.transformations.generate_R(angles1, False, True, "123")
-        R2 = ps.transformations.generate_R(angles2, False, True, "123")
+        R1 = ps.transformations.generate_R(angles1, False, True, "xyz")
+        R2 = ps.transformations.generate_R(angles2, False, True, "xyz")
 
         # Apply rotations sequentially
         v_rotated_sequential = R2 @ (R1 @ test_vector)
@@ -356,7 +356,7 @@ class TestGenerateR(unittest.TestCase):
 
         for passive in [True, False]:
             for intrinsic in [True, False]:
-                for order in ["123", "321"]:
+                for order in ["xyz", "zyx"]:
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
@@ -378,7 +378,7 @@ class TestGenerateR(unittest.TestCase):
         :return: None
         """
         angles = np.array([30.0, 45.0, 60.0])
-        valid_orders = ["123", "132", "213", "231", "312", "321"]
+        valid_orders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]
 
         for order in valid_orders:
             with self.subTest(order=order):
@@ -413,7 +413,7 @@ class TestGenerateR(unittest.TestCase):
         for angles in edge_case_angles:
             with self.subTest(angles=angles):
                 for passive in [True, False]:
-                    R = ps.transformations.generate_R(angles, passive, True, "123")
+                    R = ps.transformations.generate_R(angles, passive, True, "xyz")
 
                     # Should be a valid rotation matrix
                     det = np.linalg.det(R)
@@ -482,7 +482,7 @@ class TestGenerateTRot(unittest.TestCase):
 
         for passive in [True, False]:
             for intrinsic in [True, False]:
-                for order in ["123", "321"]:
+                for order in ["xyz", "zyx"]:
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
@@ -506,7 +506,7 @@ class TestGenerateTRot(unittest.TestCase):
         """
         # Test rotation of position vectors
         R_act_z90 = ps.transformations.generate_R(
-            np.array([0.0, 0.0, 90.0]), False, True, "123"
+            np.array([0.0, 0.0, 90.0]), False, True, "xyz"
         )
         T_rot = ps.transformations.generate_T_rot(R_act_z90)
 

@@ -465,7 +465,7 @@ class Wing:
         # rotation step.
         T_rot_pas_G_to_prelimWn = transformations.generate_T_rot(
             transformations.generate_R(
-                self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="321"
+                self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="zyx"
             )
         )
 

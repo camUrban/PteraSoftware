@@ -4,24 +4,24 @@ As discussed in [Axes, Points, and Frames](https://raw.githubusercontent.com/cam
 
 # Angle Vectors
 
-Angle vectors contain three scalar angles. These angles can either represent the orientation of one axis system with respect to another (passive angle vectors), or they can be the angles that would like use to rotate a given vector within one axis system (active angle vectors).
+Angle vectors contain three scalar angles. These angles can either represent the orientation of one axis system with respect to another (passive angle vectors), or they can be the angles that would like use to rotate a given vector within one axis system (active angle vectors). Angle vectors always take the form (angleX, angleY, angleZ).
 
 ## Sequence IDs and Names
 
 For both active and passive angle vectors, Ptera Software only uses Tait-Bryan rotation sequences. Below are the acceptable sequence IDs and names, which we use for variable naming and for describing angle vectors in text.
 
-* i123: intrinsic 1-2'-3"  
-* i132: intrinsic 1-3'-2"  
-* i213: intrinsic 2-1'-3"  
-* i231: intrinsic 2-3'-1"  
-* i312: intrinsic 3-1'-2"  
-* i321: intrinsic 3-2'-1"  
-* e123: extrinsic 1-2-3  
-* e132: extrinsic 1-3-2  
-* e213: extrinsic 2-1-3  
-* e231: extrinsic 2-3-1  
-* e312: extrinsic 3-1-2  
-* e321: extrinsic 3-2-1
+* ixyz: intrinsic x-y'-z"  
+* ixzy: intrinsic x-z'-y"  
+* iyxz: intrinsic y-x'-z"  
+* iyzx: intrinsic y-z'-x"  
+* izxy: intrinsic z-x'-y"  
+* izyx: intrinsic z-y'-x"  
+* exyz: extrinsic x-y-z  
+* exzy: extrinsic x-z-y  
+* eyxz: extrinsic y-x-z  
+* eyzx: extrinsic y-z-x  
+* ezxy: extrinsic z-x-y  
+* ezyx: extrinsic z-y-x
 
 ## Passive Angle Vectors
 Unlike force or position vectors which have components in a single axis system, passive angle vectors inherently relate two different axis systems and therefore require special notation to specify both the source and target axes, as well as the rotation sequence convention.
@@ -42,23 +42,23 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 #### Local reference examples
 
-* Variables: angles\_E\_to\_B\_i321  
-* Text: …angles describing the orientation of the Earth axes relative to the body axes using an intrinsic 3-2'-1" sequence…
+* Variables: angles\_E\_to\_B\_izyx  
+* Text: …angles describing the orientation of the Earth axes relative to the body axes using an intrinsic z-y'-x" sequence…
 
 #### Wing-local reference examples
 
-* Variables: angles\_Wcs1\_to\_Wn\_i321  
-* Text: …angles describing the orientation of the wing axes from the first wing cross section's axes using an intrinsic 3-2'-1" sequence…
+* Variables: angles\_Wcs1\_to\_Wn\_izyx  
+* Text: …angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic z-y'-x" sequence…
 
 #### Airplane-local reference examples
 
-* Variables: angles\_Wn2\_to\_G\_i321  
-* Text: …angles describing the orientation of the geometry axes from the second wing's axes using an intrinsic 3-2'-1" sequence…
+* Variables: angles\_Wn2\_to\_G\_izyx  
+* Text: …angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic z-y'-x" sequence…
 
 #### Non-local reference examples
 
-* Variables: angles\_BP1\_to\_E\_e123  
-* Text: …angles describing the orientation of the Earth axes from the first airplane's body axes using an extrinsic 1-2-3 sequence…
+* Variables: angles\_BP1\_to\_E\_exyz  
+* Text: …angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic x-y-z sequence…
 
 ## Active Angle Vectors
 Active angle vectors give instructions for rotating a vector within its current axis system. Therefore, they don't require information about the particular axes, only the type or rotation and the sequence.
@@ -75,15 +75,15 @@ Active angle vectors give instructions for rotating a vector within its current 
 
 ### Active Angle Vector Examples
 
-* Variables: angles\_act\_i321  
-* Text: …angles for rotation using an intrinsic 3-2'-1" sequence…
+* Variables: angles\_act\_izyx  
+* Text: …angles for rotation using an intrinsic z-y'-x" sequence…
 
 ## Implementation Notes
 
 1. Angle wrapping: All angles should be wrapped to the range (-180, 180\] for consistency  
 2. Singularities: Different sequences experience gimbal lock at particular points  
 3. Units: All angles are in degrees unless explicitly noted otherwise  
-4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. 3-2'-1" is the same as 1-2-3)
+4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. z-y'-x" is the same as x-y-z)
 
 # Rotation and Transformation Matrices
 
@@ -93,13 +93,18 @@ Like angle vectors, rotation and transformation matrices can either represent th
 
 By convention, we treat vectors as column vectors and left-multiply by matrices for both active and passive transformations.
 
+## Homogeneous Coordinates
+We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert vector's three components to four homogenous coordinates before applying the transformation.
+
+For vector with components (x, y, z) that is given relative to a reference point, its homogeneous form is (x, y, z, 1). If it is a vector independent of any reference point, its homogeneous form is (x, y, z, 0). After applying the transformation, we can convert either type back to non-homogeneous components by dropping the last coordinate.
+
 ## Passive Matrices
 
 ### Overview of Passive Matrices 
 
 * Ptera Software uses two passive matrix types:  
-  * R_pas: 3×3 rotation matrices that relate the orientation of one axis system relative to another.  
-  * T_pas: 4×4 transformation matrices in homogeneous coordinates that can encode the relative rotation, plus additional transformations like translations and reflections, between two axes.
+  * R_pas: 3x3 rotation matrices that relate the orientation of one axis system relative to another.  
+  * T_pas: 4x4 transformation matrices in homogeneous coordinates that can encode the relative rotation, plus additional transformations like translations and reflections, between two axes.
 
 ### Passive Matrix Name Patterns
 
@@ -116,7 +121,7 @@ By convention, we treat vectors as column vectors and left-multiply by matrices 
 #### Examples:
 
 * R\_pas\_W\_to\_B: …rotation matrix R, which maps from wind axes to body axes…  
-* T\_pas\_Wn\_Ler\_to\_G\_I: …which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation's starting point…
+* T\_pas\_Wn\_Ler\_to\_G\_I: …which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point…
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.
 
@@ -125,8 +130,8 @@ See the section on angle vectors for examples that can be adapted to form text r
 ### Overview of Active Matrices 
 
 * Ptera Software uses two active matrix types:  
-  * R_act: 3×3 rotation matrices that are used to rotate a vector in its current axis system.  
-  * T_act: 4×4 transformation matrices in homogeneous coordinates that can rotate a vector and also perform additional transformations like translations and reflections.
+  * R_act: 3x3 rotation matrices that are used to rotate a vector in its current axis system.  
+  * T_act: 4x4 transformation matrices in homogeneous coordinates that can rotate a vector and also perform additional transformations like translations and reflections.
 
 ### Active Matrix Name Patterns
 

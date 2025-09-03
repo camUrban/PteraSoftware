@@ -54,6 +54,12 @@
       <w>dtype</w>
       <w>einsum</w>
       <w>eppler</w>
+      <w>exyz</w>
+      <w>exzy</w>
+      <w>eyxz</w>
+      <w>eyzx</w>
+      <w>ezxy</w>
+      <w>ezyx</w>
       <w>fage</w>
       <w>fauvel</w>
       <w>firebee</w>
@@ -81,6 +87,12 @@
       <w>hstab</w>
       <w>hstack</w>
       <w>iiic</w>
+      <w>ixyz</w>
+      <w>ixzy</w>
+      <w>iyxz</w>
+      <w>iyzx</w>
+      <w>izxy</w>
+      <w>izyx</w>
       <w>joukowski</w>
       <w>jérôme</w>
       <w>karman</w>

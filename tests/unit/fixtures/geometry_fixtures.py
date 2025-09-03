@@ -39,7 +39,7 @@ def make_test_airfoil_fixture():
     :return test_airfoil_fixture: Airfoil
         This is the Airfoil object configured for testing.
     """
-    test_airfoil_fixture = ps.geometry.Airfoil(name="naca2412")
+    test_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
 
     return test_airfoil_fixture
 
@@ -55,7 +55,7 @@ def make_basic_wing_cross_section_fixture():
     test_airfoil_fixture = make_test_airfoil_fixture()
 
     # Create the basic WingCrossSection object.
-    basic_wing_cross_section_fixture = ps.geometry.WingCrossSection(
+    basic_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
         num_spanwise_panels=8,
         chord=1.5,
@@ -85,7 +85,7 @@ def make_root_wing_cross_section_fixture():
     test_airfoil_fixture = make_test_airfoil_fixture()
 
     # Create the root WingCrossSection object.
-    root_wing_cross_section_fixture = ps.geometry.WingCrossSection(
+    root_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
         num_spanwise_panels=10,
         chord=2.0,
@@ -111,7 +111,7 @@ def make_tip_wing_cross_section_fixture():
     test_airfoil_fixture = make_test_airfoil_fixture()
 
     # Create the tip WingCrossSection object.
-    tip_wing_cross_section_fixture = ps.geometry.WingCrossSection(
+    tip_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
         num_spanwise_panels=None,
         chord=0.8,
@@ -138,9 +138,11 @@ def make_minimal_wing_cross_section_fixture():
     test_airfoil_fixture = make_test_airfoil_fixture()
 
     # Create the minimal WingCrossSection object.
-    minimal_wing_cross_section_fixture = ps.geometry.WingCrossSection(
-        airfoil=test_airfoil_fixture,
-        num_spanwise_panels=1,  # Minimum valid value
+    minimal_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=1,  # Minimum valid value
+        )
     )
 
     # Delete the constructing fixture.
@@ -161,16 +163,18 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
     test_airfoil_fixture = make_test_airfoil_fixture()
 
     # Create the asymmetric control surface WingCrossSection object.
-    asymmetric_wing_cross_section_fixture = ps.geometry.WingCrossSection(
-        airfoil=test_airfoil_fixture,
-        num_spanwise_panels=6,
-        chord=1.2,
-        Lp_Wcsp_Lpp=[0.1, 1.0, 0.05],
-        angles_Wcsp_to_Wcs_i321=[2.0, 0.0, -1.0],
-        control_surface_type="asymmetric",
-        control_surface_hinge_point=0.8,
-        control_surface_deflection=-10.0,
-        spanwise_spacing="uniform",
+    asymmetric_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=6,
+            chord=1.2,
+            Lp_Wcsp_Lpp=[0.1, 1.0, 0.05],
+            angles_Wcsp_to_Wcs_i321=[2.0, 0.0, -1.0],
+            control_surface_type="asymmetric",
+            control_surface_hinge_point=0.8,
+            control_surface_deflection=-10.0,
+            spanwise_spacing="uniform",
+        )
     )
 
     # Delete the constructing fixture.

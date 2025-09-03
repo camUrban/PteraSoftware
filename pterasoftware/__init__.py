@@ -1,11 +1,15 @@
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
-    None
+    airfoils: This package contains a collection of airfoils whose coordinates are
+    stored in DAT files.
+
+    models: This package contains example models for the GUI.
+
+    geometry: This package contains the geometry classes.
 
 This package contains the following directories:
-    airfoils: This folder contains a collection of airfoils whose coordinates are
-    stored in DAT files.
+    ui_resources: This directory contains assets used by the GUI.
 
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
@@ -17,9 +21,6 @@ This package contains the following modules:
 
     functions.py: This module contains functions shared by other modules in the
     pterasoftware package.
-
-    geometry.py: This module contains useful class definitions for different types of
-    geometries.
 
     meshing.py: This module contains useful functions for creating meshes.
 
@@ -53,11 +54,12 @@ This package contains the following modules:
     of this package's unsteady ring vortex lattice solver.
 """
 
-import pterasoftware.aerodynamics
 import pterasoftware.airfoils
+import pterasoftware.geometry
+import pterasoftware.models
+import pterasoftware.aerodynamics
 import pterasoftware.convergence
 import pterasoftware.functions
-import pterasoftware.geometry
 import pterasoftware.meshing
 import pterasoftware.movement
 import pterasoftware.operating_point

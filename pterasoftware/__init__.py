@@ -45,7 +45,8 @@ This package contains the following modules:
     steady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's steady ring vortex lattice solver.
 
-    transformations.py This module contains functions use for geometric transformations.
+    transformations.py This module contains functions used for geometric
+    transformations.
 
     trim.py: This module contains functions to analyze the trim conditions of steady
     and unsteady solvers.

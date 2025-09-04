@@ -1,10 +1,10 @@
 # Angle Vectors and Transformations
 
-As discussed in [Axes, Points, and Frames](https://raw.githubusercontent.com/camUrban/PteraSoftware/feature/improved_geometry_definitions/docs/AXES_POINTS_AND_FRAMES.md), Ptera Software defines vector-valued quantities in a multitude of different axis systems and relative to different reference points. Therefore, we must be able to find a vectors equivalent representations in different axis systems (i.e. perform passive transformations). Also, as flapping-wing flight inherently involves lots of rotational motion, we must be able to rotate vectors within their current axis systems (i.e. perform active transformations). We accomplish both of these tasks using angle vectors, rotation matrices, and transformation matrices.
+As discussed in [Axes, Points, and Frames](https://raw.githubusercontent.com/camUrban/PteraSoftware/feature/improved_geometry_definitions/docs/AXES_POINTS_AND_FRAMES.md), Ptera Software defines vector-valued quantities in a multitude of different axis systems and relative to different reference points. Therefore, we must be able to find a vector's equivalent representations in different axis systems (i.e. perform passive transformations). Also, as flapping-wing flight inherently involves lots of rotational motion, we must be able to rotate vectors within their current axis systems (i.e. perform active transformations). We accomplish both of these tasks using angle vectors, rotation matrices, and transformation matrices.
 
 # Angle Vectors
 
-Angle vectors contain three scalar angles. These angles can either represent the orientation of one axis system with respect to another (passive angle vectors), or they can be the angles that would like use to rotate a given vector within one axis system (active angle vectors). Angle vectors always take the form (angleX, angleY, angleZ).
+Angle vectors contain three scalar angles. These angles can either represent the orientation of one axis system with respect to another (passive angle vectors), or they can be the angles that we would like to use to rotate a given vector within one axis system (active angle vectors). Angle vectors always take the form (angleX, angleY, angleZ).
 
 ## Sequence IDs and Names
 
@@ -89,7 +89,7 @@ Active angle vectors give instructions for rotating a vector within its current 
 
 This section formalizes how Ptera Software represents and composes rotations and more general transformations between the many axis systems and reference points defined elsewhere in the guide. It builds on the notation for axes, points, and frames as well as the notation for passive and active angle vectors.
 
-Like angle vectors, rotation and transformation matrices can either represent the position and orientation of one axis system relative to another (passive rotation and transformation matrices), or they can be a used to transform a vector within its current axes.
+Like angle vectors, rotation and transformation matrices can either represent the position and orientation of one axis system relative to another (passive rotation and transformation matrices), or be used to transform a vector within its current axes (active rotation and transformation matrices).
 
 By convention, we treat vectors as column vectors and left-multiply by matrices for both active and passive transformations.
 
@@ -103,8 +103,8 @@ For vector with components (x, y, z) that is given relative to a reference point
 ### Overview of Passive Matrices 
 
 * Ptera Software uses two passive matrix types:  
-  * R_pas: 3x3 rotation matrices that relate the orientation of one axis system relative to another.  
-  * T_pas: 4x4 transformation matrices in homogeneous coordinates that can encode the relative rotation, plus additional transformations like translations and reflections, between two axes.
+  * R\_pas\_…: 3x3 rotation matrices that relate the orientation of one axis system relative to another.  
+  * T\_pas\_…: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 
 ### Passive Matrix Name Patterns
 
@@ -130,8 +130,8 @@ See the section on angle vectors for examples that can be adapted to form text r
 ### Overview of Active Matrices 
 
 * Ptera Software uses two active matrix types:  
-  * R_act: 3x3 rotation matrices that are used to rotate a vector in its current axis system.  
-  * T_act: 4x4 transformation matrices in homogeneous coordinates that can rotate a vector and also perform additional transformations like translations and reflections.
+  * [variable name]\_R\_act: 3x3 rotation matrices that are used to rotate a vector in its current axis system.  
+  * [variable name]\_T\_act: 4x4 homogeneous transformation that operates within a single axis system. It applies a rigid orientation change (rotation or reflection) and, for quantities tied to a reference point, may also apply a translation. It never changes which axes a vector is expressed in and never introduces scaling or shear. The translation has no effect on free vectors (e.g., forces).
 
 ### Active Matrix Name Patterns
 
@@ -147,7 +147,7 @@ See the section on angle vectors for examples that can be adapted to form text r
 
 #### Examples:
 
-* mirror_T\_act: …mirror, a matrix for active transformations in homogeneous coordinates…  
-* translate_wing\_T\_act: …translate_wing, a matrix for active transformations in homogeneous coordinates…
+* mirror\_T\_act: …mirror, a matrix for active transformations in homogeneous coordinates…  
+* translate\_wing\_T\_act: …translate_wing, a matrix for active transformations in homogeneous coordinates…
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.

@@ -98,6 +98,16 @@ class TestGenerateHomog(unittest.TestCase):
 
         :return: None
         """
+        # Check that tuples are converted to ndarrays
+        float_tuple = (1.5, 2.5, 3.5)
+        homog_float_tuple = ps.transformations.generate_homog(float_tuple, True)
+        self.assertIsInstance(homog_float_tuple, np.ndarray)
+
+        # Check that lists are converted to ndarrays
+        float_list = [1.5, 2.5, 3.5]
+        homog_float_list = ps.transformations.generate_homog(float_list, True)
+        self.assertIsInstance(homog_float_list, np.ndarray)
+
         # Test with different numeric types
         float_vector = np.array([1.5, 2.5, 3.5])
         homog_float = ps.transformations.generate_homog(float_vector, True)
@@ -116,19 +126,29 @@ class TestGenerateR(unittest.TestCase):
 
     This class contains the following public methods:
         test_identity_rotations: Tests that zero angles produce identity matrices.
+
         test_passive_vs_active_relationship: Tests the transpose relationship between
         passive and active matrices.
+
         test_intrinsic_vs_extrinsic_relationship: Tests the relationship between
         intrinsic and extrinsic rotations.
+
         test_rotation_matrix_properties: Tests that generated matrices are proper
         rotation matrices.
+
         test_specific_known_active_rotations: Tests specific active rotations with
         known results.
+
         test_specific_known_passive_rotations: Tests specific passive rotations with
         known results.
+
         test_composition_properties: Tests composition of multiple rotations.
+
         test_large_angle_handling: Tests handling of large angles and angle wrapping.
+
         test_different_orders: Tests all valid Tait-Bryan rotation orders.
+
+        test_edge_case_angles: Tests edge case angle values.
 
     This class contains the following class attributes:
         None

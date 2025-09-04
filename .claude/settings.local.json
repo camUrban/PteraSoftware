@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\Users\\camer\\Documents\\GitHub\\PteraSoftware/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

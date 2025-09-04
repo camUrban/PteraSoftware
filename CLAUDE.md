@@ -53,14 +53,19 @@ python -O -m PyInstaller --noconfirm "pterasoftware.spec"
 
 ### Core Package Structure
 - **pterasoftware/**: Main package with modular solver architecture
-  - **Geometry**: `geometry.py` (Airplane → Wing → WingCrossSection → Airfoil hierarchy)
+  - **Geometry**: `geometry/` package (Airplane → Wing → WingCrossSection → Airfoil hierarchy)
+    - `geometry/airplane.py`: Airplane class with coordinate transformations
+    - `geometry/wing.py`: Wing class with symmetry processing
+    - `geometry/wing_cross_section.py`: WingCrossSection class with validation
+    - `geometry/airfoil.py`: Airfoil class with coordinate generation
+  - **Transformations**: `transformations.py` (coordinate system transformations and rotations)
   - **Solvers**: Three VLM implementations (steady horseshoe, steady ring, unsteady ring)
   - **Problems**: `problems.py` (SteadyProblem, UnsteadyProblem classes)
   - **Support**: meshing, movement, output, trim, convergence modules
 
 ### Key Features
 - **Multiple Simulation Methods**: Steady horseshoe VLM, steady ring VLM, unsteady ring UVLM
-- **Customizable Aircraft Geometry**: Multi-wing aircraft with arbitrary cross sections and airfoils
+- **Customizable Aircraft Geometry**: Multi-wing aircraft with arbitrary wing cross sections and airfoils
 - **Time-Dependent Motion**: Flapping motion defined by sweep, pitch, and heave functions
 - **Formation Flight**: Multi-airplane simulations supported since v2.0.0
 - **High-Speed Computing**: JIT compilation via Numba for fast simulations
@@ -101,37 +106,25 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
 ## Writing Style Guidelines
 
 ### Terminology
-- **"Ptera Software"**: When writing as text, always write as two words without a 
-hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware"). 
-When writing as a package to be imported, use ```import pterasoftware as ps```  
-- **"cross section"**: Always write as two words, never hyphenated 
-(not "cross-section")  
-- **Object references**: When referring to code objects, use proper class naming 
-convention. The capitalization indicates that we are talking about a code object, not an 
-abstraction. You don't need to add "object" or "objects" after the class name since the 
-capitalization already makes this clear (e.g. "update the Wings" instead of "update the 
-Wing objects"). In summary, when talking about code objects:
+- **"Ptera Software"**: When writing as text, always write as two words without a hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware"). When writing as a package to be imported, use ```import pterasoftware as ps```  
+- **"cross section"**: Always write as two words, never hyphenated (not "cross-section")  
+- **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). In summary, when talking about code objects:
   - ✅ "the previous WingCrossSection"
   - ❌ "the previous cross section"
   - ✅ "this Wing"
   - ❌ "this wing"
   - ✅ "update the Wings"
   - ❌ "update the Wing objects" (unnecessary)
-- **Abstract references**: When referring to abstractions, use lowercase and separate 
-individual words with a space (e.g. "an airplane's wings are used to generate lift" and 
-"the cross section of a wing typically has a streamlined shape known as an airfoil"). 
-This is to distinguish them from code objects.
+- **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and"the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 
 ### Docstring Style
 - Follow existing PteraSoftware docstring conventions  
 - Use reStructuredText (rST) formatting guidelines  
 - Maintain consistent parameter descriptions  
-- Preserve existing documentation structure and completeness unless we are explicitly 
-updating or improving it  
+- Preserve existing documentation structure and completeness unless we are explicitly updating or improving it  
 - Always include units in parameter descriptions where applicable  
 - Keep parameter descriptions complete.  
-- If a parameter is a numpy array, specify the expected shape and data type. For  
-example, say "(3,) ndarray of floats" for a 1D array of 3 floats.
+- If a parameter is a numpy array, specify the expected shape and data type. For example, say "(3,) ndarray of floats" for a 1D array of 3 floats.
 
 ## Code Style Guidelines
 
@@ -141,17 +134,100 @@ example, say "(3,) ndarray of floats" for a 1D array of 3 floats.
 - Preserve existing comment structure and detail level  
 
 ### Variable Naming
-- Use descriptive variables names that clearly indicate their purpose  
+- Use descriptive variable names that clearly indicate their purpose  
 - Use lowercase with underscores for variable names
-- Variables that are coordinates should be named 1D ndarrays, and have a suffix 
-abbreviation indicating their reference frame. The reference frames used are:  
-  - The wind frame (wind_frame)
-  - The geometry frame (geometry_frame)
-  - The wing frame (wing_frame)
-  - The wing cross section frame (wing_cross_section_frame)
-  - The airfoil frame (airfoil_frame)
-  - The for a 1D ndarray of x-coordinates in the body frame, or "x_wing" for a 1D 
-  ndarray of x-coordinates in the wing frame.
+- **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the documentation
+
+#### Coordinate System Variable Naming Patterns
+
+Variables must follow one of these three patterns based on their requirements:
+
+1. **Axes without a point and without a frame**  
+   `[variable name]_[axes ID]`
+   - Example: `force_W` (force in wind axes)
+
+2. **Axes without a point and with a frame**  
+   `[variable name]_[axes ID]__[frame ID]` (note double underscore)
+   - Example: `velocity_W__B` (velocity in wind axes, observed from body frame)
+
+3. **Axes with a point and without a frame**  
+   `[variable name]_[axes ID]_[point ID]`
+   - Example: `position_G_Cg` (position in geometry axes, relative to CG point)
+
+#### Standardized IDs
+
+**Axis Systems:**
+- E: Earth, B: body, W: wind, G: geometry, Wn: wing, Wcs: wing cross section, Wcsp: wing cross section parent, A: airfoil
+
+**Reference Points:**  
+- I: simulation starting point, Cgi: starting point, Cg: CG point, Ler: leading edge root point, Lp: leading point, Lpp: leading point parent
+
+**Reference Frames:**
+- E: Earth frame, B: body frame, Wn: wing frame, Wcs: wing cross section frame, Wcsp: wing cross section parent frame
+
+#### Angle Vector Naming
+
+**Passive angle vectors (relating two axis systems):**
+- `[variable name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
+- Example: `angles_E_to_B_izyx` (angles from Earth to body axes using intrinsic z-y'-x" sequence)
+
+**Active angle vectors (for rotation within current axis system):**
+- `[variable name]_act_[sequence ID]`
+- Example: `rotation_angles_act_izyx` (rotation angles using intrinsic z-y'-x" sequence)
+
+#### Transformation Matrix Naming
+
+**Passive transformation matrices:**
+- Rotation: `R_pas_[source]_to_[target]`
+- Full transformation: `T_pas_[source axes]_[source point]_to_[target axes]_[target point]`
+- Examples: `R_pas_G_to_Wn`, `T_pas_G_Cg_to_Wn_Ler`
+
+**Active transformation matrices:**
+- Rotation: `[name]_R_act`
+- Full transformation: `[name]_T_act`
+- Examples: `mirror_R_act`, `translate_T_act`
+
+#### Text Referencing Conventions
+
+When referencing coordinate variables in comments and docstrings, use the following patterns:
+
+1. **Axes without a point and without a frame**  
+   "[variable name] (in [axes name])"
+   - Example: "force (in wind axes)"
+
+2. **Axes without a point and with a frame**  
+   "[variable name] (in [axes name], observed from the [frame name])"
+   - Example: "velocity (in wind axes, observed from the body frame)"
+
+3. **Axes with a point and without a frame**  
+   "[variable name] (in [axes name], relative to the [point name])"
+   - Example: "position (in geometry axes, relative to the CG point)"
+
+**Context-Dependent References:**
+- **Local context**: "...in wing axes..." (when already within Wing class)
+- **Airplane-local**: "...in the first Wing's axes..." (when within Airplane class)
+- **Non-local**: "...in the first Airplane's second Wing's axes..." (when outside Airplane)
+
+#### Vector and Angle Vector Format Conventions
+
+**Vector Format:**
+- All (non-homogeneous) vectors must take the form `[x, y, z]`
+- This applies to position vectors, force vectors, velocity vectors, etc.
+- Example: `position_G_Cg = np.array([1.5, 2.0, -0.3])`
+- Example: `force_W = np.array([100.2, -5.1, 85.7])`
+
+**Angle Vector Format:**
+- All angle vectors must take the form `[angleX, angleY, angleZ]`
+- This applies to both passive and active angle vectors
+- Angles are always in degrees unless explicitly noted otherwise
+- Example: `angles_E_to_B_izyx = np.array([15.0, -5.2, 30.0])`
+- Example: `rotation_angles_act_izyx = np.array([0.0, 45.0, 0.0])`
+
+**Homogeneous Coordinates:**
+- For 4x4 transformation matrices, vectors are converted to homogeneous form
+- Position vectors: `[x, y, z, 1]` (has_point=True)
+- Direction vectors: `[x, y, z, 0]` (has_point=False)
+- Use `ps.transformations.generate_homog(vector, has_point)` for conversion
 
 ## Coordinate System Conventions
 
@@ -190,37 +266,34 @@ There are three useful combinations of axes, points, and frames. Variables are d
 
 ### ID Abbreviations and Names
 
-**Axis Systems:**
 - E: Earth  
 - B: body  
-- P: airplane  
+- P: Airplane  
 - W: wind  
 - G: geometry  
 - Wn: wing  
 - Wcs: wing cross section  
-- Wcsp: wing cross section's parent  
-- A: airfoil  
-
-**Reference Points:**
-- I: Simulation's starting point  
+- Wcsp: wing cross section parent  
+- A: airfoil
+- I: simulation starting point  
 - Cgi: starting point  
 - Cg: CG point  
-- Ler: leading edge's root point  
+- Ler: leading edge root point  
 - Lp: leading point  
-- Lpp: leading point's parent  
+- Lpp: leading point parent  
 - ...pp...: panel point (Fr=front right, Fl=front left, Bl=back left, Br=back right, C=collocation)
-- ...bhvp...: bound horseshoe vortex's point  
+- ...bhvp...: bound horseshoe vortex point  
 - ...brvp...: bound ring vortex point  
 - ...wrvp...: wake ring vortex point  
 - ...whvp...: wake horseshoe vortex point  
-- ...lvp...: line vortex's point (S=start, E=end, C=center)
+- ...lvp...: line vortex point (S=start, E=end, C=center)
 
 **Reference Frames:**
-- E: Earth's reference frame (inertial)
-- B: Body's reference frame (non-inertial, attached to airplane body)
-- Wn: Wing's reference frame (non-inertial, attached to wing leading edge root)
-- Wcs: Wing cross section's reference frame (non-inertial, attached to leading point)
-- Wcsp: Wing cross section's parent reference frame (non-inertial, attached to leading parent point)
+- E: Earth reference frame (inertial)
+- B: Body reference frame (non-inertial, attached to Airplane's body)
+- Wn: Wing reference frame (non-inertial, attached to Wing's leading edge root)
+- Wcs: Wing cross section reference frame (non-inertial, attached to WingCrossSection's leading point)
+- Wcsp: Wing cross section parent reference frame (non-inertial, attached to WingCrossSection's leading point parent)
 
 ### Axis System Definitions
 
@@ -230,63 +303,63 @@ There are three useful combinations of axes, points, and frames. Variables are d
 - Text: "...in Earth axes..."
 
 **2. Body Axes**
-- Basis: Front of airplane, Right of airplane, Bottom of airplane (right-handed)
+- Basis: Front of Airplane, Right of Airplane, Bottom of Airplane (right-handed)
 - Variables: `..._B...` (local) or `..._BP1...` (non-local)
-- Text: "...in body axes..." or "...in the first airplane's body axes..."
+- Text: "...in body axes..." or "...in the first Airplane's body axes..."
 
 **3. Wind Axes**
 - Basis: Parallel to freestream velocity, perpendicular directions defined via angle of attack/sideslip
 - Variables: `..._W...` (local) or `..._WP1...` (non-local)
-- Text: "...in wind axes..." or "...in the first airplane's wind axes..."
+- Text: "...in wind axes..." or "...in the first Airplane's wind axes..."
 
 **4. Geometry Axes**
-- Basis: Back of airplane, Right of airplane, Top of airplane (right-handed)
+- Basis: Back of Airplane, Right of Airplane, Top of Airplane (right-handed)
 - Variables: `..._G...` (local) or `..._GP1...` (non-local)
-- Text: "...in geometry axes..." or "...in the first airplane's geometry axes..."
+- Text: "...in geometry axes..." or "...in the first Airplane's geometry axes..."
 
 **5. Wing Axes**
-- Basis: Back of wing in first cross section plane, normal to plane, top surface
-- Right-handed for non-symmetric/symmetric-continuous wings, left-handed for mirror-only wings
-- Variables: `..._Wn...` (local), `..._Wn1...` (airplane-local), `..._Wn2P1...` (non-local)
-- Text: "...in wing axes...", "...in the first wing's axes...", "...in the first airplane's second wing's axes..."
+- Basis: Back of Wing in first cross section plane, normal to plane, top surface
+- Right-handed for non-symmetric/symmetric-continuous Wings, left-handed for mirror-only Wings
+- Variables: `..._Wn...` (local), `..._Wn1...` (Airplane-local), `..._Wn2P1...` (non-local)
+- Text: "...in wing axes...", "...in the first Wing's axes...", "...in the first Airplane's second Wing's axes..."
 
 **6. Wing Cross Section Axes**
 - Basis: Trailing edge in plane, normal to plane, top surface
 - Handedness same as wing axes
-- Variables: `..._Wcs...` (local), `..._Wcs1...` (wing-local), `..._Wcs3Wn2...` (airplane-local), `..._Wcs1Wn2P1...` (non-local)
-- Text: "...in wing cross section axes...", "...in the first wing cross section's axes...", etc.
+- Variables: `..._Wcs...` (local), `..._Wcs1...` (Wing-local), `..._Wcs3Wn2...` (Airplane-local), `..._Wcs1Wn2P1...` (non-local)
+- Text: "...in wing cross section axes...", "...in the first WingCrossSection's axes...", etc.
 
 **7. Wing Cross Section Parent Axes**
 - Basis: Identical to wing axes for first cross section, identical to previous cross section axes for subsequent ones
 - Variables: `..._Wcsp...` with similar local/non-local patterns
-- Text: "...in the wing cross section's parent axes..."
+- Text: "...in wing cross section parent axes..."
 
 **8. Airfoil Axes**
 - Basis: Chordwise to trailing point, Normal to chord toward upper line (2D)
-- Variables: `..._A...` (local), `..._AWcs2...` (wing-local), etc.
-- Text: "...in airfoil axes...", "...in the second wing cross section's airfoil's axes...", etc.
+- Variables: `..._A...` (local), `..._AWcs2...` (Wing-local), etc.
+- Text: "...in airfoil axes...", "...in the second WingCrossSection's Airfoil's axes...", etc.
 
 ### Angle Vectors and Transformations
 
 **Rotation Sequences (Tait-Bryan only):**
-- i123, i132, i213, i231, i312, i321: intrinsic sequences
-- e123, e132, e213, e231, e312, e321: extrinsic sequences
+- ixyz, ixzy, iyxz, iyzx, izxy, izyx: intrinsic sequences (x-y'-z", x-z'-y", etc.)
+- exyz, exzy, eyxz, eyzx, ezxy, ezyx: extrinsic sequences (x-y-z, x-z-y, etc.)
 
 **Passive Angle Vectors (relating axis systems):**
-- Variable pattern: `[name]_pas_[source axes ID]_to_[target axes ID]_[sequence ID]`
+- Variable pattern: `[name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
 - Text pattern: "[name] describing the orientation of [target axes name] relative to [source axes name] using an [sequence name] sequence"
-- Example: `angles_pas_E_to_B_i321` = "angles describing the orientation of the Earth axes relative to the body axes using an intrinsic 3-2'-1" sequence"
+- Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic z-y'-x" sequence"
 
 **Active Angle Vectors (rotating within axis system):**
 - Variable pattern: `[name]_act_[sequence ID]`
 - Text pattern: "[name] for rotation using an [sequence name] sequence"
-- Example: `angles_act_i321` = "angles for rotation using an intrinsic 3-2'-1" sequence"
+- Example: `angles_act_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
 
 **Rotation and Transformation Matrices:**
-- **Passive rotation matrices:** `R_pas_[source]_to_[target]` (3×3)
-- **Passive transformation matrices:** `T_pas_[source axes]_[source point]_to_[target axes]_[target point]` (4×4 homogeneous)
-- **Active rotation matrices:** `[name]_R_act` (3×3)  
-- **Active transformation matrices:** `[name]_T_act` (4×4 homogeneous)
+- **Passive rotation matrices:** `R_pas_[source]_to_[target]` (3x3)
+- **Passive transformation matrices:** `T_pas_[source axes]_[source point]_to_[target axes]_[target point]` (4x4 homogeneous)
+- **Active rotation matrices:** `[name]_R_act` (3x3)  
+- **Active transformation matrices:** `[name]_T_act` (4x4 homogeneous)
 
 **Implementation Notes:**
 - All angles in degrees unless noted otherwise
@@ -294,36 +367,26 @@ There are three useful combinations of axes, points, and frames. Variables are d
 - Vectors treated as column vectors with left-multiplication by matrices
 - Different sequences have different gimbal lock singularities
 
-## Miscellaneous Guidelines
-- Use clear, descriptive variable names  
-- Avoid abbreviations unless they are well-known in the context  
-- In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use 
-hyphens (-) for clarity  
-- **Coordinate and axis references**: When referring to axes, coordinates, or planes, use 
-lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", 
-"y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and 
-"axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes"). 
-Never use uppercase letters for axis references in text.
-- Never use emojis in code, comments, or docstrings
-
 ## Example Usage Pattern
 
 Basic usage follows this pattern:
 ```python
 import pterasoftware as ps
 
-# Define geometry
-airplane = ps.geometry.Airplane(
+# Define geometry using the new package structure
+airplane = ps.geometry.airplane.Airplane(
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             symmetric=True,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
-                    airfoil=ps.geometry.Airfoil(name="naca2412"),
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    num_spanwise_panels=8,
                 ),
-                ps.geometry.WingCrossSection(
-                    y_le=5.0,
-                    airfoil=ps.geometry.Airfoil(name="naca2412"),
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    Lp_Wcsp_Lpp=[0.0, 5.0, 0.0],
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    num_spanwise_panels=None,  # Tip cross section
                 ),
             ],
         ),
@@ -347,3 +410,12 @@ solver.run()
 # Visualize results
 ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ```
+
+## Miscellaneous Guidelines
+- Use clear, descriptive variable names  
+- Avoid abbreviations unless they are well-known in the context  
+- In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use hyphens (-) for clarity  
+- In docstrings and comments, never use a multiplication sign (×); always use a lowercase x (x)
+- **Coordinate and axis references**: When referring to axes, coordinates, or planes, use  lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", "y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and "axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes").  Never use uppercase letters for axis references in text.
+- Never use emojis in code, comments, or docstrings
+- Always use straight single and double quotes, not curly ones

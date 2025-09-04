@@ -10,13 +10,10 @@ This module contains the following functions:
     generate_homog: This function converts a 3D vector to homogeneous coordinates
     for use with 4x4 transformation matrices.
 
-    generate_R: This function generates either a passive or active rotation matrix
-    using an angle vector, and parameters specifying if the matrix should be passive
-    or active, intrinsic or extrinsic, and the order by which to apply the rotations
-    about each axis.
-
-    generate_rot_T: This function converts a rotation matrix to a rotational
-    transformation matrix for use with homogeneous coordinates.
+    generate_rot_T: This function generates a transformation matrix representing a
+    passive or active rotation using an angle vector, and parameters specifying if
+    the matrix should be passive or active, intrinsic or extrinsic, and the order by
+    which to apply the rotations about each axis.
 
     generate_trans_T: This function generates either a passive or active
     translational transformation matrix using a vector and a parameter specifying if
@@ -73,33 +70,35 @@ def generate_homog(vector_A, has_point):
     return vectorHomog_A
 
 
-def generate_R(angles, passive, intrinsic, order):
-    """This function generates either a passive or active rotation matrix using an
-    angle vector, and parameters specifying if the matrix should be passive or
-    active, intrinsic or extrinsic, and the order by which to apply the rotations
-    about each axis.
+def generate_rot_T(angles, passive, intrinsic, order):
+    """This function generates a transformation matrix representing a passive or
+    active rotation using an angle vector, and parameters specifying if the matrix
+    should be passive or active, intrinsic or extrinsic, and the order by which to
+    apply the rotations about each axis.
 
     Notes: Angles are in degrees with signs defined using the right-hand rule.
 
-    Passive Use-Case: Let `r_A` be a vector in "A" axes, but we want to find `r_B`,
-    which is the same vector, but expressed in "B" axes. The orientation of "B" axes
-    relative to "A" axes is defined by the angle vector `angles` (with rotations in
-    order and type defined by the variables `order` and `intrinsic`). Then:
+    Passive Use-Case: Let `r_A` be a free vector in "A" axes, but we want to find
+    `r_B`, which is the same vector, but expressed in "B" axes. The orientation of
+    "B" axes relative to "A" axes is defined by the angle vector `angles` (with
+    rotations in order and type defined by the variables `order` and `intrinsic`). Then:
 
     ```
-     R_pas_A_to_B = generate_R(angles, True, intrinsic, order)
-    r_B =  R_pas_A_to_B @ r_A
+    T_pas_A_to_B = generate_rot_T(angles, True, intrinsic, order)
+    rHomog_B =  T_pas_A_to_B @ generate_homog(r_A, False)
+    r_B = rHomog_B[:3]
     ```
 
-    Active Use-Case: Let `r_A` be a vector in "A" axes, but we want to find
-    `r_A_prime`, which is `r_A` rotated by the specified sequence: about the fixed
-    "A" axes if `intrinsic=False`, or about the current, newly-rotated axes if
+    Active Use-Case: Let `r_A` be a free vector in "A" axes, but we want to find
+    `rPrime_A`, which is `r_A` rotated by the specified sequence: about the fixed "A"
+    axes if `intrinsic=False`, or about the current, newly-rotated axes if
     `intrinsic=True`, with angles given by `angles` and the sequence defined by
     `order`. Then:
 
     ```
-    rotate_R_act = generate_R(angles, False, intrinsic, order)
-    r_A_prime = rotate_R_act @ r_A
+    rot_T_act = generate_rot_T(angles, False, intrinsic, order)
+    rPrimeHomog_A = rot_T_act @ generate_homog(r_A, False)
+    rPrime_A = rPrimeHomog_A[:3]
     ```
 
     :param angles: array-like of 3 numbers
@@ -118,7 +117,7 @@ def generate_R(angles, passive, intrinsic, order):
 
         If True, returns a matrix that changes coordinates from "A" to "B" axes (`r_B
         = R @ r_A`). If False, returns a matrix that rotates vectors in "A" axes (
-        `r_A_prime = R @ r_A`).
+        `rPrime_A = R @ r_A`).
 
     :param intrinsic: bool
 
@@ -132,9 +131,9 @@ def generate_R(angles, passive, intrinsic, order):
         Each character can be 'x', 'y', or 'z'. Only Tait-Bryan angles are accepted
         so all accepted characters must be distinct.
 
-    :return: (3, 3) ndarray of floats
+    :return: (4, 4) ndarray of floats
 
-        This is the rotation matrix.
+        This is the transformation matrix.
     """
     angles = parameter_validation.validate_3d_vector_float(angles, "angles")
     passive = parameter_validation.validate_boolean(passive, "passive")
@@ -143,21 +142,21 @@ def generate_R(angles, passive, intrinsic, order):
 
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
 
-    R_act_x = np.array(
+    x_R_act = np.array(
         [
             [1.0, 0.0, 0.0],
             [0.0, np.cos(angleX_rad), -np.sin(angleX_rad)],
             [0.0, np.sin(angleX_rad), np.cos(angleX_rad)],
         ]
     )
-    R_act_y = np.array(
+    y_R_act = np.array(
         [
             [np.cos(angleY_rad), 0.0, np.sin(angleY_rad)],
             [0.0, 1.0, 0.0],
             [-np.sin(angleY_rad), 0.0, np.cos(angleY_rad)],
         ]
     )
-    R_act_z = np.array(
+    z_R_act = np.array(
         [
             [np.cos(angleZ_rad), -np.sin(angleZ_rad), 0],
             [np.sin(angleZ_rad), np.cos(angleZ_rad), 0],
@@ -165,7 +164,7 @@ def generate_R(angles, passive, intrinsic, order):
         ]
     )
 
-    R_act_components = [R_act_x, R_act_y, R_act_z]
+    R_act_components = [x_R_act, y_R_act, z_R_act]
 
     order_nums = [{"x": 1, "y": 2, "z": 3}[order_char] for order_char in order]
 
@@ -178,32 +177,14 @@ def generate_R(angles, passive, intrinsic, order):
     for order_id in order_ids:
         R_act = R_act_components[order_id] @ R_act
 
+    R = R_act
     if passive:
-        return R_act.T
-    return R_act
+        R = R.T
 
+    T = np.eye(4, dtype=float)
 
-def generate_rot_T(R):
-    """This function converts a rotation matrix to a rotation transformation matrix
-    using homogeneous coordinates.
-
-    :param R: 3x3 array-like of numbers
-
-        This is the rotation matrix. It can be any 3x3 array-like object and contain
-        either floats or ints. Internally, it will be converted to a (3, 3) ndarray
-        of floats. The rotation matrix can be active or passive, intrinsic or
-        extrinsic, and perform rotations in any order. The generated transformation
-        matrix will retain these same attributes.
-
-    :return: (4, 4) ndarray of floats
-
-        This is the transformation matrix.
-    """
-    R = parameter_validation.validate_3_by_3_matrix_float(R, "R")
-    T_rot = np.eye(4, dtype=float)
-
-    T_rot[:3, :3] = R
-    return T_rot
+    T[:3, :3] = R
+    return T
 
 
 def generate_trans_T(translations, passive):

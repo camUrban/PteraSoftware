@@ -3,7 +3,6 @@
 This module contains the following classes:
     TestGenerateHomog: This class contains methods for testing the generate_homog
     function.
-    TestGenerateR: This class contains methods for testing the generate_R function.
     TestGenerateRotT: This class contains methods for testing the generate_rot_T
     function.
     TestGenerateTransT: This class contains methods for testing the generate_trans_T
@@ -121,34 +120,28 @@ class TestGenerateHomog(unittest.TestCase):
         npt.assert_array_equal(homog_int, expected_int)
 
 
-class TestGenerateR(unittest.TestCase):
-    """This class contains methods for testing the generate_R function.
+class TestGenerateRotT(unittest.TestCase):
+    """This class contains methods for testing the generate_rot_T function.
 
     This class contains the following public methods:
-        test_identity_rotations: Tests that zero angles produce identity matrices.
-
+        test_identity_transformations: Tests that zero angles produce identity matrices.
+        test_transformation_matrix_structure: Tests the structure of transformation matrices.
         test_passive_vs_active_relationship: Tests the transpose relationship between
-        passive and active matrices.
-
+        passive and active rotation components.
         test_intrinsic_vs_extrinsic_relationship: Tests the relationship between
         intrinsic and extrinsic rotations.
-
-        test_rotation_matrix_properties: Tests that generated matrices are proper
+        test_rotation_matrix_properties: Tests that rotation components are proper
         rotation matrices.
-
         test_specific_known_active_rotations: Tests specific active rotations with
         known results.
-
         test_specific_known_passive_rotations: Tests specific passive rotations with
         known results.
-
         test_composition_properties: Tests composition of multiple rotations.
-
         test_large_angle_handling: Tests handling of large angles and angle wrapping.
-
         test_different_orders: Tests all valid Tait-Bryan rotation orders.
-
         test_edge_case_angles: Tests edge case angle values.
+        test_homogeneous_coordinate_transformations: Tests transformation of
+        homogeneous coordinates.
 
     This class contains the following class attributes:
         None
@@ -157,7 +150,7 @@ class TestGenerateR(unittest.TestCase):
         This class is not meant to be subclassed.
     """
 
-    def test_identity_rotations(self):
+    def test_identity_transformations(self):
         """Tests that zero angles produce identity matrices for all configurations.
 
         :return: None
@@ -171,13 +164,45 @@ class TestGenerateR(unittest.TestCase):
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
-                        R = ps.transformations.generate_R(
+                        T = ps.transformations.generate_rot_T(
                             zero_angles, passive, intrinsic, order
                         )
-                        npt.assert_allclose(R, np.eye(3), atol=1e-14)
+                        npt.assert_allclose(T, np.eye(4), atol=1e-14)
+
+    def test_transformation_matrix_structure(self):
+        """Tests that transformation matrices have correct 4x4 structure.
+
+        :return: None
+        """
+        angles = np.array([30.0, 45.0, 60.0])
+
+        for passive in [True, False]:
+            for intrinsic in [True, False]:
+                for order in ["xyz", "zyx"]:  # Test representative orders
+                    with self.subTest(
+                        passive=passive, intrinsic=intrinsic, order=order
+                    ):
+                        T = ps.transformations.generate_rot_T(
+                            angles, passive, intrinsic, order
+                        )
+
+                        # Test output shape
+                        self.assertEqual(T.shape, (4, 4))
+
+                        # Test that translation part is zero
+                        expected_translation = np.array([0.0, 0.0, 0.0])
+                        npt.assert_array_equal(T[:3, 3], expected_translation)
+
+                        # Test that bottom row is [0, 0, 0, 1]
+                        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+                        npt.assert_array_equal(T[3, :], expected_bottom)
+
+                        # Test determinant is 1
+                        det = np.linalg.det(T)
+                        self.assertAlmostEqual(det, 1.0, places=14)
 
     def test_passive_vs_active_relationship(self):
-        """Tests that passive and active matrices are transposes of each other.
+        """Tests that passive and active rotation components are transposes.
 
         :return: None
         """
@@ -186,12 +211,17 @@ class TestGenerateR(unittest.TestCase):
         for intrinsic in [True, False]:
             for order in ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]:
                 with self.subTest(intrinsic=intrinsic, order=order):
-                    R_passive = ps.transformations.generate_R(
+                    T_passive = ps.transformations.generate_rot_T(
                         angles, True, intrinsic, order
                     )
-                    R_active = ps.transformations.generate_R(
+                    T_active = ps.transformations.generate_rot_T(
                         angles, False, intrinsic, order
                     )
+                    
+                    # Extract rotation parts
+                    R_passive = T_passive[:3, :3]
+                    R_active = T_active[:3, :3]
+                    
                     npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
     def test_intrinsic_vs_extrinsic_relationship(self):
@@ -221,16 +251,21 @@ class TestGenerateR(unittest.TestCase):
                     intrinsic_order=intrinsic_order,
                     extrinsic_order=extrinsic_order,
                 ):
-                    R_intrinsic = ps.transformations.generate_R(
+                    T_intrinsic = ps.transformations.generate_rot_T(
                         angles, passive, True, intrinsic_order
                     )
-                    R_extrinsic = ps.transformations.generate_R(
+                    T_extrinsic = ps.transformations.generate_rot_T(
                         angles, passive, False, extrinsic_order
                     )
+                    
+                    # Extract rotation parts
+                    R_intrinsic = T_intrinsic[:3, :3]
+                    R_extrinsic = T_extrinsic[:3, :3]
+                    
                     npt.assert_allclose(R_intrinsic, R_extrinsic, atol=1e-14)
 
     def test_rotation_matrix_properties(self):
-        """Tests that generated matrices satisfy rotation matrix properties.
+        """Tests that rotation components satisfy rotation matrix properties.
 
         Tests: determinant = 1, orthogonality (R.T @ R = I), and proper rotation.
 
@@ -258,9 +293,10 @@ class TestGenerateR(unittest.TestCase):
                             intrinsic=intrinsic,
                             order=order,
                         ):
-                            R = ps.transformations.generate_R(
+                            T = ps.transformations.generate_rot_T(
                                 angles, passive, intrinsic, order
                             )
+                            R = T[:3, :3]  # Extract rotation part
 
                             # Test determinant = 1 (proper rotation)
                             det = np.linalg.det(R)
@@ -283,21 +319,24 @@ class TestGenerateR(unittest.TestCase):
         angles_x90 = np.array([90.0, 0.0, 0.0])
         R_act_x90_expected = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
 
-        R_act_x90 = ps.transformations.generate_R(angles_x90, False, True, "xyz")
+        T_act_x90 = ps.transformations.generate_rot_T(angles_x90, False, True, "xyz")
+        R_act_x90 = T_act_x90[:3, :3]
         npt.assert_allclose(R_act_x90, R_act_x90_expected, atol=1e-14)
 
         # Test 90-degree rotation about y-axis (order "xyz", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         R_act_y90_expected = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
 
-        R_act_y90 = ps.transformations.generate_R(angles_y90, False, True, "xyz")
+        T_act_y90 = ps.transformations.generate_rot_T(angles_y90, False, True, "xyz")
+        R_act_y90 = T_act_y90[:3, :3]
         npt.assert_allclose(R_act_y90, R_act_y90_expected, atol=1e-14)
 
         # Test 90-degree rotation about z-axis (order "xyz", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         R_act_z90_expected = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
-        R_act_z90 = ps.transformations.generate_R(angles_z90, False, True, "xyz")
+        T_act_z90 = ps.transformations.generate_rot_T(angles_z90, False, True, "xyz")
+        R_act_z90 = T_act_z90[:3, :3]
         npt.assert_allclose(R_act_z90, R_act_z90_expected, atol=1e-14)
 
     def test_specific_known_passive_rotations(self):
@@ -310,7 +349,8 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([0.0, 1.0, 0.0])
         v_B_expected = np.array([0.0, 0.0, -1.0])
 
-        R_pas_x90 = ps.transformations.generate_R(angles_x90, True, True, "xyz")
+        T_pas_x90 = ps.transformations.generate_rot_T(angles_x90, True, True, "xyz")
+        R_pas_x90 = T_pas_x90[:3, :3]
         v_B = R_pas_x90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -319,7 +359,8 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([0.0, 0.0, 1.0])
         v_B_expected = np.array([-1.0, 0.0, 0.0])
 
-        R_pas_y90 = ps.transformations.generate_R(angles_y90, True, True, "xyz")
+        T_pas_y90 = ps.transformations.generate_rot_T(angles_y90, True, True, "xyz")
+        R_pas_y90 = T_pas_y90[:3, :3]
         v_B = R_pas_y90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -328,7 +369,8 @@ class TestGenerateR(unittest.TestCase):
         v_A = np.array([1.0, 0.0, 0.0])
         v_B_expected = np.array([0.0, -1.0, 0])
 
-        R_pas_z90 = ps.transformations.generate_R(angles_z90, True, True, "xyz")
+        T_pas_z90 = ps.transformations.generate_rot_T(angles_z90, True, True, "xyz")
+        R_pas_z90 = T_pas_z90[:3, :3]
         v_B = R_pas_z90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
@@ -347,8 +389,10 @@ class TestGenerateR(unittest.TestCase):
         angles2 = np.array([0.0, 45.0, 0.0])
 
         # Get individual rotation matrices
-        R1 = ps.transformations.generate_R(angles1, False, True, "xyz")
-        R2 = ps.transformations.generate_R(angles2, False, True, "xyz")
+        T1 = ps.transformations.generate_rot_T(angles1, False, True, "xyz")
+        T2 = ps.transformations.generate_rot_T(angles2, False, True, "xyz")
+        R1 = T1[:3, :3]
+        R2 = T2[:3, :3]
 
         # Apply rotations sequentially
         v_rotated_sequential = R2 @ (R1 @ test_vector)
@@ -380,12 +424,16 @@ class TestGenerateR(unittest.TestCase):
                     with self.subTest(
                         passive=passive, intrinsic=intrinsic, order=order
                     ):
-                        R_large = ps.transformations.generate_R(
+                        T_large = ps.transformations.generate_rot_T(
                             large_angles, passive, intrinsic, order
                         )
-                        R_equivalent = ps.transformations.generate_R(
+                        T_equivalent = ps.transformations.generate_rot_T(
                             equivalent_angles, passive, intrinsic, order
                         )
+                        
+                        # Extract rotation parts
+                        R_large = T_large[:3, :3]
+                        R_equivalent = T_equivalent[:3, :3]
 
                         # Should produce the same rotation matrix
                         npt.assert_allclose(R_large, R_equivalent, atol=1e-14)
@@ -393,7 +441,7 @@ class TestGenerateR(unittest.TestCase):
     def test_different_orders(self):
         """Tests all valid Tait-Bryan rotation orders.
 
-        Ensures all six valid orders produce valid rotation matrices.
+        Ensures all six valid orders produce valid transformation matrices.
 
         :return: None
         """
@@ -404,9 +452,10 @@ class TestGenerateR(unittest.TestCase):
             with self.subTest(order=order):
                 for passive in [True, False]:
                     for intrinsic in [True, False]:
-                        R = ps.transformations.generate_R(
+                        T = ps.transformations.generate_rot_T(
                             angles, passive, intrinsic, order
                         )
+                        R = T[:3, :3]  # Extract rotation part
 
                         # Should be a valid rotation matrix
                         det = np.linalg.det(R)
@@ -433,7 +482,8 @@ class TestGenerateR(unittest.TestCase):
         for angles in edge_case_angles:
             with self.subTest(angles=angles):
                 for passive in [True, False]:
-                    R = ps.transformations.generate_R(angles, passive, True, "xyz")
+                    T = ps.transformations.generate_rot_T(angles, passive, True, "xyz")
+                    R = T[:3, :3]  # Extract rotation part
 
                     # Should be a valid rotation matrix
                     det = np.linalg.det(R)
@@ -442,98 +492,20 @@ class TestGenerateR(unittest.TestCase):
                     identity_test = R.T @ R
                     npt.assert_allclose(identity_test, np.eye(3), atol=1e-14)
 
-
-class TestGenerateRotT(unittest.TestCase):
-    """This class contains methods for testing the generate_rot_T function.
-
-    This class contains the following public methods:
-        test_identity_transformation: Tests transformation with identity rotation.
-        test_rotation_preservation: Tests that rotation components are preserved.
-        test_with_generate_R_matrices: Tests with matrices from generate_R.
-        test_homog_coordinate_transformations: Tests transformation of
-        homogeneous coordinates.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
-
-    def test_identity_transformation(self):
-        """Tests transformation with identity rotation matrix.
-
-        :return: None
-        """
-        # Test with identity rotation
-        R_identity = np.eye(3)
-        T_identity = ps.transformations.generate_rot_T(R_identity)
-
-        expected_T = np.eye(4)
-        npt.assert_array_equal(T_identity, expected_T)
-
-    def test_rotation_preservation(self):
-        """Tests that rotation components are correctly preserved.
-
-        :return: None
-        """
-        # Test with a known rotation matrix
-        R_test = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
-
-        T_test = ps.transformations.generate_rot_T(R_test)
-
-        # Check that rotation part is preserved
-        npt.assert_array_equal(T_test[:3, :3], R_test)
-
-        # Check that translation part is zero
-        expected_translation = np.array([0.0, 0.0, 0.0])
-        npt.assert_array_equal(T_test[:3, 3], expected_translation)
-
-        # Check that bottom row is [0, 0, 0, 1]
-        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
-        npt.assert_array_equal(T_test[3, :], expected_bottom)
-
-    def test_with_generate_R_matrices(self):
-        """Tests with rotation matrices generated by generate_R.
-
-        :return: None
-        """
-        angles = np.array([30.0, 45.0, 60.0])
-
-        for passive in [True, False]:
-            for intrinsic in [True, False]:
-                for order in ["xyz", "zyx"]:
-                    with self.subTest(
-                        passive=passive, intrinsic=intrinsic, order=order
-                    ):
-                        R = ps.transformations.generate_R(
-                            angles, passive, intrinsic, order
-                        )
-                        T = ps.transformations.generate_rot_T(R)
-
-                        # Test that rotation part matches
-                        npt.assert_array_equal(T[:3, :3], R)
-
-                        # Test transformation matrix properties
-                        self.assertEqual(T.shape, (4, 4))
-                        npt.assert_array_equal(T[3, :], [0, 0, 0, 1])
-                        npt.assert_array_equal(T[:3, 3], [0, 0, 0])
-
-    def test_homog_coordinate_transformations(self):
+    def test_homogeneous_coordinate_transformations(self):
         """Tests transformation of homogeneous coordinates.
 
         :return: None
         """
         # Test rotation of position vectors
-        R_act_z90 = ps.transformations.generate_R(
+        T_rot_act_z90 = ps.transformations.generate_rot_T(
             np.array([0.0, 0.0, 90.0]), False, True, "xyz"
         )
-        T_rot = ps.transformations.generate_rot_T(R_act_z90)
 
         # Test position vector [1, 0, 0] -> should become [0, 1, 0]
         pos_vec = np.array([1.0, 0.0, 0.0])
         homog_pos = ps.transformations.generate_homog(pos_vec, True)
-        transformed_homog = T_rot @ homog_pos
+        transformed_homog = T_rot_act_z90 @ homog_pos
 
         expected_transformed = np.array([0.0, 1.0, 0.0, 1.0])
         npt.assert_allclose(transformed_homog, expected_transformed, atol=1e-14)
@@ -541,7 +513,7 @@ class TestGenerateRotT(unittest.TestCase):
         # Test direction vector [1, 0, 0] -> should become [0, 1, 0]
         dir_vec = np.array([1.0, 0.0, 0.0])
         homog_dir = ps.transformations.generate_homog(dir_vec, False)
-        transformed_homog_dir = T_rot @ homog_dir
+        transformed_homog_dir = T_rot_act_z90 @ homog_dir
 
         expected_transformed_dir = np.array([0.0, 1.0, 0.0, 0.0])
         npt.assert_allclose(transformed_homog_dir, expected_transformed_dir, atol=1e-14)

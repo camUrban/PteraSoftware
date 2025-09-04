@@ -1,14 +1,22 @@
 """This module contains classes to test functions in the transformations module.
 
 This module contains the following classes:
-    TestGenerateHomog: This class contains methods for testing the generate_homog
-    function.
     TestGenerateRotT: This class contains methods for testing the generate_rot_T
     function.
     TestGenerateTransT: This class contains methods for testing the generate_trans_T
     function.
     TestGenerateReflectT: This class contains methods for testing the
     generate_reflect_T function.
+    TestComposeTPas: This class contains methods for testing the compose_T_pas
+    function.
+    TestComposeTAct: This class contains methods for testing the compose_T_act
+    function.
+    TestInvertTPas: This class contains methods for testing the invert_T_pas
+    function.
+    TestInvertTAct: This class contains methods for testing the invert_T_act
+    function.
+    TestApplyTToVector: This class contains methods for testing the apply_T_to_vector
+    function.
 
 This module contains the following exceptions:
     None
@@ -23,101 +31,6 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-
-
-class TestGenerateHomog(unittest.TestCase):
-    """This class contains methods for testing the generate_homog function.
-
-    This class contains the following public methods:
-        test_position_vector_conversion: Tests conversion of position vectors.
-        test_direction_vector_conversion: Tests conversion of direction vectors.
-        test_input_validation: Tests various input types and edge cases.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
-
-    def test_position_vector_conversion(self):
-        """Tests conversion of position vectors (has_point=True).
-
-        :return: None
-        """
-        # Test basic position vector
-        position = np.array([1.0, 2.0, 3.0])
-        homog_position = ps.transformations.generate_homog(position, True)
-
-        expected = np.array([1.0, 2.0, 3.0, 1.0])
-        npt.assert_array_equal(homog_position, expected)
-
-        # Test zero position vector
-        zero_position = np.array([0.0, 0.0, 0.0])
-        homog_zero = ps.transformations.generate_homog(zero_position, True)
-
-        expected_zero = np.array([0.0, 0.0, 0.0, 1.0])
-        npt.assert_array_equal(homog_zero, expected_zero)
-
-        # Test negative position vector
-        neg_position = np.array([-5.0, -10.0, -15.0])
-        homog_neg = ps.transformations.generate_homog(neg_position, True)
-
-        expected_neg = np.array([-5.0, -10.0, -15.0, 1.0])
-        npt.assert_array_equal(homog_neg, expected_neg)
-
-    def test_direction_vector_conversion(self):
-        """Tests conversion of direction vectors (has_point=False).
-
-        :return: None
-        """
-        # Test basic direction vector
-        direction = np.array([1.0, 2.0, 3.0])
-        homog_direction = ps.transformations.generate_homog(direction, False)
-
-        expected = np.array([1.0, 2.0, 3.0, 0.0])
-        npt.assert_array_equal(homog_direction, expected)
-
-        # Test unit direction vector
-        unit_direction = np.array([1.0, 0.0, 0.0])
-        homog_unit = ps.transformations.generate_homog(unit_direction, False)
-
-        expected_unit = np.array([1.0, 0.0, 0.0, 0.0])
-        npt.assert_array_equal(homog_unit, expected_unit)
-
-        # Test zero direction vector
-        zero_direction = np.array([0.0, 0.0, 0.0])
-        homog_zero_dir = ps.transformations.generate_homog(zero_direction, False)
-
-        expected_zero_dir = np.array([0.0, 0.0, 0.0, 0.0])
-        npt.assert_array_equal(homog_zero_dir, expected_zero_dir)
-
-    def test_input_validation(self):
-        """Tests various input types and edge cases.
-
-        :return: None
-        """
-        # Check that tuples are converted to ndarrays
-        float_tuple = (1.5, 2.5, 3.5)
-        homog_float_tuple = ps.transformations.generate_homog(float_tuple, True)
-        self.assertIsInstance(homog_float_tuple, np.ndarray)
-
-        # Check that lists are converted to ndarrays
-        float_list = [1.5, 2.5, 3.5]
-        homog_float_list = ps.transformations.generate_homog(float_list, True)
-        self.assertIsInstance(homog_float_list, np.ndarray)
-
-        # Test with different numeric types
-        float_vector = np.array([1.5, 2.5, 3.5])
-        homog_float = ps.transformations.generate_homog(float_vector, True)
-        self.assertEqual(homog_float.dtype, np.float64)
-
-        # Test with integer input (should convert to float)
-        int_vector = np.array([1, 2, 3])
-        homog_int = ps.transformations.generate_homog(int_vector, True)
-        self.assertEqual(homog_int.dtype, np.float64)
-        expected_int = np.array([1.0, 2.0, 3.0, 1.0])
-        npt.assert_array_equal(homog_int, expected_int)
 
 
 class TestGenerateRotT(unittest.TestCase):
@@ -217,11 +130,11 @@ class TestGenerateRotT(unittest.TestCase):
                     T_active = ps.transformations.generate_rot_T(
                         angles, False, intrinsic, order
                     )
-                    
+
                     # Extract rotation parts
                     R_passive = T_passive[:3, :3]
                     R_active = T_active[:3, :3]
-                    
+
                     npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
     def test_intrinsic_vs_extrinsic_relationship(self):
@@ -257,11 +170,11 @@ class TestGenerateRotT(unittest.TestCase):
                     T_extrinsic = ps.transformations.generate_rot_T(
                         angles, passive, False, extrinsic_order
                     )
-                    
+
                     # Extract rotation parts
                     R_intrinsic = T_intrinsic[:3, :3]
                     R_extrinsic = T_extrinsic[:3, :3]
-                    
+
                     npt.assert_allclose(R_intrinsic, R_extrinsic, atol=1e-14)
 
     def test_rotation_matrix_properties(self):
@@ -430,7 +343,7 @@ class TestGenerateRotT(unittest.TestCase):
                         T_equivalent = ps.transformations.generate_rot_T(
                             equivalent_angles, passive, intrinsic, order
                         )
-                        
+
                         # Extract rotation parts
                         R_large = T_large[:3, :3]
                         R_equivalent = T_equivalent[:3, :3]
@@ -504,19 +417,21 @@ class TestGenerateRotT(unittest.TestCase):
 
         # Test position vector [1, 0, 0] -> should become [0, 1, 0]
         pos_vec = np.array([1.0, 0.0, 0.0])
-        homog_pos = ps.transformations.generate_homog(pos_vec, True)
-        transformed_homog = T_rot_act_z90 @ homog_pos
+        transformed_pos = ps.transformations.apply_T_to_vector(
+            T_rot_act_z90, pos_vec, True
+        )
 
-        expected_transformed = np.array([0.0, 1.0, 0.0, 1.0])
-        npt.assert_allclose(transformed_homog, expected_transformed, atol=1e-14)
+        expected_transformed = np.array([0.0, 1.0, 0.0])
+        npt.assert_allclose(transformed_pos, expected_transformed, atol=1e-14)
 
         # Test direction vector [1, 0, 0] -> should become [0, 1, 0]
         dir_vec = np.array([1.0, 0.0, 0.0])
-        homog_dir = ps.transformations.generate_homog(dir_vec, False)
-        transformed_homog_dir = T_rot_act_z90 @ homog_dir
+        transformed_dir = ps.transformations.apply_T_to_vector(
+            T_rot_act_z90, dir_vec, False
+        )
 
-        expected_transformed_dir = np.array([0.0, 1.0, 0.0, 0.0])
-        npt.assert_allclose(transformed_homog_dir, expected_transformed_dir, atol=1e-14)
+        expected_transformed_dir = np.array([0.0, 1.0, 0.0])
+        npt.assert_allclose(transformed_dir, expected_transformed_dir, atol=1e-14)
 
 
 class TestGenerateTransT(unittest.TestCase):
@@ -553,10 +468,7 @@ class TestGenerateTransT(unittest.TestCase):
         c_A_a = np.array([5.0, 6.0, 7.0])
 
         T_trans_pas = ps.transformations.generate_trans_T(b_A_a, True)
-        cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
-
-        cHomog_A_b = T_trans_pas @ cHomog_A_a
-        c_A_b = cHomog_A_b[:3]
+        c_A_b = ps.transformations.apply_T_to_vector(T_trans_pas, c_A_a, True)
 
         # For passive transformation: new_position = old_position - translation
         expected_c_A_b = c_A_a - b_A_a
@@ -573,10 +485,7 @@ class TestGenerateTransT(unittest.TestCase):
 
         # Test active transformation with position vector
         T_trans_act = ps.transformations.generate_trans_T(cPrime_A_c, False)
-        cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
-
-        cPrimeHomog_A_a = T_trans_act @ cHomog_A_a
-        cPrime_A_a = cPrimeHomog_A_a[:3]
+        cPrime_A_a = ps.transformations.apply_T_to_vector(T_trans_act, c_A_a, True)
 
         # For active transformation: new_position = old_position + translation
         expected_cPrime_A_a = c_A_a + cPrime_A_c
@@ -635,14 +544,17 @@ class TestGenerateTransT(unittest.TestCase):
 
         # Test that direction vectors are unaffected by translation
         direction = np.array([1.0, 0.0, 0.0])
-        directionHomog = ps.transformations.generate_homog(direction, False)
 
-        passive_transformed_directionHomog = T_trans_pas @ directionHomog
-        active_transformed_directionHomog = T_trans_act @ directionHomog
+        passive_transformed_direction = ps.transformations.apply_T_to_vector(
+            T_trans_pas, direction, False
+        )
+        active_transformed_direction = ps.transformations.apply_T_to_vector(
+            T_trans_act, direction, False
+        )
 
         # Direction vectors should be unchanged by pure translation
-        npt.assert_array_equal(passive_transformed_directionHomog[:3], direction)
-        npt.assert_array_equal(active_transformed_directionHomog[:3], direction)
+        npt.assert_array_equal(passive_transformed_direction, direction)
+        npt.assert_array_equal(active_transformed_direction, direction)
 
 
 class TestGenerateReflectT(unittest.TestCase):
@@ -682,9 +594,9 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Point [1, 2, 3] should reflect to [1, 2, -3]
         test_point = np.array([1.0, 2.0, 3.0])
-        homog_point = ps.transformations.generate_homog(test_point, True)
-        reflected_homog = T_reflect_act @ homog_point
-        reflected_point = reflected_homog[:3]
+        reflected_point = ps.transformations.apply_T_to_vector(
+            T_reflect_act, test_point, True
+        )
 
         expected_reflected = np.array([1.0, 2.0, -3.0])
         npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
@@ -695,8 +607,9 @@ class TestGenerateReflectT(unittest.TestCase):
             plane_point, plane_normal_y, False
         )
 
-        reflected_homog_y = T_reflect_act_y @ homog_point
-        reflected_point_y = reflected_homog_y[:3]
+        reflected_point_y = ps.transformations.apply_T_to_vector(
+            T_reflect_act_y, test_point, True
+        )
 
         expected_reflected_y = np.array([1.0, -2.0, 3.0])
         npt.assert_allclose(reflected_point_y, expected_reflected_y, atol=1e-14)
@@ -716,18 +629,18 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Point [1, 2, 5] should reflect to [1, 2, -1]
         test_point = np.array([1.0, 2.0, 5.0])
-        homog_point = ps.transformations.generate_homog(test_point, True)
-        reflected_homog = T_reflect_act @ homog_point
-        reflected_point = reflected_homog[:3]
+        reflected_point = ps.transformations.apply_T_to_vector(
+            T_reflect_act, test_point, True
+        )
 
         expected_reflected = np.array([1.0, 2.0, -1.0])
         npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
 
         # Point on the plane should remain unchanged
         plane_test_point = np.array([3.0, 4.0, 2.0])
-        homog_plane_point = ps.transformations.generate_homog(plane_test_point, True)
-        reflected_plane_homog = T_reflect_act @ homog_plane_point
-        reflected_plane_point = reflected_plane_homog[:3]
+        reflected_plane_point = ps.transformations.apply_T_to_vector(
+            T_reflect_act, plane_test_point, True
+        )
 
         npt.assert_allclose(reflected_plane_point, plane_test_point, atol=1e-14)
 
@@ -788,13 +701,15 @@ class TestGenerateReflectT(unittest.TestCase):
         )
 
         test_point = np.array([5.0, 8.0, -2.0])
-        homog_point = ps.transformations.generate_homog(test_point, True)
 
         # Apply reflection twice
-        reflected_once = T_reflect_act @ homog_point
-        reflected_twice = T_reflect_act @ reflected_once
+        reflected_once = ps.transformations.apply_T_to_vector(
+            T_reflect_act, test_point, True
+        )
+        final_point = ps.transformations.apply_T_to_vector(
+            T_reflect_act, reflected_once, True
+        )
 
-        final_point = reflected_twice[:3]
         npt.assert_allclose(final_point, test_point, atol=1e-14)
 
     def test_normal_vector_normalization(self):
@@ -811,9 +726,9 @@ class TestGenerateReflectT(unittest.TestCase):
         )
 
         test_point = np.array([1.0, 2.0, 3.0])
-        homog_point = ps.transformations.generate_homog(test_point, True)
-        reflected_homog = T_reflect_act @ homog_point
-        reflected_point = reflected_homog[:3]
+        reflected_point = ps.transformations.apply_T_to_vector(
+            T_reflect_act, test_point, True
+        )
 
         # Should give same result as unit normal [0,0,1]
         expected_reflected = np.array([1.0, 2.0, -3.0])
@@ -836,6 +751,809 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Matrices should be identical for reflections
         npt.assert_array_equal(T_reflect_pas, T_reflect_act)
+
+
+class TestComposeTAas(unittest.TestCase):
+    """This class contains methods for testing the compose_T_pas function.
+
+    This class contains the following public methods:
+        test_basic_passive_composition: Tests basic passive transformation composition.
+        test_composition_order: Tests that composition order matters.
+        test_identity_composition: Tests composition with identity matrices.
+        test_inverse_composition: Tests composition with inverse transformations.
+        test_multiple_transformations: Tests composition of multiple transformations.
+        test_rotation_translation_composition: Tests composition of rotation and translation.
+        test_matrix_properties: Tests properties of composed matrices.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_basic_passive_composition(self):
+        """Tests basic passive transformation composition.
+
+        :return: None
+        """
+        # Create translation and rotation transformations
+        translation = np.array([1.0, 2.0, 3.0])
+        angles = np.array([30.0, 0.0, 0.0])
+
+        T1 = ps.transformations.generate_trans_T(translation, True)
+        T2 = ps.transformations.generate_rot_T(angles, True, True, "xyz")
+
+        # Test composition
+        T_composed = ps.transformations.compose_T_pas(T1, T2)
+
+        # Test that result has correct structure
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_composed[3, :], expected_bottom)
+
+    def test_composition_order(self):
+        """Tests that composition order matters for non-commuting transformations.
+
+        :return: None
+        """
+        translation = np.array([1.0, 0.0, 0.0])
+        angles = np.array([0.0, 0.0, 90.0])
+
+        T_trans = ps.transformations.generate_trans_T(translation, True)
+        T_rot = ps.transformations.generate_rot_T(angles, True, True, "xyz")
+
+        # Test different composition orders
+        T1 = ps.transformations.compose_T_pas(
+            T_trans, T_rot
+        )  # Translation then rotation
+        T2 = ps.transformations.compose_T_pas(
+            T_rot, T_trans
+        )  # Rotation then translation
+
+        # Should produce different results for non-commuting transformations
+        self.assertFalse(np.allclose(T1, T2))
+
+    def test_identity_composition(self):
+        """Tests composition with identity matrices.
+
+        :return: None
+        """
+        identity = np.eye(4)
+        translation = np.array([1.0, 2.0, 3.0])
+        T_trans = ps.transformations.generate_trans_T(translation, True)
+
+        # Composition with identity should leave transformation unchanged
+        T_composed1 = ps.transformations.compose_T_pas(identity, T_trans)
+        T_composed2 = ps.transformations.compose_T_pas(T_trans, identity)
+
+        npt.assert_allclose(T_composed1, T_trans, atol=1e-14)
+        npt.assert_allclose(T_composed2, T_trans, atol=1e-14)
+
+    def test_inverse_composition(self):
+        """Tests composition with inverse transformations.
+
+        :return: None
+        """
+        translation = np.array([1.0, 2.0, 3.0])
+        T_trans = ps.transformations.generate_trans_T(translation, True)
+        T_trans_inv = ps.transformations.invert_T_pas(T_trans)
+
+        # Composition with inverse should yield identity
+        T_composed1 = ps.transformations.compose_T_pas(T_trans, T_trans_inv)
+        T_composed2 = ps.transformations.compose_T_pas(T_trans_inv, T_trans)
+
+        npt.assert_allclose(T_composed1, np.eye(4), atol=1e-14)
+        npt.assert_allclose(T_composed2, np.eye(4), atol=1e-14)
+
+    def test_multiple_transformations(self):
+        """Tests composition of multiple transformations.
+
+        :return: None
+        """
+        # Create three different transformations
+        T1 = ps.transformations.generate_trans_T(np.array([1.0, 0.0, 0.0]), True)
+        T2 = ps.transformations.generate_rot_T(
+            np.array([0.0, 0.0, 90.0]), True, True, "xyz"
+        )
+        T3 = ps.transformations.generate_trans_T(np.array([0.0, 1.0, 0.0]), True)
+
+        # Test composition of multiple matrices
+        T_composed = ps.transformations.compose_T_pas(T1, T2, T3)
+
+        # Test that result has correct structure
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test determinant (should be 1 for proper transformations)
+        det = np.linalg.det(T_composed)
+        self.assertAlmostEqual(det, 1.0, places=12)
+
+    def test_rotation_translation_composition(self):
+        """Tests composition of rotation and translation transformations.
+
+        :return: None
+        """
+        # Test vector
+        test_vector = np.array([1.0, 0.0, 0.0])
+
+        # Individual transformations
+        T_rot = ps.transformations.generate_rot_T(
+            np.array([0.0, 0.0, 90.0]), True, True, "xyz"
+        )
+        T_trans = ps.transformations.generate_trans_T(np.array([1.0, 1.0, 0.0]), True)
+
+        # Composed transformation
+        T_composed = ps.transformations.compose_T_pas(T_rot, T_trans)
+
+        # Apply transformations sequentially
+        v1 = ps.transformations.apply_T_to_vector(T_rot, test_vector, True)
+        v2 = ps.transformations.apply_T_to_vector(T_trans, v1, True)
+
+        # Apply composed transformation
+        v_composed = ps.transformations.apply_T_to_vector(T_composed, test_vector, True)
+
+        # Results should be identical
+        npt.assert_allclose(v2, v_composed, atol=1e-14)
+
+    def test_matrix_properties(self):
+        """Tests properties of composed transformation matrices.
+
+        :return: None
+        """
+        # Create various transformations
+        T1 = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), True, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), True)
+        T3 = ps.transformations.generate_rot_T(
+            np.array([0.0, 45.0, 0.0]), True, True, "xyz"
+        )
+
+        T_composed = ps.transformations.compose_T_pas(T1, T2, T3)
+
+        # Test output shape
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_composed[3, :], expected_bottom)
+
+        # Test determinant is 1
+        det = np.linalg.det(T_composed)
+        self.assertAlmostEqual(det, 1.0, places=12)
+
+
+class TestComposeTAct(unittest.TestCase):
+    """This class contains methods for testing the compose_T_act function.
+
+    This class contains the following public methods:
+        test_basic_active_composition: Tests basic active transformation composition.
+        test_composition_vs_manual: Tests composition against manual matrix multiplication.
+        test_identity_composition: Tests composition with identity matrices.
+        test_inverse_composition: Tests composition with inverse transformations.
+        test_multiple_transformations: Tests composition of multiple transformations.
+        test_matrix_properties: Tests properties of composed matrices.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_basic_active_composition(self):
+        """Tests basic active transformation composition.
+
+        :return: None
+        """
+        # Create translation and rotation transformations
+        translation = np.array([1.0, 2.0, 3.0])
+        angles = np.array([0.0, 0.0, 45.0])
+
+        T1 = ps.transformations.generate_trans_T(translation, False)
+        T2 = ps.transformations.generate_rot_T(angles, False, True, "xyz")
+
+        # Test composition
+        T_composed = ps.transformations.compose_T_act(T1, T2)
+
+        # Test that result has correct structure
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_composed[3, :], expected_bottom)
+
+    def test_composition_vs_manual(self):
+        """Tests composition against manual matrix multiplication.
+
+        :return: None
+        """
+        # Create transformations
+        T1 = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False)
+
+        # Test composed matrix
+        T_composed = ps.transformations.compose_T_act(T1, T2)
+
+        # Manual composition for active transformations
+        T_manual = T2 @ T1
+
+        npt.assert_allclose(T_composed, T_manual, atol=1e-14)
+
+    def test_identity_composition(self):
+        """Tests composition with identity matrices.
+
+        :return: None
+        """
+        identity = np.eye(4)
+        rotation = np.array([30.0, 45.0, 60.0])
+        T_rot = ps.transformations.generate_rot_T(rotation, False, True, "xyz")
+
+        # Composition with identity should leave transformation unchanged
+        T_composed1 = ps.transformations.compose_T_act(identity, T_rot)
+        T_composed2 = ps.transformations.compose_T_act(T_rot, identity)
+
+        npt.assert_allclose(T_composed1, T_rot, atol=1e-14)
+        npt.assert_allclose(T_composed2, T_rot, atol=1e-14)
+
+    def test_inverse_composition(self):
+        """Tests composition with inverse transformations.
+
+        :return: None
+        """
+        rotation = np.array([30.0, 45.0, 60.0])
+        T_rot = ps.transformations.generate_rot_T(rotation, False, True, "xyz")
+        T_rot_inv = ps.transformations.invert_T_act(T_rot)
+
+        # Composition with inverse should yield identity
+        T_composed1 = ps.transformations.compose_T_act(T_rot, T_rot_inv)
+        T_composed2 = ps.transformations.compose_T_act(T_rot_inv, T_rot)
+
+        npt.assert_allclose(T_composed1, np.eye(4), atol=1e-14)
+        npt.assert_allclose(T_composed2, np.eye(4), atol=1e-14)
+
+    def test_multiple_transformations(self):
+        """Tests composition of multiple transformations.
+
+        :return: None
+        """
+        # Create four different transformations
+        T1 = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([1.0, 0.0, 0.0]), False)
+        T3 = ps.transformations.generate_rot_T(
+            np.array([0.0, 45.0, 0.0]), False, True, "xyz"
+        )
+        T4 = ps.transformations.generate_trans_T(np.array([0.0, 1.0, 0.0]), False)
+
+        # Test composition of multiple matrices
+        T_composed = ps.transformations.compose_T_act(T1, T2, T3, T4)
+
+        # Test that result has correct structure
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test determinant (should be 1 for proper transformations)
+        det = np.linalg.det(T_composed)
+        self.assertAlmostEqual(det, 1.0, places=12)
+
+    def test_matrix_properties(self):
+        """Tests properties of composed transformation matrices.
+
+        :return: None
+        """
+        # Create various transformations
+        T1 = ps.transformations.generate_reflect_T(
+            np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), False
+        )
+        T2 = ps.transformations.generate_rot_T(
+            np.array([0.0, 0.0, 90.0]), False, True, "xyz"
+        )
+        T3 = ps.transformations.generate_trans_T(np.array([2.0, 3.0, 1.0]), False)
+
+        T_composed = ps.transformations.compose_T_act(T1, T2, T3)
+
+        # Test output shape
+        self.assertEqual(T_composed.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_composed[3, :], expected_bottom)
+
+        # Test determinant is -1 (includes reflection)
+        det = np.linalg.det(T_composed)
+        self.assertAlmostEqual(det, -1.0, places=12)
+
+
+class TestInvertTPas(unittest.TestCase):
+    """This class contains methods for testing the invert_T_pas function.
+
+    This class contains the following public methods:
+        test_translation_inversion: Tests inversion of pure translation matrices.
+        test_rotation_inversion: Tests inversion of pure rotation matrices.
+        test_reflection_inversion: Tests inversion of pure reflection matrices.
+        test_combined_transformation_inversion: Tests inversion of combined transformations.
+        test_identity_inversion: Tests inversion of identity matrix.
+        test_double_inversion: Tests that double inversion returns original.
+        test_inversion_properties: Tests mathematical properties of inverted matrices.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_translation_inversion(self):
+        """Tests inversion of pure translation matrices.
+
+        :return: None
+        """
+        translation = np.array([1.0, 2.0, 3.0])
+        T_trans = ps.transformations.generate_trans_T(translation, True)
+        T_trans_inv = ps.transformations.invert_T_pas(T_trans)
+
+        # Test that T @ T_inv = I
+        result = T_trans @ T_trans_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_trans_inv @ T_trans
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_rotation_inversion(self):
+        """Tests inversion of pure rotation matrices.
+
+        :return: None
+        """
+        angles = np.array([30.0, 45.0, 60.0])
+        T_rot = ps.transformations.generate_rot_T(angles, True, True, "xyz")
+        T_rot_inv = ps.transformations.invert_T_pas(T_rot)
+
+        # Test that T @ T_inv = I
+        result = T_rot @ T_rot_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_rot_inv @ T_rot
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_reflection_inversion(self):
+        """Tests inversion of pure reflection matrices.
+
+        :return: None
+        """
+        plane_point = np.array([1.0, 2.0, 3.0])
+        plane_normal = np.array([0.0, 1.0, 0.0])
+        T_reflect = ps.transformations.generate_reflect_T(
+            plane_point, plane_normal, True
+        )
+        T_reflect_inv = ps.transformations.invert_T_pas(T_reflect)
+
+        # For reflections, the inverse should equal the original
+        npt.assert_allclose(T_reflect_inv, T_reflect, atol=1e-14)
+
+        # Test that T @ T_inv = I
+        result = T_reflect @ T_reflect_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+    def test_combined_transformation_inversion(self):
+        """Tests inversion of combined transformations.
+
+        :return: None
+        """
+        # Create composed transformation
+        T1 = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), True, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), True)
+        T_combined = ps.transformations.compose_T_pas(T1, T2)
+
+        # Invert composed transformation
+        T_combined_inv = ps.transformations.invert_T_pas(T_combined)
+
+        # Test that T @ T_inv = I
+        result = T_combined @ T_combined_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_combined_inv @ T_combined
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_identity_inversion(self):
+        """Tests inversion of identity matrix.
+
+        :return: None
+        """
+        identity = np.eye(4)
+        identity_inv = ps.transformations.invert_T_pas(identity)
+
+        # Inverse of identity should be identity
+        npt.assert_allclose(identity_inv, identity, atol=1e-14)
+
+    def test_double_inversion(self):
+        """Tests that double inversion returns the original matrix.
+
+        :return: None
+        """
+        # Create various transformations
+        transformations = [
+            ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), True),
+            ps.transformations.generate_rot_T(
+                np.array([30.0, 45.0, 60.0]), True, True, "xyz"
+            ),
+            ps.transformations.generate_reflect_T(
+                np.array([0.0, 0.0, 0.0]), np.array([1.0, 1.0, 0.0]), True
+            ),
+        ]
+
+        for i, T in enumerate(transformations):
+            with self.subTest(transformation=i):
+                T_inv = ps.transformations.invert_T_pas(T)
+                T_inv_inv = ps.transformations.invert_T_pas(T_inv)
+
+                # Double inversion should return original
+                npt.assert_allclose(T_inv_inv, T, atol=1e-14)
+
+    def test_inversion_properties(self):
+        """Tests mathematical properties of inverted matrices.
+
+        :return: None
+        """
+        # Create transformation
+        T1 = ps.transformations.generate_rot_T(
+            np.array([45.0, 30.0, 60.0]), True, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([2.0, 3.0, 1.0]), True)
+        T_combined = ps.transformations.compose_T_pas(T1, T2)
+
+        T_inv = ps.transformations.invert_T_pas(T_combined)
+
+        # Test output shape
+        self.assertEqual(T_inv.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_inv[3, :], expected_bottom)
+
+        # Test determinant (should be 1/det(original))
+        det_original = np.linalg.det(T_combined)
+        det_inv = np.linalg.det(T_inv)
+        self.assertAlmostEqual(det_inv * det_original, 1.0, places=12)
+
+
+class TestInvertTAct(unittest.TestCase):
+    """This class contains methods for testing the invert_T_act function.
+
+    This class contains the following public methods:
+        test_translation_inversion: Tests inversion of pure translation matrices.
+        test_rotation_inversion: Tests inversion of pure rotation matrices.
+        test_reflection_inversion: Tests inversion of pure reflection matrices.
+        test_combined_transformation_inversion: Tests inversion of combined transformations.
+        test_identity_inversion: Tests inversion of identity matrix.
+        test_double_inversion: Tests that double inversion returns original.
+        test_inversion_properties: Tests mathematical properties of inverted matrices.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_translation_inversion(self):
+        """Tests inversion of pure translation matrices.
+
+        :return: None
+        """
+        translation = np.array([1.0, 2.0, 3.0])
+        T_trans = ps.transformations.generate_trans_T(translation, False)
+        T_trans_inv = ps.transformations.invert_T_act(T_trans)
+
+        # Test that T @ T_inv = I
+        result = T_trans @ T_trans_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_trans_inv @ T_trans
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_rotation_inversion(self):
+        """Tests inversion of pure rotation matrices.
+
+        :return: None
+        """
+        angles = np.array([30.0, 45.0, 60.0])
+        T_rot = ps.transformations.generate_rot_T(angles, False, True, "xyz")
+        T_rot_inv = ps.transformations.invert_T_act(T_rot)
+
+        # Test that T @ T_inv = I
+        result = T_rot @ T_rot_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_rot_inv @ T_rot
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_reflection_inversion(self):
+        """Tests inversion of pure reflection matrices.
+
+        :return: None
+        """
+        plane_point = np.array([1.0, 2.0, 3.0])
+        plane_normal = np.array([0.0, 1.0, 0.0])
+        T_reflect = ps.transformations.generate_reflect_T(
+            plane_point, plane_normal, False
+        )
+        T_reflect_inv = ps.transformations.invert_T_act(T_reflect)
+
+        # For reflections, the inverse should equal the original
+        npt.assert_allclose(T_reflect_inv, T_reflect, atol=1e-14)
+
+        # Test that T @ T_inv = I
+        result = T_reflect @ T_reflect_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+    def test_combined_transformation_inversion(self):
+        """Tests inversion of combined transformations.
+
+        :return: None
+        """
+        # Create composed transformation
+        T1 = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False)
+        T_combined = ps.transformations.compose_T_act(T1, T2)
+
+        # Invert composed transformation
+        T_combined_inv = ps.transformations.invert_T_act(T_combined)
+
+        # Test that T @ T_inv = I
+        result = T_combined @ T_combined_inv
+        npt.assert_allclose(result, np.eye(4), atol=1e-14)
+
+        # Test that T_inv @ T = I
+        result2 = T_combined_inv @ T_combined
+        npt.assert_allclose(result2, np.eye(4), atol=1e-14)
+
+    def test_identity_inversion(self):
+        """Tests inversion of identity matrix.
+
+        :return: None
+        """
+        identity = np.eye(4)
+        identity_inv = ps.transformations.invert_T_act(identity)
+
+        # Inverse of identity should be identity
+        npt.assert_allclose(identity_inv, identity, atol=1e-14)
+
+    def test_double_inversion(self):
+        """Tests that double inversion returns the original matrix.
+
+        :return: None
+        """
+        # Create various transformations
+        transformations = [
+            ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False),
+            ps.transformations.generate_rot_T(
+                np.array([30.0, 45.0, 60.0]), False, True, "xyz"
+            ),
+            ps.transformations.generate_reflect_T(
+                np.array([0.0, 0.0, 0.0]), np.array([1.0, 1.0, 0.0]), False
+            ),
+        ]
+
+        for i, T in enumerate(transformations):
+            with self.subTest(transformation=i):
+                T_inv = ps.transformations.invert_T_act(T)
+                T_inv_inv = ps.transformations.invert_T_act(T_inv)
+
+                # Double inversion should return original
+                npt.assert_allclose(T_inv_inv, T, atol=1e-14)
+
+    def test_inversion_properties(self):
+        """Tests mathematical properties of inverted matrices.
+
+        :return: None
+        """
+        # Create transformation
+        T1 = ps.transformations.generate_rot_T(
+            np.array([45.0, 30.0, 60.0]), False, True, "xyz"
+        )
+        T2 = ps.transformations.generate_trans_T(np.array([2.0, 3.0, 1.0]), False)
+        T_combined = ps.transformations.compose_T_act(T1, T2)
+
+        T_inv = ps.transformations.invert_T_act(T_combined)
+
+        # Test output shape
+        self.assertEqual(T_inv.shape, (4, 4))
+
+        # Test that bottom row is [0, 0, 0, 1]
+        expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T_inv[3, :], expected_bottom)
+
+        # Test determinant (should be 1/det(original))
+        det_original = np.linalg.det(T_combined)
+        det_inv = np.linalg.det(T_inv)
+        self.assertAlmostEqual(det_inv * det_original, 1.0, places=12)
+
+
+class TestApplyTToVector(unittest.TestCase):
+    """This class contains methods for testing the apply_T_to_vector function.
+
+    This class contains the following public methods:
+        test_position_vector_transformation: Tests transformation of position vectors.
+        test_direction_vector_transformation: Tests transformation of direction vectors.
+        test_input_validation: Tests various input types and edge cases.
+        test_transformation_consistency: Tests consistency with manual homogeneous operations.
+        test_various_transformation_types: Tests with different types of transformations.
+        test_vector_types: Tests with different vector input types.
+
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
+    """
+
+    def test_position_vector_transformation(self):
+        """Tests transformation of position vectors (has_point=True).
+
+        :return: None
+        """
+        # Test translation transformation
+        translation = np.array([1.0, 2.0, 3.0])
+        T_trans = ps.transformations.generate_trans_T(translation, False)
+
+        position = np.array([5.0, 6.0, 7.0])
+        transformed_position = ps.transformations.apply_T_to_vector(
+            T_trans, position, True
+        )
+
+        expected = position + translation
+        npt.assert_array_equal(transformed_position, expected)
+
+    def test_direction_vector_transformation(self):
+        """Tests transformation of direction vectors (has_point=False).
+
+        :return: None
+        """
+        # Test rotation transformation
+        angles = np.array([0.0, 0.0, 90.0])
+        T_rot = ps.transformations.generate_rot_T(angles, False, True, "xyz")
+
+        direction = np.array([1.0, 0.0, 0.0])
+        transformed_direction = ps.transformations.apply_T_to_vector(
+            T_rot, direction, False
+        )
+
+        expected = np.array([0.0, 1.0, 0.0])
+        npt.assert_allclose(transformed_direction, expected, atol=1e-14)
+
+    def test_input_validation(self):
+        """Tests various input types and edge cases.
+
+        :return: None
+        """
+        T = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
+        )
+
+        # Test with tuple input
+        vector_tuple = (1.0, 2.0, 3.0)
+        result_tuple = ps.transformations.apply_T_to_vector(T, vector_tuple, True)
+        self.assertIsInstance(result_tuple, np.ndarray)
+        self.assertEqual(len(result_tuple), 3)
+
+        # Test with list input
+        vector_list = [1.0, 2.0, 3.0]
+        result_list = ps.transformations.apply_T_to_vector(T, vector_list, True)
+        self.assertIsInstance(result_list, np.ndarray)
+        self.assertEqual(len(result_list), 3)
+
+        # Test with numpy array input
+        vector_array = np.array([1.0, 2.0, 3.0])
+        result_array = ps.transformations.apply_T_to_vector(T, vector_array, True)
+        self.assertIsInstance(result_array, np.ndarray)
+        self.assertEqual(len(result_array), 3)
+
+    def test_transformation_consistency(self):
+        """Tests consistency with manual homogeneous coordinate operations.
+
+        :return: None
+        """
+        # Create transformation
+        T = ps.transformations.generate_rot_T(
+            np.array([45.0, 30.0, 60.0]), False, True, "xyz"
+        )
+
+        # Test vector
+        vector = np.array([1.0, 2.0, 3.0])
+
+        # Using apply_T_to_vector for position vector
+        result_position = ps.transformations.apply_T_to_vector(T, vector, True)
+
+        # Manual homogeneous approach for position vector
+        homog_vector = np.append(vector, 1.0)
+        manual_result_homog = T @ homog_vector
+        manual_result_position = manual_result_homog[:3]
+
+        npt.assert_allclose(result_position, manual_result_position, atol=1e-14)
+
+        # Using apply_T_to_vector for direction vector
+        result_direction = ps.transformations.apply_T_to_vector(T, vector, False)
+
+        # Manual homogeneous approach for direction vector
+        homog_vector_dir = np.append(vector, 0.0)
+        manual_result_homog_dir = T @ homog_vector_dir
+        manual_result_direction = manual_result_homog_dir[:3]
+
+        npt.assert_allclose(result_direction, manual_result_direction, atol=1e-14)
+
+    def test_various_transformation_types(self):
+        """Tests with different types of transformations.
+
+        :return: None
+        """
+        test_vector = np.array([1.0, 2.0, 3.0])
+
+        # Translation transformation
+        T_trans = ps.transformations.generate_trans_T(np.array([1.0, 1.0, 1.0]), False)
+        result_trans = ps.transformations.apply_T_to_vector(T_trans, test_vector, True)
+        self.assertEqual(len(result_trans), 3)
+
+        # Rotation transformation
+        T_rot = ps.transformations.generate_rot_T(
+            np.array([30.0, 45.0, 60.0]), False, True, "xyz"
+        )
+        result_rot = ps.transformations.apply_T_to_vector(T_rot, test_vector, True)
+        self.assertEqual(len(result_rot), 3)
+
+        # Reflection transformation
+        T_reflect = ps.transformations.generate_reflect_T(
+            np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), False
+        )
+        result_reflect = ps.transformations.apply_T_to_vector(
+            T_reflect, test_vector, True
+        )
+        self.assertEqual(len(result_reflect), 3)
+
+        # Composed transformation
+        T_composed = ps.transformations.compose_T_act(T_trans, T_rot)
+        result_composed = ps.transformations.apply_T_to_vector(
+            T_composed, test_vector, True
+        )
+        self.assertEqual(len(result_composed), 3)
+
+    def test_vector_types(self):
+        """Tests with different vector input types and sizes.
+
+        :return: None
+        """
+        T = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False)
+
+        # Test with integer vector
+        int_vector = np.array([1, 2, 3])
+        result_int = ps.transformations.apply_T_to_vector(T, int_vector, True)
+        self.assertEqual(result_int.dtype, np.float64)
+
+        # Test with float vector
+        float_vector = np.array([1.5, 2.5, 3.5])
+        result_float = ps.transformations.apply_T_to_vector(T, float_vector, True)
+        self.assertEqual(result_float.dtype, np.float64)
+
+        # Test with zero vector
+        zero_vector = np.array([0.0, 0.0, 0.0])
+        result_zero = ps.transformations.apply_T_to_vector(T, zero_vector, True)
+        expected_zero = np.array(
+            [1.0, 2.0, 3.0]
+        )  # Translation applied to zero position
+        npt.assert_array_equal(result_zero, expected_zero)
 
 
 if __name__ == "__main__":

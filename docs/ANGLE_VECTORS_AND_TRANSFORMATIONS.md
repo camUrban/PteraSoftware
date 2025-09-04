@@ -43,7 +43,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 #### Local reference examples
 
 * Variables: angles\_E\_to\_B\_izyx  
-* Text: …angles describing the orientation of the Earth axes relative to the body axes using an intrinsic z-y'-x" sequence…
+* Text: …angles describing the orientation of the body axes relative to the Earth axes using an intrinsic z-y'-x" sequence…
 
 #### Wing-local reference examples
 

@@ -317,14 +317,14 @@ class WingCrossSection:
         # coordinates from parent wing cross section axes relative to the parent
         # leading point to parent wing cross section axes relative to the leading
         # point. This is the translation step.
-        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = transformations.generate_T_trans(
+        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = transformations.generate_trans_T(
             self.Lp_Wcsp_Lpp, passive=True
         )
 
         # Step 2: Create T_rot_pas_Wcsp_to_Wcs, which maps in homogeneous coordinates
         # from parent wing cross section axes to wing cross section axes This is the
         # rotation step.
-        T_rot_pas_Wcsp_to_Wcs = transformations.generate_T_rot(
+        T_rot_pas_Wcsp_to_Wcs = transformations.generate_rot_T(
             transformations.generate_R(
                 self.angles_Wcsp_to_Wcs_i321, passive=True, intrinsic=True, order="zyx"
             )

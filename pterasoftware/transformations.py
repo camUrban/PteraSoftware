@@ -15,14 +15,14 @@ This module contains the following functions:
     or active, intrinsic or extrinsic, and the order by which to apply the rotations
     about each axis.
 
-    generate_T_rot: This function converts a rotation matrix to a rotational
+    generate_rot_T: This function converts a rotation matrix to a rotational
     transformation matrix for use with homogeneous coordinates.
 
-    generate_T_trans: This function generates either a passive or active
+    generate_trans_T: This function generates either a passive or active
     translational transformation matrix using a vector and a parameter specifying if
     the transformation should be passive or active.
 
-    generate_T_reflect: This function generates either a passive or active
+    generate_reflect_T: This function generates either a passive or active
     reflectional transformation matrix about a plane which is defined by a point (in
     "A" axes, relative to point "a") and a normal unit vector (in "A" axes)."""
 
@@ -183,7 +183,7 @@ def generate_R(angles, passive, intrinsic, order):
     return R_act
 
 
-def generate_T_rot(R):
+def generate_rot_T(R):
     """This function converts a rotation matrix to a rotation transformation matrix
     using homogeneous coordinates.
 
@@ -206,7 +206,7 @@ def generate_T_rot(R):
     return T_rot
 
 
-def generate_T_trans(translations, passive):
+def generate_trans_T(translations, passive):
     """This function generates either a passive or active translational
     transformation matrix using a vector and a parameter specifying if the
     transformation should be passive or active.
@@ -217,7 +217,7 @@ def generate_T_trans(translations, passive):
     "b" is defined by `translations` (in "A" axes, relative to the point a). Then:
 
     ```
-    T_pas_A_a_to_A_b = generate_T_trans(translations, True)
+    T_pas_A_a_to_A_b = generate_trans_T(translations, True)
     cHomog_A_b = T_pas_A_a_to_A_b @ generate_homog(c_A_a, True)
     c_A_b = cHomog_A_b[:3]
     ```
@@ -228,7 +228,7 @@ def generate_T_trans(translations, passive):
     in "A" axes). Then:
 
     ```
-    translate_T_act = generate_T_trans(translations, False)
+    translate_T_act = generate_trans_T(translations, False)
     cPrimeHomog_A_a = translate_T_act @ generate_homog(c_A_a, True)
     cPrime_A_a = cPrimeHomog_A_a[:3]
     ```
@@ -260,7 +260,7 @@ def generate_T_trans(translations, passive):
     return T_trans
 
 
-def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
+def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
     """This function generates either a passive or active reflectional transformation
     matrix about a plane which is defined by a point (in "A" axes, relative to point
     "a") and a normal vector (in "A" axes).
@@ -277,7 +277,7 @@ def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
     reflected across the same plane. Then:
 
     ```
-    T_pas_A_a_to_B_b = generate_T_reflect(plane_point_A_a, plane_normal_A, True)
+    T_pas_A_a_to_B_b = generate_reflect_T(plane_point_A_a, plane_normal_A, True)
     cHomog_B_b = T_pas_A_a_to_B_b @ generate_homog(c_A_a, True)
     c_B_b = cHomog_B_b[:3]
     ```
@@ -288,7 +288,7 @@ def generate_T_reflect(plane_point_A_a, plane_normal_A, passive):
     by plane_point_A_a and plane_normal_A. Then:
 
     ```
-    reflect_T_act = generate_T_reflect(plane_point_A_a, plane_normal_A, False)
+    reflect_T_act = generate_reflect_T(plane_point_A_a, plane_normal_A, False)
     cPrimeHomog_A_a = reflect_T_act @ generate_homog(c_A_a, True)
     cPrime_A_a = cPrimeHomog_A_a[:3]
     ```

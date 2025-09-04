@@ -236,7 +236,7 @@ When referencing coordinate variables in comments and docstrings, use the follow
 Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames. The notation and terminology used is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
 
 **Key Concepts:**
-- **Axis system** ("axes"): Contains information about three directions (cartesian, polar, or spherical)
+- **Axis system** ("axes"): Contains information about three cartesian directions
 - **Reference points** ("points"): Contains information about the location of a particular point in space
 - **Reference frame** ("frame"): Contains information about the location of an "observer" and their motion relative to what is observed
 
@@ -267,9 +267,10 @@ There are three useful combinations of axes, points, and frames. Variables are d
 ### ID Abbreviations and Names
 
 - E: Earth  
-- B: body  
-- P: Airplane  
-- W: wind  
+- B: body
+- P: airplane  
+- W: wind
+- Pr: problem
 - G: geometry  
 - Wn: wing  
 - Wcs: wing cross section  
@@ -309,8 +310,8 @@ There are three useful combinations of axes, points, and frames. Variables are d
 
 **3. Wind Axes**
 - Basis: Parallel to freestream velocity, perpendicular directions defined via angle of attack/sideslip
-- Variables: `..._W...` (local) or `..._WP1...` (non-local)
-- Text: "...in wind axes..." or "...in the first Airplane's wind axes..."
+- Variables: `..._W...` (local) or `..._WPr1...` (non-local)
+- Text: "...in wind axes..." or "...in the first Problem's wind axes..."
 
 **4. Geometry Axes**
 - Basis: Back of Airplane, Right of Airplane, Top of Airplane (right-handed)
@@ -351,15 +352,17 @@ There are three useful combinations of axes, points, and frames. Variables are d
 - Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic z-y'-x" sequence"
 
 **Active Angle Vectors (rotating within axis system):**
-- Variable pattern: `[name]_act_[sequence ID]`
+- Variable pattern: `[name]_[sequence ID]`
 - Text pattern: "[name] for rotation using an [sequence name] sequence"
-- Example: `angles_act_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
+- Example: `angles_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
 
 **Rotation and Transformation Matrices:**
 - **Passive rotation matrices:** `R_pas_[source]_to_[target]` (3x3)
 - **Passive transformation matrices:** `T_pas_[source axes]_[source point]_to_[target axes]_[target point]` (4x4 homogeneous)
+  - It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 - **Active rotation matrices:** `[name]_R_act` (3x3)  
 - **Active transformation matrices:** `[name]_T_act` (4x4 homogeneous)
+  - Active transforms operate within a single axis system; they never change which axes a vector is expressed in and never introduce scaling or shear. For free vectors (e.g., forces), translation has no effect.
 
 **Implementation Notes:**
 - All angles in degrees unless noted otherwise

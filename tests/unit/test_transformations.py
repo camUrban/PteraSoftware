@@ -4,12 +4,12 @@ This module contains the following classes:
     TestGenerateHomog: This class contains methods for testing the generate_homog
     function.
     TestGenerateR: This class contains methods for testing the generate_R function.
-    TestGenerateTRot: This class contains methods for testing the generate_T_rot
+    TestGenerateRotT: This class contains methods for testing the generate_rot_T
     function.
-    TestGenerateTTrans: This class contains methods for testing the generate_T_trans
+    TestGenerateTransT: This class contains methods for testing the generate_trans_T
     function.
-    TestGenerateTReflect: This class contains methods for testing the
-    generate_T_reflect function.
+    TestGenerateReflectT: This class contains methods for testing the
+    generate_reflect_T function.
 
 This module contains the following exceptions:
     None
@@ -443,8 +443,8 @@ class TestGenerateR(unittest.TestCase):
                     npt.assert_allclose(identity_test, np.eye(3), atol=1e-14)
 
 
-class TestGenerateTRot(unittest.TestCase):
-    """This class contains methods for testing the generate_T_rot function.
+class TestGenerateRotT(unittest.TestCase):
+    """This class contains methods for testing the generate_rot_T function.
 
     This class contains the following public methods:
         test_identity_transformation: Tests transformation with identity rotation.
@@ -467,7 +467,7 @@ class TestGenerateTRot(unittest.TestCase):
         """
         # Test with identity rotation
         R_identity = np.eye(3)
-        T_identity = ps.transformations.generate_T_rot(R_identity)
+        T_identity = ps.transformations.generate_rot_T(R_identity)
 
         expected_T = np.eye(4)
         npt.assert_array_equal(T_identity, expected_T)
@@ -480,7 +480,7 @@ class TestGenerateTRot(unittest.TestCase):
         # Test with a known rotation matrix
         R_test = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
-        T_test = ps.transformations.generate_T_rot(R_test)
+        T_test = ps.transformations.generate_rot_T(R_test)
 
         # Check that rotation part is preserved
         npt.assert_array_equal(T_test[:3, :3], R_test)
@@ -509,7 +509,7 @@ class TestGenerateTRot(unittest.TestCase):
                         R = ps.transformations.generate_R(
                             angles, passive, intrinsic, order
                         )
-                        T = ps.transformations.generate_T_rot(R)
+                        T = ps.transformations.generate_rot_T(R)
 
                         # Test that rotation part matches
                         npt.assert_array_equal(T[:3, :3], R)
@@ -528,7 +528,7 @@ class TestGenerateTRot(unittest.TestCase):
         R_act_z90 = ps.transformations.generate_R(
             np.array([0.0, 0.0, 90.0]), False, True, "xyz"
         )
-        T_rot = ps.transformations.generate_T_rot(R_act_z90)
+        T_rot = ps.transformations.generate_rot_T(R_act_z90)
 
         # Test position vector [1, 0, 0] -> should become [0, 1, 0]
         pos_vec = np.array([1.0, 0.0, 0.0])
@@ -547,8 +547,8 @@ class TestGenerateTRot(unittest.TestCase):
         npt.assert_allclose(transformed_homog_dir, expected_transformed_dir, atol=1e-14)
 
 
-class TestGenerateTTrans(unittest.TestCase):
-    """This class contains methods for testing the generate_T_trans function.
+class TestGenerateTransT(unittest.TestCase):
+    """This class contains methods for testing the generate_trans_T function.
 
     This class contains the following public methods:
         test_passive_transformation_with_homog_coords: Tests passive translation
@@ -580,7 +580,7 @@ class TestGenerateTTrans(unittest.TestCase):
         b_A_a = np.array([1.0, 2.0, 3.0])
         c_A_a = np.array([5.0, 6.0, 7.0])
 
-        T_trans_pas = ps.transformations.generate_T_trans(b_A_a, True)
+        T_trans_pas = ps.transformations.generate_trans_T(b_A_a, True)
         cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
 
         cHomog_A_b = T_trans_pas @ cHomog_A_a
@@ -600,7 +600,7 @@ class TestGenerateTTrans(unittest.TestCase):
         c_A_a = np.array([5.0, 6.0, 7.0])
 
         # Test active transformation with position vector
-        T_trans_act = ps.transformations.generate_T_trans(cPrime_A_c, False)
+        T_trans_act = ps.transformations.generate_trans_T(cPrime_A_c, False)
         cHomog_A_a = ps.transformations.generate_homog(c_A_a, True)
 
         cPrimeHomog_A_a = T_trans_act @ cHomog_A_a
@@ -618,11 +618,11 @@ class TestGenerateTTrans(unittest.TestCase):
         zero_translation = np.array([0.0, 0.0, 0.0])
 
         # Test passive with zero translation
-        T_passive_zero = ps.transformations.generate_T_trans(zero_translation, True)
+        T_passive_zero = ps.transformations.generate_trans_T(zero_translation, True)
         npt.assert_array_equal(T_passive_zero, np.eye(4))
 
         # Test active with zero translation
-        T_active_zero = ps.transformations.generate_T_trans(zero_translation, False)
+        T_active_zero = ps.transformations.generate_trans_T(zero_translation, False)
         npt.assert_array_equal(T_active_zero, np.eye(4))
 
     def test_transformation_properties(self):
@@ -634,7 +634,7 @@ class TestGenerateTTrans(unittest.TestCase):
 
         for passive in [True, False]:
             with self.subTest(passive=passive):
-                T = ps.transformations.generate_T_trans(translations, passive)
+                T = ps.transformations.generate_trans_T(translations, passive)
 
                 # Test output shape
                 self.assertEqual(T.shape, (4, 4))
@@ -658,8 +658,8 @@ class TestGenerateTTrans(unittest.TestCase):
 
         # Generate passive and active transformation matrices.
         translation = np.array([1.0, 2.0, 3.0])
-        T_trans_pas = ps.transformations.generate_T_trans(translation, True)
-        T_trans_act = ps.transformations.generate_T_trans(translation, False)
+        T_trans_pas = ps.transformations.generate_trans_T(translation, True)
+        T_trans_act = ps.transformations.generate_trans_T(translation, False)
 
         # Test that direction vectors are unaffected by translation
         direction = np.array([1.0, 0.0, 0.0])
@@ -673,8 +673,8 @@ class TestGenerateTTrans(unittest.TestCase):
         npt.assert_array_equal(active_transformed_directionHomog[:3], direction)
 
 
-class TestGenerateTReflect(unittest.TestCase):
-    """This class contains methods for testing the generate_T_reflect function.
+class TestGenerateReflectT(unittest.TestCase):
+    """This class contains methods for testing the generate_reflect_T function.
 
     This class contains the following public methods:
         test_reflection_about_origin_planes: Tests reflection about planes through
@@ -704,7 +704,7 @@ class TestGenerateTReflect(unittest.TestCase):
         plane_point = np.array([0.0, 0.0, 0.0])
         plane_normal = np.array([0.0, 0.0, 1.0])
 
-        T_reflect_act = ps.transformations.generate_T_reflect(
+        T_reflect_act = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, False
         )
 
@@ -719,7 +719,7 @@ class TestGenerateTReflect(unittest.TestCase):
 
         # Test reflection about xz-plane (y=0, normal=[0,1,0])
         plane_normal_y = np.array([0.0, 1.0, 0.0])
-        T_reflect_act_y = ps.transformations.generate_T_reflect(
+        T_reflect_act_y = ps.transformations.generate_reflect_T(
             plane_point, plane_normal_y, False
         )
 
@@ -738,7 +738,7 @@ class TestGenerateTReflect(unittest.TestCase):
         plane_point = np.array([0.0, 0.0, 2.0])
         plane_normal = np.array([0.0, 0.0, 1.0])
 
-        T_reflect_act = ps.transformations.generate_T_reflect(
+        T_reflect_act = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, False
         )
 
@@ -768,7 +768,7 @@ class TestGenerateTReflect(unittest.TestCase):
         zero_normal = np.array([0.0, 0.0, 0.0])
 
         with self.assertRaises(ValueError) as context:
-            ps.transformations.generate_T_reflect(plane_point, zero_normal, False)
+            ps.transformations.generate_reflect_T(plane_point, zero_normal, False)
 
         self.assertIn(
             "plane_normal_A must have a non-zero length.", str(context.exception)
@@ -784,7 +784,7 @@ class TestGenerateTReflect(unittest.TestCase):
 
         for passive in [True, False]:
             with self.subTest(passive=passive):
-                T = ps.transformations.generate_T_reflect(
+                T = ps.transformations.generate_reflect_T(
                     plane_point, plane_normal, passive
                 )
 
@@ -811,7 +811,7 @@ class TestGenerateTReflect(unittest.TestCase):
         plane_point = np.array([1.0, 2.0, 3.0])
         plane_normal = np.array([0.0, 1.0, 0.0])
 
-        T_reflect_act = ps.transformations.generate_T_reflect(
+        T_reflect_act = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, False
         )
 
@@ -834,7 +834,7 @@ class TestGenerateTReflect(unittest.TestCase):
         # Use non-unit normal vector - should be normalized internally
         plane_normal = np.array([0.0, 0.0, 5.0])  # Should normalize to [0,0,1]
 
-        T_reflect_act = ps.transformations.generate_T_reflect(
+        T_reflect_act = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, False
         )
 
@@ -855,10 +855,10 @@ class TestGenerateTReflect(unittest.TestCase):
         plane_point = np.array([1.0, 2.0, 3.0])
         plane_normal = np.array([1.0, 0.0, 1.0])
 
-        T_reflect_pas = ps.transformations.generate_T_reflect(
+        T_reflect_pas = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, True
         )
-        T_reflect_act = ps.transformations.generate_T_reflect(
+        T_reflect_act = ps.transformations.generate_reflect_T(
             plane_point, plane_normal, False
         )
 

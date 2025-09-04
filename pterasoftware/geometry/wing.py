@@ -456,14 +456,14 @@ class Wing:
         # coordinates from geometry axes relative to the CG point to geometry axes
         # relative to the preliminary leading edge root point. This is the
         # translation step.
-        T_trans_pas_G_Cg_to_G_prelimLer = transformations.generate_T_trans(
+        T_trans_pas_G_Cg_to_G_prelimLer = transformations.generate_trans_T(
             self.prelimLer_G_Cg, passive=True
         )
 
         # Step 2: Create T_rot_pas_G_to_prelimWn, which maps in homogeneous
         # coordinates from geometry axes to preliminary wing axes. This is the
         # rotation step.
-        T_rot_pas_G_to_prelimWn = transformations.generate_T_rot(
+        T_rot_pas_G_to_prelimWn = transformations.generate_rot_T(
             transformations.generate_R(
                 self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="zyx"
             )
@@ -478,7 +478,7 @@ class Wing:
             and self.symmetry_point_prelimWn_prelimLer is not None
         ):
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = (
-                transformations.generate_T_reflect(
+                transformations.generate_reflect_T(
                     self.symmetry_point_prelimWn_prelimLer,
                     self.symmetry_normal_prelimWn,
                     passive=True,

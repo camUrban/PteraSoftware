@@ -168,14 +168,14 @@ class Wing:
                     to False, its mirror_only parameter to False,
                     its symmetry_normal_prelimWn parameter to None and its
                     symmetry_point_prelimWn_prelimLer parameter to None. These
-                    changes turn this Wing into a "Scenario 1 Wing."
+                    changes turn this Wing into a type 1 symmetry wing.
 
                     - The Airplane will also create a new Wing, and add it to its
                     wings list immediately after this Wing. The new Wing will have
                     the same name as this Wing, but with the prefix "Reflected ". The
                     new Wing also will have all the same parameters as this Wing,
                     except that symmetric will be False and mirror_only will be True,
-                    which means that it will be a "Scenario 3 Wing."
+                    which means that it will be a type 3 symmetry wing.
 
                     - Also, if the control_surface_type is "asymmetric" for any of
                     this Wing's WingCrossSections, the reflected Wing's corresponding
@@ -464,9 +464,7 @@ class Wing:
         # coordinates from geometry axes to preliminary wing axes. This is the
         # rotation step.
         T_rot_pas_G_to_prelimWn = transformations.generate_rot_T(
-            transformations.generate_R(
-                self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="zyx"
-            )
+            self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="zyx"
         )
 
         # Step 3: Create T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler, which maps from
@@ -528,11 +526,9 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
-        WnXHomog_Wn = transformations.generate_homog(WnX_Wn, has_point=False)
-
-        WnXHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnXHomog_Wn
-
-        return WnXHomog_G[:3]
+        return transformations.apply_T_to_vector(
+            self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
+        )
 
     @property
     def WnY_G(self):
@@ -550,11 +546,9 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
-        WnYHomog_Wn = transformations.generate_homog(WnY_Wn, has_point=False)
-
-        WnYHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnYHomog_Wn
-
-        return WnYHomog_G[:3]
+        return transformations.apply_T_to_vector(
+            self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
+        )
 
     @property
     def WnZ_G(self):
@@ -572,11 +566,9 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
-        WnZHomog_Wn = transformations.generate_homog(WnZ_Wn, has_point=False)
-
-        WnZHomog_G = self.T_pas_Wn_Ler_to_G_Cg @ WnZHomog_Wn
-
-        return WnZHomog_G[:3]
+        return transformations.apply_T_to_vector(
+            self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
+        )
 
     @property
     def projected_area(self):
@@ -674,13 +666,12 @@ class Wing:
                 )
 
             # Transform displacement from parent axes to wing axes
-            displacementHomog_parent = transformations.generate_homog(
-                displacement_parent, has_point=False
+            displacement_wing = transformations.apply_T_to_vector(
+                T_parent_to_wing, displacement_parent, has_point=True
             )
-            displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
 
             # Add to accumulated position
-            current_position_Wn_Ler += displacementHomog_wing[:3]
+            current_position_Wn_Ler += displacement_wing
 
         # Now we have tip position in wing axes relative to Ler
         tipLp_Wn_Ler = current_position_Wn_Ler
@@ -766,11 +757,11 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacementHomog_parent = transformations.generate_homog(
-                    displacement_parent, has_point=False
+                displacement_wing = transformations.apply_T_to_vector(
+                    T_parent_to_wing, displacement_parent, has_point=True
                 )
-                displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
-                current_position_Wn_Ler += displacementHomog_wing[:3]
+
+                current_position_Wn_Ler += displacement_wing
 
             # Calculate next WingCrossSection's position in wing axes
             next_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
@@ -786,11 +777,11 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacementHomog_parent = transformations.generate_homog(
-                    displacement_parent, has_point=False
+                displacement_wing = transformations.apply_T_to_vector(
+                    T_parent_to_wing, displacement_parent, has_point=True
                 )
-                displacementHomog_wing = T_parent_to_wing @ displacementHomog_parent
-                next_position_Wn_Ler += displacementHomog_wing[:3]
+
+                next_position_Wn_Ler += displacement_wing
 
             # Find the section vector and project it onto spanwise direction
             section_vector_Wn = next_position_Wn_Ler - current_position_Wn_Ler

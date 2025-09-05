@@ -71,7 +71,7 @@ class Airplane:
         wings,
         name="Untitled Airplane",
         Cgi_E_I=(0.0, 0.0, 0.0),
-        angles_E_to_B_i321=(0.0, 0.0, 0.0),
+        angles_E_to_B_izyx=(0.0, 0.0, 0.0),
         weight=0.0,
         s_ref=None,
         c_ref=None,
@@ -100,7 +100,7 @@ class Airplane:
             Airplane's starting point (the location of its CG at t=0). The default is
             (0.0, 0.0, 0.0).
 
-        :param angles_E_to_B_i321: array-like of 3 numbers, optional
+        :param angles_E_to_B_izyx: array-like of 3 numbers, optional
 
             Angles [angle1, angle2, angle3] from Earth axes to body axes using an
             intrinsic 3-2'-1" sequence. Can be a tuple, list, or numpy array of
@@ -147,19 +147,19 @@ class Airplane:
         self.name = parameter_validation.validate_string(name, "name")
         self.Cgi_E_I = parameter_validation.validate_3d_vector_float(Cgi_E_I, "Cgi_E_I")
 
-        angles_E_to_B_i321 = parameter_validation.validate_3d_vector_float(
-            angles_E_to_B_i321, "angles_E_to_B_i321"
+        angles_E_to_B_izyx = parameter_validation.validate_3d_vector_float(
+            angles_E_to_B_izyx, "angles_E_to_B_izyx"
         )
-        angles_E_to_B_i321[0] = parameter_validation.validate_scalar_in_range_float(
-            angles_E_to_B_i321[0], "angles_E_to_B_i321[0]", -180.0, False, 180.0, True
+        angles_E_to_B_izyx[0] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_izyx[0], "angles_E_to_B_izyx[0]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_i321[1] = parameter_validation.validate_scalar_in_range_float(
-            angles_E_to_B_i321[1], "angles_E_to_B_i321[1]", -60.0, True, 60.0, True
+        angles_E_to_B_izyx[1] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_izyx[1], "angles_E_to_B_izyx[1]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_i321[2] = parameter_validation.validate_scalar_in_range_float(
-            angles_E_to_B_i321[2], "angles_E_to_B_i321[2]", -90.0, False, 90.0, False
+        angles_E_to_B_izyx[2] = parameter_validation.validate_scalar_in_range_float(
+            angles_E_to_B_izyx[2], "angles_E_to_B_izyx[2]", -180.0, False, 180.0, True
         )
-        self.angles_E_to_B_i321 = angles_E_to_B_i321
+        self.angles_E_to_B_izyx = angles_E_to_B_izyx
 
         self.weight = parameter_validation.validate_non_negative_scalar_float(
             weight, "weight"
@@ -307,8 +307,8 @@ class Airplane:
                             num_spanwise_panels=wing_cross_section.num_spanwise_panels,
                             chord=wing_cross_section.chord,
                             Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
-                            angles_Wcsp_to_Wcs_i321=np.copy(
-                                wing_cross_section.angles_Wcsp_to_Wcs_i321
+                            angles_Wcsp_to_Wcs_izyx=np.copy(
+                                wing_cross_section.angles_Wcsp_to_Wcs_izyx
                             ),
                             control_surface_type=wing_cross_section.control_surface_type,
                             control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,

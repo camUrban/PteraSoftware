@@ -44,15 +44,22 @@ def make_test_airfoil_fixture():
     return test_airfoil_fixture
 
 
-def make_basic_wing_cross_section_fixture():
+def make_basic_wing_cross_section_fixture(airfoil=None):
     """This method makes a fixture that is a WingCrossSection object with typical
     parameters for general testing.
+
+    :param airfoil: Airfoil, optional
+        This is the Airfoil object to use for the WingCrossSection. If None, a new
+        test airfoil fixture will be created. The default is None.
 
     :return basic_wing_cross_section_fixture: WingCrossSection
         This is the WingCrossSection object configured for general testing.
     """
-    # Initialize the constructing fixture.
-    test_airfoil_fixture = make_test_airfoil_fixture()
+    # Use provided airfoil or create a new one.
+    if airfoil is None:
+        test_airfoil_fixture = make_test_airfoil_fixture()
+    else:
+        test_airfoil_fixture = airfoil
 
     # Create the basic WingCrossSection object.
     basic_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
@@ -60,15 +67,16 @@ def make_basic_wing_cross_section_fixture():
         num_spanwise_panels=8,
         chord=1.5,
         Lp_Wcsp_Lpp=[0.2, 0.5, 0.1],
-        angles_Wcsp_to_Wcs_i321=[5.0, -2.0, 3.0],
+        angles_Wcsp_to_Wcs_izyx=[5.0, -2.0, 3.0],
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=5.0,
         spanwise_spacing="cosine",
     )
 
-    # Delete the constructing fixture.
-    del test_airfoil_fixture
+    # Only delete the fixture if we created it locally.
+    if airfoil is None:
+        del test_airfoil_fixture
 
     # Return the WingCrossSection fixture.
     return basic_wing_cross_section_fixture
@@ -90,7 +98,7 @@ def make_root_wing_cross_section_fixture():
         num_spanwise_panels=10,
         chord=2.0,
         Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
-        angles_Wcsp_to_Wcs_i321=[0.0, 0.0, 0.0],
+        angles_Wcsp_to_Wcs_izyx=[0.0, 0.0, 0.0],
     )
 
     # Delete the constructing fixture.
@@ -116,7 +124,7 @@ def make_tip_wing_cross_section_fixture():
         num_spanwise_panels=None,
         chord=0.8,
         Lp_Wcsp_Lpp=[0.5, 2.0, 0.2],
-        angles_Wcsp_to_Wcs_i321=[10.0, -5.0, 8.0],
+        angles_Wcsp_to_Wcs_izyx=[10.0, -5.0, 8.0],
         spanwise_spacing=None,
     )
 
@@ -169,7 +177,7 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
             num_spanwise_panels=6,
             chord=1.2,
             Lp_Wcsp_Lpp=[0.1, 1.0, 0.05],
-            angles_Wcsp_to_Wcs_i321=[2.0, 0.0, -1.0],
+            angles_Wcsp_to_Wcs_izyx=[2.0, 0.0, -1.0],
             control_surface_type="asymmetric",
             control_surface_hinge_point=0.8,
             control_surface_deflection=-10.0,

@@ -31,7 +31,6 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
-from pterasoftware.transformations import generate_rot_T, apply_T_to_vector
 
 
 class TestGenerateRotT(unittest.TestCase):
@@ -982,7 +981,9 @@ class TestComposeTPas(unittest.TestCase):
             T_trans_pas_G_Cg_to_G_Ler, T_rot_pas_G_to_Wn
         )
 
-        c_Wn_Ler = apply_T_to_vector(T_pas_G_Cg_to_Wn_Ler, c_G_Cg, has_point=True)
+        c_Wn_Ler = ps.transformations.apply_T_to_vector(
+            T_pas_G_Cg_to_Wn_Ler, c_G_Cg, has_point=True
+        )
 
         # Expected value calculated using CAD model
         c_Wn_Ler_expected = np.array([-3.0, 0.5, 1.5])
@@ -1162,7 +1163,7 @@ class TestComposeTAct(unittest.TestCase):
 
         T_act = ps.transformations.compose_T_act(rot_T_act, trans_T_act)
 
-        cPrime_G = apply_T_to_vector(T_act, c_G, has_point=True)
+        cPrime_G = ps.transformations.apply_T_to_vector(T_act, c_G, has_point=True)
 
         # Expected known value. If this expected value is confusing to you, and you
         # expect it to instead by np.array([-2.0, 11.0, 3.0]), see the note in the

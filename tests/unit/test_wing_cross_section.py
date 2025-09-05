@@ -26,7 +26,7 @@ class TestWingCrossSection(unittest.TestCase):
         # Create fixtures using geometry_fixtures module
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
-            geometry_fixtures.make_basic_wing_cross_section_fixture()
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
         )
         self.root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -56,7 +56,7 @@ class TestWingCrossSection(unittest.TestCase):
             self.basic_wing_cross_section.Lp_Wcsp_Lpp, np.array([0.2, 0.5, 0.1])
         )
         np.testing.assert_array_equal(
-            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_i321,
+            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
             np.array([5.0, -2.0, 3.0]),
         )
         self.assertEqual(
@@ -81,7 +81,7 @@ class TestWingCrossSection(unittest.TestCase):
             wing_cross_section.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])
         )
         np.testing.assert_array_equal(
-            wing_cross_section.angles_Wcsp_to_Wcs_i321, np.array([0.0, 0.0, 0.0])
+            wing_cross_section.angles_Wcsp_to_Wcs_izyx, np.array([0.0, 0.0, 0.0])
         )
         self.assertEqual(wing_cross_section.control_surface_type, "symmetric")
         self.assertEqual(wing_cross_section.control_surface_hinge_point, 0.75)
@@ -195,8 +195,8 @@ class TestWingCrossSection(unittest.TestCase):
                         Lp_Wcsp_Lpp=invalid_vector,
                     )
 
-    def test_angles_Wcsp_to_Wcs_i321_validation(self):
-        """Test angles_Wcsp_to_Wcs_i321 parameter validation."""
+    def test_angles_Wcsp_to_Wcs_izyx_validation(self):
+        """Test angles_Wcsp_to_Wcs_izyx parameter validation."""
         # Test with valid array-like angles (within -90, 90 range)
         valid_angles = [
             np.array([0.0, 0.0, 0.0]),  # numpy array of floats
@@ -210,10 +210,10 @@ class TestWingCrossSection(unittest.TestCase):
                 wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
-                    angles_Wcsp_to_Wcs_i321=angles,
+                    angles_Wcsp_to_Wcs_izyx=angles,
                 )
                 np.testing.assert_array_equal(
-                    wing_cross_section.angles_Wcsp_to_Wcs_i321, angles
+                    wing_cross_section.angles_Wcsp_to_Wcs_izyx, angles
                 )
                 del wing_cross_section
 
@@ -230,7 +230,7 @@ class TestWingCrossSection(unittest.TestCase):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
-                        angles_Wcsp_to_Wcs_i321=invalid_angle,
+                        angles_Wcsp_to_Wcs_izyx=invalid_angle,
                     )
 
     def test_control_surface_type_validation(self):
@@ -415,7 +415,7 @@ class TestWingCrossSection(unittest.TestCase):
             num_spanwise_panels=100,
             chord=50.0,
             Lp_Wcsp_Lpp=np.array([10.0, 20.0, 5.0]),
-            angles_Wcsp_to_Wcs_i321=np.array([89.9, -89.9, 89.9]),
+            angles_Wcsp_to_Wcs_izyx=np.array([89.9, -89.9, 89.9]),
             control_surface_hinge_point=0.001,  # Very small but valid
             control_surface_deflection=89.9,  # Maximum valid deflection
         )

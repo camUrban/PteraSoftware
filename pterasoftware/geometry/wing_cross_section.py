@@ -76,7 +76,7 @@ class WingCrossSection:
         num_spanwise_panels,
         chord=1.0,
         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        angles_Wcsp_to_Wcs_i321=(0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         control_surface_type="symmetric",
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
@@ -114,7 +114,7 @@ class WingCrossSection:
             vector. The second component must be non-negative. The default is (0.0,
             0.0, 0.0).
 
-        :param angles_Wcsp_to_Wcs_i321: array-like of 3 numbers, optional
+        :param angles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
 
             This is the angle vector of rotation angles [roll, pitch, yaw] in degrees
             that define the orientation of this WingCrossSection's axes relative to
@@ -183,24 +183,24 @@ class WingCrossSection:
         )
         self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
 
-        # Perform a preliminary validation for angles_Wcsp_to_Wcs_i321. The parent
+        # Perform a preliminary validation for angles_Wcsp_to_Wcs_izyx. The parent
         # Wing will later check that this is a zero vector if this WingCrossSection
         # is a root WingCrossSection.
-        angles_Wcsp_to_Wcs_i321 = parameter_validation.validate_3d_vector_float(
-            angles_Wcsp_to_Wcs_i321, "angles_Wcsp_to_Wcs_i321"
+        angles_Wcsp_to_Wcs_izyx = parameter_validation.validate_3d_vector_float(
+            angles_Wcsp_to_Wcs_izyx, "angles_Wcsp_to_Wcs_izyx"
         )
-        for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_i321):
-            angles_Wcsp_to_Wcs_i321[angle_id] = (
+        for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_izyx):
+            angles_Wcsp_to_Wcs_izyx[angle_id] = (
                 parameter_validation.validate_scalar_in_range_float(
                     angle,
-                    f"angles_Wcsp_to_Wcs_i321[{angle_id}]",
+                    f"angles_Wcsp_to_Wcs_izyx[{angle_id}]",
                     -90.0,
                     False,
                     90.0,
                     False,
                 )
             )
-        self.angles_Wcsp_to_Wcs_i321 = angles_Wcsp_to_Wcs_i321
+        self.angles_Wcsp_to_Wcs_izyx = angles_Wcsp_to_Wcs_izyx
 
         # Validate control surface type.
         control_surface_type = parameter_validation.validate_string(
@@ -265,7 +265,7 @@ class WingCrossSection:
         """This method is called by the parent Wing to validate constraints specific
         to root WingCrossSections.
 
-        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_i321
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_izyx
         set to zero vectors.
 
         :raises ValueError: If root constraints are violated.
@@ -276,9 +276,9 @@ class WingCrossSection:
             raise ValueError(
                 "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, 0.0])."
             )
-        if not np.allclose(self.angles_Wcsp_to_Wcs_i321, np.array([0.0, 0.0, 0.0])):
+        if not np.allclose(self.angles_Wcsp_to_Wcs_izyx, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
-                "The root WingCrossSection's angles_Wcsp_to_Wcs_i321 must be np.array([0.0, 0.0, 0.0])."
+                "The root WingCrossSection's angles_Wcsp_to_Wcs_izyx must be np.array([0.0, 0.0, 0.0])."
             )
 
     def validate_tip_constraints(self):
@@ -325,9 +325,7 @@ class WingCrossSection:
         # from parent wing cross section axes to wing cross section axes This is the
         # rotation step.
         T_rot_pas_Wcsp_to_Wcs = transformations.generate_rot_T(
-            transformations.generate_R(
-                self.angles_Wcsp_to_Wcs_i321, passive=True, intrinsic=True, order="zyx"
-            )
+            self.angles_Wcsp_to_Wcs_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
         return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp

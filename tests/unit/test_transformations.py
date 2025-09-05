@@ -31,6 +31,7 @@ import numpy as np
 import numpy.testing as npt
 
 import pterasoftware as ps
+from pterasoftware.transformations import generate_rot_T, apply_T_to_vector
 
 
 class TestGenerateRotT(unittest.TestCase):
@@ -55,6 +56,8 @@ class TestGenerateRotT(unittest.TestCase):
         test_edge_case_angles: Tests edge case angle values.
         test_homogeneous_coordinate_transformations: Tests transformation of
         homogeneous coordinates.
+        test_invalid_rotation_order_rejected: Tests that passing in invalid angle
+        orders raises a value error.
 
     This class contains the following class attributes:
         None
@@ -433,6 +436,16 @@ class TestGenerateRotT(unittest.TestCase):
         expected_transformed_dir = np.array([0.0, 1.0, 0.0])
         npt.assert_allclose(transformed_dir, expected_transformed_dir, atol=1e-14)
 
+    def test_invalid_rotation_order_rejected(self):
+        """Tests that passing in invalid angle orders raises a value error.
+
+        :return: None
+        """
+        angles = np.array([10.0, 20.0, 30.0])
+        for bad in ["xyx", "xxx", "zz", "wxy", "x_y", ""]:
+            with self.assertRaises(ValueError):
+                ps.transformations.generate_rot_T(angles, True, True, bad)
+
 
 class TestGenerateTransT(unittest.TestCase):
     """This class contains methods for testing the generate_trans_T function.
@@ -753,7 +766,7 @@ class TestGenerateReflectT(unittest.TestCase):
         npt.assert_array_equal(T_reflect_pas, T_reflect_act)
 
 
-class TestComposeTAas(unittest.TestCase):
+class TestComposeTPas(unittest.TestCase):
     """This class contains methods for testing the compose_T_pas function.
 
     This class contains the following public methods:
@@ -764,6 +777,10 @@ class TestComposeTAas(unittest.TestCase):
         test_multiple_transformations: Tests composition of multiple transformations.
         test_rotation_translation_composition: Tests composition of rotation and translation.
         test_matrix_properties: Tests properties of composed matrices.
+        test_empty_chain_raises: Tests that passing an empty transformation chain
+        results in a value error.
+        test_specific_known_passive_composition: Tests specific composition of
+        passive transformations with a known result.
 
     This class contains the following class attributes:
         None
@@ -924,6 +941,54 @@ class TestComposeTAas(unittest.TestCase):
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, 1.0, places=12)
 
+    def test_empty_chain_raises(self):
+        """Tests that passing an empty transformation chain results in a value error.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.transformations.compose_T_pas()
+
+    def test_specific_known_passive_composition(self):
+        """Tests specific composition of passive transformations with a known result.
+
+        :return: None
+        """
+        # Goal: c_Wn_Ler, "the position of point c (in wing axes, relative to the
+        # leading edge root point)"
+
+        # Given:
+        # The position of point c (in geometry axes, relative to the CG point)
+        c_G_Cg = [0.5, -1.0, 2.0]
+
+        # Given:
+        # The position of the leading edge root point (in geometry axes, relative to
+        # the CG point)
+        Ler_G_CG = [1.0, 2.0, 0.5]
+
+        # Given:
+        # The orientation of wing axes relative to geometry axes using an intrinsic
+        # z-y'-x" rotation
+        angles_G_to_Wn_izyx = [0.0, 0.0, 90.0]
+
+        T_rot_pas_G_to_Wn = ps.transformations.generate_rot_T(
+            angles_G_to_Wn_izyx, passive=True, intrinsic=True, order="zyx"
+        )
+        T_trans_pas_G_Cg_to_G_Ler = ps.transformations.generate_trans_T(
+            Ler_G_CG, passive=True
+        )
+
+        T_pas_G_Cg_to_Wn_Ler = ps.transformations.compose_T_pas(
+            T_trans_pas_G_Cg_to_G_Ler, T_rot_pas_G_to_Wn
+        )
+
+        c_Wn_Ler = apply_T_to_vector(T_pas_G_Cg_to_Wn_Ler, c_G_Cg, has_point=True)
+
+        # Expected value calculated using CAD model
+        c_Wn_Ler_expected = np.array([-3.0, 0.5, 1.5])
+
+        npt.assert_allclose(c_Wn_Ler, c_Wn_Ler_expected)
+
 
 class TestComposeTAct(unittest.TestCase):
     """This class contains methods for testing the compose_T_act function.
@@ -935,6 +1000,10 @@ class TestComposeTAct(unittest.TestCase):
         test_inverse_composition: Tests composition with inverse transformations.
         test_multiple_transformations: Tests composition of multiple transformations.
         test_matrix_properties: Tests properties of composed matrices.
+        test_empty_chain_raises: Tests that passing an empty transformation chain
+        results in a value error.
+        test_specific_known_active_composition: Tests specific composition of active
+        transformations with a known result.
 
     This class contains the following class attributes:
         None
@@ -1067,6 +1136,40 @@ class TestComposeTAct(unittest.TestCase):
         # Test determinant is -1 (includes reflection)
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, -1.0, places=12)
+
+    def test_empty_chain_raises(self):
+        """Tests that passing an empty transformation chain results in a value error.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.transformations.compose_T_act()
+
+    def test_specific_known_active_composition(self):
+        """Tests specific composition of active transformations with a known result.
+
+        :return: None
+        """
+        c_G = [1.0, 2.0, 3.0]
+
+        angles_act_izyx = [0.0, 0.0, 90.0]
+        t_G = [10.0, 0.0, 0.0]
+
+        rot_T_act = ps.transformations.generate_rot_T(
+            angles_act_izyx, passive=False, intrinsic=True, order="zyx"
+        )
+        trans_T_act = ps.transformations.generate_trans_T(t_G, passive=False)
+
+        T_act = ps.transformations.compose_T_act(rot_T_act, trans_T_act)
+
+        cPrime_G = apply_T_to_vector(T_act, c_G, has_point=True)
+
+        # Expected known value. If this expected value is confusing to you, and you
+        # expect it to instead by np.array([-2.0, 11.0, 3.0]), see the note in the
+        # docstrings of compose_T_act on world-fixed vs. body-fixed transformations.
+        cPrime_G_expected = np.array([8.0, 1.0, 3.0])
+
+        npt.assert_allclose(cPrime_G, cPrime_G_expected)
 
 
 class TestInvertTPas(unittest.TestCase):

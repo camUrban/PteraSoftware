@@ -361,10 +361,39 @@ def compose_T_act(*T_act_chain):
 
     Internally returns: translate_T_act @ rot_T_act @ reflect_T_act
 
+    Note on body-fixed vs world-fixed interpretations:
+        This function left-composes the supplied active transforms: given
+        compose_T_act( T1, T2, ..., Tn) it returns Tn @ ... @ T2 @ T1. Pass
+        transforms in the chronological order you want them applied.
+
+        Active translations created with generate_trans_T(..., passive=False)
+        interpret the components in the same axes the vector is expressed in (e.g.,
+        G axes). Therefore: ``` T_act = compose_T_act(rot_T_act, trans_T_act) ```
+        applies a rotation first and then a *world-fixed* translation.
+
+        If you instead want a *body-fixed* translation (e.g., “+10 along x′ after the
+        rotation”), either:
+            (a) pre-rotate the components before building the translation:
+            ```
+            R = rot_T_act[:3, :3]
+            tPrime_A = R @ t_A
+            transBodyFixed_T_act = generate_trans_T(tPrime_A, False)
+            T_act = compose_T_act(rot_T_act, transBodyFixed_T_act)
+            ```
+            or
+            (b) pass the translation before the rotation:
+            ```
+            T_act = compose_T_act(trans_T_act, rot_T_act)
+            ```
+
+        Both yield the same homogeneous matrix: [[R, R @ t_body], [0, 0, 0, 1]].
+
     :param T_act_chain: sequence of 4x4 array-like objects filled with numbers
+
         The active homogeneous transforms in chronological order.
 
     :return: (4,4) ndarray of floats
+
         The composed active homogeneous transform.
     """
     if not T_act_chain:

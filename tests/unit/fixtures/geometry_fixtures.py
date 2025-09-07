@@ -40,7 +40,21 @@ This module contains the following functions:
 
     make_type_5_wing_fixture: This method makes a fixture that is a Wing object
     with type 5 symmetry (symmetric=True, coincident_symmetry_plane=False).
-"""
+
+    make_basic_airplane_fixture: This method makes a fixture that is an Airplane
+    object with basic configuration for general testing.
+
+    make_first_airplane_fixture: This method makes a fixture that is an Airplane
+    object suitable for use as the first Airplane in a simulation.
+
+    make_multi_wing_airplane_fixture: This method makes a fixture that is an Airplane
+    with multiple Wings for testing multi-wing configurations.
+
+    make_type_5_wing_airplane_fixture: This method makes a fixture that is an
+    Airplane with a type 5 Wing to test wing symmetry processing.
+
+    make_custom_reference_airplane_fixture: This method makes a fixture that is an
+    Airplane with custom reference dimensions set explicitly."""
 
 import numpy as np
 
@@ -188,14 +202,14 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
     asymmetric_wing_cross_section_fixture = (
         ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=test_airfoil_fixture,
-            num_spanwise_panels=6,
+            num_spanwise_panels=None,
             chord=1.2,
             Lp_Wcsp_Lpp=[0.1, 1.0, 0.05],
             angles_Wcsp_to_Wcs_izyx=[2.0, 0.0, -1.0],
             control_surface_symmetry_type="asymmetric",
             control_surface_hinge_point=0.8,
             control_surface_deflection=-10.0,
-            spanwise_spacing="uniform",
+            spanwise_spacing=None,
         )
     )
 
@@ -362,3 +376,124 @@ def make_type_5_wing_fixture():
     )
 
     return type_5_wing_fixture
+
+
+def make_basic_airplane_fixture():
+    """This method makes a fixture that is an Airplane with basic configuration for
+    general testing.
+
+    :return basic_airplane_fixture: Airplane
+        This is the Airplane configured for general testing.
+    """
+    # Create a basic Wing for the Airplane
+    wing = make_type_1_wing_fixture()
+
+    # Create the basic Airplane
+    basic_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Basic Test Airplane",
+        Cgi_E_I=[1.0, 0.5, -0.2],
+        angles_E_to_B_izyx=[10.0, -5.0, 15.0],
+        weight=1000.0,
+    )
+
+    return basic_airplane_fixture
+
+
+def make_first_airplane_fixture():
+    """This method makes a fixture that is an Airplane suitable for use
+    as the first Airplane in a simulation (with Cgi_E_I set to zeros).
+
+    :return first_airplane_fixture: Airplane
+        This is the Airplane configured as the first in a simulation.
+    """
+    # Create a Wing for the Airplane
+    wing = make_type_4_wing_fixture()
+
+    # Create the first Airplane
+    first_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="First Test Airplane",
+        Cgi_E_I=[0.0, 0.0, 0.0],
+        angles_E_to_B_izyx=[0.0, 0.0, 0.0],
+        weight=1500.0,
+    )
+
+    return first_airplane_fixture
+
+
+def make_multi_wing_airplane_fixture():
+    """This method makes a fixture that is an Airplane with multiple Wings for
+    testing multi-wing configurations.
+
+    :return multi_wing_airplane_fixture: Airplane
+        This is the Airplane with multiple Wings.
+    """
+    # Create multiple Wings for the Airplane
+    main_wing = make_type_4_wing_fixture()
+    main_wing.name = "Main Wing"
+
+    tail_wing = make_type_2_wing_fixture()
+    tail_wing.name = "Tail Wing"
+    tail_wing.prelimLer_G_Cg = [0.0, 0.0, 5.0]  # Move tail wing back
+
+    # Create the multi-wing Airplane
+    multi_wing_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[main_wing, tail_wing],
+        name="Multi-Wing Test Airplane",
+        Cgi_E_I=[2.0, -1.0, 0.5],
+        angles_E_to_B_izyx=[-5.0, 2.0, -10.0],
+        weight=2000.0,
+        s_ref=20.0,
+        c_ref=1.5,
+        b_ref=8.0,
+    )
+
+    return multi_wing_airplane_fixture
+
+
+def make_type_5_wing_airplane_fixture():
+    """This method makes a fixture that is an Airplane with a type 5 Wing to test
+    Wing symmetry processing (type 5 symmetry gets split into two Wings).
+
+    :return type_5_wing_airplane_fixture: Airplane
+        This is the Airplane with a type 5 Wing that will be processed.
+    """
+    # Create a type 5 Wing for the Airplane
+    wing = make_type_5_wing_fixture()
+
+    # Create the Airplane (this will process the type 5 Wing)
+    type_5_wing_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Type 5 Wing Test Airplane",
+        Cgi_E_I=[0.0, 0.0, 0.0],
+        angles_E_to_B_izyx=[0.0, 0.0, 0.0],
+        weight=1200.0,
+    )
+
+    return type_5_wing_airplane_fixture
+
+
+def make_custom_reference_airplane_fixture():
+    """This method makes a fixture that is an Airplane with custom reference
+    dimensions set explicitly.
+
+    :return custom_reference_airplane_fixture: Airplane
+        This is the Airplane with custom reference dimensions.
+    """
+    # Create a Wing for the Airplane
+    wing = make_type_1_wing_fixture()
+
+    # Create the Airplane with custom reference dimensions
+    custom_reference_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Custom Reference Test Airplane",
+        Cgi_E_I=[0.5, 1.0, -0.8],
+        angles_E_to_B_izyx=[20.0, -10.0, 5.0],
+        weight=800.0,
+        s_ref=15.0,
+        c_ref=2.0,
+        b_ref=10.0,
+    )
+
+    return custom_reference_airplane_fixture

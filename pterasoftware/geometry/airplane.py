@@ -171,19 +171,19 @@ class Airplane:
         if s_ref is None:
             self.s_ref = self.wings[0].projected_area
         else:
-            self.s_ref = parameter_validation.validate_non_negative_scalar_float(
+            self.s_ref = parameter_validation.validate_positive_scalar_float(
                 s_ref, "s_ref"
             )
         if c_ref is None:
             self.c_ref = self.wings[0].mean_aerodynamic_chord
         else:
-            self.c_ref = parameter_validation.validate_non_negative_scalar_float(
+            self.c_ref = parameter_validation.validate_positive_scalar_float(
                 c_ref, "c_ref"
             )
         if b_ref is None:
             self.b_ref = self.wings[0].span
         else:
-            self.b_ref = parameter_validation.validate_non_negative_scalar_float(
+            self.b_ref = parameter_validation.validate_positive_scalar_float(
                 b_ref, "b_ref"
             )
 

@@ -44,60 +44,68 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ## ID Abbreviations and Names
 
-* E: Earth  
-* B: body  
-* P: airplane  
+* E: Earth
+* B: body
+* P: airplane
 * W: wind
 * Pr: problem
-* G: geometry  
-* Wn: wing  
-* Wcs: wing cross section  
-* Wcsp: wing cross section parent  
-* A: airfoil  
-* I: simulation starting point  
-* Cgi: starting point  
-* Cg: CG point  
-* Ler: leading edge root point  
-* Lp: leading point  
-* Lpp: leading point parent  
-* …pp…: panel point  
-  * Fr…: front right  
-  * Fl…: front left  
-  * Bl…: back left  
-  * Br…: back right  
-  * C…: collocation  
-  * …r\[m\]c\[n\]: (m, n)  
-* …bhvp…: bound horseshoe vortex point  
-  * Fr…: front right  
-  * Fl…: front left  
-  * Bl…: back left  
-  * Br…: back right  
-  * …r\[m\]c\[n\]: (m, n)  
-* …brvp…: bound ring vortex point  
-  * Fr…: front right  
-  * Fl…: front left  
-  * Bl…: back left  
-  * Br…: back right  
-  * …r\[m\]c\[n\]: (m, n)  
-* …wrvp…: wake ring vortex point  
-  * Fr…: front right  
-  * Fl…: front left  
-  * Bl…: back left  
-  * Br…: back right  
-  * …r\[m\]c\[n\]: (m, n)  
-* …whvp…: wake horseshoe vortex point  
-  * Fr…: front right  
-  * Fl…: front left  
-  * Bl…: back left  
-  * Br…: back right  
-  * …\[n\]: n  
-* …lvp…: line vortex point  
-  * S…: start  
-  * E…: end  
-  * C…: center  
-  * …f: front leg  
-  * …l: left leg  
-  * …b: back leg  
+* G: geometry
+* Wn: wing
+* Wcs…: wing cross section
+  * …i: inner
+  * …o: outer
+* Wcsp: wing cross section parent
+* A…: airfoil
+  * …i: inner
+  * …o: outer
+* I: simulation starting point
+* Cgi: starting point
+* Cg: CG point
+* Ler: leading edge root point
+* Lp: leading point
+* Lpp: leading point parent
+* …pp…: panel point
+  * Fr…: front right
+  * Fo…: forward outer
+  * Fl…: front left
+  * Fi…: forward inner
+  * Bl…: back left
+  * Bi…: backward inner
+  * Br…: back right
+  * Bo…: backward outer
+  * C…: collocation
+  * …r\[m\]c\[n\]: (m, n)
+* …bhvp…: bound horseshoe vortex point
+  * Fr…: front right
+  * Fl…: front left
+  * Bl…: back left
+  * Br…: back right
+  * …r\[m\]c\[n\]: (m, n)
+* …brvp…: bound ring vortex point
+  * Fr…: front right
+  * Fl…: front left
+  * Bl…: back left
+  * Br…: back right
+  * …r\[m\]c\[n\]: (m, n)
+* …wrvp…: wake ring vortex point
+  * Fr…: front right
+  * Fl…: front left
+  * Bl…: back left
+  * Br…: back right
+  * …r\[m\]c\[n\]: (m, n)
+* …whvp…: wake horseshoe vortex point
+  * Fr…: front right
+  * Fl…: front left
+  * Bl…: back left
+  * Br…: back right
+  * …\[n\]: n
+* …lvp…: line vortex point
+  * S…: start
+  * E…: end
+  * C…: center
+  * …f: front leg
+  * …l: left leg
+  * …b: back leg
   * …r: right leg
 
 # Axis Systems

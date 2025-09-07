@@ -24,6 +24,9 @@
       <w>bhvp</w>
       <w>bhvr</w>
       <w>bleriot</w>
+      <w>blpp</w>
+      <w>bopp</w>
+      <w>brpp</w>
       <w>brvp</w>
       <w>camberline</w>
       <w>cambre</w>
@@ -62,8 +65,11 @@
       <w>ezyx</w>
       <w>fage</w>
       <w>fauvel</w>
+      <w>fipp</w>
       <w>firebee</w>
+      <w>flpp</w>
       <w>flyer</w>
+      <w>fopp</w>
       <w>frbhvp</w>
       <w>frbhvpr</w>
       <w>frbrvp</w>
@@ -190,6 +196,8 @@
       <w>vortices</w>
       <w>vstab</w>
       <w>vstack</w>
+      <w>wcsi</w>
+      <w>wcso</w>
       <w>wcsp</w>
       <w>weisstein</w>
       <w>wetted</w>

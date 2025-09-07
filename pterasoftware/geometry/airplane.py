@@ -233,24 +233,17 @@ class Airplane:
         # axes' xz-plane. This is relatively easy their values are either None ( if
         # there isn't any symmetry) or relative to the preliminary wing axes.
         # Therefore, if it exists, the symmetry plane is coincident to the
-        # preliminary wing axes' xz-plane if symmetry_point_prelimWn_prelimLer is all
-        # zeros (no translational offset), and symmetry_normal_prelimWn is np.array([
-        # 0.0, 1.0, 0.0]). We don't need to check types, values, or normalize because
-        # this is done in Wing's init method.
+        # preliminary wing axes' xz-plane if symmetry_point_Wn_Ler is all zeros (no
+        # translational offset), and symmetry_normal_Wn is np.array([ 0.0, 1.0,
+        # 0.0]). We don't need to check types, values, or normalize because this is
+        # done in Wing's init method.
         coincident_symmetry_plane = True
-        if (
-            wing.symmetry_point_prelimWn_prelimLer is None
-            or wing.symmetry_normal_prelimWn is None
-        ):
+        if wing.symmetry_point_Wn_Ler is None or wing.symmetry_normal_Wn is None:
             coincident_symmetry_plane = False
         else:
-            if not np.allclose(
-                wing.symmetry_point_prelimWn_prelimLer, np.array([0.0, 0.0, 0.0])
-            ):
+            if not np.allclose(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0])):
                 coincident_symmetry_plane = False
-            elif not np.allclose(
-                wing.symmetry_normal_prelimWn, np.array([0.0, 1.0, 0.0])
-            ):
+            elif not np.allclose(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0])):
                 coincident_symmetry_plane = False
 
         # See the Wing class docstring for the interpretation of the different
@@ -324,18 +317,16 @@ class Airplane:
                     angles_G_to_prelimWn=np.copy(wing.angles_G_to_prelimWn),
                     symmetric=False,
                     mirror_only=True,
-                    symmetry_normal_prelimWn=np.copy(wing.symmetry_normal_prelimWn),
-                    symmetry_point_prelimWn_prelimLer=np.copy(
-                        wing.symmetry_point_prelimWn_prelimLer
-                    ),
+                    symmetry_normal_Wn=np.copy(wing.symmetry_normal_Wn),
+                    symmetry_point_Wn_Ler=np.copy(wing.symmetry_point_Wn_Ler),
                     num_chordwise_panels=wing.num_chordwise_panels,
                     chordwise_spacing=wing.chordwise_spacing,
                 )
 
                 wing.symmetric = False
                 wing.mirror_only = False
-                wing.symmetry_normal_prelimWn = None
-                wing.symmetry_point_prelimWn_prelimLer = None
+                wing.symmetry_normal_Wn = None
+                wing.symmetry_point_Wn_Ler = None
 
                 wing.generate_mesh(symmetry_type=1)
                 reflected_wing.generate_mesh(symmetry_type=3)

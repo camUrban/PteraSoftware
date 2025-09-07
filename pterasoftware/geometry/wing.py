@@ -14,8 +14,7 @@ import numpy as np
 
 from .wing_cross_section import WingCrossSection
 
-# ToDo: Uncomment this line once we uncomment the meshing command.
-# from .. import meshing
+from .. import meshing
 from .. import parameter_validation
 from .. import transformations
 
@@ -36,8 +35,8 @@ class Wing:
 
         T_pas_G_Cg_to_Wn_Ler: This method defines a property for the passive
         transformation matrix which maps in homogeneous coordinates from geometry
-        axes relative to the CG point to wing axes relative to the leading edge root
-        point. This is set to None if the Wing's symmetry type hasn't been defined yet.
+        axes relative to the CG to wing axes relative to the leading edge root point.
+        This is set to None if the Wing's symmetry type hasn't been defined yet.
 
         T_pas_Wn_Ler_to_G_Cg: This method defines a property for the passive
         transformation matrix which maps in homogeneous coordinates from wing axes
@@ -52,6 +51,26 @@ class Wing:
 
         WnZ_G: This method sets a property for the wing axes' third basis vector (in
         geometry axes).
+
+        children_T_pas_Wn_Ler_to_Wcs_Lp: This method defines a property containing a
+        list of passive transformation matrices which maps in homogeneous coordinates
+        from wing axes relative to the leading edge root point to each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points.
+
+        children_T_pas_Wcs_Lp_to_Wn_Ler: This method defines a property containing a
+        list of passive transformation matrices which maps in homogeneous coordinates
+        from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points to wing axes relative to the leading edge root point.
+
+        children_T_pas_G_Cg_to_Wcs_Lp: This method defines a property containing a
+        list of passive transformation matrices which maps in homogeneous coordinates
+        from geometry axes relative to the CG to each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points.
+
+        children_T_pas_Wcs_Lp_to_G_Cg: This method defines a property containing a
+        list of passive transformation matrices which maps in homogeneous coordinates
+        from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points to geometry axes relative to the CG.
 
         projected_area: This method sets a property for the area of the Wing
         projected onto the plane defined by the wing axes' xy-plane.
@@ -77,15 +96,14 @@ class Wing:
     angles_G_to_prelimWn parameters. However, the steps for transforming a vector
     from geometry axes to wing axes, and the interpretation of the wing axes
     orientation and position relative to a Wing's geometry, also depend on the
-    parameters symmetric, mirror_only, symmetry_normal_prelimWn,
-    and symmetry_point_prelimWn_prelimLer:
+    parameters symmetric, mirror_only, symmetry_normal_Wn, and symmetry_point_Wn_Ler:
 
         1. symmetric is False
 
             A. mirror_only is False
 
-                I. The symmetry plane must be undefined (symmetry_normal_prelimWn and
-                symmetry_point_prelimWn_prelimLer must be None)
+                I. The symmetry plane must be undefined (symmetry_normal_Wn and
+                symmetry_point_Wn_Ler must be None)
 
                     Type 1 Symmetry:
 
@@ -166,8 +184,8 @@ class Wing:
 
                     - This Wing's Airplane will set this Wing's symmetric parameter
                     to False, its mirror_only parameter to False,
-                    its symmetry_normal_prelimWn parameter to None and its
-                    symmetry_point_prelimWn_prelimLer parameter to None. These
+                    its symmetry_normal_Wn parameter to None and its
+                    symmetry_point_Wn_Ler parameter to None. These
                     changes turn this Wing into a type 1 symmetry wing.
 
                     - The Airplane will also create a new Wing, and add it to its
@@ -191,8 +209,8 @@ class Wing:
         angles_G_to_prelimWn=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
-        symmetry_normal_prelimWn=None,
-        symmetry_point_prelimWn_prelimLer=None,
+        symmetry_normal_Wn=None,
+        symmetry_point_Wn_Ler=None,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     ):
@@ -214,36 +232,33 @@ class Wing:
             geometry axes, relative to the starting point) before any symmetry or
             mirror has been applied. Can be a tuple, list, or numpy array of numbers
             (int or float). Values are converted to floats internally. It may differ
-            from the actual position as explained in the class docstring. The units are
-            meters. The default is (0.0, 0.0, 0.0).
+            from the actual position as explained in the class docstring. The units
+            are meters. The default is (0.0, 0.0, 0.0).
 
         :param angles_G_to_prelimWn: array-like of 3 numbers, optional
 
-            This is the rotation angles [roll, pitch, yaw] in degrees that define the
-            orientation of this Wing's axes relative to the geometry axes before any
-            symmetry or mirror has been applied. Can be a tuple, list, or numpy array
-            of numbers (int or float). Values are converted to floats internally. All
-            angles must be in the range (-90, 90) degrees. Roll is rotation about the
-            x-axis, pitch is rotation about the y-axis, and yaw is rotation about the
-            z-axis. Rotations are intrinsic, and proceed in the z-y'-x'' order
-            conventional for Euler angles. It may differ from the actual position as
-            explained in the class docstring. The units are degrees. The default is (
-            0.0, 0.0, 0.0).
+            This is the rotation angles [angleX, angleY, angleZ] in degrees that
+            define the orientation of this Wing's axes relative to the geometry axes
+            before any symmetry or mirroring has been applied. Can be a tuple, list,
+            or numpy array of numbers (int or float). Values are converted to floats
+            internally. All angles must be in the range (-90, 90) degrees. Rotations
+            are intrinsic, and proceed in the z-y'-x'' order conventional for Euler
+            angles. It may differ from the actual position as explained in the class
+            docstring. The units are degrees. The default is ( 0.0, 0.0, 0.0).
 
         :param symmetric: bool, optional
 
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
             True, symmetric must be False. If symmetric is true, then neither
-            symmetry_normal_prelimWn nor symmetry_point_prelimWn_prelimLer can be
-            None. If the symmetry plane is coincident with this Wing's wing axes'
-            xz-plane, the mirrored and non-mirrored geometry will be meshed as a
-            single wing. If not, this Wing's Airplane will automatically create
-            another Wing with the mirrored geometry, modify both Wings' parameters,
-            and add the reflected Wing to its list of wings immediately following
-            this one. For more details on how that process, and how this parameter
-            interacts with symmetry_normal_prelimWn,
-            symmetry_point_prelimWn_prelimLer, and mirror_only, see the class
+            symmetry_normal_Wn nor symmetry_point_Wn_Ler can be None. If the symmetry
+            plane is coincident with this Wing's wing axes' xz-plane, the mirrored
+            and non-mirrored geometry will be meshed as a single wing. If not,
+            this Wing's Airplane will automatically create another Wing with the
+            mirrored geometry, modify both Wings' parameters, and add the reflected
+            Wing to its list of wings immediately following this one. For more
+            details on how that process, and how this parameter interacts with
+            symmetry_normal_Wn, symmetry_point_Wn_Ler, and mirror_only, see the class
             docstring. The default is False.
 
         :param mirror_only: bool, optional
@@ -251,36 +266,41 @@ class Wing:
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
             is True, mirror_only must be False. If mirror_only is true, then neither
-            symmetry_normal_prelimWn nor symmetry_point_prelimWn_prelimLer can be
-            None. For more details on how this parameter interacts with
-            symmetry_normal_prelimWn, symmetry_point_prelimWn_prelimLer,
-            and symmetric, see the class docstring. The default is False.
+            symmetry_normal_Wn nor symmetry_point_Wn_Ler can be None. For more
+            details on how this parameter interacts with symmetry_normal_Wn,
+            symmetry_point_Wn_Ler, and symmetric, see the class docstring. The
+            default is False.
 
-        :param symmetry_normal_prelimWn: array-like of 3 numbers or None, optional
+        :param symmetry_normal_Wn: array-like of 3 numbers or None, optional
 
             The unit normal vector (in preliminary wing axes) that, together with
-            symmetry_point_prelimWn_prelimLer, defines the plane used for symmetry or
-            mirroring. Can be a tuple, list, or numpy array of numbers (int or
-            float), or None. Values are converted to floats and normalized
-            internally. Note that reversing the normal direction (using the
-            antiparallel vector) defines the same plane and produces the same result.
-            This value must be None if both symmetric and mirror_only are False,
-            and cannot be None if either are True. For more details on how this
-            parameter interacts with symmetry_point_prelimWn_prelimLer, symmetric,
-            and mirror_only, see the class docstring. The default is None.
+            symmetry_point_Wn_Ler, defines the plane used for symmetry or mirroring.
+            Can be a tuple, list, or numpy array of numbers (int or float), or None.
+            Values are converted to floats and normalized internally. Note that
+            reversing the normal direction (using the antiparallel vector) defines
+            the same plane and produces the same result. This value must be None if
+            both symmetric and mirror_only are False, and cannot be None if either
+            are True. For more details on how this parameter interacts with
+            symmetry_point_Wn_Ler, symmetric, and mirror_only, see the class
+            docstring. The default is None. In mirror_only cases, the wing axes
+            themselves are reflected, so this vector is identical in preliminary wing
+            axes and wing axes.
 
-        :param symmetry_point_prelimWn_prelimLer: array-like of 3 numbers or None,
+        :param symmetry_point_Wn_Ler: array-like of 3 numbers or None,
         optional
 
             A point [x, y, z] (in preliminary wing axes, relative to the preliminary
-            leading edge root point) that, along with symmetry_normal_prelimWn,
-            defines the location of the plane about which symmetry or mirroring is
-            applied. Can be a list, tuple, or numpy array of numbers (int or float),
-            or None. Values are converted to floats internally. This value must be
-            None if both symmetric and mirror_only are False, and cannot be None if
-            either are True. For more details on how this parameter interacts with
-            symmetry_normal_prelimWn, symmetric, and mirror_only, see the class
-            docstring. The units are meters. The default is None.
+            leading edge root point) that, along with symmetry_normal_Wn, defines the
+            location of the plane about which symmetry or mirroring is applied. Can
+            be a list, tuple, or numpy array of numbers (int or float), or None.
+            Values are converted to floats internally. This value must be None if
+            both symmetric and mirror_only are False, and cannot be None if either
+            are True. For more details on how this parameter interacts with
+            symmetry_normal_Wn, symmetric, and mirror_only, see the class docstring.
+            The units are meters. The default is None. In mirror_only cases, the wing
+            axes themselves are reflected, so this vector is identical in preliminary
+            wing axes relative to the preliminary leading edge root point and in wing
+            axes relative to the leading edge root point.
 
         :param num_chordwise_panels: int, optional
 
@@ -341,38 +361,36 @@ class Wing:
         self.symmetric = symmetric
         self.mirror_only = mirror_only
 
-        # Validate symmetry_normal_prelimWn and symmetry_point_prelimWn_prelimLer.
+        # Validate symmetry_normal_Wn and symmetry_point_Wn_Ler.
         if self.symmetric or self.mirror_only:
-            if symmetry_normal_prelimWn is None:
+            if symmetry_normal_Wn is None:
                 raise ValueError(
-                    "symmetry_normal_prelimWn cannot be None when symmetric or mirror_only is True."
+                    "symmetry_normal_Wn cannot be None when symmetric or mirror_only is True."
                 )
-            symmetry_normal_prelimWn = (
+            symmetry_normal_Wn = (
                 parameter_validation.validate_3d_unit_vector_norm_float(
-                    symmetry_normal_prelimWn, "symmetry_normal_prelimWn"
+                    symmetry_normal_Wn, "symmetry_normal_Wn"
                 )
             )
-            if symmetry_point_prelimWn_prelimLer is None:
+            if symmetry_point_Wn_Ler is None:
                 raise ValueError(
-                    "symmetry_point_prelimWn_prelimLer cannot be None when symmetric or mirror_only is True."
+                    "symmetry_point_Wn_Ler cannot be None when symmetric or mirror_only is True."
                 )
-            symmetry_point_prelimWn_prelimLer = (
-                parameter_validation.validate_3d_vector_float(
-                    symmetry_point_prelimWn_prelimLer,
-                    "symmetry_point_prelimWn_prelimLer",
-                )
+            symmetry_point_Wn_Ler = parameter_validation.validate_3d_vector_float(
+                symmetry_point_Wn_Ler,
+                "symmetry_point_Wn_Ler",
             )
         else:
-            if symmetry_normal_prelimWn is not None:
+            if symmetry_normal_Wn is not None:
                 raise ValueError(
-                    "symmetry_normal_prelimWn must be None when both symmetric and mirror_only are False."
+                    "symmetry_normal_Wn must be None when both symmetric and mirror_only are False."
                 )
-            if symmetry_point_prelimWn_prelimLer is not None:
+            if symmetry_point_Wn_Ler is not None:
                 raise ValueError(
-                    "symmetry_point_prelimWn_prelimLer must be None when both symmetric and mirror_only are False."
+                    "symmetry_point_Wn_Ler must be None when both symmetric and mirror_only are False."
                 )
-        self.symmetry_normal_prelimWn = symmetry_normal_prelimWn
-        self.symmetry_point_prelimWn_prelimLer = symmetry_point_prelimWn_prelimLer
+        self.symmetry_normal_Wn = symmetry_normal_Wn
+        self.symmetry_point_Wn_Ler = symmetry_point_Wn_Ler
 
         # Validate num_chordwise_panels and chordwise_spacing.
         self.num_chordwise_panels = parameter_validation.validate_positive_scalar_int(
@@ -432,14 +450,12 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
         # Generate the wing's mesh, which populates the Panels attribute.
-        # ToDo: Uncomment this once meshing has been fixed for the refactored
-        #  geometry definitions.
-        # meshing.mesh_wing(self)
+        meshing.mesh_wing(self)
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from geometry axes relative to the CG point
+        maps in homogeneous coordinates from geometry axes relative to the CG
         to wing axes relative to the leading edge root point. This is set to None if
         the Wing's symmetry type hasn't been defined yet.
 
@@ -453,7 +469,7 @@ class Wing:
             return None
 
         # Step 1: Create T_trans_pas_G_Cg_to_G_prelimLer, which maps in homogenous
-        # coordinates from geometry axes relative to the CG point to geometry axes
+        # coordinates from geometry axes relative to the CG to geometry axes
         # relative to the preliminary leading edge root point. This is the
         # translation step.
         T_trans_pas_G_Cg_to_G_prelimLer = transformations.generate_trans_T(
@@ -472,32 +488,31 @@ class Wing:
         # to the preliminary leading edge root point to wing axes relative to the
         # leading edge root point. This is the reflection step.
         if (
-            self.symmetry_normal_prelimWn is not None
-            and self.symmetry_point_prelimWn_prelimLer is not None
+            self.symmetry_normal_Wn is not None
+            and self.symmetry_point_Wn_Ler is not None
         ):
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = (
                 transformations.generate_reflect_T(
-                    self.symmetry_point_prelimWn_prelimLer,
-                    self.symmetry_normal_prelimWn,
+                    self.symmetry_point_Wn_Ler,
+                    self.symmetry_normal_Wn,
                     passive=True,
                 )
             )
         else:
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = np.eye(4, dtype=float)
 
-        return (
-            T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler
-            @ T_rot_pas_G_to_prelimWn
-            @ T_trans_pas_G_Cg_to_G_prelimLer
+        return transformations.compose_T_pas(
+            T_trans_pas_G_Cg_to_G_prelimLer,
+            T_rot_pas_G_to_prelimWn,
+            T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler,
         )
 
     @property
     def T_pas_Wn_Ler_to_G_Cg(self):
         """This method defines a property for the passive transformation matrix which
         maps in homogeneous coordinates from wing axes relative to the leading edge
-        root point to geometry axe
-        s relative to the CG point. This is set to None if
-        the Wing's symmetry type hasn't been defined yet.
+        root point to geometry axes relative to the CG. This is set to None if the
+        Wing's symmetry type hasn't been defined yet.
 
         :return: (4,4) ndarray of floats or None
             4x4 transformation matrix or None in cases where the Wing's symmetry type
@@ -508,7 +523,7 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler)
+        return transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
 
     @property
     def WnX_G(self):
@@ -571,6 +586,77 @@ class Wing:
         )
 
     @property
+    def children_T_pas_Wn_Ler_to_Wcs_Lp(self):
+        """This method defines a property containing a list of passive transformation
+        matrices which maps in homogeneous coordinates from wing axes relative to the
+        leading edge root point to each of this Wing's WingCrossSection's axes,
+        relative to their respective leading points.
+
+        :return: list of (4,4) ndarrays of floats
+            list of homogeneous transformation matrices
+        """
+
+        return [
+            transformations.compose_T_pas(
+                *(
+                    wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
+                    for wing_cross_section in self.wing_cross_sections[: i + 1]
+                )
+            )
+            for i in range(len(self.wing_cross_sections))
+        ]
+
+    @property
+    def children_T_pas_Wcs_Lp_to_Wn_Ler(self):
+        """This method defines a property containing a list of passive transformation
+        matrices which maps in homogeneous coordinates from each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points to wing
+        axes relative to the leading edge root point.
+
+        :return: list of (4,4) ndarrays of floats
+            list of homogeneous transformation matrices
+        """
+
+        return [
+            transformations.invert_T_pas(self.children_T_pas_Wn_Ler_to_Wcs_Lp[i])
+            for i in range(len(self.wing_cross_sections))
+        ]
+
+    @property
+    def children_T_pas_G_Cg_to_Wcs_Lp(self):
+        """This method defines a property containing a list of passive transformation
+        matrices which maps in homogeneous coordinates from geometry axes relative to
+        the CG to each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points.
+
+        :return: list of (4,4) ndarrays of floats
+            list of homogeneous transformation matrices
+        """
+
+        return [
+            transformations.compose_T_pas(
+                self.T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
+            )
+            for i in range(len(self.wing_cross_sections))
+        ]
+
+    @property
+    def children_T_pas_Wcs_Lp_to_G_Cg(self):
+        """This method defines a property containing a list of passive transformation
+        matrices which maps in homogeneous coordinates from each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points to
+        geometry axes relative to the CG.
+
+        :return: list of (4,4) ndarrays of floats
+            list of homogeneous transformation matrices
+        """
+
+        return [
+            transformations.invert_T_pas(self.children_T_pas_G_Cg_to_Wcs_Lp[i])
+            for i in range(len(self.wing_cross_sections))
+        ]
+
+    @property
     def projected_area(self):
         """This method sets a property for the area of the Wing projected onto the
         plane defined by the wing axes' xy-plane.
@@ -623,6 +709,8 @@ class Wing:
 
         return wetted_area
 
+    # ToDo: (1) Consider if there's a better way of implementing this method using
+    #  one of the children_T_pas_* properties. (2) Validate this method.
     @property
     def span(self):
         """This method sets a property for the Wing's span.
@@ -654,8 +742,9 @@ class Wing:
         for i in range(1, len(self.wing_cross_sections)):
             wing_cross_section = self.wing_cross_sections[i]
 
-            # Get displacement in parent axes (WingCrossSection[i-1]'s axes)
-            displacement_parent = wing_cross_section.Lp_Wcsp_Lpp
+            # Get the position of the leading point (in wing cross section parent axes,
+            # relative to the leading point parent)
+            Lp_Wcsp_Lpp = wing_cross_section.Lp_Wcsp_Lpp
 
             # Compute transformation from parent axes to wing axes
             T_parent_to_wing = np.eye(4, dtype=float)
@@ -667,7 +756,7 @@ class Wing:
 
             # Transform displacement from parent axes to wing axes
             displacement_wing = transformations.apply_T_to_vector(
-                T_parent_to_wing, displacement_parent, has_point=True
+                T_parent_to_wing, Lp_Wcsp_Lpp, has_point=True
             )
 
             # Add to accumulated position
@@ -707,6 +796,8 @@ class Wing:
 
         return self.projected_area / self.span
 
+    # ToDo: (1) Consider if there's a better way of implementing this method using
+    #  one of the children_T_pas_* properties. (2) Validate this method.
     @property
     def mean_aerodynamic_chord(self):
         """This method sets a property for the mean aerodynamic chord of the Wing.

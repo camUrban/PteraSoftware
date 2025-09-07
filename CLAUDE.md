@@ -236,9 +236,9 @@ When referencing coordinate variables in comments and docstrings, use the follow
 Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames. The notation and terminology used is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
 
 **Key Concepts:**
-- **Axis system** ("axes"): Contains information about three cartesian directions
-- **Reference points** ("points"): Contains information about the location of a particular point in space
-- **Reference frame** ("frame"): Contains information about the location of an "observer" and their motion relative to what is observed
+- **Axis system** ("axes"): Contains information about three cartesian directions. They do not have an origin, therefore it's incorrect to write something like "the wing axes' origin."
+- **Reference points** ("points"): Contains information about the location of a particular point in space.
+- **Reference frame** ("frame"): Contains information about the location of an "observer" and their motion relative to what is observed.
 
 **Vector Requirements:**
 - Force vectors: require only an axis system

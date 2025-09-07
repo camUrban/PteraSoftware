@@ -22,7 +22,7 @@ This package contains the following modules:
     functions.py: This module contains functions shared by other modules in the
     pterasoftware package.
 
-    meshing.py: This module contains useful functions for creating meshes.
+    meshing.py: This module contains the function for meshing Wings.
 
     movement.py: This module contains the class definitions for the problem's movement.
 

@@ -70,6 +70,10 @@ class WingCrossSection:
     meshing function how we'd like to generate the Wing's Panels.
     """
 
+    # ToDo: Make control_surface_type have a default value of None. Also add
+    #  validation that checks that it is only not equal to None if (1) this
+    #  WingCrossSection is not a tip WingCrossSection, and (2) this
+    #  WingCrossSection's Wing has type 4 or type 5 symmetry.
     def __init__(
         self,
         airfoil,
@@ -255,12 +259,6 @@ class WingCrossSection:
         # methods.
         self.validated = False
 
-        # ToDo: Determine if we still need this attribute. If so, uncomment it and
-        #  modify Wing to set it.
-        # Define an attribute for the parent Wing's unit chordwise vector, which will
-        # be set by this WingCrossSection's parent Wing's initialization method.
-        # self.wing_unit_chordwise_vector = None
-
     def validate_root_constraints(self):
         """This method is called by the parent Wing to validate constraints specific
         to root WingCrossSections.
@@ -345,52 +343,3 @@ class WingCrossSection:
             return None
 
         return np.linalg.inv(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
-
-    # ToDo: I'm going to try and replace the need for these properties by calculating
-    #  them directly in the meshing function. In the new set up, they require
-    #  information about the parent wing cross section axes and parent leading point,
-    #  which we don't have access to.
-    # @property
-    # def unit_chordwise_vector(self):
-    #     """This method defines a property for the wing cross section's unit chordwise
-    #     vector.
-    #
-    #     The unit chordwise vector is defined as the parent wing's unit chordwise
-    #     vector, rotated by the wing cross section's twist about the wing cross
-    #     section's normal vector.
-    #
-    #     :return: (3,) array of floats
-    #         This is the unit vector for the wing cross section's chordwise direction.
-    #         The units are meters.
-    #     """
-    #     # Find the rotation matrix given the cross section's twist.
-    #     twist_rotation_matrix = functions.angle_axis_rotation_matrix(
-    #         self.twist * np.pi / 180, self.unit_normal_vector
-    #     )
-    #
-    #     # Use the rotation matrix and the leading edge coordinates to calculate the
-    #     # unit chordwise vector.
-    #     return twist_rotation_matrix @ self.wing_unit_chordwise_vector
-
-    # @property
-    # def unit_up_vector(self):
-    #     """This method defines a property for the wing cross section's unit up vector.
-    #
-    #     :return: (3,) array of floats
-    #         This is the unit vector for the wing cross section's chordwise direction.
-    #         The units are meters.
-    #     """
-    #     return np.cross(self.unit_chordwise_vector, self.unit_normal_vector)
-
-    # @property
-    # def trailing_edge(self):
-    #     """This method defines a property for the coordinates of this wing cross
-    #     section's trailing edge.
-    #
-    #     :return: (3,) array of floats
-    #         This is an array of the coordinates of this wing cross section's trailing
-    #         edge.
-    #     """
-    #     chordwise_vector = self.chord * self.unit_chordwise_vector
-    #
-    #     return self.leading_edge + chordwise_vector

@@ -70,10 +70,6 @@ class WingCrossSection:
     meshing function how we'd like to generate the Wing's Panels.
     """
 
-    # ToDo: Make control_surface_type have a default value of None. Also add
-    #  validation that checks that it is only not equal to None if (1) this
-    #  WingCrossSection is not a tip WingCrossSection, and (2) this
-    #  WingCrossSection's Wing has type 4 or type 5 symmetry.
     def __init__(
         self,
         airfoil,
@@ -81,7 +77,7 @@ class WingCrossSection:
         chord=1.0,
         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        control_surface_type="symmetric",
+        control_surface_symmetry_type=None,
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
         spanwise_spacing=None,
@@ -133,13 +129,16 @@ class WingCrossSection:
             and proceed in the z-y'-x'' order conventional for Euler angles. The
             units are degrees. The default is (0.0, 0.0, 0.0).
 
-        :param control_surface_type: str, optional
+        :param control_surface_symmetry_type: str or None, optional
 
-            This is type of control surfaces for this WingCrossSection. It can
-            be "symmetric" or "asymmetric". An example of symmetric control surfaces
-            are flaps. An example of asymmetric control surfaces are ailerons. The
-            default value is "symmetric". This value only affects a Wing's geometry
-            if it has type 4 or 5 symmetry.
+            This determines how control surfaces behave when the Wing has symmetry.
+            It can be "symmetric", "asymmetric", or None. With "symmetric", mirrored
+            control surfaces have the same deflection (like flaps). With
+            "asymmetric", mirrored control surfaces have opposite deflections (like
+            ailerons). The default value is None. For Wings with type 4 or 5 symmetry,
+            this parameter must be specified. For Wings with type 1, 2, or 3 symmetry,
+            this parameter must be None. This validation is performed by the parent
+            Airplane during Wing processing.
 
         :param control_surface_hinge_point: number, optional
 
@@ -206,16 +205,20 @@ class WingCrossSection:
             )
         self.angles_Wcsp_to_Wcs_izyx = angles_Wcsp_to_Wcs_izyx
 
-        # Validate control surface type.
-        control_surface_type = parameter_validation.validate_string(
-            control_surface_type, "control_surface_type"
-        )
-        valid_control_surface_types = ["symmetric", "asymmetric"]
-        if control_surface_type not in valid_control_surface_types:
-            raise ValueError(
-                f"control_surface_type must be one of {valid_control_surface_types}."
+        # Validate control surface symmetry type.
+        if control_surface_symmetry_type is not None:
+            control_surface_symmetry_type = parameter_validation.validate_string(
+                control_surface_symmetry_type, "control_surface_symmetry_type"
             )
-        self.control_surface_type = control_surface_type
+            valid_control_surface_symmetry_types = ["symmetric", "asymmetric"]
+            if (
+                control_surface_symmetry_type
+                not in valid_control_surface_symmetry_types
+            ):
+                raise ValueError(
+                    f"control_surface_symmetry_type must be one of {valid_control_surface_symmetry_types} or None."
+                )
+        self.control_surface_symmetry_type = control_surface_symmetry_type
 
         # Validate control_surface_hinge_point and control_surface_deflection.
         self.control_surface_hinge_point = (

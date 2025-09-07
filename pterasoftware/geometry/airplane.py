@@ -252,82 +252,106 @@ class Airplane:
             if not wing.mirror_only:
                 # Type 1 Symmetry:
                 # symmetric=False, mirror_only=False
-                wing.generate_mesh(symmetry_type=1)
-                return [wing]
+                symmetry_type = 1
             else:
                 if coincident_symmetry_plane:
                     # Type 2 Symmetry:
                     # symmetric=False, mirror_only=True, coincident_symmetry_plane=True
-                    wing.generate_mesh(symmetry_type=2)
-                    return [wing]
+                    symmetry_type = 2
                 else:
                     # Type 3 Symmetry:
                     # symmetric=False, mirror_only=True, coincident_symmetry_plane=False
-                    wing.generate_mesh(symmetry_type=3)
-                    return [wing]
+                    symmetry_type = 3
         else:
             if coincident_symmetry_plane:
                 # Type 4 Symmetry:
                 # symmetric=True, coincident_symmetry_plane=True
-                wing.generate_mesh(symmetry_type=4)
-                return [wing]
+                symmetry_type = 4
             else:
                 # Type 5 Symmetry:
                 # symmetric=True, coincident_symmetry_plane=False
-                reflected_wing_cross_sections = []
-                for wing_cross_section in wing.wing_cross_sections:
-                    airfoil = wing_cross_section.airfoil
+                symmetry_type = 5
 
-                    reflected_airfoil = Airfoil(
-                        name=airfoil.name,
-                        coordinates=np.copy(airfoil.coordinates),
-                        repanel=airfoil.repanel,
-                        n_points_per_side=airfoil.n_points_per_side,
+        # Based on the determined symmetry type, validate the Wing's
+        # WingCrossSections' control_surface_symmetry types. From the validation done
+        # during each WingCrossSection's initialization method, we already know that
+        # control_surface_symmetry type is None or a valid string.
+        for wing_cross_section in wing.wing_cross_sections:
+            control_surface_symmetry_type = (
+                wing_cross_section.control_surface_symmetry_type
+            )
+            if symmetry_type in [1, 2, 3]:
+                if control_surface_symmetry_type is not None:
+                    raise ValueError(
+                        f"control_surface_symmetry_type must be None for symmetry type "
+                        f"{symmetry_type}"
+                    )
+            else:
+                if wing_cross_section.control_surface_symmetry_type is None:
+                    raise ValueError(
+                        f"control_surface_symmetry_type must be specified for symmetry "
+                        f"type {symmetry_type}"
                     )
 
-                    if wing_cross_section.control_surface_type == "asymmetric":
-                        reflected_control_surface_deflection = (
-                            -1 * wing_cross_section.control_surface_deflection
-                        )
-                    else:
-                        reflected_control_surface_deflection = (
-                            wing_cross_section.control_surface_deflection
-                        )
+        # Based on symmetry type, generate the mesh and return the wing(s).
+        if symmetry_type in [1, 2, 3, 4]:
+            wing.generate_mesh(symmetry_type)
+            return [wing]
+        else:
+            reflected_wing_cross_sections = []
+            for wing_cross_section in wing.wing_cross_sections:
+                airfoil = wing_cross_section.airfoil
 
-                    reflected_wing_cross_sections.append(
-                        WingCrossSection(
-                            airfoil=reflected_airfoil,
-                            num_spanwise_panels=wing_cross_section.num_spanwise_panels,
-                            chord=wing_cross_section.chord,
-                            Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
-                            angles_Wcsp_to_Wcs_izyx=np.copy(
-                                wing_cross_section.angles_Wcsp_to_Wcs_izyx
-                            ),
-                            control_surface_type=wing_cross_section.control_surface_type,
-                            control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
-                            control_surface_deflection=reflected_control_surface_deflection,
-                            spanwise_spacing=wing_cross_section.spanwise_spacing,
-                        )
-                    )
-
-                reflected_wing = Wing(
-                    wing_cross_sections=reflected_wing_cross_sections,
-                    name=f"Reflected {wing.name}",
-                    prelimLer_G_Cg=np.copy(wing.prelimLer_G_Cg),
-                    angles_G_to_prelimWn=np.copy(wing.angles_G_to_prelimWn),
-                    symmetric=False,
-                    mirror_only=True,
-                    symmetry_normal_Wn=np.copy(wing.symmetry_normal_Wn),
-                    symmetry_point_Wn_Ler=np.copy(wing.symmetry_point_Wn_Ler),
-                    num_chordwise_panels=wing.num_chordwise_panels,
-                    chordwise_spacing=wing.chordwise_spacing,
+                reflected_airfoil = Airfoil(
+                    name=airfoil.name,
+                    coordinates=np.copy(airfoil.coordinates),
+                    repanel=airfoil.repanel,
+                    n_points_per_side=airfoil.n_points_per_side,
                 )
 
-                wing.symmetric = False
-                wing.mirror_only = False
-                wing.symmetry_normal_Wn = None
-                wing.symmetry_point_Wn_Ler = None
+                if wing_cross_section.control_surface_symmetry_type == "asymmetric":
+                    reflected_control_surface_deflection = (
+                        -1 * wing_cross_section.control_surface_deflection
+                    )
+                else:
+                    reflected_control_surface_deflection = (
+                        wing_cross_section.control_surface_deflection
+                    )
 
-                wing.generate_mesh(symmetry_type=1)
-                reflected_wing.generate_mesh(symmetry_type=3)
-                return [wing, reflected_wing]
+                reflected_wing_cross_sections.append(
+                    WingCrossSection(
+                        airfoil=reflected_airfoil,
+                        num_spanwise_panels=wing_cross_section.num_spanwise_panels,
+                        chord=wing_cross_section.chord,
+                        Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
+                        angles_Wcsp_to_Wcs_izyx=np.copy(
+                            wing_cross_section.angles_Wcsp_to_Wcs_izyx
+                        ),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
+                        control_surface_deflection=reflected_control_surface_deflection,
+                        spanwise_spacing=wing_cross_section.spanwise_spacing,
+                    )
+                )
+
+            reflected_wing = Wing(
+                wing_cross_sections=reflected_wing_cross_sections,
+                name=f"Reflected {wing.name}",
+                prelimLer_G_Cg=np.copy(wing.prelimLer_G_Cg),
+                angles_G_to_prelimWn=np.copy(wing.angles_G_to_prelimWn),
+                symmetric=False,
+                mirror_only=True,
+                symmetry_normal_Wn=np.copy(wing.symmetry_normal_Wn),
+                symmetry_point_Wn_Ler=np.copy(wing.symmetry_point_Wn_Ler),
+                num_chordwise_panels=wing.num_chordwise_panels,
+                chordwise_spacing=wing.chordwise_spacing,
+            )
+
+            wing.symmetric = False
+            wing.mirror_only = False
+            wing.symmetry_normal_Wn = None
+            wing.symmetry_point_Wn_Ler = None
+
+            wing.generate_mesh(symmetry_type=1)
+            reflected_wing.generate_mesh(symmetry_type=3)
+            return [wing, reflected_wing]

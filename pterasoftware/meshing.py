@@ -190,28 +190,31 @@ def mesh_wing(wing):
         # Handle type 4 symmetry.
         if symmetry_type == 4:
 
-            # The inner WingCrossSection's control surface type dictates this wing
-            # section's control surface type.
-            if inner_wing_cross_section.control_surface_type == "symmetric":
-
-                # Define the Airfoils at each WingCrossSection with flap-like control
-                # surfaces.
+            # Handle control surface symmetry.
+            if inner_wing_cross_section.control_surface_symmetry_type == "symmetric":
+                # Define the Airfoil at the inner WingCrossSection with flap-like
+                # control surface symmetry.
                 inner_airfoil = inner_wing_cross_section.airfoil.add_control_surface(
                     deflection=inner_wing_cross_section.control_surface_deflection,
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
-                outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
-                    deflection=outer_wing_cross_section.control_surface_deflection,
-                    hinge_point=outer_wing_cross_section.control_surface_hinge_point,
-                )
-            else:
-
-                # Define the Airfoils at each WingCrossSection with aileron-like
-                # control surfaces.
+            else:  # If not "symmetric", this must be "asymmetric" for type 4 symmetry.
+                # Define the Airfoil at the inner WingCrossSection with aileron-like
+                # control surface symmetry.
                 inner_airfoil = inner_wing_cross_section.airfoil.add_control_surface(
                     deflection=-inner_wing_cross_section.control_surface_deflection,
                     hinge_point=inner_wing_cross_section.control_surface_hinge_point,
                 )
+            if outer_wing_cross_section.control_surface_symmetry_type == "symmetric":
+                # Define the Airfoil at the outer WingCrossSection with flap-like
+                # control surface symmetry.
+                outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
+                    deflection=outer_wing_cross_section.control_surface_deflection,
+                    hinge_point=outer_wing_cross_section.control_surface_hinge_point,
+                )
+            else:  # If not "symmetric", this must be "asymmetric" for type 4 symmetry.
+                # Define the Airfoil at the outer WingCrossSection with aileron-like
+                # control surface symmetry.
                 outer_airfoil = outer_wing_cross_section.airfoil.add_control_surface(
                     deflection=-outer_wing_cross_section.control_surface_deflection,
                     hinge_point=outer_wing_cross_section.control_surface_hinge_point,

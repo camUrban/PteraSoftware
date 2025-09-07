@@ -128,16 +128,16 @@ def mesh_wing(wing):
         )
 
         # Find the MCS points expressed in geometry axes, relative to the CG.
-        Fipp_G_Cg = transformations.apply_T_to_vector(
+        Fipp_G_Cg = transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Fipp_Wn_Ler, has_point=True
         )
-        Fopp_G_Cg = transformations.apply_T_to_vector(
+        Fopp_G_Cg = transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Fopp_Wn_Ler, has_point=True
         )
-        Bipp_G_Cg = transformations.apply_T_to_vector(
+        Bipp_G_Cg = transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Bipp_Wn_Ler, has_point=True
         )
-        Bopp_G_Cg = transformations.apply_T_to_vector(
+        Bopp_G_Cg = transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Bopp_Wn_Ler, has_point=True
         )
 
@@ -276,29 +276,29 @@ def mesh_wing(wing):
                 passive=False,
             )
 
-            reflected_Fipp_Wn_Ler = transformations.apply_T_to_vector(
+            reflected_Fipp_Wn_Ler = transformations.apply_T_to_vectors(
                 reflect_T_act, Fipp_Wn_Ler, has_point=True
             )
-            reflected_Fopp_Wn_Ler = transformations.apply_T_to_vector(
+            reflected_Fopp_Wn_Ler = transformations.apply_T_to_vectors(
                 reflect_T_act, Fopp_Wn_Ler, has_point=True
             )
-            reflected_Bipp_Wn_Ler = transformations.apply_T_to_vector(
+            reflected_Bipp_Wn_Ler = transformations.apply_T_to_vectors(
                 reflect_T_act, Bipp_Wn_Ler, has_point=True
             )
-            reflected_Bopp_Wn_Ler = transformations.apply_T_to_vector(
+            reflected_Bopp_Wn_Ler = transformations.apply_T_to_vectors(
                 reflect_T_act, Bopp_Wn_Ler, has_point=True
             )
 
-            reflected_Fipp_G_Cg = transformations.apply_T_to_vector(
+            reflected_Fipp_G_Cg = transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, has_point=True
             )
-            reflected_Fopp_G_Cg = transformations.apply_T_to_vector(
+            reflected_Fopp_G_Cg = transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fopp_Wn_Ler, has_point=True
             )
-            reflected_Bipp_G_Cg = transformations.apply_T_to_vector(
+            reflected_Bipp_G_Cg = transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Bipp_Wn_Ler, has_point=True
             )
-            reflected_Bopp_G_Cg = transformations.apply_T_to_vector(
+            reflected_Bopp_G_Cg = transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Bopp_Wn_Ler, has_point=True
             )
 
@@ -511,10 +511,10 @@ def _get_mcs_points(
         ]
     )
 
-    inner_mcl_points_Wn_Ler = transformations.apply_T_to_vector(
+    inner_mcl_points_Wn_Ler = transformations.apply_T_to_vectors(
         T_pas_Wcsi_Lpi_Wn_Ler, inner_mcl_points_Wcsi_Lpi, has_point=True
     )
-    outer_mcl_points_Wn_Ler = transformations.apply_T_to_vector(
+    outer_mcl_points_Wn_Ler = transformations.apply_T_to_vectors(
         T_pas_Wcso_Lpo_Wn_Ler, outer_mcl_points_Wcso_Lpo, has_point=True
     )
 

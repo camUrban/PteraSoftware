@@ -25,10 +25,24 @@ This module contains the following functions:
     make_asymmetric_control_surface_wing_cross_section_fixture: This method makes
     a fixture that is a WingCrossSection object with asymmetric control surface
     configuration.
+
+    make_type_1_wing_fixture: This method makes a fixture that is a Wing object
+    with type 1 symmetry (symmetric=False, mirror_only=False).
+
+    make_type_2_wing_fixture: This method makes a fixture that is a Wing object
+    with type 2 symmetry (symmetric=False, mirror_only=True, coincident_symmetry_plane=True).
+
+    make_type_3_wing_fixture: This method makes a fixture that is a Wing object
+    with type 3 symmetry (symmetric=False, mirror_only=True, coincident_symmetry_plane=False).
+
+    make_type_4_wing_fixture: This method makes a fixture that is a Wing object
+    with type 4 symmetry (symmetric=True, coincident_symmetry_plane=True).
+
+    make_type_5_wing_fixture: This method makes a fixture that is a Wing object
+    with type 5 symmetry (symmetric=True, coincident_symmetry_plane=False).
 """
 
-# ToDo: Uncomment if we end up using numpy again in this module.
-# import numpy as np
+import numpy as np
 
 import pterasoftware as ps
 
@@ -190,3 +204,161 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
 
     # Return the asymmetric WingCrossSection fixture.
     return asymmetric_wing_cross_section_fixture
+
+
+def make_type_1_wing_fixture():
+    """This method makes a fixture that is a Wing object with type 1 symmetry
+    (symmetric=False, mirror_only=False).
+
+    :return type_1_wing_fixture: Wing
+        This is the Wing object configured for type 1 symmetry testing.
+    """
+    # Create WingCrossSections for the wing
+    root_wcs = make_root_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create type 1 wing (no symmetry, no mirroring)
+    type_1_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Type 1 Test Wing",
+        prelimLer_G_Cg=[1.0, 0.0, 0.5],
+        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetry_normal_Wn=None,
+        symmetry_point_Wn_Ler=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return type_1_wing_fixture
+
+
+def make_type_2_wing_fixture():
+    """This method makes a fixture that is a Wing object with type 2 symmetry
+    (symmetric=False, mirror_only=True, coincident_symmetry_plane=True).
+
+    :return type_2_wing_fixture: Wing
+        This is the Wing object configured for type 2 symmetry testing.
+    """
+    # Create WingCrossSections for the wing
+    root_wcs = make_root_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create type 2 wing (mirror_only=True, coincident xz-plane symmetry)
+    type_2_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Type 2 Test Wing",
+        prelimLer_G_Cg=[1.0, 0.0, 0.5],
+        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        symmetric=False,
+        mirror_only=True,
+        symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
+        symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],  # At origin
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return type_2_wing_fixture
+
+
+def make_type_3_wing_fixture():
+    """This method makes a fixture that is a Wing object with type 3 symmetry
+    (symmetric=False, mirror_only=True, coincident_symmetry_plane=False).
+
+    :return type_3_wing_fixture: Wing
+        This is the Wing object configured for type 3 symmetry testing.
+    """
+    # Create WingCrossSections for the wing
+    root_wcs = make_root_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create type 3 wing (mirror_only=True, non-coincident symmetry plane)
+    type_3_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Type 3 Test Wing",
+        prelimLer_G_Cg=[1.0, 0.0, 0.5],
+        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        symmetric=False,
+        mirror_only=True,
+        symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
+        symmetry_point_Wn_Ler=[0.5, 0.0, 0.0],  # Offset from origin
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return type_3_wing_fixture
+
+
+def make_type_4_wing_fixture():
+    """This method makes a fixture that is a Wing object with type 4 symmetry
+    (symmetric=True, coincident_symmetry_plane=True).
+
+    :return type_4_wing_fixture: Wing
+        This is the Wing object configured for type 4 symmetry testing.
+    """
+    # Create WingCrossSections for the wing with symmetric control surfaces
+    root_wcs = make_root_wing_cross_section_fixture()
+    root_wcs.control_surface_symmetry_type = "symmetric"
+
+    tip_wcs = make_tip_wing_cross_section_fixture()
+    # Set chord and control surface for tip (since it was None)
+    tip_wcs.chord = 1.0
+    tip_wcs.control_surface_symmetry_type = "symmetric"
+    tip_wcs.control_surface_hinge_point = 0.75
+    tip_wcs.control_surface_deflection = 2.0
+
+    # Create type 4 wing (symmetric=True, coincident xz-plane symmetry)
+    type_4_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Type 4 Test Wing",
+        prelimLer_G_Cg=[1.0, 0.0, 0.5],
+        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        symmetric=True,
+        mirror_only=False,
+        symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
+        symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],  # At origin
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return type_4_wing_fixture
+
+
+def make_type_5_wing_fixture():
+    """This method makes a fixture that is a Wing object with type 5 symmetry
+    (symmetric=True, coincident_symmetry_plane=False).
+
+    Note: Type 5 wings are automatically processed by Airplane.process_wing_symmetry()
+    into type 1 and type 3 wings, so this fixture represents the initial state
+    before processing.
+
+    :return type_5_wing_fixture: Wing
+        This is the Wing object configured for type 5 symmetry testing.
+    """
+    # Create WingCrossSections for the wing with symmetric control surfaces
+    root_wcs = make_root_wing_cross_section_fixture()
+    root_wcs.control_surface_symmetry_type = "symmetric"
+
+    tip_wcs = make_tip_wing_cross_section_fixture()
+    # Set chord and control surface for tip (since it was None)
+    tip_wcs.chord = 1.0
+    tip_wcs.control_surface_symmetry_type = "symmetric"
+    tip_wcs.control_surface_hinge_point = 0.75
+    tip_wcs.control_surface_deflection = 2.0
+
+    # Create type 5 wing (symmetric=True, non-coincident symmetry plane)
+    type_5_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Type 5 Test Wing",
+        prelimLer_G_Cg=[1.0, 0.0, 0.5],
+        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        symmetric=True,
+        mirror_only=False,
+        symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
+        symmetry_point_Wn_Ler=[0.5, 0.0, 0.0],  # Offset from origin
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return type_5_wing_fixture

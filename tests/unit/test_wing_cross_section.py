@@ -1,14 +1,13 @@
-"""This module contains unit tests for the WingCrossSection class.
+"""This module contains a class to test WingCrossSections.
 
-This module tests the WingCrossSection class from pterasoftware.geometry, including:
-- Initialization and parameter validation
-- Root and tip WingCrossSection constraint validation
-- Transformation matrix calculations
-- Control surface parameter validation
-- Edge cases and error handling
+This module contains the following classes:
+    None
 
-The tests follow the established Ptera Software testing patterns with setUp/tearDown
-methods and comprehensive parameter validation testing.
+This module contains the following exceptions:
+    None
+
+This module contains the following functions:
+    TestWingCrossSection: This is a class with functions to test WingCrossSections.
 """
 
 import unittest
@@ -19,7 +18,7 @@ from tests.unit.fixtures import geometry_fixtures
 
 
 class TestWingCrossSection(unittest.TestCase):
-    """This class contains unit tests for the WingCrossSection class."""
+    """This is a class with functions to test WingCrossSections."""
 
     def setUp(self):
         """Set up test fixtures for WingCrossSection tests."""

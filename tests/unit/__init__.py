@@ -9,9 +9,6 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
-    test_transformations.py: This module contains a class to test functions in the
-    transformations module.
-
     test_horseshoe_vortex.py: This module contains a class to test horseshoe vortex
     objects.
 
@@ -19,8 +16,12 @@ This package contains the following modules:
 
     test_ring_vortex.py: This module contains a class to test ring vortex objects.
 
-    test_wing_cross_section.py: This module contains a class to test WingCrossSection
-    objects.
+    test_transformations.py: This module contains a class to test functions in the
+    transformations module.
+
+    test_wing.py: This module contains a class to test Wings.
+
+    test_wing_cross_section.py: This module contains a class to test WingCrossSections.
 """
 
 import tests.unit.test_transformations

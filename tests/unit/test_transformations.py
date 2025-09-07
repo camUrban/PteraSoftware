@@ -15,7 +15,7 @@ This module contains the following classes:
     function.
     TestInvertTAct: This class contains methods for testing the invert_T_act
     function.
-    TestApplyTToVector: This class contains methods for testing the apply_T_to_vector
+    TestApplyTToVectors: This class contains methods for testing the apply_T_to_vectors
     function.
 
 This module contains the following exceptions:
@@ -419,7 +419,7 @@ class TestGenerateRotT(unittest.TestCase):
 
         # Test position vector [1, 0, 0] -> should become [0, 1, 0]
         pos_vec = np.array([1.0, 0.0, 0.0])
-        transformed_pos = ps.transformations.apply_T_to_vector(
+        transformed_pos = ps.transformations.apply_T_to_vectors(
             T_rot_act_z90, pos_vec, True
         )
 
@@ -428,7 +428,7 @@ class TestGenerateRotT(unittest.TestCase):
 
         # Test direction vector [1, 0, 0] -> should become [0, 1, 0]
         dir_vec = np.array([1.0, 0.0, 0.0])
-        transformed_dir = ps.transformations.apply_T_to_vector(
+        transformed_dir = ps.transformations.apply_T_to_vectors(
             T_rot_act_z90, dir_vec, False
         )
 
@@ -480,7 +480,7 @@ class TestGenerateTransT(unittest.TestCase):
         c_A_a = np.array([5.0, 6.0, 7.0])
 
         T_trans_pas = ps.transformations.generate_trans_T(b_A_a, True)
-        c_A_b = ps.transformations.apply_T_to_vector(T_trans_pas, c_A_a, True)
+        c_A_b = ps.transformations.apply_T_to_vectors(T_trans_pas, c_A_a, True)
 
         # For passive transformation: new_position = old_position - translation
         expected_c_A_b = c_A_a - b_A_a
@@ -497,7 +497,7 @@ class TestGenerateTransT(unittest.TestCase):
 
         # Test active transformation with position vector
         T_trans_act = ps.transformations.generate_trans_T(cPrime_A_c, False)
-        cPrime_A_a = ps.transformations.apply_T_to_vector(T_trans_act, c_A_a, True)
+        cPrime_A_a = ps.transformations.apply_T_to_vectors(T_trans_act, c_A_a, True)
 
         # For active transformation: new_position = old_position + translation
         expected_cPrime_A_a = c_A_a + cPrime_A_c
@@ -557,10 +557,10 @@ class TestGenerateTransT(unittest.TestCase):
         # Test that direction vectors are unaffected by translation
         direction = np.array([1.0, 0.0, 0.0])
 
-        passive_transformed_direction = ps.transformations.apply_T_to_vector(
+        passive_transformed_direction = ps.transformations.apply_T_to_vectors(
             T_trans_pas, direction, False
         )
-        active_transformed_direction = ps.transformations.apply_T_to_vector(
+        active_transformed_direction = ps.transformations.apply_T_to_vectors(
             T_trans_act, direction, False
         )
 
@@ -606,7 +606,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Point [1, 2, 3] should reflect to [1, 2, -3]
         test_point = np.array([1.0, 2.0, 3.0])
-        reflected_point = ps.transformations.apply_T_to_vector(
+        reflected_point = ps.transformations.apply_T_to_vectors(
             T_reflect_act, test_point, True
         )
 
@@ -619,7 +619,7 @@ class TestGenerateReflectT(unittest.TestCase):
             plane_point, plane_normal_y, False
         )
 
-        reflected_point_y = ps.transformations.apply_T_to_vector(
+        reflected_point_y = ps.transformations.apply_T_to_vectors(
             T_reflect_act_y, test_point, True
         )
 
@@ -641,7 +641,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Point [1, 2, 5] should reflect to [1, 2, -1]
         test_point = np.array([1.0, 2.0, 5.0])
-        reflected_point = ps.transformations.apply_T_to_vector(
+        reflected_point = ps.transformations.apply_T_to_vectors(
             T_reflect_act, test_point, True
         )
 
@@ -650,7 +650,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         # Point on the plane should remain unchanged
         plane_test_point = np.array([3.0, 4.0, 2.0])
-        reflected_plane_point = ps.transformations.apply_T_to_vector(
+        reflected_plane_point = ps.transformations.apply_T_to_vectors(
             T_reflect_act, plane_test_point, True
         )
 
@@ -715,10 +715,10 @@ class TestGenerateReflectT(unittest.TestCase):
         test_point = np.array([5.0, 8.0, -2.0])
 
         # Apply reflection twice
-        reflected_once = ps.transformations.apply_T_to_vector(
+        reflected_once = ps.transformations.apply_T_to_vectors(
             T_reflect_act, test_point, True
         )
-        final_point = ps.transformations.apply_T_to_vector(
+        final_point = ps.transformations.apply_T_to_vectors(
             T_reflect_act, reflected_once, True
         )
 
@@ -738,7 +738,7 @@ class TestGenerateReflectT(unittest.TestCase):
         )
 
         test_point = np.array([1.0, 2.0, 3.0])
-        reflected_point = ps.transformations.apply_T_to_vector(
+        reflected_point = ps.transformations.apply_T_to_vectors(
             T_reflect_act, test_point, True
         )
 
@@ -904,11 +904,13 @@ class TestComposeTPas(unittest.TestCase):
         T_composed = ps.transformations.compose_T_pas(T_rot, T_trans)
 
         # Apply transformations sequentially
-        v1 = ps.transformations.apply_T_to_vector(T_rot, test_vector, True)
-        v2 = ps.transformations.apply_T_to_vector(T_trans, v1, True)
+        v1 = ps.transformations.apply_T_to_vectors(T_rot, test_vector, True)
+        v2 = ps.transformations.apply_T_to_vectors(T_trans, v1, True)
 
         # Apply composed transformation
-        v_composed = ps.transformations.apply_T_to_vector(T_composed, test_vector, True)
+        v_composed = ps.transformations.apply_T_to_vectors(
+            T_composed, test_vector, True
+        )
 
         # Results should be identical
         npt.assert_allclose(v2, v_composed, atol=1e-14)
@@ -981,7 +983,7 @@ class TestComposeTPas(unittest.TestCase):
             T_trans_pas_G_Cg_to_G_Ler, T_rot_pas_G_to_Wn
         )
 
-        c_Wn_Ler = ps.transformations.apply_T_to_vector(
+        c_Wn_Ler = ps.transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_Wn_Ler, c_G_Cg, has_point=True
         )
 
@@ -1163,7 +1165,7 @@ class TestComposeTAct(unittest.TestCase):
 
         T_act = ps.transformations.compose_T_act(rot_T_act, trans_T_act)
 
-        cPrime_G = ps.transformations.apply_T_to_vector(T_act, c_G, has_point=True)
+        cPrime_G = ps.transformations.apply_T_to_vectors(T_act, c_G, has_point=True)
 
         # Expected known value. If this expected value is confusing to you, and you
         # expect it to instead by np.array([-2.0, 11.0, 3.0]), see the note in the
@@ -1487,16 +1489,41 @@ class TestInvertTAct(unittest.TestCase):
         self.assertAlmostEqual(det_inv * det_original, 1.0, places=12)
 
 
-class TestApplyTToVector(unittest.TestCase):
-    """This class contains methods for testing the apply_T_to_vector function.
+class TestApplyTToVectors(unittest.TestCase):
+    """This class contains methods for testing the apply_T_to_vectors function.
 
     This class contains the following public methods:
         test_position_vector_transformation: Tests transformation of position vectors.
+
         test_direction_vector_transformation: Tests transformation of direction vectors.
+
         test_input_validation: Tests various input types and edge cases.
-        test_transformation_consistency: Tests consistency with manual homogeneous operations.
-        test_various_transformation_types: Tests with different types of transformations.
+
+        test_transformation_consistency: Tests consistency with manual homogeneous
+        operations.
+
+        test_various_transformation_types: Tests with different types of
+        transformations.
+
         test_vector_types: Tests with different vector input types.
+
+        test_single_vector_compatibility: Tests that single vector behavior is as
+        expected.
+
+        test_array_of_vectors_transformation: Tests transformation of arrays of vectors.
+
+        test_higher_dimensional_arrays: Tests transformation of higher dimensional
+        arrays.
+
+        test_position_vs_direction_arrays: Tests that has_point parameter works
+        correctly with arrays.
+
+        test_array_input_validation: Tests validation of array inputs.
+
+        test_array_consistency_with_single_applications: Tests that array
+        transformation gives same results as individual applications.
+
+        test_edge_cases_arrays: Tests edge cases with array inputs.
 
     This class contains the following class attributes:
         None
@@ -1515,7 +1542,7 @@ class TestApplyTToVector(unittest.TestCase):
         T_trans = ps.transformations.generate_trans_T(translation, False)
 
         position = np.array([5.0, 6.0, 7.0])
-        transformed_position = ps.transformations.apply_T_to_vector(
+        transformed_position = ps.transformations.apply_T_to_vectors(
             T_trans, position, True
         )
 
@@ -1532,7 +1559,7 @@ class TestApplyTToVector(unittest.TestCase):
         T_rot = ps.transformations.generate_rot_T(angles, False, True, "xyz")
 
         direction = np.array([1.0, 0.0, 0.0])
-        transformed_direction = ps.transformations.apply_T_to_vector(
+        transformed_direction = ps.transformations.apply_T_to_vectors(
             T_rot, direction, False
         )
 
@@ -1550,19 +1577,19 @@ class TestApplyTToVector(unittest.TestCase):
 
         # Test with tuple input
         vector_tuple = (1.0, 2.0, 3.0)
-        result_tuple = ps.transformations.apply_T_to_vector(T, vector_tuple, True)
+        result_tuple = ps.transformations.apply_T_to_vectors(T, vector_tuple, True)
         self.assertIsInstance(result_tuple, np.ndarray)
         self.assertEqual(len(result_tuple), 3)
 
         # Test with list input
         vector_list = [1.0, 2.0, 3.0]
-        result_list = ps.transformations.apply_T_to_vector(T, vector_list, True)
+        result_list = ps.transformations.apply_T_to_vectors(T, vector_list, True)
         self.assertIsInstance(result_list, np.ndarray)
         self.assertEqual(len(result_list), 3)
 
         # Test with numpy array input
         vector_array = np.array([1.0, 2.0, 3.0])
-        result_array = ps.transformations.apply_T_to_vector(T, vector_array, True)
+        result_array = ps.transformations.apply_T_to_vectors(T, vector_array, True)
         self.assertIsInstance(result_array, np.ndarray)
         self.assertEqual(len(result_array), 3)
 
@@ -1579,8 +1606,8 @@ class TestApplyTToVector(unittest.TestCase):
         # Test vector
         vector = np.array([1.0, 2.0, 3.0])
 
-        # Using apply_T_to_vector for position vector
-        result_position = ps.transformations.apply_T_to_vector(T, vector, True)
+        # Using apply_T_to_vectors for position vector
+        result_position = ps.transformations.apply_T_to_vectors(T, vector, True)
 
         # Manual homogeneous approach for position vector
         homog_vector = np.append(vector, 1.0)
@@ -1589,8 +1616,8 @@ class TestApplyTToVector(unittest.TestCase):
 
         npt.assert_allclose(result_position, manual_result_position, atol=1e-14)
 
-        # Using apply_T_to_vector for direction vector
-        result_direction = ps.transformations.apply_T_to_vector(T, vector, False)
+        # Using apply_T_to_vectors for direction vector
+        result_direction = ps.transformations.apply_T_to_vectors(T, vector, False)
 
         # Manual homogeneous approach for direction vector
         homog_vector_dir = np.append(vector, 0.0)
@@ -1608,28 +1635,28 @@ class TestApplyTToVector(unittest.TestCase):
 
         # Translation transformation
         T_trans = ps.transformations.generate_trans_T(np.array([1.0, 1.0, 1.0]), False)
-        result_trans = ps.transformations.apply_T_to_vector(T_trans, test_vector, True)
+        result_trans = ps.transformations.apply_T_to_vectors(T_trans, test_vector, True)
         self.assertEqual(len(result_trans), 3)
 
         # Rotation transformation
         T_rot = ps.transformations.generate_rot_T(
             np.array([30.0, 45.0, 60.0]), False, True, "xyz"
         )
-        result_rot = ps.transformations.apply_T_to_vector(T_rot, test_vector, True)
+        result_rot = ps.transformations.apply_T_to_vectors(T_rot, test_vector, True)
         self.assertEqual(len(result_rot), 3)
 
         # Reflection transformation
         T_reflect = ps.transformations.generate_reflect_T(
             np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), False
         )
-        result_reflect = ps.transformations.apply_T_to_vector(
+        result_reflect = ps.transformations.apply_T_to_vectors(
             T_reflect, test_vector, True
         )
         self.assertEqual(len(result_reflect), 3)
 
         # Composed transformation
         T_composed = ps.transformations.compose_T_act(T_trans, T_rot)
-        result_composed = ps.transformations.apply_T_to_vector(
+        result_composed = ps.transformations.apply_T_to_vectors(
             T_composed, test_vector, True
         )
         self.assertEqual(len(result_composed), 3)
@@ -1643,21 +1670,177 @@ class TestApplyTToVector(unittest.TestCase):
 
         # Test with integer vector
         int_vector = np.array([1, 2, 3])
-        result_int = ps.transformations.apply_T_to_vector(T, int_vector, True)
+        result_int = ps.transformations.apply_T_to_vectors(T, int_vector, True)
         self.assertEqual(result_int.dtype, np.float64)
 
         # Test with float vector
         float_vector = np.array([1.5, 2.5, 3.5])
-        result_float = ps.transformations.apply_T_to_vector(T, float_vector, True)
+        result_float = ps.transformations.apply_T_to_vectors(T, float_vector, True)
         self.assertEqual(result_float.dtype, np.float64)
 
         # Test with zero vector
         zero_vector = np.array([0.0, 0.0, 0.0])
-        result_zero = ps.transformations.apply_T_to_vector(T, zero_vector, True)
+        result_zero = ps.transformations.apply_T_to_vectors(T, zero_vector, True)
         expected_zero = np.array(
             [1.0, 2.0, 3.0]
         )  # Translation applied to zero position
         npt.assert_array_equal(result_zero, expected_zero)
+
+    def test_single_vector_compatibility(self):
+        """Tests that single vector behavior is as expected.
+
+        :return: None
+        """
+        T = ps.transformations.generate_rot_T(
+            np.array([45.0, 0.0, 0.0]), False, True, "xyz"
+        )
+
+        # Test with single vector as (3,) shape
+        single_vector = np.array([1.0, 2.0, 3.0])
+        result_single = ps.transformations.apply_T_to_vectors(T, single_vector, True)
+
+        # Should return same shape as input
+        self.assertEqual(result_single.shape, (3,))
+        self.assertIsInstance(result_single, np.ndarray)
+
+        # Test consistency between has_point=True and has_point=False
+        result_position = ps.transformations.apply_T_to_vectors(T, single_vector, True)
+        result_direction = ps.transformations.apply_T_to_vectors(
+            T, single_vector, False
+        )
+        self.assertEqual(len(result_position), 3)
+        self.assertEqual(len(result_direction), 3)
+
+    def test_array_of_vectors_transformation(self):
+        """Tests transformation of arrays of vectors.
+
+        :return: None
+        """
+        # Create translation transformation
+        T = ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False)
+
+        # Test with 2D array (multiple vectors)
+        vectors_2d = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        result_2d = ps.transformations.apply_T_to_vectors(T, vectors_2d, True)
+
+        expected_2d = np.array([[2.0, 2.0, 3.0], [1.0, 3.0, 3.0], [1.0, 2.0, 4.0]])
+        npt.assert_array_equal(result_2d, expected_2d)
+        self.assertEqual(result_2d.shape, (3, 3))
+
+    def test_higher_dimensional_arrays(self):
+        """Tests transformation of higher dimensional arrays.
+
+        :return: None
+        """
+        T = ps.transformations.generate_rot_T(
+            np.array([0.0, 0.0, 90.0]), False, True, "xyz"
+        )
+
+        # Test with 3D array (2x2x3 array of vectors)
+        vectors_3d = np.array(
+            [[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], [[0.0, 0.0, 1.0], [1.0, 1.0, 0.0]]]
+        )
+        result_3d = ps.transformations.apply_T_to_vectors(T, vectors_3d, False)
+
+        # Z-rotation by 90 degrees: [1,0,0] -> [0,1,0], [0,1,0] -> [-1,0,0]
+        expected_3d = np.array(
+            [[[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]], [[0.0, 0.0, 1.0], [-1.0, 1.0, 0.0]]]
+        )
+        npt.assert_allclose(result_3d, expected_3d, atol=1e-14)
+        self.assertEqual(result_3d.shape, (2, 2, 3))
+
+    def test_position_vs_direction_arrays(self):
+        """Tests that has_point parameter works correctly with arrays.
+
+        :return: None
+        """
+        # Translation transformation
+        translation = np.array([5.0, 10.0, 15.0])
+        T = ps.transformations.generate_trans_T(translation, False)
+
+        vectors = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+
+        # Position vectors should be translated
+        result_positions = ps.transformations.apply_T_to_vectors(T, vectors, True)
+        expected_positions = vectors + translation
+        npt.assert_array_equal(result_positions, expected_positions)
+
+        # Direction vectors should not be translated (pure translation matrix)
+        result_directions = ps.transformations.apply_T_to_vectors(T, vectors, False)
+        npt.assert_array_equal(result_directions, vectors)  # No change expected
+
+    def test_array_input_validation(self):
+        """Tests validation of array inputs.
+
+        :return: None
+        """
+        T = ps.transformations.generate_rot_T(
+            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
+        )
+
+        # Test various valid array shapes
+        valid_inputs = [
+            np.array([1.0, 2.0, 3.0]),  # Single vector (3,)
+            np.array([[1.0, 2.0, 3.0]]),  # Single vector as (1,3)
+            np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]),  # Multiple vectors (2,3)
+            np.array([[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]]),  # 3D array (1,2,3)
+        ]
+
+        for i, vectors in enumerate(valid_inputs):
+            with self.subTest(i=i, shape=vectors.shape):
+                result = ps.transformations.apply_T_to_vectors(T, vectors, True)
+                self.assertEqual(result.shape, vectors.shape)
+                self.assertEqual(result.shape[-1], 3)
+
+    def test_array_consistency_with_single_applications(self):
+        """Tests that array transformation gives same results as individual
+        applications.
+
+        :return: None
+        """
+        # Create a complex transformation
+        T = ps.transformations.compose_T_act(
+            ps.transformations.generate_rot_T(
+                np.array([30.0, 45.0, 0.0]), False, True, "xyz"
+            ),
+            ps.transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False),
+        )
+
+        # Test vectors
+        test_vectors = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 1.0, 1.0]]
+        )
+
+        # Transform as array
+        array_result = ps.transformations.apply_T_to_vectors(T, test_vectors, True)
+
+        # Transform individually and compare
+        individual_results = []
+        for vector in test_vectors:
+            individual_result = ps.transformations.apply_T_to_vectors(T, vector, True)
+            individual_results.append(individual_result)
+        individual_results = np.array(individual_results)
+
+        npt.assert_allclose(array_result, individual_results, atol=1e-14)
+
+    def test_edge_cases_arrays(self):
+        """Tests edge cases with array inputs.
+
+        :return: None
+        """
+        T = ps.transformations.generate_rot_T(
+            np.array([0.0, 0.0, 0.0]), False, True, "xyz"  # Identity rotation
+        )
+
+        # Test with empty-like inputs that should still work
+        single_zero = np.array([0.0, 0.0, 0.0])
+        result_single_zero = ps.transformations.apply_T_to_vectors(T, single_zero, True)
+        npt.assert_array_equal(result_single_zero, single_zero)
+
+        # Test with array of zeros
+        zeros_array = np.zeros((3, 3))
+        result_zeros_array = ps.transformations.apply_T_to_vectors(T, zeros_array, True)
+        npt.assert_array_equal(result_zeros_array, zeros_array)
 
 
 if __name__ == "__main__":

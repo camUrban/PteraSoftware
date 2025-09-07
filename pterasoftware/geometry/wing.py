@@ -541,7 +541,7 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
-        return transformations.apply_T_to_vector(
+        return transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
         )
 
@@ -561,7 +561,7 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
-        return transformations.apply_T_to_vector(
+        return transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
         )
 
@@ -581,7 +581,7 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
-        return transformations.apply_T_to_vector(
+        return transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
         )
 
@@ -755,7 +755,7 @@ class Wing:
                 )
 
             # Transform displacement from parent axes to wing axes
-            displacement_wing = transformations.apply_T_to_vector(
+            displacement_wing = transformations.apply_T_to_vectors(
                 T_parent_to_wing, Lp_Wcsp_Lpp, has_point=True
             )
 
@@ -848,7 +848,7 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacement_wing = transformations.apply_T_to_vector(
+                displacement_wing = transformations.apply_T_to_vectors(
                     T_parent_to_wing, displacement_parent, has_point=True
                 )
 
@@ -868,7 +868,7 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacement_wing = transformations.apply_T_to_vector(
+                displacement_wing = transformations.apply_T_to_vectors(
                     T_parent_to_wing, displacement_parent, has_point=True
                 )
 

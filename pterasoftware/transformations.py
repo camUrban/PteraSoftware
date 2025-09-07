@@ -28,16 +28,16 @@ This module contains the following functions:
 
     invert_T_act: Invert an active homogeneous transform.
 
-    apply_T_to_vector: Apply a homogeneous transform to a 3-element vector and return
-    a 3-element vector."""
+    apply_T_to_vectors: Apply a homogeneous transform to 3-element vector(s) and
+    return 3-element vector(s)."""
 
 import numpy as np
 
 from . import parameter_validation
 
 
-def _generate_homog(vector_A, has_point):
-    """This function converts a 3D vector to homogeneous coordinates for use with
+def _generate_homogs(vectors_A, has_point):
+    """This function converts 3D vector(s) to homogeneous coordinates for use with
     4x4 transformation matrices.
 
     Homogeneous coordinates extend 3D vectors to 4D by adding a fourth component. For
@@ -46,20 +46,28 @@ def _generate_homog(vector_A, has_point):
     or force vectors, the fourth component is 0.0. This allows 4x4 transformation
     matrices to handle both translations and rotations in a unified framework.
 
+    This function handles both single vectors and arrays of vectors efficiently.
+
     This is a private function, so it assumes all parameters have been pre-validated.
 
-    :param vector_A: (3,) ndarray of floats
+    :param vectors_A: ndarray of shape (..., 3)
+        Array of 3D vectors or a single 3D vector
     :param has_point: bool
-    :return: (4,) ndarray of floats
+        True if vectors are relative to a reference point, False for free vectors
+    :return: ndarray of shape (..., 4)
+        Array of homogeneous vectors with same leading dimensions as input
     """
-    vectorHomog_A = np.zeros(4, dtype=float)
+    # Create homogeneous array with one extra dimension
+    vectorsHomog_A = np.zeros(vectors_A.shape[:-1] + (4,), dtype=float)
 
-    vectorHomog_A[:3] = vector_A
+    # Copy the 3D components
+    vectorsHomog_A[..., :3] = vectors_A
 
+    # Set the homogeneous coordinate
     if has_point:
-        vectorHomog_A[-1] = 1.0
+        vectorsHomog_A[..., -1] = 1.0
 
-    return vectorHomog_A
+    return vectorsHomog_A
 
 
 def generate_rot_T(angles, passive, intrinsic, order):
@@ -77,7 +85,7 @@ def generate_rot_T(angles, passive, intrinsic, order):
 
     ```
     T_pas_A_to_B = generate_rot_T(angles, True, intrinsic, order)
-    r_B =  apply_T_to_vector(T_pas_A_to_B, r_A, has_point=False)
+    r_B =  apply_T_to_vectors(T_pas_A_to_B, r_A, has_point=False)
     ```
 
     Active Use-Case: Let `r_A` be a free vector in "A" axes, but we want to find
@@ -88,7 +96,7 @@ def generate_rot_T(angles, passive, intrinsic, order):
 
     ```
     rot_T_act = generate_rot_T(angles, False, intrinsic, order)
-    rPrime_A = apply_T_to_vector(rot_T_act, r_A, has_point=False)
+    rPrime_A = apply_T_to_vectors(rot_T_act, r_A, has_point=False)
     ```
 
     :param angles: array-like of 3 numbers
@@ -189,7 +197,7 @@ def generate_trans_T(translations, passive):
 
     ```
     T_pas_A_a_to_A_b = generate_trans_T(translations, True)
-    c_A_b = apply_T_to_vector(T_pas_A_a_to_A_b, c_A_a, has_point=True)
+    c_A_b = apply_T_to_vectors(T_pas_A_a_to_A_b, c_A_a, has_point=True)
     ```
 
     Active Use-Case: Let `c_A_a` be a vector which describes the location of point
@@ -199,7 +207,7 @@ def generate_trans_T(translations, passive):
 
     ```
     translate_T_act = generate_trans_T(translations, False)
-    cPrime_A_a = apply_T_to_vector(translate_T_act, c_A_a, has_point=True)
+    cPrime_A_a = apply_T_to_vectors(translate_T_act, c_A_a, has_point=True)
     ```
 
     :param translations: array-like of 3 numbers
@@ -247,7 +255,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
 
     ```
     T_pas_A_a_to_B_b = generate_reflect_T(plane_point_A_a, plane_normal_A, True)
-    c_B_b = apply_T_to_vector(T_pas_A_a_to_B_b, c_A_a, has_point=True)
+    c_B_b = apply_T_to_vectors(T_pas_A_a_to_B_b, c_A_a, has_point=True)
     ```
 
     Active Use-Case: Let `c_A_a` be a vector which describes the location of point
@@ -257,7 +265,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
 
     ```
     reflect_T_act = generate_reflect_T(plane_point_A_a, plane_normal_A, False)
-    c_A_a = apply_T_to_vector(reflect_T_act, c_A_a, has_point=True)
+    c_A_a = apply_T_to_vectors(reflect_T_act, c_A_a, has_point=True)
     ```
 
     :param plane_point_A_a: array-like of 3 numbers
@@ -463,11 +471,11 @@ def invert_T_pas(T_pas):
     T_pas_B_b_to_A_a = invert_T_pas(T_pas_A_a_to_B_b)
 
     # Apply to the position vector r (in B axes, relative to point b):
-    r_A_a = apply_T_to_vector(T_pas_B_b_to_A_a, r_B_b, has_point=True)
+    r_A_a = apply_T_to_vectors(T_pas_B_b_to_A_a, r_B_b, has_point=True)
 
     Example 2:
     # Apply to the free vector v (in B axes) (translation will be ignored):
-    v_A = apply_T_to_vector(T_pas_B_b_to_A_a, v_B)
+    v_A = apply_T_to_vectors(T_pas_B_b_to_A_a, v_B)
 
     :param T_pas: 4x4 array-like of numbers
 
@@ -492,7 +500,7 @@ def invert_T_act(T_act):
     to the free vector qPrime (in A axes), then:
 
     ```
-    q_A = apply_T_to_vector(invert_T_act(T_act), qPrime_A, has_point=False)
+    q_A = apply_T_to_vectors(invert_T_act(T_act), qPrime_A, has_point=False)
     ```
 
     Notes:
@@ -503,17 +511,17 @@ def invert_T_act(T_act):
 
     Example 1:
     # Undo an active sequence applied to a position:
-    rPrime_A = apply_T_to_vector(T_act, r_A, has_point=True)
+    rPrime_A = apply_T_to_vectors(T_act, r_A, has_point=True)
     undo_T_act = invert_T_act(T_act)
 
-    recovered_r_A = apply_T_to_vector(undo_T_act, rPrime_A, has_point=True)
+    recovered_r_A = apply_T_to_vectors(undo_T_act, rPrime_A, has_point=True)
 
     Example 2:
     # For a free vector, translation has no effect:
-    fPrime_A = apply_T_to_vector(T_act, f_A, has_point=False)
+    fPrime_A = apply_T_to_vectors(T_act, f_A, has_point=False)
     undo_T_act = invert_T_act(T_act)
 
-    recovered_f_A = apply_T_to_vector(undo_T_act, fPrime_A, has_point=False)
+    recovered_f_A = apply_T_to_vectors(undo_T_act, fPrime_A, has_point=False)
 
     :param T_act: 4x4 array-like of numbers
 
@@ -529,40 +537,44 @@ def invert_T_act(T_act):
     return _invert_T_rigid(valid_T_act)
 
 
-def apply_T_to_vector(T, vector_A, has_point):
-    """Apply a homogeneous transform to a 3-element vector and return a 3-element
-    vector.
+def apply_T_to_vectors(T, vectors_A, has_point):
+    """Apply a homogeneous transform to 3-element vector(s) and return 3-element
+    vector(s).
 
     For passive T: interpret as mapping components from source axes/point to target
     axes/point.
 
-    For active T: interpret as re-orienting/translating the vector within the same axes.
+    For active T: interpret as re-orienting/translating the vector(s) within the same axes.
 
-    Internally returns: (T @ vectorHomog_A)[:3]
+    This function handles both single vectors and arrays of vectors efficiently using
+    einsum operations.
 
     :param T: 4x4 array-like of numbers
 
         Homogeneous transform (active or passive). Can be any 4x4 array-like object
         of size of numbers (int or float). Values are converted to floats internally.
 
-    :param vector_A: array-like of 3 numbers
+    :param vectors_A: array-like of shape (..., 3)
 
-        The 3-vector to transform. Can be a tuple, list, or numpy array of numbers (
-        int or float). Values are converted to floats internally.
+        The 3-vector(s) to transform. Can be a single vector (3,) or array of vectors
+        (..., 3). Can be a tuple, list, or numpy array of numbers (int or float).
+        Values are converted to floats internally.
 
     :param has_point: bool
 
-        True for a vector relative to a reference point such as a position vector.
-        False for a free vector.
+        True for vectors relative to a reference point such as position vectors.
+        False for free vectors.
 
-    :return: (3,) ndarray of floats
+    :return: ndarray of floats with same shape as input vectors_A
 
-        The transformed 3-element vector.
+        The transformed vector(s).
     """
     T = parameter_validation.validate_4_by_4_matrix_float(T, "T")
-    vector_A = parameter_validation.validate_3d_vector_float(vector_A, "vector_A")
+    vectors_A = parameter_validation.validate_3d_vectors_array_float(
+        vectors_A, "vectors_A"
+    )
     has_point = parameter_validation.validate_boolean(has_point, "has_point")
 
-    vectorHomog_A = _generate_homog(vector_A, has_point)
+    vectorsHomog_A = _generate_homogs(vectors_A, has_point)
 
-    return (T @ vectorHomog_A)[:3]
+    return np.einsum("ij,...j->...i", T, vectorsHomog_A)[..., :3]

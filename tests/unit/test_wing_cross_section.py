@@ -60,7 +60,7 @@ class TestWingCrossSection(unittest.TestCase):
             np.array([5.0, -2.0, 3.0]),
         )
         self.assertEqual(
-            self.basic_wing_cross_section.control_surface_type, "symmetric"
+            self.basic_wing_cross_section.control_surface_symmetry_type, "symmetric"
         )
         self.assertEqual(
             self.basic_wing_cross_section.control_surface_hinge_point, 0.75
@@ -83,7 +83,7 @@ class TestWingCrossSection(unittest.TestCase):
         np.testing.assert_array_equal(
             wing_cross_section.angles_Wcsp_to_Wcs_izyx, np.array([0.0, 0.0, 0.0])
         )
-        self.assertEqual(wing_cross_section.control_surface_type, "symmetric")
+        self.assertEqual(wing_cross_section.control_surface_symmetry_type, None)
         self.assertEqual(wing_cross_section.control_surface_hinge_point, 0.75)
         self.assertEqual(wing_cross_section.control_surface_deflection, 0.0)
         self.assertIsNone(wing_cross_section.spanwise_spacing)
@@ -233,8 +233,8 @@ class TestWingCrossSection(unittest.TestCase):
                         angles_Wcsp_to_Wcs_izyx=invalid_angle,
                     )
 
-    def test_control_surface_type_validation(self):
-        """Test control_surface_type parameter validation."""
+    def test_control_surface_symmetry_type_validation(self):
+        """Test control_surface_symmetry_type parameter validation."""
         # Test with valid types
         valid_types = ["symmetric", "asymmetric"]
         for control_type in valid_types:
@@ -242,20 +242,22 @@ class TestWingCrossSection(unittest.TestCase):
                 wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
-                    control_surface_type=control_type,
+                    control_surface_symmetry_type=control_type,
                 )
-                self.assertEqual(wing_cross_section.control_surface_type, control_type)
+                self.assertEqual(
+                    wing_cross_section.control_surface_symmetry_type, control_type
+                )
                 del wing_cross_section
 
         # Test with invalid types
-        invalid_types = ["invalid", "flap", "", None, 123]
+        invalid_types = ["invalid", "flap", "", 123]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
-                        control_surface_type=invalid_type,
+                        control_surface_symmetry_type=invalid_type,
                     )
 
     def test_control_surface_hinge_point_validation(self):

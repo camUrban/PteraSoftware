@@ -119,6 +119,29 @@ def validate_scalar_in_range_float(
     return float(value)
 
 
+def validate_2d_vector_array_float(vectors, name):
+    """Validates an array of 2D vectors and returns it as an array of floats.
+
+    Accepts both single vectors of shape (2,) and arrays of vectors with shape
+    (..., 2) where the last dimension must be 2.
+    """
+    try:
+        vectors = np.asarray(vectors, dtype=float)
+    except (TypeError, ValueError):
+        raise TypeError(f"{name} must be array-like and numeric.")
+
+    if vectors.ndim == 0:
+        raise ValueError(f"{name} cannot be a scalar.")
+
+    if vectors.shape[-1] != 2:
+        raise ValueError(f"{name} must have 2 elements in the last dimension.")
+
+    if not np.isfinite(vectors).all():
+        raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
+
+    return vectors
+
+
 def validate_3d_vector_float(vector, name):
     """Validates a 3D vector and returns it as a vector of floats."""
     try:
@@ -137,8 +160,8 @@ def validate_3d_vector_float(vector, name):
 
 def validate_3d_vectors_array_float(vectors, name):
     """Validates an array of 3D vectors and returns it as an array of floats.
-    
-    Accepts both single vectors of shape (3,) and arrays of vectors with shape 
+
+    Accepts both single vectors of shape (3,) and arrays of vectors with shape
     (..., 3) where the last dimension must be 3.
     """
     try:
@@ -148,7 +171,7 @@ def validate_3d_vectors_array_float(vectors, name):
 
     if vectors.ndim == 0:
         raise ValueError(f"{name} cannot be a scalar.")
-    
+
     if vectors.shape[-1] != 3:
         raise ValueError(f"{name} must have 3 elements in the last dimension.")
 

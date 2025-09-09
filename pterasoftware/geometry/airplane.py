@@ -304,8 +304,8 @@ class Airplane:
 
                 reflected_airfoil = Airfoil(
                     name=airfoil.name,
-                    coordinates=np.copy(airfoil.coordinates),
-                    repanel=airfoil.repanel,
+                    outline_A_lp=np.copy(airfoil.outline_A_lp),
+                    resample=airfoil.resample,
                     n_points_per_side=airfoil.n_points_per_side,
                 )
 

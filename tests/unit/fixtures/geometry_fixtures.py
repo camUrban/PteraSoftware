@@ -56,8 +56,6 @@ This module contains the following functions:
     make_custom_reference_airplane_fixture: This method makes a fixture that is an
     Airplane with custom reference dimensions set explicitly."""
 
-import numpy as np
-
 import pterasoftware as ps
 
 

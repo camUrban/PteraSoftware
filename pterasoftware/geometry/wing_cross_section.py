@@ -140,11 +140,11 @@ class WingCrossSection:
             this parameter must be None. This validation is performed by the parent
             Airplane during Wing processing.
 
-        :param control_surface_hinge_point: number, optional
+        :param control_surface_hinge_point: float, optional
 
             This is the location of the control surface hinge from the leading edge
-            as a fraction of chord. It must be a number (int or float) the range (
-            0.0, 1.0). The default value is 0.75.
+            as a fraction of chord. It must be a float the range (0.0, 1.0). The
+            default value is 0.75.
 
         :param control_surface_deflection: number, optional
 

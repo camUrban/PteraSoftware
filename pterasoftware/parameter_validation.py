@@ -223,6 +223,22 @@ def validate_4d_homog_vector_float(vector, name):
     return vector
 
 
+def validate_nd_vector_float(vector, name):
+    """Validates a ND vector and returns it as a vector of floats."""
+    try:
+        vector = np.asarray(vector, dtype=float)
+    except (TypeError, ValueError):
+        raise TypeError(f"{name} must be array-like and numeric.")
+
+    if vector.ndim != 1:
+        raise ValueError(f"{name} must be an N-element vector.")
+
+    if not np.isfinite(vector).all():
+        raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
+
+    return vector
+
+
 def validate_3_by_3_matrix_float(matrix, name):
     """Validates a 3x3 matrix and returns it as a matrix of floats."""
     try:

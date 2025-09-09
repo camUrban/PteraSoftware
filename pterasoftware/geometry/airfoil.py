@@ -18,9 +18,9 @@ import scipy.interpolate as sp_interp
 
 from .. import functions
 from .. import parameter_validation
+from .. import transformations
 
 
-# NOTE: I'm in the process of refactoring this class.
 class Airfoil:
     """This class is used to contain the Airfoil of a WingCrossSection.
 
@@ -34,10 +34,12 @@ class Airfoil:
         add_control_surface: This method returns a version of the Airfoil with a
         control surface added at a given point.
 
-        draw: This method plots this Airfoil using PyPlot.
+        draw: This method plots this Airfoil's outlines and mean camber line (MCL)
+        using PyPlot.
 
-        get_downsampled_mcl: This method returns the mean camber line (MCL) in a
-        downsampled form.
+        get_resampled_mcl: This method returns an array of points along the mean
+        camber line (MCL), resampled from the mcl_A_outline attribute. It is used to
+        discretize the MCL for meshing.
 
     This class contains the following class attributes:
         None
@@ -46,12 +48,11 @@ class Airfoil:
         This class is not meant to be subclassed.
     """
 
-    # NOTE: I'm in the process of refactoring this method.
     def __init__(
         self,
         name="NACA0012",
         outline_A_lp=None,
-        repanel=True,
+        resample=True,
         n_points_per_side=400,
     ):
         """This is the initialization method.
@@ -74,221 +75,372 @@ class Airfoil:
             numbers (int or float). Make sure all x-component values are in the range
             [ 0.0, 1.0]. The default value is None.
 
-        :param repanel: bool, optional
+        :param resample: bool, optional
 
-            This is the variable that determines whether you would like to repanel
-            the airfoil coordinates. This applies to points passed in by the user or
-            to those from the airfoils directory. I highly recommended setting this
-            to True. The default is True.
+            This is the variable that determines whether you would like to resample
+            the points defining the Airfoil's outline. This applies to points passed
+            in by the user or to those from the airfoils directory. I highly
+            recommended setting this to True. The default is True.
 
         :param n_points_per_side: int or None, optional
 
-            This is number of points to use when repaneling the Airfoil. If repanel
-            is True, it must be a positive int. If repanel is False, it must be None.
-            The default value is 400.
+            This is number of points to use when resampling the Airfoil's outline. If
+            resample is True, it must be a positive int. If resample is False,
+            it must be None. The default value is 400.
         """
         self.name = parameter_validation.validate_string(name, "name")
 
         if outline_A_lp is not None:
-            self.outline_A_lp = parameter_validation.validate_2d_vector_array_float(
+            outline_A_lp = parameter_validation.validate_2d_vector_array_float(
                 outline_A_lp, "coordinates"
             )
-            # ToDo: Also check if all x-component values are between 0.0 and 1.0.
+            if not np.all((outline_A_lp[:, 0] >= 0.0) & (outline_A_lp[:, 0] <= 1.0)):
+                raise ValueError(
+                    "All x-component values in outline_A_lp must be between 0.0 and "
+                    "1.0."
+                )
+            self.outline_A_lp = outline_A_lp
         else:
-            self._populate_points()
+            self._populate_outline()
 
-        self.repanel = parameter_validation.validate_boolean(repanel, "repanel")
+        self.resample = parameter_validation.validate_boolean(resample, "resample")
 
-        if self.repanel:
+        if self.resample:
             if n_points_per_side is None:
-                raise ValueError("n_points_per_side must be set if repanel is True")
+                raise ValueError("n_points_per_side must be set if resample is True")
         else:
             if n_points_per_side is not None:
-                raise ValueError("n_points_per_side must be None if repanel is False")
+                raise ValueError("n_points_per_side must be None if resample is False")
         self.n_points_per_side = parameter_validation.validate_positive_scalar_int(
             n_points_per_side, "n_points_per_side"
         )
 
-        # If repanel is True, repanel the Airfoil.
-        if self.repanel:
-            # NOTE: I've refactored this up to here. I'm now jumping to this method.
-            self._repanel_current_airfoil(n_points_per_side=self.n_points_per_side)
+        # If resample is True, resample the Airfoil's outline points.
+        if self.resample:
+            self._resample_outline(self.n_points_per_side)
 
-        # Initialize other attributes that will be set by populate_mcl_coordinates.
-        self.mcl_coordinates = None
-        self.upper_minus_mcl = None
-        self.thickness = None
+        # Initialize an attribute for an array of points along the MCL (in airfoil
+        # axes, relative to the leading point). It will be set by _populate_mcl.
+        self.mcl_A_lp = None
+        self._populate_mcl()
 
-        # Populate the mean camber line attributes.
-        self._populate_mcl_coordinates()
-
-    # NOTE: I've haven't yet started refactoring this method.
-    def add_control_surface(self, deflection=0.0, hinge_point=0.75):
+    def add_control_surface(self, deflection, hinge_point):
         """This method returns a version of the Airfoil with a control surface added
-        at a given point.
+        at a given point. It is called during meshing.
 
-        :param deflection: float, optional
-            This is the deflection angle in degrees. Deflection downwards is
-            positive. The default value is 0.0.
-        :param hinge_point: float, optional
-            This is the location of the hinge as a fraction of chord length. The
-            default value is 0.75.
+        :param deflection: number
+            This is the control deflection in degrees. Deflection downwards is
+            positive. It must be a number (int or float) in the range (-90.0,
+            90.0) degrees. Values are converted to floats internally.
+        :param hinge_point: float
+            This is the location of the hinge as a fraction of chord length. It must
+            be in the range (0.0, 1.0).
         :return flapped_airfoil: Airfoil
             This is the new airfoil with the control surface added.
         """
-
-        # Ensure that the airfoil's deflection is not too high, which increases the
-        # risk of self intersection.
-        if deflection > 90 or deflection < -90:
-            raise Exception("Invalid value for deflection!")
-
-        # Make the rotation matrix for the given angle.
-        sin_theta = np.sin(np.radians(-deflection))
-        cos_theta = np.cos(np.radians(-deflection))
-        rotation_matrix = np.array([[cos_theta, -sin_theta], [sin_theta, cos_theta]])
-
-        # Find y coordinate at the hinge point x coordinate and make it a vector.
-        hinge_point = np.array(
-            (hinge_point, self._get_camber_at_chord_fraction(hinge_point))
+        # Validate the deflection and hinge_point inputs.
+        deflection = parameter_validation.validate_scalar_in_range_float(
+            deflection,
+            "deflection",
+            -90.0,
+            False,
+            90.0,
+            False,
+        )
+        hinge_point = parameter_validation.validate_scalar_in_range_float(
+            hinge_point,
+            "hinge_point",
+            0.0,
+            False,
+            1.0,
+            False,
         )
 
-        # Split the airfoil into the sections before and after the hinge.
-        split_index = np.where(self.mcl_coordinates[:, 0] > hinge_point[0])[0][0]
-        mcl_coordinates_before = self.mcl_coordinates[:split_index, :]
-        mcl_coordinates_after = self.mcl_coordinates[split_index:, :]
-        upper_minus_mcl_before = self.upper_minus_mcl[:split_index, :]
-        upper_minus_mcl_after = self.upper_minus_mcl[split_index:, :]
-
-        # Rotate the mean camber line coordinates and upper minus mean camber line
-        # vectors.
-        new_mcl_coordinates_after = (
-            np.transpose(
-                rotation_matrix @ np.transpose(mcl_coordinates_after - hinge_point)
-            )
-            + hinge_point
-        )
-        new_upper_minus_mcl_after = np.transpose(
-            rotation_matrix @ np.transpose(upper_minus_mcl_after)
+        # Make the active rotational homogeneous transformation matrix for the given
+        # angle.
+        rot_T = transformations.generate_rot_T(
+            (0, 0, -deflection), passive=False, intrinsic=False, order="zyx"
         )
 
-        # Assemble the new, flapped airfoil.
-        new_mcl_coordinates = np.vstack(
-            (mcl_coordinates_before, new_mcl_coordinates_after)
-        )
-        new_upper_minus_mcl = np.vstack(
-            (upper_minus_mcl_before, new_upper_minus_mcl_after)
-        )
-        upper_coordinates = np.flipud(new_mcl_coordinates + new_upper_minus_mcl)
-        lower_coordinates = new_mcl_coordinates - new_upper_minus_mcl
-        outline_A_lp = np.vstack((upper_coordinates, lower_coordinates[1:, :]))
+        # ToDo: Delete these old lines after confirming the the refactoring was
+        #  successful.
+        # sin_theta = np.sin(np.radians(-deflection))
+        # cos_theta = np.cos(np.radians(-deflection))
+        # rotation_matrix = np.array([[cos_theta, -sin_theta], [sin_theta, cos_theta]])
+        # # Rotate the mean camber line coordinates and upper minus mean camber line
+        # # vectors.
+        # new_mcl_coordinates_after = (
+        #     np.transpose(
+        #         rotation_matrix @ np.transpose(mcl_coordinates_after - hingePoint_A_lp)
+        #     )
+        #     + hingePoint_A_lp
+        # )
+        # new_upper_minus_mcl_after = np.transpose(
+        #     rotation_matrix @ np.transpose(upper_minus_mcl_after)
+        # )
 
-        # Initialize the new, flapped airfoil and return it.
+        # Find the position of the hinge point on the MCL (in airfoil axes, relative
+        # to the leading point)
+        hingePoint_A_lp = np.array((hinge_point, self._get_mclY(hinge_point)))
+
+        # Resample the upper outline to have points with the same x-components as the
+        # MCL.
+        upperFlippedOutline_A_lp = np.flipud(self._upper_outline())
+        upper_func = sp_interp.PchipInterpolator(
+            x=upperFlippedOutline_A_lp[:, 0],
+            y=upperFlippedOutline_A_lp[:, 1],
+            extrapolate=False,
+        )
+        upperFlippedOutline_A_lp = np.column_stack(
+            [self.mcl_A_lp[:, 0], upper_func(self.mcl_A_lp[:, 0])]
+        )
+
+        # Find the vectors from each mean camber line coordinate to the upper portion
+        # of the Airfoil's outline (in airfoil axes)
+        mclToUpper_A = upperFlippedOutline_A_lp - self.mcl_A_lp
+
+        # Split the airfoil into the sections before and after the hinge point.
+        split_index = np.where(self.mcl_A_lp[:, 0] > hingePoint_A_lp[0])[0][0]
+        preHingeMcl_A_lp = self.mcl_A_lp[:split_index, :]
+        postHingeMcl_A_lp = self.mcl_A_lp[split_index:, :]
+        preHingeMclToUpper_A = mclToUpper_A[:split_index, :]
+        postHingeMclToUpper_A = mclToUpper_A[split_index:, :]
+
+        postHingeMcl_Wcs_lp = np.hstack(
+            [postHingeMcl_A_lp, np.zeros((postHingeMcl_A_lp.shape[0], 1))]
+        )
+        postHingeMclToUpper_Wcs = np.hstack(
+            [postHingeMclToUpper_A, np.zeros((postHingeMclToUpper_A.shape[0], 1))]
+        )
+
+        flappedPostHingeMcl_A_lp = transformations.apply_T_to_vectors(
+            rot_T, postHingeMcl_Wcs_lp, has_point=True
+        )[:, :2]
+        flappedPostHingeMclToUpper_A = transformations.apply_T_to_vectors(
+            rot_T, postHingeMclToUpper_Wcs, has_point=False
+        )[:, :2]
+
+        # ToDo: Determine if this method is forcing Airfoil's to be symmetrical.
+        # Assemble the new flapped Airfoil.
+        flappedMcl_A_lp = np.vstack((preHingeMcl_A_lp, flappedPostHingeMcl_A_lp))
+        flappedMclToUpper_A = np.vstack(
+            (preHingeMclToUpper_A, flappedPostHingeMclToUpper_A)
+        )
+        flappedUpperOutline_A_lp = np.flipud(flappedMcl_A_lp + flappedMclToUpper_A)
+        flappedLowerOutline_A_lp = flappedMcl_A_lp - flappedMclToUpper_A
+        flappedOutline_A_lp = np.vstack(
+            (flappedUpperOutline_A_lp, flappedLowerOutline_A_lp[1:, :])
+        )
+
+        # Initialize and return the new flapped Airfoil.
         flapped_airfoil = Airfoil(
-            name=self.name + " flapped", outline_A_lp=outline_A_lp, repanel=False
+            name=self.name + " flapped",
+            outline_A_lp=flappedOutline_A_lp,
+            resample=False,
+            n_points_per_side=None,
         )
         return flapped_airfoil
 
-    # NOTE: I've haven't yet started refactoring this method.
     def draw(self):
-        """This method plots this Airfoil's coordinates using PyPlot.
+        """This method plots this Airfoil's outlines and mean camber line (MCL) using
+        PyPlot.
 
         :return: None
         """
-        x = self.coordinates[:, 0]
-        y = self.coordinates[:, 1]
-        plt.plot(x, y)
-        plt.xlim(0, 1)
-        plt.ylim(-0.5, 0.5)
+        outlineX_A_lp = self.outline_A_lp[:, 0]
+        outlineY_A_lp = self.outline_A_lp[:, 1]
+        mclX_A_lp = self.mcl_A_lp[:, 0]
+        mclY_A_lp = self.mcl_A_lp[:, 1]
+
+        outlineYMin_A_lp = np.min(outlineY_A_lp)
+        outlineYMax_A_lp = np.max(outlineY_A_lp)
+        outlineYRange_A_lp = outlineYMax_A_lp - outlineYMin_A_lp
+        y_padding = 0.1 * outlineYRange_A_lp
+
+        plt.plot(outlineX_A_lp, outlineY_A_lp, "b-")
+        plt.plot(mclX_A_lp, mclY_A_lp, "r-")
+
+        plt.xlim(0.0, 1.0)
+        plt.ylim(outlineYMin_A_lp - y_padding, outlineYMax_A_lp + y_padding)
+
+        plt.xlabel("x (airfoil axes)")
+        plt.ylabel("y (airfoil axes)")
+        plt.title(f"Airfoil: {self.name}")
+        plt.legend(["Outline", "Mean Camber Line (MCL)"])
+
         plt.gca().set_aspect("equal", adjustable="box")
+
         plt.show()
 
-    # NOTE: I've haven't yet started refactoring this method.
-    def get_downsampled_mcl(self, mcl_fractions):
-        """This method returns the mean camber line in a downsampled form.
+    def get_resampled_mcl(self, mcl_fractions):
+        """This method returns an array of points along the mean camber line (MCL),
+        resampled from the mcl_A_outline attribute. It is used to discretize the MCL
+        for meshing.
 
-        :param mcl_fractions: 1D array
-            This is a 1D array that lists the points along the mean camber line (
-            normalized from 0 to 1) at which to return the mean camber line
-            coordinates.
-        :return mcl_downsampled: 2D array
-            This is a 2D array that contains the coordinates of the downsampled mean
-            camber line.
+        :param mcl_fractions: (N,) array-like of floats
+
+            This is a (N,) array-like object of normalized distances along the MCL (
+            from the leading to the trailing edge) at which to return the resampled
+            MCL points. It can be a tuple, list, or ndarray. The first value must be
+            0.0, the last must be 1.0, and the remaining must be in the range [0.0,
+            1.0]. All values must be non-duplicated floats in ascending order.
+
+        :return: (N,2) ndarray of floats
+
+            This is a (N,2) ndarray of floats that contains the positions of the
+            resampled MCL points (in airfoil axes, relative to the leading point).
         """
+        # Validate the mcl_fractions input parameter.
+        mcl_fractions = parameter_validation.validate_nd_vector_float(
+            mcl_fractions, "mcl_fractions"
+        )
+        if len(mcl_fractions) < 2:
+            raise ValueError("mcl_fractions must contain at least two values.")
+        if not np.isclose(mcl_fractions[0], 0.0):
+            raise ValueError("The first value in mcl_fractions must be 0.0.")
+        if not np.isclose(mcl_fractions[-1], 1.0):
+            raise ValueError("The last value in mcl_fractions must be 1.0.")
+        if not np.all((mcl_fractions >= 0.0) & (mcl_fractions <= 1.0)):
+            raise ValueError(
+                "All values in mcl_fractions must be in the range[0.0, 1.0]."
+            )
+        if not np.all(np.diff(mcl_fractions) > 0):
+            raise ValueError(
+                "All values in mcl_fractions must be non-duplicated and in ascending "
+                "order."
+            )
 
-        mcl = self.mcl_coordinates
-
-        # Find the distances between points along the mean camber line, assuming
-        # linear interpolation.
+        # Find the distance between points along the MCL.
         mcl_distances_between_points = np.sqrt(
-            np.power(mcl[:-1, 0] - mcl[1:, 0], 2)
-            + np.power(mcl[:-1, 1] - mcl[1:, 1], 2)
+            np.power(self.mcl_A_lp[:-1, 0] - self.mcl_A_lp[1:, 0], 2)
+            + np.power(self.mcl_A_lp[:-1, 1] - self.mcl_A_lp[1:, 1], 2)
         )
 
-        # Create a horizontal 1D array that contains the distance along the mean
-        # camber line of each point.
+        # Create a horizontal 1D array that contains the distance along the MCL of
+        # each point on the MCL.
         mcl_distances_cumulative = np.hstack(
             (0, np.cumsum(mcl_distances_between_points))
         )
 
-        # Normalize the 1D array so that it ranges from 0 to 1.
+        # Normalize the 1D array so that it ranges from 0.0 to 1.0.
         mcl_distances_cumulative_normalized = (
             mcl_distances_cumulative / mcl_distances_cumulative[-1]
         )
 
-        # Linearly interpolate to find the x coordinates of the mean camber line at
-        # the given mean camber line fractions.
-        mcl_downsampled_x = np.interp(
-            x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 0]
+        # Create interpolated functions for MCL's components as a function of
+        # fractional distances along the MCL.
+        mclX_func = sp_interp.PchipInterpolator(
+            x=mcl_distances_cumulative_normalized,
+            y=self.mcl_A_lp[:, 0],
+            extrapolate=False,
+        )
+        mclY_func = sp_interp.PchipInterpolator(
+            x=mcl_distances_cumulative_normalized,
+            y=self.mcl_A_lp[:, 1],
+            extrapolate=False,
         )
 
-        # Linearly interpolate to find the y coordinates of the mean camber line at
-        # the given mean camber line fractions.
-        mcl_downsampled_y = np.interp(
-            x=mcl_fractions, xp=mcl_distances_cumulative_normalized, fp=mcl[:, 1]
+        return np.column_stack([mclX_func(mcl_fractions), mclY_func(mcl_fractions)])
+
+    def _get_mclY(self, chord_fraction):
+        """This method returns the y-component of the Airfoil's MCL (in airfoil axes,
+        relative to the leading point) at a given fraction along the chord.
+
+        Note: This is a private method, so it doesn't perform any parameter validation.
+
+        :param chord_fraction: number
+
+            This number (int or float) is the fraction along the chord, from leading
+            to trailing point, at which to return the y-component of the MCL (in
+            airfoil axes, relative to the leading point). It should be in the range [
+            0.0, 1.0].
+
+        :return: float
+
+            This is the y-component of the MCL (in airfoil axes, relative to the
+            leading point) at the requested fraction along the chord.
+        """
+        mclY_func = sp_interp.PchipInterpolator(
+            x=self.mcl_A_lp[:, 0],
+            y=self.mcl_A_lp[:, 1],
+            extrapolate=False,
         )
 
-        # Combine the x and y coordinates of the downsampled mean camber line.
-        mcl_downsampled = np.column_stack((mcl_downsampled_x, mcl_downsampled_y))
+        return mclY_func(chord_fraction)
 
-        # Return the coordinates of the downsampled mean camber line.
-        return mcl_downsampled
+    def _leading_edge_index(self):
+        """Returns the index of the leading point in the outline_A_lp attribute.
 
-    # NOTE: I've haven't yet started refactoring this method.
-    def _populate_mcl_coordinates(self):
-        """This method creates a list of the airfoil's mean camber line coordinates.
-        It also creates two lists of the vectors needed to go from the mcl
-        coordinates to the upper and lower surfaces. It also creates list of the
-        thicknesses at the x coordinates along the mean camber line.
+        Note: This is a private method, so it doesn't perform any parameter validation.
 
-        All vectors are listed from the leading edge to the trailing edge of the
-        airfoil.
+        :return: int
+            This is the index of the leading point.
+        """
+        return np.argmin(self.outline_A_lp[:, 0])
+
+    def _lower_outline(self):
+        """This method returns a 2D array of points on the lower portion of the
+        Airfoil's outline (in airfoil axes, relative to the leading point).
+
+        The order of the returned points is from leading edge to trailing edge.
+        Included is the leading point, so be careful about duplicates if
+        using this method in conjunction with _upper_outline.
+
+        Note: This is a private method, so it doesn't perform any parameter validation.
+
+        :return: (N,2) ndarray of floats
+
+            This is an (N,2) ndarray of floats that describe the position of N points
+            on the Airfoil's lower outline (in airfoil axes, relative to the leading
+            point).
+        """
+        return self.outline_A_lp[self._leading_edge_index() :, :]
+
+    def _populate_mcl(self):
+        """This method creates a 2D array of points along the Airfoil's MCL (in
+        airfoil axes, relative to the leading point), which it uses to set the mcl_A_lp
+        attribute. It is in order from the leading point to the trailing point.
 
         :return: None
         """
+        # Split outline_A_lp into upper and lower sections. Flip the upper points so
+        # that they are ordered from the leading point to the trailing point.
+        upperFlippedOutline_A_lp = np.flipud(self._upper_outline())
+        lowerOutline_A_lp = self._lower_outline()
 
-        # Get the upper and lower coordinates. Flip the upper coordinates so that it
-        # is ordered from the leading edge to the trailing edge.
-        upper = np.flipud(self._upper_coordinates())
-        lower = self._lower_coordinates()
+        cosine_spaced_chord_fractions = functions.cosspace(
+            0.0, 1.0, self.n_points_per_side
+        )
 
-        # Calculate the approximate mean camber line and populate the class attribute.
-        mcl_coordinates = (upper + lower) / 2
-        self.mcl_coordinates = mcl_coordinates
+        upper_func = sp_interp.PchipInterpolator(
+            x=upperFlippedOutline_A_lp[:, 0],
+            y=upperFlippedOutline_A_lp[:, 1],
+            extrapolate=True,
+        )
+        lower_func = sp_interp.PchipInterpolator(
+            x=lowerOutline_A_lp[:, 0],
+            y=lowerOutline_A_lp[:, 1],
+            extrapolate=True,
+        )
 
-        # Find the vectors from each mean camber line coordinate to its upper
-        # coordinate.
-        self.upper_minus_mcl = upper - self.mcl_coordinates
+        upperFlippedOutline_A_lp = upper_func(cosine_spaced_chord_fractions)
+        lowerOutline_A_lp = lower_func(cosine_spaced_chord_fractions)
 
-        # Create a list of values that are the thickness of the airfoil at each mean
-        # camber line.
-        thickness = np.sqrt(np.sum(np.power(self.upper_minus_mcl, 2), axis=1)) * 2
+        # Calculate the approximate MCL points (in airfoil axes, relative to the
+        # leading point) and set the class attribute.
+        self.mcl_A_lp = np.column_stack(
+            [
+                cosine_spaced_chord_fractions,
+                (upperFlippedOutline_A_lp + lowerOutline_A_lp) / 2,
+            ]
+        )
 
-        # Populate the class attribute with the thicknesses at their associated x
-        # coordinates.
-        self.thickness = np.column_stack((self.mcl_coordinates[:, 0], thickness))
+        # Resample the MCL points using cosine-spaced distances along the MCL.
+        self.mcl_A_lp = self.get_resampled_mcl(
+            mcl_fractions=cosine_spaced_chord_fractions
+        )
 
-    # NOTE: I've finished refactoring this method.
-    def _populate_points(self):
+    def _populate_outline(self):
         """This method populates a variable with the points of the Airfoil's outline
         (in airfoil axes, relative to the leading point).
 
@@ -318,7 +470,7 @@ class Airfoil:
                     thickness = int(naca_number[2:]) * 0.01
 
                     # Set the number of points per side.
-                    n_points_per_side = 100
+                    n_points_per_side = 400
 
                     # Get the x component of the MCL.
                     mclX_A_lp = functions.cosspace(0, 1, n_points_per_side)
@@ -385,30 +537,33 @@ class Airfoil:
                     # airfoil axes, relative to the leading point) using the MCL
                     # points, the perpendicular half-thickness, and the angle between
                     # the x-axis and the MCL tangent line.
-                    upperX_A_lp = mclX_A_lp - halfThickness_A * np.sin(
+                    upperOutlineX_A_lp = mclX_A_lp - halfThickness_A * np.sin(
                         thetaSlope_Ax_to_MCL
                     )
-                    lowerX_A_lp = mclX_A_lp + halfThickness_A * np.sin(
+                    lowerOutlineX_A_lp = mclX_A_lp + halfThickness_A * np.sin(
                         thetaSlope_Ax_to_MCL
                     )
-                    upperY_A_lp = mclY_A_lp + halfThickness_A * np.cos(
+                    upperOutlineY_A_lp = mclY_A_lp + halfThickness_A * np.cos(
                         thetaSlope_Ax_to_MCL
                     )
-                    lowerY_A_lp = mclY_A_lp - halfThickness_A * np.cos(
+                    lowerOutlineY_A_lp = mclY_A_lp - halfThickness_A * np.cos(
                         thetaSlope_Ax_to_MCL
                     )
 
                     # Flip upper surface so it's back to front.
-                    upperX_A_lp, upperY_A_lp = np.flipud(upperX_A_lp), np.flipud(
-                        upperY_A_lp
-                    )
+                    upperOutlineX_A_lp, upperOutlineY_A_lp = np.flipud(
+                        upperOutlineX_A_lp
+                    ), np.flipud(upperOutlineY_A_lp)
 
                     # Trim one point from lower surface so there's no overlap.
-                    lowerX_A_lp, lowerY_A_lp = lowerX_A_lp[1:], lowerY_A_lp[1:]
+                    lowerOutlineX_A_lp, lowerOutlineY_A_lp = (
+                        lowerOutlineX_A_lp[1:],
+                        lowerOutlineY_A_lp[1:],
+                    )
 
                     # Combine the points.
-                    outlineX_A_lp = np.hstack((upperX_A_lp, lowerX_A_lp))
-                    outlineY_A_lp = np.hstack((upperY_A_lp, lowerY_A_lp))
+                    outlineX_A_lp = np.hstack((upperOutlineX_A_lp, lowerOutlineX_A_lp))
+                    outlineY_A_lp = np.hstack((upperOutlineY_A_lp, lowerOutlineY_A_lp))
 
                     # Populate the outline_A_lp attribute and return.
                     self.outline_A_lp = np.column_stack((outlineX_A_lp, outlineY_A_lp))
@@ -451,135 +606,151 @@ class Airfoil:
         except FileNotFoundError:
             raise Exception("Airfoil not in database!")
 
-    # NOTE: I've haven't yet started refactoring this method.
-    def _leading_edge_index(self):
-        """Returns the index of the leading edge point.
+    def _resample_outline(self, n_points_per_side):
+        """This method returns a resampled version of the points on the Airfoil's
+        outline (in airfoil axes, relative to the leading point) with cosine-spaced
+        points on the upper and lower surfaces.
 
-        :return leading_edge_index: int
-            This is the index of the leading edge point.
-        """
+        The number of points defining the final Airfoil's outline will be (
+        n_points_per_side * 2 - 1), since the leading point is shared by both the
+        upper and lower surfaces.
 
-        # Find the index of the coordinate pair with the minimum value of the x
-        # coordinate. This is the leading edge index.
-        leading_edge_index = np.argmin(self.coordinates[:, 0])
+        Note: This is a private method, so it doesn't perform any parameter validation.
 
-        # Return the leading edge index.
-        return leading_edge_index
-
-    # NOTE: I've haven't yet started refactoring this method.
-    def _lower_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the
-        lower surface of the airfoil.
-
-        The order of the returned matrix is from leading edge to trailing edge. This
-        matrix includes the leading edge point so be careful about duplicates if
-        using this method in conjunction with self.upper_coordinates.
-
-        :return lower_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the lower
-            surface of the airfoil, where N is the number of points.
-        """
-
-        # Find the lower coordinates.
-        lower_coordinates = self.coordinates[self._leading_edge_index() :, :]
-
-        # Return the lower coordinates.
-        return lower_coordinates
-
-    # NOTE: I've haven't yet started refactoring this method.
-    def _upper_coordinates(self):
-        """This method returns a matrix of x and y coordinates that describe the
-        upper surface of the airfoil.
-
-        The order of the returned matrix is from trailing edge to leading edge. This
-        matrix includes the leading edge point so be careful about duplicates if
-        using this method in conjunction with self.lower_coordinates.
-
-        :return upper_coordinates: array
-            This is an N x 2 array of x and y coordinates that describe the upper
-            surface of the airfoil, where N is the number of points.
-        """
-
-        # Find the upper coordinates.
-        upper_coordinates = self.coordinates[: self._leading_edge_index() + 1, :]
-
-        # Return the upper coordinates.
-        return upper_coordinates
-
-    # NOTE: I've haven't yet started refactoring this method.
-    def _get_camber_at_chord_fraction(self, chord_fraction):
-        """This method returns the camber of the airfoil at a given fraction of the
-        chord.
-
-        :param chord_fraction: float
-            This is a float of the fraction along the chord (normalized from 0 to 1)
-            at which to return the camber.
-        :return camber: float
-            This is the camber of the airfoil at the requested fraction along the
-            chord.
-        """
-
-        # Create a function that interpolates between the x and y coordinates of the
-        # mean camber line.
-        camber_function = sp_interp.interp1d(
-            x=self.mcl_coordinates[:, 0],
-            y=self.mcl_coordinates[:, 1],
-            copy=False,
-            fill_value="extrapolate",
-        )
-
-        # Find the value of the camber (the y coordinate) of the airfoil at the
-        # requested chord fraction.
-        camber = camber_function(chord_fraction)
-
-        # Return the camber of the airfoil at the requested chord fraction.
-        return camber
-
-    # NOTE: I've haven't yet started refactoring this method.
-    def _repanel_current_airfoil(self, n_points_per_side=100):
-        """This method returns a repaneled version of the airfoil with cosine-spaced
-        coordinates on the upper and lower surfaces.
-
-        The number of points defining the final airfoil will be (n_points_per_side *
-        2 - 1), since the leading edge point is shared by both the upper and lower
-        surfaces.
-
-        :param n_points_per_side: int, optional
-            This is the number of points on the upper and lower surfaces. The default
-            value is 100.
+        :param n_points_per_side: positive int
+            This is the number of points on the upper and lower surfaces.
         :return: None
         """
+        # Get the upper outline points. This contains the leading point.
+        upperOutline_A_lp = self._upper_outline()
 
-        # Get the upper and lower surface coordinates. These both contain the leading
-        # edge point.
-        upper_original_coordinates = self._upper_coordinates()
-        lower_original_coordinates = self._lower_coordinates()
+        upperFlippedOutlineX_A_lp = np.flip(upperOutline_A_lp[:, 0])
+        upperFlippedOutlineY_A_lp = np.flip(upperOutline_A_lp[:, 1])
 
-        # Generate a cosine-spaced list of points from 0 to 1.
-        cosine_spaced_x_values = functions.cosspace(0, 1, n_points_per_side)
-
-        # Create interpolated functions for the x and y values of the upper and lower
-        # surfaces as a function of the chord fractions
-        upper_func = sp_interp.PchipInterpolator(
-            x=np.flip(upper_original_coordinates[:, 0]),
-            y=np.flip(upper_original_coordinates[:, 1]),
-        )
-        lower_func = sp_interp.PchipInterpolator(
-            x=lower_original_coordinates[:, 0], y=lower_original_coordinates[:, 1]
-        )
-
-        # Find the x and y coordinates of the upper and lower surfaces at each of the
-        # cosine-spaced x values.
-        x_coordinates = np.hstack(
-            (np.flip(cosine_spaced_x_values), cosine_spaced_x_values[1:])
-        )
-        y_coordinates = np.hstack(
-            (
-                upper_func(np.flip(cosine_spaced_x_values)),
-                lower_func(cosine_spaced_x_values[1:]),
+        # Find the distance between points along the upper flipped original outline.
+        upperFlippedOutline_distances_between_points = np.sqrt(
+            np.power(
+                upperFlippedOutlineX_A_lp[:-1] - upperFlippedOutlineX_A_lp[1:],
+                2,
+            )
+            + np.power(
+                upperFlippedOutlineY_A_lp[:-1] - upperFlippedOutlineY_A_lp[1:],
+                2,
             )
         )
 
-        # Stack the coordinates together and return them.
-        coordinates = np.column_stack((x_coordinates, y_coordinates))
-        self.coordinates = coordinates
+        # Create a horizontal 1D array that contains the cumulative distance along
+        # the upper flipped original outline of each point.
+        upperFlippedOutline_distances_cumulative = np.hstack(
+            (0, np.cumsum(upperFlippedOutline_distances_between_points))
+        )
+
+        # Normalize the 1D array so that it ranges from 0.0 to 1.0.
+        upperFlippedOutline_distances_cumulative_normalized = (
+            upperFlippedOutline_distances_cumulative
+            / upperFlippedOutline_distances_cumulative[-1]
+        )
+
+        # Create interpolated functions for the x and y-components of points on the
+        # upper outline as a function of distance along upper outline.
+        upperX_func = sp_interp.PchipInterpolator(
+            x=upperFlippedOutline_distances_cumulative_normalized,
+            y=upperFlippedOutlineX_A_lp,
+            extrapolate=False,
+        )
+        upperY_func = sp_interp.PchipInterpolator(
+            x=upperFlippedOutline_distances_cumulative_normalized,
+            y=upperFlippedOutlineY_A_lp,
+            extrapolate=False,
+        )
+
+        # Get the lower outline points. This contains the leading point.
+        lowerOutline_A_lp = self._lower_outline()
+
+        lowerOutlineX_A_lp = lowerOutline_A_lp[:, 0]
+        lowerOutlineY_A_lp = lowerOutline_A_lp[:, 1]
+
+        # Find the distance between points along the lower original outline.
+        lowerOutline_distances_between_points = np.sqrt(
+            np.power(
+                lowerOutlineX_A_lp[:-1] - lowerOutlineX_A_lp[1:],
+                2,
+            )
+            + np.power(
+                lowerOutlineY_A_lp[:-1] - lowerOutlineY_A_lp[1:],
+                2,
+            )
+        )
+
+        # Create a horizontal 1D array that contains the cumulative distance along
+        # the lower original outline of each point.
+        lowerOutline_distances_cumulative = np.hstack(
+            (0, np.cumsum(lowerOutline_distances_between_points))
+        )
+
+        # Normalize the 1D array so that it ranges from 0.0 to 1.0.
+        lowerOutline_distances_cumulative_normalized = (
+            lowerOutline_distances_cumulative / lowerOutline_distances_cumulative[-1]
+        )
+
+        # Create interpolated functions for the x and y-components of points on the
+        # lower outline as a function of distance along the lower outline.
+        lowerX_func = sp_interp.PchipInterpolator(
+            x=lowerOutline_distances_cumulative_normalized,
+            y=lowerOutlineX_A_lp,
+            extrapolate=False,
+        )
+        lowerY_func = sp_interp.PchipInterpolator(
+            x=lowerOutline_distances_cumulative_normalized,
+            y=lowerOutlineY_A_lp,
+            extrapolate=False,
+        )
+
+        # Generate a cosine-spaced list of normalized distances from 0.0 to 1.0.
+        cosine_spaced_normalized_distances = functions.cosspace(
+            0.0, 1.0, n_points_per_side
+        )
+
+        # Find the x and y-components of the upper and lower outline points at each
+        # of the resampled cosine-spaced normalized distances.
+        upperResampledOutlineX_A_lp = np.flip(
+            upperX_func(cosine_spaced_normalized_distances)
+        )
+        lowerResampledOutlineX_A_lp = lowerX_func(cosine_spaced_normalized_distances)[
+            1:
+        ]
+        upperResampledOutlineY_A_lp = np.flip(
+            upperY_func(cosine_spaced_normalized_distances)
+        )
+        lowerResampledOutlineY_A_lp = lowerY_func(cosine_spaced_normalized_distances)[
+            1:
+        ]
+
+        resampledOutlineX_A_lp = np.hstack(
+            (upperResampledOutlineX_A_lp, lowerResampledOutlineX_A_lp)
+        )
+        resampledOutlineY_A_lp = np.hstack(
+            (upperResampledOutlineY_A_lp, lowerResampledOutlineY_A_lp)
+        )
+
+        self.outline_A_lp = np.column_stack(
+            (resampledOutlineX_A_lp, resampledOutlineY_A_lp)
+        )
+
+    def _upper_outline(self):
+        """This method returns a 2D array of points on the upper portion of the
+        Airfoil's outline (in airfoil axes, relative to the leading point).
+
+        The order of the returned points is from trailing edge to leading edge.
+        Included is the leading point, so be careful about duplicates if
+        using this method in conjunction with _lower_outline.
+
+        Note: This is a private method, so it doesn't perform any parameter validation.
+
+        :return: (N,2) ndarray of floats
+
+            This is an (N,2) ndarray of floats that describe the position of N points
+            on the Airfoil's upper outline (in airfoil axes, relative to the leading
+            point).
+        """
+        return self.outline_A_lp[: self._leading_edge_index() + 1, :]

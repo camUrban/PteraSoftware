@@ -20,6 +20,10 @@ from .. import functions
 from .. import parameter_validation
 from .. import transformations
 
+# Create a token object for bypassing outline_A_lp parameter validation in Airfoil's
+# __init__ method.
+_TRUST = object()
+
 
 class Airfoil:
     """This class is used to contain the Airfoil of a WingCrossSection.
@@ -54,6 +58,7 @@ class Airfoil:
         outline_A_lp=None,
         resample=True,
         n_points_per_side=400,
+        _trust=None,
     ):
         """This is the initialization method.
 
@@ -84,35 +89,28 @@ class Airfoil:
 
         :param n_points_per_side: int or None, optional
 
-            This is number of points to use when resampling the Airfoil's outline. If
-            resample is True, it must be a positive int. If resample is False,
-            it must be None. The default value is 400.
+            This is number of points to use when creating the Airfoil's MCL and when
+            resampling the upper and lower parts of the Airfoil's outline. It must be
+            a positive int greater than or equal to 3. The resampled outline will
+            have a total number of points equal to (2 * n_points_per_side) - 1. I
+            highly recommend setting this to at least 100. The default value is 400.
         """
-        self.name = parameter_validation.validate_string(name, "name")
+        self.name = parameter_validation.string_return_string(name, "name")
 
         if outline_A_lp is not None:
-            outline_A_lp = parameter_validation.validate_2d_vector_array_float(
-                outline_A_lp, "coordinates"
-            )
-            if not np.all((outline_A_lp[:, 0] >= 0.0) & (outline_A_lp[:, 0] <= 1.0)):
-                raise ValueError(
-                    "All x-component values in outline_A_lp must be between 0.0 and "
-                    "1.0."
-                )
-            self.outline_A_lp = outline_A_lp
+            if _trust is not _TRUST:
+                self.outline_A_lp = self._validate_outline(outline_A_lp)
+            else:
+                self.outline_A_lp = outline_A_lp
         else:
             self._populate_outline()
 
-        self.resample = parameter_validation.validate_boolean(resample, "resample")
+        self.resample = parameter_validation.boolean_return_boolean(
+            resample, "resample"
+        )
 
-        if self.resample:
-            if n_points_per_side is None:
-                raise ValueError("n_points_per_side must be set if resample is True")
-        else:
-            if n_points_per_side is not None:
-                raise ValueError("n_points_per_side must be None if resample is False")
-        self.n_points_per_side = parameter_validation.validate_positive_scalar_int(
-            n_points_per_side, "n_points_per_side"
+        self.n_points_per_side = parameter_validation.int_in_range_return_int(
+            n_points_per_side, "n_points_per_side", 3, True, None, None
         )
 
         # If resample is True, resample the Airfoil's outline points.
@@ -139,21 +137,11 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
         # Validate the deflection and hinge_point inputs.
-        deflection = parameter_validation.validate_scalar_in_range_float(
-            deflection,
-            "deflection",
-            -90.0,
-            False,
-            90.0,
-            False,
+        deflection = parameter_validation.number_in_range_return_float(
+            deflection, "deflection", -90.0, False, 90.0, False
         )
-        hinge_point = parameter_validation.validate_scalar_in_range_float(
-            hinge_point,
-            "hinge_point",
-            0.0,
-            False,
-            1.0,
-            False,
+        hinge_point = parameter_validation.number_in_range_return_float(
+            hinge_point, "hinge_point", 0.0, False, 1.0, False
         )
 
         # Make the active rotational homogeneous transformation matrix for the given
@@ -232,14 +220,17 @@ class Airfoil:
             (flappedUpperOutline_A_lp, flappedLowerOutline_A_lp[1:, :])
         )
 
-        # Initialize and return the new flapped Airfoil.
-        flapped_airfoil = Airfoil(
+        # Return the new flapped Airfoil, with the _TRUST token so that we don't
+        # re-validate the outline, which would fail because the validation requires
+        # the trailing edge points be roughly at y=0.0, in Airfoil axes, relative to
+        # the leading point.
+        return Airfoil(
             name=self.name + " flapped",
             outline_A_lp=flappedOutline_A_lp,
             resample=False,
-            n_points_per_side=None,
+            n_points_per_side=self.n_points_per_side,
+            _trust=_TRUST,
         )
-        return flapped_airfoil
 
     def draw(self):
         """This method plots this Airfoil's outlines and mean camber line (MCL) using
@@ -291,7 +282,7 @@ class Airfoil:
             resampled MCL points (in airfoil axes, relative to the leading point).
         """
         # Validate the mcl_fractions input parameter.
-        mcl_fractions = parameter_validation.validate_nd_vector_float(
+        mcl_fractions = parameter_validation.nD_number_vectorLike_return_float(
             mcl_fractions, "mcl_fractions"
         )
         if len(mcl_fractions) < 2:
@@ -368,7 +359,7 @@ class Airfoil:
 
         return mclY_func(chord_fraction)
 
-    def _leading_edge_index(self):
+    def _lp_index(self):
         """Returns the index of the leading point in the outline_A_lp attribute.
 
         Note: This is a private method, so it doesn't perform any parameter validation.
@@ -382,7 +373,7 @@ class Airfoil:
         """This method returns a 2D array of points on the lower portion of the
         Airfoil's outline (in airfoil axes, relative to the leading point).
 
-        The order of the returned points is from leading edge to trailing edge.
+        The order of the returned points is from leading point to trailing edge.
         Included is the leading point, so be careful about duplicates if
         using this method in conjunction with _upper_outline.
 
@@ -394,7 +385,7 @@ class Airfoil:
             on the Airfoil's lower outline (in airfoil axes, relative to the leading
             point).
         """
-        return self.outline_A_lp[self._leading_edge_index() :, :]
+        return self.outline_A_lp[self._lp_index() :, :]
 
     def _populate_mcl(self):
         """This method creates a 2D array of points along the Airfoil's MCL (in
@@ -624,8 +615,8 @@ class Airfoil:
         # Get the upper outline points. This contains the leading point.
         upperOutline_A_lp = self._upper_outline()
 
-        upperFlippedOutlineX_A_lp = np.flip(upperOutline_A_lp[:, 0])
-        upperFlippedOutlineY_A_lp = np.flip(upperOutline_A_lp[:, 1])
+        upperFlippedOutlineX_A_lp = np.flipud(upperOutline_A_lp)[:, 0]
+        upperFlippedOutlineY_A_lp = np.flipud(upperOutline_A_lp)[:, 1]
 
         # Find the distance between points along the upper flipped original outline.
         upperFlippedOutline_distances_between_points = np.sqrt(
@@ -713,13 +704,13 @@ class Airfoil:
 
         # Find the x and y-components of the upper and lower outline points at each
         # of the resampled cosine-spaced normalized distances.
-        upperResampledOutlineX_A_lp = np.flip(
+        upperResampledOutlineX_A_lp = np.flipud(
             upperX_func(cosine_spaced_normalized_distances)
         )
         lowerResampledOutlineX_A_lp = lowerX_func(cosine_spaced_normalized_distances)[
             1:
         ]
-        upperResampledOutlineY_A_lp = np.flip(
+        upperResampledOutlineY_A_lp = np.flipud(
             upperY_func(cosine_spaced_normalized_distances)
         )
         lowerResampledOutlineY_A_lp = lowerY_func(cosine_spaced_normalized_distances)[
@@ -741,7 +732,7 @@ class Airfoil:
         """This method returns a 2D array of points on the upper portion of the
         Airfoil's outline (in airfoil axes, relative to the leading point).
 
-        The order of the returned points is from trailing edge to leading edge.
+        The order of the returned points is from trailing edge to leading point.
         Included is the leading point, so be careful about duplicates if
         using this method in conjunction with _lower_outline.
 
@@ -753,4 +744,230 @@ class Airfoil:
             on the Airfoil's upper outline (in airfoil axes, relative to the leading
             point).
         """
-        return self.outline_A_lp[: self._leading_edge_index() + 1, :]
+        return self.outline_A_lp[: self._lp_index() + 1, :]
+
+    @staticmethod
+    def _validate_outline(outline_A_lp):
+        """This method performs validates a user's provided outline_A_lp. However,
+        it will fail for "flapped" airfoils.
+
+        :param outline_A_lp: Any
+            This is the input to validate.
+        :return: (N,2) ndarray of floats
+            This is the validated version of outline_A_lp
+        """
+        outline_A_lp = (
+            parameter_validation.arrayLike_of_twoD_number_vectorLikes_return_float(
+                outline_A_lp, "outline_A_lp"
+            )
+        )
+
+        n_outline_points = outline_A_lp.shape[0]
+
+        # The outline must have at least 5 points.
+        if n_outline_points < 5:
+            raise ValueError("The Airfoil's outline must have at least five points")
+
+        # The Airfoil must have roughly a unit chord length.
+        allowance = 0.01
+        outlineMaxX_A_lp = max(outline_A_lp[:, 0])
+        outlineMinX_A_lp = min(outline_A_lp[:, 0])
+        outlineChord = outlineMaxX_A_lp - outlineMinX_A_lp
+        if outlineChord > 1 + allowance or outlineChord < 1 - allowance:
+            raise ValueError(
+                "The Airfoil's outline must have a chord length of roughly 1.0 m"
+            )
+
+        # The Airfoil's outline must have roughly a thickness of at least 0.1%.
+        outlineMaxY_A_lp = max(outline_A_lp[:, 1])
+        outlineMinY_A_lp = min(outline_A_lp[:, 1])
+        outlineMaxThickness = outlineMaxY_A_lp - outlineMinY_A_lp
+        if outlineMaxThickness < 0.001:
+            raise ValueError(
+                "The Airfoil's outline must have max thickness of at least 0.1%"
+            )
+
+        xAllowance = allowance * outlineChord
+        yAllowance = allowance * outlineMaxThickness
+
+        # Check that the upper outline's trailing point is at approximately [1.0,
+        # 0.0] (in Airfoil axes, relative to the leading point).
+        outlineUpperTp_A_lp = outline_A_lp[0, :]
+        outlineUpperTpX_A_lp = outlineUpperTp_A_lp[0]
+        outlineUpperTpY_A_lp = outlineUpperTp_A_lp[1]
+        if (
+            outlineUpperTpX_A_lp < 1.0 - xAllowance
+            or outlineUpperTpX_A_lp > 1.0 + xAllowance
+        ):
+            raise ValueError(
+                "The x-value of the Airfoil's upper outline's trailing point must be approximately 1.0 m (in Airfoil axes, relative to the leading point)"
+            )
+        if outlineUpperTpY_A_lp < -yAllowance or outlineUpperTpY_A_lp > yAllowance:
+            raise ValueError(
+                "The y-value of the Airfoil's upper outline's trailing point must be approximately 0.0 m (in Airfoil axes, relative to the leading point)"
+            )
+
+        # Check that the lower outline's trailing point is at approximately [1.0,
+        # 0.0] (in Airfoil axes, relative to the leading point).
+        outlineLowerTp_A_lp = outline_A_lp[-1, :]
+        outlineLowerTpX_A_lp = outlineLowerTp_A_lp[0]
+        outlineLowerTpY_A_lp = outlineLowerTp_A_lp[1]
+        if (
+            outlineLowerTpX_A_lp < 1.0 - xAllowance
+            or outlineLowerTpX_A_lp > 1.0 + xAllowance
+        ):
+            raise ValueError(
+                "The x-value of the Airfoil's lower outline's trailing point must be approximately 1.0 (in Airfoil axes, relative to the leading point)"
+            )
+        if outlineLowerTpY_A_lp < -yAllowance or outlineLowerTpY_A_lp > yAllowance:
+            raise ValueError(
+                "The y-value of the Airfoil's lower outline's trailing point must be approximately 0.0 (in Airfoil axes, relative to the leading point)"
+            )
+
+        # Check that the upper outline's trailing point has a y-value that's greater
+        # than or equal to the lower outline's trailing point's y-value.
+        if outlineLowerTpY_A_lp > outlineUpperTpY_A_lp:
+            raise ValueError(
+                "The upper outline's trailing point must have a y-value that's greater than or equal to the lower outline's trailing point's y-value (in Airfoil axes)"
+            )
+
+        # ToDo: Consider moving this to another function for "normalizing" an
+        #  Airfoil's outline such that its leading point is exactly at [0.0, 0.0],
+        #  and its trailing point exactly at [1.0, 0.0]. However, we'd have to be
+        #  careful we don't reject "flapped" Airfoils.
+        # # If the upper outline's trailing point isn't exactly on the x-axis,
+        # # check that it's slope is in the direction of the x-axis. If so, find the
+        # # linearly extrapolated intersection with the x-axis (in Airfoil axes,
+        # # relative to the leading point).
+        # outlineUpperExtrapTpX_A_lp = outlineUpperTpX_A_lp
+        # if outlineUpperTpY_A_lp != 0.0:
+        #     outlineUpperPtp = outline_A_lp[1, :]
+        #     outlineUpperSlopeTp_A = (outlineUpperTpY_A_lp - outlineUpperPtp[1]) / (
+        #         outlineUpperTpX_A_lp - outlineUpperPtp[0]
+        #     )
+        #     if outlineUpperTpY_A_lp > 0.0:
+        #         if outlineUpperSlopeTp_A >= 0.0:
+        #             raise ValueError(
+        #                 "If the y-value of the Airfoil's upper outline's trailing point is positive, the slope at the trailing point of the upper outline must be negative"
+        #             )
+        #     elif outlineUpperTpY_A_lp < 0.0:
+        #         if outlineUpperSlopeTp_A <= 0.0:
+        #             raise ValueError(
+        #                 "If the y-value of the Airfoil's upper outline's trailing point is negative, the slope at the trailing point of the upper outline must be positive"
+        #             )
+        #     outlineUpperExtrapTpX_A_lp -= outlineUpperTpY_A_lp / outlineUpperSlopeTp_A
+        #
+        # # If the lower outline's trailing point isn't exactly on the x-axis,
+        # # check that it's slope is in the direction of the x-axis. If so, find the
+        # # linearly extrapolated intersection with the x-axis (in Airfoil axes,
+        # # relative to the leading point).
+        # outlineLowerExtrapTpX_A_lp = outlineLowerTpX_A_lp
+        # if outlineLowerTpY_A_lp != 0.0:
+        #     outlineLowerPtp = outline_A_lp[-2, :]
+        #     outlineLowerSlopeTp_A = (outlineLowerTpY_A_lp - outlineLowerPtp[1]) / (
+        #         outlineLowerTpX_A_lp - outlineLowerPtp[0]
+        #     )
+        #     if outlineLowerTpY_A_lp > 0.0:
+        #         if outlineLowerSlopeTp_A >= 0.0:
+        #             raise ValueError(
+        #                 "If the y-value of the Airfoil's lower outline's trailing point is positive, the slope at the trailing point of the lower outline must be negative"
+        #             )
+        #     elif outlineLowerTpY_A_lp < 0.0:
+        #         if outlineLowerSlopeTp_A <= 0.0:
+        #             raise ValueError(
+        #                 "If the y-value of the Airfoil's lower outline's trailing point is negative, the slope at the trailing point of the lower outline must be positive"
+        #             )
+        #     outlineLowerExtrapTpX_A_lp -= outlineLowerTpY_A_lp / outlineLowerSlopeTp_A
+        #
+        # # Find the average extrapolated trailing point.
+        # outlineExtrapTpX = (outlineUpperExtrapTpX_A_lp + outlineLowerExtrapTpX_A_lp) / 2
+        # outlineExtrapTp = np.array([outlineExtrapTpX, 0.0], dtype=float)
+        #
+        # # Add the extrapolated trailing point to outline_A_lp while avoiding duplicates.
+        # if outlineUpperTpY_A_lp != 0.0:
+        #     if outlineLowerTpY_A_lp != 0.0:
+        #         outline_A_lp = np.hstack([outlineExtrapTp, outline_A_lp])
+        #     else:
+        #         outline_A_lp = np.hstack([outlineExtrapTp, outline_A_lp[:-1, :]])
+        # else:
+        #     if outlineLowerTpY_A_lp != 0.0:
+        #         outline_A_lp = np.hstack([outlineExtrapTp, outline_A_lp[1:, :]])
+        #     else:
+        #         outline_A_lp = np.hstack([outlineExtrapTp, outline_A_lp[1:-1, :]])
+
+        # Find the index of the outline's leading point.
+        outlineLp_index = np.argmin(outline_A_lp[:, 0])
+
+        # Check the outline's leading point is at approximately [0.0, 0.0] (in
+        # Airfoil axes, relative to the leading point).
+        outlineLp_A_lp = outline_A_lp[outlineLp_index, :]
+        outlineLpX_A_lp = outlineLp_A_lp[0]
+        outlineLpY_A_lp = outlineLp_A_lp[1]
+        if outlineLpX_A_lp < -xAllowance or outlineLpX_A_lp > xAllowance:
+            raise ValueError(
+                "The x-value of the Airfoil's outline's leading point must be approximately 0.0 (in Airfoil axes, relative to the leading point)"
+            )
+        if outlineLpY_A_lp < -yAllowance or outlineLpY_A_lp > yAllowance:
+            raise ValueError(
+                "The y-value of the Airfoil's outline's leading point must be approximately 0.0 (in Airfoil axes, relative to the leading point)"
+            )
+
+        # Split the outline into its upper and lower sections.
+        lowerOutline_A_lp = outline_A_lp[outlineLp_index:, :]
+        upperOutline_A_lp = outline_A_lp[: outlineLp_index + 1, :]
+
+        lowerOutlineDiffX_A = np.diff(lowerOutline_A_lp[:, 0])
+        upperOutlineDiffX_A = np.diff(upperOutline_A_lp[:, 0])
+
+        # Check that the upper outline is strictly decreasing in x and that the lower
+        # outline is strictly increasing in x (in Airfoil axes).
+        if not np.all(upperOutlineDiffX_A < 0.0):
+            raise ValueError(
+                "The every point in the Airfoil's outline's upper portion must have an x-value less than the point before it (in Airfoil axes)"
+            )
+        if not np.all(lowerOutlineDiffX_A > 0.0):
+            raise ValueError(
+                "The every point in the Airfoil's outline's lower portion must have an x-value greater than than the point before it (in Airfoil axes)"
+            )
+
+        # Check that the split portions both have at least three points.
+        n_upper_points = upperOutline_A_lp.shape[0]
+        n_lower_points = lowerOutline_A_lp.shape[0]
+        if n_upper_points < 3:
+            raise ValueError(
+                "The upper portion of the Airfoil's outline must contain at least three points (including the outline's leading point)"
+            )
+        if n_lower_points < 3:
+            raise ValueError(
+                "The lower portion of the Airfoil's outline must contain at least three points (including the outline's leading point)"
+            )
+
+        outline_chord_fractions = np.linspace(
+            outlineLpX_A_lp,
+            max(outlineUpperTpX_A_lp, outlineUpperTpY_A_lp),
+            2 * max(n_upper_points, n_lower_points),
+        )
+
+        upperFlippedOutline_A_lp = np.flipud(upperOutline_A_lp)
+
+        upperY_func = sp_interp.PchipInterpolator(
+            x=upperFlippedOutline_A_lp[:, 0],
+            y=upperFlippedOutline_A_lp[:, 1],
+            extrapolate=True,
+        )
+        lowerY_func = sp_interp.PchipInterpolator(
+            x=lowerOutline_A_lp[:, 0],
+            y=lowerOutline_A_lp[:, 1],
+            extrapolate=True,
+        )
+
+        upperMinusLowerOutlineY = upperY_func(outline_chord_fractions) - lowerY_func(
+            outline_chord_fractions
+        )
+
+        if not np.all(upperMinusLowerOutlineY[1:-1] >= 0.0):
+            raise ValueError(
+                "All points on the Airfoil's upper outline (excluding the outline's leading and trailing points) must have a y-value greater than the points on the lower outline at the same x-value (in Airfoil axes, relative to the leading point)"
+            )
+
+        return outline_A_lp

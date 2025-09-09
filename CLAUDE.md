@@ -227,7 +227,6 @@ When referencing coordinate variables in comments and docstrings, use the follow
 - For 4x4 transformation matrices, vectors are converted to homogeneous form
 - Position vectors: `[x, y, z, 1]` (has_point=True)
 - Direction vectors: `[x, y, z, 0]` (has_point=False)
-- Use `ps.transformations.generate_homog(vector, has_point)` for conversion
 
 ## Coordinate System Conventions
 
@@ -422,3 +421,4 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 - **Coordinate and axis references**: When referring to axes, coordinates, or planes, use  lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", "y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and "axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes").  Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, or docstrings
 - Always use straight single and double quotes, not curly ones
+- In .md files, use "…" instead of "...". In all other files, use "...".

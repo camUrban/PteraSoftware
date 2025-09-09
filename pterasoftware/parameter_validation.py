@@ -3,57 +3,133 @@
 import numpy as np
 
 
-def validate_boolean(value, name):
-    """Validates a boolean parameter."""
+def string_return_string(string, name):
+    """Validates that a value is a string and returns it as a string. name must also
+    be a string."""
+    if not isinstance(name, str):
+        raise TypeError("name must be a string.")
+
+    if not isinstance(string, str):
+        raise TypeError(f"{name} must be a string.")
+    return string
+
+
+def boolean_return_boolean(value, name):
+    """Validates that a value is a boolean and returns it as a boolean. name must be
+    a string."""
+    name = string_return_string(name, "name")
+
     if not isinstance(value, bool):
         raise TypeError(f"{name} must be a boolean.")
 
     return value
 
 
-def validate_scalar_int(value, name):
-    """Validates a scalar is an int and returns it."""
+def int_return_int(value, name):
+    """Validates that a value is an int and returns it as an int. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
+    name = string_return_string(name, "name")
+
     if not isinstance(value, int):
         raise TypeError(f"{name} must be an integer.")
-
-    if not np.isfinite(value).all():
-        raise ValueError(f"{name} can't be nan, inf, or -inf.")
 
     return value
 
 
-def validate_non_negative_scalar_int(value, name):
-    """Validates a scalar is an int with a value greater than or equal to zero and
-    returns it."""
+# ToDo: Consider getting rid of this function as its functionality can be replicated
+#  with validate_scalar_int_in_range.
+def non_negative_int_return_int(value, name):
+    """Validates that a value is an int with a value greater than or equal to zero
+    and returns it as an int. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
 
     if not isinstance(value, int):
         raise TypeError(f"{name} must be an integer.")
-
-    if not np.isfinite(value).all():
-        raise ValueError(f"{name} can't be nan, inf, or -inf.")
 
     if value < 0:
         raise ValueError(f"{name} must be greater than or equal to zero.")
 
-    return value
+    return int(value)
 
 
-def validate_positive_scalar_int(value, name):
-    """Validates a scalar is an int with a value greater than zero and returns it."""
+# ToDo: Consider getting rid of this function as its functionality can be replicated
+#  with validate_scalar_int_in_range.
+def positive_int_return_int(value, name):
+    """Validates that a value is an int with a value greater than zero and returns it
+    as an int. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     if not isinstance(value, int):
         raise TypeError(f"{name} must be an int.")
 
-    if not np.isfinite(value).all():
-        raise ValueError(f"{name} can't be nan, inf, or -inf.")
-
     if value <= 0:
         raise ValueError(f"{name} must be positive.")
 
     return value
 
 
-def validate_scalar_float(value, name):
-    """Validates a scalar value and returns it as a float."""
+def int_in_range_return_int(
+    value, name, min_val, min_inclusive, max_val, max_inclusive
+):
+    """Validates that a value is an int and in a custom range and returns it as an
+    int. If min_val or max_val is None, then value's magnitude isn't checked relative
+    to that parameter. If min_val or max_val is None, the corresponding '*_inclusive'
+    parameter must also be None. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+    if min_val is not None:
+        min_val = number_return_float(min_val, "min_val")
+        min_inclusive = boolean_return_boolean(min_inclusive, "min_inclusive")
+    else:
+        if min_inclusive is not None:
+            raise ValueError("min_inclusive must be None if min_val is None")
+    if max_val is not None:
+        max_val = number_return_float(max_val, "max_val")
+        max_inclusive = boolean_return_boolean(max_inclusive, "max_inclusive")
+    else:
+        if max_inclusive is not None:
+            raise ValueError("max_inclusive must be None if max_val is None")
+
+    if min_val is not None and max_val is not None:
+        if min_val >= max_val:
+            raise ValueError("min_val must be less than max_val")
+
+    if not isinstance(value, int):
+        raise TypeError(f"{name} must be an int.")
+
+    if min_val is not None:
+        if min_inclusive:
+            if not value >= min_val:
+                raise ValueError(f"{name} must be greater than or equal to {min_val}.")
+        else:
+            if not value > min_val:
+                raise ValueError(f"{name} must be greater than {min_val}.")
+
+    if max_val is not None:
+        if max_inclusive:
+            if not value <= max_val:
+                raise ValueError(f"{name} must be less than or equal to {max_val}.")
+        else:
+            if not value < max_val:
+                raise ValueError(f"{name} must be less than {min_val}.")
+
+    return int(value)
+
+
+def number_return_float(value, name):
+    """Validates a value is a number and returns it as a float. name must be a
+    string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     if not isinstance(value, (int, float, np.number)):
         raise TypeError(f"{name} must be numeric.")
 
@@ -63,9 +139,15 @@ def validate_scalar_float(value, name):
     return float(value)
 
 
-def validate_non_negative_scalar_float(value, name):
-    """Validates a scalar value greater than or equal to zero and returns it as a
-    float."""
+# ToDo: Consider getting rid of this function as its functionality can be replicated
+#  with number_in_range_return_float.
+def non_negative_number_return_float(value, name):
+    """Validates a value is a number and is greater than or equal to zero and returns
+    it as a float. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     if not isinstance(value, (int, float, np.number)):
         raise TypeError(f"{name} must be numeric.")
 
@@ -78,8 +160,15 @@ def validate_non_negative_scalar_float(value, name):
     return float(value)
 
 
-def validate_positive_scalar_float(value, name):
-    """Validates a scalar value greater than zero and returns it as a float."""
+# ToDo: Consider getting rid of this function as its functionality can be replicated
+#  with number_in_range_return_float.
+def positive_number_return_float(value, name):
+    """Validates a value is a number and is greater than zero and returns it as a
+    float. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     if not isinstance(value, (int, float, np.number)):
         raise TypeError(f"{name} must be numeric.")
 
@@ -92,39 +181,72 @@ def validate_positive_scalar_float(value, name):
     return float(value)
 
 
-def validate_scalar_in_range_float(
+def number_in_range_return_float(
     value, name, min_val, min_inclusive, max_val, max_inclusive
 ):
-    """Validates a scalar value in a custom range and returns it as a float."""
+    """Validates a value is a number and is in a custom range and returns it as a
+    float. If min_val or max_val is None, then value's magnitude isn't checked
+    relative to that parameter. If min_val or max_val is None, the corresponding
+    '*_inclusive' parameter must also be None. If not None, these parameters must be
+    booleans. If neither min_val nor max_val are None, then min_val must be less than
+    max_val. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+    if min_val is not None:
+        min_val = number_return_float(min_val, "min_val")
+        min_inclusive = boolean_return_boolean(min_inclusive, "min_inclusive")
+    else:
+        if min_inclusive is not None:
+            raise ValueError("min_inclusive must be None if min_val is None")
+    if max_val is not None:
+        max_val = number_return_float(max_val, "max_val")
+        max_inclusive = boolean_return_boolean(max_inclusive, "max_inclusive")
+    else:
+        if max_inclusive is not None:
+            raise ValueError("max_inclusive must be None if max_val is None")
+
+    if min_val is not None and max_val is not None:
+        if min_val >= max_val:
+            raise ValueError("min_val must be less than max_val")
+
     if not isinstance(value, (int, float, np.number)):
         raise TypeError(f"{name} must be numeric.")
 
     if not np.isfinite(value).all():
         raise ValueError(f"{name} can't be nan, inf, or -inf.")
 
-    if min_inclusive:
-        if not value >= min_val:
-            raise ValueError(f"{name} must be greater than or equal to {min_val}.")
-    else:
-        if not value > min_val:
-            raise ValueError(f"{name} must be greater than {min_val}.")
+    if min_val is not None:
+        if min_inclusive:
+            if not value >= min_val:
+                raise ValueError(f"{name} must be greater than or equal to {min_val}.")
+        else:
+            if not value > min_val:
+                raise ValueError(f"{name} must be greater than {min_val}.")
 
-    if max_inclusive:
-        if not value <= max_val:
-            raise ValueError(f"{name} must be less than or equal to {max_val}.")
-    else:
-        if not value < max_val:
-            raise ValueError(f"{name} must be less than {min_val}.")
+    if max_val is not None:
+        if max_inclusive:
+            if not value <= max_val:
+                raise ValueError(f"{name} must be less than or equal to {max_val}.")
+        else:
+            if not value < max_val:
+                raise ValueError(f"{name} must be less than {min_val}.")
 
     return float(value)
 
 
-def validate_2d_vector_array_float(vectors, name):
-    """Validates an array of 2D vectors and returns it as an array of floats.
+def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
+    """Validates a value is an array-like object of 2D number vector-like objects (
+    array-like objects with shape (2,)). It then returns it as a (...,2) numpy array
+    of floats. name must be a string.
 
     Accepts both single vectors of shape (2,) and arrays of vectors with shape
     (..., 2) where the last dimension must be 2.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
     """
+    name = string_return_string(name, "name")
+
     try:
         vectors = np.asarray(vectors, dtype=float)
     except (TypeError, ValueError):
@@ -142,8 +264,13 @@ def validate_2d_vector_array_float(vectors, name):
     return vectors
 
 
-def validate_3d_vector_float(vector, name):
-    """Validates a 3D vector and returns it as a vector of floats."""
+def threeD_number_vectorLike_return_float(vector, name):
+    """Validates a value is a 3D vector-like object (array-like object with shape (3,
+    )). It then returns it as a (3,) numpy array of floats. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
@@ -158,12 +285,17 @@ def validate_3d_vector_float(vector, name):
     return vector
 
 
-def validate_3d_vectors_array_float(vectors, name):
-    """Validates an array of 3D vectors and returns it as an array of floats.
+def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
+    """Validates a value is an array-like object of 3D number vector-like objects (
+    array-like objects with shape (3,)). It then returns it as a (...,3) numpy array
+    of floats. name must be a string.
 
-    Accepts both single vectors of shape (3,) and arrays of vectors with shape
-    (..., 3) where the last dimension must be 3.
-    """
+    Accepts both single vectors of shape (2,) and arrays of vectors with shape
+    (..., 2) where the last dimension must be 2.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         vectors = np.asarray(vectors, dtype=float)
     except (TypeError, ValueError):
@@ -181,8 +313,14 @@ def validate_3d_vectors_array_float(vectors, name):
     return vectors
 
 
-def validate_3d_unit_vector_norm_float(vector, name):
-    """Validates a 3D unit vector and returns it as a normalized vector of floats."""
+def threeD_number_vectorLike_return_float_unit_vector(vector, name):
+    """Validates a value is a 3D vector-like object (array-like object with shape (3,
+    )). It then returns it as a (3,) numpy array of floats, normalized to have a
+    magnitude of 1.0. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
@@ -202,9 +340,14 @@ def validate_3d_unit_vector_norm_float(vector, name):
     return vector
 
 
-def validate_4d_homog_vector_float(vector, name):
-    """Validates a 4D vector in homogeneous coordinates and returns it as a vector of
-    floats."""
+def fourD_homog_number_vectorLike_return_float(vector, name):
+    """Validates a value is a 4D homogeneous vector-like object (array-like object
+    with shape (4,) with a final value equal to 0.0 or 1.0). It then returns it as a
+    (4,) numpy array of floats. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
@@ -223,8 +366,13 @@ def validate_4d_homog_vector_float(vector, name):
     return vector
 
 
-def validate_nd_vector_float(vector, name):
-    """Validates a ND vector and returns it as a vector of floats."""
+def nD_number_vectorLike_return_float(vector, name):
+    """Validates a value is an ND vector-like object (array-like object with shape (N,
+    )). It then returns it as an (N,) numpy array of floats. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
@@ -239,8 +387,13 @@ def validate_nd_vector_float(vector, name):
     return vector
 
 
-def validate_3_by_3_matrix_float(matrix, name):
-    """Validates a 3x3 matrix and returns it as a matrix of floats."""
+def threeByThree_number_arrayLike_return_float(matrix, name):
+    """Validates a value is a (3,3) array-like object. It then returns it as a (3,
+    3) numpy array of floats. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         matrix = np.asarray(matrix, dtype=float)
     except (TypeError, ValueError):
@@ -255,8 +408,13 @@ def validate_3_by_3_matrix_float(matrix, name):
     return matrix
 
 
-def validate_4_by_4_matrix_float(matrix, name):
-    """Validates a 4x4 matrix and returns it as a matrix of floats."""
+def fourByFour_number_arrayLike_return_float(matrix, name):
+    """Validates a value is a (4,4) array-like object. It then returns it as a (4,
+    4) numpy array of floats. name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+
     try:
         matrix = np.asarray(matrix, dtype=float)
     except (TypeError, ValueError):
@@ -271,22 +429,19 @@ def validate_4_by_4_matrix_float(matrix, name):
     return matrix
 
 
-def validate_string(string, name):
-    """Validates a string and returns it."""
-    if not isinstance(string, str):
-        raise TypeError(f"{name} must be a string.")
-    return string
+def list_return_list(list_parameter, name):
+    """Validates a list and returns it. name must be a string."""
+    name = string_return_string(name, "name")
 
-
-def validate_list(list_parameter, name):
-    """Validates a list and returns it."""
     if not isinstance(list_parameter, list):
         raise TypeError(f"{name} must be a list.")
     return list_parameter
 
 
-def validate_non_empty_list(list_parameter, name):
-    """Validates a non-empty list and returns it."""
+def non_empty_list_return_list(list_parameter, name):
+    """Validates a non-empty list and returns it. name must be a string."""
+    name = string_return_string(name, "name")
+
     if not isinstance(list_parameter, list):
         raise TypeError(f"{name} must be a list.")
 
@@ -296,8 +451,11 @@ def validate_non_empty_list(list_parameter, name):
     return list_parameter
 
 
-def validate_rotation_order(order, name):
-    """Validates string representing a Tait-Bryan rotation sequence, and returns it."""
+def rotation_order_return_string(order, name):
+    """Validates string representing a Tait-Bryan rotation sequence, and returns it.
+    name must be a string."""
+    name = string_return_string(name, "name")
+
     if not isinstance(order, str):
         raise TypeError(f"{name} must be a string.")
 

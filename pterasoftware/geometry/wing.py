@@ -316,7 +316,7 @@ class Wing:
 
         """
         # Validate wing_cross_sections.
-        wing_cross_sections = parameter_validation.validate_non_empty_list(
+        wing_cross_sections = parameter_validation.non_empty_list_return_list(
             wing_cross_sections, "wing_cross_sections"
         )
         num_wing_cross_sections = len(wing_cross_sections)
@@ -338,14 +338,18 @@ class Wing:
         self.wing_cross_sections = wing_cross_sections
 
         # Validate name and prelimLer_G_Cg.
-        self.name = parameter_validation.validate_string(name, "name")
-        self.prelimLer_G_Cg = parameter_validation.validate_3d_vector_float(
-            prelimLer_G_Cg, "prelimLer_G_Cg"
+        self.name = parameter_validation.string_return_string(name, "name")
+        self.prelimLer_G_Cg = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                prelimLer_G_Cg, "prelimLer_G_Cg"
+            )
         )
 
         # Validate angles_G_to_prelimWn.
-        angles_G_to_prelimWn = parameter_validation.validate_3d_vector_float(
-            angles_G_to_prelimWn, "angles_G_to_prelimWn"
+        angles_G_to_prelimWn = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                angles_G_to_prelimWn, "angles_G_to_prelimWn"
+            )
         )
         if not np.all((-90.0 < angles_G_to_prelimWn) & (angles_G_to_prelimWn < 90.0)):
             raise ValueError(
@@ -354,8 +358,10 @@ class Wing:
         self.angles_G_to_prelimWn = angles_G_to_prelimWn
 
         # Validate symmetric and mirror_only.
-        symmetric = parameter_validation.validate_boolean(symmetric, "symmetric")
-        mirror_only = parameter_validation.validate_boolean(mirror_only, "mirror_only")
+        symmetric = parameter_validation.boolean_return_boolean(symmetric, "symmetric")
+        mirror_only = parameter_validation.boolean_return_boolean(
+            mirror_only, "mirror_only"
+        )
         if symmetric and mirror_only:
             raise ValueError("symmetric and mirror_only cannot both be True.")
         self.symmetric = symmetric
@@ -368,7 +374,7 @@ class Wing:
                     "symmetry_normal_Wn cannot be None when symmetric or mirror_only is True."
                 )
             symmetry_normal_Wn = (
-                parameter_validation.validate_3d_unit_vector_norm_float(
+                parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
                     symmetry_normal_Wn, "symmetry_normal_Wn"
                 )
             )
@@ -376,9 +382,10 @@ class Wing:
                 raise ValueError(
                     "symmetry_point_Wn_Ler cannot be None when symmetric or mirror_only is True."
                 )
-            symmetry_point_Wn_Ler = parameter_validation.validate_3d_vector_float(
-                symmetry_point_Wn_Ler,
-                "symmetry_point_Wn_Ler",
+            symmetry_point_Wn_Ler = (
+                parameter_validation.threeD_number_vectorLike_return_float(
+                    symmetry_point_Wn_Ler, "symmetry_point_Wn_Ler"
+                )
             )
         else:
             if symmetry_normal_Wn is not None:
@@ -393,7 +400,7 @@ class Wing:
         self.symmetry_point_Wn_Ler = symmetry_point_Wn_Ler
 
         # Validate num_chordwise_panels and chordwise_spacing.
-        self.num_chordwise_panels = parameter_validation.validate_positive_scalar_int(
+        self.num_chordwise_panels = parameter_validation.positive_int_return_int(
             num_chordwise_panels, "num_chordwise_panels"
         )
         if chordwise_spacing not in ["cosine", "uniform"]:
@@ -421,7 +428,7 @@ class Wing:
         # the parent Airplane should have modified a Wing that initially had type 5
         # symmetry to have type 1 symmetry, and then made a new reflected Wing with
         # type 3 symmetry.
-        symmetry_type = parameter_validation.validate_scalar_int(
+        symmetry_type = parameter_validation.int_return_int(
             symmetry_type, "symmetry_type"
         )
         valid_symmetry_types = [1, 2, 3, 4]

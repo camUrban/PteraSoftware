@@ -167,21 +167,21 @@ class WingCrossSection:
         # will later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if num_spanwise_panels is not None:
-            num_spanwise_panels = parameter_validation.validate_positive_scalar_int(
+            num_spanwise_panels = parameter_validation.positive_int_return_int(
                 num_spanwise_panels, "Non-None num_spanwise"
             )
         self.num_spanwise_panels = num_spanwise_panels
 
         # Validate chord.
-        self.chord = parameter_validation.validate_positive_scalar_float(chord, "chord")
+        self.chord = parameter_validation.positive_number_return_float(chord, "chord")
 
         # Perform a preliminary validation for Lp_Wcsp_Lpp. The parent Wing will
         # later check that this is a zero vector if this WingCrossSection is a root
         # WingCrossSection.
-        Lp_Wcsp_Lpp = parameter_validation.validate_3d_vector_float(
+        Lp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
             Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
         )
-        Lp_Wcsp_Lpp[1] = parameter_validation.validate_non_negative_scalar_float(
+        Lp_Wcsp_Lpp[1] = parameter_validation.non_negative_number_return_float(
             Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]"
         )
         self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
@@ -189,12 +189,14 @@ class WingCrossSection:
         # Perform a preliminary validation for angles_Wcsp_to_Wcs_izyx. The parent
         # Wing will later check that this is a zero vector if this WingCrossSection
         # is a root WingCrossSection.
-        angles_Wcsp_to_Wcs_izyx = parameter_validation.validate_3d_vector_float(
-            angles_Wcsp_to_Wcs_izyx, "angles_Wcsp_to_Wcs_izyx"
+        angles_Wcsp_to_Wcs_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                angles_Wcsp_to_Wcs_izyx, "angles_Wcsp_to_Wcs_izyx"
+            )
         )
         for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_izyx):
             angles_Wcsp_to_Wcs_izyx[angle_id] = (
-                parameter_validation.validate_scalar_in_range_float(
+                parameter_validation.number_in_range_return_float(
                     angle,
                     f"angles_Wcsp_to_Wcs_izyx[{angle_id}]",
                     -90.0,
@@ -207,7 +209,7 @@ class WingCrossSection:
 
         # Validate control surface symmetry type.
         if control_surface_symmetry_type is not None:
-            control_surface_symmetry_type = parameter_validation.validate_string(
+            control_surface_symmetry_type = parameter_validation.string_return_string(
                 control_surface_symmetry_type, "control_surface_symmetry_type"
             )
             valid_control_surface_symmetry_types = ["symmetric", "asymmetric"]
@@ -222,7 +224,7 @@ class WingCrossSection:
 
         # Validate control_surface_hinge_point and control_surface_deflection.
         self.control_surface_hinge_point = (
-            parameter_validation.validate_scalar_in_range_float(
+            parameter_validation.number_in_range_return_float(
                 control_surface_hinge_point,
                 "control_surface_hinge_point",
                 0.0,
@@ -232,7 +234,7 @@ class WingCrossSection:
             )
         )
         self.control_surface_deflection = (
-            parameter_validation.validate_scalar_in_range_float(
+            parameter_validation.number_in_range_return_float(
                 control_surface_deflection,
                 "control_surface_deflection",
                 -90.0,
@@ -246,7 +248,7 @@ class WingCrossSection:
         # later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if spanwise_spacing is not None:
-            spanwise_spacing = parameter_validation.validate_string(
+            spanwise_spacing = parameter_validation.string_return_string(
                 spanwise_spacing, "spanwise_spacing"
             )
             valid_non_none_spanwise_spacings = ["cosine", "uniform"]

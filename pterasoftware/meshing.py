@@ -372,8 +372,8 @@ def _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates):
     # Make the MCLs for each Airfoil. First index is point number, second index is
     # the coordinates of that point on the MCL (in each Airfoil's axes, relative to
     # each Airfoil's leading point).
-    inner_mcl_points_Ai_lpAi = inner_airfoil.get_downsampled_mcl(chordwise_coordinates)
-    outer_mcl_points_Ao_lpAo = outer_airfoil.get_downsampled_mcl(chordwise_coordinates)
+    inner_mcl_points_Ai_lpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
+    outer_mcl_points_Ao_lpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
 
     # Extract the y-components of the inner Airfoil's MCL points (in the inner
     # Airfoil's axes, relative to the inner Airfoil's leading point) and put them in

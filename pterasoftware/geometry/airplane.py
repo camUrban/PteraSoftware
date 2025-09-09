@@ -136,7 +136,7 @@ class Airplane:
             span. If not set or set to None (the default value), it populates from
             first Wing. If set, it must be greater than zero. The units are meters.
         """
-        wings = parameter_validation.validate_non_empty_list(wings, "wings")
+        wings = parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings = []
         for wing in wings:
             if not isinstance(wing, Wing):
@@ -144,24 +144,26 @@ class Airplane:
             processed_wings.extend(self.process_wing_symmetry(wing))
         self.wings = processed_wings
 
-        self.name = parameter_validation.validate_string(name, "name")
-        self.Cgi_E_I = parameter_validation.validate_3d_vector_float(Cgi_E_I, "Cgi_E_I")
+        self.name = parameter_validation.string_return_string(name, "name")
+        self.Cgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+            Cgi_E_I, "Cgi_E_I"
+        )
 
-        angles_E_to_B_izyx = parameter_validation.validate_3d_vector_float(
+        angles_E_to_B_izyx = parameter_validation.threeD_number_vectorLike_return_float(
             angles_E_to_B_izyx, "angles_E_to_B_izyx"
         )
-        angles_E_to_B_izyx[0] = parameter_validation.validate_scalar_in_range_float(
+        angles_E_to_B_izyx[0] = parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[0], "angles_E_to_B_izyx[0]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_izyx[1] = parameter_validation.validate_scalar_in_range_float(
+        angles_E_to_B_izyx[1] = parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[1], "angles_E_to_B_izyx[1]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_izyx[2] = parameter_validation.validate_scalar_in_range_float(
+        angles_E_to_B_izyx[2] = parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[2], "angles_E_to_B_izyx[2]", -180.0, False, 180.0, True
         )
         self.angles_E_to_B_izyx = angles_E_to_B_izyx
 
-        self.weight = parameter_validation.validate_non_negative_scalar_float(
+        self.weight = parameter_validation.non_negative_number_return_float(
             weight, "weight"
         )
 
@@ -171,19 +173,19 @@ class Airplane:
         if s_ref is None:
             self.s_ref = self.wings[0].projected_area
         else:
-            self.s_ref = parameter_validation.validate_positive_scalar_float(
+            self.s_ref = parameter_validation.positive_number_return_float(
                 s_ref, "s_ref"
             )
         if c_ref is None:
             self.c_ref = self.wings[0].mean_aerodynamic_chord
         else:
-            self.c_ref = parameter_validation.validate_positive_scalar_float(
+            self.c_ref = parameter_validation.positive_number_return_float(
                 c_ref, "c_ref"
             )
         if b_ref is None:
             self.b_ref = self.wings[0].span
         else:
-            self.b_ref = parameter_validation.validate_positive_scalar_float(
+            self.b_ref = parameter_validation.positive_number_return_float(
                 b_ref, "b_ref"
             )
 

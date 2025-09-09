@@ -54,7 +54,22 @@ This module contains the following functions:
     Airplane with a type 5 Wing to test wing symmetry processing.
 
     make_custom_reference_airplane_fixture: This method makes a fixture that is an
-    Airplane with custom reference dimensions set explicitly."""
+    Airplane with custom reference dimensions set explicitly.
+
+    make_naca0012_airfoil_fixture: This method makes a fixture that is a symmetric
+    NACA 0012 Airfoil for testing purposes.
+
+    make_naca2412_airfoil_fixture: This method makes a fixture that is a cambered
+    NACA 2412 Airfoil for testing purposes.
+
+    make_custom_outline_airfoil_fixture: This method makes a fixture that is an
+    Airfoil with custom outline coordinates for testing purposes.
+
+    make_resampled_airfoil_fixture: This method makes a fixture that is an Airfoil
+    with resampling enabled for testing purposes.
+
+    make_non_resampled_airfoil_fixture: This method makes a fixture that is an
+    Airfoil with resampling disabled for testing purposes."""
 
 import pterasoftware as ps
 
@@ -495,3 +510,105 @@ def make_custom_reference_airplane_fixture():
     )
 
     return custom_reference_airplane_fixture
+
+
+def make_naca0012_airfoil_fixture():
+    """This method makes a fixture that is a symmetric NACA 0012 Airfoil for
+    testing purposes.
+
+    :return naca0012_airfoil_fixture: Airfoil
+        This is the symmetric NACA 0012 Airfoil object configured for testing.
+    """
+    naca0012_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0012")
+
+    return naca0012_airfoil_fixture
+
+
+def make_naca2412_airfoil_fixture():
+    """This method makes a fixture that is a cambered NACA 2412 Airfoil for
+    testing purposes.
+
+    :return naca2412_airfoil_fixture: Airfoil
+        This is the cambered NACA 2412 Airfoil object configured for testing.
+    """
+    naca2412_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
+
+    return naca2412_airfoil_fixture
+
+
+def make_custom_outline_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with custom outline
+    coordinates for testing purposes.
+
+    :return custom_outline_airfoil_fixture: Airfoil
+        This is the Airfoil object with custom outline coordinates.
+    """
+    import numpy as np
+
+    custom_outline = np.array(
+        [
+            [1.00, 0.00],  # Outline upper trailing point
+            [0.75, 0.05],
+            [0.50, 0.03],
+            [0.25, 0.01],
+            [0.00, 0.00],  # Outline leading point
+            [0.25, -0.01],
+            [0.50, -0.03],
+            [0.75, -0.05],
+            [1.00, -0.00],  # Outline lower trailing point
+        ]
+    )
+
+    custom_outline_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="Custom Test Airfoil",
+        outline_A_lp=custom_outline,
+        resample=False,
+        n_points_per_side=400,
+    )
+
+    return custom_outline_airfoil_fixture
+
+
+def make_resampled_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with resampling enabled
+    for testing purposes.
+
+    :return resampled_airfoil_fixture: Airfoil
+        This is the Airfoil object with resampling enabled.
+    """
+    resampled_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca3210",
+        resample=True,
+        n_points_per_side=100,
+    )
+
+    return resampled_airfoil_fixture
+
+
+def make_non_resampled_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with resampling disabled
+    for testing purposes.
+
+    :return non_resampled_airfoil_fixture: Airfoil
+        This is the Airfoil object with resampling disabled.
+    """
+    import numpy as np
+
+    simple_outline = np.array(
+        [
+            [1.00, 0.00],  # Outline upper trailing point
+            [0.50, 0.03],
+            [0.00, 0.00],  # Outline leading point
+            [0.50, -0.03],
+            [1.00, -0.00],  # Outline lower trailing point
+        ]
+    )
+
+    non_resampled_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="Non-Resampled Test Airfoil",
+        outline_A_lp=simple_outline,
+        resample=False,
+        n_points_per_side=10,
+    )
+
+    return non_resampled_airfoil_fixture

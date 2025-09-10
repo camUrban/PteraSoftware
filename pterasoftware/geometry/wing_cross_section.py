@@ -149,8 +149,8 @@ class WingCrossSection:
         :param control_surface_deflection: number, optional
 
             This is the control deflection in degrees. Deflection downwards is
-            positive. It must be a number (int or float) in the range (-90.0,
-            90.0) degrees. The default value is 0.0 degrees.
+            positive. It must be a number (int or float) in the range [-5.0,
+            5.0] degrees. The default value is 0.0 degrees.
 
         :param spanwise_spacing: str or None, optional
 
@@ -237,10 +237,10 @@ class WingCrossSection:
             parameter_validation.number_in_range_return_float(
                 control_surface_deflection,
                 "control_surface_deflection",
-                -90.0,
-                False,
-                90.0,
-                False,
+                -5.0,
+                True,
+                5.0,
+                True,
             )
         )
 

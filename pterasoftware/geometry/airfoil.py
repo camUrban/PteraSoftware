@@ -122,14 +122,22 @@ class Airfoil:
         self.mcl_A_lp = None
         self._populate_mcl()
 
+    # ToDo: In the future, if adding control surfaces becomes more important,
+    #  we may want to rework this method. Using this method we need to artificially
+    #  limit the maximum deflection to 5.0 degrees because higher values may cause
+    #  the upper and lower outlines to intersect. This is because they each rotate
+    #  about points on their respective outlines. Instead, it would be better to have
+    #  everything rotate about the MCL's hinge point, however, this causes
+    #  self-intersections for the upper and lower outlines, so we'd need that we'd
+    #  need to write some logic to remove those.
     def add_control_surface(self, deflection, hinge_point):
         """This method returns a version of the Airfoil with a control surface added
         at a given point. It is called during meshing.
 
         :param deflection: number
             This is the control deflection in degrees. Deflection downwards is
-            positive. It must be a number (int or float) in the range (-90.0,
-            90.0) degrees. Values are converted to floats internally.
+            positive. It must be a number (int or float) in the range [-5.0,
+            5.0] degrees. Values are converted to floats internally.
         :param hinge_point: float
             This is the location of the hinge as a fraction of chord length. It must
             be in the range (0.0, 1.0).
@@ -138,10 +146,53 @@ class Airfoil:
         """
         # Validate the deflection and hinge_point inputs.
         deflection = parameter_validation.number_in_range_return_float(
-            deflection, "deflection", -90.0, False, 90.0, False
+            deflection, "deflection", -5.0, True, 5.0, True
         )
         hinge_point = parameter_validation.number_in_range_return_float(
             hinge_point, "hinge_point", 0.0, False, 1.0, False
+        )
+
+        flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
+        lowerOutline_A_lp = self._lower_outline()
+        mcl_A_lp = self.mcl_A_lp
+
+        flippedUpperOutline_split_index = np.where(
+            flippedUpperOutline_A_lp[:, 0] >= hinge_point
+        )[0][0]
+        lowerOutline_split_index = np.where(lowerOutline_A_lp[:, 0] >= hinge_point)[0][
+            0
+        ]
+        mcl_split_index = np.where(mcl_A_lp[:, 0] >= hinge_point)[0][0]
+
+        preHingeFlippedUpperOutline_A_lp = flippedUpperOutline_A_lp[
+            :flippedUpperOutline_split_index, :
+        ]
+        postHingeFlippedUpperOutline_A_lp = flippedUpperOutline_A_lp[
+            flippedUpperOutline_split_index:, :
+        ]
+        preHingeLowerOutline_A_lp = lowerOutline_A_lp[:lowerOutline_split_index, :]
+        postHingeLowerOutline_A_lp = lowerOutline_A_lp[lowerOutline_split_index:, :]
+        preHingeMcl_A_lp = mcl_A_lp[:mcl_split_index, :]
+        postHingeMcl_A_lp = mcl_A_lp[mcl_split_index:, :]
+
+        flippedUpperOutlineHingePoint_A_lp = preHingeFlippedUpperOutline_A_lp[-1, :]
+        lowerOutlineHingePoint_A_lp = preHingeLowerOutline_A_lp[-1, :]
+        mclHingePoint_A_lp = preHingeMcl_A_lp[-1, :]
+
+        flippedUpperOutlineHingePoint_Wcs_lp = np.hstack(
+            [flippedUpperOutlineHingePoint_A_lp, 0.0]
+        )
+        lowerOutlineHingePoint_Wcs_lp = np.hstack([lowerOutlineHingePoint_A_lp, 0.0])
+        mclHingePoint_Wcs_lp = np.hstack([mclHingePoint_A_lp, 0.0])
+
+        flippedUpperOutlineToOrigin_T_act = transformations.generate_trans_T(
+            -flippedUpperOutlineHingePoint_Wcs_lp, passive=False
+        )
+        lowerOutlineToOrigin_T_act = transformations.generate_trans_T(
+            -lowerOutlineHingePoint_Wcs_lp, passive=False
+        )
+        mclToOrigin_T_act = transformations.generate_trans_T(
+            -mclHingePoint_Wcs_lp, passive=False
         )
 
         # Make the active rotational homogeneous transformation matrix for the given
@@ -150,80 +201,79 @@ class Airfoil:
             (0, 0, -deflection), passive=False, intrinsic=False, order="zyx"
         )
 
-        # ToDo: Delete these old lines after confirming the the refactoring was
-        #  successful.
-        # sin_theta = np.sin(np.radians(-deflection))
-        # cos_theta = np.cos(np.radians(-deflection))
-        # rotation_matrix = np.array([[cos_theta, -sin_theta], [sin_theta, cos_theta]])
-        # # Rotate the mean camber line coordinates and upper minus mean camber line
-        # # vectors.
-        # new_mcl_coordinates_after = (
-        #     np.transpose(
-        #         rotation_matrix @ np.transpose(mcl_coordinates_after - hingePoint_A_lp)
-        #     )
-        #     + hingePoint_A_lp
-        # )
-        # new_upper_minus_mcl_after = np.transpose(
-        #     rotation_matrix @ np.transpose(upper_minus_mcl_after)
-        # )
-
-        # Find the position of the hinge point on the MCL (in airfoil axes, relative
-        # to the leading point)
-        hingePoint_A_lp = np.array((hinge_point, self._get_mclY(hinge_point)))
-
-        # Resample the upper outline to have points with the same x-components as the
-        # MCL.
-        upperFlippedOutline_A_lp = np.flipud(self._upper_outline())
-        upper_func = sp_interp.PchipInterpolator(
-            x=upperFlippedOutline_A_lp[:, 0],
-            y=upperFlippedOutline_A_lp[:, 1],
-            extrapolate=False,
+        flippedUpperOutlineBack_T_act = transformations.generate_trans_T(
+            flippedUpperOutlineHingePoint_Wcs_lp, passive=False
         )
-        upperFlippedOutline_A_lp = np.column_stack(
-            [self.mcl_A_lp[:, 0], upper_func(self.mcl_A_lp[:, 0])]
+        lowerOutlineBack_T_act = transformations.generate_trans_T(
+            lowerOutlineHingePoint_Wcs_lp, passive=False
+        )
+        mclBack_T_act = transformations.generate_trans_T(
+            mclHingePoint_Wcs_lp, passive=False
         )
 
-        # Find the vectors from each mean camber line coordinate to the upper portion
-        # of the Airfoil's outline (in airfoil axes)
-        mclToUpper_A = upperFlippedOutline_A_lp - self.mcl_A_lp
+        postHingeFlippedUpperOutline_T_act = transformations.compose_T_act(
+            flippedUpperOutlineToOrigin_T_act, rot_T, flippedUpperOutlineBack_T_act
+        )
+        postHingeLowerOutline_T_act = transformations.compose_T_act(
+            lowerOutlineToOrigin_T_act, rot_T, lowerOutlineBack_T_act
+        )
+        postHingeMcl_T_act = transformations.compose_T_act(
+            mclToOrigin_T_act, rot_T, mclBack_T_act
+        )
 
-        # Split the airfoil into the sections before and after the hinge point.
-        split_index = np.where(self.mcl_A_lp[:, 0] > hingePoint_A_lp[0])[0][0]
-        preHingeMcl_A_lp = self.mcl_A_lp[:split_index, :]
-        postHingeMcl_A_lp = self.mcl_A_lp[split_index:, :]
-        preHingeMclToUpper_A = mclToUpper_A[:split_index, :]
-        postHingeMclToUpper_A = mclToUpper_A[split_index:, :]
-
+        postHingeFlippedUpperOutline_Wcs_lp = np.hstack(
+            [
+                postHingeFlippedUpperOutline_A_lp,
+                np.zeros((postHingeFlippedUpperOutline_A_lp.shape[0], 1)),
+            ]
+        )
+        postHingeLowerOutline_Wcs_lp = np.hstack(
+            [
+                postHingeLowerOutline_A_lp,
+                np.zeros((postHingeLowerOutline_A_lp.shape[0], 1)),
+            ]
+        )
         postHingeMcl_Wcs_lp = np.hstack(
             [postHingeMcl_A_lp, np.zeros((postHingeMcl_A_lp.shape[0], 1))]
         )
-        postHingeMclToUpper_Wcs = np.hstack(
-            [postHingeMclToUpper_A, np.zeros((postHingeMclToUpper_A.shape[0], 1))]
-        )
 
+        flappedPostHingeFlippedUpperOutline_A_lp = (
+            transformations.apply_T_to_vectors(
+                postHingeFlippedUpperOutline_T_act,
+                postHingeFlippedUpperOutline_Wcs_lp,
+                has_point=True,
+            )
+        )[:, :2]
+        flappedPostHingeLowerOutline_A_lp = transformations.apply_T_to_vectors(
+            postHingeLowerOutline_T_act,
+            postHingeLowerOutline_Wcs_lp,
+            has_point=True,
+        )[:, :2]
         flappedPostHingeMcl_A_lp = transformations.apply_T_to_vectors(
-            rot_T, postHingeMcl_Wcs_lp, has_point=True
-        )[:, :2]
-        flappedPostHingeMclToUpper_A = transformations.apply_T_to_vectors(
-            rot_T, postHingeMclToUpper_Wcs, has_point=False
+            postHingeMcl_T_act,
+            postHingeMcl_Wcs_lp,
+            has_point=True,
         )[:, :2]
 
-        # ToDo: Determine if this method is forcing Airfoil's to be symmetrical.
-        # Assemble the new flapped Airfoil.
-        flappedMcl_A_lp = np.vstack((preHingeMcl_A_lp, flappedPostHingeMcl_A_lp))
-        flappedMclToUpper_A = np.vstack(
-            (preHingeMclToUpper_A, flappedPostHingeMclToUpper_A)
+        flappedFlippedUpperOutline_A_lp = np.vstack(
+            [preHingeFlippedUpperOutline_A_lp, flappedPostHingeFlippedUpperOutline_A_lp]
         )
-        flappedUpperOutline_A_lp = np.flipud(flappedMcl_A_lp + flappedMclToUpper_A)
-        flappedLowerOutline_A_lp = flappedMcl_A_lp - flappedMclToUpper_A
+        flappedLowerOutline_A_lp = np.vstack(
+            [preHingeLowerOutline_A_lp, flappedPostHingeLowerOutline_A_lp]
+        )
+        flappedMcl_A_lp = np.vstack([preHingeMcl_A_lp, flappedPostHingeMcl_A_lp])
+
         flappedOutline_A_lp = np.vstack(
-            (flappedUpperOutline_A_lp, flappedLowerOutline_A_lp[1:, :])
+            [
+                np.flipud(flappedFlippedUpperOutline_A_lp),
+                flappedLowerOutline_A_lp[1:, :],
+            ]
         )
 
         # Return the new flapped Airfoil, with the _TRUST token so that we don't
         # re-validate the outline, which would fail because the validation requires
-        # the trailing edge points be roughly at y=0.0, in Airfoil axes, relative to
-        # the leading point.
+        # the trailing edge points be roughly at y=0.0 (in Airfoil axes, relative to
+        # the leading point).
         return Airfoil(
             name=self.name + " flapped",
             outline_A_lp=flappedOutline_A_lp,
@@ -396,7 +446,7 @@ class Airfoil:
         """
         # Split outline_A_lp into upper and lower sections. Flip the upper points so
         # that they are ordered from the leading point to the trailing point.
-        upperFlippedOutline_A_lp = np.flipud(self._upper_outline())
+        flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
         lowerOutline_A_lp = self._lower_outline()
 
         cosine_spaced_chord_fractions = functions.cosspace(
@@ -404,8 +454,8 @@ class Airfoil:
         )
 
         upper_func = sp_interp.PchipInterpolator(
-            x=upperFlippedOutline_A_lp[:, 0],
-            y=upperFlippedOutline_A_lp[:, 1],
+            x=flippedUpperOutline_A_lp[:, 0],
+            y=flippedUpperOutline_A_lp[:, 1],
             extrapolate=True,
         )
         lower_func = sp_interp.PchipInterpolator(
@@ -414,15 +464,15 @@ class Airfoil:
             extrapolate=True,
         )
 
-        upperFlippedOutline_A_lp = upper_func(cosine_spaced_chord_fractions)
-        lowerOutline_A_lp = lower_func(cosine_spaced_chord_fractions)
+        flippedUpperOutlineY_A_lp = upper_func(cosine_spaced_chord_fractions)
+        lowerOutlineY_A_lp = lower_func(cosine_spaced_chord_fractions)
 
         # Calculate the approximate MCL points (in airfoil axes, relative to the
         # leading point) and set the class attribute.
         self.mcl_A_lp = np.column_stack(
             [
                 cosine_spaced_chord_fractions,
-                (upperFlippedOutline_A_lp + lowerOutline_A_lp) / 2,
+                (flippedUpperOutlineY_A_lp + lowerOutlineY_A_lp) / 2,
             ]
         )
 
@@ -615,43 +665,43 @@ class Airfoil:
         # Get the upper outline points. This contains the leading point.
         upperOutline_A_lp = self._upper_outline()
 
-        upperFlippedOutlineX_A_lp = np.flipud(upperOutline_A_lp)[:, 0]
-        upperFlippedOutlineY_A_lp = np.flipud(upperOutline_A_lp)[:, 1]
+        flippedUpperOutlineX_A_lp = np.flipud(upperOutline_A_lp)[:, 0]
+        flippedUpperOutlineY_A_lp = np.flipud(upperOutline_A_lp)[:, 1]
 
         # Find the distance between points along the upper flipped original outline.
-        upperFlippedOutline_distances_between_points = np.sqrt(
+        flippedUpperOutline_distances_between_points = np.sqrt(
             np.power(
-                upperFlippedOutlineX_A_lp[:-1] - upperFlippedOutlineX_A_lp[1:],
+                flippedUpperOutlineX_A_lp[:-1] - flippedUpperOutlineX_A_lp[1:],
                 2,
             )
             + np.power(
-                upperFlippedOutlineY_A_lp[:-1] - upperFlippedOutlineY_A_lp[1:],
+                flippedUpperOutlineY_A_lp[:-1] - flippedUpperOutlineY_A_lp[1:],
                 2,
             )
         )
 
         # Create a horizontal 1D array that contains the cumulative distance along
         # the upper flipped original outline of each point.
-        upperFlippedOutline_distances_cumulative = np.hstack(
-            (0, np.cumsum(upperFlippedOutline_distances_between_points))
+        flippedUpperOutline_distances_cumulative = np.hstack(
+            (0, np.cumsum(flippedUpperOutline_distances_between_points))
         )
 
         # Normalize the 1D array so that it ranges from 0.0 to 1.0.
-        upperFlippedOutline_distances_cumulative_normalized = (
-            upperFlippedOutline_distances_cumulative
-            / upperFlippedOutline_distances_cumulative[-1]
+        flippedUpperOutline_distances_cumulative_normalized = (
+            flippedUpperOutline_distances_cumulative
+            / flippedUpperOutline_distances_cumulative[-1]
         )
 
         # Create interpolated functions for the x and y-components of points on the
         # upper outline as a function of distance along upper outline.
         upperX_func = sp_interp.PchipInterpolator(
-            x=upperFlippedOutline_distances_cumulative_normalized,
-            y=upperFlippedOutlineX_A_lp,
+            x=flippedUpperOutline_distances_cumulative_normalized,
+            y=flippedUpperOutlineX_A_lp,
             extrapolate=False,
         )
         upperY_func = sp_interp.PchipInterpolator(
-            x=upperFlippedOutline_distances_cumulative_normalized,
-            y=upperFlippedOutlineY_A_lp,
+            x=flippedUpperOutline_distances_cumulative_normalized,
+            y=flippedUpperOutlineY_A_lp,
             extrapolate=False,
         )
 
@@ -948,11 +998,11 @@ class Airfoil:
             2 * max(n_upper_points, n_lower_points),
         )
 
-        upperFlippedOutline_A_lp = np.flipud(upperOutline_A_lp)
+        flippedUpperOutline_A_lp = np.flipud(upperOutline_A_lp)
 
         upperY_func = sp_interp.PchipInterpolator(
-            x=upperFlippedOutline_A_lp[:, 0],
-            y=upperFlippedOutline_A_lp[:, 1],
+            x=flippedUpperOutline_A_lp[:, 0],
+            y=flippedUpperOutline_A_lp[:, 1],
             extrapolate=True,
         )
         lowerY_func = sp_interp.PchipInterpolator(

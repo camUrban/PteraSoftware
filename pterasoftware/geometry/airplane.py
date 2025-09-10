@@ -11,6 +11,9 @@ This module contains the following functions:
 """
 
 import numpy as np
+import pyvista as pv
+import time
+import webp
 
 from .airfoil import Airfoil
 from .wing import Wing
@@ -28,6 +31,8 @@ class Airplane:
         Date of Retrieval:    04/23/2020
 
     This class contains the following public methods:
+
+        draw: Draw the 3D geometry of this Airplane.
 
         validate_first_airplane_constraints: This method validates that the first
         Airplane in a simulation has Cgi_E_I set to zeros, as required by the
@@ -200,6 +205,122 @@ class Airplane:
         self.total_near_field_force_coefficients_W = None
         self.total_near_field_moment_W = None
         self.total_near_field_moment_coefficients_W = None
+
+    def draw(self, save=False, testing=False):
+        """Draw the 3D geometry of this Airplane.
+
+        This method provides a convenient way to visualize the Airplane's Panels
+        without needing to create a solver object first. It shows the Panel's
+        surfaces in 3D using PyVista.
+
+        :param save: bool, optional
+            Set this variable to True to save the image as a WebP. The default
+            value is False.
+        :param testing: bool, optional
+            Set this variable to True to close the image after 1 second, which is
+            useful for running test suites. The default value is False.
+        :return: None
+        """
+        # Define visualization constants
+        panel_color = "chartreuse"
+        plotter_background_color = "black"
+        window_size = [1024, 768]
+        quality = 75
+
+        # Initialize the plotter and set it to use parallel projection
+        plotter = pv.Plotter(window_size=window_size, lighting=None)
+        plotter.enable_parallel_projection()
+
+        # Initialize empty arrays to hold the Panels' vertices and faces
+        panel_vertices = np.empty((0, 3), dtype=float)
+        panel_faces = np.empty(0, dtype=int)
+
+        # Initialize a variable to keep track of how many Panels' data has been added
+        # to the arrays
+        panel_num = 0
+
+        # Iterate through this Airplane's Wings
+        for wing in self.wings:
+            # Unravel the Wing's Panel matrix and iterate through it
+            panels = np.ravel(wing.panels)
+            for panel in panels:
+                # Stack this Panel's vertices and faces
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
+                )
+                panel_face_to_add = np.array(
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
+
+                # Stack this Panel's vertices and faces with the array of all vertices and faces
+                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+
+                # Update the number of previous Panels
+                panel_num += 1
+
+        # Convert the Panel vertices and faces to PolyData.
+        panel_surfaces = pv.PolyData(panel_vertices, panel_faces)
+
+        # Add the Panels to the plotter
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=panel_color,
+            smooth_shading=False,
+        )
+
+        # Set the plotter's background color
+        plotter.set_background(color=plotter_background_color)
+
+        if not testing:
+            # Show the plotter so the user can adjust the camera position and window
+            plotter.show(
+                title=f"Airplane: {self.name}",
+                cpos=(-1, -1, 1),
+                full_screen=False,
+                auto_close=False,
+            )
+        else:
+            # Show the plotter for 1 second, then proceed automatically (for testing)
+            plotter.show(
+                title=f"Airplane: {self.name}",
+                cpos=(-1, -1, 1),
+                full_screen=False,
+                interactive=False,
+                auto_close=False,
+            )
+            time.sleep(1)
+
+        # If the user wants to save the image, take a screenshot and save as WebP
+        if save:
+            image = webp.Image.fromarray(
+                plotter.screenshot(
+                    filename=None,
+                    transparent_background=True,
+                    return_img=True,
+                )
+            )
+            webp.save_image(
+                img=image,
+                file_path=f"{self.name}_geometry.webp",
+                lossless=False,
+                quality=quality,
+            )
+
+        # Close all the plotters
+        pv.close_all()
 
     def validate_first_airplane_constraints(self):
         """This method validates constraints specific to the first Airplane in a

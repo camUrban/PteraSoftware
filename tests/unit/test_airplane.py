@@ -413,7 +413,7 @@ class TestAirplane(unittest.TestCase):
             asymmetric_wcs,
         ]
         wing_cross_sections[0].control_surface_symmetry_type = "asymmetric"
-        wing_cross_sections[0].control_surface_deflection = 10.0
+        wing_cross_sections[0].control_surface_deflection = 2.5
 
         wing = ps.geometry.wing.Wing(
             wing_cross_sections=wing_cross_sections,

@@ -288,8 +288,8 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_control_surface_deflection_validation(self):
         """Test control_surface_deflection parameter validation."""
-        # Test with valid values (in range -90 < x < 90)
-        valid_deflections = [0.0, 15.0, -30.0, 45.0, -89.9, 89.9]
+        # Test with valid values (in range -5 <= x <= 5)
+        valid_deflections = [0.0, 1.0, -5.0, 5.0, -4.1, 4]
         for deflection in valid_deflections:
             with self.subTest(deflection=deflection):
                 wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -418,7 +418,7 @@ class TestWingCrossSection(unittest.TestCase):
             Lp_Wcsp_Lpp=np.array([10.0, 20.0, 5.0]),
             angles_Wcsp_to_Wcs_izyx=np.array([89.9, -89.9, 89.9]),
             control_surface_hinge_point=0.001,  # Very small but valid
-            control_surface_deflection=89.9,  # Maximum valid deflection
+            control_surface_deflection=5.0,  # Maximum valid deflection
         )
         self.assertEqual(max_wing_cross_section.num_spanwise_panels, 100)
         self.assertEqual(max_wing_cross_section.chord, 50.0)

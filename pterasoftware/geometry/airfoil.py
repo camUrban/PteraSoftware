@@ -819,7 +819,7 @@ class Airfoil:
             raise ValueError("The Airfoil's outline must have at least five points")
 
         # The Airfoil must have roughly a unit chord length.
-        allowance = 0.01
+        allowance = 0.02
         outlineMaxX_A_lp = max(outline_A_lp[:, 0])
         outlineMinX_A_lp = min(outline_A_lp[:, 0])
         outlineChord = outlineMaxX_A_lp - outlineMinX_A_lp

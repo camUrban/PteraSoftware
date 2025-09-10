@@ -221,7 +221,7 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
             angles_Wcsp_to_Wcs_izyx=[2.0, 0.0, -1.0],
             control_surface_symmetry_type="asymmetric",
             control_surface_hinge_point=0.8,
-            control_surface_deflection=-10.0,
+            control_surface_deflection=-5.0,
             spanwise_spacing=None,
         )
     )

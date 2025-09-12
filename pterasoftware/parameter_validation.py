@@ -14,15 +14,17 @@ def string_return_string(string, name):
     return string
 
 
-def boolean_return_boolean(value, name):
-    """Validates that a value is a boolean and returns it as a boolean. name must be
-    a string."""
+def boolLike_return_bool(value, name):
+    """Validates that a value is a boolean or NumPy boolean and returns it as a
+    boolean. name must be a string."""
     name = string_return_string(name, "name")
 
-    if not isinstance(value, bool):
-        raise TypeError(f"{name} must be a boolean.")
+    if not isinstance(value, (bool, np.bool)):
+        raise TypeError(
+            f"{name} is a {type(value)} equal to {value} but it must be a boolean."
+        )
 
-    return value
+    return bool(value)
 
 
 def int_return_int(value, name):
@@ -86,13 +88,13 @@ def int_in_range_return_int(
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
-        min_inclusive = boolean_return_boolean(min_inclusive, "min_inclusive")
+        min_inclusive = boolLike_return_bool(min_inclusive, "min_inclusive")
     else:
         if min_inclusive is not None:
             raise ValueError("min_inclusive must be None if min_val is None")
     if max_val is not None:
         max_val = number_return_float(max_val, "max_val")
-        max_inclusive = boolean_return_boolean(max_inclusive, "max_inclusive")
+        max_inclusive = boolLike_return_bool(max_inclusive, "max_inclusive")
     else:
         if max_inclusive is not None:
             raise ValueError("max_inclusive must be None if max_val is None")
@@ -195,13 +197,13 @@ def number_in_range_return_float(
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
-        min_inclusive = boolean_return_boolean(min_inclusive, "min_inclusive")
+        min_inclusive = boolLike_return_bool(min_inclusive, "min_inclusive")
     else:
         if min_inclusive is not None:
             raise ValueError("min_inclusive must be None if min_val is None")
     if max_val is not None:
         max_val = number_return_float(max_val, "max_val")
-        max_inclusive = boolean_return_boolean(max_inclusive, "max_inclusive")
+        max_inclusive = boolLike_return_bool(max_inclusive, "max_inclusive")
     else:
         if max_inclusive is not None:
             raise ValueError("max_inclusive must be None if max_val is None")

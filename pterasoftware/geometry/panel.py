@@ -126,15 +126,17 @@ class Panel:
             towards the next wing section or the Wing's tip, etc. The units are in
             meters.
 
-        :param is_leading_edge: bool
+        :param is_leading_edge: boolLike
 
             This is True if the Panel is a leading edge Panel on a Wing, and False
-            otherwise.
+            otherwise. It can be a boolean or a NumPy boolean and will be converted
+            internally to a boolean.
 
-        :param is_trailing_edge: bool
+        :param is_trailing_edge: boolLike
 
             This is True if the Panel is a trailing edge Panel on a Wing, and False
-            otherwise.
+            otherwise. It can be a boolean or a NumPy boolean and will be converted
+            internally to a boolean.
         """
 
         # Validate and initialize the attributes.
@@ -150,12 +152,10 @@ class Panel:
         self.Brpp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
             Brpp_G_Cg, "Brpp_G_Cg"
         )
-        self.is_leading_edge = parameter_validation.boolean_return_boolean(
-            is_leading_edge, "is_leading_edge"
-        )
-        self.is_trailing_edge = parameter_validation.boolean_return_boolean(
-            is_trailing_edge, "is_trailing_edge"
-        )
+        self.is_leading_edge = parameter_validation.boolLike_return_bool(
+            is_leading_edge, "is_leading_edge")
+        self.is_trailing_edge = parameter_validation.boolLike_return_bool(
+            is_trailing_edge, "is_trailing_edge")
 
         # Initialize variables to hold attributes that describe the Panel's position
         # in its Wing's Panel matrix. They will be populated by the meshing function.

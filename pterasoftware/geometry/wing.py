@@ -247,7 +247,7 @@ class Wing:
             angles. It may differ from the actual position as explained in the class
             docstring. The units are degrees. The default is ( 0.0, 0.0, 0.0).
 
-        :param symmetric: bool, optional
+        :param symmetric: boolLike, optional
 
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
@@ -260,17 +260,19 @@ class Wing:
             Wing to its list of wings immediately following this one. For more
             details on how that process, and how this parameter interacts with
             symmetry_normal_Wn, symmetry_point_Wn_Ler, and mirror_only, see the class
-            docstring. The default is False.
+            docstring. It can be a boolean or a NumPy boolean and will be converted
+            internally to a boolean. The default is False.
 
-        :param mirror_only: bool, optional
+        :param mirror_only: boolLike, optional
 
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
             is True, mirror_only must be False. If mirror_only is true, then neither
             symmetry_normal_Wn nor symmetry_point_Wn_Ler can be None. For more
             details on how this parameter interacts with symmetry_normal_Wn,
-            symmetry_point_Wn_Ler, and symmetric, see the class docstring. The
-            default is False.
+            symmetry_point_Wn_Ler, and symmetric, see the class docstring. It can be
+            a boolean or a NumPy boolean and will be converted internally to a
+            boolean. The default is False.
 
         :param symmetry_normal_Wn: array-like of 3 numbers or None, optional
 
@@ -359,10 +361,9 @@ class Wing:
         self.angles_G_to_prelimWn = angles_G_to_prelimWn
 
         # Validate symmetric and mirror_only.
-        symmetric = parameter_validation.boolean_return_boolean(symmetric, "symmetric")
-        mirror_only = parameter_validation.boolean_return_boolean(
-            mirror_only, "mirror_only"
-        )
+        symmetric = parameter_validation.boolLike_return_bool(symmetric, "symmetric")
+        mirror_only = parameter_validation.boolLike_return_bool(mirror_only,
+                                                                "mirror_only")
         if symmetric and mirror_only:
             raise ValueError("symmetric and mirror_only cannot both be True.")
         self.symmetric = symmetric
@@ -473,7 +474,7 @@ class Wing:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolean_return_boolean(show, "show")
+        show = parameter_validation.boolLike_return_bool(show, "show")
 
         # If this Wing hasn't had its symmetry type set, return None.
         if self.symmetry_type is None:

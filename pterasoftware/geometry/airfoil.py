@@ -80,12 +80,13 @@ class Airfoil:
             numbers (int or float). Make sure all x-component values are in the range
             [ 0.0, 1.0]. The default value is None.
 
-        :param resample: bool, optional
+        :param resample: boolLike, optional
 
             This is the variable that determines whether you would like to resample
             the points defining the Airfoil's outline. This applies to points passed
             in by the user or to those from the airfoils directory. I highly
-            recommended setting this to True. The default is True.
+            recommended setting this to True. It can be a boolean or a NumPy boolean
+            and will be converted internally to a boolean. The default is True.
 
         :param n_points_per_side: int or None, optional
 
@@ -105,9 +106,7 @@ class Airfoil:
         else:
             self._populate_outline()
 
-        self.resample = parameter_validation.boolean_return_boolean(
-            resample, "resample"
-        )
+        self.resample = parameter_validation.boolLike_return_bool(resample, "resample")
 
         self.n_points_per_side = parameter_validation.int_in_range_return_int(
             n_points_per_side, "n_points_per_side", 3, True, None, None
@@ -335,7 +334,7 @@ class Airfoil:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolean_return_boolean(show, "show")
+        show = parameter_validation.boolLike_return_bool(show, "show")
 
         outline_A_lp = self.outline_A_lp
         mcl_A_lp = self.mcl_A_lp

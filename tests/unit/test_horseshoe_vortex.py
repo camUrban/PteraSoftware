@@ -160,13 +160,13 @@ class TestHorseshoeVortex(unittest.TestCase):
         # Test that all the strength's have been updated correctly.
         self.assertEqual(self.horseshoe_vortex_fixture.strength, new_strength_fixture)
         self.assertEqual(
-            self.horseshoe_vortex_fixture.rightLeg_G.strength, new_strength_fixture
+            self.horseshoe_vortex_fixture.right_leg.strength, new_strength_fixture
         )
         self.assertEqual(
             self.horseshoe_vortex_fixture.finite_leg.strength, new_strength_fixture
         )
         self.assertEqual(
-            self.horseshoe_vortex_fixture.leftLeg_G.strength, new_strength_fixture
+            self.horseshoe_vortex_fixture.left_leg.strength, new_strength_fixture
         )
 
         # Revert the change.

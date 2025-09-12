@@ -111,17 +111,19 @@ def generate_rot_T(angles, passive, intrinsic, order):
         applied in the sequence given by `order` (e.g., order="zxy" applies angles[
         2], angles[0], angles[1]).
 
-    :param passive: bool
+    :param passive: boolLike
 
         If True, returns a matrix that changes coordinates from "A" to "B" axes (`r_B
         = R @ r_A`). If False, returns a matrix that rotates vectors in "A" axes (
-        `rPrime_A = R @ r_A`).
+        `rPrime_A = R @ r_A`). It can be a boolean or a NumPy boolean and will be
+        converted internally to a boolean.
 
-    :param intrinsic: bool
+    :param intrinsic: boolLike
 
         If True, each subsequent rotation is applied to the current, newly-rotated
         axes. If False, all rotations are performed about the original, non-rotated
-        "A" axes.
+        "A" axes. It can be a boolean or a NumPy boolean and will be converted
+        internally to a boolean.
 
     :param order: string of length 3
 
@@ -136,8 +138,8 @@ def generate_rot_T(angles, passive, intrinsic, order):
     angles = parameter_validation.threeD_number_vectorLike_return_float(
         angles, "angles"
     )
-    passive = parameter_validation.boolean_return_boolean(passive, "passive")
-    intrinsic = parameter_validation.boolean_return_boolean(intrinsic, "intrinsic")
+    passive = parameter_validation.boolLike_return_bool(passive, "passive")
+    intrinsic = parameter_validation.boolLike_return_bool(intrinsic, "intrinsic")
     order = parameter_validation.rotation_order_return_string(order, "order")
 
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
@@ -220,12 +222,14 @@ def generate_trans_T(translations, passive):
         this is the position (in "A" axes) of the offset point "cPrime" relative to
         the original "c" point.
 
-    :param passive: bool
+    :param passive: boolLike
 
         If True, returns a matrix that changes reference point of a vector in
         homogeneous coordinates (`rHomog_A_b = T_trans @ rHomog_A_a`). If False,
         returns the position vector of point offset from an original position,
         still relative to the same point (`cPrimeHomog_A_a = T_trans @ cHomog_A_a`).
+        It can be a boolean or a NumPy boolean and will be converted internally to a
+        boolean.
 
     :return: (4, 4) ndarray of floats
 
@@ -234,7 +238,7 @@ def generate_trans_T(translations, passive):
     p = parameter_validation.threeD_number_vectorLike_return_float(
         translations, "translations"
     )
-    passive = parameter_validation.boolean_return_boolean(passive, "passive")
+    passive = parameter_validation.boolLike_return_bool(passive, "passive")
     T_trans = np.eye(4, dtype=float)
 
     T_trans[:3, 3] = -p if passive else p
@@ -285,13 +289,14 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
         or float). Values are converted to floats internally. It must have a non-zero
         length.
 
-    :param passive: bool
+    :param passive: boolLike
 
         If True, returns a matrix that changes reference point and axes of a vector
         in homogeneous coordinates to a reference point and axes reflected about the
         specified plane (`cHomog_B_b = T_reflect @ cHomog_A_a`). If False, it returns
         a matrix that reflects a vector (in its original axes) about a specified
-        plane (`cPrimeHomog_A_a = T_reflect @ cHomog_A_a`).
+        plane (`cPrimeHomog_A_a = T_reflect @ cHomog_A_a`). It can be a boolean or a
+        NumPy boolean and will be converted internally to a boolean.
 
     :return: (4, 4) ndarray of floats
 
@@ -303,7 +308,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
     n_hat = parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
         plane_normal_A, "plane_normal_A"
     )
-    passive = parameter_validation.boolean_return_boolean(passive, "passive")
+    passive = parameter_validation.boolLike_return_bool(passive, "passive")
 
     T_reflect = np.eye(4, dtype=float)
 
@@ -568,10 +573,11 @@ def apply_T_to_vectors(T, vectors_A, has_point):
         (..., 3). Can be a tuple, list, or numpy array of numbers (int or float).
         Values are converted to floats internally.
 
-    :param has_point: bool
+    :param has_point: boolLike
 
         True for vectors relative to a reference point such as position vectors.
-        False for free vectors.
+        False for free vectors. It can be a boolean or a NumPy boolean and will be
+        converted internally to a boolean.
 
     :return: ndarray of floats with same shape as input vectors_A
 
@@ -583,7 +589,7 @@ def apply_T_to_vectors(T, vectors_A, has_point):
             vectors_A, "vectors_A"
         )
     )
-    has_point = parameter_validation.boolean_return_boolean(has_point, "has_point")
+    has_point = parameter_validation.boolLike_return_bool(has_point, "has_point")
 
     vectorsHomog_A = _generate_homogs(vectors_A, has_point)
 

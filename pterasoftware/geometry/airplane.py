@@ -332,7 +332,7 @@ class Airplane:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolean_return_boolean(show, "show")
+        show = parameter_validation.boolLike_return_bool(show, "show")
 
         airfoilOutlines_G_Cg = []
         airfoilMcls_G_Cg = []

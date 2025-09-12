@@ -318,7 +318,7 @@ class WingCrossSection:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolean_return_boolean(show, "show")
+        show = parameter_validation.boolLike_return_bool(show, "show")
 
         # If this WingCrossSection hasn't been fully validated, or its symmetry type
         # hasn't been set, return None.

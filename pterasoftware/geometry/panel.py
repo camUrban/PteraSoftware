@@ -15,6 +15,7 @@ import numpy as np
 from .. import parameter_validation
 
 
+# ToDo: Add unit tests for this class.
 class Panel:
     """This class is used to contain the panels of a wing.
 
@@ -153,9 +154,11 @@ class Panel:
             Brpp_G_Cg, "Brpp_G_Cg"
         )
         self.is_leading_edge = parameter_validation.boolLike_return_bool(
-            is_leading_edge, "is_leading_edge")
+            is_leading_edge, "is_leading_edge"
+        )
         self.is_trailing_edge = parameter_validation.boolLike_return_bool(
-            is_trailing_edge, "is_trailing_edge")
+            is_trailing_edge, "is_trailing_edge"
+        )
 
         # Initialize variables to hold attributes that describe the Panel's position
         # in its Wing's Panel matrix. They will be populated by the meshing function.

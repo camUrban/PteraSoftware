@@ -362,8 +362,9 @@ class Wing:
 
         # Validate symmetric and mirror_only.
         symmetric = parameter_validation.boolLike_return_bool(symmetric, "symmetric")
-        mirror_only = parameter_validation.boolLike_return_bool(mirror_only,
-                                                                "mirror_only")
+        mirror_only = parameter_validation.boolLike_return_bool(
+            mirror_only, "mirror_only"
+        )
         if symmetric and mirror_only:
             raise ValueError("symmetric and mirror_only cannot both be True.")
         self.symmetric = symmetric

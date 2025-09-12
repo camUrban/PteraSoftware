@@ -172,17 +172,17 @@ pterasoftware) to run the steady horseshoe solver on an airplane with custom geo
 ```python
 import pterasoftware as ps
 
-airplane = ps.geometry.Airplane(
+airplane = ps.geometry.airplane.Airplane(
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             symmetric=True,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
-                    airfoil=ps.geometry.Airfoil(name="naca2412"),
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     y_le=5.0,
-                    airfoil=ps.geometry.Airfoil(name="naca2412"),
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
                 ),
             ],
         ),

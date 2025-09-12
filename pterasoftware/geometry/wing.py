@@ -11,6 +11,7 @@ This module contains the following functions:
 """
 
 import numpy as np
+import pyvista as pv
 
 from .wing_cross_section import WingCrossSection
 
@@ -436,6 +437,10 @@ class Wing:
             raise ValueError(f"symmetry_type must be one of {valid_symmetry_types}")
         self.symmetry_type = symmetry_type
 
+        # Set this Wing's children WingCrossSections' symmetry type parameters.
+        for wing_cross_section in self.wing_cross_sections:
+            wing_cross_section.symmetry_type = self.symmetry_type
+
         # Find the number of spanwise panels on the wing by adding each cross
         # section's number of spanwise panels. Exclude the last cross section's
         # number of spanwise panels as this is irrelevant. If the wing has type 4
@@ -458,6 +463,226 @@ class Wing:
 
         # Generate the wing's mesh, which populates the Panels attribute.
         meshing.mesh_wing(self)
+
+    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    #  Software theme for PyVista.
+    def get_plottable_data(self, show=False):
+        """
+
+        :param show:
+        :return:
+        """
+        # Validate the input flag.
+        show = parameter_validation.boolean_return_boolean(show, "show")
+
+        # If this Wing hasn't had its symmetry type set, return None.
+        if self.symmetry_type is None:
+            return None
+
+        airfoilOutlines_Wn_ler = []
+        airfoilMcls_Wn_ler = []
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections
+        ):
+            [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = (
+                wing_cross_section.get_plottable_data(show=False)
+            )
+
+            T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
+                wing_cross_section_id
+            ]
+
+            airfoilOutline_Wn_ler = transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, airfoilOutline_Wcs_lp, has_point=True
+            )
+            airfoilMcl_Wn_ler = transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, airfoilMcl_Wcs_lp, has_point=True
+            )
+
+            airfoilOutlines_Wn_ler.append(airfoilOutline_Wn_ler)
+            airfoilMcls_Wn_ler.append(airfoilMcl_Wn_ler)
+
+        if not show:
+            return [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler]
+
+        plotter = pv.Plotter()
+
+        AxesGCg = pv.AxesAssembly(
+            x_label="GX@Cg",
+            y_label="GY@Cg",
+            z_label="GZ@Cg",
+            # labels=None,
+            label_color="black",
+            show_labels=True,
+            # label_position=(1, 1, 1),
+            label_size=15,
+            x_color="red",
+            y_color="green",
+            z_color="blue",
+            # position=(0.0, 0.0, 0.0),
+            # orientation=(0.0, 0.0, 0.0),
+            # origin=(0.0, 0.0, 0.0),
+            scale=(0.25, 0.25, 0.25),
+            user_matrix=np.eye(4, dtype=float),
+            name="G",
+            shaft_type="cylinder",
+            shaft_radius=0.025,
+            shaft_length=(0.8, 0.8, 0.8),
+            tip_type="cone",
+            tip_radius=0.1,
+            tip_length=(0.2, 0.2, 0.2),
+            symmetric_bounds=False,
+        )
+
+        plotter.add_actor(AxesGCg)
+
+        AxesWLerWcs1Lp1_G_Cg = pv.AxesAssembly(
+            x_label="WX@Ler/Wcs1XLp1",
+            y_label="WY@Ler/Wcs1YLp1",
+            z_label="WZ@Ler/Wcs1ZLp1",
+            # labels=None,
+            label_color="black",
+            show_labels=True,
+            # label_position=(1, 1, 1),
+            label_size=15,
+            x_color="red",
+            y_color="green",
+            z_color="blue",
+            # position=(0.0, 0.0, 0.0),
+            # orientation=(0.0, 0.0, 0.0),
+            # origin=(0.0, 0.0, 0.0),
+            scale=(0.25, 0.25, 0.25),
+            user_matrix=np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler),
+            # user_matrix=wingAxes_T_act,
+            name="W/Wcs1",
+            shaft_type="cylinder",
+            shaft_radius=0.025,
+            shaft_length=(0.8, 0.8, 0.8),
+            tip_type="cone",
+            tip_radius=0.1,
+            tip_length=(0.2, 0.2, 0.2),
+            symmetric_bounds=False,
+        )
+
+        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
+
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections
+        ):
+            airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[wing_cross_section_id]
+            airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[wing_cross_section_id]
+
+            airfoilOutline_G_Cg = transformations.apply_T_to_vectors(
+                self.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
+            )
+            airfoilMcl_G_Cg = transformations.apply_T_to_vectors(
+                self.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, has_point=True
+            )
+
+            airfoilOutline_faces = np.hstack(
+                [
+                    airfoilOutline_G_Cg.shape[0],
+                    np.arange(airfoilOutline_G_Cg.shape[0]),
+                ]
+            )
+            airfoilOutline_mesh = pv.PolyData(
+                airfoilOutline_G_Cg, faces=airfoilOutline_faces
+            )
+            plotter.add_mesh(airfoilOutline_mesh)
+            plotter.add_lines(airfoilMcl_G_Cg)
+
+            if wing_cross_section_id != 0:
+                wing_cross_section_num = wing_cross_section_id + 1
+
+                AxesWcsLp_G_Cg = pv.AxesAssembly(
+                    x_label=f"Wcs{wing_cross_section_num}X@Lp{wing_cross_section_num}",
+                    y_label=f"Wcs{wing_cross_section_num}Y@Lp{wing_cross_section_num}",
+                    z_label=f"Wcs{wing_cross_section_num}Z@Lp{wing_cross_section_num}",
+                    # labels=None,
+                    label_color="black",
+                    show_labels=True,
+                    # label_position=(1, 1, 1),
+                    label_size=15,
+                    x_color="red",
+                    y_color="green",
+                    z_color="blue",
+                    # position=(0.0, 0.0, 0.0),
+                    # orientation=(0.0, 0.0, 0.0),
+                    # origin=(0.0, 0.0, 0.0),
+                    scale=(0.25, 0.25, 0.25),
+                    user_matrix=np.linalg.inv(
+                        self.children_T_pas_G_Cg_to_Wcs_Lp[wing_cross_section_id]
+                    ),
+                    name=f"Wcs{wing_cross_section_id}",
+                    shaft_type="cylinder",
+                    shaft_radius=0.025,
+                    shaft_length=(0.8, 0.8, 0.8),
+                    tip_type="cone",
+                    tip_radius=0.1,
+                    tip_length=(0.2, 0.2, 0.2),
+                    symmetric_bounds=False,
+                )
+
+                plotter.add_actor(AxesWcsLp_G_Cg)
+
+        if self.panels is not None:
+            # Initialize empty arrays to hold the Panels' vertices and faces
+            panel_vertices = np.empty((0, 3), dtype=float)
+            panel_faces = np.empty(0, dtype=int)
+
+            # Initialize a variable to keep track of how many Panels' data has been added
+            # to the arrays
+            panel_num = 0
+
+            # Unravel the Wing's Panel matrix and iterate through it
+            panels = np.ravel(self.panels)
+            for panel in panels:
+                # Stack this Panel's vertices and faces
+                panel_vertices_to_add = np.vstack(
+                    (
+                        panel.front_left_vertex,
+                        panel.front_right_vertex,
+                        panel.back_right_vertex,
+                        panel.back_left_vertex,
+                    )
+                )
+                panel_face_to_add = np.array(
+                    [
+                        4,
+                        (panel_num * 4),
+                        (panel_num * 4) + 1,
+                        (panel_num * 4) + 2,
+                        (panel_num * 4) + 3,
+                    ]
+                )
+
+                # Stack this Panel's vertices and faces with the array of all vertices and faces
+                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+
+                # Update the number of previous Panels
+                panel_num += 1
+
+                # Convert the Panel vertices and faces to PolyData.
+                panel_surfaces = pv.PolyData(panel_vertices, panel_faces)
+
+                # Add the Panels to the plotter
+                plotter.add_mesh(
+                    panel_surfaces,
+                    show_edges=True,
+                    color="chartreuse",
+                    smooth_shading=False,
+                )
+
+        plotter.enable_parallel_projection()
+
+        plotter.show(
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            auto_close=False,
+        )
+
+        return None
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self):

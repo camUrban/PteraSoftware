@@ -11,11 +11,14 @@ This module contains the following functions:
 """
 
 import numpy as np
+import pyvista as pv
+from jaraco.functools import apply
 
 from .airfoil import Airfoil
 
 from .. import parameter_validation
 from .. import transformations
+from ..transformations import apply_T_to_vectors
 
 
 class WingCrossSection:
@@ -264,6 +267,11 @@ class WingCrossSection:
         # methods.
         self.validated = False
 
+        # Define a flag for this WingCrossSection's parent Wing's symmetry type. This
+        # will be set by its parent Wing immediately after it has its own
+        # symmetry_type parameter set by its parent Airplane.
+        self.symmetry_type = None
+
     def validate_root_constraints(self):
         """This method is called by the parent Wing to validate constraints specific
         to root WingCrossSections.
@@ -302,6 +310,208 @@ class WingCrossSection:
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
+    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    #  Software theme for PyVista.
+    def get_plottable_data(self, show=False):
+        """
+
+        :param show:
+        :return:
+        """
+        # Validate the input flag.
+        show = parameter_validation.boolean_return_boolean(show, "show")
+
+        # If this WingCrossSection hasn't been fully validated, or its symmetry type
+        # hasn't been set, return None.
+        if self.symmetry_type is None or self.validated is None:
+            return None
+
+        [airfoilOutline_A_lp, airfoilMcl_A_lp] = self.airfoil.get_plottable_data(False)
+
+        airfoilNonScaledOutline_Wcs_lp = np.column_stack(
+            [
+                airfoilOutline_A_lp[:, 0],
+                np.zeros_like(airfoilOutline_A_lp[:, 0]),
+                airfoilOutline_A_lp[:, 1],
+            ]
+        )
+        airfoilNonScaledMcl_Wcs_lp = np.column_stack(
+            [
+                airfoilMcl_A_lp[:, 0],
+                np.zeros_like(airfoilMcl_A_lp[:, 0]),
+                airfoilMcl_A_lp[:, 1],
+            ]
+        )
+
+        airfoilScalingMatrix = np.array(
+            [
+                [self.chord, 0.0, 0.0, 0.0],
+                [0.0, self.chord, 0.0, 0.0],
+                [0.0, 0.0, self.chord, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
+
+        airfoilOutline_Wcs_lp = apply_T_to_vectors(
+            airfoilScalingMatrix, airfoilNonScaledOutline_Wcs_lp, has_point=True
+        )
+        airfoilMcl_Wcs_lp = apply_T_to_vectors(
+            airfoilScalingMatrix, airfoilNonScaledMcl_Wcs_lp, has_point=True
+        )
+
+        if not show:
+            return [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp]
+
+        plotter = pv.Plotter()
+
+        airfoilOutline_Wcsp_lpp = transformations.apply_T_to_vectors(
+            self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_lp, has_point=True
+        )
+        airfoilMcl_Wcsp_lpp = transformations.apply_T_to_vectors(
+            self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_lp, has_point=True
+        )
+
+        if self.symmetry_type in (2, 3):
+            UserMatrixAxesWcspLpp = transformations.generate_reflect_T(
+                (0, 0, 0), (0, 1, 0), passive=False
+            )
+
+            airfoilOutline_WcspReflectY_lpp = transformations.apply_T_to_vectors(
+                UserMatrixAxesWcspLpp, airfoilOutline_Wcsp_lpp, has_point=True
+            )
+            airfoilMcl_WcspReflectY_lpp = transformations.apply_T_to_vectors(
+                UserMatrixAxesWcspLpp, airfoilMcl_Wcsp_lpp, has_point=True
+            )
+
+        else:
+            UserMatrixAxesWcspLpp = np.eye(4, dtype=float)
+            airfoilOutline_WcspReflectY_lpp = airfoilOutline_Wcsp_lpp
+            airfoilMcl_WcspReflectY_lpp = airfoilMcl_Wcsp_lpp
+
+        rot_T_act = transformations.generate_rot_T(
+            angles=self.angles_Wcsp_to_Wcs_izyx,
+            passive=False,
+            intrinsic=True,
+            order="zyx",
+        )
+        trans_T_act = transformations.generate_trans_T(
+            translations=self.Lp_Wcsp_Lpp,
+            passive=False,
+        )
+
+        UserMatrixAxesWcsLp_WcspLpp = transformations.compose_T_act(
+            rot_T_act,
+            trans_T_act,
+            UserMatrixAxesWcspLpp,
+        )
+
+        airfoilOutline_faces = np.hstack(
+            [
+                airfoilOutline_WcspReflectY_lpp.shape[0],
+                np.arange(airfoilOutline_WcspReflectY_lpp.shape[0]),
+            ]
+        )
+        airfoilOutline_mesh = pv.PolyData(
+            airfoilOutline_WcspReflectY_lpp, faces=airfoilOutline_faces
+        )
+        plotter.add_mesh(airfoilOutline_mesh)
+        plotter.add_lines(airfoilMcl_WcspReflectY_lpp)
+
+        if np.allclose(UserMatrixAxesWcsLp_WcspLpp, UserMatrixAxesWcspLpp):
+            AxesWcsLpWcspLpp_Wcsp_lpp = pv.AxesAssembly(
+                x_label="WcsX@Lp/WcspX@Lpp",
+                y_label="WcsY@Lp/WcspY@Lpp",
+                z_label="WcsZ@Lp/WcspZ@Lpp",
+                # labels=None,
+                label_color="black",
+                show_labels=True,
+                # label_position=(1, 1, 1),
+                label_size=15,
+                x_color="red",
+                y_color="green",
+                z_color="blue",
+                # position=(0.0, 0.0, 0.0),
+                # orientation=(0.0, 0.0, 0.0),
+                # origin=(0.0, 0.0, 0.0),
+                scale=(0.25, 0.25, 0.25),
+                user_matrix=UserMatrixAxesWcsLp_WcspLpp,
+                name="Wcs/Wcsp",
+                shaft_type="cylinder",
+                shaft_radius=0.025,
+                shaft_length=(0.8, 0.8, 0.8),
+                tip_type="cone",
+                tip_radius=0.1,
+                tip_length=(0.2, 0.2, 0.2),
+                symmetric_bounds=False,
+            )
+            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)
+        else:
+            AxesWcsLp_Wcsp_lpp = pv.AxesAssembly(
+                x_label="WcsX@Lp",
+                y_label="WcsY@Lp",
+                z_label="WcsZ@Lp",
+                # labels=None,
+                label_color="black",
+                show_labels=True,
+                # label_position=(1, 1, 1),
+                label_size=15,
+                x_color="red",
+                y_color="green",
+                z_color="blue",
+                # position=(0.0, 0.0, 0.0),
+                # orientation=(0.0, 0.0, 0.0),
+                # origin=(0.0, 0.0, 0.0),
+                scale=(0.25, 0.25, 0.25),
+                user_matrix=UserMatrixAxesWcsLp_WcspLpp,
+                # user_matrix=self.T_pas_Wcs_Lp_to_Wcsp_Lpp,
+                name="Wcs",
+                shaft_type="cylinder",
+                shaft_radius=0.025,
+                shaft_length=(0.8, 0.8, 0.8),
+                tip_type="cone",
+                tip_radius=0.1,
+                tip_length=(0.2, 0.2, 0.2),
+                symmetric_bounds=False,
+            )
+            AxesWcspLpp = pv.AxesAssembly(
+                x_label="WcspX@Lpp",
+                y_label="WcspY@Lpp",
+                z_label="WcspZ@Lpp",
+                # labels=None,
+                label_color="black",
+                show_labels=True,
+                # label_position=(1, 1, 1),
+                label_size=15,
+                x_color="red",
+                y_color="green",
+                z_color="blue",
+                # position=(0.0, 0.0, 0.0),
+                # orientation=(0.0, 0.0, 0.0),
+                # origin=(0.0, 0.0, 0.0),
+                scale=(0.25, 0.25, 0.25),
+                user_matrix=UserMatrixAxesWcspLpp,
+                name="Wcsp",
+                shaft_type="cylinder",
+                shaft_radius=0.025,
+                shaft_length=(0.8, 0.8, 0.8),
+                tip_type="cone",
+                tip_radius=0.1,
+                tip_length=(0.2, 0.2, 0.2),
+                symmetric_bounds=False,
+            )
+            plotter.add_actor(AxesWcsLp_Wcsp_lpp)
+            plotter.add_actor(AxesWcspLpp)
+
+        plotter.enable_parallel_projection()
+
+        plotter.show(
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            auto_close=False,
+        )
+
+        return None
+
     @property
     def T_pas_Wcsp_Lpp_to_Wcs_Lp(self):
         """This method defines a property for the passive transformation matrix which
@@ -331,6 +541,7 @@ class WingCrossSection:
             self.angles_Wcsp_to_Wcs_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
+        # ToDo: Switch to using transformations.compose_T_pas()
         return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
 
     @property
@@ -347,4 +558,4 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        return np.linalg.inv(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+        return transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)

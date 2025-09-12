@@ -180,10 +180,18 @@ class Airfoil:
         mclHingePoint_A_lp = preHingeMcl_A_lp[-1, :]
 
         flippedUpperOutlineHingePoint_Wcs_lp = np.hstack(
-            [flippedUpperOutlineHingePoint_A_lp, 0.0]
+            [
+                flippedUpperOutlineHingePoint_A_lp[0],
+                0.0,
+                flippedUpperOutlineHingePoint_A_lp[1],
+            ]
         )
-        lowerOutlineHingePoint_Wcs_lp = np.hstack([lowerOutlineHingePoint_A_lp, 0.0])
-        mclHingePoint_Wcs_lp = np.hstack([mclHingePoint_A_lp, 0.0])
+        lowerOutlineHingePoint_Wcs_lp = np.hstack(
+            [lowerOutlineHingePoint_A_lp[0], 0.0, lowerOutlineHingePoint_A_lp[1]]
+        )
+        mclHingePoint_Wcs_lp = np.hstack(
+            [mclHingePoint_A_lp[0], 0.0, mclHingePoint_A_lp[1]]
+        )
 
         flippedUpperOutlineToOrigin_T_act = transformations.generate_trans_T(
             -flippedUpperOutlineHingePoint_Wcs_lp, passive=False
@@ -221,20 +229,26 @@ class Airfoil:
             mclToOrigin_T_act, rot_T, mclBack_T_act
         )
 
-        postHingeFlippedUpperOutline_Wcs_lp = np.hstack(
+        postHingeFlippedUpperOutline_Wcs_lp = np.column_stack(
             [
-                postHingeFlippedUpperOutline_A_lp,
-                np.zeros((postHingeFlippedUpperOutline_A_lp.shape[0], 1)),
+                postHingeFlippedUpperOutline_A_lp[:, 0],
+                np.zeros_like(postHingeFlippedUpperOutline_A_lp[:, 0]),
+                postHingeFlippedUpperOutline_A_lp[:, 1],
             ]
         )
-        postHingeLowerOutline_Wcs_lp = np.hstack(
+        postHingeLowerOutline_Wcs_lp = np.column_stack(
             [
-                postHingeLowerOutline_A_lp,
-                np.zeros((postHingeLowerOutline_A_lp.shape[0], 1)),
+                postHingeLowerOutline_A_lp[:, 0],
+                np.zeros_like(postHingeLowerOutline_A_lp[:, 0]),
+                postHingeLowerOutline_A_lp[:, 1],
             ]
         )
-        postHingeMcl_Wcs_lp = np.hstack(
-            [postHingeMcl_A_lp, np.zeros((postHingeMcl_A_lp.shape[0], 1))]
+        postHingeMcl_Wcs_lp = np.column_stack(
+            [
+                postHingeMcl_A_lp[:, 0],
+                np.zeros_like(postHingeMcl_A_lp[:, 0]),
+                postHingeMcl_A_lp[:, 1],
+            ]
         )
 
         flappedPostHingeFlippedUpperOutline_A_lp = (
@@ -243,17 +257,17 @@ class Airfoil:
                 postHingeFlippedUpperOutline_Wcs_lp,
                 has_point=True,
             )
-        )[:, :2]
+        )[:, [0, 2]]
         flappedPostHingeLowerOutline_A_lp = transformations.apply_T_to_vectors(
             postHingeLowerOutline_T_act,
             postHingeLowerOutline_Wcs_lp,
             has_point=True,
-        )[:, :2]
+        )[:, [0, 2]]
         flappedPostHingeMcl_A_lp = transformations.apply_T_to_vectors(
             postHingeMcl_T_act,
             postHingeMcl_Wcs_lp,
             has_point=True,
-        )[:, :2]
+        )[:, [0, 2]]
 
         flappedFlippedUpperOutline_A_lp = np.vstack(
             [preHingeFlippedUpperOutline_A_lp, flappedPostHingeFlippedUpperOutline_A_lp]
@@ -312,6 +326,57 @@ class Airfoil:
         plt.gca().set_aspect("equal", adjustable="box")
 
         plt.show()
+
+    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    #  Software theme for Matplotlib.
+    def get_plottable_data(self, show=False):
+        """
+
+        :return:
+        """
+        # Validate the input flag.
+        show = parameter_validation.boolean_return_boolean(show, "show")
+
+        outline_A_lp = self.outline_A_lp
+        mcl_A_lp = self.mcl_A_lp
+
+        if not show:
+            return [outline_A_lp, mcl_A_lp]
+
+        airfoil_figure, airfoil_axes = plt.subplots()
+
+        outlineX_A_lp = self.outline_A_lp[:, 0]
+        outlineY_A_lp = self.outline_A_lp[:, 1]
+        mclX_A_lp = self.mcl_A_lp[:, 0]
+        mclY_A_lp = self.mcl_A_lp[:, 1]
+
+        outlineYMin_A_lp = np.min(outlineY_A_lp)
+        outlineYMax_A_lp = np.max(outlineY_A_lp)
+        outlineYRange_A_lp = outlineYMax_A_lp - outlineYMin_A_lp
+        y_padding = 0.1 * outlineYRange_A_lp
+
+        airfoil_axes.plot(outlineX_A_lp, outlineY_A_lp, "b-")
+        airfoil_axes.plot(mclX_A_lp, mclY_A_lp, "r-")
+
+        airfoil_axes.set_xlim(0.0, 1.0)
+        airfoil_axes.set_ylim(
+            outlineYMin_A_lp - y_padding, outlineYMax_A_lp + y_padding
+        )
+
+        airfoil_axes.set_xlabel("AX_lp")
+        airfoil_axes.set_ylabel("AY_lp")
+        airfoil_axes.set_title(f"{self.name} Airfoil")
+        airfoil_axes.legend(
+            ["Outline", "Mean Camber Line (MCL)"],
+            loc="lower center",
+            bbox_to_anchor=(0.5, -1.75),
+        )
+
+        airfoil_axes.set_aspect("equal", adjustable="box")
+
+        airfoil_figure.show()
+
+        return None
 
     def get_resampled_mcl(self, mcl_fractions):
         """This method returns an array of points along the mean camber line (MCL),

@@ -219,6 +219,11 @@ class TestAirfoil(unittest.TestCase):
             max_thickness = np.max(outlineY_A_lp) - np.min(outlineY_A_lp)
             self.assertAlmostEqual(max_thickness, 0.12, places=2)
 
+    # ToDo: Finalize Airfoil's get_plottable_data testing.
+    def test_airfoil_get_plottable_data(self):
+        """Test that the get_plottable_data method works correctly."""
+        self.naca0012_airfoil.get_plottable_data(show=True, save=False, testing=False)
+
 
 if __name__ == "__main__":
     unittest.main()

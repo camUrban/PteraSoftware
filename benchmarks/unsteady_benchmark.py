@@ -9,30 +9,30 @@ flapping_frequency = 1
 num_chordwise_panels = 5
 num_spanwise_panels = 20
 
-example_airplane = ps.geometry.Airplane(
+example_airplane = ps.geometry.airplane.Airplane(
     name="Example Airplane",
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             name="Main Wing",
             symmetric=True,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0000",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
                     spanwise_spacing="uniform",
                     x_le=0.625,
                     y_le=5.0,
                     chord=0.5,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0000",
                     ),
                 ),

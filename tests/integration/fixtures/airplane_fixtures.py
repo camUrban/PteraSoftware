@@ -44,7 +44,7 @@ def make_steady_validation_airplane():
         This is the airplane fixture.
     """
     # Create and return the airplane object.
-    steady_validation_airplane = ps.geometry.Airplane(
+    steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
             ps.geometry.wing.Wing(
                 wing_cross_sections=[
@@ -128,7 +128,7 @@ def make_multiple_wing_steady_validation_airplane():
         This is the airplane fixture.
     """
     # Create and return the airplane object.
-    multiple_wing_steady_validation_airplane = ps.geometry.Airplane(
+    multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
             ps.geometry.wing.Wing(
                 wing_cross_sections=[
@@ -266,7 +266,7 @@ def make_symmetric_unsteady_validation_airplane():
         This is the airplane fixture.
     """
     # Create and return the airplane object.
-    symmetric_unsteady_validation_airplane = ps.geometry.Airplane(
+    symmetric_unsteady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
             ps.geometry.wing.Wing(
                 wing_cross_sections=[
@@ -341,7 +341,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
         This is the airplane fixture.
     """
     # Create and return the airplane object.
-    symmetric_multiple_wing_steady_validation_airplane = ps.geometry.Airplane(
+    symmetric_multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
             ps.geometry.wing.Wing(
                 wing_cross_sections=[

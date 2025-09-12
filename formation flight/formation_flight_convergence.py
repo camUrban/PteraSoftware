@@ -117,12 +117,12 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
 
                 offset = row - 1
 
-                this_airplane = ps.geometry.Airplane(
+                this_airplane = ps.geometry.airplane.Airplane(
                     name=this_name,
                     x_ref=offset * x_spacing,
                     y_ref=offset_sign * offset * y_spacing,
                     wings=[
-                        ps.geometry.Wing(
+                        ps.geometry.wing.Wing(
                             name="Main Wing",
                             symmetric=True,
                             chordwise_spacing="uniform",
@@ -130,26 +130,32 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                             y_le=offset_sign * offset * y_spacing,
                             num_chordwise_panels=num_chord,
                             wing_cross_sections=[
-                                ps.geometry.WingCrossSection(
+                                ps.geometry.wing_cross_section.WingCrossSection(
                                     twist=alpha,
                                     chord=root_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.airfoil.Airfoil(
+                                        name="naca0012"
+                                    ),
                                     num_spanwise_panels=root_to_mid_num_span,
                                     spanwise_spacing="cosine",
                                 ),
-                                ps.geometry.WingCrossSection(
+                                ps.geometry.wing_cross_section.WingCrossSection(
                                     twist=alpha,
                                     y_le=root_to_mid_span,
                                     chord=root_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.airfoil.Airfoil(
+                                        name="naca0012"
+                                    ),
                                     num_spanwise_panels=mid_to_tip_num_span,
                                     spanwise_spacing="cosine",
                                 ),
-                                ps.geometry.WingCrossSection(
+                                ps.geometry.wing_cross_section.WingCrossSection(
                                     twist=alpha,
                                     y_le=root_to_mid_span + mid_to_tip_span,
                                     chord=tip_chord,
-                                    airfoil=ps.geometry.Airfoil(name="naca0012"),
+                                    airfoil=ps.geometry.airfoil.Airfoil(
+                                        name="naca0012"
+                                    ),
                                 ),
                             ],
                         ),

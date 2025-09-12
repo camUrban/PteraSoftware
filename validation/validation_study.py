@@ -495,7 +495,7 @@ exp_green_leading_point_pressures = np.genfromtxt(
 )
 
 # Interpolate the experimental pressure data to ensure that they all reference the
-# same normalized time scale.
+# same normalized timescale.
 exp_blue_trailing_point_pressures_norm = np.interp(
     normalized_times,
     exp_blue_trailing_point_pressures[:, 0],

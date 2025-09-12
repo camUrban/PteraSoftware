@@ -12,48 +12,48 @@ example_logger.setLevel(logging.DEBUG)
 
 # Create an airplane object. Read through the solver examples for more details on
 # creating this object.
-default_airplane = ps.geometry.Airplane(
+default_airplane = ps.geometry.airplane.Airplane(
     weight=250,
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             symmetric=True,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
-                    airfoil=ps.geometry.Airfoil(
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
                     y_le=5.0,
                     z_le=0.0,
                     chord=1.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                 ),
             ],
         ),
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             x_le=7.50,
             z_le=0.25,
             symmetric=True,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
                     y_le=0.0,
                     chord=0.5,
                     twist=-5.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
                     y_le=1.0,
                     chord=0.5,
                     twist=-5.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),

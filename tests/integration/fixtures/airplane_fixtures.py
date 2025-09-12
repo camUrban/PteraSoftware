@@ -46,10 +46,10 @@ def make_steady_validation_airplane():
     # Create and return the airplane object.
     steady_validation_airplane = ps.geometry.Airplane(
         wings=[
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -67,8 +67,8 @@ def make_steady_validation_airplane():
                         num_spanwise_panels=20,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -130,10 +130,10 @@ def make_multiple_wing_steady_validation_airplane():
     # Create and return the airplane object.
     multiple_wing_steady_validation_airplane = ps.geometry.Airplane(
         wings=[
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca23012",
                             coordinates=None,
                             repanel=True,
@@ -151,8 +151,8 @@ def make_multiple_wing_steady_validation_airplane():
                         num_spanwise_panels=69,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca23012",
                             coordinates=None,
                             repanel=True,
@@ -181,10 +181,10 @@ def make_multiple_wing_steady_validation_airplane():
                 num_chordwise_panels=12,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,
@@ -202,8 +202,8 @@ def make_multiple_wing_steady_validation_airplane():
                         num_spanwise_panels=16,
                         spanwise_spacing="uniform",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,
@@ -268,10 +268,10 @@ def make_symmetric_unsteady_validation_airplane():
     # Create and return the airplane object.
     symmetric_unsteady_validation_airplane = ps.geometry.Airplane(
         wings=[
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -289,8 +289,8 @@ def make_symmetric_unsteady_validation_airplane():
                         num_spanwise_panels=18,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -343,10 +343,10 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
     # Create and return the airplane object.
     symmetric_multiple_wing_steady_validation_airplane = ps.geometry.Airplane(
         wings=[
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -364,8 +364,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                         num_spanwise_panels=8,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
                             coordinates=None,
                             repanel=True,
@@ -394,10 +394,10 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                 num_chordwise_panels=8,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,
@@ -415,8 +415,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                         num_spanwise_panels=8,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,
@@ -445,10 +445,10 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                 num_chordwise_panels=8,
                 chordwise_spacing="uniform",
             ),
-            ps.geometry.Wing(
+            ps.geometry.wing.Wing(
                 wing_cross_sections=[
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,
@@ -466,8 +466,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                         num_spanwise_panels=8,
                         spanwise_spacing="cosine",
                     ),
-                    ps.geometry.WingCrossSection(
-                        airfoil=ps.geometry.Airfoil(
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
                             coordinates=None,
                             repanel=True,

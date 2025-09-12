@@ -157,11 +157,11 @@ for i in range(num_spanwise_sections):
     this_chord = this_x_te - this_x_le
 
     # Define this wing cross section object.
-    this_wing_cross_section = ps.geometry.WingCrossSection(
+    this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         x_le=this_x_le,
         y_le=this_y_le,
         chord=this_chord,
-        airfoil=ps.geometry.Airfoil(
+        airfoil=ps.geometry.airfoil.Airfoil(
             name="naca0000",
         ),
         num_spanwise_panels=1,
@@ -187,11 +187,11 @@ for i in range(num_spanwise_sections):
         this_chord = this_x_te - this_x_le
 
         # Define this wing cross section object.
-        this_wing_cross_section = ps.geometry.WingCrossSection(
+        this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             x_le=this_x_le,
             y_le=this_y_le,
             chord=this_chord,
-            airfoil=ps.geometry.Airfoil(
+            airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca0000",
             ),
             num_spanwise_panels=1,
@@ -201,10 +201,10 @@ for i in range(num_spanwise_sections):
         validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
 # Define the validation airplane object.
-validation_airplane = ps.geometry.Airplane(
+validation_airplane = ps.geometry.airplane.Airplane(
     name="Validation Airplane",
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             symmetric=True,
             wing_cross_sections=validation_airplane_wing_cross_sections,
             chordwise_spacing=chordwise_spacing,

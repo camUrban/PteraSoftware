@@ -6,7 +6,7 @@ class steadyHorseshoeVortexLatticeMethodSolver:
         var = "Variables"
 
     def runSolver(self):
-        example_airplane = ps.geometry.Airplane(
+        example_airplane = ps.geometry.airplane.Airplane(
             name="Example Airplane",
             x_ref=0.0,
             y_ref=0.0,
@@ -15,7 +15,7 @@ class steadyHorseshoeVortexLatticeMethodSolver:
             b_ref=None,
             c_ref=None,
             wings=[
-                ps.geometry.Wing(
+                ps.geometry.wing.Wing(
                     name="Main Wing",
                     x_le=0.0,
                     y_le=0.0,
@@ -24,7 +24,7 @@ class steadyHorseshoeVortexLatticeMethodSolver:
                     num_chordwise_panels=8,
                     chordwise_spacing="cosine",
                     wing_cross_sections=[
-                        ps.geometry.WingCrossSection(
+                        ps.geometry.wing_cross_section.WingCrossSection(
                             x_le=0.0,
                             y_le=0.0,
                             z_le=0.0,
@@ -35,45 +35,45 @@ class steadyHorseshoeVortexLatticeMethodSolver:
                             num_spanwise_panels=8,
                             spanwise_spacing="cosine",
                             chord=1.75,
-                            airfoil=ps.geometry.Airfoil(
+                            airfoil=ps.geometry.airfoil.Airfoil(
                                 name="naca2412",
                                 coordinates=None,
                                 repanel=True,
                                 n_points_per_side=400,
                             ),
                         ),
-                        ps.geometry.WingCrossSection(
+                        ps.geometry.wing_cross_section.WingCrossSection(
                             x_le=0.75,
                             y_le=6.0,
                             z_le=1.0,
                             chord=1.5,
                             twist=5.0,
-                            airfoil=ps.geometry.Airfoil(
+                            airfoil=ps.geometry.airfoil.Airfoil(
                                 name="naca2412",
                             ),
                         ),
                     ],
                 ),
-                ps.geometry.Wing(
+                ps.geometry.wing.Wing(
                     name="V-Tail",
                     x_le=6.75,
                     z_le=0.25,
                     symmetric=True,
                     wing_cross_sections=[
-                        ps.geometry.WingCrossSection(
+                        ps.geometry.wing_cross_section.WingCrossSection(
                             chord=1.5,
-                            airfoil=ps.geometry.Airfoil(
+                            airfoil=ps.geometry.airfoil.Airfoil(
                                 name="naca0012",
                             ),
                             twist=-5.0,
                         ),
-                        ps.geometry.WingCrossSection(
+                        ps.geometry.wing_cross_section.WingCrossSection(
                             x_le=0.5,
                             y_le=2.0,
                             z_le=1.0,
                             chord=1.0,
                             twist=-5.0,
-                            airfoil=ps.geometry.Airfoil(
+                            airfoil=ps.geometry.airfoil.Airfoil(
                                 name="naca0012",
                             ),
                         ),

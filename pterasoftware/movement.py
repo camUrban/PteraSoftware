@@ -438,7 +438,7 @@ class AirplaneMovement:
             these_wings = wings[:, step]
 
             # Make a new airplane object for this time step.
-            this_airplane = geometry.Airplane(
+            this_airplane = geometry.airplane.Airplane(
                 name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
             )
 
@@ -795,7 +795,7 @@ class WingMovement:
             cross_sections = wing_cross_sections[:, step]
 
             # Make a new wing object for this time step.
-            this_wing = geometry.Wing(
+            this_wing = geometry.wing.Wing(
                 name=name,
                 x_le=x_le,
                 y_le=y_le,
@@ -1203,7 +1203,7 @@ class WingCrossSectionMovement:
             twist = twist_list[step]
 
             # Make a new wing cross section object for this time step.
-            this_wing_cross_section = geometry.WingCrossSection(
+            this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
                 x_le=x_le,
                 y_le=y_le,
                 z_le=z_le,

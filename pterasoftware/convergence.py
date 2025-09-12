@@ -211,7 +211,7 @@ def analyze_steady_convergence(
                             this_num_spanwise_panels = 0
 
                         these_wing_cross_sections.append(
-                            geometry.WingCrossSection(
+                            geometry.wing_cross_section.WingCrossSection(
                                 # These values are copied from the reference wing
                                 # cross section.
                                 x_le=ref_wing_cross_section.x_le,
@@ -225,7 +225,7 @@ def analyze_steady_convergence(
                                 spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
                                 # These values change.
                                 num_spanwise_panels=this_num_spanwise_panels,
-                                airfoil=geometry.Airfoil(
+                                airfoil=geometry.airfoil.Airfoil(
                                     name=ref_wing_cross_section.airfoil.name,
                                     coordinates=ref_wing_cross_section.airfoil.coordinates,
                                     repanel=ref_wing_cross_section.airfoil.repanel,
@@ -235,7 +235,7 @@ def analyze_steady_convergence(
                         )
 
                     these_wings.append(
-                        geometry.Wing(
+                        geometry.wing.Wing(
                             # These values are copied from this reference wing.
                             name=ref_wing.name,
                             x_le=ref_wing.x_le,
@@ -250,7 +250,7 @@ def analyze_steady_convergence(
                     )
 
                 these_airplanes.append(
-                    geometry.Airplane(
+                    geometry.airplane.Airplane(
                         # These values are copied from the reference airplane.
                         name=ref_airplane.name,
                         x_ref=ref_airplane.x_ref,
@@ -799,7 +799,7 @@ def analyze_unsteady_convergence(
                                 # N/A
 
                                 # 6: Create a copy of the base object.
-                                this_base_wing_cross_section = geometry.WingCrossSection(
+                                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
                                     # These values are copied from the reference base
                                     # wing cross section.
                                     x_le=ref_base_wing_cross_section.x_le,
@@ -813,7 +813,7 @@ def analyze_unsteady_convergence(
                                     spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
                                     # These values change.
                                     num_spanwise_panels=this_num_spanwise_panels,
-                                    airfoil=geometry.Airfoil(
+                                    airfoil=geometry.airfoil.Airfoil(
                                         name=ref_base_wing_cross_section.airfoil.name,
                                         coordinates=ref_base_wing_cross_section.airfoil.coordinates,
                                         repanel=ref_base_wing_cross_section.airfoil.repanel,
@@ -854,7 +854,7 @@ def analyze_unsteady_convergence(
                                 )
 
                             # 6: Create a copy of the base object.
-                            this_base_wing = geometry.Wing(
+                            this_base_wing = geometry.wing.Wing(
                                 # These values are copied from this reference base
                                 # wing.
                                 name=ref_base_wing.name,
@@ -895,7 +895,7 @@ def analyze_unsteady_convergence(
                             these_wing_movements.append(this_wing_movement)
 
                         # 6: Create a copy of the base object.
-                        this_base_airplane = geometry.Airplane(
+                        this_base_airplane = geometry.airplane.Airplane(
                             # These values are copied from the reference base airplane.
                             name=ref_base_airplane.name,
                             x_ref=ref_base_airplane.x_ref,

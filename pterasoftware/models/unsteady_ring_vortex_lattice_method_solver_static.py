@@ -9,7 +9,7 @@ import pterasoftware as ps
 # Create an airplane object. Note, I am going to declare every attribute for each
 # class, even most of them have usable default values. This is simply for educational
 # purposes, even though it makes the code much longer than what it needs to be.
-example_airplane = ps.geometry.Airplane(
+example_airplane = ps.geometry.airplane.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
     # Specify the location of the airplane's center of gravity. This is the point
@@ -31,7 +31,7 @@ example_airplane = ps.geometry.Airplane(
     b_ref=None,
     c_ref=None,  # All airplane objects have a list of wings.
     wings=[  # Create the first wing object in this airplane.
-        ps.geometry.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
+        ps.geometry.wing.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # global coordinate system fixed front left corner of the first
@@ -61,7 +61,7 @@ example_airplane = ps.geometry.Airplane(
             # output to be sensible, each wing must have at least two wing cross
             # sections.
             wing_cross_sections=[  # Create a new wing cross section object.
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
@@ -101,7 +101,7 @@ example_airplane = ps.geometry.Airplane(
                     # Set the chord of this cross section to be 1.75 meters. This
                     # value defaults to 1.0 meter.
                     chord=1.75,  # Every wing cross section has an airfoil object.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled
                         # Airfoil". This name should correspond to a name in the
                         # airfoil directory or a NACA four series airfoil, unless you
@@ -129,20 +129,20 @@ example_airplane = ps.geometry.Airplane(
                 # Define the next wing cross section. From here on out,
                 # the declarations will not be as commented as the previous. See the
                 # above comments if you have questions.
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     z_le=1.0,
                     chord=1.5,
                     twist=5.0,  # Give this wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                 ),
             ],
         ),
         # Define the next wing.
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             name="V-Tail",
             x_le=6.75,
             z_le=0.25,
@@ -151,22 +151,22 @@ example_airplane = ps.geometry.Airplane(
             symmetric=True,
             # Define this wing's root wing cross section.
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     chord=1.5,
                     # Give the root wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                     twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.5,
                     y_le=2.0,
                     z_le=1.0,
                     chord=1.0,
                     twist=-5.0,  # Give the tip wing cross section an airfoil.
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),

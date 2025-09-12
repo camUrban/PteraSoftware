@@ -10,7 +10,7 @@ x_spacing = 13
 y_spacing = 13
 
 # Create the lead airplane object.
-lead_airplane = ps.geometry.Airplane(
+lead_airplane = ps.geometry.airplane.Airplane(
     name="Lead Airplane",
     # Specify the location of the lead airplane's center of gravity. This is the
     # point around about which the solver will calculate the moments on the airplane.
@@ -21,7 +21,7 @@ lead_airplane = ps.geometry.Airplane(
     y_ref=0.0,
     z_ref=0.0,
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # global coordinate system fixed front left corner of the first
@@ -42,7 +42,7 @@ lead_airplane = ps.geometry.Airplane(
             chordwise_spacing="uniform",
             num_chordwise_panels=4,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
@@ -55,16 +55,16 @@ lead_airplane = ps.geometry.Airplane(
                     # simulate each aircraft having an angle of attack.
                     twist=5.0,
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     chord=1.5,
                     twist=5.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
@@ -101,7 +101,7 @@ lead_airplane_movement = ps.movement.AirplaneMovement(
 )
 
 # Create the trailing right airplane object.
-right_airplane = ps.geometry.Airplane(
+right_airplane = ps.geometry.airplane.Airplane(
     name="Right Airplane",
     # Specify the location of the right airplane's center of gravity. This is the
     # point around about which the solver will calculate the moments on the airplane.
@@ -112,7 +112,7 @@ right_airplane = ps.geometry.Airplane(
     y_ref=y_spacing,
     z_ref=0.0,
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # global coordinate system fixed front left corner of the first
@@ -123,19 +123,19 @@ right_airplane = ps.geometry.Airplane(
             chordwise_spacing="uniform",
             num_chordwise_panels=4,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     twist=5.0,
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     chord=1.5,
                     twist=5.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
@@ -170,7 +170,7 @@ right_airplane_movement = ps.movement.AirplaneMovement(
 )
 
 # Create the trailing left airplane object.
-left_airplane = ps.geometry.Airplane(
+left_airplane = ps.geometry.airplane.Airplane(
     name="Left Airplane",
     # Specify the location of the left airplane's center of gravity. This is the
     # point around about which the solver will calculate the moments on the airplane.
@@ -181,7 +181,7 @@ left_airplane = ps.geometry.Airplane(
     y_ref=-y_spacing,
     z_ref=0.0,
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             name="Main Wing",
             # Define the location of the leading edge of the wing relative to the
             # global coordinate system fixed front left corner of the first
@@ -192,19 +192,19 @@ left_airplane = ps.geometry.Airplane(
             chordwise_spacing="uniform",
             num_chordwise_panels=4,
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     twist=5.0,
                     chord=1.75,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.75,
                     y_le=6.0,
                     chord=1.5,
                     twist=5.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),

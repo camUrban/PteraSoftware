@@ -6,28 +6,28 @@ import pterasoftware as ps
 
 # Create an airplane and airplane movement object. Read through the unsteady solver
 # examples for more details on creating this object.
-airplane = ps.geometry.Airplane(
+airplane = ps.geometry.airplane.Airplane(
     wings=[
-        ps.geometry.Wing(
+        ps.geometry.wing.Wing(
             symmetric=True,
             chordwise_spacing="uniform",
             wing_cross_sections=[
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
                     y_le=0.0,
                     z_le=0.0,
                     chord=1.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                     spanwise_spacing="uniform",
                 ),
-                ps.geometry.WingCrossSection(
+                ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
                     y_le=3.0,
                     z_le=0.0,
                     chord=1.0,
-                    airfoil=ps.geometry.Airfoil(
+                    airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                 ),

@@ -17,36 +17,36 @@ class Panel:
     """This class is used to contain the panels of a wing.
 
     This class contains the following public methods:
-        right_leg: This method defines a property for the panel's right leg vector as
+        rightLeg_G: This method defines a property for the panel's right leg vector as
         a (3,) array.
 
-        front_leg: This method defines a property for the panel's front leg vector as
+        frontLeg_G: This method defines a property for the panel's front leg vector as
         a (3,) array.
 
-        left_leg: This method defines a property for the panel's left leg vector as a
+        leftLeg_G: This method defines a property for the panel's left leg vector as a
         (3,) array.
 
-        back_leg: This method defines a property for the panel's back leg vector as a
+        backLeg_G: This method defines a property for the panel's back leg vector as a
         (3,) array.
 
-        front_right_vortex_vertex: This method defines a property for the coordinates
+        Frbvp_G_Cg: This method defines a property for the coordinates
         of the front-right vertex of the ring vortex as a (3,) array.
 
-        front_left_vortex_vertex: This method defines a property for the coordinates
+        Flbvp_G_Cg: This method defines a property for the coordinates
         of the front-left vertex of the ring vortex as a (3,) array.
 
-        collocation_point: This method defines a property for the coordinates of the
+        Cpp_G_Cg: This method defines a property for the coordinates of the
         panel's collocation point as a (3,) array.
 
         area: This method defines a property which is an estimate of the panel's area.
 
-        unit_normal: This method defines a property for an estimate of the panel's
+        unitNormal_G: This method defines a property for an estimate of the panel's
         unit normal vector as a (3,) array.
 
-        unit_spanwise: This method defines a property for the panel's unit spanwise
+        unitSpanwise_G: This method defines a property for the panel's unit spanwise
         vector as a ( 3,) array.
 
-        unit_chordwise: This method defines a property for the panel's unit chordwise
+        unitChordwise_G: This method defines a property for the panel's unit chordwise
         vector as a (3,) array.
 
         average_span: This method defines a property for the average span of the panel.
@@ -360,11 +360,11 @@ class Panel:
 
         if self.ring_vortex is not None:
             normalized_induced_velocity += (
-                self.ring_vortex.calculate_normalized_induced_velocity(point=point)
+                self.ring_vortex.normalizedInducedVelocity_G()
             )
         if self.horseshoe_vortex is not None:
             normalized_induced_velocity += (
-                self.horseshoe_vortex.calculate_normalized_induced_velocity(point=point)
+                self.horseshoe_vortex.normalizedInducedVelocity_G()
             )
 
         return normalized_induced_velocity
@@ -385,11 +385,9 @@ class Panel:
         induced_velocity = np.zeros(3)
 
         if self.ring_vortex is not None:
-            induced_velocity += self.ring_vortex.calculate_induced_velocity(point=point)
+            induced_velocity += self.ring_vortex.inducedVelocity_G(point=point)
         if self.horseshoe_vortex is not None:
-            induced_velocity += self.horseshoe_vortex.calculate_induced_velocity(
-                point=point
-            )
+            induced_velocity += self.horseshoe_vortex.inducedVelocity_G(point=point)
 
         return induced_velocity
 

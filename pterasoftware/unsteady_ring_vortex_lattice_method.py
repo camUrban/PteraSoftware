@@ -510,8 +510,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                             # Find the location of the panel's front left and right
                             # vortex vertices.
-                            front_left_vortex_vertex = panel.front_left_vortex_vertex
-                            front_right_vortex_vertex = panel.front_right_vortex_vertex
+                            front_left_vortex_vertex = panel.Flbvp_G_Cg
+                            front_right_vortex_vertex = panel.Frbvp_G_Cg
 
                             # Define the back left and right vortex vertices based on
                             # whether the panel is along the trailing edge or not.
@@ -520,10 +520,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     chordwise_position + 1, spanwise_position
                                 ]
                                 back_left_vortex_vertex = (
-                                    next_chordwise_panel.front_left_vortex_vertex
+                                    next_chordwise_panel.Flbvp_G_Cg
                                 )
                                 back_right_vortex_vertex = (
-                                    next_chordwise_panel.front_right_vortex_vertex
+                                    next_chordwise_panel.Frbvp_G_Cg
                                 )
                             else:
                                 # As these vertices are directly behind the trailing
@@ -536,17 +536,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # Thomas Lambert.
                                 back_left_vortex_vertex = (
                                     front_left_vortex_vertex
-                                    + (panel.back_left_vertex - panel.front_left_vertex)
+                                    + (panel.Blpp_G_Cg - panel.Flpp_G_Cg)
                                     + this_freestream_velocity_geometry_axes
                                     * self.delta_time
                                     * 0.25
                                 )
                                 back_right_vortex_vertex = (
                                     front_right_vortex_vertex
-                                    + (
-                                        panel.back_right_vertex
-                                        - panel.front_right_vertex
-                                    )
+                                    + (panel.Brpp_G_Cg - panel.Frpp_G_Cg)
                                     + this_freestream_velocity_geometry_axes
                                     * self.delta_time
                                     * 0.25
@@ -603,16 +600,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     ] = wake_ring_vortex.age
                     self.current_wake_ring_vortex_front_right_vertices[
                         global_wake_ring_vortex_position, :
-                    ] = wake_ring_vortex.front_right_vertex
+                    ] = wake_ring_vortex.Frpp_G_Cg
                     self.current_wake_ring_vortex_front_left_vertices[
                         global_wake_ring_vortex_position, :
-                    ] = wake_ring_vortex.front_left_vertex
+                    ] = wake_ring_vortex.Flpp_G_Cg
                     self.current_wake_ring_vortex_back_left_vertices[
                         global_wake_ring_vortex_position, :
-                    ] = wake_ring_vortex.back_left_vertex
+                    ] = wake_ring_vortex.Blpp_G_Cg
                     self.current_wake_ring_vortex_back_right_vertices[
                         global_wake_ring_vortex_position, :
-                    ] = wake_ring_vortex.back_right_vertex
+                    ] = wake_ring_vortex.Brpp_G_Cg
 
                     global_wake_ring_vortex_position += 1
 
@@ -643,28 +640,28 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
                         self.last_panel_back_right_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.right_leg.origin
+                        ] = panel.ring_vortex.rightLeg_G.origin
                         self.last_panel_front_right_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.right_leg.termination
+                        ] = panel.ring_vortex.rightLeg_G.termination
                         self.last_panel_front_left_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.left_leg.origin
+                        ] = panel.ring_vortex.leftLeg_G.origin
                         self.last_panel_back_left_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.left_leg.termination
+                        ] = panel.ring_vortex.leftLeg_G.termination
                         self.last_panel_right_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.right_leg.center
+                        ] = panel.ring_vortex.rightLeg_G.center
                         self.last_panel_front_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.front_leg.center
+                        ] = panel.ring_vortex.frontLeg_G.center
                         self.last_panel_left_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.left_leg.center
+                        ] = panel.ring_vortex.leftLeg_G.center
                         self.last_panel_back_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.back_leg.center
+                        ] = panel.ring_vortex.backLeg_G.center
 
                         # Increment the global panel position.
                         global_panel_position += 1
@@ -1144,9 +1141,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # The position of the next front left wake ring vortex
                             # vertex is the next panel's ring vortex's back left
                             # vertex.
-                            next_front_left_vertex = (
-                                next_panel.ring_vortex.back_left_vertex
-                            )
+                            next_front_left_vertex = next_panel.ring_vortex.Blpp_G_Cg
 
                             # Add this to the new row of wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
@@ -1159,7 +1154,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # vortex vertex is the next panel's ring vortex's
                                 # back right vertex.
                                 next_front_right_vertex = (
-                                    next_panel.ring_vortex.back_right_vertex
+                                    next_panel.ring_vortex.Brpp_G_Cg
                                 )
 
                                 # Add this to the new row of wake ring vortex vertices.
@@ -1313,7 +1308,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # the matrix of new wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
                                 0, spanwise_position
-                            ] = next_panel.ring_vortex.back_left_vertex
+                            ] = next_panel.ring_vortex.Blpp_G_Cg
 
                             if spanwise_position == (this_wing.num_spanwise_panels - 1):
                                 # If the panel object is at the right edge of the
@@ -1321,7 +1316,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # matrix of new wake ring vortex vertices.
                                 first_row_of_wake_ring_vortex_vertices[
                                     0, spanwise_position + 1
-                                ] = next_panel.ring_vortex.back_right_vertex
+                                ] = next_panel.ring_vortex.Brpp_G_Cg
 
                         # Stack the new first row of wake ring vortex vertices above
                         # the wing's matrix of wake ring vortex vertices.

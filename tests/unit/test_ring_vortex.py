@@ -179,16 +179,16 @@ class TestRingVortex(unittest.TestCase):
         # Test that all the strength's have been updated correctly.
         self.assertEqual(self.ring_vortex_fixture.strength, new_strength_fixture)
         self.assertEqual(
-            self.ring_vortex_fixture.front_leg.strength, new_strength_fixture
+            self.ring_vortex_fixture.frontLeg_G.strength, new_strength_fixture
         )
         self.assertEqual(
-            self.ring_vortex_fixture.left_leg.strength, new_strength_fixture
+            self.ring_vortex_fixture.leftLeg_G.strength, new_strength_fixture
         )
         self.assertEqual(
-            self.ring_vortex_fixture.back_leg.strength, new_strength_fixture
+            self.ring_vortex_fixture.backLeg_G.strength, new_strength_fixture
         )
         self.assertEqual(
-            self.ring_vortex_fixture.right_leg.strength, new_strength_fixture
+            self.ring_vortex_fixture.rightLeg_G.strength, new_strength_fixture
         )
 
         # Revert the change.
@@ -201,10 +201,10 @@ class TestRingVortex(unittest.TestCase):
         """
 
         # Create fixtures to hold the old values of the ring vortex's position.
-        old_front_right_vertex_fixture = self.ring_vortex_fixture.front_right_vertex
-        old_front_left_vertex_fixture = self.ring_vortex_fixture.front_right_vertex
-        old_back_left_vertex_fixture = self.ring_vortex_fixture.back_left_vertex
-        old_back_right_vertex_fixture = self.ring_vortex_fixture.back_right_vertex
+        old_front_right_vertex_fixture = self.ring_vortex_fixture.Frpp_G_Cg
+        old_front_left_vertex_fixture = self.ring_vortex_fixture.Frpp_G_Cg
+        old_back_left_vertex_fixture = self.ring_vortex_fixture.Blpp_G_Cg
+        old_back_right_vertex_fixture = self.ring_vortex_fixture.Brpp_G_Cg
 
         # Create fixtures to hold the soon-to-be new values of the ring vortex's
         # position.
@@ -232,24 +232,24 @@ class TestRingVortex(unittest.TestCase):
         # Test that the position of the ring vortex was correctly updated.
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_right_vertex,
+                self.ring_vortex_fixture.Frpp_G_Cg,
                 new_front_right_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_left_vertex,
+                self.ring_vortex_fixture.Flpp_G_Cg,
                 new_front_left_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_left_vertex, new_back_left_vertex_fixture
+                self.ring_vortex_fixture.Blpp_G_Cg, new_back_left_vertex_fixture
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_right_vertex,
+                self.ring_vortex_fixture.Brpp_G_Cg,
                 new_back_right_vertex_fixture,
             )
         )
@@ -257,46 +257,47 @@ class TestRingVortex(unittest.TestCase):
         # Check that the positions of the child objects have been correctly updated.
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_leg.origin,
+                self.ring_vortex_fixture.frontLeg_G.origin,
                 new_front_right_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_leg.termination,
+                self.ring_vortex_fixture.frontLeg_G.termination,
                 new_front_left_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.left_leg.origin, new_front_left_vertex_fixture
+                self.ring_vortex_fixture.leftLeg_G.origin, new_front_left_vertex_fixture
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.left_leg.termination,
+                self.ring_vortex_fixture.leftLeg_G.termination,
                 new_back_left_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_leg.origin, new_back_left_vertex_fixture
+                self.ring_vortex_fixture.backLeg_G.origin, new_back_left_vertex_fixture
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_leg.termination,
+                self.ring_vortex_fixture.backLeg_G.termination,
                 new_back_right_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.right_leg.origin, new_back_right_vertex_fixture
+                self.ring_vortex_fixture.rightLeg_G.origin,
+                new_back_right_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.right_leg.termination,
+                self.ring_vortex_fixture.rightLeg_G.termination,
                 new_front_right_vertex_fixture,
             )
         )

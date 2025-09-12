@@ -12,7 +12,6 @@ This module contains the following functions:
 
 import numpy as np
 import pyvista as pv
-from jaraco.functools import apply
 
 from .airfoil import Airfoil
 

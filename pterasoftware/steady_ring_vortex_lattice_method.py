@@ -212,8 +212,8 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Find the location of the panel's front left and right
                         # vortex vertices.
-                        front_left_vortex_vertex = panel.front_left_vortex_vertex
-                        front_right_vortex_vertex = panel.front_right_vortex_vertex
+                        front_left_vortex_vertex = panel.Flbvp_G_Cg
+                        front_right_vortex_vertex = panel.Frbvp_G_Cg
 
                         # Define the back left and right vortex vertices based on
                         # whether the panel is along the trailing edge or not.
@@ -221,18 +221,14 @@ class SteadyRingVortexLatticeMethodSolver:
                             next_chordwise_panel = wing.panels[
                                 chordwise_position + 1, spanwise_position
                             ]
-                            back_left_vortex_vertex = (
-                                next_chordwise_panel.front_left_vortex_vertex
-                            )
-                            back_right_vortex_vertex = (
-                                next_chordwise_panel.front_right_vortex_vertex
-                            )
+                            back_left_vortex_vertex = next_chordwise_panel.Flbvp_G_Cg
+                            back_right_vortex_vertex = next_chordwise_panel.Frbvp_G_Cg
                         else:
                             back_left_vortex_vertex = front_left_vortex_vertex + (
-                                panel.back_left_vertex - panel.front_left_vertex
+                                panel.Blpp_G_Cg - panel.Flpp_G_Cg
                             )
                             back_right_vortex_vertex = front_right_vortex_vertex + (
-                                panel.back_right_vertex - panel.front_right_vertex
+                                panel.Brpp_G_Cg - panel.Frpp_G_Cg
                             )
 
                             # If the panel is along the trailing edge, initialize its
@@ -289,16 +285,16 @@ class SteadyRingVortexLatticeMethodSolver:
                         # vortex attributes
                         self.horseshoe_vortex_back_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.right_leg.origin
+                        ] = panel.horseshoe_vortex.rightLeg_G.origin
                         self.horseshoe_vortex_front_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.right_leg.termination
+                        ] = panel.horseshoe_vortex.rightLeg_G.termination
                         self.horseshoe_vortex_front_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.left_leg.origin
+                        ] = panel.horseshoe_vortex.leftLeg_G.origin
                         self.horseshoe_vortex_back_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.left_leg.termination
+                        ] = panel.horseshoe_vortex.leftLeg_G.termination
 
                         # Set the horseshoe vortex strength at this position to 1.0.
                         # This will be updated after the correct vortex strengths are

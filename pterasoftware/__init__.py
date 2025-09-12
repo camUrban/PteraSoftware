@@ -32,8 +32,6 @@ This package contains the following modules:
     output.py: This module contains useful functions for visualizing solutions to
     problems.
 
-    panel.py: This module contains the Panel class.
-
     parameter_validation.py: This module contains common parameter validation functions.
 
     problems.py: This module contains the class definitions for different types of
@@ -65,7 +63,6 @@ import pterasoftware.meshing
 import pterasoftware.movement
 import pterasoftware.operating_point
 import pterasoftware.output
-import pterasoftware.panel
 import pterasoftware.parameter_validation
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method

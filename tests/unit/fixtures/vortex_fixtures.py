@@ -163,7 +163,7 @@ def make_horseshoe_vortex_fixture():
 def make_front_left_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return front_left_vertex: (,3) array of floats
+    :return Flpp_G_Cg: (,3) array of floats
         This holds the fixture's coordinates.
     """
     front_left_vertex = np.zeros(3)
@@ -174,7 +174,7 @@ def make_front_left_vertex_fixture():
 def make_front_right_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return front_right_vertex: (,3) array of floats
+    :return Frpp_G_Cg: (,3) array of floats
         This holds the fixture's coordinates.
     """
     front_right_vertex = np.ones(3)
@@ -185,7 +185,7 @@ def make_front_right_vertex_fixture():
 def make_back_left_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return back_left_vertex: (,3) array of floats
+    :return Blpp_G_Cg: (,3) array of floats
         This holds the fixture's coordinates.
     """
     back_left_vertex = np.array([1.0, 1.0, 0.0])
@@ -196,7 +196,7 @@ def make_back_left_vertex_fixture():
 def make_back_right_vertex_fixture():
     """This method makes a fixture that holds the coordinates of a position.
 
-    :return back_right_vertex: (,3) array of floats
+    :return Brpp_G_Cg: (,3) array of floats
         This holds the fixture's coordinates.
     """
     back_right_vertex = np.array([1.0, 1.0, 0.0])

@@ -304,10 +304,10 @@ def process_steady_solver_forces(
         this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
 
         # Update the force and moment on this panel.
-        panel.near_field_force_geometry_axes = this_force_geometry_axes
-        panel.near_field_moment_geometry_axes = this_moment_geometry_axes
-        panel.near_field_force_wind_axes = this_force_wind_axes
-        panel.near_field_moment_wind_axes = this_moment_wind_axes
+        panel.forces_G = this_force_geometry_axes
+        panel.moments_G_Cg = this_moment_geometry_axes
+        panel.forces_W = this_force_wind_axes
+        panel.moments_W_Cg = this_moment_wind_axes
 
         # Update the force coefficients this panel.
         panel.update_coefficients(dynamic_pressure)
@@ -436,10 +436,10 @@ def process_unsteady_solver_forces(
         this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
 
         # Update the force and moment on this panel.
-        panel.near_field_force_geometry_axes = this_force_geometry_axes
-        panel.near_field_moment_geometry_axes = this_moment_geometry_axes
-        panel.near_field_force_wind_axes = this_force_wind_axes
-        panel.near_field_moment_wind_axes = this_moment_wind_axes
+        panel.forces_G = this_force_geometry_axes
+        panel.moments_G_Cg = this_moment_geometry_axes
+        panel.forces_W = this_force_wind_axes
+        panel.moments_W_Cg = this_moment_wind_axes
 
         # Update the force coefficients on this panel.
         panel.update_coefficients(dynamic_pressure=dynamic_pressure)
@@ -550,44 +550,44 @@ def update_ring_vortex_solvers_panel_attributes(
 
     # Update the solver's list of attributes with this panel's attributes.
     solver.panels[global_panel_position] = panel
-    solver.panel_normal_directions[global_panel_position, :] = panel.unit_normal
+    solver.panel_normal_directions[global_panel_position, :] = panel.unitNormal_G
     solver.panel_areas[global_panel_position] = panel.area
-    solver.panel_collocation_points[global_panel_position, :] = panel.collocation_point
+    solver.panel_collocation_points[global_panel_position, :] = panel.Cpp_G_Cg
     solver.panel_back_right_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.origin
+        panel.ring_vortex.rightLeg_G.origin
     )
     solver.panel_front_right_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.termination
+        panel.ring_vortex.rightLeg_G.termination
     )
     solver.panel_front_left_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.origin
+        panel.ring_vortex.leftLeg_G.origin
     )
     solver.panel_back_left_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.termination
+        panel.ring_vortex.leftLeg_G.termination
     )
     solver.panel_right_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.center
+        panel.ring_vortex.rightLeg_G.center
     )
     solver.panel_right_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.vector
+        panel.ring_vortex.rightLeg_G.vector
     )
     solver.panel_front_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.front_leg.center
+        panel.ring_vortex.frontLeg_G.center
     )
     solver.panel_front_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.front_leg.vector
+        panel.ring_vortex.frontLeg_G.vector
     )
     solver.panel_left_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.center
+        panel.ring_vortex.leftLeg_G.center
     )
     solver.panel_left_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.vector
+        panel.ring_vortex.leftLeg_G.vector
     )
     solver.panel_back_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.back_leg.center
+        panel.ring_vortex.backLeg_G.center
     )
     solver.panel_back_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.back_leg.vector
+        panel.ring_vortex.backLeg_G.vector
     )
     solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
@@ -601,8 +601,7 @@ def update_ring_vortex_solvers_panel_attributes(
         solver.seed_points = np.vstack(
             (
                 solver.seed_points,
-                panel.back_left_vertex
-                + 0.5 * (panel.back_right_vertex - panel.back_left_vertex),
+                panel.Blpp_G_Cg + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
             )
         )
 

@@ -12,8 +12,8 @@ This module contains the following functions:
 
 import numpy as np
 
+from . import geometry
 from . import functions
-from . import panel
 from . import transformations
 
 
@@ -605,15 +605,15 @@ def _get_panels(
     # Loop through the empty Panels array and create a new Panel in each position.
     for chordwise_position in range(num_chordwise_panels):
         for spanwise_position in range(num_spanwise_panels):
-            panels[chordwise_position, spanwise_position] = panel.Panel(
-                front_left_vertex=Flpp_G_Cg[chordwise_position, spanwise_position],
-                front_right_vertex=Frpp_G_Cg[chordwise_position, spanwise_position],
-                back_left_vertex=Blpp_G_Cg[chordwise_position, spanwise_position],
-                back_right_vertex=Brpp_G_Cg[chordwise_position, spanwise_position],
+            panels[chordwise_position, spanwise_position] = geometry.panel.Panel(
+                Frpp_G_Cg=Frpp_G_Cg[chordwise_position, spanwise_position],
+                Flpp_G_Cg=Flpp_G_Cg[chordwise_position, spanwise_position],
+                Blpp_G_Cg=Blpp_G_Cg[chordwise_position, spanwise_position],
+                Brpp_G_Cg=Brpp_G_Cg[chordwise_position, spanwise_position],
+                is_leading_edge=is_leading_edge[chordwise_position, spanwise_position],
                 is_trailing_edge=is_trailing_edge[
                     chordwise_position, spanwise_position
                 ],
-                is_leading_edge=is_leading_edge[chordwise_position, spanwise_position],
             )
 
     return panels

@@ -1128,10 +1128,10 @@ def get_panel_surfaces(
                 # documentation for more details.
                 panel_vertices_to_add = np.vstack(
                     (
-                        panel.front_left_vertex,
-                        panel.front_right_vertex,
-                        panel.back_right_vertex,
-                        panel.back_left_vertex,
+                        panel.Flpp_G_Cg,
+                        panel.Frpp_G_Cg,
+                        panel.Brpp_G_Cg,
+                        panel.Blpp_G_Cg,
                     )
                 )
                 panel_face_to_add = np.array(

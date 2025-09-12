@@ -178,8 +178,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                         # Find the location of the panel's front and right vortex
                         # vertices.
-                        front_left_vortex_vertex = panel.front_left_vortex_vertex
-                        front_right_vortex_vertex = panel.front_right_vortex_vertex
+                        front_left_vortex_vertex = panel.Flbvp_G_Cg
+                        front_right_vortex_vertex = panel.Frbvp_G_Cg
 
                         # Initialize the horseshoe vortex at this panel.
                         panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
@@ -221,16 +221,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         panel.collocation_point
                     )
                     self.panel_back_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.right_leg.origin
+                        panel.horseshoe_vortex.rightLeg_G.origin
                     )
                     self.panel_front_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.right_leg.termination
+                        panel.horseshoe_vortex.rightLeg_G.termination
                     )
                     self.panel_front_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.left_leg.origin
+                        panel.horseshoe_vortex.leftLeg_G.origin
                     )
                     self.panel_back_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.left_leg.termination
+                        panel.horseshoe_vortex.leftLeg_G.termination
                     )
                     self.panel_bound_vortex_centers[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.center
@@ -249,9 +249,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         self.seed_points = np.vstack(
                             (
                                 self.seed_points,
-                                panel.back_left_vertex
-                                + 0.5
-                                * (panel.back_right_vertex - panel.back_left_vertex),
+                                panel.Blpp_G_Cg
+                                + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
                             )
                         )
 

@@ -19,13 +19,13 @@ out of them.
 
 2. Inside the root repository directory with the virtualenv active:
 
-```commandline
-python -O -m PyInstaller --noconfirm "pterasoftware.spec"
-```
-
-We run `python` with the first level optimise flag `-O` to slim down some now
-unnecessary debug code. *Do not use second
-level optimisation `-OO`, as this removes some docstrings that break dependencies.*
+   ```commandline
+   python -O -m PyInstaller --noconfirm "pterasoftware.spec"
+   ```
+   
+   We run `python` with the first level optimise flag `-O` to slim down some now
+   unnecessary debug code. *Do not use second
+   level optimisation `-OO`, as this removes some docstrings that break dependencies.*
 
 3. Open `make_installer.iss` in InnoSetup and run the packaging process. This can take a
    while, but should output an

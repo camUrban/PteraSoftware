@@ -114,9 +114,9 @@ example_airplane = ps.geometry.airplane.Airplane(
                         # The default is None. Make sure that any airfoil coordinates
                         # used range in x from 0 to 1.
                         coordinates=None,
-                        # This is the variable that determines whether or not you
-                        # would like to repanel the airfoil coordinates. This applies
-                        # to coordinates passed in by the user or to the directory
+                        # This is the variable that determines whether you would like
+                        # to repanel the airfoil coordinates. This applies to
+                        # coordinates passed in by the user or to the directory
                         # coordinates. It is highly recommended to set this to True.
                         # The default is True.
                         repanel=True,
@@ -266,8 +266,8 @@ ps.output.draw(
     # Tell the draw function to not show any wake vortices. As this is a steady
     # solver, no vortices have been shed into the wake. This value defaults to false.
     show_wake_vortices=False,
-    # The the draw function to not save the drawing as an image file. This way,
-    # the drawing will still be displayed but not saved. This value defaults to false.
+    # The function to not save the drawing as an image file. This way, the drawing
+    # will still be displayed but not saved. This value defaults to false.
     save=False,
 )
 

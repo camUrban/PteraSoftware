@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a three airplanes, flying in formation, each with custom
+lattice method solver on three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the
 single-airplane examples for readability. I recommend you read and understand those
 examples before reading this example."""
@@ -18,48 +18,49 @@ class unsteadyRingVortexLatticeSolver:
         # Create the lead airplane object.
         lead_airplane = ps.geometry.airplane.Airplane(
             name="Lead Airplane",
-            # Specify the location of the lead airplane's center of gravity. This is the
-            # point around about which the solver will calculate the moments on the
-            # airplane.
-            # These three values default to 0.0 meters. Note: these values are relative to
-            # the global coordinate system fixed front left corner of the first airplane's
-            # first wing's root wing cross section.
+            # Specify the location of the lead airplane's center of gravity. This is
+            # the point around about which the solver will calculate the moments on
+            # the airplane. These three values default to 0.0 meters. Note: these
+            # values are relative to the global coordinate system fixed front left
+            # corner of the first airplane's first wing's root wing cross section.
             x_ref=0.0,
             y_ref=0.0,
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to the
-                    # global coordinate system fixed front left corner of the first
-                    # airplane's first wing's root wing cross section.
+                    # Define the location of the leading edge of the wing relative to
+                    # the global coordinate system fixed front left corner of the
+                    # first airplane's first wing's root wing cross section.
                     x_le=0.0,
                     y_le=0.0,
-                    # Declare that this wing is symmetric. This means that the geometry will
-                    # be reflected across plane of this wing's root wing cross section. Note
-                    # that the geometry coordinates are defined as such: If you were riding
-                    # in the airplane, the positive x direction would point behind you,
-                    # the positive y direction would point out of your right wing, and the
-                    # positive z direction would point upwards, out of your chair. These
-                    # directions form a right-handed coordinate system. The default value of
-                    # "symmetric" is false.
+                    # Declare that this wing is symmetric. This means that the
+                    # geometry will be reflected across plane of this wing's root
+                    # wing cross section. Note that the geometry coordinates are
+                    # defined as such: If you were riding in the airplane,
+                    # the positive x direction would point behind you, the positive y
+                    # direction would point out of your right wing, and the positive
+                    # z direction would point upwards, out of your chair. These
+                    # directions form a right-handed coordinate system. The default
+                    # value of "symmetric" is false.
                     symmetric=True,
-                    # Define the chordwise spacing of the wing panels to be "uniform" as this
-                    # increase the accuracy of unsteady solvers.
+                    # Define the chordwise spacing of the wing panels to be "uniform"
+                    # as this increase the accuracy of unsteady solvers.
                     chordwise_spacing="uniform",
                     num_chordwise_panels=4,
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
-                            # Define the location of the leading edge of the wing cross
-                            # section relative to the wing's leading edge. These values all
-                            # default to 0.0 meters.
+                            # Define the location of the leading edge of the wing
+                            # cross section relative to the wing's leading edge.
+                            # These values all default to 0.0 meters.
                             x_le=0.0,
                             y_le=0.0,
                             # Assign the twist of this wing cross section. Note: when
-                            # assigning angles of attack to multiple airplanes, it is better
-                            # to set the operating point's angle of attack to zero, and then
-                            # use offset the twist values of all the wing cross sections to
-                            # simulate each aircraft having an angle of attack.
+                            # assigning angles of attack to multiple airplanes,
+                            # it is better to set the operating point's angle of
+                            # attack to zero, and then use offset the twist values of
+                            # all the wing cross sections to simulate each aircraft
+                            # having an angle of attack.
                             twist=5.0,
                             chord=1.75,
                             airfoil=ps.geometry.airfoil.Airfoil(
@@ -111,20 +112,20 @@ class unsteadyRingVortexLatticeSolver:
         # Create the trailing right airplane object.
         right_airplane = ps.geometry.airplane.Airplane(
             name="Right Airplane",
-            # Specify the location of the right airplane's center of gravity. This is the
-            # point around about which the solver will calculate the moments on the airplane.
-            # These three values default to 0.0 meters. Note: these values are relative to
-            # the global coordinate system fixed front left corner of the first airplane's
-            # first wing's root wing cross section.
+            # Specify the location of the right airplane's center of gravity. This is
+            # the point around about which the solver will calculate the moments on
+            # the airplane. These three values default to 0.0 meters. Note: these
+            # values are relative to the global coordinate system fixed front left
+            # corner of the first airplane's first wing's root wing cross section.
             x_ref=x_spacing,
             y_ref=y_spacing,
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to the
-                    # global coordinate system fixed front left corner of the first
-                    # airplane's first wing's root wing cross section.
+                    # Define the location of the leading edge of the wing relative to
+                    # the global coordinate system fixed front left corner of the
+                    # first airplane's first wing's root wing cross section.
                     x_le=x_spacing,
                     y_le=y_spacing,
                     symmetric=True,
@@ -180,20 +181,20 @@ class unsteadyRingVortexLatticeSolver:
         # Create the trailing left airplane object.
         left_airplane = ps.geometry.airplane.Airplane(
             name="Left Airplane",
-            # Specify the location of the left airplane's center of gravity. This is the
-            # point around about which the solver will calculate the moments on the airplane.
-            # These three values default to 0.0 meters. Note: these values are relative to
-            # the global coordinate system fixed front left corner of the first airplane's
-            # first wing's root wing cross section.
+            # Specify the location of the left airplane's center of gravity. This is
+            # the point around about which the solver will calculate the moments on
+            # the airplane. These three values default to 0.0 meters. Note: these
+            # values are relative to the global coordinate system fixed front left
+            # corner of the first airplane's first wing's root wing cross section.
             x_ref=x_spacing,
             y_ref=-y_spacing,
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to the
-                    # global coordinate system fixed front left corner of the first
-                    # airplane's first wing's root wing cross section.
+                    # Define the location of the leading edge of the wing relative to
+                    # the global coordinate system fixed front left corner of the
+                    # first airplane's first wing's root wing cross section.
                     x_le=x_spacing,
                     y_le=-y_spacing,
                     symmetric=True,
@@ -246,11 +247,11 @@ class unsteadyRingVortexLatticeSolver:
             ],
         )
 
-        # Define a new operating point object. This defines the state at which all the
-        # airplanes objects are operating. Note: when assigning angles of attack to multiple
-        # airplanes, it is better to set the operating point's angle of attack to zero,
-        # and then use offset the twist values of all the wing cross sections to simulate
-        # each aircraft having an angle of attack.
+        # Define a new operating point object. This defines the state at which all
+        # the airplanes objects are operating. Note: when assigning angles of attack
+        # to multiple airplanes, it is better to set the operating point's angle of
+        # attack to zero, and then use offset the twist values of all the wing cross
+        # sections to simulate each aircraft having an angle of attack.
         operating_point = ps.operating_point.OperatingPoint(
             velocity=10.0,
             alpha=0.0,
@@ -261,15 +262,15 @@ class unsteadyRingVortexLatticeSolver:
             base_operating_point=operating_point,
         )
 
-        # Delete the extraneous airplane and operating point objects, as these are now
-        # contained within their respective movement objects.
+        # Delete the extraneous airplane and operating point objects, as these are
+        # now contained within their respective movement objects.
         del lead_airplane
         del right_airplane
         del left_airplane
         del operating_point
 
-        # Define the movement object. This contains each airplane's movement and the operating
-        # point movement.
+        # Define the movement object. This contains each airplane's movement and the
+        # operating point movement.
         movement = ps.movement.Movement(
             airplane_movements=[
                 lead_airplane_movement,
@@ -280,8 +281,8 @@ class unsteadyRingVortexLatticeSolver:
             num_cycles=2,
         )
 
-        # Delete the extraneous airplane and operating point movement objects, as these are
-        # now contained within the movement object.
+        # Delete the extraneous airplane and operating point movement objects,
+        # as these are now contained within the movement object.
         del lead_airplane_movement
         del right_airplane_movement
         del left_airplane_movement
@@ -292,16 +293,16 @@ class unsteadyRingVortexLatticeSolver:
             movement=movement,
         )
 
-        # Define a new solver. The available solver objects are the steady horseshoe vortex
-        # lattice method solver, the steady ring vortex lattice method solver, and the
-        # unsteady ring vortex lattice method solver.
+        # Define a new solver. The available solver objects are the steady horseshoe
+        # vortex lattice method solver, the steady ring vortex lattice method solver,
+        # and the unsteady ring vortex lattice method solver.
         solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
             # Solvers just take in one attribute: the problem they are going to solve.
             unsteady_problem=problem,
         )
 
-        # Delete the extraneous pointer to the problem as it is now contained within the
-        # solver.
+        # Delete the extraneous pointer to the problem as it is now contained within
+        # the solver.
         del problem
 
         # Run the example solver.
@@ -309,17 +310,18 @@ class unsteadyRingVortexLatticeSolver:
             prescribed_wake=False,
         )
 
-        # Call the software's animate function on the solver. This produces a GIF of the wake
-        # being shed. The GIF is saved in the same directory as this script. Press "q",
-        # after orienting the view, to begin the animation.
+        # Call the software's animate function on the solver. This produces a GIF of
+        # the wake being shed. The GIF is saved in the same directory as this script.
+        # Press "q", after orienting the view, to begin the animation.
         ps.output.animate(
             unsteady_solver=solver,
             scalar_type="lift",
             show_wake_vortices=True,
-            # The the animate function to not save the animation as file. This way,
-            # the animation will still be displayed but not saved. This value defaults to
-            # false.
+            # The animate function to not save the animation as file. This way,
+            # the animation will still be displayed but not saved. This value
+            # defaults to false.
             save=False,
         )
 
-        # Compare the output you see with the expected outputs saved in the "docs/examples  # expected output" directory.
+        # Compare the output you see with the expected outputs saved in the
+        # "docs/examples  # expected output" directory.

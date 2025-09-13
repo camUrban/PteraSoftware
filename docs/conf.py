@@ -74,9 +74,9 @@ def _repo_rel_for_autoapi_page(pagename: str) -> str | None:
     """Return a repo-relative path for an AutoAPI page's corresponding source file."""
     if not pagename.startswith("api/"):
         return None
-    rel = pagename[len("api/") :]
+    rel = pagename[len("api/"):]
     if rel.endswith("/index"):
-        rel = rel[: -len("/index")]
+        rel = rel[:-len("/index")]
     py_path = REPO_ROOT / (rel.replace("/", os.sep) + ".py")
     if py_path.exists():
         target = py_path

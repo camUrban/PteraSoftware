@@ -47,6 +47,7 @@ import numpy as np
 from numba import njit
 
 from . import functions
+from . import parameter_validation
 
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
@@ -81,106 +82,134 @@ class LineVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, origin, termination, strength):
+    def __init__(self, Slvp_G_Cg, Elvp_G_Cg, strength):
         """This is the initialization method.
 
-        :param origin: 1D array
-            This is a vector containing the x, y, and z coordinates of the origin of
-            the line vortex. It's a (3,) array. Its units are meters.
-        :param termination: 1D array
-            This is a vector containing the x, y, and z coordinates of the
-            termination of the line vortex. It's a (3,) array. Its units are meters.
-        :param strength: float
-            This is the strength of the vortex in meters squared per second.
+        :param Slvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
+            start point (in geometry axes, relative to the CG). Can be a list, tuple, or
+            numpy array of numbers (int or float). Values are converted to floats
+            internally. The units are in meters.
+        :param Elvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
+            end point (in geometry axes, relative to the CG). Can be a list, tuple, or
+            numpy array of numbers (int or float). Values are converted to floats
+            internally. The units are in meters.
+        :param strength: number This is the strength of the LineVortex. It can be a
+            positive int or float and will be converted to a float internally. The units
+            are in meters squared per second.
         """
-        self.origin = origin
-        self.termination = termination
-        self.strength = strength
+        self.Slvp_G_Cg = parameter_validation.positive_number_return_float(
+            Slvp_G_Cg, "Slvp_G_Cg"
+        )
+        self.Elvp_G_Cg = parameter_validation.positive_number_return_float(
+            Elvp_G_Cg, "Elvp_G_Cg"
+        )
+        self.strength = parameter_validation.positive_number_return_float(
+            strength, "strength"
+        )
 
-        # Initialize variables to hold the vector from the vortex's origin to
-        # termination, and the point halfway between the origin and termination.
-        self.vector = self.termination - self.origin
-        self.center = self.origin + 0.5 * self.vector
+        # Initialize variables to hold the vector from the LineVortex's start to end
+        # point (in geometry axes), and its center point (in geometry axes, relative
+        # to the CG).
+        self.vector_G = self.Elvp_G_Cg - self.Slvp_G_Cg
+        self.Clvp_G_Cg = self.Slvp_G_Cg + 0.5 * self.vector_G
 
 
+# NOTE: I'm in the process of refactoring this class.
 class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
-    This class contains the following public methods:
-        update_strength: This method updates the strength of this horseshoe vortex
-        object, and the strength of its legs line vortex objects.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    :param Frhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-right point (in
+        geometry axes, relative to the CG). The front-right point is defined as the
+        start point of the HorseshoeVortex's front leg, which is also its one finite
+        leg. Can be a list, tuple, or numpy array of numbers (int or float). Values are
+        converted to floats internally. The units are in meters.
+    :type Frhvp_G_Cg: array-like of 3 numbers
+    :param Flhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-left point (in
+        geometry axes, relative to the CG). The front-left point is defined as the end
+        point of the HorseshoeVortex's front leg, which is also its one finite leg. Can
+        be a list, tuple, or numpy array of numbers (int or float). Values are converted
+        to floats internally. The units are in meters.
+    :type Flhvp_G_Cg: array-like of 3 numbers
+    :param leftLegVector_G: Direction vector of the HorseshoeVortex's left leg (in
+        geometry axes). The left leg starts from the front-left point and ends at the
+        back-left point. It is one of the HorseshoeVortex's two quasi-infinite legs, the
+        other being the right-leg. It can be a list, tuple, or numpy array of numbers
+        (int or float). Values are converted to floats internally. If this isn't already
+        a unit vector, it will be converted to one during initialization. The right-
+        leg's vector (in geometry axes) is defined as -1 times this vector. The units
+        are in meters.
+    :type leftLegVector_G: array-like of 3 numbers
+    :param left_right_leg_lengths: This is the length of the HorseshoeVortex's left and
+        right quasi-infinite legs. It must be a positive number and will be converted
+        internally to a float. I recommend setting it to at least 20 times the length of
+        the finite leg. The units are in meters.
+    :type left_right_leg_lengths: number
+    :param strength: This is the strength of the HorseshoeVortex It must be a positive
+        number and will be converted internally to a float. Its units are in meters
+        squared per second.
+    :type strength: number :raises [ErrorType]: [ErrorDescription]
+    :return: [ ReturnDescription]
+    :rtype: [ReturnType]
     """
 
     def __init__(
         self,
-        finite_leg_origin,
-        finite_leg_termination,
+        Frhvp_G_Cg,
+        Flhvp_G_Cg,
+        leftLegVector_G,
+        left_right_leg_lengths,
         strength,
-        infinite_leg_direction,
-        infinite_leg_length,
     ):
-        """This is the initialization method.
+        """This is the constructor method."""
+        self.Frhvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Frhvp_G_Cg, "Frhvp_G_Cg"
+        )
+        self.Flhvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Flhvp_G_Cg, "Flhvp_G_Cg"
+        )
+        self.leftLegVector_G = (
+            parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+                leftLegVector_G, "leftLegVector_G"
+            )
+        )
+        self.left_right_leg_lengths = parameter_validation.positive_number_return_float(
+            left_right_leg_lengths, "left_right_leg_lengths"
+        )
+        self.strength = parameter_validation.positive_number_return_float(
+            strength, "strength"
+        )
 
-        :param finite_leg_origin: 1D array
-            This is a vector containing the x, y, and z coordinates of the origin of
-            the vortex's finite leg. It's a (,3) array. It's units are meters.
-        :param finite_leg_termination: 1D array
-            This is a vector containing the x, y, and z coordinates of the
-            termination of the vortex's finite leg. It's a (,3) array. It's units are
-            meters.
-        :param strength: float
-            This is the strength of the vortex in meters squared per second.
-        :param infinite_leg_direction: 1D array
-            This is a unit vector containing the direction that the infinite legs
-            extend towards. It's a (,3) array. It's units are meters. It's default
-            value is the unit vector in the positive x direction.
-        :param infinite_leg_length: float
-            This is the length back to extend the quasi-infinite legs of the
-            horseshoe vortex. It's units are meters.
-        """
-        self.finite_leg_origin = finite_leg_origin
-        self.finite_leg_termination = finite_leg_termination
-        self.strength = strength
-        self.infinite_leg_direction = infinite_leg_direction
-        self.infinite_leg_length = infinite_leg_length
         self.right_leg_origin = (
-            self.finite_leg_origin + infinite_leg_direction * infinite_leg_length
+            self.Frhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
         )
         self.left_leg_termination = (
-            self.finite_leg_termination + infinite_leg_direction * infinite_leg_length
+            self.Flhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
         )
 
-        # Initialize a line vortex to represent the horseshoe's finite leg.
+        # Initialize LineVortices to represent the HorseshoeVortex's legs.
         self.right_leg = LineVortex(
-            origin=self.right_leg_origin,
-            termination=self.finite_leg_origin,
+            Slvp_G_Cg=self.right_leg_origin,
+            Elvp_G_Cg=self.Frhvp_G_Cg,
             strength=self.strength,
         )
         self.finite_leg = LineVortex(
-            origin=self.finite_leg_origin,
-            termination=self.finite_leg_termination,
+            Slvp_G_Cg=self.Frhvp_G_Cg,
+            Elvp_G_Cg=self.Flhvp_G_Cg,
             strength=self.strength,
         )
         self.left_leg = LineVortex(
-            origin=self.finite_leg_termination,
-            termination=self.left_leg_termination,
+            Slvp_G_Cg=self.Flhvp_G_Cg,
+            Elvp_G_Cg=self.left_leg_termination,
             strength=self.strength,
         )
 
     def update_strength(self, strength):
-        """This method updates the strength of this horseshoe vortex object, and the
-        strength of its legs line vortex objects.
+        """This method updates the strength of this HorseshoeVortex object, and the
+        strength of its leg LineVortices.
 
-        :param strength: float
-            This is the strength of this vortex, and of its line vortex legs. Its
-            units are meters squared per second.
-        :return: None
+        :param strength: This is the strength of this vortex, and of its line vortex
+            legs. Its units are meters squared per second.
+        :type strength: float
         """
         self.strength = strength
         self.right_leg.strength = strength
@@ -215,20 +244,20 @@ class RingVortex:
     ):
         """This is the initialization method.
 
-        :param front_left_vertex: 1D array
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            front left point. It's a (,3) array with units of meters.
-        :param front_right_vertex: 1D array
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            front right point. It's a (,3) array with units of meters.
-        :param back_left_vertex: 1D array
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            back left point. It's a (,3) array with units of meters.
-        :param back_right_vertex: 1D array
-            This is a vector containing the x, y, and z coordinates of the vortex's
-            back right point. It's a (,3) array with units of meters.
-        :param strength: float
-            This is the strength of the vortex in meters squared per second.
+        :param front_left_vertex: 1D array This is a vector_G containing the x, y, and z
+            coordinates of the vortex's front left point. It's a (,3) array with units
+            of meters.
+        :param front_right_vertex: 1D array This is a vector_G containing the x, y, and
+            z coordinates of the vortex's front right point. It's a (,3) array with
+            units of meters.
+        :param back_left_vertex: 1D array This is a vector_G containing the x, y, and z
+            coordinates of the vortex's back left point. It's a (,3) array with units of
+            meters.
+        :param back_right_vertex: 1D array This is a vector_G containing the x, y, and z
+            coordinates of the vortex's back right point. It's a (,3) array with units
+            of meters.
+        :param strength: float This is the strength of the vortex in meters squared per
+            second.
         """
         self.front_left_vertex = front_left_vertex
         self.front_right_vertex = front_right_vertex
@@ -270,12 +299,11 @@ class RingVortex:
         self.age = 0
 
     def update_strength(self, strength):
-        """This method updates the strength of this ring vortex object, and the
-        strength of its four legs' line vortex objects.
+        """This method updates the strength of this ring vortex object, and the strength
+        of its four legs' line vortex objects.
 
-        :param strength: float
-            This is the strength of this vortex, and of its four legs' line vortices.
-            Its units are meters squared per second.
+        :param strength: float This is the strength of this vortex, and of its four
+            legs' line vortices. Its units are meters squared per second.
         :return: None
         """
         self.strength = strength
@@ -287,21 +315,21 @@ class RingVortex:
     def update_position(
         self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
     ):
-        """This method updates the position of the ring vortex, and the positions of
-        all its attributes.
+        """This method updates the position of the ring vortex, and the positions of all
+        its attributes.
 
-        :param front_left_vertex: 1D array
-            This is the new position of the x, y, and z coordinates of the front left
-            vertex. It is a (,3) array with units of meters.
-        :param front_right_vertex: 1D array
-            This is the new position of the x, y, and z coordinates of the front
-            right vertex. It is a (,3) array with units of meters.
-        :param back_left_vertex: 1D array
-            This is the new position of the x, y, and z coordinates of the back left
-            vertex. It is a (,3) array with units of meters.
-        :param back_right_vertex: 1D array
-            This is the new position of the x, y, and z coordinates of the back right
-            vertex. It is a (,3) array with units of meters.
+        :param front_left_vertex: 1D array This is the new position of the x, y, and z
+            coordinates of the front left vertex. It is a (,3) array with units of
+            meters.
+        :param front_right_vertex: 1D array This is the new position of the x, y, and z
+            coordinates of the front right vertex. It is a (,3) array with units of
+            meters.
+        :param back_left_vertex: 1D array This is the new position of the x, y, and z
+            coordinates of the back left vertex. It is a (,3) array with units of
+            meters.
+        :param back_right_vertex: 1D array This is the new position of the x, y, and z
+            coordinates of the back right vertex. It is a (,3) array with units of
+            meters.
         :return: None
         """
         self.front_left_vertex = front_left_vertex
@@ -352,8 +380,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     nu=0.0,
 ):
     """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point, it finds the cumulative induced velocity due
-    to all the horseshoe vortices.
+    horseshoe vortices. At every point, it finds the cumulative induced velocity due to
+    all the horseshoe vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -519,9 +547,9 @@ def collapsed_velocities_from_ring_vortices(
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it finds the cumulative induced velocity due to
-    all the ring vortices.
+    """This function takes in a group of points, and the attributes of a group of ring
+    vortices. At every point, it finds the cumulative induced velocity due to all the
+    ring vortices.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -605,9 +633,9 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it finds the cumulative induced velocity due to
-    all the ring vortices' chordwise segments.
+    """This function takes in a group of points, and the attributes of a group of ring
+    vortices. At every point, it finds the cumulative induced velocity due to all the
+    ring vortices' chordwise segments.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -687,9 +715,8 @@ def expanded_velocities_from_ring_vortices(
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    ring vortices. At every point, it finds the induced velocity due to each ring
-    vortex.
+    """This function takes in a group of points, and the attributes of a group of ring
+    vortices. At every point, it finds the induced velocity due to each ring vortex.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
@@ -771,9 +798,9 @@ def collapsed_velocities_from_line_vortices(
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    line vortices. At every point, it finds the cumulative induced velocity due to
-    all the line vortices.
+    """This function takes in a group of points, and the attributes of a group of line
+    vortices. At every point, it finds the cumulative induced velocity due to all the
+    line vortices.
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -796,11 +823,11 @@ def collapsed_velocities_from_line_vortices(
     :param origins: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
-        vortex's origin's position in meters.
+        vortex's Slvp_G_Cg's position in meters.
     :param terminations: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
-        vortex's termination's position in meters.
+        vortex's Elvp_G_Cg's position in meters.
     :param strengths: 1D array of floats
         This variable is an array of shape (, M), where M is the number of line
         vortices. Each position contains the strength of that line vortex in meters
@@ -840,12 +867,12 @@ def collapsed_velocities_from_line_vortices(
         # this will evaluate to be 0.0 meters.
         r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
 
-        # The r_0 vector goes from the line vortex's origin to its termination.
+        # The r_0 vector_G goes from the line vortex's Slvp_G_Cg to its Elvp_G_Cg.
         r_0_x = termination[0] - origin[0]
         r_0_y = termination[1] - origin[1]
         r_0_z = termination[2] - origin[2]
 
-        # Find the r_0 vector's length.
+        # Find the r_0 vector_G's length.
         r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
 
         c_1 = strength / (4 * math.pi)
@@ -854,17 +881,17 @@ def collapsed_velocities_from_line_vortices(
         for point_id in range(num_points):
             point = points[point_id]
 
-            # The r_1 vector goes from the point to the line vortex's origin.
+            # The r_1 vector_G goes from the point to the line vortex's Slvp_G_Cg.
             r_1_x = origin[0] - point[0]
             r_1_y = origin[1] - point[1]
             r_1_z = origin[2] - point[2]
 
-            # The r_2 vector goes from the point to the line vortex's termination.
+            # The r_2 vector_G goes from the point to the line vortex's Elvp_G_Cg.
             r_2_x = termination[0] - point[0]
             r_2_y = termination[1] - point[1]
             r_2_z = termination[2] - point[2]
 
-            # The r_3 vector is the cross product of the r_1 and r_2 vectors.
+            # The r_3 vector_G is the cross product of the r_1 and r_2 vectors.
             r_3_x = r_1_y * r_2_z - r_1_z * r_2_y
             r_3_y = r_1_z * r_2_x - r_1_x * r_2_z
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
@@ -902,9 +929,8 @@ def expanded_velocities_from_line_vortices(
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of
-    line vortices. At every point, it finds the induced velocity due to each line
-    vortex.
+    """This function takes in a group of points, and the attributes of a group of line
+    vortices. At every point, it finds the induced velocity due to each line vortex.
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -927,11 +953,11 @@ def expanded_velocities_from_line_vortices(
     :param origins: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
-        vortex's origin's position in meters.
+        vortex's Slvp_G_Cg's position in meters.
     :param terminations: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
-        vortex's termination's position in meters.
+        vortex's Elvp_G_Cg's position in meters.
     :param strengths: 1D array of floats
         This variable is an array of shape (, M), where M is the number of line
         vortices. Each position contains the strength of that line vortex in meters
@@ -971,12 +997,12 @@ def expanded_velocities_from_line_vortices(
         # this will evaluate to be 0.0 meters.
         r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
 
-        # The r_0 vector goes from the line vortex's origin to its termination.
+        # The r_0 vector_G goes from the line vortex's Slvp_G_Cg to its Elvp_G_Cg.
         r_0_x = termination[0] - origin[0]
         r_0_y = termination[1] - origin[1]
         r_0_z = termination[2] - origin[2]
 
-        # Find the r_0 vector's length.
+        # Find the r_0 vector_G's length.
         r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
 
         c_1 = strength / (4 * math.pi)
@@ -985,17 +1011,17 @@ def expanded_velocities_from_line_vortices(
         for point_id in range(num_points):
             point = points[point_id]
 
-            # The r_1 vector goes from the point to the line vortex's origin.
+            # The r_1 vector_G goes from the point to the line vortex's Slvp_G_Cg.
             r_1_x = origin[0] - point[0]
             r_1_y = origin[1] - point[1]
             r_1_z = origin[2] - point[2]
 
-            # The r_2 vector goes from the point to the line vortex's termination.
+            # The r_2 vector_G goes from the point to the line vortex's Elvp_G_Cg.
             r_2_x = termination[0] - point[0]
             r_2_y = termination[1] - point[1]
             r_2_z = termination[2] - point[2]
 
-            # The r_3 vector is the cross product of the r_1 and r_2 vectors.
+            # The r_3 vector_G is the cross product of the r_1 and r_2 vectors.
             r_3_x = r_1_y * r_2_z - r_1_z * r_2_y
             r_3_y = r_1_z * r_2_x - r_1_x * r_2_z
             r_3_z = r_1_x * r_2_y - r_1_y * r_2_x

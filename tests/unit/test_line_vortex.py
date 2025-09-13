@@ -74,10 +74,10 @@ class TestLineVortex(unittest.TestCase):
 
         # Test that the vortex's coordinates were correctly set.
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.origin, self.origin_fixture)
+            np.allclose(self.line_vortex_fixture.Slvp_G_Cg, self.origin_fixture)
         )
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.termination, self.termination_fixture)
+            np.allclose(self.line_vortex_fixture.Elvp_G_Cg, self.termination_fixture)
         )
 
         # Test that the vortex's strength was correctly set.
@@ -88,5 +88,5 @@ class TestLineVortex(unittest.TestCase):
             np.allclose(self.line_vortex_fixture.center, np.array([0.5, 0.5, 0.5]))
         )
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.vector, np.array([1, 1, 1]))
+            np.allclose(self.line_vortex_fixture.vector_G, np.array([1, 1, 1]))
         )

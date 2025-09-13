@@ -640,16 +640,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
                         self.last_panel_back_right_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.rightLeg_G.origin
+                        ] = panel.ring_vortex.rightLeg_G.Slvp_G_Cg
                         self.last_panel_front_right_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.rightLeg_G.termination
+                        ] = panel.ring_vortex.rightLeg_G.Elvp_G_Cg
                         self.last_panel_front_left_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.leftLeg_G.origin
+                        ] = panel.ring_vortex.leftLeg_G.Slvp_G_Cg
                         self.last_panel_back_left_vortex_vertices[
                             global_panel_position, :
-                        ] = panel.ring_vortex.leftLeg_G.termination
+                        ] = panel.ring_vortex.leftLeg_G.Elvp_G_Cg
                         self.last_panel_right_vortex_centers[
                             global_panel_position, :
                         ] = panel.ring_vortex.rightLeg_G.center

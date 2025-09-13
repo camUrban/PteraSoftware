@@ -100,13 +100,11 @@ class TestHorseshoeVortex(unittest.TestCase):
 
         # Test that the vortex objects' coordinates were correctly set.
         self.assertTrue(
-            np.allclose(
-                self.horseshoe_vortex_fixture.finite_leg_origin, self.origin_fixture
-            )
+            np.allclose(self.horseshoe_vortex_fixture.Frhvp_G_Cg, self.origin_fixture)
         )
         self.assertTrue(
             np.allclose(
-                self.horseshoe_vortex_fixture.finite_leg_termination,
+                self.horseshoe_vortex_fixture.Flhvp_G_Cg,
                 self.termination_fixture,
             )
         )
@@ -117,12 +115,12 @@ class TestHorseshoeVortex(unittest.TestCase):
         # Test that other class attributes were correctly set.
         self.assertTrue(
             np.allclose(
-                self.horseshoe_vortex_fixture.infinite_leg_direction,
+                self.horseshoe_vortex_fixture.leftLegVector_G,
                 self.infinite_leg_direction_fixture,
             )
         )
         self.assertEqual(
-            self.horseshoe_vortex_fixture.infinite_leg_length,
+            self.horseshoe_vortex_fixture.left_right_leg_lengths,
             self.infinite_leg_length_fixture,
         )
 
@@ -130,17 +128,17 @@ class TestHorseshoeVortex(unittest.TestCase):
         self.assertTrue(
             np.allclose(
                 self.horseshoe_vortex_fixture.right_leg_origin,
-                self.horseshoe_vortex_fixture.finite_leg_origin
-                + self.horseshoe_vortex_fixture.infinite_leg_direction
-                * self.horseshoe_vortex_fixture.infinite_leg_length,
+                self.horseshoe_vortex_fixture.Frhvp_G_Cg
+                + self.horseshoe_vortex_fixture.leftLegVector_G
+                * self.horseshoe_vortex_fixture.left_right_leg_lengths,
             )
         )
         self.assertTrue(
             np.allclose(
                 self.horseshoe_vortex_fixture.left_leg_termination,
-                self.horseshoe_vortex_fixture.finite_leg_termination
-                + self.horseshoe_vortex_fixture.infinite_leg_direction
-                * self.horseshoe_vortex_fixture.infinite_leg_length,
+                self.horseshoe_vortex_fixture.Flhvp_G_Cg
+                + self.horseshoe_vortex_fixture.leftLegVector_G
+                * self.horseshoe_vortex_fixture.left_right_leg_lengths,
             )
         )
 

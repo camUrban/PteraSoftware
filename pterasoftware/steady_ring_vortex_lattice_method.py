@@ -234,11 +234,11 @@ class SteadyRingVortexLatticeMethodSolver:
                             # If the panel is along the trailing edge, initialize its
                             # horseshoe vortex.
                             panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
-                                finite_leg_origin=back_right_vortex_vertex,
-                                finite_leg_termination=back_left_vortex_vertex,
+                                Frhvp_G_Cg=back_right_vortex_vertex,
+                                Flhvp_G_Cg=back_left_vortex_vertex,
+                                leftLegVector_G=freestream_direction,
+                                left_right_leg_lengths=infinite_leg_length,
                                 strength=None,
-                                infinite_leg_direction=freestream_direction,
-                                infinite_leg_length=infinite_leg_length,
                             )
 
                         # Initialize the panel's ring vortex.
@@ -285,16 +285,16 @@ class SteadyRingVortexLatticeMethodSolver:
                         # vortex attributes
                         self.horseshoe_vortex_back_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.rightLeg_G.origin
+                        ] = panel.horseshoe_vortex.rightLeg_G.Slvp_G_Cg
                         self.horseshoe_vortex_front_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.rightLeg_G.termination
+                        ] = panel.horseshoe_vortex.rightLeg_G.Elvp_G_Cg
                         self.horseshoe_vortex_front_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.leftLeg_G.origin
+                        ] = panel.horseshoe_vortex.leftLeg_G.Slvp_G_Cg
                         self.horseshoe_vortex_back_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.leftLeg_G.termination
+                        ] = panel.horseshoe_vortex.leftLeg_G.Elvp_G_Cg
 
                         # Set the horseshoe vortex strength at this position to 1.0.
                         # This will be updated after the correct vortex strengths are

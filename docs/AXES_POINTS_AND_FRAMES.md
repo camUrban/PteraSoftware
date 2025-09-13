@@ -75,30 +75,23 @@ The standard abbreviations and names are given below for reference. See the sect
   * Bo…: backward outer
   * C…: collocation
   * …r\[m\]c\[n\]: (m, n)
-* …bhvp…: bound horseshoe vortex point
+* …hvp…: horseshoe vortex point
   * Fr…: front right
   * Fl…: front left
   * Bl…: back left
   * Br…: back right
+  * …b…: bound
+  * …w…: wake
   * …r\[m\]c\[n\]: (m, n)
-* …brvp…: bound ring vortex point
-  * Fr…: front right
-  * Fl…: front left
-  * Bl…: back left
-  * Br…: back right
-  * …r\[m\]c\[n\]: (m, n)
-* …wrvp…: wake ring vortex point
-  * Fr…: front right
-  * Fl…: front left
-  * Bl…: back left
-  * Br…: back right
-  * …r\[m\]c\[n\]: (m, n)
-* …whvp…: wake horseshoe vortex point
-  * Fr…: front right
-  * Fl…: front left
-  * Bl…: back left
-  * Br…: back right
   * …\[n\]: n
+* …rvp…: ring vortex point
+  * Fr…: front right
+  * Fl…: front left
+  * Bl…: back left
+  * Br…: back right
+  * …b…: bound
+  * …w…: wake
+  * …r\[m\]c\[n\]: (m, n)
 * …lvp…: line vortex point
   * S…: start
   * E…: end

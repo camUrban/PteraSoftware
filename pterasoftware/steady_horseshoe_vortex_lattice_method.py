@@ -183,11 +183,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
                         # Initialize the horseshoe vortex at this panel.
                         panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
-                            finite_leg_origin=front_right_vortex_vertex,
-                            finite_leg_termination=front_left_vortex_vertex,
+                            Frhvp_G_Cg=front_right_vortex_vertex,
+                            Flhvp_G_Cg=front_left_vortex_vertex,
+                            leftLegVector_G=freestream_direction,
+                            left_right_leg_lengths=infinite_leg_length,
                             strength=None,
-                            infinite_leg_direction=freestream_direction,
-                            infinite_leg_length=infinite_leg_length,
                         )
 
     def collapse_geometry(self):
@@ -221,22 +221,22 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         panel.collocation_point
                     )
                     self.panel_back_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.rightLeg_G.origin
+                        panel.horseshoe_vortex.rightLeg_G.Slvp_G_Cg
                     )
                     self.panel_front_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.rightLeg_G.termination
+                        panel.horseshoe_vortex.rightLeg_G.Elvp_G_Cg
                     )
                     self.panel_front_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.leftLeg_G.origin
+                        panel.horseshoe_vortex.leftLeg_G.Slvp_G_Cg
                     )
                     self.panel_back_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.leftLeg_G.termination
+                        panel.horseshoe_vortex.leftLeg_G.Elvp_G_Cg
                     )
                     self.panel_bound_vortex_centers[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.center
                     )
                     self.panel_bound_vortex_vectors[global_panel_position, :] = (
-                        panel.horseshoe_vortex.finite_leg.vector
+                        panel.horseshoe_vortex.finite_leg.vector_G
                     )
                     self.panel_moment_references[global_panel_position, :] = (
                         airplane.xyz_ref

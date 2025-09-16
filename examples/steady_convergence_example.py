@@ -1,6 +1,7 @@
 """This script is an example of analyzing the steady convergence of a problem with
 multiple airplanes. It should take a few minutes to run. It will display the
-convergence progress and results in the console."""
+convergence progress and results in the console.
+"""
 
 import pterasoftware as ps
 

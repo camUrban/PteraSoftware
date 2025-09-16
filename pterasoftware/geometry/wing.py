@@ -316,7 +316,6 @@ class Wing:
             be "cosine" or "uniform". Using cosine spacing is highly recommended for
             steady simulations and uniform spacing is highly recommended for unsteady
             simulations. The default is "cosine".
-
         """
         # Validate wing_cross_sections.
         wing_cross_sections = parameter_validation.non_empty_list_return_list(
@@ -470,7 +469,6 @@ class Wing:
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
-
         :param show:
         :return:
         """

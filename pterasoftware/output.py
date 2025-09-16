@@ -33,7 +33,8 @@ This module contains the following functions:
     output methods.
 
     plot_scalars: This function plots a scalar bar, the mesh panels with a particular
-    set of scalars, and labels for the minimum and maximum scalar values."""
+    set of scalars, and labels for the minimum and maximum scalar values.
+"""
 
 import math
 import time

@@ -2,7 +2,8 @@
 lattice method solver on three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the
 single-airplane examples for readability. I recommend you read and understand those
-examples before reading this example."""
+examples before reading this example.
+"""
 
 import pterasoftware as ps
 

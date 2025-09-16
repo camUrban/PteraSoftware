@@ -8,7 +8,8 @@ This module contains the following exceptions:
 
 This module contains the following functions:
     mesh_wing: This function takes in Wing and creates a quadrilateral mesh of its
-    geometry, and then populates its array of Panels with the mesh data."""
+    geometry, and then populates its array of Panels with the mesh data.
+"""
 
 import numpy as np
 
@@ -416,7 +417,6 @@ def _get_mcs_points(
 ):
     """This function calculates the points on a wing section's mean camber surface (
     MCS) (in wing axes, relative to the leading edge root point).
-
 
     :param T_pas_Wcsi_Lpi_Wn_Ler: (4,4) ndarray of floats
 

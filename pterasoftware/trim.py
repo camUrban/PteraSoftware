@@ -19,7 +19,8 @@ This module contains the following functions:
     angle of sideslip, and external thrust until the net cycle-averaged force and net
     cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
     be found, it returns the trimmed operating point values. Otherwise, it logs an
-    error."""
+    error.
+"""
 
 import logging
 
@@ -92,7 +93,6 @@ def analyze_steady_trim(
     # ToDo: Document this function.
     def objective_function(arguments):
         """
-
         :param arguments:
         :return:
         """
@@ -243,7 +243,6 @@ def analyze_unsteady_trim(
     # ToDo: Document this function.
     def objective_function(arguments):
         """
-
         :param arguments:
         :return:
         """

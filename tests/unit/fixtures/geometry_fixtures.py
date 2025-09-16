@@ -69,7 +69,8 @@ This module contains the following functions:
     with resampling enabled for testing purposes.
 
     make_non_resampled_airfoil_fixture: This method makes a fixture that is an
-    Airfoil with resampling disabled for testing purposes."""
+    Airfoil with resampling disabled for testing purposes.
+"""
 
 import pterasoftware as ps
 

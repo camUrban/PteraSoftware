@@ -29,7 +29,8 @@ This module contains the following functions:
     invert_T_act: Invert an active homogeneous transform.
 
     apply_T_to_vectors: Apply a homogeneous transform to 3-element vector(s) and
-    return 3-element vector(s)."""
+    return 3-element vector(s).
+"""
 
 import numpy as np
 
@@ -322,7 +323,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
 
 
 def _left_compose_T(valid_T_chain):
-    """Left-compose a list of homogeneous transformations
+    """Left-compose a list of homogeneous transformations.
 
     Given: `valid_T_chain=[T_1, T_2, ..., T_n]`
     Internally returns: `T_n @ ... @ T_2 @ T_1`

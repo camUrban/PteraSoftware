@@ -329,10 +329,7 @@ class Airfoil:
     # ToDo: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for Matplotlib.
     def get_plottable_data(self, show=False):
-        """
-
-        :return:
-        """
+        """:return:"""
         # Validate the input flag.
         show = parameter_validation.boolLike_return_bool(show, "show")
 

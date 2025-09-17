@@ -313,6 +313,7 @@ class WingCrossSection:
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
+
         :param show:
         :return:
         """
@@ -524,7 +525,7 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        # Step 1: Create T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, which maps in homogenous
+        # Step 1: Create T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, which maps in homogeneous
         # coordinates from parent wing cross section axes relative to the parent
         # leading point to parent wing cross section axes relative to the leading
         # point. This is the translation step.

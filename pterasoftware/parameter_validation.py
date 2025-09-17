@@ -5,8 +5,7 @@ import numpy as np
 
 def string_return_string(string, name):
     """Validates that a value is a string and returns it as a string. name must also
-    be a string.
-    """
+    be a string."""
     if not isinstance(name, str):
         raise TypeError("name must be a string.")
 
@@ -17,8 +16,7 @@ def string_return_string(string, name):
 
 def boolLike_return_bool(value, name):
     """Validates that a value is a boolean or NumPy boolean and returns it as a
-    boolean. name must be a string.
-    """
+    boolean. name must be a string."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, (bool, np.bool)):
@@ -47,8 +45,8 @@ def int_return_int(value, name):
 def non_negative_int_return_int(value, name):
     """Validates that a value is an int with a value greater than or equal to zero
     and returns it as an int. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, int):
@@ -65,8 +63,8 @@ def non_negative_int_return_int(value, name):
 def positive_int_return_int(value, name):
     """Validates that a value is an int with a value greater than zero and returns it
     as an int. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, int):
@@ -85,8 +83,8 @@ def int_in_range_return_int(
     int. If min_val or max_val is None, then value's magnitude isn't checked relative
     to that parameter. If min_val or max_val is None, the corresponding '*_inclusive'
     parameter must also be None. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
@@ -130,8 +128,8 @@ def int_in_range_return_int(
 def number_return_float(value, name):
     """Validates a value is a number and returns it as a float. name must be a
     string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -148,8 +146,8 @@ def number_return_float(value, name):
 def non_negative_number_return_float(value, name):
     """Validates a value is a number and is greater than or equal to zero and returns
     it as a float. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -169,8 +167,8 @@ def non_negative_number_return_float(value, name):
 def positive_number_return_float(value, name):
     """Validates a value is a number and is greater than zero and returns it as a
     float. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -194,8 +192,8 @@ def number_in_range_return_float(
     '*_inclusive' parameter must also be None. If not None, these parameters must be
     booleans. If neither min_val nor max_val are None, then min_val must be less than
     max_val. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
@@ -271,8 +269,8 @@ def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
 def threeD_number_vectorLike_return_float(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -296,8 +294,8 @@ def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
 
     Accepts both single vectors of shape (2,) and arrays of vectors with shape
     (..., 2) where the last dimension must be 2.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -321,8 +319,8 @@ def threeD_number_vectorLike_return_float_unit_vector(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats, normalized to have a
     magnitude of 1.0. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -348,8 +346,8 @@ def fourD_homog_number_vectorLike_return_float(vector, name):
     """Validates a value is a 4D homogeneous vector-like object (array-like object
     with shape (4,) with a final value equal to 0.0 or 1.0). It then returns it as a
     (4,) numpy array of floats. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -373,8 +371,8 @@ def fourD_homog_number_vectorLike_return_float(vector, name):
 def nD_number_vectorLike_return_float(vector, name):
     """Validates a value is an ND vector-like object (array-like object with shape (N,
     )). It then returns it as an (N,) numpy array of floats. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -394,8 +392,8 @@ def nD_number_vectorLike_return_float(vector, name):
 def threeByThree_number_arrayLike_return_float(matrix, name):
     """Validates a value is a (3,3) array-like object. It then returns it as a (3,
     3) numpy array of floats. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -415,8 +413,8 @@ def threeByThree_number_arrayLike_return_float(matrix, name):
 def fourByFour_number_arrayLike_return_float(matrix, name):
     """Validates a value is a (4,4) array-like object. It then returns it as a (4,
     4) numpy array of floats. name must be a string.
-    Note: np.nan, np.inf, and -np.inf won't pass this test.
-    """
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")
 
     try:
@@ -457,8 +455,7 @@ def non_empty_list_return_list(list_parameter, name):
 
 def rotation_order_return_string(order, name):
     """Validates string representing a Tait-Bryan rotation sequence, and returns it.
-    name must be a string.
-    """
+    name must be a string."""
     name = string_return_string(name, "name")
 
     if not isinstance(order, str):

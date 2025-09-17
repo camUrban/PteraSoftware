@@ -209,8 +209,7 @@ class TestAirfoil(unittest.TestCase):
 
     def test_naca_airfoil_thickness(self):
         """Test that the generated NACA0012 and NACA2412 Airfoils have approximately
-        the correct maximum thickness.
-        """
+        the correct maximum thickness."""
         for airfoil in [self.naca0012_airfoil, self.naca2412_airfoil]:
             outline_A_lp = airfoil.outline_A_lp
             outlineY_A_lp = outline_A_lp[:, 1]

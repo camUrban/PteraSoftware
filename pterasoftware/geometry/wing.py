@@ -316,6 +316,7 @@ class Wing:
             be "cosine" or "uniform". Using cosine spacing is highly recommended for
             steady simulations and uniform spacing is highly recommended for unsteady
             simulations. The default is "cosine".
+
         """
         # Validate wing_cross_sections.
         wing_cross_sections = parameter_validation.non_empty_list_return_list(
@@ -469,6 +470,7 @@ class Wing:
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
+
         :param show:
         :return:
         """
@@ -700,7 +702,7 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        # Step 1: Create T_trans_pas_G_Cg_to_G_prelimLer, which maps in homogenous
+        # Step 1: Create T_trans_pas_G_Cg_to_G_prelimLer, which maps in homogeneous
         # coordinates from geometry axes relative to the CG to geometry axes
         # relative to the preliminary leading edge root point. This is the
         # translation step.

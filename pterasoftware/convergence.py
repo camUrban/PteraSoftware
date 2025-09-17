@@ -12,8 +12,7 @@ This module contains the following functions:
     steady problem.
 
     analyze_unsteady_convergence: This function finds the converged parameters of an
-    unsteady problem.
-"""
+    unsteady problem."""
 
 import logging
 import math

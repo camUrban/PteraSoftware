@@ -72,7 +72,7 @@ class Airfoil:
         :param outline_A_lp: array-like of shape (N,2), optional
 
             This is an array of the 2D points making up the Airfoil's outline (in
-            airfoil axes, relative to the leading poit). If you wish to load
+            airfoil axes, relative to the leading point). If you wish to load
             coordinates from the airfoils directory, leave this as None, which is the
             default. If not, it must be an array-like object of numbers (int or
             float) with shape (N,2). It can be a tuple, list, or numpy array. Values
@@ -329,7 +329,10 @@ class Airfoil:
     # ToDo: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for Matplotlib.
     def get_plottable_data(self, show=False):
-        """:return:"""
+        """
+
+        :return:
+        """
         # Validate the input flag.
         show = parameter_validation.boolLike_return_bool(show, "show")
 

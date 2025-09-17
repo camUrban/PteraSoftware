@@ -1,8 +1,7 @@
 """This script is a single-run version of simulation in unsteady_benchmark_timed.py.
 It is useful for profiling the unsteady solver, which cannot be done with
 unsteady_benchmark_timed.py. This script doesn't have any expected output images in
-the docs directory. Do not commit any changes to this file.
-"""
+the docs directory. Do not commit any changes to this file."""
 
 import pterasoftware as ps
 

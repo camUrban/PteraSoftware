@@ -94,7 +94,7 @@ Like angle vectors, rotation and transformation matrices can either represent th
 By convention, we treat vectors as column vectors and left-multiply by matrices for both active and passive transformations.
 
 ## Homogeneous Coordinates
-We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert vector's three components to four homogenous coordinates before applying the transformation.
+We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert vector's three components to four homogeneous coordinates before applying the transformation.
 
 For vector with components (x, y, z) that is given relative to a reference point, its homogeneous form is (x, y, z, 1). If it is a vector independent of any reference point, its homogeneous form is (x, y, z, 0). After applying the transformation, we can convert either type back to non-homogeneous components by dropping the last coordinate.
 

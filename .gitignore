@@ -127,7 +127,6 @@ cython_debug/
 # These are folders for scripts in development to ignore.
 /testing_in_development/
 /experimental/
-/reports/
 
 # These are folders created by testing to ignore.
 /tests/_trial_temp/

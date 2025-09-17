@@ -9,8 +9,7 @@ simulated results to the published experimental results.
 WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 2011.
 
 More information can be found in my accompanying report: "Validating an Open-Source
-UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
-"""
+UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach." """
 
 # Import Python’s math package.
 import math

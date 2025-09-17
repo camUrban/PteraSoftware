@@ -132,9 +132,7 @@ class TestWing(unittest.TestCase):
         self.assertIsNone(wing.symmetry_type)
 
     def test_wing_type_2_properties(self):
-        """Test type 2 wing (mirror_only=True, coincident symmetry plane)
-        properties.
-        """
+        """Test type 2 wing (mirror_only=True, coincident symmetry plane) properties."""
         wing = self.type_2_wing
 
         # Test basic properties
@@ -144,9 +142,7 @@ class TestWing(unittest.TestCase):
         npt.assert_array_equal(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0]))
 
     def test_wing_type_3_properties(self):
-        """Test type 3 wing (mirror_only=True, non-coincident symmetry plane)
-        properties.
-        """
+        """Test type 3 wing (mirror_only=True, non-coincident symmetry plane) properties."""
         wing = self.type_3_wing
 
         # Test basic properties
@@ -175,9 +171,7 @@ class TestWing(unittest.TestCase):
             self.assertEqual(wcs.control_surface_symmetry_type, "symmetric")
 
     def test_wing_type_5_properties(self):
-        """Test type 5 wing (symmetric=True, non-coincident symmetry plane)
-        properties.
-        """
+        """Test type 5 wing (symmetric=True, non-coincident symmetry plane) properties."""
         wing = self.type_5_wing
 
         # Test basic properties (before Airplane processing)

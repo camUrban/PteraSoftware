@@ -1,6 +1,5 @@
 """This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a custom airplane with static geometry.
-"""
+lattice method solver on a custom airplane with static geometry."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install the software by running "pip

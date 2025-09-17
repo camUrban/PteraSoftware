@@ -327,6 +327,7 @@ class Airplane:
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
+
         :param show:
         :return:
         """

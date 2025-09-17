@@ -470,7 +470,7 @@ class TestGenerateTransT(unittest.TestCase):
     """
 
     def test_passive_transformations_with_homog_coords(self):
-        """Tests passive translation transformations on generated homogenous
+        """Tests passive translation transformations on generated homogeneous
         coordinates.
 
         :return: None

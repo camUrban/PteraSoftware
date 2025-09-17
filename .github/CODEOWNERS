@@ -1,2 +1,13 @@
 # This sets @camUrban as the code owner for everything in the repository
 *       @camUrban
+
+# Explicitly protect high-risk files/directories
+/.claude/                   @camUrban
+/.github/                   @camUrban
+/benchmarks/                @camUrban
+/pterasoftware/             @camUrban
+/.gitignore                 @camUrban
+/.pre-commit-config.yaml    @camUrban
+**/pyproject.toml           @camUrban
+**/requirements*.txt        @camUrban
+**/setup.cfg                @camUrban

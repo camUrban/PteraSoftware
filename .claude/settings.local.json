@@ -1,9 +1,48 @@
 {
   "permissions": {
+    "defaultMode": "plan",
     "allow": [
-      "Read(/C:\\Users\\camer\\Documents\\GitHub\\PteraSoftware/**)"
+      "Bash(cat:*)",
+      "Bash(git:diff:*)",
+      "Bash(git:grep:*)",
+      "Bash(git:log:*)",
+      "Bash(git:ls-files:*)",
+      "Bash(git:show:*)",
+      "Bash(git:status)",
+      "Bash(ls:*)",
+      "Read"
     ],
-    "deny": [],
-    "ask": []
+    "deny": [
+      "Bash(chmod:*)",
+      "Bash(cp:*)",
+      "Bash(find:*)",
+      "Bash(gh:*)",
+      "Bash(gh:pr:*)",
+      "Bash(gh:repo:*)",
+      "Bash(gh:secret:*)",
+      "Bash(gh:api:*)",
+      "Bash(git:add:*)",
+      "Bash(git:branch:*)",
+      "Bash(git:checkout:*)",
+      "Bash(git:clean:*)",
+      "Bash(git:commit:*)",
+      "Bash(git:config:*)",
+      "Bash(git:merge:*)",
+      "Bash(git:push:*)",
+      "Bash(git:rebase:*)",
+      "Bash(git:remote:*)",
+      "Bash(git:reset:*)",
+      "Bash(git:tag:*)",
+      "Bash(mv:*)",
+      "Bash(pip:*)",
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Exec(*)"
+    ],
+    "ask": [
+      "Write",
+      "Bash(python:-m unittest:*)"
+    ]
   }
 }

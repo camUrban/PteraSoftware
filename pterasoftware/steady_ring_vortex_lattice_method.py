@@ -285,16 +285,16 @@ class SteadyRingVortexLatticeMethodSolver:
                         # vortex attributes
                         self.horseshoe_vortex_back_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.rightLeg_G.Slvp_G_Cg
+                        ] = panel.horseshoe_vortex.right_leg.Slvp_G_Cg
                         self.horseshoe_vortex_front_right_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.rightLeg_G.Elvp_G_Cg
+                        ] = panel.horseshoe_vortex.right_leg.Elvp_G_Cg
                         self.horseshoe_vortex_front_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.leftLeg_G.Slvp_G_Cg
+                        ] = panel.horseshoe_vortex.left_leg.Slvp_G_Cg
                         self.horseshoe_vortex_back_left_vertex[
                             global_panel_position
-                        ] = panel.horseshoe_vortex.leftLeg_G.Elvp_G_Cg
+                        ] = panel.horseshoe_vortex.left_leg.Elvp_G_Cg
 
                         # Set the horseshoe vortex strength at this position to 1.0.
                         # This will be updated after the correct vortex strengths are

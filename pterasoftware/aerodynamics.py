@@ -116,9 +116,11 @@ class RingVortex:
         self.Brrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
             Brrvp_G_Cg, "Brrvp_G_Cg"
         )
-        self.strength = parameter_validation.positive_number_return_float(
-            strength, "strength"
-        )
+        if strength is not None:
+            strength = parameter_validation.positive_number_return_float(
+                strength, "strength"
+            )
+        self.strength = strength
 
         # Initialize the LineVortices that make up the RingVortex.
         self.front_leg = _LineVortex(
@@ -297,9 +299,11 @@ class HorseshoeVortex:
         self.left_right_leg_lengths = parameter_validation.positive_number_return_float(
             left_right_leg_lengths, "left_right_leg_lengths"
         )
-        self.strength = parameter_validation.positive_number_return_float(
-            strength, "strength"
-        )
+        if strength is not None:
+            strength = parameter_validation.positive_number_return_float(
+                strength, "strength"
+            )
+        self.strength = strength
 
         # ToDo: Consider making these properties.
         # Save attributes for the back right and back left horseshoe vortex points (
@@ -376,7 +380,7 @@ class _LineVortex:
         self.Elvp_G_Cg = Elvp_G_Cg
         self.strength = strength
 
-        # ToDo: Consider make these properties.
+        # ToDo: Consider making these properties.
         # Initialize variables to hold the vector from the LineVortex's start to end
         # point (in geometry axes), and its center point (in geometry axes, relative
         # to the CG).

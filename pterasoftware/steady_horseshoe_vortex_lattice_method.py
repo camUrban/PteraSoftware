@@ -214,32 +214,32 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # attributes.
                     self.panels[global_panel_position] = panel
                     self.panel_normal_directions[global_panel_position, :] = (
-                        panel.unit_normal
+                        panel.unitNormal_G
                     )
                     self.panel_areas[global_panel_position] = panel.area
                     self.panel_collocation_points[global_panel_position, :] = (
-                        panel.collocation_point
+                        panel.Cpp_G_Cg
                     )
                     self.panel_back_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.rightLeg_G.Slvp_G_Cg
+                        panel.horseshoe_vortex.right_leg.Slvp_G_Cg
                     )
                     self.panel_front_right_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.rightLeg_G.Elvp_G_Cg
+                        panel.horseshoe_vortex.right_leg.Elvp_G_Cg
                     )
                     self.panel_front_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.leftLeg_G.Slvp_G_Cg
+                        panel.horseshoe_vortex.left_leg.Slvp_G_Cg
                     )
                     self.panel_back_left_vortex_vertices[global_panel_position, :] = (
-                        panel.horseshoe_vortex.leftLeg_G.Elvp_G_Cg
+                        panel.horseshoe_vortex.left_leg.Elvp_G_Cg
                     )
                     self.panel_bound_vortex_centers[global_panel_position, :] = (
-                        panel.horseshoe_vortex.finite_leg.Crvp_G_Cg
+                        panel.horseshoe_vortex.finite_leg.Clvp_G_Cg
                     )
                     self.panel_bound_vortex_vectors[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.vector_G
                     )
                     self.panel_moment_references[global_panel_position, :] = (
-                        airplane.xyz_ref
+                        airplane.Cgi_E_I
                     )
 
                     # Check if this panel is on the trailing edge.

@@ -322,12 +322,10 @@ def process_steady_solver_forces(
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
         for wing in airplane.wings:
             for panel in np.ravel(wing.panels):
-                total_near_field_forces_geometry_axes[
-                    airplane_num, :
-                ] += panel.near_field_force_geometry_axes
+                total_near_field_forces_geometry_axes[airplane_num, :] += panel.forces_G
                 total_near_field_moments_geometry_axes[
                     airplane_num, :
-                ] += panel.near_field_moment_geometry_axes
+                ] += panel.moments_G_Cg
 
     # For each airplane, find the total force and moment it experiences in wind axes
     # from the rotation matrix and the total force and moment it experiences in
@@ -554,46 +552,46 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_areas[global_panel_position] = panel.area
     solver.panel_collocation_points[global_panel_position, :] = panel.Cpp_G_Cg
     solver.panel_back_right_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.rightLeg_G.origin
+        panel.ring_vortex.right_leg.Slvp_G_Cg
     )
     solver.panel_front_right_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.rightLeg_G.termination
+        panel.ring_vortex.right_leg.Elvp_G_Cg
     )
     solver.panel_front_left_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.leftLeg_G.origin
+        panel.ring_vortex.left_leg.Slvp_G_Cg
     )
     solver.panel_back_left_vortex_vertices[global_panel_position, :] = (
-        panel.ring_vortex.leftLeg_G.termination
+        panel.ring_vortex.left_leg.Elvp_G_Cg
     )
     solver.panel_right_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.rightLeg_G.Crvp_G_Cg
+        panel.ring_vortex.right_leg.Clvp_G_Cg
     )
     solver.panel_right_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.rightLeg_G.vector
+        panel.ring_vortex.right_leg.vector_G
     )
     solver.panel_front_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.frontLeg_G.Crvp_G_Cg
+        panel.ring_vortex.front_leg.Clvp_G_Cg
     )
     solver.panel_front_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.frontLeg_G.vector
+        panel.ring_vortex.front_leg.vector_G
     )
     solver.panel_left_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.leftLeg_G.Crvp_G_Cg
+        panel.ring_vortex.left_leg.Clvp_G_Cg
     )
     solver.panel_left_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.leftLeg_G.vector
+        panel.ring_vortex.left_leg.vector_G
     )
     solver.panel_back_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.backLeg_G.Crvp_G_Cg
+        panel.ring_vortex.back_leg.Clvp_G_Cg
     )
     solver.panel_back_vortex_vectors[global_panel_position, :] = (
-        panel.ring_vortex.backLeg_G.vector
+        panel.ring_vortex.back_leg.vector_G
     )
     solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
-    solver.panel_moment_references[global_panel_position, :] = airplane.xyz_ref
+    solver.panel_moment_references[global_panel_position, :] = airplane.Cgi_E_I
 
     # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.

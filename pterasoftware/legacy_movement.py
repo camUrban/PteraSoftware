@@ -144,7 +144,7 @@ class Movement:
                 delta_times.append(
                     airplane_movement.base_airplane.c_ref
                     / airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                    / operating_point_movement.base_operating_point.velocity
+                    / operating_point_movement.base_operating_point.uInfX_W__B
                 )
 
             # Set the delta time to be the average of the airplanes' ideal delta times.
@@ -174,7 +174,7 @@ class Movement:
                 wake_length = self.num_chords * max_c_ref
                 panel_length = (
                     delta_time
-                    * self.operating_point_movement.base_operating_point.velocity
+                    * self.operating_point_movement.base_operating_point.uInfX_W__B
                 )
                 num_steps = math.ceil(wake_length / panel_length)
             else:
@@ -1280,7 +1280,7 @@ class OperatingPointMovement:
 
         # Initialize the class attributes.
         self.base_operating_point = base_operating_point
-        self.velocity_base = self.base_operating_point.velocity
+        self.velocity_base = self.base_operating_point.uInfX_W__B
         self.velocity_amplitude = velocity_amplitude
         self.velocity_period = velocity_period
         self.velocity_spacing = velocity_spacing
@@ -1340,7 +1340,7 @@ class OperatingPointMovement:
 
             # Make a new operating point object for this time step.
             this_operating_point = operating_point.OperatingPoint(
-                density=density, velocity=velocity, alpha=alpha, beta=beta
+                density=density, uInfX_W__B=velocity, alpha=alpha, beta=beta
             )
 
             # Add this new object to the list of operating points.

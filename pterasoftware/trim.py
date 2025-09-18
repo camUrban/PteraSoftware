@@ -60,10 +60,10 @@ def analyze_steady_trim(
         )
 
     weight = problem.airplanes[0].weight
-    base_velocity = problem.operating_point.velocity
+    base_velocity = problem.operating_point.uInfX_W__B
     base_alpha = problem.operating_point.alpha
     base_beta = problem.operating_point.beta
-    base_external_thrust = problem.operating_point.external_thrust
+    base_external_thrust = problem.operating_point.externalFX_W
 
     if base_velocity < velocity_bounds[0] or base_velocity > velocity_bounds[1]:
         raise Exception(
@@ -101,7 +101,7 @@ def analyze_steady_trim(
         current_arguments.clear()
         current_arguments.extend([velocity, alpha, beta, external_thrust])
 
-        problem.operating_point.velocity = velocity
+        problem.operating_point.uInfX_W__B = velocity
         problem.operating_point.alpha = alpha
         problem.operating_point.beta = beta
 
@@ -220,7 +220,7 @@ def analyze_unsteady_trim(
     :return:
     """
     weight = airplane_movement.base_airplane.weight
-    base_velocity = operating_point.velocity
+    base_velocity = operating_point.uInfX_W__B
     base_alpha = operating_point.alpha
     base_beta = operating_point.beta
 
@@ -252,7 +252,7 @@ def analyze_unsteady_trim(
         current_arguments.clear()
         current_arguments.extend([velocity, alpha, beta])
 
-        operating_point.velocity = velocity
+        operating_point.uInfX_W__B = velocity
         operating_point.alpha = alpha
         operating_point.beta = beta
 

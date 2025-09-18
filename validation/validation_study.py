@@ -352,8 +352,7 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    alpha=validation_alpha,
-    velocity=validation_velocity,
+    uInfX_W__B=validation_velocity, alpha=validation_alpha
 )
 
 # Define an operating point movement that contains the operating point.
@@ -363,9 +362,7 @@ validation_operating_point_movement = ps.movement.OperatingPointMovement(
 
 # Calculate the wind-to-geometry rotation matrix, which will later be used to convert
 # the experimental pressure-based-lift measurements to wind axes.
-wind_to_geometry_rotation_matrix = (
-    validation_operating_point.calculate_rotation_matrix_wind_to_geometry()
-)
+wind_to_geometry_rotation_matrix = validation_operating_point.T_pas_W_Cg_to_G_Cg()
 
 # Delete the extraneous pointer.
 del validation_operating_point

@@ -202,18 +202,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
 example_operating_point = ps.operating_point.OperatingPoint(
-    # Define the density of the fluid the airplane is flying in. This defaults to
-    # 1.225 kilograms per meters cubed.
-    density=1.225,
-    # Define the angle of sideslip the airplane is experiencing. This defaults to 0.0
-    # degrees.
-    beta=0.0,
-    # Define the freestream velocity at which the airplane is flying. This defaults
-    # to 10.0 meters per second.
-    velocity=10.0,
-    # Define the angle of attack the airplane is experiencing. This defaults to 5.0
-    # degrees.
-    alpha=1.0,
+    density=1.225, uInfX_W__B=10.0, alpha=1.0, beta=0.0
 )
 
 # Define a new steady problem. A steady problem contains an airplane object and an

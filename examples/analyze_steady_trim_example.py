@@ -66,7 +66,7 @@ default_airplane = ps.geometry.airplane.Airplane(
 # external thrust because this aircraft is not flapping, and will therefore generate
 # no thrust of its own. This external thrust could be due to a propeller or other
 # type of engine.
-default_operating_point = ps.operating_point.OperatingPoint(external_thrust=5)
+default_operating_point = ps.operating_point.OperatingPoint(externalFX_W=5)
 
 # Construct this example's problem object.
 default_problem = ps.problems.SteadyProblem(

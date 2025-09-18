@@ -291,9 +291,7 @@ def process_steady_solver_forces(
 
     # Find the rotation matrix that will be used to convert the geometry frame values
     # to wind frame values.
-    rotation_matrix = np.transpose(
-        steady_solver.operating_point.calculate_rotation_matrix_wind_to_geometry()
-    )
+    rotation_matrix = np.transpose(steady_solver.operating_point.T_pas_W_Cg_to_G_Cg())
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
@@ -422,9 +420,7 @@ def process_unsteady_solver_forces(
 
     # Find the rotation matrix that will be used to convert the geometry frame values
     # to wind frame values.
-    rotation_matrix = np.transpose(
-        operating_point.calculate_rotation_matrix_wind_to_geometry()
-    )
+    rotation_matrix = np.transpose(operating_point.T_pas_W_Cg_to_G_Cg())
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):

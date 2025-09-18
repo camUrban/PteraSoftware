@@ -27,7 +27,7 @@ This package contains the following modules:
 
     movement.py: This module contains the class definitions for the problem's movement.
 
-    operating_point.py: This module contains the class definition for the problem's
+    operating_point.py: This module contains the class definition for a Problem's
     operating point.
 
     output.py: This module contains useful functions for visualizing solutions to

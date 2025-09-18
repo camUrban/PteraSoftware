@@ -339,22 +339,7 @@ del v_tail_movement
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
 example_operating_point = ps.operating_point.OperatingPoint(
-    # Define the density of the fluid the airplane is flying in. This defaults to
-    # 1.225 kilograms per meters cubed.
-    density=1.225,
-    # Define the angle of sideslip the airplane is experiencing. This defaults to 0.0
-    # degrees.
-    beta=0.0,
-    # Define the freestream velocity at which the airplane is flying. This defaults
-    # to 10.0 meters per second.
-    velocity=10.0,
-    # Define the angle of attack the airplane is experiencing. This defaults to 5.0
-    # degrees.
-    alpha=1.0,
-    # Define the kinematic viscosity of the air in meters squared per second. This
-    # defaults to 15.06e-6 meters squared per second, which corresponds to an air
-    # temperature of 20 degrees Celsius.
-    nu=15.06e-6,
+    density=1.225, uInfX_W__B=10.0, alpha=1.0, beta=0.0, nu=15.06e-6
 )
 
 # Define the operating point's movement. The operating point's velocity can change

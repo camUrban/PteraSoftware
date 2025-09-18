@@ -1421,27 +1421,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                                     # If this isn't the front of the wake, update the
                                     # position of the ring vortex at this location.
-                                    next_wing.wake_ring_vortices[
-                                        chordwise_vertex_position,
-                                        spanwise_vertex_position,
-                                    ].update_position(
-                                        front_left_vertex=front_left_vertex,
-                                        front_right_vertex=front_right_vertex,
-                                        back_left_vertex=back_left_vertex,
-                                        back_right_vertex=back_right_vertex,
+                                    this_wake_ring_vortex: aerodynamics.RingVortex = (
+                                        next_wing.wake_ring_vortices[
+                                            chordwise_vertex_position,
+                                            spanwise_vertex_position,
+                                        ]
+                                    )
+                                    this_wake_ring_vortex.update_position(
+                                        Flrvp_G_Cg=front_left_vertex,
+                                        Frrvp_G_Cg=front_right_vertex,
+                                        Blrvp_G_Cg=back_left_vertex,
+                                        Brrvp_G_Cg=back_right_vertex,
                                     )
 
-                                    # Also, update the age of this ring vortex.
+                                    # Also, update the age of this RingVortex.
                                     if self.current_step == 0:
-                                        next_wing.wake_ring_vortices[
-                                            chordwise_vertex_position,
-                                            spanwise_vertex_position,
-                                        ].age = self.delta_time
+                                        this_wake_ring_vortex.age = self.delta_time
                                     else:
-                                        next_wing.wake_ring_vortices[
-                                            chordwise_vertex_position,
-                                            spanwise_vertex_position,
-                                        ].age += self.delta_time
+                                        this_wake_ring_vortex.age += self.delta_time
 
                                 if chordwise_vertex_position == 0:
                                     # If this is the front of the wake, get the

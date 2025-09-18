@@ -18,6 +18,7 @@ import numpy as np
 
 from . import aerodynamics
 from . import functions
+from . import geometry
 
 
 class SteadyHorseshoeVortexLatticeMethodSolver:
@@ -294,9 +295,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Iterate through the panels and update their vortex strengths.
-        for panel_num, panel in enumerate(self.panels):
+        for panel_num in range(len(self.panels)):
+            this_panel: geometry.panel.Panel = self.panels[panel_num]
+
             # Update this panel's horseshoe vortex strength.
-            panel.horseshoe_vortex.update_strength(self.vortex_strengths[panel_num])
+            this_panel.horseshoe_vortex.update_strength(
+                self.vortex_strengths[panel_num]
+            )
 
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the

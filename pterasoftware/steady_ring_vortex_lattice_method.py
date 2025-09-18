@@ -17,6 +17,7 @@ import logging
 
 from . import aerodynamics
 from . import functions
+from . import geometry
 
 
 class SteadyRingVortexLatticeMethodSolver:
@@ -368,7 +369,7 @@ class SteadyRingVortexLatticeMethodSolver:
         for panel_num in range(self.panels.size):
 
             # Get the panel at this location.
-            panel = self.panels[panel_num]
+            panel: geometry.panel.Panel = self.panels[panel_num]
 
             # Update this panel's ring vortex strength.
             panel.ring_vortex.update_strength(self.vortex_strengths[panel_num])

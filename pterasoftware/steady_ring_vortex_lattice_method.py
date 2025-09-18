@@ -243,10 +243,10 @@ class SteadyRingVortexLatticeMethodSolver:
 
                         # Initialize the panel's ring vortex.
                         panel.ring_vortex = aerodynamics.RingVortex(
-                            front_right_vertex=front_right_vortex_vertex,
-                            front_left_vertex=front_left_vortex_vertex,
-                            back_left_vertex=back_left_vortex_vertex,
-                            back_right_vertex=back_right_vortex_vertex,
+                            Flrvp_G_Cg=front_left_vortex_vertex,
+                            Frrvp_G_Cg=front_right_vortex_vertex,
+                            Blrvp_G_Cg=back_left_vortex_vertex,
+                            Brrvp_G_Cg=back_right_vortex_vertex,
                             strength=None,
                         )
 
@@ -315,11 +315,11 @@ class SteadyRingVortexLatticeMethodSolver:
         # because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strengths' are calculated.
         ring_vortex_influences = aerodynamics.expanded_velocities_from_ring_vortices(
-            points=self.panel_collocation_points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=self.panel_collocation_points,
+            stackBrrvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrrvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlrvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlrvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=self.vortex_strengths,
         )
 
@@ -332,11 +332,11 @@ class SteadyRingVortexLatticeMethodSolver:
         # positions elsewhere will remain zero.
         horseshoe_vortex_influences = (
             aerodynamics.expanded_velocities_from_horseshoe_vortices(
-                points=self.panel_collocation_points,
-                back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
-                front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
-                front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
-                back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
+                stackP_G_Cg=self.panel_collocation_points,
+                stackBrhvp_G_Cg=self.horseshoe_vortex_back_right_vertex,
+                stackFrhvp_G_Cg=self.horseshoe_vortex_front_right_vertex,
+                stackFlhvp_G_Cg=self.horseshoe_vortex_front_left_vertex,
+                stackBlhvp_G_Cg=self.horseshoe_vortex_back_left_vertex,
                 strengths=self.horseshoe_vortex_strengths,
             )
         )
@@ -406,11 +406,11 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the matrix of velocities induced at every point by every panel's ring
         # vortex. The effect of every ring vortex on each point will be summed.
         ring_vortex_influences = aerodynamics.collapsed_velocities_from_ring_vortices(
-            points=points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=points,
+            stackBrrvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrrvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlrvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlrvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=self.vortex_strengths,
         )
 
@@ -422,11 +422,11 @@ class SteadyRingVortexLatticeMethodSolver:
         # on each point will be summed.
         horseshoe_vortex_influences = (
             aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-                points=points,
-                back_right_vortex_vertices=self.horseshoe_vortex_back_right_vertex,
-                front_right_vortex_vertices=self.horseshoe_vortex_front_right_vertex,
-                front_left_vortex_vertices=self.horseshoe_vortex_front_left_vertex,
-                back_left_vortex_vertices=self.horseshoe_vortex_back_left_vertex,
+                stackP_G_Cg=points,
+                stackBrhvp_G_Cg=self.horseshoe_vortex_back_right_vertex,
+                stackFrhvp_G_Cg=self.horseshoe_vortex_front_right_vertex,
+                stackFlhvp_G_Cg=self.horseshoe_vortex_front_left_vertex,
+                stackBlhvp_G_Cg=self.horseshoe_vortex_back_left_vertex,
                 strengths=self.horseshoe_vortex_strengths,
             )
         )

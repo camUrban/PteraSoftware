@@ -24,10 +24,16 @@
       <w>bhvp</w>
       <w>bhvr</w>
       <w>bleriot</w>
+      <w>blhvp</w>
       <w>blpp</w>
+      <w>blrvp</w>
+      <w>blvrp</w>
       <w>bopp</w>
+      <w>brhvp</w>
       <w>brpp</w>
+      <w>brrvp</w>
       <w>brvp</w>
+      <w>brvrp</w>
       <w>camberline</w>
       <w>cambre</w>
       <w>carto</w>
@@ -39,6 +45,7 @@
       <w>coolwarm</w>
       <w>coords</w>
       <w>cosspace</w>
+      <w>crvp</w>
       <w>curtiss</w>
       <w>customspace</w>
       <w>darkgray</w>
@@ -71,6 +78,7 @@
       <w>flbvp</w>
       <w>flhvp</w>
       <w>flpp</w>
+      <w>flrvp</w>
       <w>flyer</w>
       <w>fopp</w>
       <w>frbhvp</w>
@@ -83,6 +91,7 @@
       <w>friedrichshafen</w>
       <w>frpp</w>
       <w>frppr</w>
+      <w>frrvp</w>
       <w>frwhvp</w>
       <w>frwrvp</w>
       <w>frwrvpr</w>

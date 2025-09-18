@@ -14,7 +14,8 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
-    aerodynamics.py: This module contains vortex class definitions.
+    aerodynamics.py: This module contains vortex class definitions, and functions for
+    calculating induced velocities.
 
     convergence.py: This module contains functions for analyzing the convergence of
     steady and unsteady problems.

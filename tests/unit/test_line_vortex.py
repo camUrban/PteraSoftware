@@ -70,7 +70,7 @@ class TestLineVortex(unittest.TestCase):
         """
 
         # Test that the object is of the right type.
-        self.assertIsInstance(self.line_vortex_fixture, ps.aerodynamics.LineVortex)
+        self.assertIsInstance(self.line_vortex_fixture, ps.aerodynamics._LineVortex)
 
         # Test that the vortex's coordinates were correctly set.
         self.assertTrue(
@@ -85,7 +85,7 @@ class TestLineVortex(unittest.TestCase):
 
         # Test that the vortex's center and vector were correctly calculated.
         self.assertTrue(
-            np.allclose(self.line_vortex_fixture.center, np.array([0.5, 0.5, 0.5]))
+            np.allclose(self.line_vortex_fixture.Clvp_G_Cg, np.array([0.5, 0.5, 0.5]))
         )
         self.assertTrue(
             np.allclose(self.line_vortex_fixture.vector_G, np.array([1, 1, 1]))

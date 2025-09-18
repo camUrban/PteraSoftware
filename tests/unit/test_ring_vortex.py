@@ -87,17 +87,17 @@ class TestRingVortex(unittest.TestCase):
         self.assertIsInstance(self.ring_vortex_fixture, ps.aerodynamics.RingVortex)
         self.assertIsInstance(
             self.ring_vortex_fixture.front_leg,
-            ps.aerodynamics.LineVortex,
+            ps.aerodynamics._LineVortex,
         )
         self.assertIsInstance(
-            self.ring_vortex_fixture.left_leg, ps.aerodynamics.LineVortex
+            self.ring_vortex_fixture.left_leg, ps.aerodynamics._LineVortex
         )
         self.assertIsInstance(
-            self.ring_vortex_fixture.back_leg, ps.aerodynamics.LineVortex
+            self.ring_vortex_fixture.back_leg, ps.aerodynamics._LineVortex
         )
         self.assertIsInstance(
             self.ring_vortex_fixture.right_leg,
-            ps.aerodynamics.LineVortex,
+            ps.aerodynamics._LineVortex,
         )
 
         # Test that the vortex objects' coordinates were correctly set.
@@ -203,10 +203,10 @@ class TestRingVortex(unittest.TestCase):
         """
 
         # Create fixtures to hold the old values of the ring vortex's position.
-        old_front_right_vertex_fixture = self.ring_vortex_fixture.front_right_vertex
-        old_front_left_vertex_fixture = self.ring_vortex_fixture.front_left_vertex
-        old_back_left_vertex_fixture = self.ring_vortex_fixture.back_left_vertex
-        old_back_right_vertex_fixture = self.ring_vortex_fixture.back_right_vertex
+        old_front_right_vertex_fixture = self.ring_vortex_fixture.Frrvp_G_Cg
+        old_front_left_vertex_fixture = self.ring_vortex_fixture.Flrvp_G_Cg
+        old_back_left_vertex_fixture = self.ring_vortex_fixture.Blrvp_G_Cg
+        old_back_right_vertex_fixture = self.ring_vortex_fixture.Brrvp_G_Cg
 
         # Create fixtures to hold the soon-to-be new values of the ring vortex's
         # position.
@@ -225,33 +225,33 @@ class TestRingVortex(unittest.TestCase):
 
         # Update the ring vortex fixture's position.
         self.ring_vortex_fixture.update_position(
-            front_right_vertex=new_front_right_vertex_fixture,
-            front_left_vertex=new_front_left_vertex_fixture,
-            back_left_vertex=new_back_left_vertex_fixture,
-            back_right_vertex=new_back_right_vertex_fixture,
+            Flrvp_G_Cg=new_front_left_vertex_fixture,
+            Frrvp_G_Cg=new_front_right_vertex_fixture,
+            Blrvp_G_Cg=new_back_left_vertex_fixture,
+            Brrvp_G_Cg=new_back_right_vertex_fixture,
         )
 
         # Test that the position of the ring vortex was correctly updated.
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_right_vertex,
+                self.ring_vortex_fixture.Frrvp_G_Cg,
                 new_front_right_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.front_left_vertex,
+                self.ring_vortex_fixture.Flrvp_G_Cg,
                 new_front_left_vertex_fixture,
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_left_vertex, new_back_left_vertex_fixture
+                self.ring_vortex_fixture.Blrvp_G_Cg, new_back_left_vertex_fixture
             )
         )
         self.assertTrue(
             np.allclose(
-                self.ring_vortex_fixture.back_right_vertex,
+                self.ring_vortex_fixture.Brrvp_G_Cg,
                 new_back_right_vertex_fixture,
             )
         )
@@ -308,8 +308,8 @@ class TestRingVortex(unittest.TestCase):
 
         # Revert the changes.
         self.ring_vortex_fixture.update_position(
-            front_right_vertex=old_front_right_vertex_fixture,
-            front_left_vertex=old_front_left_vertex_fixture,
-            back_left_vertex=old_back_left_vertex_fixture,
-            back_right_vertex=old_back_right_vertex_fixture,
+            Flrvp_G_Cg=old_front_left_vertex_fixture,
+            Frrvp_G_Cg=old_front_right_vertex_fixture,
+            Blrvp_G_Cg=old_back_left_vertex_fixture,
+            Brrvp_G_Cg=old_back_right_vertex_fixture,
         )

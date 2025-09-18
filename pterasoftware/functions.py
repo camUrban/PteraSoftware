@@ -566,25 +566,25 @@ def update_ring_vortex_solvers_panel_attributes(
         panel.ring_vortex.leftLeg_G.termination
     )
     solver.panel_right_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.rightLeg_G.center
+        panel.ring_vortex.rightLeg_G.Crvp_G_Cg
     )
     solver.panel_right_vortex_vectors[global_panel_position, :] = (
         panel.ring_vortex.rightLeg_G.vector
     )
     solver.panel_front_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.frontLeg_G.center
+        panel.ring_vortex.frontLeg_G.Crvp_G_Cg
     )
     solver.panel_front_vortex_vectors[global_panel_position, :] = (
         panel.ring_vortex.frontLeg_G.vector
     )
     solver.panel_left_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.leftLeg_G.center
+        panel.ring_vortex.leftLeg_G.Crvp_G_Cg
     )
     solver.panel_left_vortex_vectors[global_panel_position, :] = (
         panel.ring_vortex.leftLeg_G.vector
     )
     solver.panel_back_vortex_centers[global_panel_position, :] = (
-        panel.ring_vortex.backLeg_G.center
+        panel.ring_vortex.backLeg_G.Crvp_G_Cg
     )
     solver.panel_back_vortex_vectors[global_panel_position, :] = (
         panel.ring_vortex.backLeg_G.vector

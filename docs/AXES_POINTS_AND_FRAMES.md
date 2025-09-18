@@ -89,6 +89,7 @@ The standard abbreviations and names are given below for reference. See the sect
   * Fl…: front left
   * Bl…: back left
   * Br…: back right
+  * C…: centroid
   * …b…: bound
   * …w…: wake
   * …r\[m\]c\[n\]: (m, n)

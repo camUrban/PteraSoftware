@@ -233,7 +233,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         panel.horseshoe_vortex.leftLeg_G.Elvp_G_Cg
                     )
                     self.panel_bound_vortex_centers[global_panel_position, :] = (
-                        panel.horseshoe_vortex.finite_leg.center
+                        panel.horseshoe_vortex.finite_leg.Crvp_G_Cg
                     )
                     self.panel_bound_vortex_vectors[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.vector_G
@@ -266,11 +266,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Find the matrix of normalized velocities induced at every panel's
         # collocation point by every panel's horseshoe vortex.
         induced_velocities = aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            points=self.panel_collocation_points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=self.panel_collocation_points,
+            stackBrhvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrhvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlhvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlhvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=np.ones(self.num_panels),
         )
 
@@ -321,11 +321,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             meters per second.
         """
         induced_velocities = aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            points=points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=points,
+            stackBrhvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrhvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlhvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlhvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=self.vortex_strengths,
         )
 

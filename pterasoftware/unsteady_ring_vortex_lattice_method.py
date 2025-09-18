@@ -551,10 +551,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                             # Initialize the panel's ring vortex.
                             panel.ring_vortex = aerodynamics.RingVortex(
-                                front_right_vertex=front_right_vortex_vertex,
-                                front_left_vertex=front_left_vortex_vertex,
-                                back_left_vertex=back_left_vortex_vertex,
-                                back_right_vertex=back_right_vortex_vertex,
+                                Flrvp_G_Cg=front_left_vortex_vertex,
+                                Frrvp_G_Cg=front_right_vortex_vertex,
+                                Blrvp_G_Cg=back_left_vortex_vertex,
+                                Brrvp_G_Cg=back_right_vortex_vertex,
                                 strength=None,
                             )
 
@@ -652,16 +652,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         ] = panel.ring_vortex.leftLeg_G.Elvp_G_Cg
                         self.last_panel_right_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.rightLeg_G.center
+                        ] = panel.ring_vortex.rightLeg_G.Crvp_G_Cg
                         self.last_panel_front_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.frontLeg_G.center
+                        ] = panel.ring_vortex.frontLeg_G.Crvp_G_Cg
                         self.last_panel_left_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.leftLeg_G.center
+                        ] = panel.ring_vortex.leftLeg_G.Crvp_G_Cg
                         self.last_panel_back_vortex_centers[
                             global_panel_position, :
-                        ] = panel.ring_vortex.backLeg_G.center
+                        ] = panel.ring_vortex.backLeg_G.Crvp_G_Cg
 
                         # Increment the global panel position.
                         global_panel_position += 1
@@ -677,11 +677,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # because the solver's vortex strength list was initialized to all ones. This
         # will be updated once the correct vortex strengths are calculated.
         total_influences = aerodynamics.expanded_velocities_from_ring_vortices(
-            points=self.panel_collocation_points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=self.panel_collocation_points,
+            stackBrrvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrrvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlrvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlrvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=self.current_vortex_strengths,
             ages=None,
             nu=self.current_operating_point.nu,
@@ -749,11 +749,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # and z components of the velocity induced by the entire wake at each of
             # the M panels.
             velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
-                points=self.panel_collocation_points,
-                back_right_vortex_vertices=self.current_wake_ring_vortex_back_right_vertices,
-                front_right_vortex_vertices=self.current_wake_ring_vortex_front_right_vertices,
-                front_left_vortex_vertices=self.current_wake_ring_vortex_front_left_vertices,
-                back_left_vortex_vertices=self.current_wake_ring_vortex_back_left_vertices,
+                stackP_G_Cg=self.panel_collocation_points,
+                stackBrrvp_G_Cg=self.current_wake_ring_vortex_back_right_vertices,
+                stackFrrvp_G_Cg=self.current_wake_ring_vortex_front_right_vertices,
+                stackFlrvp_G_Cg=self.current_wake_ring_vortex_front_left_vertices,
+                stackBlrvp_G_Cg=self.current_wake_ring_vortex_back_left_vertices,
                 strengths=self.current_wake_ring_vortex_strengths,
                 ages=self.current_wake_ring_vortex_ages,
                 nu=self.current_operating_point.nu,
@@ -818,11 +818,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the vector of velocities induced at every point by every panel's ring
         # vortex. The effect of every ring vortex on each point will be summed.
         velocities_from_wings = aerodynamics.collapsed_velocities_from_ring_vortices(
-            points=points,
-            back_right_vortex_vertices=self.panel_back_right_vortex_vertices,
-            front_right_vortex_vertices=self.panel_front_right_vortex_vertices,
-            front_left_vortex_vertices=self.panel_front_left_vortex_vertices,
-            back_left_vortex_vertices=self.panel_back_left_vortex_vertices,
+            stackP_G_Cg=points,
+            stackBrrvp_G_Cg=self.panel_back_right_vortex_vertices,
+            stackFrrvp_G_Cg=self.panel_front_right_vortex_vertices,
+            stackFlrvp_G_Cg=self.panel_front_left_vortex_vertices,
+            stackBlrvp_G_Cg=self.panel_back_left_vortex_vertices,
             strengths=self.current_vortex_strengths,
             ages=None,
             nu=self.current_operating_point.nu,
@@ -831,11 +831,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the vector of velocities induced at every point by every wake ring
         # vortex. The effect of every wake ring vortex on each point will be summed.
         velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
-            points=points,
-            back_right_vortex_vertices=self.current_wake_ring_vortex_back_right_vertices,
-            front_right_vortex_vertices=self.current_wake_ring_vortex_front_right_vertices,
-            front_left_vortex_vertices=self.current_wake_ring_vortex_front_left_vertices,
-            back_left_vortex_vertices=self.current_wake_ring_vortex_back_left_vertices,
+            stackP_G_Cg=points,
+            stackBrrvp_G_Cg=self.current_wake_ring_vortex_back_right_vertices,
+            stackFrrvp_G_Cg=self.current_wake_ring_vortex_front_right_vertices,
+            stackFlrvp_G_Cg=self.current_wake_ring_vortex_front_left_vertices,
+            stackBlrvp_G_Cg=self.current_wake_ring_vortex_back_left_vertices,
             strengths=self.current_wake_ring_vortex_strengths,
             ages=self.current_wake_ring_vortex_ages,
             nu=self.current_operating_point.nu,
@@ -1459,10 +1459,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         chordwise_vertex_position,
                                         spanwise_vertex_position,
                                     ] = aerodynamics.RingVortex(
-                                        front_left_vertex=front_left_vertex,
-                                        front_right_vertex=front_right_vertex,
-                                        back_left_vertex=back_left_vertex,
-                                        back_right_vertex=back_right_vertex,
+                                        Flrvp_G_Cg=front_left_vertex,
+                                        Frrvp_G_Cg=front_right_vertex,
+                                        Blrvp_G_Cg=back_left_vertex,
+                                        Brrvp_G_Cg=back_right_vertex,
                                         strength=this_strength_copy,
                                     )
 

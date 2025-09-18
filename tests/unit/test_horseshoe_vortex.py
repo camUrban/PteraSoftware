@@ -87,15 +87,15 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
         self.assertIsInstance(
             self.horseshoe_vortex_fixture.finite_leg,
-            ps.aerodynamics.LineVortex,
+            ps.aerodynamics._LineVortex,
         )
         self.assertIsInstance(
             self.horseshoe_vortex_fixture.left_leg,
-            ps.aerodynamics.LineVortex,
+            ps.aerodynamics._LineVortex,
         )
         self.assertIsInstance(
             self.horseshoe_vortex_fixture.right_leg,
-            ps.aerodynamics.LineVortex,
+            ps.aerodynamics._LineVortex,
         )
 
         # Test that the vortex objects' coordinates were correctly set.
@@ -127,7 +127,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         # Test that the infinite legs' coordinates are correct.
         self.assertTrue(
             np.allclose(
-                self.horseshoe_vortex_fixture.right_leg_origin,
+                self.horseshoe_vortex_fixture.Brhvp_G_Cg,
                 self.horseshoe_vortex_fixture.Frhvp_G_Cg
                 + self.horseshoe_vortex_fixture.leftLegVector_G
                 * self.horseshoe_vortex_fixture.left_right_leg_lengths,
@@ -135,7 +135,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                self.horseshoe_vortex_fixture.left_leg_termination,
+                self.horseshoe_vortex_fixture.Blhvp_G_Cg,
                 self.horseshoe_vortex_fixture.Flhvp_G_Cg
                 + self.horseshoe_vortex_fixture.leftLegVector_G
                 * self.horseshoe_vortex_fixture.left_right_leg_lengths,

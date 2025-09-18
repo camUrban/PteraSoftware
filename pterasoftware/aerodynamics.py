@@ -1,44 +1,35 @@
-"""This module contains vortex class definitions, and useful aerodynamic functions.
+"""This module contains vortex class definitions, and functions for calculating
+induced velocities.
 
 This module contains the following classes:
-    LineVortex: This class is used to contain line vortices.
+    RingVortex: This class is used to contain ring vortices.
 
     HorseshoeVortex: This class is used to contain horseshoe vortices.
-
-    RingVortex: This class is used to contain ring vortices.
 
 This module contains the following exceptions:
     None
 
 This module contains the following functions:
-    collapsed_velocities_from_horseshoe_vortices: This function takes in a group of
-    points, and the attributes of a group of horseshoe vortices. At every point,
-    it finds the cumulative induced velocity due to all the horseshoe vortices.
-
-    expanded_velocities_from_horseshoe_vortices: This function takes in a group of
-    points, and the attributes of a group of horseshoe vortices. At every point,
-    it finds the induced velocity due to each horseshoe vortex.
-
     collapsed_velocities_from_ring_vortices: This function takes in a group of
-    points, and the attributes of a group of ring vortices. At every point, it finds
-    the cumulative induced velocity due to all the ring vortices.
+    points, and the attributes of a group of RingVortices. At every point, it finds
+    the cumulative induced velocity due to all the RingVortices.
 
     collapsed_velocities_from_ring_vortices_chordwise_segments: This function takes
-    in a group of points, and the attributes of a group of ring vortices. At every
-    point, it finds the cumulative induced velocity due to all the ring vortices'
+    in a group of points, and the attributes of a group of RingVortices. At every
+    point, it finds the cumulative induced velocity due to all the RingVortices'
     chordwise segments.
 
     expanded_velocities_from_ring_vortices: This function takes in a group of points,
-    and the attributes of a group of ring vortices. At every point, it finds the
-    induced velocity due to each ring vortex.
+    and the attributes of a group of RingVortices. At every point, it finds the
+    induced velocity due to each RingVortex.
 
-    collapsed_velocities_from_line_vortices: This function takes in a group of
-    points, and the attributes of a group of line vortices. At every point, it finds
-    the cumulative induced velocity due to all the line vortices.
+    collapsed_velocities_from_horseshoe_vortices: This function takes in a group of
+    points, and the attributes of a group of HorseshoeVortices. At every point,
+    it finds the cumulative induced velocity due to all the HorseshoeVortices.
 
-    expanded_velocities_from_line_vortices: This function takes in a group of points,
-    and the attributes of a group of line vortices. At every point, it finds the
-    induced velocity due to each line vortex.
+    expanded_velocities_from_horseshoe_vortices: This function takes in a group of
+    points, and the attributes of a group of HorseshoeVortices. At every point,
+    it finds the induced velocity due to each HorseshoeVortex.
 """
 
 import math
@@ -69,11 +60,16 @@ lamb = 1.25643
 eps = np.finfo(float).eps
 
 
-class LineVortex:
-    """This class is used to contain line vortices.
+# ToDo: Write unit tests for this class.
+class RingVortex:
+    """This class is used to contain ring vortices.
 
     This class contains the following public methods:
-        None
+        update_strength: This method updates the strength of this RingVortex,
+        and the strength of its four legs' LineVortices.
+
+        update_position: This method updates the position of the RingVortex, and the
+        positions of all its attributes.
 
     This class contains the following class attributes:
         None
@@ -82,42 +78,168 @@ class LineVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, Slvp_G_Cg, Elvp_G_Cg, strength):
+    def __init__(
+        self,
+        Flrvp_G_Cg,
+        Frrvp_G_Cg,
+        Blrvp_G_Cg,
+        Brrvp_G_Cg,
+        strength,
+    ):
         """This is the initialization method.
 
-        :param Slvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
-            start point (in geometry axes, relative to the CG). Can be a list, tuple, or
-            numpy array of numbers (int or float). Values are converted to floats
-            internally. The units are in meters.
-        :param Elvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
-            end point (in geometry axes, relative to the CG). Can be a list, tuple, or
-            numpy array of numbers (int or float). Values are converted to floats
-            internally. The units are in meters.
-        :param strength: number This is the strength of the LineVortex. It can be a
-            positive int or float and will be converted to a float internally. The units
-            are in meters squared per second.
+        #ToDo: Update docstring parameters' descriptions and types.
+        :param Flrvp_G_Cg: 1D array This is a vector containing the x, y, and z
+            coordinates of the vortex's front left point. It's a (,3) array with units
+            of meters.
+        :param Frrvp_G_Cg: 1D array This is a vector containing the x, y, and
+            z coordinates of the vortex's front right point. It's a (,3) array with
+            units of meters.
+        :param Blrvp_G_Cg: 1D array This is a vector containing the x, y, and z
+            coordinates of the vortex's back left point. It's a (,3) array with units of
+            meters.
+        :param Brrvp_G_Cg: 1D array This is a vector containing the x, y, and z
+            coordinates of the vortex's back right point. It's a (,3) array with units
+            of meters.
+        :param strength: float This is the strength of the vortex in meters squared per
+            second.
         """
-        self.Slvp_G_Cg = parameter_validation.positive_number_return_float(
-            Slvp_G_Cg, "Slvp_G_Cg"
+        self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Flrvp_G_Cg, "Flrvp_G_Cg"
         )
-        self.Elvp_G_Cg = parameter_validation.positive_number_return_float(
-            Elvp_G_Cg, "Elvp_G_Cg"
+        self.Frrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Frrvp_G_Cg, "Frrvp_G_Cg"
+        )
+        self.Blrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Blrvp_G_Cg, "Blrvp_G_Cg"
+        )
+        self.Brrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Brrvp_G_Cg, "Brrvp_G_Cg"
         )
         self.strength = parameter_validation.positive_number_return_float(
             strength, "strength"
         )
 
-        # Initialize variables to hold the vector from the LineVortex's start to end
-        # point (in geometry axes), and its center point (in geometry axes, relative
-        # to the CG).
-        self.vector_G = self.Elvp_G_Cg - self.Slvp_G_Cg
-        self.Clvp_G_Cg = self.Slvp_G_Cg + 0.5 * self.vector_G
+        # Initialize the LineVortices that make up the RingVortex.
+        self.front_leg = _LineVortex(
+            Slvp_G_Cg=self.Frrvp_G_Cg,
+            Elvp_G_Cg=self.Flrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.left_leg = _LineVortex(
+            Slvp_G_Cg=self.Flrvp_G_Cg,
+            Elvp_G_Cg=self.Blrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.back_leg = _LineVortex(
+            Slvp_G_Cg=self.Blrvp_G_Cg,
+            Elvp_G_Cg=self.Brrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.right_leg = _LineVortex(
+            Slvp_G_Cg=self.Brrvp_G_Cg,
+            Elvp_G_Cg=self.Frrvp_G_Cg,
+            strength=self.strength,
+        )
+
+        # ToDo: Consider making this a property.
+        # Initialize a variable to hold the centroid of the RingVortex.
+        self.Crvp_G_Cg = functions.numba_centroid_of_quadrilateral(
+            self.Flrvp_G_Cg,
+            self.Frrvp_G_Cg,
+            self.Blrvp_G_Cg,
+            self.Brrvp_G_Cg,
+        )
+
+        # Initialize a variable to hold the age of the RingVortex in seconds (in
+        # simulation time).
+        self.age = 0
+
+    def update_strength(self, strength):
+        """This method updates the strength of this RingVortex, and the strength
+        of its four legs' LineVortices.
+
+        :param strength: float This is the strength of this vortex, and of its four
+            legs' LineVortices. Its units are meters squared per second.
+        :return: None
+        """
+        self.strength = strength
+        self.right_leg.strength = strength
+        self.front_leg.strength = strength
+        self.left_leg.strength = strength
+        self.back_leg.strength = strength
+
+    def update_position(self, Flrvp_G_Cg, Frrvp_G_Cg, Blrvp_G_Cg, Brrvp_G_Cg):
+        """This method updates the position of the RingVortex, and the positions of all
+        its attributes.
+
+        #ToDo: Update docstring parameters descriptions and types.
+        :param Flrvp_G_Cg: 1D array This is the new position of the x, y, and z
+            coordinates of the front left vertex. It is a (,3) array with units of
+            meters.
+        :param Frrvp_G_Cg: 1D array This is the new position of the x, y, and z
+            coordinates of the front right vertex. It is a (,3) array with units of
+            meters.
+        :param Blrvp_G_Cg: 1D array This is the new position of the x, y, and z
+            coordinates of the back left vertex. It is a (,3) array with units of
+            meters.
+        :param Brrvp_G_Cg: 1D array This is the new position of the x, y, and z
+            coordinates of the back right vertex. It is a (,3) array with units of
+            meters.
+        :return: None
+        """
+        self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Flrvp_G_Cg, "Flrvp_G_Cg"
+        )
+        self.Frrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Frrvp_G_Cg, "Frrvp_G_Cg"
+        )
+        self.Blrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Blrvp_G_Cg, "Blrvp_G_Cg"
+        )
+        self.Brrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            Brrvp_G_Cg, "Brrvp_G_Cg"
+        )
+
+        # ToDo: Is it really faster to make new LineVortices instead of writing an
+        #  update_position method inside of LineVortex and calling that from this
+        #  method? Initialize the line vortices that make up the ring vortex. Or
+        #  maybe I should make decorate the LineVortices as properties of RingVortex?
+        self.front_leg = _LineVortex(
+            Slvp_G_Cg=self.Frrvp_G_Cg,
+            Elvp_G_Cg=self.Flrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.left_leg = _LineVortex(
+            Slvp_G_Cg=self.Flrvp_G_Cg,
+            Elvp_G_Cg=self.Blrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.back_leg = _LineVortex(
+            Slvp_G_Cg=self.Blrvp_G_Cg,
+            Elvp_G_Cg=self.Brrvp_G_Cg,
+            strength=self.strength,
+        )
+        self.right_leg = _LineVortex(
+            Slvp_G_Cg=self.Brrvp_G_Cg,
+            Elvp_G_Cg=self.Frrvp_G_Cg,
+            strength=self.strength,
+        )
+
+        # Update the variable with the centroid of the RingVortex.
+        self.Crvp_G_Cg = functions.numba_centroid_of_quadrilateral(
+            self.Flrvp_G_Cg,
+            self.Frrvp_G_Cg,
+            self.Blrvp_G_Cg,
+            self.Brrvp_G_Cg,
+        )
 
 
-# NOTE: I'm in the process of refactoring this class.
+# ToDo: Write unit tests for this class.
 class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
+    #ToDo: Update docstring parameters' descriptions and types.
     :param Frhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-right point (in
         geometry axes, relative to the CG). The front-right point is defined as the
         start point of the HorseshoeVortex's front leg, which is also its one finite
@@ -179,35 +301,36 @@ class HorseshoeVortex:
             strength, "strength"
         )
 
-        self.right_leg_origin = (
-            self.Frhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
-        )
-        self.left_leg_termination = (
-            self.Flhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
-        )
+        # ToDo: Consider making these properties.
+        # Save attributes for the back right and back left horseshoe vortex points (
+        # in geometry axes, relative to the CG).
+        self.Brhvp_G_Cg = self.Frhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
+        self.Blhvp_G_Cg = self.Flhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
 
+        # ToDo: Consider making these properties.
         # Initialize LineVortices to represent the HorseshoeVortex's legs.
-        self.right_leg = LineVortex(
-            Slvp_G_Cg=self.right_leg_origin,
+        self.right_leg = _LineVortex(
+            Slvp_G_Cg=self.Brhvp_G_Cg,
             Elvp_G_Cg=self.Frhvp_G_Cg,
             strength=self.strength,
         )
-        self.finite_leg = LineVortex(
+        self.finite_leg = _LineVortex(
             Slvp_G_Cg=self.Frhvp_G_Cg,
             Elvp_G_Cg=self.Flhvp_G_Cg,
             strength=self.strength,
         )
-        self.left_leg = LineVortex(
+        self.left_leg = _LineVortex(
             Slvp_G_Cg=self.Flhvp_G_Cg,
-            Elvp_G_Cg=self.left_leg_termination,
+            Elvp_G_Cg=self.Blhvp_G_Cg,
             strength=self.strength,
         )
 
+    # ToDo: If we make the LineVortices strengths, then we can get rid of this method.
     def update_strength(self, strength):
         """This method updates the strength of this HorseshoeVortex object, and the
         strength of its leg LineVortices.
 
-        :param strength: This is the strength of this vortex, and of its line vortex
+        :param strength: This is the strength of this vortex, and of its LineVortex
             legs. Its units are meters squared per second.
         :type strength: float
         """
@@ -217,15 +340,12 @@ class HorseshoeVortex:
         self.left_leg.strength = strength
 
 
-class RingVortex:
-    """This class is used to contain ring vortices.
+# ToDo: Write unit tests for this class.
+class _LineVortex:
+    """This class is used to contain line vortices.
 
     This class contains the following public methods:
-        update_strength: This method updates the strength of this ring vortex object,
-        and the strength of its four legs' line vortex objects.
-
-        update_position: This method updates the position of the ring vortex, and the
-        positions of all its attributes.
+        None
 
     This class contains the following class attributes:
         None
@@ -234,345 +354,78 @@ class RingVortex:
         This class is not meant to be subclassed.
     """
 
-    def __init__(
-        self,
-        front_left_vertex,
-        front_right_vertex,
-        back_left_vertex,
-        back_right_vertex,
-        strength,
-    ):
+    def __init__(self, Slvp_G_Cg, Elvp_G_Cg, strength):
         """This is the initialization method.
 
-        :param front_left_vertex: 1D array This is a vector_G containing the x, y, and z
-            coordinates of the vortex's front left point. It's a (,3) array with units
-            of meters.
-        :param front_right_vertex: 1D array This is a vector_G containing the x, y, and
-            z coordinates of the vortex's front right point. It's a (,3) array with
-            units of meters.
-        :param back_left_vertex: 1D array This is a vector_G containing the x, y, and z
-            coordinates of the vortex's back left point. It's a (,3) array with units of
-            meters.
-        :param back_right_vertex: 1D array This is a vector_G containing the x, y, and z
-            coordinates of the vortex's back right point. It's a (,3) array with units
-            of meters.
-        :param strength: float This is the strength of the vortex in meters squared per
-            second.
+        Note: This is a private class, so it doesn't validate its parameters.
+        Validate them before passing them in.
+
+        :param Slvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
+            start point (in geometry axes, relative to the CG). Can be a list, tuple, or
+            numpy array of numbers (int or float). Values are converted to floats
+            internally. The units are in meters.
+        :param Elvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
+            end point (in geometry axes, relative to the CG). Can be a list, tuple, or
+            numpy array of numbers (int or float). Values are converted to floats
+            internally. The units are in meters.
+        :param strength: number This is the strength of the LineVortex. It can be a
+            positive int or float and will be converted to a float internally. The units
+            are in meters squared per second.
         """
-        self.front_left_vertex = front_left_vertex
-        self.front_right_vertex = front_right_vertex
-        self.back_left_vertex = back_left_vertex
-        self.back_right_vertex = back_right_vertex
+        self.Slvp_G_Cg = Slvp_G_Cg
+        self.Elvp_G_Cg = Elvp_G_Cg
         self.strength = strength
 
-        # Initialize the line vortices that make up the ring vortex.
-        self.front_leg = LineVortex(
-            origin=self.front_right_vertex,
-            termination=self.front_left_vertex,
-            strength=self.strength,
-        )
-        self.left_leg = LineVortex(
-            origin=self.front_left_vertex,
-            termination=self.back_left_vertex,
-            strength=self.strength,
-        )
-        self.back_leg = LineVortex(
-            origin=self.back_left_vertex,
-            termination=self.back_right_vertex,
-            strength=self.strength,
-        )
-        self.right_leg = LineVortex(
-            origin=self.back_right_vertex,
-            termination=self.front_right_vertex,
-            strength=self.strength,
-        )
-
-        # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = functions.numba_centroid_of_quadrilateral(
-            self.front_left_vertex,
-            self.front_right_vertex,
-            self.back_left_vertex,
-            self.back_right_vertex,
-        )
-
-        # Initialize a variable to hold the age of the ring vortex in seconds.
-        self.age = 0
-
-    def update_strength(self, strength):
-        """This method updates the strength of this ring vortex object, and the strength
-        of its four legs' line vortex objects.
-
-        :param strength: float This is the strength of this vortex, and of its four
-            legs' line vortices. Its units are meters squared per second.
-        :return: None
-        """
-        self.strength = strength
-        self.right_leg.strength = strength
-        self.front_leg.strength = strength
-        self.left_leg.strength = strength
-        self.back_leg.strength = strength
-
-    def update_position(
-        self, front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
-    ):
-        """This method updates the position of the ring vortex, and the positions of all
-        its attributes.
-
-        :param front_left_vertex: 1D array This is the new position of the x, y, and z
-            coordinates of the front left vertex. It is a (,3) array with units of
-            meters.
-        :param front_right_vertex: 1D array This is the new position of the x, y, and z
-            coordinates of the front right vertex. It is a (,3) array with units of
-            meters.
-        :param back_left_vertex: 1D array This is the new position of the x, y, and z
-            coordinates of the back left vertex. It is a (,3) array with units of
-            meters.
-        :param back_right_vertex: 1D array This is the new position of the x, y, and z
-            coordinates of the back right vertex. It is a (,3) array with units of
-            meters.
-        :return: None
-        """
-        self.front_left_vertex = front_left_vertex
-        self.front_right_vertex = front_right_vertex
-        self.back_left_vertex = back_left_vertex
-        self.back_right_vertex = back_right_vertex
-
-        # Initialize the line vortices that make up the ring vortex.
-        self.front_leg = LineVortex(
-            origin=self.front_right_vertex,
-            termination=self.front_left_vertex,
-            strength=self.strength,
-        )
-        self.left_leg = LineVortex(
-            origin=self.front_left_vertex,
-            termination=self.back_left_vertex,
-            strength=self.strength,
-        )
-        self.back_leg = LineVortex(
-            origin=self.back_left_vertex,
-            termination=self.back_right_vertex,
-            strength=self.strength,
-        )
-        self.right_leg = LineVortex(
-            origin=self.back_right_vertex,
-            termination=self.front_right_vertex,
-            strength=self.strength,
-        )
-
-        # Initialize a variable to hold the centroid of the ring vortex.
-        self.center = functions.numba_centroid_of_quadrilateral(
-            self.front_left_vertex,
-            self.front_right_vertex,
-            self.back_left_vertex,
-            self.back_right_vertex,
-        )
+        # ToDo: Consider make these properties.
+        # Initialize variables to hold the vector from the LineVortex's start to end
+        # point (in geometry axes), and its center point (in geometry axes, relative
+        # to the CG).
+        self.vector_G = self.Elvp_G_Cg - self.Slvp_G_Cg
+        self.Clvp_G_Cg = self.Slvp_G_Cg + 0.5 * self.vector_G
 
 
-@njit(cache=True, fastmath=False)
-def collapsed_velocities_from_horseshoe_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
-    """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point, it finds the cumulative induced velocity due to
-    all the horseshoe vortices.
-
-    Note: This function's performance has been highly optimized for unsteady
-    simulations via Numba. While using Numba dramatically increases unsteady
-    simulation performance, it does cause a performance drop for the less intense
-    steady simulations.
-
-    :param points: 2D array of floats
-        This variable is an array of shape (N x 3), where N is the number of points.
-        Each row contains the x, y, and z float coordinates of that point's position
-        in meters.
-    :param back_right_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's back right vertex's position in meters.
-    :param front_right_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front right vertex's position in meters.
-    :param front_left_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front left vertex's position in meters.
-    :param back_left_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front left vertex's position in meters.
-    :param strengths: 1D array of floats
-        This variable is an array of shape (, M), where M is the number of horseshoe
-        vortices. Each holds the strength of that horseshoe vortex in meters squared
-        per second.
-    :param ages: 1D array of floats, optional
-        This variable is an array of shape (, M), where M is the number of line
-        vortices. Each position contains the age of that horseshoe vortex in seconds.
-        This is only relevant for vortices that have been shed into the wake. The
-        default value is None. If the age of a specific vortex is 0.0 seconds,
-        then the vortex core radius is set to 0.0 meters.
-    :param nu: float, optional
-        This variable is a float that represents the kinematic viscosity of the fluid
-        in meters squared per second. The default value is 0.0 meters squared per
-        second.
-    :return velocities: 2D array of floats
-        This is an array of shape (N x 3), and it holds the cumulative induced
-        velocity at each of the N points due to all the horseshoe vortices. The units
-        are meters per second.
-    """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
-    induced_velocities = np.zeros((points.shape[0], 3))
-
-    # Get the velocity induced by each leg of the ring vortex.
-    for i in range(3):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
-    return induced_velocities
-
-
-@njit(cache=True, fastmath=False)
-def expanded_velocities_from_horseshoe_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
-    strengths,
-    ages=None,
-    nu=0.0,
-):
-    """This function takes in a group of points, and the attributes of a group of
-    horseshoe vortices. At every point, it finds the induced velocity due to each
-    horseshoe vortex.
-
-    Note: This function's performance has been highly optimized for unsteady
-    simulations via Numba. While using Numba dramatically increases unsteady
-    simulation performance, it does cause a performance drop for the less intense
-    steady simulations.
-
-    :param points: 2D array of floats
-        This variable is an array of shape (N x 3), where N is the number of points.
-        Each row contains the x, y, and z float coordinates of that point's position
-        in meters.
-    :param back_right_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's back right vertex's position in meters.
-    :param front_right_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front right vertex's position in meters.
-    :param front_left_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front left vertex's position in meters.
-    :param back_left_vortex_vertices: 2D array of floats
-        This variable is an array of shape (M x 3), where M is the number of
-        horseshoe vortices. Each row contains the x, y, and z float coordinates of
-        that horseshoe vortex's front left vertex's position in meters.
-    :param strengths: 1D array of floats
-        This variable is an array of shape (, M), where M is the number of horseshoe
-        vortices. Each holds the strength of that horseshoe vortex in meters squared
-        per second.
-    :param ages: 1D array of floats, optional
-        This variable is an array of shape (, M), where M is the number of line
-        vortices. Each position contains the age of that horseshoe vortex in seconds.
-        This is only relevant for vortices that have been shed into the wake. The
-        default value is None. If the age of a specific vortex is 0.0 seconds,
-        then the vortex core radius is set to 0.0 meters.
-    :param nu: float, optional
-        This variable is a float that represents the kinematic viscosity of the fluid
-        in meters squared per second. The default value is 0.0 meters squared per
-        second.
-    :return velocities: 2D array of floats
-        This is an array of shape (N x M x 3), where each row/column pair identifies
-        the velocity induced at one point by one of the horseshoe vortices. The units
-        are meters per second.
-    """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-    ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-    ]
-    induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
-
-    # Get the velocity induced by each leg of the ring vortex.
-    for i in range(3):
-        induced_velocities += expanded_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
-            strengths=strengths,
-            ages=ages,
-            nu=nu,
-        )
-    return induced_velocities
-
-
+# ToDo: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
+    stackP_G_Cg,
+    stackBrrvp_G_Cg,
+    stackFrrvp_G_Cg,
+    stackFlrvp_G_Cg,
+    stackBlrvp_G_Cg,
     strengths,
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of ring
-    vortices. At every point, it finds the cumulative induced velocity due to all the
-    ring vortices.
+    """This function takes in a group of points, and the attributes of a group of
+    RingVortices. At every point, it finds the cumulative induced velocity due to all
+    the RingVortices.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    :param points: 2D array of floats
+    #ToDo: Update docstring parameters' descriptions and types.
+    :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
         in meters.
-    :param back_right_vortex_vertices: 2D array of floats
+    :param stackBrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's back right vertex's position in meters.
-    :param front_right_vortex_vertices: 2D array of floats
+    :param stackFrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front right vertex's position in meters.
-    :param front_left_vortex_vertices: 2D array of floats
+    :param stackFlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
-    :param back_left_vortex_vertices: 2D array of floats
+    :param stackBlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
@@ -595,70 +448,76 @@ def collapsed_velocities_from_ring_vortices(
         velocity at each of the N points due to all the ring vortices. The units are
         meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
+    listStackSlvp_G_Cg = [
+        stackBrrvp_G_Cg,
+        stackFrrvp_G_Cg,
+        stackFlrvp_G_Cg,
+        stackBlrvp_G_Cg,
     ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-        back_right_vortex_vertices,
+    listStackElvp_G_Cg = [
+        stackFrrvp_G_Cg,
+        stackFlrvp_G_Cg,
+        stackBlrvp_G_Cg,
+        stackBrrvp_G_Cg,
     ]
-    induced_velocities = np.zeros((points.shape[0], 3))
 
-    # Get the velocity induced by each leg of the ring vortex.
+    stackVInd_G__E = np.zeros((stackP_G_Cg.shape[0], 3))
+
+    # Get the velocity induced by each leg of the RingVortex.
     for i in range(4):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
+        stackVInd_G__E += _collapsed_velocities_from_line_vortices(
+            stackP_G_Cg=stackP_G_Cg,
+            stackSlvp_G_Cg=listStackSlvp_G_Cg[i],
+            stackElvp_G_Cg=listStackElvp_G_Cg[i],
             strengths=strengths,
             ages=ages,
             nu=nu,
         )
-    return induced_velocities
+    return stackVInd_G__E
 
 
+# ToDo: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices_chordwise_segments(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
+    stackP_G_Cg,
+    stackBrrvp_G_Cg,
+    stackFrrvp_G_Cg,
+    stackFlrvp_G_Cg,
+    stackBlrvp_G_Cg,
     strengths,
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of ring
-    vortices. At every point, it finds the cumulative induced velocity due to all the
-    ring vortices' chordwise segments.
+    """This function takes in a group of points, and the attributes of a group of
+    RingVortices. At every point, it finds the cumulative induced velocity due to all
+    the RingVortices' chordwise segments.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    :param points: 2D array of floats
+    #ToDo: Update docstring parameters' descriptions and types.
+    :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
         in meters.
-    :param back_right_vortex_vertices: 2D array of floats
+    :param stackBrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's back right vertex's position in meters.
-    :param front_right_vortex_vertices: 2D array of floats
+    :param stackFrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front right vertex's position in meters.
-    :param front_left_vortex_vertices: 2D array of floats
+    :param stackFlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
-    :param back_left_vortex_vertices: 2D array of floats
+    :param stackBlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
@@ -681,65 +540,71 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         velocity at each of the N points due to all the ring vortices' spanwise
         segments. The units are meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_left_vortex_vertices,
+    listStackSlvp_G_Cg = [
+        stackBrrvp_G_Cg,
+        stackFlrvp_G_Cg,
     ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        back_left_vortex_vertices,
+    listStackElvp_G_Cg = [
+        stackFrrvp_G_Cg,
+        stackBlrvp_G_Cg,
     ]
-    induced_velocities = np.zeros((points.shape[0], 3))
 
-    # Get the velocity induced by each leg of the ring vortex.
+    stackVInd_G__E = np.zeros((stackP_G_Cg.shape[0], 3))
+
+    # Get the velocity induced by each leg of the RingVortex.
     for i in range(2):
-        induced_velocities += collapsed_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
+        stackVInd_G__E += _collapsed_velocities_from_line_vortices(
+            stackP_G_Cg=stackP_G_Cg,
+            stackSlvp_G_Cg=listStackSlvp_G_Cg[i],
+            stackElvp_G_Cg=listStackElvp_G_Cg[i],
             strengths=strengths,
             ages=ages,
             nu=nu,
         )
-    return induced_velocities
+    return stackVInd_G__E
 
 
+# ToDo: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
-    points,
-    back_right_vortex_vertices,
-    front_right_vortex_vertices,
-    front_left_vortex_vertices,
-    back_left_vortex_vertices,
+    stackP_G_Cg,
+    stackBrrvp_G_Cg,
+    stackFrrvp_G_Cg,
+    stackFlrvp_G_Cg,
+    stackBlrvp_G_Cg,
     strengths,
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of ring
-    vortices. At every point, it finds the induced velocity due to each ring vortex.
+    """This function takes in a group of points, and the attributes of a group of
+    RingVortices. At every point, it finds the induced velocity due to each RingVortex.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
 
     Note: This function's performance has been highly optimized for unsteady
     simulations via Numba. While using Numba dramatically increases unsteady
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    :param points: 2D array of floats
+    #ToDo: Update docstring parameters' descriptions and types.
+    :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
         in meters.
-    :param back_right_vortex_vertices: 2D array of floats
+    :param stackBrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's back right vertex's position in meters.
-    :param front_right_vortex_vertices: 2D array of floats
+    :param stackFrrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front right vertex's position in meters.
-    :param front_left_vortex_vertices: 2D array of floats
+    :param stackFlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
-    :param back_left_vortex_vertices: 2D array of floats
+    :param stackBlrvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of ring
         vortices. Each row contains the x, y, and z float coordinates of that ring
         vortex's front left vertex's position in meters.
@@ -762,45 +627,311 @@ def expanded_velocities_from_ring_vortices(
         the velocity induced at one point by one of the ring vortices. The units are
         meters per second.
     """
-    origins_list = [
-        back_right_vortex_vertices,
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
+    listStackSlvp_G_Cg = [
+        stackBrrvp_G_Cg,
+        stackFrrvp_G_Cg,
+        stackFlrvp_G_Cg,
+        stackBlrvp_G_Cg,
     ]
-    terminations_list = [
-        front_right_vortex_vertices,
-        front_left_vortex_vertices,
-        back_left_vortex_vertices,
-        back_right_vortex_vertices,
+    listStackElvp_G_Cg = [
+        stackFrrvp_G_Cg,
+        stackFlrvp_G_Cg,
+        stackBlrvp_G_Cg,
+        stackBrrvp_G_Cg,
     ]
-    induced_velocities = np.zeros((points.shape[0], strengths.shape[0], 3))
 
-    # Get the velocity induced by each leg of the ring vortex.
+    gridVInd_G__E = np.zeros((stackP_G_Cg.shape[0], strengths.shape[0], 3))
+
+    # Get the velocity induced by each leg of the RingVortex.
     for i in range(4):
-        induced_velocities += expanded_velocities_from_line_vortices(
-            points=points,
-            origins=origins_list[i],
-            terminations=terminations_list[i],
+        gridVInd_G__E += _expanded_velocities_from_line_vortices(
+            stackP_G_Cg=stackP_G_Cg,
+            stackSlvp_G_Cg=listStackSlvp_G_Cg[i],
+            stackElvp_G_Cg=listStackElvp_G_Cg[i],
             strengths=strengths,
             ages=ages,
             nu=nu,
         )
-    return induced_velocities
+    return gridVInd_G__E
 
 
+# ToDo: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
-def collapsed_velocities_from_line_vortices(
-    points,
-    origins,
-    terminations,
+def collapsed_velocities_from_horseshoe_vortices(
+    stackP_G_Cg,
+    stackBrhvp_G_Cg,
+    stackFrhvp_G_Cg,
+    stackFlhvp_G_Cg,
+    stackBlhvp_G_Cg,
     strengths,
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of line
-    vortices. At every point, it finds the cumulative induced velocity due to all the
-    line vortices.
+    """This function takes in a group of points, and the attributes of a group of
+    HorseshoeVortices. At every point, it finds the cumulative induced velocity due to
+    all the HorseshoeVortices.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
+
+    #ToDo: Update docstring parameters' descriptions and types.
+    :param stackP_G_Cg: 2D array of floats
+        This variable is an array of shape (N x 3), where N is the number of points.
+        Each row contains the x, y, and z float coordinates of that point's position
+        in meters.
+    :param stackBrhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's back right vertex's position in meters.
+    :param stackFrhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front right vertex's position in meters.
+    :param stackFlhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front left vertex's position in meters.
+    :param stackBlhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front left vertex's position in meters.
+    :param strengths: 1D array of floats
+        This variable is an array of shape (, M), where M is the number of horseshoe
+        vortices. Each holds the strength of that horseshoe vortex in meters squared
+        per second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that horseshoe vortex in seconds.
+        This is only relevant for vortices that have been shed into the wake. The
+        default value is None. If the age of a specific vortex is 0.0 seconds,
+        then the vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x 3), and it holds the cumulative induced
+        velocity at each of the N points due to all the horseshoe vortices. The units
+        are meters per second.
+    """
+    listStackSlvp_G_Cg = [
+        stackBrhvp_G_Cg,
+        stackFrhvp_G_Cg,
+        stackFlhvp_G_Cg,
+    ]
+    listStackElvp_G_Cg = [
+        stackFrhvp_G_Cg,
+        stackFlhvp_G_Cg,
+        stackBlhvp_G_Cg,
+    ]
+
+    stackVInd_G__E = np.zeros((stackP_G_Cg.shape[0], 3))
+
+    # Get the velocity induced by each leg of the RingVortex.
+    for i in range(3):
+        stackVInd_G__E += _collapsed_velocities_from_line_vortices(
+            stackP_G_Cg=stackP_G_Cg,
+            stackSlvp_G_Cg=listStackSlvp_G_Cg[i],
+            stackElvp_G_Cg=listStackElvp_G_Cg[i],
+            strengths=strengths,
+            ages=ages,
+            nu=nu,
+        )
+    return stackVInd_G__E
+
+
+# ToDo: Write unit tests for this function.
+@njit(cache=True, fastmath=False)
+def expanded_velocities_from_horseshoe_vortices(
+    stackP_G_Cg,
+    stackBrhvp_G_Cg,
+    stackFrhvp_G_Cg,
+    stackFlhvp_G_Cg,
+    stackBlhvp_G_Cg,
+    strengths,
+    ages=None,
+    nu=0.0,
+):
+    """This function takes in a group of points, and the attributes of a group of
+    HorseshoeVortices. At every point, it finds the induced velocity due to each
+    HorseshoeVortex.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
+
+    Note: This function's performance has been highly optimized for unsteady
+    simulations via Numba. While using Numba dramatically increases unsteady
+    simulation performance, it does cause a performance drop for the less intense
+    steady simulations.
+
+    #ToDo: Update docstring parameters' descriptions and types.
+    :param stackP_G_Cg: 2D array of floats
+        This variable is an array of shape (N x 3), where N is the number of points.
+        Each row contains the x, y, and z float coordinates of that point's position
+        in meters.
+    :param stackBrhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's back right vertex's position in meters.
+    :param stackFrhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front right vertex's position in meters.
+    :param stackFlhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front left vertex's position in meters.
+    :param stackBlhvp_G_Cg: 2D array of floats
+        This variable is an array of shape (M x 3), where M is the number of
+        horseshoe vortices. Each row contains the x, y, and z float coordinates of
+        that horseshoe vortex's front left vertex's position in meters.
+    :param strengths: 1D array of floats
+        This variable is an array of shape (, M), where M is the number of horseshoe
+        vortices. Each holds the strength of that horseshoe vortex in meters squared
+        per second.
+    :param ages: 1D array of floats, optional
+        This variable is an array of shape (, M), where M is the number of line
+        vortices. Each position contains the age of that horseshoe vortex in seconds.
+        This is only relevant for vortices that have been shed into the wake. The
+        default value is None. If the age of a specific vortex is 0.0 seconds,
+        then the vortex core radius is set to 0.0 meters.
+    :param nu: float, optional
+        This variable is a float that represents the kinematic viscosity of the fluid
+        in meters squared per second. The default value is 0.0 meters squared per
+        second.
+    :return velocities: 2D array of floats
+        This is an array of shape (N x M x 3), where each row/column pair identifies
+        the velocity induced at one point by one of the horseshoe vortices. The units
+        are meters per second.
+    """
+    listStackSlvp_G_Cg = [
+        stackBrhvp_G_Cg,
+        stackFrhvp_G_Cg,
+        stackFlhvp_G_Cg,
+    ]
+    listStackElvp_G_Cg = [
+        stackFrhvp_G_Cg,
+        stackFlhvp_G_Cg,
+        stackBlhvp_G_Cg,
+    ]
+
+    gridVInd_G__E = np.zeros((stackP_G_Cg.shape[0], strengths.shape[0], 3))
+
+    # Get the velocity induced by each leg of the RingVortex.
+    for i in range(3):
+        gridVInd_G__E += _expanded_velocities_from_line_vortices(
+            stackP_G_Cg=stackP_G_Cg,
+            stackSlvp_G_Cg=listStackSlvp_G_Cg[i],
+            stackElvp_G_Cg=listStackElvp_G_Cg[i],
+            strengths=strengths,
+            ages=ages,
+            nu=nu,
+        )
+    return gridVInd_G__E
+
+
+# ToDo: Write unit tests for this function.
+@njit(cache=True, fastmath=False)
+def _collapsed_velocities_from_line_vortices(
+    stackP_G_Cg,
+    stackSlvp_G_Cg,
+    stackElvp_G_Cg,
+    strengths,
+    ages=None,
+    nu=0.0,
+):
+    """This function takes in a group of points, and the attributes of a group of
+    LineVortices. At every point, it finds the cumulative induced velocity due to all
+    the LineVortices.
+
+
+    Example Usage (single point case):
+    ------------------------------------------------------------------------------------
+
+    Returns vIndP_G__E: the velocity induced at P_G_Cg, a point on the body (in
+    geometry axes, relative to the CG), due solely to the supplied LineVortex.
+    vIndP_G__E is in geometry axes, and observed from the Earth frame. The velocity
+    returned is as observed from the Earth frame because the Biot-Savart law
+    calculates the velocity induced by the LineVortex, as observed from an inertial
+    frame where the induced velocity approaches zero as distance from the LineVortex
+    approaches infinity. We choose this frame to be the inertial Earth frame.
+
+    To obtain the apparent velocity "felt" by the point P_G_Cg:
+
+    1.) Calculate flow velocity at P (in geometry axes, observed from the Earth
+    frame), by summing the velocity induced by all LineVortices:
+
+        vFlowP_G__E = ∑[vIndP_G__E(P_G_Cg, Slvp_G_Cg, Elvp_G_Cg, strength)]
+
+    2.) Find the material-point velocity at P (in geometry axes, observed from the
+    Earth frame):
+
+        vMatP_G__E = uBodyCg_G__E + omegaBodyCg_G__E x P_G_Cg + vDeformP_G__E
+
+    3.) Combine for apparent ("felt") velocity at P (in geometry axes, observed from
+    the Earth frame):
+
+        vFeltP_G__E = vFlowP_G__E - vMatP_G__E
+
+    Conventions:
+
+    - All vectors are 3-vectors expressed in geometry axes.
+
+    - "x" denotes the 3D cross product.
+
+    Variables (inputs, geometry, and constants)
+
+    - G: The Airplane's geometry axis system (geometry axes), with basis directions
+    +x = aft, +y = right, and +z = up.
+
+    - Cg: The Airplane's CG, which serves as the reference point used for relative
+    positions.
+
+    - E: Inertial Earth reference frame where the observed induced velocity from the
+    LineVortex approaches zero as distance from the LineVortex approaches infinity.
+
+    - Slvp_G_Cg: start point of the specified LineVortex segment (in geometry axes,
+    relative to the CG) (m).
+
+    - Elvp_G_Cg: end point of the specified LineVortex segment (in geometry axes,
+    relative to the CG) (m).
+
+    - P_G_Cg: evaluation point on the body (in geometry axes, relative to the CG) (
+    m). It is also where vFlowP_G__E, vMatP_G__E, vFeltP_G__E are evaluated.
+
+    - strength: LineVortex strength (circulation). It is a frame-independent scalar
+    with units m^2/s.
+
+    - LineVortex: a finite straight vortex segment defined by Slvp_G_Cg, Elvp_G_Cg,
+    and strength (circulation).
+
+    Velocities (all in geometry axes, observed from the Earth frame)
+
+    - vIndP_G__E: induced velocity at P_G_Cg due only to the specified LineVortex (m/s).
+
+    - vFlowP_G__E: total flow velocity at P_G_Cg (sum of all LineVortices'
+    vIndP_G__E) (m/s). We assume that the external fluid is quiescent (no wind or
+    current), so this is only composed of the induced velocities.
+
+    - uBodyCg_G__E: rigid translational velocity of the body at the Cg (m/s).
+
+    - omegaBodyCg_G__E: rigid angular velocity of the body (about the Cg) (rad/s).
+
+    - vDeformP_G__E: additional local velocity of point P due to deformation/flapping
+    relative to the body’s rigid motion (m/s).
+
+    - vMatP_G__E: inertial velocity of the material point P (rigid + deform) =
+    uBodyCg_G__E + omegaBodyCg_G__E x P_G_Cg + vDeformP_G__E (m/s).
+
+    - vFeltP_G__E: apparent velocity "felt" by the material point P, equal to
+    vFlowP_G__E - vMatP_G__E (m/s).
+
+    ------------------------------------------------------------------------------------
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -816,15 +947,16 @@ def collapsed_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    :param points: 2D array of floats
+    # ToDo: Update docstring parameters' types and descriptions.
+    :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
         in meters.
-    :param origins: 2D array of floats
+    :param stackSlvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
         vortex's Slvp_G_Cg's position in meters.
-    :param terminations: 2D array of floats
+    :param stackElvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
         vortex's Elvp_G_Cg's position in meters.
@@ -847,90 +979,96 @@ def collapsed_velocities_from_line_vortices(
         velocity at each of the N points due to all the line vortices. The units are
         meters per second.
     """
-    num_vortices = origins.shape[0]
-    num_points = points.shape[0]
+    num_vortices = stackSlvp_G_Cg.shape[0]
+    num_points = stackP_G_Cg.shape[0]
 
-    # Initialize an empty array, which we will fill with the induced velocities.
-    velocities = np.zeros((num_points, 3))
+    # Initialize an empty array, which we will fill with the induced velocities (in
+    # geometry axes, observed from the Earth frame).
+    stackVInd_G__E = np.zeros((num_points, 3))
 
-    # If the user didn't specify any ages, set the age of each vortex to 0.0 seconds.
+    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
 
     for vortex_id in range(num_vortices):
-        origin = origins[vortex_id]
-        termination = terminations[vortex_id]
+        Slvp_G_Cg = stackSlvp_G_Cg[vortex_id]
+        Elvp_G_Cg = stackElvp_G_Cg[vortex_id]
         strength = strengths[vortex_id]
         age = ages[vortex_id]
 
-        # Calculate the radius of the vortex's core. If the age is 0.0 seconds,
+        # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
         # this will evaluate to be 0.0 meters.
         r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
 
-        # The r_0 vector_G goes from the line vortex's Slvp_G_Cg to its Elvp_G_Cg.
-        r_0_x = termination[0] - origin[0]
-        r_0_y = termination[1] - origin[1]
-        r_0_z = termination[2] - origin[2]
+        # The r0_G vector goes from the LineVortex's start point to its end point (in
+        # geometry axes).
+        r0X_G = Elvp_G_Cg[0] - Slvp_G_Cg[0]
+        r0Y_G = Elvp_G_Cg[1] - Slvp_G_Cg[1]
+        r0Z_G = Elvp_G_Cg[2] - Slvp_G_Cg[2]
 
-        # Find the r_0 vector_G's length.
-        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
+        # Find r0_G's length.
+        r0 = math.sqrt(r0X_G**2 + r0Y_G**2 + r0Z_G**2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0**2 * r_c**2
+        c_2 = r0**2 * r_c**2
 
         for point_id in range(num_points):
-            point = points[point_id]
+            P_G_Cg = stackP_G_Cg[point_id]
 
-            # The r_1 vector_G goes from the point to the line vortex's Slvp_G_Cg.
-            r_1_x = origin[0] - point[0]
-            r_1_y = origin[1] - point[1]
-            r_1_z = origin[2] - point[2]
+            # The r1_G vector goes from P_G_Cg to the LineVortex's start point (in
+            # geometry axes).
+            r1X_G = Slvp_G_Cg[0] - P_G_Cg[0]
+            r1Y_G = Slvp_G_Cg[1] - P_G_Cg[1]
+            r1Z_G = Slvp_G_Cg[2] - P_G_Cg[2]
 
-            # The r_2 vector_G goes from the point to the line vortex's Elvp_G_Cg.
-            r_2_x = termination[0] - point[0]
-            r_2_y = termination[1] - point[1]
-            r_2_z = termination[2] - point[2]
+            # The r2_G vector goes from P_G_Cg to the LineVortex's end point (in
+            # geometry axes).
+            r2X_G = Elvp_G_Cg[0] - P_G_Cg[0]
+            r2Y_G = Elvp_G_Cg[1] - P_G_Cg[1]
+            r2Z_G = Elvp_G_Cg[2] - P_G_Cg[2]
 
-            # The r_3 vector_G is the cross product of the r_1 and r_2 vectors.
-            r_3_x = r_1_y * r_2_z - r_1_z * r_2_y
-            r_3_y = r_1_z * r_2_x - r_1_x * r_2_z
-            r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
+            # The r3_G vector is the cross product of r1_G and r2_G (in geometry axes).
+            r3X_G = r1Y_G * r2Z_G - r1Z_G * r2Y_G
+            r3Y_G = r1Z_G * r2X_G - r1X_G * r2Z_G
+            r3Z_G = r1X_G * r2Y_G - r1Y_G * r2X_G
 
-            # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
-            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
-            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
+            # Find the lengths of r1_G, r2_G, and r3_G.
+            r1 = math.sqrt(r1X_G**2 + r1Y_G**2 + r1Z_G**2)
+            r2 = math.sqrt(r2X_G**2 + r2Y_G**2 + r2Z_G**2)
+            r3 = math.sqrt(r3X_G**2 + r3Y_G**2 + r3Z_G**2)
 
-            c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
+            c_3 = r1X_G * r2X_G + r1Y_G * r2Y_G + r1Z_G * r2Z_G
 
-            # If part of the vortex is so close to the point that they are touching (
-            # within machine epsilon), there is a removable discontinuity. In this
+            # If part of the LineVortex is so close to P_G_Cg that they are touching
+            # (within machine epsilon), there is a removable discontinuity. In this
             # case, continue to the next point because there is no velocity induced
-            # by the current vortex at this point.
-            if r_1 < eps or r_2 < eps or r_3**2 < eps:
+            # by the current LineVortex at this point.
+            if r1 < eps or r2 < eps or r3**2 < eps:
                 continue
             else:
-                c_4 = (
-                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
-                )
-                velocities[point_id, 0] += c_4 * r_3_x
-                velocities[point_id, 1] += c_4 * r_3_y
-                velocities[point_id, 2] += c_4 * r_3_z
-
-    return velocities
+                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
+                stackVInd_G__E[point_id, 0] += c_4 * r3X_G
+                stackVInd_G__E[point_id, 1] += c_4 * r3Y_G
+                stackVInd_G__E[point_id, 2] += c_4 * r3Z_G
+    return stackVInd_G__E
 
 
+# ToDo: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
-def expanded_velocities_from_line_vortices(
-    points,
-    origins,
-    terminations,
+def _expanded_velocities_from_line_vortices(
+    stackP_G_Cg,
+    stackSlvp_G_Cg,
+    stackElvp_G_Cg,
     strengths,
     ages=None,
     nu=0.0,
 ):
-    """This function takes in a group of points, and the attributes of a group of line
-    vortices. At every point, it finds the induced velocity due to each line vortex.
+    """This function takes in a group of points, and the attributes of a group of
+    LineVortices. At every point, it finds the induced velocity due to each LineVortex.
+
+    Note: See the docstring for collapsed_velocities_from_line_vortices for
+    information on usage.
 
     Citation: The equations in this function are from "Extended Unsteady
     Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016)
@@ -946,15 +1084,16 @@ def expanded_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    :param points: 2D array of floats
+     # ToDo: Update docstring parameters' types and descriptions.
+    :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
         in meters.
-    :param origins: 2D array of floats
+    :param stackSlvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
         vortex's Slvp_G_Cg's position in meters.
-    :param terminations: 2D array of floats
+    :param stackElvp_G_Cg: 2D array of floats
         This variable is an array of shape (M x 3), where M is the number of line
         vortices. Each row contains the x, y, and z float coordinates of that line
         vortex's Elvp_G_Cg's position in meters.
@@ -977,74 +1116,76 @@ def expanded_velocities_from_line_vortices(
         the velocity induced at one point by one of the line vortices. The units are
         meters per second.
     """
-    num_vortices = origins.shape[0]
-    num_points = points.shape[0]
+    num_vortices = stackSlvp_G_Cg.shape[0]
+    num_points = stackP_G_Cg.shape[0]
 
-    # Initialize an empty array, which we will fill with the induced velocities.
-    velocities = np.zeros((num_points, num_vortices, 3))
+    # Initialize an empty array, which we will fill with the induced velocities (in
+    # geometry axes, observed from the Earth frame).
+    gridVInd_G__E = np.zeros((num_points, num_vortices, 3))
 
-    # If the user didn't specify any ages, set the age of each vortex to 0.0 seconds.
+    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
 
     for vortex_id in range(num_vortices):
-        origin = origins[vortex_id]
-        termination = terminations[vortex_id]
+        Slvp_G_Cg = stackSlvp_G_Cg[vortex_id]
+        Elvp_G_Cg = stackElvp_G_Cg[vortex_id]
         strength = strengths[vortex_id]
         age = ages[vortex_id]
 
-        # Calculate the radius of the vortex's core. If the age is 0.0 seconds,
+        # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
         # this will evaluate to be 0.0 meters.
         r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
 
-        # The r_0 vector_G goes from the line vortex's Slvp_G_Cg to its Elvp_G_Cg.
-        r_0_x = termination[0] - origin[0]
-        r_0_y = termination[1] - origin[1]
-        r_0_z = termination[2] - origin[2]
+        # The r0_G vector goes from the LineVortex's start point to its end point (in
+        # geometry axes).
+        r0X_G = Elvp_G_Cg[0] - Slvp_G_Cg[0]
+        r0Y_G = Elvp_G_Cg[1] - Slvp_G_Cg[1]
+        r0Z_G = Elvp_G_Cg[2] - Slvp_G_Cg[2]
 
-        # Find the r_0 vector_G's length.
-        r_0 = math.sqrt(r_0_x**2 + r_0_y**2 + r_0_z**2)
+        # Find r0_G's length.
+        r0 = math.sqrt(r0X_G**2 + r0Y_G**2 + r0Z_G**2)
 
         c_1 = strength / (4 * math.pi)
-        c_2 = r_0**2 * r_c**2
+        c_2 = r0**2 * r_c**2
 
         for point_id in range(num_points):
-            point = points[point_id]
+            P_G_Cg = stackP_G_Cg[point_id]
 
-            # The r_1 vector_G goes from the point to the line vortex's Slvp_G_Cg.
-            r_1_x = origin[0] - point[0]
-            r_1_y = origin[1] - point[1]
-            r_1_z = origin[2] - point[2]
+            # The r1_G vector goes from P_G_Cg to the LineVortex's start point (in
+            # geometry axes).
+            r1X_G = Slvp_G_Cg[0] - P_G_Cg[0]
+            r1Y_G = Slvp_G_Cg[1] - P_G_Cg[1]
+            r1Z_G = Slvp_G_Cg[2] - P_G_Cg[2]
 
-            # The r_2 vector_G goes from the point to the line vortex's Elvp_G_Cg.
-            r_2_x = termination[0] - point[0]
-            r_2_y = termination[1] - point[1]
-            r_2_z = termination[2] - point[2]
+            # The r2_G vector goes from P_G_Cg to the LineVortex's end point (in
+            # geometry axes).
+            r2X_G = Elvp_G_Cg[0] - P_G_Cg[0]
+            r2Y_G = Elvp_G_Cg[1] - P_G_Cg[1]
+            r2Z_G = Elvp_G_Cg[2] - P_G_Cg[2]
 
-            # The r_3 vector_G is the cross product of the r_1 and r_2 vectors.
-            r_3_x = r_1_y * r_2_z - r_1_z * r_2_y
-            r_3_y = r_1_z * r_2_x - r_1_x * r_2_z
-            r_3_z = r_1_x * r_2_y - r_1_y * r_2_x
+            # The r3_G vector is the cross product of r1_G and r2_G (in geometry axes).
+            r3X_G = r1Y_G * r2Z_G - r1Z_G * r2Y_G
+            r3Y_G = r1Z_G * r2X_G - r1X_G * r2Z_G
+            r3Z_G = r1X_G * r2Y_G - r1Y_G * r2X_G
 
-            # Find the r_1, r_2, and r_3 vectors' lengths.
-            r_1 = math.sqrt(r_1_x**2 + r_1_y**2 + r_1_z**2)
-            r_2 = math.sqrt(r_2_x**2 + r_2_y**2 + r_2_z**2)
-            r_3 = math.sqrt(r_3_x**2 + r_3_y**2 + r_3_z**2)
+            # Find the lengths of r1_G, r2_G, and r3_G.
+            r1 = math.sqrt(r1X_G**2 + r1Y_G**2 + r1Z_G**2)
+            r2 = math.sqrt(r2X_G**2 + r2Y_G**2 + r2Z_G**2)
+            r3 = math.sqrt(r3X_G**2 + r3Y_G**2 + r3Z_G**2)
 
-            c_3 = r_1_x * r_2_x + r_1_y * r_2_y + r_1_z * r_2_z
+            c_3 = r1X_G * r2X_G + r1Y_G * r2Y_G + r1Z_G * r2Z_G
 
-            # If part of the vortex is so close to the point that they are touching (
-            # within machine epsilon), there is a removable discontinuity. In this
-            # case, set the velocity components to their true values, which are 0.0
-            # meters per second.
-            if r_1 < eps or r_2 < eps or r_3**2 < eps:
+            # If part of the LineVortex is so close to P_G_Cg that they are touching
+            # (within machine epsilon), there is a removable discontinuity. In this
+            # case, continue to the next point because there is no velocity induced
+            # by the current LineVortex at this point.
+            if r1 < eps or r2 < eps or r3**2 < eps:
                 continue
             else:
-                c_4 = (
-                    c_1 * (r_1 + r_2) * (r_1 * r_2 - c_3) / (r_1 * r_2 * (r_3**2 + c_2))
-                )
-                velocities[point_id, vortex_id, 0] = c_4 * r_3_x
-                velocities[point_id, vortex_id, 1] = c_4 * r_3_y
-                velocities[point_id, vortex_id, 2] = c_4 * r_3_z
-
-    return velocities
+                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
+                gridVInd_G__E[point_id, vortex_id, 0] = c_4 * r3X_G
+                gridVInd_G__E[point_id, vortex_id, 1] = c_4 * r3Y_G
+                gridVInd_G__E[point_id, vortex_id, 2] = c_4 * r3Z_G
+    return gridVInd_G__E

@@ -135,11 +135,15 @@ The standard abbreviations and names are given below for reference. See the sect
 
 * Caveat: We assume a still airmass, so the freestream velocity observed from the body frame is solely due to the Airplane's velocity observed from the Earth frame.  
 * Basis directions  
-  1. +x: In line with (parallel, not anti-parallel, to) Airplane's velocity observed from the Earth frame  
+  1. +x: In line with (parallel, not anti-parallel, to) Airplane's velocity observed from the Earth frame
   2. +y: In the direction perpendicular to first and third components\*  
   3. +z: In the direction perpendicular to first and second components\*  
-* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions, as defined in Earth axes. There is exactly one pair of angles, which we'll call α and β, that we can use to perform a y-z series of **extrinsic** rotations to construct wind axes from geometry axes that will exactly align x-axis with Airplane's velocity observed from the Earth frame. This series of rotations also constructs the wind axes +y and +z basis directions.  
-The two angles α and β are referred to as the angle of attack and the angle of sideslip. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: in the simplest scenarios, a positive α corresponds to the Airplane's nose pointing above its direction of travel, and a positive β to its nose pointing to the left of its direction of travel. However, this can seem a bit cyclical, and it obscures some subtlety in their definition: defining α and β based on the convention described previously, allows us to define lift as the aerodynamic force's component in the wind axes' z-axis, thereby making lift independent of sideslip.  
+* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions. There is exactly one pair of angles, which we'll call α and β, that we can use to perform a y-z extrinsic series (or, equivalently, a z-y' intrinsic series) of rotations to construct wind axes from body axes that will exactly align the x-axis with Airplane's velocity observed from the Earth frame. This series of rotations also constructs the wind axes +y and +z basis directions.  
+The two angles α and β are known as the angle of attack and the angle of sideslip. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: in the simplest scenarios, a positive α corresponds to the Airplane's nose pointing above its direction of travel (relative wind coming from below the aircraft), and a positive β to its nose pointing to the left of its direction of travel (relative wind coming from the right of the aircraft). However, this can seem a bit cyclical, and it obscures some subtlety in their definition: defining α and β using the convention described previously allows us to define lift as the aerodynamic force's component in the wind axes' -z basis direction, thereby making lift independent of sideslip.  
+* Alternative way to think about basis directions (for small |α| and |β|): 
+  1. +x: Approximately towards the front of the Airplane  
+  2. +y: Approximately towards the right of the Airplane  
+  3. +z: Approximately towards the bottom of the Airplane
 * Right-handed
 * Ownership: SteadyProblem or UnsteadyProblem  
 * Local reference examples  

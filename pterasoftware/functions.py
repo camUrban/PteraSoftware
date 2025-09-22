@@ -157,12 +157,14 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
     :return: None
     """
     # Initialize an array to hold this solver's matrix of streamline points.
-    solver.streamline_points = np.expand_dims(solver.seed_points, axis=0)
+    solver.stackStreamlinePoint_G_Cg = np.expand_dims(
+        solver.stackSeedPoint_G_Cg, axis=0
+    )
 
     # Iterate through the streamline steps.
     for step in range(num_steps):
         # Get the last row of streamline points.
-        last_row_streamline_points = solver.streamline_points[-1, :, :]
+        last_row_streamline_points = solver.stackStreamlinePoint_G_Cg[-1, :, :]
 
         # Add the freestream velocity to the induced velocity to get the total
         # velocity at each of the last row of streamline points.
@@ -177,9 +179,9 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
 
         # Stack the new row of streamline points to the bottom of the matrix of
         # streamline points.
-        solver.streamline_points = np.vstack(
+        solver.stackStreamlinePoint_G_Cg = np.vstack(
             (
-                solver.streamline_points,
+                solver.stackStreamlinePoint_G_Cg,
                 np.expand_dims(new_row_streamline_points, axis=0),
             )
         )
@@ -529,14 +531,14 @@ def update_ring_vortex_solvers_panel_attributes(
     solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
     solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
-    solver.panel_moment_references[global_panel_position, :] = airplane.Cgi_E_I
+    solver.stackPanelMomentReference_G_Cg[global_panel_position, :] = airplane.Cgi_E_I
 
     # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.
     if panel.is_trailing_edge:
-        solver.seed_points = np.vstack(
+        solver.stackSeedPoint_G_Cg = np.vstack(
             (
-                solver.seed_points,
+                solver.stackSeedPoint_G_Cg,
                 panel.Blpp_G_Cg + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
             )
         )
@@ -552,7 +554,7 @@ def calculate_steady_freestream_wing_influences(steady_solver):
     # Take the batch dot product of the freestream velocity with each panel's
     # normal direction. This is now the problem's 1D array of freestream-wing
     # influence coefficients.
-    steady_solver.freestream_wing_influences_G__E = np.einsum(
+    steady_solver.stackVInfInfluCpp_G__E = np.einsum(
         "ij,j->i",
         steady_solver.stackUnitNormal_G,
         steady_solver.vInf_G__E,

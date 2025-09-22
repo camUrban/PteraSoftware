@@ -34,7 +34,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         Date of Retrieval:    04/28/2020
 
     This class contains the following public methods:
-        run: Run the solver on the steady problem.
+        run: Run the solver on the SteadyProblem.
 
         calculate_solution_velocity: This function takes in a group of points. At
         every point, it finds the induced velocity due to every vortex and the
@@ -47,7 +47,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
-    # NOTE: I've started refactoring this method.
     def __init__(self, steady_problem):
         """This is the initialization method.
 
@@ -71,11 +70,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Initialize attributes to hold aerodynamic data that pertains to this
         # SteadyProblem.
-        self.wing_wing_influences_G__E = np.zeros(
+        self.stackWingInfluCpp_G__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
         self.vInf_G__E = self.operating_point.vInf_G__E
-        self.freestream_wing_influences_G__E = np.zeros(self.num_panels, dtype=float)
+        self.stackVInfInfluCpp_G__E = np.zeros(self.num_panels, dtype=float)
 
         self.vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
@@ -89,16 +88,19 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.stackBlhvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
         self.panels = np.empty(self.num_panels, dtype=object)
-        self.panel_bound_vortex_centers = np.zeros((self.num_panels, 3), dtype=float)
-        self.panel_bound_vortex_vectors = np.zeros((self.num_panels, 3), dtype=float)
-        self.panel_moment_references = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackPanelBoundVortexCenter_G_Cg = np.zeros(
+            (self.num_panels, 3), dtype=float
+        )
+        self.stackPanelBoundVortexVector_G = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackPanelMomentReference_G_Cg = np.zeros(
+            (self.num_panels, 3), dtype=float
+        )
 
-        self.seed_points = np.empty((0, 3), dtype=float)
-        self.streamline_points = None
+        self.stackSeedPoint_G_Cg = np.empty((0, 3), dtype=float)
+        self.stackStreamlinePoint_G_Cg = None
 
-    # NOTE: I haven't yet started refactoring this method.
     def run(self, logging_level="Warning"):
-        """Run the solver on the steady problem.
+        """Run the solver on the SteadyProblem.
 
         :param logging_level: str, optional
 
@@ -109,101 +111,99 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Configure the problem's logger.
+        # Configure the SteadyProblem's logger.
         logging_level_value = functions.convert_logging_level_name_to_value(
             logging_level
         )
         logging.basicConfig(level=logging_level_value)
 
-        # Initialize this problem's panels to have vortices congruent with this
-        # solver type.
-        logging.info("Initializing the panel vortices.")
+        # Initialize this Panels to have vortices congruent with this solver type.
+        logging.info("Initializing the Panels' HorseshoeVortices.")
         self._initialize_panel_vortices()
 
-        # Collapse this problem's geometry matrices into 1D arrays of attributes.
+        # Collapse the geometry matrices into 1D ndarrays of attributes.
         logging.info("Collapsing the geometry.")
         self._collapse_geometry()
 
         # Find the matrix of aerodynamic influence coefficients associated with this
-        # problem's geometry.
+        # SteadyProblem's geometry.
         logging.info("Calculating the wing-wing influences.")
         self._calculate_wing_wing_influences()
 
-        # Find the normal freestream speed at every collocation points without
-        # vortices.
+        # Find the normal velocity (in geometry axes, observed from the Earth frame)
+        # at every collocation point due solely to the freestream.
         logging.info("Calculating the freestream-wing influences.")
         functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
-        # Solve for each panel's vortex strengths.
-        logging.info("Calculating the vortex strengths.")
+        # Solve for each Panel's HorseshoeVortex's strength.
+        logging.info("Calculating the HorseshoeVortex strengths.")
         self._calculate_vortex_strengths()
 
-        # Solve for the forces and moments on each panel.
+        # Solve for the forces (in geometry axes) and moments (in geometry axes,
+        # relative to the CG) on each Panel.
         logging.info("Calculating the forces and moments.")
         self._calculate_forces_and_moments()
 
-        # Solve for the location of the streamlines coming off the back of the wings.
+        # Solve for the location of the streamlines coming off the Wings' trailing
+        # edges.
         logging.info("Calculating streamlines.")
         functions.calculate_streamlines(self)
 
-    # NOTE: I haven't yet started refactoring this method.
     def _initialize_panel_vortices(self):
-        """This method calculates the locations of the vortex vertices, and then
-        initializes the panels' vortices.
+        """This method calculates the locations of the HorseshoeVortex vertices,
+        and then initializes the HorseshoeVortices.
 
-        Every panel has a horseshoe vortex. The vortex's finite leg runs along the
-        panel's quarter chord from right to left. It's infinite legs points backwards
-        in the positive x direction.
+        Every Panel has a HorseshoeVortex. The HorseshoeVortices' front legs runs along
+        their Panel's quarter chord from right to left. Their quasi-infinite legs point
+        backward in the direction of the freestream.
 
         :return: None
         """
-        # Find the freestream direction in geometry axes.
-        freestream_direction = self.operating_point.vInfHat_G__E
+        # Find the freestream direction (in geometry axes, observed from the Earth
+        # frame).
+        vInfHat_G__E = self.operating_point.vInfHat_G__E
 
-        # Iterate through each airplane's wings.
+        # Iterate through each Airplane's Wings.
         for airplane in self.airplanes:
             for wing in airplane.wings:
 
-                # Find a suitable length for the "infinite" legs of the horseshoe
-                # vortices on this wing. At twenty-times the wing's span, these legs
-                # are essentially infinite.
+                # Find a suitable length for the quasi-infinite legs of the
+                # HorseshoeVortices on this Wing. At twenty-times the Wing's span,
+                # these legs are essentially infinite.
                 infinite_leg_length = wing.span * 20
 
-                # Iterate through the wing's chordwise and spanwise panel positions.
+                # Iterate through the chordwise and spanwise positions of this Wing's
+                # Panels.
                 for chordwise_position in range(wing.num_chordwise_panels):
                     for spanwise_position in range(wing.num_spanwise_panels):
-                        # Pull the panel object out of the wing's list of panels.
+                        # Pull the Panel out of the Wing's list of Panels.
                         panel = wing.panels[chordwise_position, spanwise_position]
 
-                        # Find the location of the panel's front and right vortex
-                        # vertices.
-                        front_left_vortex_vertex = panel.Flbvp_G_Cg
-                        front_right_vortex_vertex = panel.Frbvp_G_Cg
-
-                        # Initialize the horseshoe vortex at this panel.
+                        # Initialize this Panel's HorseshoeVortex.
                         panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
-                            Frhvp_G_Cg=front_right_vortex_vertex,
-                            Flhvp_G_Cg=front_left_vortex_vertex,
-                            leftLegVector_G=freestream_direction,
+                            Frhvp_G_Cg=panel.Frbvp_G_Cg,
+                            Flhvp_G_Cg=panel.Flbvp_G_Cg,
+                            leftLegVector_G=vInfHat_G__E,
                             left_right_leg_lengths=infinite_leg_length,
                             strength=None,
                         )
 
-    # NOTE: I haven't yet started refactoring this method.
+    # NOTE: I've started refactoring this method.
     def _collapse_geometry(self):
-        """This method converts attributes of the problem's geometry into 1D arrays.
-        This facilitates vectorization, which speeds up the solver.
+        """This method converts attributes of the SteadyProblem's geometry into 1D
+        ndarrays. This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
-        # Initialize a variable to hold the global position of the panel as we
+        # Initialize a variable to hold the global position of the current Panel as we
         # iterate through them.
         global_panel_position = 0
 
-        # Iterate through each airplane's wings.
+        # Iterate through each Airplane's Wings.
         for airplane in self.airplanes:
             for wing in airplane.wings:
 
+                # NOTE: I've refactored up to here.
                 # Convert this wing's 2D array of panels into a 1D array.
                 panels = np.ravel(wing.panels)
 
@@ -230,13 +230,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     self.stackBlhvp_G_Cg[global_panel_position, :] = (
                         panel.horseshoe_vortex.left_leg.Elvp_G_Cg
                     )
-                    self.panel_bound_vortex_centers[global_panel_position, :] = (
+                    self.stackPanelBoundVortexCenter_G_Cg[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.Clvp_G_Cg
                     )
-                    self.panel_bound_vortex_vectors[global_panel_position, :] = (
+                    self.stackPanelBoundVortexVector_G[global_panel_position, :] = (
                         panel.horseshoe_vortex.finite_leg.vector_G
                     )
-                    self.panel_moment_references[global_panel_position, :] = (
+                    self.stackPanelMomentReference_G_Cg[global_panel_position, :] = (
                         airplane.Cgi_E_I
                     )
 
@@ -244,9 +244,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     if panel.is_trailing_edge:
                         # If it is, calculate it's streamline seed point and add it
                         # to the solver's array of seed points.
-                        self.seed_points = np.vstack(
+                        self.stackSeedPoint_G_Cg = np.vstack(
                             (
-                                self.seed_points,
+                                self.stackSeedPoint_G_Cg,
                                 panel.Blpp_G_Cg
                                 + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
                             )
@@ -276,7 +276,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized velocities with each panel's
         # normal direction. This is now the problem's matrix of wing-wing influence
         # coefficients.
-        self.wing_wing_influences_G__E = np.einsum(
+        self.stackWingInfluCpp_G__E = np.einsum(
             "...k,...k->...",
             induced_velocities,
             np.expand_dims(self.stackUnitNormal_G, axis=1),
@@ -290,7 +290,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
         # Solve for the strength of each panel's vortex.
         self.vortex_strengths = np.linalg.solve(
-            self.wing_wing_influences_G__E, -self.freestream_wing_influences_G__E
+            self.stackWingInfluCpp_G__E, -self.stackVInfInfluCpp_G__E
         )
 
         # Iterate through the panels and update their vortex strengths.
@@ -348,7 +348,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """
         # Calculate the total velocity at every panel's bound vortex center.
         total_velocities = self.calculate_solution_velocity(
-            points=self.panel_bound_vortex_centers
+            points=self.stackPanelBoundVortexCenter_G_Cg
         )
 
         # Calculate the force, in geometry axes, on each panel's bound
@@ -356,13 +356,13 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         forces_G = (
             self.operating_point.density
             * np.expand_dims(self.vortex_strengths, axis=1)
-            * np.cross(total_velocities, self.panel_bound_vortex_vectors, axis=-1)
+            * np.cross(total_velocities, self.stackPanelBoundVortexVector_G, axis=-1)
         )
 
         # Calculate the moments, in geometry axes, on each panel's bound
         # vortex.
         moments_G_Cg = np.cross(
-            self.panel_bound_vortex_centers - self.panel_moment_references,
+            self.stackPanelBoundVortexCenter_G_Cg - self.stackPanelMomentReference_G_Cg,
             forces_G,
             axis=-1,
         )

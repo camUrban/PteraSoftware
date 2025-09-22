@@ -67,7 +67,7 @@ single_chord = None
 wake_saturated = None
 this_solver = None
 
-this_operating_point = ps.operating_point.OperatingPoint(uInfX_W__B=speed, alpha=0.0)
+this_operating_point = ps.operating_point.OperatingPoint(vCg__E=speed, alpha=0.0)
 this_operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=this_operating_point,
 )

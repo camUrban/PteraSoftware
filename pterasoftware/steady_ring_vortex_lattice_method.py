@@ -79,9 +79,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Initialize attributes to hold aerodynamic data that pertains to this problem.
         self.wing_wing_influences = np.zeros((self.num_panels, self.num_panels))
-        self.freestream_velocity = (
-            self.operating_point.calculate_freestream_velocity_geometry_axes()
-        )
+        self.freestream_velocity = self.operating_point.vInf_G__E
         self.freestream_wing_influences = np.zeros(self.num_panels)
         self.vortex_strengths = np.ones(self.num_panels)
         self.panel_normal_directions = np.zeros((self.num_panels, 3))
@@ -191,9 +189,7 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         # Find the freestream direction in geometry axes.
-        freestream_direction = (
-            self.operating_point.calculate_freestream_direction_geometry_axes()
-        )
+        freestream_direction = self.operating_point.vInfHat_G__E
 
         # Iterate through each airplane's wings.
         for airplane in self.airplanes:

@@ -875,7 +875,7 @@ def _collapsed_velocities_from_line_vortices(
     2.) Find the material-point velocity at P (in geometry axes, observed from the
     Earth frame):
 
-        vMatP_G__E = uBodyCg_G__E + omegaBodyCg_G__E x P_G_Cg + vDeformP_G__E
+        vMatP_G__E = vCg_G__E + omegaCg_G__E x P_G_Cg + vDeformP_G__E
 
     3.) Combine for apparent ("felt") velocity at P (in geometry axes, observed from
     the Earth frame):
@@ -922,15 +922,15 @@ def _collapsed_velocities_from_line_vortices(
     vIndP_G__E) (m/s). We assume that the external fluid is quiescent (no wind or
     current), so this is only composed of the induced velocities.
 
-    - uBodyCg_G__E: rigid translational velocity of the body at the Cg (m/s).
+    - vCg_G__E: rigid translational velocity of the body at the CG (m/s).
 
-    - omegaBodyCg_G__E: rigid angular velocity of the body (about the Cg) (rad/s).
+    - omegaCg_G__E: rigid angular velocity of the body (about the CG) (rad/s).
 
     - vDeformP_G__E: additional local velocity of point P due to deformation/flapping
     relative to the body’s rigid motion (m/s).
 
     - vMatP_G__E: inertial velocity of the material point P (rigid + deform) =
-    uBodyCg_G__E + omegaBodyCg_G__E x P_G_Cg + vDeformP_G__E (m/s).
+    vCg_G__E + omegaCg_G__E x P_G_Cg + vDeformP_G__E (m/s).
 
     - vFeltP_G__E: apparent velocity "felt" by the material point P, equal to
     vFlowP_G__E - vMatP_G__E (m/s).

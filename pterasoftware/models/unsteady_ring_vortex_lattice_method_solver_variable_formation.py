@@ -252,7 +252,7 @@ class unsteadyRingVortexLatticeSolver:
         # to multiple airplanes, it is better to set the operating point's angle of
         # attack to zero, and then use offset the twist values of all the wing cross
         # sections to simulate each aircraft having an angle of attack.
-        operating_point = ps.operating_point.OperatingPoint(uInfX_W__B=10.0, alpha=0.0)
+        operating_point = ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=0.0)
 
         # Define the operating point's movement.
         operating_point_movement = ps.movement.OperatingPointMovement(

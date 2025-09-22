@@ -287,7 +287,7 @@ def process_steady_solver_forces(
     :return:
     """
     # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = steady_solver.operating_point.calculate_dynamic_pressure()
+    dynamic_pressure = steady_solver.operating_point.qInf__E
 
     # Find the rotation matrix that will be used to convert the geometry frame values
     # to wind frame values.
@@ -416,7 +416,7 @@ def process_unsteady_solver_forces(
     operating_point = unsteady_solver.current_operating_point
 
     # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = operating_point.calculate_dynamic_pressure()
+    dynamic_pressure = operating_point.qInf__E
 
     # Find the rotation matrix that will be used to convert the geometry frame values
     # to wind frame values.

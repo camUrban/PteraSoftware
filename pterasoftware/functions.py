@@ -54,6 +54,8 @@ import logging
 import numpy as np
 from numba import njit
 
+from . import transformations
+
 
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create an array containing a specified number of
@@ -287,19 +289,24 @@ def process_steady_solver_forces(
     :return:
     """
     # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = steady_solver.operating_point.calculate_dynamic_pressure()
+    dynamic_pressure = steady_solver.operating_point.qInf__E
 
-    # Find the rotation matrix that will be used to convert the geometry frame values
-    # to wind frame values.
-    rotation_matrix = np.transpose(steady_solver.operating_point.T_pas_W_Cg_to_G_Cg())
+    # Find the transformation matrix that will be used to convert from geometry axes
+    # to wind axes.
+    T_pas_G_Cg_to_W_Cg = steady_solver.operating_point.T_pas_G_Cg_to_W_Cg
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(steady_solver.panels):
         # Get this panel's near field forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
-        this_force_wind_axes = rotation_matrix @ this_force_geometry_axes
-        this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
+
+        this_force_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, this_force_geometry_axes, has_point=False
+        )
+        this_moment_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, this_moment_geometry_axes, has_point=True
+        )
 
         # Update the force and moment on this panel.
         panel.forces_G = this_force_geometry_axes
@@ -329,11 +336,15 @@ def process_steady_solver_forces(
     # from the rotation matrix and the total force and moment it experiences in
     # geometry axes.
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
-        airplane.total_near_field_force_wind_axes = (
-            rotation_matrix @ total_near_field_forces_geometry_axes[airplane_num]
+        airplane.total_near_field_force_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg,
+            total_near_field_forces_geometry_axes[airplane_num],
+            has_point=False,
         )
-        airplane.total_near_field_moment_wind_axes = (
-            rotation_matrix @ total_near_field_moments_geometry_axes[airplane_num]
+        airplane.total_near_field_moment_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg,
+            total_near_field_moments_geometry_axes[airplane_num],
+            has_point=True,
         )
 
     # Iterate through the airplanes and calculate each one's coefficients.
@@ -414,20 +425,24 @@ def process_unsteady_solver_forces(
     operating_point = unsteady_solver.current_operating_point
 
     # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = operating_point.calculate_dynamic_pressure()
+    dynamic_pressure = operating_point.qInf__E
 
-    # Find the rotation matrix that will be used to convert the geometry frame values
-    # to wind frame values.
-    rotation_matrix = np.transpose(operating_point.T_pas_W_Cg_to_G_Cg())
+    # Find the transformation matrix that will be used to convert from geometry axes
+    # to wind axes.
+    T_pas_G_Cg_to_W_Cg = unsteady_solver.operating_point.T_pas_G_Cg_to_W_Cg
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
-        # Get this panel's near field forces and moments in geometry axes and wind
-        # axes.
+        # Get this panel's near field forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = near_field_forces_geometry_axes[panel_num, :]
         this_moment_geometry_axes = near_field_moments_geometry_axes[panel_num, :]
-        this_force_wind_axes = rotation_matrix @ this_force_geometry_axes
-        this_moment_wind_axes = rotation_matrix @ this_moment_geometry_axes
+
+        this_force_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, this_force_geometry_axes, has_point=False
+        )
+        this_moment_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, this_moment_geometry_axes, has_point=True
+        )
 
         # Update the force and moment on this panel.
         panel.forces_G = this_force_geometry_axes
@@ -458,12 +473,16 @@ def process_unsteady_solver_forces(
     # For each airplane, find the total force and moment it experiences in wind axes
     # from the rotation matrix and the total force and moment it experiences in
     # geometry axes.
-    for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
-        airplane.total_near_field_force_wind_axes = (
-            rotation_matrix @ total_near_field_forces_geometry_axes[airplane_num]
+    for airplane_num, airplane in enumerate(unsteady_solver.airplanes):
+        airplane.total_near_field_force_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg,
+            total_near_field_forces_geometry_axes[airplane_num],
+            has_point=False,
         )
-        airplane.total_near_field_moment_wind_axes = (
-            rotation_matrix @ total_near_field_moments_geometry_axes[airplane_num]
+        airplane.total_near_field_moment_wind_axes = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg,
+            total_near_field_moments_geometry_axes[airplane_num],
+            has_point=True,
         )
 
     # Iterate through the airplanes and calculate each one's coefficients.

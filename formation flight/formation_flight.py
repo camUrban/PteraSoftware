@@ -28,7 +28,7 @@ period = x_spacing / speed
 root_to_mid_chord = root_chord
 mid_to_tip_chord = (root_chord + tip_chord) / 2
 
-this_operating_point = ps.operating_point.OperatingPoint(uInfX_W__B=speed, alpha=0.0)
+this_operating_point = ps.operating_point.OperatingPoint(vCg__E=speed, alpha=0.0)
 this_operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=this_operating_point,
 )

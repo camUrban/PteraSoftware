@@ -333,7 +333,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     self.current_step
                 ].operating_point
                 self.current_freestream_velocity_geometry_axes = (
-                    self.current_operating_point.calculate_freestream_velocity_geometry_axes()
+                    self.current_operating_point.vInf_G__E
                 )
                 logging.info(
                     "Beginning time step "
@@ -354,7 +354,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     (self.num_panels, self.num_panels)
                 )
                 self.current_freestream_velocity_geometry_axes = (
-                    self.current_operating_point.calculate_freestream_velocity_geometry_axes()
+                    self.current_operating_point.vInf_G__E
                 )
                 self.current_freestream_wing_influences = np.zeros(self.num_panels)
                 self.current_wake_wing_influences = np.zeros(self.num_panels)
@@ -494,7 +494,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Get the freestream velocity at this time step's problem.
             this_freestream_velocity_geometry_axes = (
-                steady_problem.operating_point.calculate_freestream_velocity_geometry_axes()
+                steady_problem.operating_point.vInf_G__E
             )
 
             # Iterate through this problem's airplanes' wings.

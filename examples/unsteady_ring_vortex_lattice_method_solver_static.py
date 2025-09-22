@@ -339,7 +339,7 @@ del v_tail_movement
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
 example_operating_point = ps.operating_point.OperatingPoint(
-    density=1.225, uInfX_W__B=10.0, alpha=1.0, beta=0.0, nu=15.06e-6
+    density=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, nu=15.06e-6
 )
 
 # Define the operating point's movement. The operating point's velocity can change

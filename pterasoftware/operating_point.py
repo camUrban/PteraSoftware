@@ -17,7 +17,6 @@ from . import transformations
 from . import parameter_validation
 
 
-# NOTE: I've started refactoring this class.
 # ToDo: Add unit tests for this class.
 class OperatingPoint:
     """This is a class used to contain a Problem's operating point characteristics.
@@ -27,20 +26,23 @@ class OperatingPoint:
         Author:               Peter Sharpe
         Date of Retrieval:    04/29/2020
 
-    # ToDo: Update methods' descriptions.
     This class contains the following public methods:
-        calculate_dynamic_pressure: This method calculates the freestream dynamic
-        pressure of the working fluid.
+        qInf__E: This method calculates the freestream dynamic pressure experienced
+        by the Airplane (observed in the Earth frame).
 
-        calculate_rotation_matrix_wind_to_geometry: This method computes the 3 x 3
-        rotation matrix for converting from wind axes to geometry axes.
+        T_pas_G_Cg_to_W_Cg: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from geometry
+        axes relative to the CG to wind axes relative to the CG.
 
-        calculate_freestream_direction_geometry_axes: This method computes the
-        freestream direction (the direction the wind is going to) in geometry axes.
+        T_pas_W_Cg_to_G_Cg: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from wind axes
+        relative to the CG to geometry axes relative to the CG.
 
-        calculate_freestream_velocity_geometry_axes: This method computes the
-        freestream velocity vector (in the direction the wind is going to) in
-        geometry axes.
+        vInfHat_G__E: This method computes the freestream direction (in geometry
+        axes, observed from the Earth frame).
+
+        vInf_G__E: This method computes the freestream velocity (in geometry axes,
+        observed from the Earth frame).
 
     This class contains the following class attributes:
         None
@@ -52,7 +54,7 @@ class OperatingPoint:
     def __init__(
         self,
         density=1.225,
-        uInfX_W__B=10.0,
+        vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
         externalFX_W=0.0,
@@ -64,7 +66,7 @@ class OperatingPoint:
         :param density: float, optional
             This parameter is the density. The units are kilograms per meters cubed.
             The default value is 1.225.
-        :param uInfX_W__B: float, optional
+        :param vCg__E: float, optional
             This parameter is the freestream speed in the positive x direction. The
             units are meters per second. The
             default value is 10.0.
@@ -89,11 +91,11 @@ class OperatingPoint:
         self.density = parameter_validation.positive_number_return_float(
             density, "density"
         )
-        # ToDo: In the future, test what happens with uInfX_W__B = 0.
-        self.uInfX_W__B = parameter_validation.positive_number_return_float(
-            uInfX_W__B, "uInfX_W__B"
+        # ToDo: In the future, test what happens with vCg__E = 0.
+        self.vCg__E = parameter_validation.positive_number_return_float(
+            vCg__E, "vCg__E"
         )
-        # ToDo: Restrict alpha and beta's range if testing reveals that high
+        # ToDo: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
         self.alpha = parameter_validation.number_in_range_return_float(
             alpha, "alpha", -180.0, False, 180.0, True
@@ -106,84 +108,130 @@ class OperatingPoint:
         )
         self.nu = parameter_validation.positive_number_return_float(nu, "nu")
 
-    # ToDo: Consider making this a property.
-    def calculate_dynamic_pressure(self):
-        """This method calculates the freestream dynamic pressure of the working fluid.
+    @property
+    def qInf__E(self):
+        """This method calculates the freestream dynamic pressure experienced by the
+        Airplane (observed in the Earth frame).
 
-        :return dynamic_pressure: float
-            This is the freestream dynamic pressure. Its units are pascals.
+        :return: float
+
+            This is the freestream dynamic pressure (observed in the Earth frame).
+            Its units are Pascals.
         """
-        return 0.5 * self.density * self.uInfX_W__B**2
+        return 0.5 * self.density * self.vCg__E**2
 
-    # NOTE: I've started refactoring this method.
-    def T_pas_W_Cg_to_G_Cg(self):
+    @property
+    def T_pas_G_Cg_to_W_Cg(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from wind axes relative to the Cg to geometry
+        maps in homogeneous coordinates from geometry axes relative to the CG to wind
         axes relative to the CG.
 
-        # ToDo: Update the parameters' descriptions and types.
-        :return rotation_matrix_wind_axes_to_geometry_axes: 3 x 3 array
-            This is the rotation matrix to convert wind axes to geometry axes.
+        :return: (4,4) ndarray of floats
+
+            This is the passive transformation matrix which maps in homogeneous
+            coordinates from geometry axes relative to the CG to wind axes relative
+            to the CG.
         """
+        alpha_rad = np.radians(self.alpha)
+        beta_rad = np.radians(self.beta)
 
-        sin_alpha = np.sin(np.radians(self.alpha))
-        cos_alpha = np.cos(np.radians(self.alpha))
-        sin_beta = np.sin(np.radians(self.beta))
-        cos_beta = np.cos(np.radians(self.beta))
-        eye = np.eye(3)
-
-        alpha_rotation = np.array(
-            [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]]
-        )
-        beta_rotation = np.array(
-            [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
+        T_pas_G_Cg_to_B_Cg = transformations.generate_reflect_T(
+            plane_point_A_a=np.array([0.0, 0.0, 0.0]),
+            plane_normal_A=np.array([1.0, 0.0, 0.0]),
+            passive=True,
         )
 
-        # Flip the axes because in geometry axes x is downstream by convention,
-        # while in wind axes x is upstream by convention. Same with z being up/down
-        # respectively.
-        axes_flip = np.array(
-            [
-                [-1, 0, 0],
-                [0, 1, 0],
-                [0, 0, -1],
-            ]
+        angles_B_to_W_exyz = np.array([0.0, alpha_rad, beta_rad])
+
+        T_pas_B_Cg_to_W_Cg = transformations.generate_rot_T(
+            angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
         )
 
-        # Calculate and return the rotation matrix to convert wind axes to geometry
-        # axes.
-        rotation_matrix_wind_axes_to_geometry_axes = (
-            axes_flip @ alpha_rotation @ beta_rotation @ eye
-        )
-        return rotation_matrix_wind_axes_to_geometry_axes
+        return transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
 
-    # NOTE: I haven't started refactoring this method.
-    def calculate_freestream_direction_geometry_axes(self):
-        """This method computes the freestream direction (the direction the wind is
-        going to) in geometry axes.
+    @property
+    def T_pas_W_Cg_to_G_Cg(self):
+        """This method defines a property for the passive transformation matrix which
+        maps in homogeneous coordinates from wind axes relative to the CG to geometry
+        axes relative to the CG.
 
-        # ToDo: Update the parameters' descriptions and types.
-        :return velocity_direction_geometry_axes: 1D array
-            This is the freestream velocity direction in geometry axes.
+        :return: (4,4) ndarray of floats
+
+            This is the passive transformation matrix which maps in homogeneous
+            coordinates from wind axes relative to the CG to geometry axes relative
+            to the CG.
         """
+        return transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
 
-        velocity_direction_wind_axes = np.array([-1, 0, 0])
-        velocity_direction_geometry_axes = (
-            self.T_pas_W_Cg_to_G_Cg() @ velocity_direction_wind_axes
-        )
-        return velocity_direction_geometry_axes
+        # ToDo: Delete the following older method of finding the rotation matrix once
+        #  we've confirmed that the new method delivers equivalent results.
+        # sin_alpha = np.sin(np.radians(self.alpha))
+        # cos_alpha = np.cos(np.radians(self.alpha))
+        # sin_beta = np.sin(np.radians(self.beta))
+        # cos_beta = np.cos(np.radians(self.beta))
+        # eye = np.eye(3)
+        #
+        # alpha_rotation = np.array(
+        #     [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]]
+        # )
+        # beta_rotation = np.array(
+        #     [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
+        # )
+        #
+        # # Flip the axes because in geometry axes x is downstream by convention,
+        # # while in wind axes x is upstream by convention. Same with z being up/down
+        # # respectively.
+        # axes_flip = np.array(
+        #     [
+        #         [-1, 0, 0],
+        #         [0, 1, 0],
+        #         [0, 0, -1],
+        #     ]
+        # )
+        #
+        # # Calculate and return the rotation matrix to convert wind axes to geometry
+        # # axes.
+        # rotation_matrix_wind_axes_to_geometry_axes = (
+        #     axes_flip @ alpha_rotation @ beta_rotation @ eye
+        # )
+        # return rotation_matrix_wind_axes_to_geometry_axes
 
-    # NOTE: I haven't started refactoring this method.
-    def calculate_freestream_velocity_geometry_axes(self):
-        """This method computes the freestream velocity vector (in the direction the
-        wind is going to) in geometry axes.
+    @property
+    def vInfHat_G__E(self):
+        """This method computes the freestream direction (in geometry axes, observed
+        from the Earth frame).
 
-        # ToDo: Update the parameters' descriptions and types.
-        :return freestream_velocity_geometry_axes: 1D array
-            This is the freestream velocity vector in geometry axes.
+        Note: See the docstring for vInf_G__E for details on how to interpret this
+        property.
+
+        :return: (3,) ndarray of floats
+
+            This is a unit vector along the freestream velocity vector (in geometry
+            axes, observed from the Earth frame).
         """
+        vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
 
-        freestream_velocity_geometry_axes = (
-            self.calculate_freestream_direction_geometry_axes() * self.uInfX_W__B
+        return transformations.apply_T_to_vectors(
+            self.T_pas_W_Cg_to_G_Cg, vInfHat_W__E, has_point=False
         )
+
+    @property
+    def vInf_G__E(self):
+        """This method computes the freestream velocity (in geometry axes, observed
+        from the Earth frame).
+
+        Note: I'm defining vInf_G__E to be -1 * vCgX_G__E. This may seem obvious,
+        but the important takeaways are that the freestream velocity is (1) entirely
+        due to the body's motion (a still airmass), and (2) the freestream velocity
+        is observed from the Earth frame, which is inertial. Given point 1,
+        a possible interpretation is that vInf_G__E must be zero, which is why I'm
+        being specific with the definition.
+
+        :return: (3,) ndarray of floats
+
+            This is the freestream velocity vector (in geometry axes, observed from
+            the Earth frame).
+        """
+        freestream_velocity_geometry_axes = self.vInfHat_G__E * self.vCg__E
+
         return freestream_velocity_geometry_axes

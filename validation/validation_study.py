@@ -352,7 +352,7 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    uInfX_W__B=validation_velocity, alpha=validation_alpha
+    vCg__E=validation_velocity, alpha=validation_alpha
 )
 
 # Define an operating point movement that contains the operating point.
@@ -360,9 +360,9 @@ validation_operating_point_movement = ps.movement.OperatingPointMovement(
     base_operating_point=validation_operating_point,
 )
 
-# Calculate the wind-to-geometry rotation matrix, which will later be used to convert
+# Get the geometry-to-wind transformation matrix, which will later be used to convert
 # the experimental pressure-based-lift measurements to wind axes.
-wind_to_geometry_rotation_matrix = validation_operating_point.T_pas_W_Cg_to_G_Cg()
+T_pas_G_Cg_to_W_Cg = validation_operating_point.T_pas_G_Cg_to_W_Cg
 
 # Delete the extraneous pointer.
 del validation_operating_point
@@ -622,8 +622,8 @@ exp_net_z_forces_wind_axes = np.zeros(exp_net_z_forces_geometry_axes.size)
 # to shift the experimental force z-direction force to the wind frame.
 for force_id, force in enumerate(exp_net_z_forces_geometry_axes):
     exp_net_force_geometry_axes = np.array([0, 0, force])
-    exp_net_force_wind_axes = (
-        wind_to_geometry_rotation_matrix @ exp_net_force_geometry_axes
+    exp_net_force_wind_axes = ps.transformations.apply_T_to_vectors(
+        T_pas_G_Cg_to_W_Cg, exp_net_force_geometry_axes, has_point=False
     )
     exp_net_z_force_wind_axes = exp_net_force_wind_axes[2]
     exp_net_z_forces_wind_axes[force_id] = exp_net_z_force_wind_axes

@@ -60,7 +60,7 @@ def analyze_steady_trim(
         )
 
     weight = problem.airplanes[0].weight
-    base_velocity = problem.operating_point.uInfX_W__B
+    base_velocity = problem.operating_point.vCg__E
     base_alpha = problem.operating_point.alpha
     base_beta = problem.operating_point.beta
     base_external_thrust = problem.operating_point.externalFX_W
@@ -101,11 +101,11 @@ def analyze_steady_trim(
         current_arguments.clear()
         current_arguments.extend([velocity, alpha, beta, external_thrust])
 
-        problem.operating_point.uInfX_W__B = velocity
+        problem.operating_point.vCg__E = velocity
         problem.operating_point.alpha = alpha
         problem.operating_point.beta = beta
 
-        dynamic_pressure = problem.operating_point.calculate_dynamic_pressure()
+        dynamic_pressure = problem.operating_point.qInf__E
         s_ref = problem.airplanes[0].s_ref
 
         external_forces = np.array([external_thrust, 0, weight])
@@ -220,7 +220,7 @@ def analyze_unsteady_trim(
     :return:
     """
     weight = airplane_movement.base_airplane.weight
-    base_velocity = operating_point.uInfX_W__B
+    base_velocity = operating_point.vCg__E
     base_alpha = operating_point.alpha
     base_beta = operating_point.beta
 
@@ -252,11 +252,11 @@ def analyze_unsteady_trim(
         current_arguments.clear()
         current_arguments.extend([velocity, alpha, beta])
 
-        operating_point.uInfX_W__B = velocity
+        operating_point.vCg__E = velocity
         operating_point.alpha = alpha
         operating_point.beta = beta
 
-        dynamic_pressure = operating_point.calculate_dynamic_pressure()
+        dynamic_pressure = operating_point.qInf__E
         s_ref = airplane_movement.base_airplane.s_ref
 
         external_forces = np.array([0, 0, weight])

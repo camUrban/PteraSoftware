@@ -28,6 +28,12 @@ This module contains the following functions:
 
     invert_T_act: Invert an active homogeneous transform.
 
+    convert_T_pas_to_T_act: Convert a passive transformation matrix to an active
+    transformation matrix.
+
+    convert_T_act_to_T_pas: Convert an active transformation matrix to a passive
+    transformation matrix.
+
     apply_T_to_vectors: Apply a homogeneous transform to 3-element vector(s) and
     return 3-element vector(s)."""
 
@@ -38,12 +44,12 @@ from . import parameter_validation
 
 def _generate_homogs(vectors_A, has_point):
     """This function converts 3D vector(s) to homogeneous coordinates for use with
-    4x4 transformation matrices.
+    (4,4) transformation matrices.
 
     Homogeneous coordinates extend 3D vectors to 4D by adding a fourth component. For
     vectors relative to a reference point (has_point=True), such as position vectors,
     the fourth component is 1.0. For free vectors (has_point=False), such as velocity
-    or force vectors, the fourth component is 0.0. This allows 4x4 transformation
+    or force vectors, the fourth component is 0.0. This allows (4,4) transformation
     matrices to handle both translations and rotations in a unified framework.
 
     This function handles both single vectors and arrays of vectors efficiently.
@@ -350,7 +356,7 @@ def compose_T_pas(*T_pas_chain):
 
     Internally returns: T_pas_B_b_to_C_c @ T_pas_A_a_to_B_b
 
-    :param T_pas_chain: sequence of 4x4 array-like objects filled with numbers
+    :param T_pas_chain: sequence of (4,4) array-like objects filled with numbers
         The passive homogeneous transforms along the path.
 
     :return: (4,4) ndarray of floats
@@ -405,7 +411,7 @@ def compose_T_act(*T_act_chain):
 
         Both yield the same homogeneous matrix: [[R, R @ t_body], [0, 0, 0, 1]].
 
-    :param T_act_chain: sequence of 4x4 array-like objects filled with numbers
+    :param T_act_chain: sequence of (4,4) array-like objects filled with numbers
 
         The active homogeneous transforms in chronological order.
 
@@ -486,13 +492,13 @@ def invert_T_pas(T_pas):
     # Apply to the free vector v (in B axes) (translation will be ignored):
     v_A = apply_T_to_vectors(T_pas_B_b_to_A_a, v_B)
 
-    :param T_pas: 4x4 array-like of numbers
+    :param T_pas: (4,4) array-like of numbers
 
         Passive homogeneous transform mapping from source axes+reference point to
-        target axes + reference point.  Can be any 4x4 array-like object of size of
+        target axes + reference point.  Can be any (4,4) array-like object of size of
         numbers (int or float). Values are converted to floats internally.
 
-    :return: ndarray, shape (4,4)
+    :return: (4,4) ndarray of floats
 
         The passive transform that maps back from the target axes + reference point
         to the original axes + reference point.
@@ -534,13 +540,13 @@ def invert_T_act(T_act):
 
     recovered_f_A = apply_T_to_vectors(undo_T_act, fPrime_A, has_point=False)
 
-    :param T_act: 4x4 array-like of numbers
+    :param T_act: (4,4) array-like of numbers
 
         Active homogeneous transform that operated within the current axis system.
-        Can be any 4x4 array-like object of size of numbers (int or float). Values
+        Can be any (4,4) array-like object of size of numbers (int or float). Values
         are converted to floats internally.
 
-    :return: ndarray, shape (4,4)
+    :return: (4,4) ndarray of floats
 
         The active transform that exactly undoes T_act.
     """
@@ -548,6 +554,40 @@ def invert_T_act(T_act):
         T_act, "T_act"
     )
     return _invert_T_rigid(valid_T_act)
+
+
+def convert_T_pas_to_T_act(T_pas):
+    """Convert a passive transformation matrix to an active transformation matrix.
+
+    :param T_pas: (4,4) array-like of numbers
+
+        The passive transformation matrix.
+
+    :return: (4,4) ndarray of floats
+
+        The converted active transformation matrix.
+    """
+    valid_T_pas = parameter_validation.fourByFour_number_arrayLike_return_float(
+        T_pas, "T_pas"
+    )
+    return np.linalg.inv(valid_T_pas)
+
+
+def convert_T_act_to_T_pas(T_act):
+    """Convert an active transformation matrix to a passive transformation matrix.
+
+    :param T_act: (4,4) array-like of numbers
+
+        The active transformation matrix.
+
+    :return: (4,4) ndarray of floats
+
+        The converted passive transformation matrix.
+    """
+    valid_T_act = parameter_validation.fourByFour_number_arrayLike_return_float(
+        T_act, "T_act"
+    )
+    return np.linalg.inv(valid_T_act)
 
 
 def apply_T_to_vectors(T, vectors_A, has_point):
@@ -562,9 +602,9 @@ def apply_T_to_vectors(T, vectors_A, has_point):
     This function handles both single vectors and arrays of vectors efficiently using
     einsum operations.
 
-    :param T: 4x4 array-like of numbers
+    :param T: (4,4) array-like of numbers
 
-        Homogeneous transform (active or passive). Can be any 4x4 array-like object
+        Homogeneous transform (active or passive). Can be any (4,4) array-like object
         of size of numbers (int or float). Values are converted to floats internally.
 
     :param vectors_A: array-like of shape (..., 3)

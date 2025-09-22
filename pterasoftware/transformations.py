@@ -1,3 +1,4 @@
+# ToDo: Consider making this module private (renaming it with a _ prefix).
 """This module contains functions used for geometric transformations.
 
 This module contains the following classes:

@@ -1,3 +1,4 @@
+# ToDo: Consider making this module private (renaming it with a _ prefix).
 """This module contains functions shared by other modules in the pterasoftware package.
 
 This module contains the following classes:

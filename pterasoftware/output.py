@@ -21,19 +21,7 @@ This module contains the following functions:
     print_unsteady_results: This function prints the final cycle-averaged of the
     forces, moments, force coefficients, and moment coefficients calculated by an
     unsteady solver.
-
-    get_panel_surfaces: This function returns a PolyData representation of the wing
-    panel surfaces associated with all the airplanes in a given list.
-
-    get_wake_ring_vortex_surfaces: This function returns the PolyData object for the
-    surface of wake ring vortices at a given time step.
-
-    get_scalars: This function gets the coefficient values from a problem's airplane
-    objects, and puts them into a 1D array to be used as scalars for display by other
-    output methods.
-
-    plot_scalars: This function plots a scalar bar, the mesh panels with a particular
-    set of scalars, and labels for the minimum and maximum scalar values."""
+"""
 
 import math
 import time
@@ -46,20 +34,20 @@ import webp
 from . import unsteady_ring_vortex_lattice_method
 
 # Define the color and colormaps used by the visualization functions.
-sequential_color_map = "speed"
-diverging_color_map = "delta"
-wake_vortex_color = "white"
-panel_color = "chartreuse"
-streamline_color = "orchid"
-plotter_background_color = "black"
-figure_background_color = "None"
-text_color = "#818181"
-quality = 75
-window_size = [1024, 768]
+_sequential_color_map = "speed"
+_diverging_color_map = "delta"
+_wake_vortex_color = "white"
+_panel_color = "chartreuse"
+_streamline_color = "orchid"
+_plotter_background_color = "black"
+_figure_background_color = "None"
+_text_color = "#818181"
+_quality = 75
+_window_size = [1024, 768]
 
 # For the figure lines, use the "Prism" qualitative color map from
 # carto.com/carto-colors.
-prism = [
+_prism = [
     "#5F4690",
     "#1D6996",
     "#38A6A5",
@@ -74,33 +62,33 @@ prism = [
     "#666666",
 ]
 [
-    drag_color,
-    side_color,
-    lift_color,
-    roll_color,
-    pitch_color,
-    yaw_color,
-] = prism[3:9]
+    _drag_color,
+    _side_color,
+    _lift_color,
+    _roll_color,
+    _pitch_color,
+    _yaw_color,
+] = _prism[3:9]
 
 # Set constants for the color maps, scalar bars, and text boxes.
-color_map_num_sig = 3
-bar_title_font_size = 30
-bar_label_font_size = 21
-bar_width = 0.5
-bar_position_x = 0.25
-bar_position_y = 0.05
-bar_n_labels = 2
-text_max_position = (0.85, 0.075)
-text_min_position = (0.85, 0.050)
-text_speed_position = (0.05, 0.075)
-text_font_size = 11
+_color_map_num_sig = 3
+_bar_title_font_size = 30
+_bar_label_font_size = 21
+_bar_width = 0.5
+_bar_position_x = 0.25
+_bar_position_y = 0.05
+_bar_n_labels = 2
+_text_max_position = (0.85, 0.075)
+_text_min_position = (0.85, 0.050)
+_text_speed_position = (0.05, 0.075)
+_text_font_size = 11
 
 # Set the number of markers and the marker size for the results plots.
-num_markers = 6
-marker_size = 8
+_num_markers = 6
+_marker_size = 8
 
 # Calculate the normalized spacing between the markers for the results plots.
-marker_spacing = 1.0 / num_markers
+_marker_spacing = 1.0 / _num_markers
 
 
 def draw(
@@ -144,7 +132,7 @@ def draw(
 
     # Initialize the plotter and set it to use parallel projection (instead of
     # perspective).
-    plotter = pv.Plotter(window_size=window_size, lighting=None)
+    plotter = pv.Plotter(window_size=_window_size, lighting=None)
     plotter.enable_parallel_projection()
 
     # Get the solver's geometry.
@@ -158,12 +146,14 @@ def draw(
         # If the user wants to show the wake ring vortices, then get their surfaces and
         # plot them.
         if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(solver, draw_step)
+            wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
+                solver, draw_step
+            )
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
                 smooth_shading=False,
-                color=wake_vortex_color,
+                color=_wake_vortex_color,
             )
     else:
         airplanes = solver.airplanes
@@ -178,13 +168,13 @@ def draw(
         show_scalars = True
 
     # Get the panel surfaces.
-    panel_surfaces = get_panel_surfaces(airplanes)
+    panel_surfaces = _get_panel_surfaces(airplanes)
 
     # Check if the user wants to plot any scalars.
     if show_scalars:
 
         # Get the scalars
-        these_scalars = get_scalars(airplanes, scalar_type)
+        these_scalars = _get_scalars(airplanes, scalar_type)
         min_scalar = round(min(these_scalars), 2)
         max_scalar = round(max(these_scalars), 2)
 
@@ -192,21 +182,21 @@ def draw(
         # have the same sign (sequential color map) or if they have different signs
         # (diverging color map).
         if np.sign(np.min(these_scalars)) == np.sign(np.max(these_scalars)):
-            color_map = sequential_color_map
+            color_map = _sequential_color_map
             c_min = max(
-                np.mean(these_scalars) - color_map_num_sig * np.std(these_scalars),
+                np.mean(these_scalars) - _color_map_num_sig * np.std(these_scalars),
                 np.min(these_scalars),
             )
             c_max = min(
-                np.mean(these_scalars) + color_map_num_sig * np.std(these_scalars),
+                np.mean(these_scalars) + _color_map_num_sig * np.std(these_scalars),
                 np.max(these_scalars),
             )
         else:
-            color_map = diverging_color_map
-            c_min = -color_map_num_sig * np.std(these_scalars)
-            c_max = color_map_num_sig * np.std(these_scalars)
+            color_map = _diverging_color_map
+            c_min = -_color_map_num_sig * np.std(these_scalars)
+            c_max = _color_map_num_sig * np.std(these_scalars)
 
-        plot_scalars(
+        _plot_scalars(
             plotter,
             these_scalars,
             scalar_type,
@@ -221,7 +211,7 @@ def draw(
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
-            color=panel_color,
+            color=_panel_color,
             smooth_shading=False,
         )
 
@@ -251,13 +241,13 @@ def draw(
                             point,
                         ),
                         show_edges=True,
-                        color=streamline_color,
+                        color=_streamline_color,
                         line_width=2,
                         smooth_shading=False,
                     )
 
     # Set the plotter's background color.
-    plotter.set_background(color=plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)
     if not testing:
         # Show the plotter so the user can adjust the camera position and window.
         # When the user closes the window, the plotter object itself won't close so
@@ -289,7 +279,7 @@ def draw(
             )
         )
         webp.save_image(
-            img=image, file_path="Draw.webp", lossless=False, quality=quality
+            img=image, file_path="Draw.webp", lossless=False, quality=_quality
         )
 
     # Close all the plotters.
@@ -343,7 +333,7 @@ def animate(
     actual_fps = math.floor(requested_fps * speed)
 
     # Initialize the plotter and get the color map.
-    plotter = pv.Plotter(window_size=window_size, lighting=None)
+    plotter = pv.Plotter(window_size=_window_size, lighting=None)
 
     # Initialize values to hold the color map choice and its limits.
     c_min = 0
@@ -355,10 +345,10 @@ def animate(
         # speed.
         plotter.add_text(
             text="Speed: " + str(round(100 * speed)) + "%",
-            position=text_speed_position,
-            font_size=text_font_size,
+            position=_text_speed_position,
+            font_size=_text_font_size,
             viewport=True,
-            color=text_color,
+            color=_text_color,
         )
 
     # Check if the user wants to show scalars on the wing panels.
@@ -381,39 +371,39 @@ def animate(
         # Now iterate through each time step and gather all the scalars for its list
         # of airplanes. These values will be used to configure the color map.
         for airplanes in step_airplanes:
-            scalars_to_add = get_scalars(airplanes, scalar_type)
+            scalars_to_add = _get_scalars(airplanes, scalar_type)
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
         # across all time steps have the same sign (sequential color map) or if they
         # have different signs (diverging color map).
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
-            color_map = sequential_color_map
+            color_map = _sequential_color_map
             c_min = max(
-                np.mean(all_scalars) - color_map_num_sig * np.std(all_scalars),
+                np.mean(all_scalars) - _color_map_num_sig * np.std(all_scalars),
                 np.min(all_scalars),
             )
             c_max = min(
-                np.mean(all_scalars) + color_map_num_sig * np.std(all_scalars),
+                np.mean(all_scalars) + _color_map_num_sig * np.std(all_scalars),
                 np.max(all_scalars),
             )
         else:
-            color_map = diverging_color_map
-            c_min = -color_map_num_sig * np.std(all_scalars)
-            c_max = color_map_num_sig * np.std(all_scalars)
+            color_map = _diverging_color_map
+            c_min = -_color_map_num_sig * np.std(all_scalars)
+            c_max = _color_map_num_sig * np.std(all_scalars)
 
         min_scalar = round(min(all_scalars), 2)
         max_scalar = round(max(all_scalars), 2)
 
     # Initialize the panel surfaces and add the meshes to the plotter.
-    panel_surfaces = get_panel_surfaces(step_airplanes[0])
+    panel_surfaces = _get_panel_surfaces(step_airplanes[0])
 
     # Check if the user wants to show any scalars. If so, add the panel surfaces to
     # the plotter with these scalars.
     if show_scalars and first_results_step == 0:
-        these_scalars = get_scalars(step_airplanes[0], scalar_type)
+        these_scalars = _get_scalars(step_airplanes[0], scalar_type)
 
-        plot_scalars(
+        _plot_scalars(
             plotter,
             these_scalars,
             scalar_type,
@@ -428,12 +418,12 @@ def animate(
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
-            color=panel_color,
+            color=_panel_color,
             smooth_shading=False,
         )
 
     # Set the plotter background color and show the plotter.
-    plotter.set_background(color=plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)
 
     if not testing:
         # If not testing, print a message to the console on how to set up the window.
@@ -480,28 +470,28 @@ def animate(
         plotter.clear()
 
         # Get the panel surfaces.
-        panel_surfaces = get_panel_surfaces(airplanes)
+        panel_surfaces = _get_panel_surfaces(airplanes)
 
         if save:
             plotter.add_text(
                 text="Speed: " + str(round(100 * speed)) + "%",
-                position=text_speed_position,
-                font_size=text_font_size,
+                position=_text_speed_position,
+                font_size=_text_font_size,
                 viewport=True,
-                color=text_color,
+                color=_text_color,
             )
 
         # If the user wants to show the wake ring vortices, then get their surfaces
         # and plot them.
         if show_wake_vortices:
-            wake_ring_vortex_surfaces = get_wake_ring_vortex_surfaces(
+            wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
             )
             plotter.add_mesh(
                 wake_ring_vortex_surfaces,
                 show_edges=True,
                 smooth_shading=False,
-                color=wake_vortex_color,
+                color=_wake_vortex_color,
             )
 
         # Check if the user wants to plot scalars and this step is equal to or
@@ -509,9 +499,9 @@ def animate(
         # surfaces to the plotter with the scalars.
         if show_scalars and first_results_step <= current_step:
 
-            these_scalars = get_scalars(airplanes, scalar_type)
+            these_scalars = _get_scalars(airplanes, scalar_type)
 
-            plot_scalars(
+            _plot_scalars(
                 plotter,
                 these_scalars,
                 scalar_type,
@@ -526,7 +516,7 @@ def animate(
             plotter.add_mesh(
                 panel_surfaces,
                 show_edges=True,
-                color=panel_color,
+                color=_panel_color,
                 smooth_shading=False,
             )
 
@@ -550,7 +540,7 @@ def animate(
     if save:
         # Convert the list of WebP images to a WebP animation.
         webp.save_images(
-            images, "Animate.webp", fps=actual_fps, lossless=False, quality=quality
+            images, "Animate.webp", fps=actual_fps, lossless=False, quality=_quality
         )
 
     # Close all the plotters.
@@ -655,151 +645,151 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         moment_coefficients_axes.spines.top.set_visible(False)
 
         # Format all the plots' spine and label colors.
-        force_axes.spines.bottom.set_color(text_color)
-        force_axes.spines.left.set_color(text_color)
-        force_axes.xaxis.label.set_color(text_color)
-        force_axes.yaxis.label.set_color(text_color)
-        force_coefficients_axes.spines.bottom.set_color(text_color)
-        force_coefficients_axes.spines.left.set_color(text_color)
-        force_coefficients_axes.xaxis.label.set_color(text_color)
-        force_coefficients_axes.yaxis.label.set_color(text_color)
-        moment_coefficients_axes.spines.bottom.set_color(text_color)
-        moment_coefficients_axes.spines.left.set_color(text_color)
-        moment_coefficients_axes.xaxis.label.set_color(text_color)
-        moment_coefficients_axes.yaxis.label.set_color(text_color)
-        moment_axes.spines.bottom.set_color(text_color)
-        moment_axes.spines.left.set_color(text_color)
-        moment_axes.xaxis.label.set_color(text_color)
-        moment_axes.yaxis.label.set_color(text_color)
+        force_axes.spines.bottom.set_color(_text_color)
+        force_axes.spines.left.set_color(_text_color)
+        force_axes.xaxis.label.set_color(_text_color)
+        force_axes.yaxis.label.set_color(_text_color)
+        force_coefficients_axes.spines.bottom.set_color(_text_color)
+        force_coefficients_axes.spines.left.set_color(_text_color)
+        force_coefficients_axes.xaxis.label.set_color(_text_color)
+        force_coefficients_axes.yaxis.label.set_color(_text_color)
+        moment_coefficients_axes.spines.bottom.set_color(_text_color)
+        moment_coefficients_axes.spines.left.set_color(_text_color)
+        moment_coefficients_axes.xaxis.label.set_color(_text_color)
+        moment_coefficients_axes.yaxis.label.set_color(_text_color)
+        moment_axes.spines.bottom.set_color(_text_color)
+        moment_axes.spines.left.set_color(_text_color)
+        moment_axes.xaxis.label.set_color(_text_color)
+        moment_axes.yaxis.label.set_color(_text_color)
 
         # Format all the plots' tick colors.
-        force_axes.tick_params(axis="x", colors=text_color)
-        force_axes.tick_params(axis="y", colors=text_color)
-        force_coefficients_axes.tick_params(axis="x", colors=text_color)
-        force_coefficients_axes.tick_params(axis="y", colors=text_color)
-        moment_coefficients_axes.tick_params(axis="x", colors=text_color)
-        moment_coefficients_axes.tick_params(axis="y", colors=text_color)
-        moment_axes.tick_params(axis="x", colors=text_color)
-        moment_axes.tick_params(axis="y", colors=text_color)
+        force_axes.tick_params(axis="x", colors=_text_color)
+        force_axes.tick_params(axis="y", colors=_text_color)
+        force_coefficients_axes.tick_params(axis="x", colors=_text_color)
+        force_coefficients_axes.tick_params(axis="y", colors=_text_color)
+        moment_coefficients_axes.tick_params(axis="x", colors=_text_color)
+        moment_coefficients_axes.tick_params(axis="y", colors=_text_color)
+        moment_axes.tick_params(axis="x", colors=_text_color)
+        moment_axes.tick_params(axis="y", colors=_text_color)
 
         # Format all the plots' background colors.
-        force_figure.patch.set_facecolor(figure_background_color)
-        force_axes.set_facecolor(figure_background_color)
-        force_coefficients_figure.patch.set_facecolor(figure_background_color)
-        force_coefficients_axes.set_facecolor(figure_background_color)
-        moment_figure.patch.set_facecolor(figure_background_color)
-        moment_axes.set_facecolor(figure_background_color)
-        moment_coefficients_figure.patch.set_facecolor(figure_background_color)
-        moment_coefficients_axes.set_facecolor(figure_background_color)
+        force_figure.patch.set_facecolor(_figure_background_color)
+        force_axes.set_facecolor(_figure_background_color)
+        force_coefficients_figure.patch.set_facecolor(_figure_background_color)
+        force_coefficients_axes.set_facecolor(_figure_background_color)
+        moment_figure.patch.set_facecolor(_figure_background_color)
+        moment_axes.set_facecolor(_figure_background_color)
+        moment_coefficients_figure.patch.set_facecolor(_figure_background_color)
+        moment_coefficients_axes.set_facecolor(_figure_background_color)
 
         # Populate the plots.
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 0],
             label="Induced Drag",
-            color=drag_color,
+            color=_drag_color,
             marker=".",
-            markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 1],
             label="Side Force",
-            color=side_color,
+            color=_side_color,
             marker=".",
-            markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         force_axes.plot(
             times,
             total_near_field_force_wind_axes[airplane_id, 2],
             label="Lift",
-            color=lift_color,
+            color=_lift_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 0],
             label="Induced Drag",
-            color=drag_color,
+            color=_drag_color,
             marker=".",
-            markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 1],
             label="Side Force",
-            color=side_color,
+            color=_side_color,
             marker=".",
-            markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         force_coefficients_axes.plot(
             times,
             total_near_field_force_coefficients_wind_axes[airplane_id, 2],
             label="Lift",
-            color=lift_color,
+            color=_lift_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 0],
             label="Roll",
-            color=roll_color,
+            color=_roll_color,
             marker=".",
-            markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 1],
             label="Pitch",
-            color=pitch_color,
+            color=_pitch_color,
             marker=".",
-            markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_axes.plot(
             times,
             total_near_field_moment_wind_axes[airplane_id, 2],
             label="Yaw",
-            color=yaw_color,
+            color=_yaw_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 0],
             label="Roll",
-            color=roll_color,
+            color=_roll_color,
             marker=".",
-            markevery=(marker_spacing * 0 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 1],
             label="Pitch",
-            color=pitch_color,
+            color=_pitch_color,
             marker=".",
-            markevery=(marker_spacing * 1 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
         moment_coefficients_axes.plot(
             times,
             total_near_field_moment_coefficients_wind_axes[airplane_id, 2],
             label="Yaw",
-            color=yaw_color,
+            color=_yaw_color,
             marker=".",
-            markevery=(marker_spacing * 2 / 3, marker_spacing),
-            markersize=marker_size,
+            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
+            markersize=_marker_size,
         )
 
         # Find and format this airplane's name for use in the plot titles.
@@ -810,39 +800,39 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         moment_coefficient_title = airplane_name + " Moment Coefficients vs. Time"
 
         # Name the plots' axis labels and titles.
-        force_axes.set_xlabel("Time (s)", color=text_color)
-        force_axes.set_ylabel("Force (N)", color=text_color)
-        force_axes.set_title(force_title, color=text_color)
-        force_coefficients_axes.set_xlabel("Time (s)", color=text_color)
-        force_coefficients_axes.set_ylabel("Coefficient", color=text_color)
-        force_coefficients_axes.set_title(force_coefficient_title, color=text_color)
-        moment_axes.set_xlabel("Time (s)", color=text_color)
-        moment_axes.set_ylabel("Moment (N m)", color=text_color)
-        moment_axes.set_title(moment_title, color=text_color)
-        moment_coefficients_axes.set_xlabel("Time (s)", color=text_color)
-        moment_coefficients_axes.set_ylabel("Coefficient", color=text_color)
-        moment_coefficients_axes.set_title(moment_coefficient_title, color=text_color)
+        force_axes.set_xlabel("Time (s)", color=_text_color)
+        force_axes.set_ylabel("Force (N)", color=_text_color)
+        force_axes.set_title(force_title, color=_text_color)
+        force_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
+        force_coefficients_axes.set_ylabel("Coefficient", color=_text_color)
+        force_coefficients_axes.set_title(force_coefficient_title, color=_text_color)
+        moment_axes.set_xlabel("Time (s)", color=_text_color)
+        moment_axes.set_ylabel("Moment (N m)", color=_text_color)
+        moment_axes.set_title(moment_title, color=_text_color)
+        moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
+        moment_coefficients_axes.set_ylabel("Coefficient", color=_text_color)
+        moment_coefficients_axes.set_title(moment_coefficient_title, color=_text_color)
 
         # Format the plots' legends.
         force_axes.legend(
-            facecolor=figure_background_color,
-            edgecolor=figure_background_color,
-            labelcolor=text_color,
+            facecolor=_figure_background_color,
+            edgecolor=_figure_background_color,
+            labelcolor=_text_color,
         )
         force_coefficients_axes.legend(
-            facecolor=figure_background_color,
-            edgecolor=figure_background_color,
-            labelcolor=text_color,
+            facecolor=_figure_background_color,
+            edgecolor=_figure_background_color,
+            labelcolor=_text_color,
         )
         moment_axes.legend(
-            facecolor=figure_background_color,
-            edgecolor=figure_background_color,
-            labelcolor=text_color,
+            facecolor=_figure_background_color,
+            edgecolor=_figure_background_color,
+            labelcolor=_text_color,
         )
         moment_coefficients_axes.legend(
-            facecolor=figure_background_color,
-            edgecolor=figure_background_color,
-            labelcolor=text_color,
+            facecolor=_figure_background_color,
+            edgecolor=_figure_background_color,
+            labelcolor=_text_color,
         )
 
         # Save the figures as PNGs if the user wants to do so.
@@ -1098,7 +1088,7 @@ def print_unsteady_results(unsteady_solver):
             print("")
 
 
-def get_panel_surfaces(
+def _get_panel_surfaces(
     airplanes,
 ):
     """This function returns a PolyData representation of the wing panel surfaces
@@ -1156,7 +1146,7 @@ def get_panel_surfaces(
     return pv.PolyData(panel_vertices, panel_faces)
 
 
-def get_wake_ring_vortex_surfaces(solver, step):
+def _get_wake_ring_vortex_surfaces(solver, step):
     """This function returns the PolyData object for the surface of wake ring
     vortices at a given time step.
 
@@ -1233,7 +1223,7 @@ def get_wake_ring_vortex_surfaces(solver, step):
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
-def get_scalars(
+def _get_scalars(
     airplanes,
     scalar_type,
 ):
@@ -1274,7 +1264,7 @@ def get_scalars(
     return scalars
 
 
-def plot_scalars(
+def _plot_scalars(
     plotter,
     these_scalars,
     scalar_type,
@@ -1312,14 +1302,14 @@ def plot_scalars(
     """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",
-        title_font_size=bar_title_font_size,
-        label_font_size=bar_label_font_size,
-        width=bar_width,
-        position_x=bar_position_x,
-        position_y=bar_position_y,
-        n_labels=bar_n_labels,
+        title_font_size=_bar_title_font_size,
+        label_font_size=_bar_label_font_size,
+        width=_bar_width,
+        position_x=_bar_position_x,
+        position_y=_bar_position_y,
+        n_labels=_bar_n_labels,
         fmt="%.2f",
-        color=text_color,
+        color=_text_color,
     )
     plotter.add_mesh(
         panel_surfaces,
@@ -1332,15 +1322,15 @@ def plot_scalars(
     )
     plotter.add_text(
         text="Max: " + str(max_scalar),
-        position=text_max_position,
-        font_size=text_font_size,
+        position=_text_max_position,
+        font_size=_text_font_size,
         viewport=True,
-        color=text_color,
+        color=_text_color,
     )
     plotter.add_text(
         text="Min: " + str(min_scalar),
-        position=text_min_position,
-        font_size=text_font_size,
+        position=_text_min_position,
+        font_size=_text_font_size,
         viewport=True,
-        color=text_color,
+        color=_text_color,
     )

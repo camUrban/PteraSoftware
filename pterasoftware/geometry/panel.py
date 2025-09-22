@@ -1,3 +1,4 @@
+# ToDo: Consider making this module private (renaming it with a _ prefix).
 """This module contains the Panel class.
 
 This module contains the following classes:

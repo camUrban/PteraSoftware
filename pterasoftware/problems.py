@@ -13,6 +13,11 @@ This module contains the following functions:
 
 import math
 
+from . import geometry
+from . import movement as mov
+from . import operating_point as op
+from . import parameter_validation
+
 
 # ToDo: Add unit tests for this class.
 class SteadyProblem:
@@ -39,7 +44,16 @@ class SteadyProblem:
 
             This is the OperatingPoint for this SteadyProblem.
         """
+        if not isinstance(airplanes, list):
+            raise TypeError("airplanes must be a list.")
+        if len(airplanes) < 1:
+            raise ValueError("airplanes must have at least one element.")
+        for airplane in airplanes:
+            if not isinstance(airplane, geometry.airplane.Airplane):
+                raise TypeError("Every element in airplanes must be an Airplane.")
         self.airplanes = airplanes
+        if not isinstance(operating_point, op.OperatingPoint):
+            raise TypeError("operating_point must have be an OperatingPoint.")
         self.operating_point = operating_point
 
 
@@ -65,17 +79,22 @@ class UnsteadyProblem:
             This is the Movement that contains this UnsteadyProblem's
             OperatingPointMovement and AirplaneMovements.
 
-        :param only_final_results: Bool
+        :param only_final_results: boolLike, optional
 
             If set to True, the Solver will only calculate forces, moments,
             and pressures for the final complete cycle (of the Movement's
             sub-Movement with the longest period), which increases simulation speed.
             The default value is False.
         """
+        if not isinstance(movement, mov.Movement):
+            raise TypeError("movement must be a Movement.")
         self.movement = movement
+        self.only_final_results = parameter_validation.boolLike_return_bool(
+            only_final_results, "only_final_results"
+        )
+
         self.num_steps = self.movement.num_steps
         self.delta_time = self.movement.delta_time
-        self.only_final_results = only_final_results
 
         # Find the maximum period of this UnsteadyProblem's Movement's sub-Movements.
         self.max_period = movement.get_max_period()

@@ -1,3 +1,4 @@
+# ToDo: Consider making this module private (renaming it with a _ prefix).
 """This module contains vortex class definitions, and functions for calculating
 induced velocities.
 
@@ -46,18 +47,18 @@ from . import parameter_validation
 # dramatically affects the stability of the result. I'm using this value, as cited
 # for use in flapping-wing vehicles in "Role of Filament Strain in the Free-Vortex
 # Modeling of Rotor Wakes" (Ananthan and Leishman, 2004). It is unitless.
-squire = 10**-4
+_squire = 10**-4
 
 # Set the value of Lamb's constant that will be used by the induced velocity
 # functions. Lamb's constant relates to the size of the vortex cores and the rate at
 # which they grow. The value of this parameter is well agreed upon, and published in
 # "Extended Unsteady Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al.,
 # 2016). It is unitless.
-lamb = 1.25643
+_lamb = 1.25643
 
 # Set the value of the local machine error. This will be used to fix removable
 # discontinuities in the induced velocity functions.
-eps = np.finfo(float).eps
+_eps = np.finfo(float).eps
 
 
 # ToDo: Write unit tests for this class.
@@ -1003,7 +1004,7 @@ def _collapsed_velocities_from_line_vortices(
 
         # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
         # this will evaluate to be 0.0 meters.
-        r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
+        r_c = 2 * math.sqrt(_lamb * (nu + _squire * abs(strength)) * age)
 
         # The r0_G vector goes from the LineVortex's start point to its end point (in
         # geometry axes).
@@ -1048,7 +1049,7 @@ def _collapsed_velocities_from_line_vortices(
             # (within machine epsilon), there is a removable discontinuity. In this
             # case, continue to the next point because there is no velocity induced
             # by the current LineVortex at this point.
-            if r1 < eps or r2 < eps or r3**2 < eps:
+            if r1 < _eps or r2 < _eps or r3**2 < _eps:
                 continue
             else:
                 c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
@@ -1140,7 +1141,7 @@ def _expanded_velocities_from_line_vortices(
 
         # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
         # this will evaluate to be 0.0 meters.
-        r_c = 2 * math.sqrt(lamb * (nu + squire * abs(strength)) * age)
+        r_c = 2 * math.sqrt(_lamb * (nu + _squire * abs(strength)) * age)
 
         # The r0_G vector goes from the LineVortex's start point to its end point (in
         # geometry axes).
@@ -1185,7 +1186,7 @@ def _expanded_velocities_from_line_vortices(
             # (within machine epsilon), there is a removable discontinuity. In this
             # case, continue to the next point because there is no velocity induced
             # by the current LineVortex at this point.
-            if r1 < eps or r2 < eps or r3**2 < eps:
+            if r1 < _eps or r2 < _eps or r3**2 < _eps:
                 continue
             else:
                 c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))

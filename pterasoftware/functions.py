@@ -11,9 +11,6 @@ This module contains the following functions:
     of values between a specified minimum and maximum value that are spaced via a
     cosine function.
 
-    angle_axis_rotation_matrix: This function is used to find the rotation matrix for
-    a given axis and angle.
-
     numba_centroid_of_quadrilateral: This function is used to find the centroid of a
     quadrilateral. It has been optimized for JIT compilation using Numba.
 
@@ -41,9 +38,6 @@ This module contains the following functions:
     numba_1d_explicit_cross: This function takes in two arrays, each of which contain
     N vectors of 3 components. The function then calculates and returns the cross
     product of the two vectors at each position.
-
-    reflect_point_across_plane: This function finds the coordinates of the reflection
-    of a point across a plane in 3D space.
 
     interp_between_points: This function finds the MxN points between M pairs of
     points in 3D space given an array of N normalized spacings.
@@ -91,66 +85,6 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
         np.linspace(np.pi, 0, n_points, endpoint=endpoint)
     )
     return cosine_spaced_points
-
-
-def angle_axis_rotation_matrix(angle, axis, axis_already_normalized=False):
-    """This function is used to find the rotation matrix for a given axis and angle.
-
-    Citation:
-        Adapted from:         geometry.angle_axis_rotation_matrix in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
-
-    For more information on the math behind this method, see:
-    https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-
-    :param angle: float or 1D array of 3 angles
-        This is the angle. Provide it in radians.
-    :param axis: 1D array of 3 elements.
-        This is the axis.
-    :param axis_already_normalized: bool, optional
-        Set this as True if the axis given is already normalized, which will skip
-        internal normalization and speed up the method. If not, set as False. The
-        default is False.
-    :return rotation matrix: array
-        This is the rotation matrix. If the given angle is a scalar, this will be a 3
-        x 3 array. If the given angle is a vector, this will be a 3 x 3 x N array.
-    """
-
-    # Normalize the axis is it is not already normalized.
-    if not axis_already_normalized:
-        axis = axis / np.linalg.norm(axis)
-
-    # Define constants to use when calculating the rotation matrix.
-    sin_theta = np.sin(angle)
-    cos_theta = np.cos(angle)
-    u_x = axis[0]
-    u_y = axis[1]
-    u_z = axis[2]
-
-    # Calculate the rotation matrix.
-    rotation_matrix = np.array(
-        [
-            [
-                cos_theta + u_x**2 * (1 - cos_theta),
-                u_x * u_y * (1 - cos_theta) - u_z * sin_theta,
-                u_x * u_z * (1 - cos_theta) + u_y * sin_theta,
-            ],
-            [
-                u_y * u_x * (1 - cos_theta) + u_z * sin_theta,
-                cos_theta + u_y**2 * (1 - cos_theta),
-                u_y * u_z * (1 - cos_theta) - u_x * sin_theta,
-            ],
-            [
-                u_z * u_x * (1 - cos_theta) - u_y * sin_theta,
-                u_z * u_y * (1 - cos_theta) + u_x * sin_theta,
-                cos_theta + u_z**2 * (1 - cos_theta),
-            ],
-        ]
-    )
-
-    # Return the rotation matrix.
-    return rotation_matrix
 
 
 @njit(cache=True, fastmath=False)
@@ -668,66 +602,6 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
             vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
         )
     return crosses
-
-
-def reflect_point_across_plane(point, plane_unit_normal, plane_point):
-    """This function finds the coordinates of the reflection of a point across a
-    plane in 3D space.
-
-    As the plane doesn't necessarily include the origin, this is an affine
-    transformation. The transformation matrix and details are discussed in the
-    following source: https://en.wikipedia.org/wiki/Transformation_matrix#Reflection_2
-
-    :param point: (3,) array of floats
-        This is a (3,) array of the coordinates of the point to reflect. The units
-        are meters.
-    :param plane_unit_normal: (3,) array of floats
-        This is a (3,) array of the components of the plane's unit normal vector. It
-        must have unit magnitude. The units are meters.
-    :param plane_point: (3,) array of floats
-        This is a (3,) array of the coordinates of a point on the plane. The units
-        are meters.
-    :return: (3,) array of floats
-        This is a (3,) array of the components of the reflected point. The units are
-        meters.
-    """
-    [x, y, z] = point
-    [a, b, c] = plane_unit_normal
-
-    # Find the dot product between the point on the plane and unit normal.
-    d = np.dot(-plane_point, plane_unit_normal)
-
-    # To make the transformation matrix readable, define new variables for the
-    # products of the vector components and the dot product.
-    ab = a * b
-    ac = a * c
-    ad = a * d
-    bc = b * c
-    bd = b * d
-    cd = c * d
-    a2 = a**2
-    b2 = b**2
-    c2 = c**2
-
-    # Define the affine transformation matrix. See the citation in the docstring for
-    # details.
-    transformation_matrix = np.array(
-        [
-            [1 - 2 * a2, -2 * ab, -2 * ac, -2 * ad],
-            [-2 * ab, 1 - 2 * b2, -2 * bc, -2 * bd],
-            [-2 * ac, -2 * bc, 1 - 2 * c2, -2 * cd],
-            [0, 0, 0, 1],
-        ]
-    )
-
-    expanded_coordinates = np.array([[x], [y], [z], [1]])
-
-    transformed_expanded_coordinates = transformation_matrix @ expanded_coordinates
-
-    # Extract the reflected coordinates in 3D space.
-    [x_prime, y_prime, z_prime] = transformed_expanded_coordinates[:-1, 0]
-
-    return np.array([x_prime, y_prime, z_prime])
 
 
 @njit(cache=True, fastmath=False)

@@ -644,7 +644,7 @@ sim_forces_wind_axes = np.zeros((3, validation_num_steps))
 for step in range(validation_num_steps):
     # Get the airplane at this time step.
     airplane = airplanes[step]
-    # Add the total near field forces on the airplane at this time step to the list
+    # Add the total forces on the airplane at this time step to the list
     # of simulated forces.
     sim_forces_wind_axes[:, step] = airplane.total_near_field_force_wind_axes
 

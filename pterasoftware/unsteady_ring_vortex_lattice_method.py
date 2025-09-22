@@ -859,7 +859,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     # NOTE: I haven't yet started refactoring this method.
     def calculate_forces_and_moments(self):
-        """This method finds the forces and moments calculated from the near field.
+        """This method finds the forces and moments.
 
         Citation: This method uses logic described on pages 9-11 of "Modeling of
         aerodynamic forces in flapping flight with the Unsteady Vortex Lattice

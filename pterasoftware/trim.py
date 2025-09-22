@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains functions to analyze the trim conditions of steady and
 unsteady solvers.
 
@@ -36,6 +37,7 @@ trim_logger.setLevel(logging.DEBUG)
 logging.basicConfig()
 
 
+# NOTE: I haven't yet started refactoring this function.
 # ToDo: Document this function.
 def analyze_steady_trim(
     problem,
@@ -201,6 +203,7 @@ def analyze_steady_trim(
     return [np.nan, np.nan, np.nan, np.nan]
 
 
+# NOTE: I haven't yet started refactoring this function.
 # ToDo: Document this function.
 def analyze_unsteady_trim(
     airplane_movement,

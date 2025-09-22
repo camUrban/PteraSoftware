@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -91,6 +92,7 @@ _marker_size = 8
 _marker_spacing = 1.0 / _num_markers
 
 
+# NOTE: I haven't yet started refactoring this function.
 def draw(
     solver,
     scalar_type=None,
@@ -286,6 +288,7 @@ def draw(
     pv.close_all()
 
 
+# NOTE: I haven't yet started refactoring this function.
 def animate(
     unsteady_solver,
     scalar_type=None,
@@ -547,6 +550,7 @@ def animate(
     pv.close_all()
 
 
+# NOTE: I haven't yet started refactoring this function.
 def plot_results_versus_time(unsteady_solver, show=True, save=False):
     """This method takes in an unsteady solver object, and plots the geometries'
     forces, moments, force coefficients, and moment coefficients as a function of time.
@@ -864,6 +868,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
             plt.close("all")
 
 
+# NOTE: I haven't yet started refactoring this function.
 def print_steady_results(steady_solver):
     """This function prints the forces, moments, force coefficients, and moment
     coefficients calculated by a steady solver.
@@ -961,6 +966,7 @@ def print_steady_results(steady_solver):
             print("")
 
 
+# NOTE: I haven't yet started refactoring this function.
 def print_unsteady_results(unsteady_solver):
     """This function prints the final cycle-averaged of the forces, moments,
     force coefficients, and moment coefficients calculated by an unsteady solver.
@@ -1088,6 +1094,7 @@ def print_unsteady_results(unsteady_solver):
             print("")
 
 
+# NOTE: I haven't yet started refactoring this function.
 def _get_panel_surfaces(
     airplanes,
 ):
@@ -1146,6 +1153,7 @@ def _get_panel_surfaces(
     return pv.PolyData(panel_vertices, panel_faces)
 
 
+# NOTE: I haven't yet started refactoring this function.
 def _get_wake_ring_vortex_surfaces(solver, step):
     """This function returns the PolyData object for the surface of wake ring
     vortices at a given time step.
@@ -1223,6 +1231,7 @@ def _get_wake_ring_vortex_surfaces(solver, step):
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
+# NOTE: I haven't yet started refactoring this function.
 def _get_scalars(
     airplanes,
     scalar_type,
@@ -1264,6 +1273,7 @@ def _get_scalars(
     return scalars
 
 
+# NOTE: I haven't yet started refactoring this function.
 def _plot_scalars(
     plotter,
     these_scalars,

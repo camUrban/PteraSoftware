@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains the class definition of this package's steady ring vortex
 lattice solver.
 
@@ -20,6 +21,7 @@ from . import functions
 from . import geometry
 
 
+# NOTE: I haven't yet started refactoring this class.
 class SteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses a steady ring vortex lattice method.
 
@@ -60,6 +62,7 @@ class SteadyRingVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(self, steady_problem):
         """This is the initialization method.
 
@@ -120,6 +123,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
         self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
+    # NOTE: I haven't yet started refactoring this method.
     def run(self, logging_level="Warning"):
         """Run the solver on the steady problem.
 
@@ -167,6 +171,7 @@ class SteadyRingVortexLatticeMethodSolver:
         logging.info("Calculating streamlines.")
         functions.calculate_streamlines(self)
 
+    # NOTE: I haven't yet started refactoring this method.
     def initialize_panel_vortices(self):
         """This method calculates the locations of the vortex vertices, and then
         initializes the panels' vortices.
@@ -247,6 +252,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             strength=None,
                         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
         ndarrays. This facilitates vectorization, which speeds up the solver.
@@ -301,6 +307,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     # Increment the global panel position.
                     global_panel_position += 1
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influence coefficients
         associated with the airplanes' geometry.
@@ -351,6 +358,7 @@ class SteadyRingVortexLatticeMethodSolver:
             np.expand_dims(self.panel_normal_directions, axis=1),
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_vortex_strengths(self):
         """Solve for each panel's vortex strengths.
 
@@ -378,6 +386,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     panel_num
                 ]
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
         induced velocity due to every vortex and the freestream velocity.
@@ -436,6 +445,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # by the vortices. This is in geometry axes.
         return total_influences + self.freestream_velocity
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_near_field_forces_and_moments(self):
         """This method finds the forces and moments calculated from the near field.
 
@@ -624,8 +634,8 @@ class SteadyRingVortexLatticeMethodSolver:
             + near_field_moments_on_ring_vortex_right_legs_geometry_axes
         )
 
-        functions.process_steady_solver_forces(
+        functions.process_steady_solver_loads(
             steady_solver=self,
-            near_field_forces_geometry_axes=near_field_forces_geometry_axes,
-            near_field_moments_geometry_axes=near_field_moments_geometry_axes,
+            forces_G=near_field_forces_geometry_axes,
+            moments_G_Cg=near_field_moments_geometry_axes,
         )

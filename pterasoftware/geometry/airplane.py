@@ -202,10 +202,10 @@ class Airplane:
 
         # Initialize empty class attributes to hold the force, moment,
         # force coefficients, and moment coefficients this Airplane experiences.
-        self.total_near_field_force_W = None
-        self.total_near_field_force_coefficients_W = None
-        self.total_near_field_moment_W = None
-        self.total_near_field_moment_coefficients_W = None
+        self.forces_W = None
+        self.forceCoefficients_W = None
+        self.moments_W_Cg = None
+        self.momentCoefficients_W_Cg = None
 
     def draw(self, save=False, testing=False):
         """Draw the 3D geometry of this Airplane.

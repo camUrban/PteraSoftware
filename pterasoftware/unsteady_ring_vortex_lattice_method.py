@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
@@ -21,6 +22,7 @@ from . import aerodynamics
 from . import functions
 
 
+# NOTE: I haven't yet started refactoring this class.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -50,8 +52,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         every point, it finds the induced velocity due to every vortex and the
         freestream velocity.
 
-        calculate_near_field_forces_and_moments: This method finds the forces and
-        moments calculated from the near field.
+        calculate_forces_and_moments: This method finds the forces and moments.
 
         populate_next_airplanes_wake: This method updates the next time step's
         airplanes' wakes.
@@ -78,7 +79,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         the apparent flow velocity due to flapping at the centers of the current
         airplanes' bound ring vortices' left legs.
 
-        finalize_near_field_forces_and_moments: For cases with static geometry,
+        finalize_forces_and_moments: For cases with static geometry,
         this function finds the final loads and load coefficients for each of the
         problem's airplanes. For cases with variable geometry, it finds the final
         cycle-averaged and cycle-root-mean-squared loads and load coefficients.
@@ -90,6 +91,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(self, unsteady_problem):
         """This is the initialization method.
 
@@ -109,7 +111,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_step = None
         self.current_airplanes = None
         self.current_operating_point = None
-        self.current_freestream_velocity_geometry_axes = None
+        self.current_freestream_velocity_G = None
         self.current_wing_wing_influences = None
         self.current_freestream_wing_influences = None
         self.current_wake_wing_influences = None
@@ -177,6 +179,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_wake_ring_vortex_ages = None
         self.num_panels = None
 
+    # NOTE: I haven't yet started refactoring this method.
     def run(
         self,
         logging_level="Warning",
@@ -332,7 +335,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_operating_point = self.steady_problems[
                     self.current_step
                 ].operating_point
-                self.current_freestream_velocity_geometry_axes = (
+                self.current_freestream_velocity_G = (
                     self.current_operating_point.vInf_G__E
                 )
                 logging.info(
@@ -353,7 +356,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_wing_wing_influences = np.zeros(
                     (self.num_panels, self.num_panels)
                 )
-                self.current_freestream_velocity_geometry_axes = (
+                self.current_freestream_velocity_G = (
                     self.current_operating_point.vInf_G__E
                 )
                 self.current_freestream_wing_influences = np.zeros(self.num_panels)
@@ -454,12 +457,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 logging.info("Calculating vortex strengths.")
                 self.calculate_vortex_strengths()
 
-                # Solve for the near field forces and moments on each panel.
+                # Solve for the forces and moments on each panel.
                 if self.current_step >= self.first_results_step:
-                    logging.info("Calculating near field forces and moments.")
-                    self.calculate_near_field_forces_and_moments()
+                    logging.info("Calculating forces and moments.")
+                    self.calculate_forces_and_moments()
 
-                # Solve for the near field forces and moments on each panel.
+                # Solve for the forces and moments on each panel.
                 logging.info("Shedding wake vortices.")
                 self.populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
 
@@ -468,13 +471,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 bar.update(n=approx_times[step + 1])
 
             logging.info("Calculating averaged or final forces and moments.")
-            self.finalize_near_field_forces_and_moments()
+            self.finalize_forces_and_moments()
 
         # Solve for the location of the streamlines if requested.
         if calculate_streamlines:
             logging.info("Calculating streamlines.")
             functions.calculate_streamlines(self)
 
+    # NOTE: I haven't yet started refactoring this method.
     def initialize_panel_vortices(self):
         """This method calculates the locations of the airplanes' bound vortex
         vertices, and then initializes their panels' bound vortices.
@@ -493,9 +497,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         for steady_problem in self.steady_problems:
 
             # Get the freestream velocity at this time step's problem.
-            this_freestream_velocity_geometry_axes = (
-                steady_problem.operating_point.vInf_G__E
-            )
+            this_freestream_velocity_G = steady_problem.operating_point.vInf_G__E
 
             # Iterate through this problem's airplanes' wings.
             for airplane in steady_problem.airplanes:
@@ -537,14 +539,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 back_left_vortex_vertex = (
                                     front_left_vortex_vertex
                                     + (panel.Blpp_G_Cg - panel.Flpp_G_Cg)
-                                    + this_freestream_velocity_geometry_axes
+                                    + this_freestream_velocity_G
                                     * self.delta_time
                                     * 0.25
                                 )
                                 back_right_vortex_vertex = (
                                     front_right_vortex_vertex
                                     + (panel.Brpp_G_Cg - panel.Frpp_G_Cg)
-                                    + this_freestream_velocity_geometry_axes
+                                    + this_freestream_velocity_G
                                     * self.delta_time
                                     * 0.25
                                 )
@@ -558,6 +560,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 strength=None,
                             )
 
+    # NOTE: I haven't yet started refactoring this method.
     def collapse_geometry(self):
         """This method converts attributes of the problem's geometry into 1D
         ndarrays. This facilitates vectorization, which speeds up the solver.
@@ -666,6 +669,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Increment the global panel position.
                         global_panel_position += 1
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_wing_wing_influences(self):
         """This method finds the matrix of wing-wing influence coefficients
         associated with the airplanes' geometries.
@@ -696,6 +700,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             np.expand_dims(self.panel_normal_directions, axis=1),
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_freestream_wing_influences(self):
         """This method finds the vector of freestream-wing influence coefficients
         associated with this problem.
@@ -710,7 +715,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         freestream_influences = np.einsum(
             "ij,j->i",
             self.panel_normal_directions,
-            self.current_freestream_velocity_geometry_axes,
+            self.current_freestream_velocity_G,
         )
 
         # Get the current flapping velocities at every collocation point.
@@ -732,6 +737,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             freestream_influences + flapping_influences
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_wake_wing_influences(self):
         """This method finds the vector of the wake-wing influences associated with
         the problem at this time step.
@@ -771,6 +777,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # zero everywhere, as there is no wake yet.
             self.current_wake_wing_influences = np.zeros(self.num_panels)
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_vortex_strengths(self):
         """This method solves for each panel's vortex strength.
 
@@ -791,6 +798,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Update this panel's ring vortex strength.
             panel.ring_vortex.update_strength(self.current_vortex_strengths[panel_num])
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_solution_velocity(self, points):
         """This function takes in a group of points. At every point, it finds the
         induced velocity due to every vortex and the freestream velocity.
@@ -847,9 +855,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Calculate and return the sum of the velocities induced by the vortices and
         # freestream at every point.
-        return total_vortex_velocities + self.current_freestream_velocity_geometry_axes
+        return total_vortex_velocities + self.current_freestream_velocity_G
 
-    def calculate_near_field_forces_and_moments(self):
+    # NOTE: I haven't yet started refactoring this method.
+    def calculate_forces_and_moments(self):
         """This method finds the forces and moments calculated from the near field.
 
         Citation: This method uses logic described on pages 9-11 of "Modeling of
@@ -976,10 +985,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Using the effective line vortex strengths, and the Kutta-Joukowski theorem
-        # to find the near field force in geometry axes on the front leg, left leg,
+        # to find the force in geometry axes on the front leg, left leg,
         # and right leg. Also calculate the unsteady component of the force on each
         # panel, which is derived from the unsteady Bernoulli equation.
-        near_field_forces_on_ring_vortex_right_legs_geometry_axes = (
+        forces_on_ring_vortex_right_legs_G = (
             self.current_operating_point.density
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
@@ -987,7 +996,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panel_right_vortex_vectors,
             )
         )
-        near_field_forces_on_ring_vortex_front_legs_geometry_axes = (
+        forces_on_ring_vortex_front_legs_G = (
             self.current_operating_point.density
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
@@ -995,7 +1004,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panel_front_vortex_vectors,
             )
         )
-        near_field_forces_on_ring_vortex_left_legs_geometry_axes = (
+        forces_on_ring_vortex_left_legs_G = (
             self.current_operating_point.density
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
@@ -1003,7 +1012,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panel_left_vortex_vectors,
             )
         )
-        unsteady_near_field_forces_geometry_axes = (
+        unsteady_forces_G = (
             self.current_operating_point.density
             * np.expand_dims(
                 (self.current_vortex_strengths - self.last_panel_vortex_strengths),
@@ -1015,54 +1024,47 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Sum the forces on the legs, and the unsteady force, to calculate the total
-        # near field force, in geometry axes, on each panel.
-        near_field_forces_geometry_axes = (
-            near_field_forces_on_ring_vortex_front_legs_geometry_axes
-            + near_field_forces_on_ring_vortex_left_legs_geometry_axes
-            + near_field_forces_on_ring_vortex_right_legs_geometry_axes
-            + unsteady_near_field_forces_geometry_axes
+        # force, in geometry axes, on each panel.
+        forces_G = (
+            forces_on_ring_vortex_front_legs_G
+            + forces_on_ring_vortex_left_legs_G
+            + forces_on_ring_vortex_right_legs_G
+            + unsteady_forces_G
         )
 
-        # Find the near field moment in geometry axes on the front leg, left leg,
+        # Find the moment in geometry axes on the front leg, left leg,
         # and right leg. Also find the moment on each panel due to the unsteady force.
-        near_field_moments_on_ring_vortex_front_legs_geometry_axes = (
-            functions.numba_1d_explicit_cross(
-                self.panel_front_vortex_centers - self.panel_moment_references,
-                near_field_forces_on_ring_vortex_front_legs_geometry_axes,
-            )
+        moments_on_ring_vortex_front_legs_G = functions.numba_1d_explicit_cross(
+            self.panel_front_vortex_centers - self.panel_moment_references,
+            forces_on_ring_vortex_front_legs_G,
         )
-        near_field_moments_on_ring_vortex_left_legs_geometry_axes = (
-            functions.numba_1d_explicit_cross(
-                self.panel_left_vortex_centers - self.panel_moment_references,
-                near_field_forces_on_ring_vortex_left_legs_geometry_axes,
-            )
+        moments_on_ring_vortex_left_legs_G = functions.numba_1d_explicit_cross(
+            self.panel_left_vortex_centers - self.panel_moment_references,
+            forces_on_ring_vortex_left_legs_G,
         )
-        near_field_moments_on_ring_vortex_right_legs_geometry_axes = (
-            functions.numba_1d_explicit_cross(
-                self.panel_right_vortex_centers - self.panel_moment_references,
-                near_field_forces_on_ring_vortex_right_legs_geometry_axes,
-            )
+        moments_on_ring_vortex_right_legs_G = functions.numba_1d_explicit_cross(
+            self.panel_right_vortex_centers - self.panel_moment_references,
+            forces_on_ring_vortex_right_legs_G,
         )
-        unsteady_near_field_moments_geometry_axes = functions.numba_1d_explicit_cross(
+        unsteady_moments_G_Cg = functions.numba_1d_explicit_cross(
             self.panel_collocation_points - self.panel_moment_references,
-            unsteady_near_field_forces_geometry_axes,
+            unsteady_forces_G,
         )
 
         # Sum the moments on the legs, and the unsteady moment, to calculate the
-        # total near field moment, in geometry axes, on each panel.
-        near_field_moments_geometry_axes = (
-            near_field_moments_on_ring_vortex_front_legs_geometry_axes
-            + near_field_moments_on_ring_vortex_left_legs_geometry_axes
-            + near_field_moments_on_ring_vortex_right_legs_geometry_axes
-            + unsteady_near_field_moments_geometry_axes
+        # total moment, in geometry axes, on each panel.
+        moments_G_Cg = (
+            moments_on_ring_vortex_front_legs_G
+            + moments_on_ring_vortex_left_legs_G
+            + moments_on_ring_vortex_right_legs_G
+            + unsteady_moments_G_Cg
         )
 
-        functions.process_unsteady_solver_forces(
-            unsteady_solver=self,
-            near_field_forces_geometry_axes=near_field_forces_geometry_axes,
-            near_field_moments_geometry_axes=near_field_moments_geometry_axes,
+        functions.process_unsteady_solver_loads(
+            unsteady_solver=self, forces_G=forces_G, moments_G_Cg=moments_G_Cg
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplanes' wakes.
 
@@ -1080,6 +1082,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next step's airplanes' wake vortices.
         self.populate_next_airplanes_wake_vortices()
 
+    # NOTE: I haven't yet started refactoring this method.
     def populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
         """This method populates the locations of the next airplanes' wake vortex
         vertices.
@@ -1193,7 +1196,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # If the wake is prescribed, set the velocity at this
                                 # vertex to the freestream velocity.
                                 velocity_at_first_row_wake_ring_vortex_vertex = (
-                                    self.current_freestream_velocity_geometry_axes
+                                    self.current_freestream_velocity_G
                                 )
                             else:
 
@@ -1260,7 +1263,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     # If the wake is prescribed, set the velocity at
                                     # this vertex to the freestream velocity.
                                     velocity_at_first_row_wake_vortex_vertex = (
-                                        self.current_freestream_velocity_geometry_axes
+                                        self.current_freestream_velocity_G
                                     )
                                 else:
 
@@ -1327,6 +1330,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def populate_next_airplanes_wake_vortices(self):
         """This method populates the locations of the next airplanes' wake vortices.
 
@@ -1463,6 +1467,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         strength=this_strength_copy,
                                     )
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_current_flapping_velocities_at_collocation_points(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' collocation points.
@@ -1491,6 +1496,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_collocations - last_collocations) / self.delta_time
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_current_flapping_velocities_at_right_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' right legs.
@@ -1519,6 +1525,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_right_leg_centers - last_right_leg_centers) / self.delta_time
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_current_flapping_velocities_at_front_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' front legs.
@@ -1547,6 +1554,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_front_leg_centers - last_front_leg_centers) / self.delta_time
 
+    # NOTE: I haven't yet started refactoring this method.
     def calculate_current_flapping_velocities_at_left_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' left legs.
@@ -1575,7 +1583,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
 
-    def finalize_near_field_forces_and_moments(self):
+    # NOTE: I haven't yet started refactoring this method.
+    def finalize_forces_and_moments(self):
         """For cases with static geometry, this function finds the final loads and
         load coefficients for each of the problem's airplanes. For cases with
         variable geometry, it finds the final cycle-averaged and
@@ -1592,16 +1601,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize matrices to hold the forces, moments, and coefficients at each of
         # the time steps that has results.
-        total_near_field_forces_wind_axes = np.zeros(
+        total_forces_W = np.zeros((self.num_airplanes, 3, num_steps_to_average))
+        total_force_coefficients_W = np.zeros(
             (self.num_airplanes, 3, num_steps_to_average)
         )
-        total_near_field_force_coefficients_wind_axes = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average)
-        )
-        total_near_field_moments_wind_axes = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average)
-        )
-        total_near_field_moment_coefficients_wind_axes = np.zeros(
+        total_moments_W_Cg = np.zeros((self.num_airplanes, 3, num_steps_to_average))
+        total_moment_coefficients_W_Cg = np.zeros(
             (self.num_airplanes, 3, num_steps_to_average)
         )
 
@@ -1617,18 +1622,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Iterate through this step's airplanes.
             for airplane_id, airplane in enumerate(these_airplanes):
-                total_near_field_forces_wind_axes[airplane_id, :, results_step] = (
-                    airplane.total_near_field_force_wind_axes
+                total_forces_W[airplane_id, :, results_step] = airplane.total_force_W
+                total_force_coefficients_W[airplane_id, :, results_step] = (
+                    airplane.total_force_coefficients_W
                 )
-                total_near_field_force_coefficients_wind_axes[
-                    airplane_id, :, results_step
-                ] = airplane.total_near_field_force_coefficients_wind_axes
-                total_near_field_moments_wind_axes[airplane_id, :, results_step] = (
-                    airplane.total_near_field_moment_wind_axes
+                total_moments_W_Cg[airplane_id, :, results_step] = (
+                    airplane.total_moment_W
                 )
-                total_near_field_moment_coefficients_wind_axes[
-                    airplane_id, :, results_step
-                ] = airplane.total_near_field_moment_coefficients_wind_axes
+                total_moment_coefficients_W_Cg[airplane_id, :, results_step] = (
+                    airplane.total_moment_coefficients_W_Cg
+                )
 
             results_step += 1
 
@@ -1637,83 +1640,67 @@ class UnsteadyRingVortexLatticeMethodSolver:
         for airplane_id, airplane in enumerate(self.steady_problems[0].airplanes):
 
             if is_static:
-                self.unsteady_problem.final_near_field_forces_wind_axes.append(
-                    total_near_field_forces_wind_axes[airplane_id, :, -1]
+                self.unsteady_problem.final_forces_W.append(
+                    total_forces_W[airplane_id, :, -1]
                 )
-                self.unsteady_problem.final_near_field_force_coefficients_wind_axes.append(
-                    total_near_field_force_coefficients_wind_axes[airplane_id, :, -1]
+                self.unsteady_problem.final_force_coefficients_W.append(
+                    total_force_coefficients_W[airplane_id, :, -1]
                 )
-                self.unsteady_problem.final_near_field_moments_wind_axes.append(
-                    total_near_field_moments_wind_axes[airplane_id, :, -1]
+                self.unsteady_problem.final_moments_W_Cg.append(
+                    total_moments_W_Cg[airplane_id, :, -1]
                 )
-                self.unsteady_problem.final_near_field_moment_coefficients_wind_axes.append(
-                    total_near_field_moment_coefficients_wind_axes[airplane_id, :, -1]
+                self.unsteady_problem.final_moment_coefficients_W_Cg.append(
+                    total_moment_coefficients_W_Cg[airplane_id, :, -1]
                 )
             else:
-                mean_forces = np.mean(
-                    total_near_field_forces_wind_axes[airplane_id], axis=-1
-                )
+                mean_forces = np.mean(total_forces_W[airplane_id], axis=-1)
                 mean_force_coefficients = np.mean(
-                    total_near_field_force_coefficients_wind_axes[airplane_id], axis=-1
+                    total_force_coefficients_W[airplane_id], axis=-1
                 )
-                mean_moments = np.mean(
-                    total_near_field_moments_wind_axes[airplane_id], axis=-1
-                )
+                mean_moments = np.mean(total_moments_W_Cg[airplane_id], axis=-1)
                 mean_moment_coefficients = np.mean(
-                    total_near_field_moment_coefficients_wind_axes[airplane_id], axis=-1
+                    total_moment_coefficients_W_Cg[airplane_id], axis=-1
                 )
 
                 rms_forces = np.sqrt(
                     np.mean(
-                        np.square(total_near_field_forces_wind_axes[airplane_id]),
+                        np.square(total_forces_W[airplane_id]),
                         axis=-1,
                     )
                 )
                 rms_force_coefficients = np.sqrt(
                     np.mean(
-                        np.square(
-                            total_near_field_force_coefficients_wind_axes[airplane_id]
-                        ),
+                        np.square(total_force_coefficients_W[airplane_id]),
                         axis=-1,
                     )
                 )
                 rms_moments = np.sqrt(
                     np.mean(
-                        np.square(total_near_field_moments_wind_axes[airplane_id]),
+                        np.square(total_moments_W_Cg[airplane_id]),
                         axis=-1,
                     )
                 )
                 rms_moment_coefficients = np.sqrt(
                     np.mean(
-                        np.square(
-                            total_near_field_moment_coefficients_wind_axes[airplane_id]
-                        ),
+                        np.square(total_moment_coefficients_W_Cg[airplane_id]),
                         axis=-1,
                     )
                 )
 
-                self.unsteady_problem.final_mean_near_field_forces_wind_axes.append(
-                    mean_forces
-                )
-                self.unsteady_problem.final_mean_near_field_force_coefficients_wind_axes.append(
+                self.unsteady_problem.final_mean_forces_W.append(mean_forces)
+                self.unsteady_problem.final_mean_force_coefficients_W.append(
                     mean_force_coefficients
                 )
-                self.unsteady_problem.final_mean_near_field_moments_wind_axes.append(
-                    mean_moments
-                )
-                self.unsteady_problem.final_mean_near_field_moment_coefficients_wind_axes.append(
+                self.unsteady_problem.final_mean_moments_W_Cg.append(mean_moments)
+                self.unsteady_problem.final_mean_moment_coefficients_W_Cg.append(
                     mean_moment_coefficients
                 )
 
-                self.unsteady_problem.final_rms_near_field_forces_wind_axes.append(
-                    rms_forces
-                )
-                self.unsteady_problem.final_rms_near_field_force_coefficients_wind_axes.append(
+                self.unsteady_problem.final_rms_forces_W.append(rms_forces)
+                self.unsteady_problem.final_rms_force_coefficients_W.append(
                     rms_force_coefficients
                 )
-                self.unsteady_problem.final_rms_near_field_moments_wind_axes.append(
-                    rms_moments
-                )
-                self.unsteady_problem.final_rms_near_field_moment_coefficients_wind_axes.append(
+                self.unsteady_problem.final_rms_moments_W_Cg.append(rms_moments)
+                self.unsteady_problem.final_rms_moment_coefficients_W_Cg.append(
                     rms_moment_coefficients
                 )

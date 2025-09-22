@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains the class definitions for the problem's movement.
 
 This module contains the following classes:
@@ -42,6 +43,7 @@ from . import geometry
 from . import operating_point
 
 
+# NOTE: I haven't yet started refactoring this class.
 class Movement:
     """This is a class used to contain the movement characteristics of an unsteady
     aerodynamics problem.
@@ -57,6 +59,7 @@ class Movement:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         airplane_movements,
@@ -208,6 +211,7 @@ class Movement:
             num_steps=self.num_steps, delta_time=self.delta_time
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def get_max_period(self):
         """This method returns the longest period of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
@@ -230,6 +234,7 @@ class Movement:
         )
 
 
+# NOTE: I haven't yet started refactoring this class.
 class AirplaneMovement:
     """This is a class used to contain the movement characteristics of an airplane.
 
@@ -247,6 +252,7 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_airplane,
@@ -316,6 +322,7 @@ class AirplaneMovement:
         self.z_ref_period = z_ref_period
         self.z_ref_spacing = z_ref_spacing
 
+    # NOTE: I haven't yet started refactoring this method.
     def generate_airplanes(self, num_steps=10, delta_time=0.1):
         """This method creates the current_airplane object at each time current_step,
         and groups them into a list.
@@ -448,6 +455,7 @@ class AirplaneMovement:
         # Return the list of airplanes.
         return airplanes
 
+    # NOTE: I haven't yet started refactoring this method.
     def get_max_period(self):
         """This method returns the longest period of this movement object's sub-
         movement objects, sub-sub-movement objects, etc.
@@ -471,6 +479,7 @@ class AirplaneMovement:
         return max_period
 
 
+# NOTE: I haven't yet started refactoring this class.
 class WingMovement:
     """This is a class used to contain the movement characteristics of a wing.
 
@@ -488,6 +497,7 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_wing,
@@ -553,6 +563,7 @@ class WingMovement:
         self.z_le_period = z_le_period
         self.z_le_spacing = z_le_spacing
 
+    # NOTE: I haven't yet started refactoring this method.
     def generate_wings(self, num_steps=10, delta_time=0.1):
         """This method creates the wing object at each time current_step, and groups
         them into a list.
@@ -812,6 +823,7 @@ class WingMovement:
         # Return the list of wings.
         return wings
 
+    # NOTE: I haven't yet started refactoring this method.
     def get_max_period(self):
         """This method returns the longest period of this movement object's
         sub-movement objects, sub-sub-movement objects, etc.
@@ -839,6 +851,7 @@ class WingMovement:
         return max_period
 
 
+# NOTE: I haven't yet started refactoring this class.
 class WingCrossSectionMovement:
     """This is a class used to contain the movement characteristics of a wing cross
     section.
@@ -857,6 +870,7 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_wing_cross_section,
@@ -970,6 +984,7 @@ class WingCrossSectionMovement:
             self.base_wing_cross_section.control_surface_deflection
         )
 
+    # NOTE: I haven't yet started refactoring this method.
     def generate_wing_cross_sections(
         self,
         num_steps=10,
@@ -1223,6 +1238,7 @@ class WingCrossSectionMovement:
         # Return the list of wing cross sections.
         return wing_cross_sections
 
+    # NOTE: I haven't yet started refactoring this method.
     def get_max_period(self):
         """This method returns the longest period of this movement object's cycles.
 
@@ -1237,6 +1253,7 @@ class WingCrossSectionMovement:
         return max_period
 
 
+# NOTE: I haven't yet started refactoring this class.
 class OperatingPointMovement:
     """This is a class used to contain the movement characteristics of an operating
     point.
@@ -1255,6 +1272,7 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
+    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_operating_point,
@@ -1285,6 +1303,7 @@ class OperatingPointMovement:
         self.velocity_period = velocity_period
         self.velocity_spacing = velocity_spacing
 
+    # NOTE: I haven't yet started refactoring this method.
     def generate_operating_points(self, num_steps=10, delta_time=0.1):
         """This method creates the operating point objects at each time current_step,
         and groups them into a list.
@@ -1349,6 +1368,7 @@ class OperatingPointMovement:
         # Return the list of operating points.
         return operating_points
 
+    # NOTE: I haven't yet started refactoring this method.
     def get_max_period(self):
         """This method returns the longest period of this movement object's cycles.
 
@@ -1361,6 +1381,7 @@ class OperatingPointMovement:
         return max_period
 
 
+# NOTE: I haven't yet started refactoring this function.
 def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     """This function returns a 1D array of values that are calculated by inputting a
     vector of linearly spaced time steps into a sine function.
@@ -1399,6 +1420,7 @@ def oscillating_sinspace(amplitude, period, base_value, num_steps, delta_time):
     return a * np.sin(b * (times - h)) + k
 
 
+# NOTE: I haven't yet started refactoring this function.
 def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     """This function returns a 1D array of values that are calculated by inputting a
     vector of linearly spaced time steps into a triangle function.
@@ -1437,6 +1459,7 @@ def oscillating_linspace(amplitude, period, base_value, num_steps, delta_time):
     return a * signal.sawtooth((b * times + h), 0.5) + k
 
 
+# NOTE: I haven't yet started refactoring this function.
 def oscillating_customspace(
     amplitude, period, base_value, num_steps, delta_time, custom_function
 ):

@@ -38,7 +38,7 @@ logging.basicConfig()
 
 
 # NOTE: I haven't yet started refactoring this function.
-# ToDo: Document this function.
+# TODO: Document this function.
 def analyze_steady_trim(
     problem,
     velocity_bounds,
@@ -91,7 +91,7 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    # ToDo: Document this function.
+    # TODO: Document this function.
     def objective_function(arguments):
         """
 
@@ -204,7 +204,7 @@ def analyze_steady_trim(
 
 
 # NOTE: I haven't yet started refactoring this function.
-# ToDo: Document this function.
+# TODO: Document this function.
 def analyze_unsteady_trim(
     airplane_movement,
     operating_point,
@@ -243,7 +243,7 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan]
 
-    # ToDo: Document this function.
+    # TODO: Document this function.
     def objective_function(arguments):
         """
 

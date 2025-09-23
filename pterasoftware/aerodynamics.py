@@ -1,4 +1,4 @@
-# ToDo: Consider making this module private (renaming it with a _ prefix).
+# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains vortex class definitions, and functions for calculating
 induced velocities.
 
@@ -61,7 +61,7 @@ _lamb = 1.25643
 _eps = np.finfo(float).eps
 
 
-# ToDo: Write unit tests for this class.
+# TODO: Write unit tests for this class.
 class RingVortex:
     """This class is used to contain ring vortices.
 
@@ -89,7 +89,7 @@ class RingVortex:
     ):
         """This is the initialization method.
 
-        #ToDo: Update docstring parameters' descriptions and types.
+        # TODO: Update docstring parameters' descriptions and types.
         :param Flrvp_G_Cg: 1D array This is a vector containing the x, y, and z
             coordinates of the vortex's front left point. It's a (,3) array with units
             of meters.
@@ -145,7 +145,7 @@ class RingVortex:
             strength=self.strength,
         )
 
-        # ToDo: Consider making this a property.
+        # TODO: Consider making this a property.
         # Initialize a variable to hold the centroid of the RingVortex.
         self.Crvp_G_Cg = functions.numba_centroid_of_quadrilateral(
             self.Flrvp_G_Cg,
@@ -176,7 +176,7 @@ class RingVortex:
         """This method updates the position of the RingVortex, and the positions of all
         its attributes.
 
-        #ToDo: Update docstring parameters descriptions and types.
+        # TODO: Update docstring parameters descriptions and types.
         :param Flrvp_G_Cg: 1D array This is the new position of the x, y, and z
             coordinates of the front left vertex. It is a (,3) array with units of
             meters.
@@ -204,7 +204,7 @@ class RingVortex:
             Brrvp_G_Cg, "Brrvp_G_Cg"
         )
 
-        # ToDo: Is it really faster to make new LineVortices instead of writing an
+        # TODO: Is it really faster to make new LineVortices instead of writing an
         #  update_position method inside of LineVortex and calling that from this
         #  method? Initialize the line vortices that make up the ring vortex. Or
         #  maybe I should make decorate the LineVortices as properties of RingVortex?
@@ -238,11 +238,11 @@ class RingVortex:
         )
 
 
-# ToDo: Write unit tests for this class.
+# TODO: Write unit tests for this class.
 class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param Frhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-right point (in
         geometry axes, relative to the CG). The front-right point is defined as the
         start point of the HorseshoeVortex's front leg, which is also its one finite
@@ -306,13 +306,13 @@ class HorseshoeVortex:
             )
         self.strength = strength
 
-        # ToDo: Consider making these properties.
+        # TODO: Consider making these properties.
         # Save attributes for the back right and back left horseshoe vortex points (
         # in geometry axes, relative to the CG).
         self.Brhvp_G_Cg = self.Frhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
         self.Blhvp_G_Cg = self.Flhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
 
-        # ToDo: Consider making these properties.
+        # TODO: Consider making these properties.
         # Initialize LineVortices to represent the HorseshoeVortex's legs.
         self.right_leg = _LineVortex(
             Slvp_G_Cg=self.Brhvp_G_Cg,
@@ -330,7 +330,7 @@ class HorseshoeVortex:
             strength=self.strength,
         )
 
-    # ToDo: If we make the LineVortices strengths, then we can get rid of this method.
+    # TODO: If we make the LineVortices strengths, then we can get rid of this method.
     def update_strength(self, strength):
         """This method updates the strength of this HorseshoeVortex object, and the
         strength of its leg LineVortices.
@@ -345,7 +345,7 @@ class HorseshoeVortex:
         self.left_leg.strength = strength
 
 
-# ToDo: Write unit tests for this class.
+# TODO: Write unit tests for this class.
 class _LineVortex:
     """This class is used to contain line vortices.
 
@@ -381,7 +381,7 @@ class _LineVortex:
         self.Elvp_G_Cg = Elvp_G_Cg
         self.strength = strength
 
-        # ToDo: Consider making these properties.
+        # TODO: Consider making these properties.
         # Initialize variables to hold the vector from the LineVortex's start to end
         # point (in geometry axes), and its center point (in geometry axes, relative
         # to the CG).
@@ -389,7 +389,7 @@ class _LineVortex:
         self.Clvp_G_Cg = self.Slvp_G_Cg + 0.5 * self.vector_G
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices(
     stackP_G_Cg,
@@ -413,7 +413,7 @@ def collapsed_velocities_from_ring_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -481,7 +481,7 @@ def collapsed_velocities_from_ring_vortices(
     return stackVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackP_G_Cg,
@@ -505,7 +505,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -569,7 +569,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     return stackVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
     stackP_G_Cg,
@@ -592,7 +592,7 @@ def expanded_velocities_from_ring_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -660,7 +660,7 @@ def expanded_velocities_from_ring_vortices(
     return gridVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     stackP_G_Cg,
@@ -684,7 +684,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -750,7 +750,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     return stackVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     stackP_G_Cg,
@@ -774,7 +774,7 @@ def expanded_velocities_from_horseshoe_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    #ToDo: Update docstring parameters' descriptions and types.
+    # TODO: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -840,7 +840,7 @@ def expanded_velocities_from_horseshoe_vortices(
     return gridVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def _collapsed_velocities_from_line_vortices(
     stackP_G_Cg,
@@ -952,7 +952,7 @@ def _collapsed_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # ToDo: Update docstring parameters' types and descriptions.
+    # TODO: Update docstring parameters' types and descriptions.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -1059,7 +1059,7 @@ def _collapsed_velocities_from_line_vortices(
     return stackVInd_G__E
 
 
-# ToDo: Write unit tests for this function.
+# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def _expanded_velocities_from_line_vortices(
     stackP_G_Cg,
@@ -1089,7 +1089,7 @@ def _expanded_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-     # ToDo: Update docstring parameters' types and descriptions.
+     # TODO: Update docstring parameters' types and descriptions.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position

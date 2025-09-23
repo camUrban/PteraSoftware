@@ -1,4 +1,4 @@
-# ToDo: Document this script.
+# TODO: Document this script.
 import pterasoftware as ps
 
 # Known Converged Values (0.5% convergence, 0 degrees angle of attack):

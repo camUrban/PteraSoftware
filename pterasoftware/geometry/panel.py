@@ -1,4 +1,4 @@
-# ToDo: Consider making this module private (renaming it with a _ prefix).
+# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains the Panel class.
 
 This module contains the following classes:
@@ -16,7 +16,7 @@ import numpy as np
 from .. import parameter_validation
 
 
-# ToDo: Add unit tests for this class.
+# TODO: Add unit tests for this class.
 class Panel:
     """This class is used to contain the panels of a wing.
 
@@ -173,7 +173,7 @@ class Panel:
         self.ring_vortex = None
         self.horseshoe_vortex = None
 
-        # ToDo: Update and standardize these definitions for force coefficients.
+        # TODO: Update and standardize these definitions for force coefficients.
         # Initialize variables to hold attributes of the Panel that will be defined
         # after the solver finds a solution.
         self.forces_G = None
@@ -516,7 +516,7 @@ class Panel:
             freestream_q, "freestream_q"
         )
 
-        # ToDo: Update and standardize these definitions for force coefficients.
+        # TODO: Update and standardize these definitions for force coefficients.
         induced_drag = -self.forces_W[0]
         side_force = self.forces_W[1]
         lift = -self.forces_W[2]

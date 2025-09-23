@@ -418,7 +418,7 @@ class TestWing(unittest.TestCase):
             wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]), atol=1e-14
         )
 
-    # ToDo: Finalize Wing's get_plottable_data testing.
+    # TODO: Finalize Wing's get_plottable_data testing.
     # def test_wing_get_plottable_data(self):
     #     """Test that the get_plottable_data method works correctly."""
     #     airplane = geometry_fixtures.make_basic_airplane_fixture()

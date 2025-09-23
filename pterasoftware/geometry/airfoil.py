@@ -121,7 +121,7 @@ class Airfoil:
         self.mcl_A_lp = None
         self._populate_mcl()
 
-    # ToDo: In the future, if adding control surfaces becomes more important,
+    # TODO: In the future, if adding control surfaces becomes more important,
     #  we may want to rework this method. Using this method we need to artificially
     #  limit the maximum deflection to 5.0 degrees because higher values may cause
     #  the upper and lower outlines to intersect. This is because they each rotate
@@ -326,7 +326,7 @@ class Airfoil:
 
         plt.show()
 
-    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for Matplotlib.
     def get_plottable_data(self, show=False):
         """
@@ -704,7 +704,7 @@ class Airfoil:
             self.outline_A_lp = np.reshape(outline1D_A_lp, (-1, 2))
             return
 
-        # ToDo: Determine if I should call a particular error here instead of a
+        # TODO: Determine if I should call a particular error here instead of a
         #  general exception.
         # If the Airfoil was not a NACA 4-series and was not found in the database,
         # throw an error.
@@ -945,7 +945,7 @@ class Airfoil:
                 "The upper outline's trailing point must have a y-value that's greater than or equal to the lower outline's trailing point's y-value (in Airfoil axes)"
             )
 
-        # ToDo: Consider moving this to another function for "normalizing" an
+        # TODO: Consider moving this to another function for "normalizing" an
         #  Airfoil's outline such that its leading point is exactly at [0.0, 0.0],
         #  and its trailing point exactly at [1.0, 0.0]. However, we'd have to be
         #  careful we don't reject "flapped" Airfoils.

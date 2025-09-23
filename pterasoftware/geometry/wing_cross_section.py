@@ -309,7 +309,7 @@ class WingCrossSection:
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
-    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
@@ -540,7 +540,7 @@ class WingCrossSection:
             self.angles_Wcsp_to_Wcs_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
-        # ToDo: Switch to using transformations.compose_T_pas()
+        # TODO: Switch to using transformations.compose_T_pas()
         return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
 
     @property

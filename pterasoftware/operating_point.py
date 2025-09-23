@@ -17,7 +17,7 @@ from . import transformations
 from . import parameter_validation
 
 
-# ToDo: Add unit tests for this class.
+# TODO: Add unit tests for this class.
 class OperatingPoint:
     """This is a class used to contain a Problem's operating point characteristics.
 
@@ -62,7 +62,7 @@ class OperatingPoint:
     ):
         """This is the initialization method.
 
-        # ToDo: Update the parameters' descriptions and types.
+        # TODO: Update the parameters' descriptions and types.
         :param density: float, optional
             This parameter is the density. The units are kilograms per meters cubed.
             The default value is 1.225.
@@ -91,11 +91,11 @@ class OperatingPoint:
         self.density = parameter_validation.positive_number_return_float(
             density, "density"
         )
-        # ToDo: In the future, test what happens with vCg__E = 0.
+        # TODO: In the future, test what happens with vCg__E = 0.
         self.vCg__E = parameter_validation.positive_number_return_float(
             vCg__E, "vCg__E"
         )
-        # ToDo: Restrict alpha and beta's range if testing reveals that high absolute
+        # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
         self.alpha = parameter_validation.number_in_range_return_float(
             alpha, "alpha", -180.0, False, 180.0, True
@@ -163,7 +163,7 @@ class OperatingPoint:
         """
         return transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
 
-        # ToDo: Delete the following older method of finding the rotation matrix once
+        # TODO: Delete the following older method of finding the rotation matrix once
         #  we've confirmed that the new method delivers equivalent results.
         # sin_alpha = np.sin(np.radians(self.alpha))
         # cos_alpha = np.cos(np.radians(self.alpha))

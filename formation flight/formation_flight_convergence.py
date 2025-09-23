@@ -1,4 +1,4 @@
-# ToDo: Document this script.
+# TODO: Document this script.
 import time
 
 import numpy as np

@@ -585,7 +585,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     # Update the solver's list of attributes with this panel's
                     # attributes.
                     functions.update_ring_vortex_solvers_panel_attributes(
-                        solver=self,
+                        ring_vortex_solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
                         airplane=airplane,

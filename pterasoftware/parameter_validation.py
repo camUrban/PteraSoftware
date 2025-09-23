@@ -1,4 +1,4 @@
-# ToDo: Consider making this module private (renaming it with a _ prefix).
+# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains common parameter validation functions."""
 
 import numpy as np
@@ -41,7 +41,7 @@ def int_return_int(value, name):
     return value
 
 
-# ToDo: Consider getting rid of this function as its functionality can be replicated
+# TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
 def non_negative_int_return_int(value, name):
     """Validates that a value is an int with a value greater than or equal to zero
@@ -59,7 +59,7 @@ def non_negative_int_return_int(value, name):
     return int(value)
 
 
-# ToDo: Consider getting rid of this function as its functionality can be replicated
+# TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
 def positive_int_return_int(value, name):
     """Validates that a value is an int with a value greater than zero and returns it
@@ -142,7 +142,7 @@ def number_return_float(value, name):
     return float(value)
 
 
-# ToDo: Consider getting rid of this function as its functionality can be replicated
+# TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
 def non_negative_number_return_float(value, name):
     """Validates a value is a number and is greater than or equal to zero and returns
@@ -163,7 +163,7 @@ def non_negative_number_return_float(value, name):
     return float(value)
 
 
-# ToDo: Consider getting rid of this function as its functionality can be replicated
+# TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
 def positive_number_return_float(value, name):
     """Validates a value is a number and is greater than zero and returns it as a

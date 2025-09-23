@@ -1,5 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-# ToDo: Consider making this module private (renaming it with a _ prefix).
+# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains functions shared by other modules in the pterasoftware package.
 
 This module contains the following classes:
@@ -50,7 +50,14 @@ import logging
 import numpy as np
 from numba import njit
 
+from .geometry.airplane import Airplane
+from .geometry.panel import Panel
+from .steady_horseshoe_vortex_lattice_method import (
+    SteadyHorseshoeVortexLatticeMethodSolver,
+)
+from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
 from . import transformations
+from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 
 # NOTE: I haven't yet started refactoring this function.
@@ -169,7 +176,7 @@ def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
         # Add the freestream velocity to the induced velocity to get the total
         # velocity at each of the last row of streamline points.
         total_velocities = solver.calculate_solution_velocity(
-            points=last_row_streamline_points
+            stackP_G_Cg=last_row_streamline_points
         )
 
         # Interpolate the positions on a new row of streamline points.
@@ -212,7 +219,13 @@ def convert_logging_level_name_to_value(name):
 
 
 # NOTE: I haven't yet started refactoring this function.
-def process_steady_solver_loads(steady_solver, forces_G, moments_G_Cg):
+def process_steady_solver_loads(
+    steady_solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver
+    ),
+    forces_G,
+    moments_G_Cg,
+):
     """This function uses the forces and moments a solver has found on its panels to
     find the forces, moments, and associated coefficients on each airplane in the
     solver.
@@ -337,7 +350,9 @@ def process_steady_solver_loads(steady_solver, forces_G, moments_G_Cg):
 
 
 # NOTE: I haven't yet started refactoring this function.
-def process_unsteady_solver_loads(unsteady_solver, forces_G, moments_G_Cg):
+def process_unsteady_solver_loads(
+    unsteady_solver: UnsteadyRingVortexLatticeMethodSolver, forces_G, moments_G_Cg
+):
     """This function uses the forces and moments a solver has found on its panels to
     find the forces, moments, and associated coefficients on each airplane in the
     solver.
@@ -467,12 +482,17 @@ def process_unsteady_solver_loads(unsteady_solver, forces_G, moments_G_Cg):
 
 # NOTE: I haven't yet started refactoring this function.
 def update_ring_vortex_solvers_panel_attributes(
-    solver, global_panel_position, panel, airplane
+    ring_vortex_solver: (
+        SteadyRingVortexLatticeMethodSolver | UnsteadyRingVortexLatticeMethodSolver
+    ),
+    global_panel_position: int,
+    panel: Panel,
+    airplane: Airplane,
 ):
     """This function populates a ring vortex solver's attributes with the attributes
     of a given panel.
 
-    :param solver: SteadySolver or UnsteadySolver
+    :param ring_vortex_solver: SteadySolver or UnsteadySolver
         This is the solver object whose attributes are to be updated. It should be a
         solver that uses ring vortices.
     :param global_panel_position: int
@@ -487,69 +507,80 @@ def update_ring_vortex_solvers_panel_attributes(
     """
 
     # Update the solver's list of attributes with this panel's attributes.
-    solver.panels[global_panel_position] = panel
-    solver.stackUnitNormals_G[global_panel_position, :] = panel.unitNormal_G
-    solver.panel_areas[global_panel_position] = panel.area
-    solver.panel_collocation_points[global_panel_position, :] = panel.Cpp_G_Cg
-    solver.stackBrhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.panels[global_panel_position] = panel
+    ring_vortex_solver.stackUnitNormals_G[global_panel_position, :] = panel.unitNormal_G
+    ring_vortex_solver.panel_areas[global_panel_position] = panel.area
+    ring_vortex_solver.stackCpp_G_Cg[global_panel_position, :] = panel.Cpp_G_Cg
+    ring_vortex_solver.stackBrhvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Slvp_G_Cg
     )
-    solver.stackFrhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackFrhvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Elvp_G_Cg
     )
-    solver.stackFlhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackFlhvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Slvp_G_Cg
     )
-    solver.stackBlhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackBlhvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Elvp_G_Cg
     )
-    solver.panel_right_vortex_centers[global_panel_position, :] = (
+    ring_vortex_solver.stackRightVortexCenters_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Clvp_G_Cg
     )
-    solver.panel_right_vortex_vectors[global_panel_position, :] = (
+    ring_vortex_solver.stackRightVortexVectors_G[global_panel_position, :] = (
         panel.ring_vortex.right_leg.vector_G
     )
-    solver.panel_front_vortex_centers[global_panel_position, :] = (
+    ring_vortex_solver.stackFrontVortexCenters_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.front_leg.Clvp_G_Cg
     )
-    solver.panel_front_vortex_vectors[global_panel_position, :] = (
+    ring_vortex_solver.stackFrontVortexVectors_G[global_panel_position, :] = (
         panel.ring_vortex.front_leg.vector_G
     )
-    solver.panel_left_vortex_centers[global_panel_position, :] = (
+    ring_vortex_solver.stackLeftVortexCenters_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Clvp_G_Cg
     )
-    solver.panel_left_vortex_vectors[global_panel_position, :] = (
+    ring_vortex_solver.stackLeftVortexVectors_G[global_panel_position, :] = (
         panel.ring_vortex.left_leg.vector_G
     )
-    solver.panel_back_vortex_centers[global_panel_position, :] = (
+    ring_vortex_solver.stackBackVortexCenters_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.back_leg.Clvp_G_Cg
     )
-    solver.panel_back_vortex_vectors[global_panel_position, :] = (
+    ring_vortex_solver.stackBackVortexVectors_G[global_panel_position, :] = (
         panel.ring_vortex.back_leg.vector_G
     )
-    solver.panel_is_trailing_edge[global_panel_position] = panel.is_trailing_edge
-    solver.panel_is_leading_edge[global_panel_position] = panel.is_leading_edge
-    solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
-    solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
-    solver.stackPanelMomentReference_G_Cg[global_panel_position, :] = airplane.Cgi_E_I
+    ring_vortex_solver.panel_is_trailing_edge[global_panel_position] = (
+        panel.is_trailing_edge
+    )
+    ring_vortex_solver.panel_is_leading_edge[global_panel_position] = (
+        panel.is_leading_edge
+    )
+    ring_vortex_solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
+    ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
+    ring_vortex_solver.stackPanelMomentReference_G_Cg[global_panel_position, :] = (
+        airplane.Cgi_E_I
+    )
 
     # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.
     if panel.is_trailing_edge:
-        solver.stackSeedPoints_G_Cg = np.vstack(
+        ring_vortex_solver.stackSeedPoints_G_Cg = np.vstack(
             (
-                solver.stackSeedPoints_G_Cg,
+                ring_vortex_solver.stackSeedPoints_G_Cg,
                 panel.Blpp_G_Cg + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
             )
         )
 
 
 # NOTE: I haven't yet started refactoring this function.
-def calculate_steady_freestream_wing_influences(steady_solver):
+def calculate_steady_freestream_wing_influences(
+    steady_solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver
+    ),
+):
     """This function finds the vector of freestream-wing influence coefficients
     associated with this problem.
 
-    :return: None
+    :param steady_solver:
+    :return:
     """
     # Take the batch dot product of the freestream velocity with each panel's
     # normal direction. This is now the problem's 1D array of freestream-wing

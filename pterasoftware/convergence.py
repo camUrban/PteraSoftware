@@ -186,7 +186,7 @@ def analyze_steady_convergence(
                             next_ref_wing_cross_section = ref_wing_cross_sections[
                                 ref_wing_cross_section_id + 1
                             ]
-                            # ToDo: Modify this to allow for new geometry with custom
+                            # TODO: Modify this to allow for new geometry with custom
                             #  planes for the wing cross sections. As of now,
                             #  it fails for vertical wings.
                             section_length = (
@@ -475,7 +475,7 @@ def analyze_steady_convergence(
 
 
 # NOTE: I haven't yet started refactoring this function.
-# ToDo: Add the new parameters to the documentation.
+# TODO: Add the new parameters to the documentation.
 def analyze_unsteady_convergence(
     ref_problem,
     prescribed_wake=True,
@@ -757,7 +757,7 @@ def analyze_unsteady_convergence(
                                             ref_wing_cross_section_movement_id + 1
                                         ].base_wing_cross_section
                                     )
-                                    # ToDo: Modify this to allow for new geometry
+                                    # TODO: Modify this to allow for new geometry
                                     #  with custom planes for the wing cross
                                     #  sections. As of now, it fails for vertical wings.
                                     section_length = (

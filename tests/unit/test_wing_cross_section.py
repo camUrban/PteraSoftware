@@ -424,7 +424,7 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(max_wing_cross_section.chord, 50.0)
         del max_wing_cross_section
 
-    # ToDo: Finalize WingCrossSection's get_plottable_data testing.
+    # TODO: Finalize WingCrossSection's get_plottable_data testing.
     # def test_wing_cross_section_get_plottable_data(self):
     #     """Test that the get_plottable_data method works correctly."""
     #     # airplane = geometry_fixtures.make_basic_airplane_fixture()

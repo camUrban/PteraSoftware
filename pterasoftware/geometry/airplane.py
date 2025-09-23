@@ -323,7 +323,7 @@ class Airplane:
         # Close all the plotters
         pv.close_all()
 
-    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """

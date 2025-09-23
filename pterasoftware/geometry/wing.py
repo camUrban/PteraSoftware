@@ -466,7 +466,7 @@ class Wing:
         # Generate the wing's mesh, which populates the Panels attribute.
         meshing.mesh_wing(self)
 
-    # ToDo: Document and debug this method and convert it to use the standard Ptera
+    # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for PyVista.
     def get_plottable_data(self, show=False):
         """
@@ -943,7 +943,7 @@ class Wing:
 
         return wetted_area
 
-    # ToDo: (1) Consider if there's a better way of implementing this method using
+    # TODO: (1) Consider if there's a better way of implementing this method using
     #  one of the children_T_pas_* properties. (2) Validate this method.
     @property
     def span(self):
@@ -1030,7 +1030,7 @@ class Wing:
 
         return self.projected_area / self.span
 
-    # ToDo: (1) Consider if there's a better way of implementing this method using
+    # TODO: (1) Consider if there's a better way of implementing this method using
     #  one of the children_T_pas_* properties. (2) Validate this method.
     @property
     def mean_aerodynamic_chord(self):

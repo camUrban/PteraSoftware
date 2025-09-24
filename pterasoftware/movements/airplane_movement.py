@@ -1,8 +1,7 @@
-# NOTE: I haven't yet started refactoring this module.
 """This module contains the AirplaneMovement class.
 
 This module contains the following classes:
-    AirplaneMovement: This is a class used to contain the Airplane movements.
+    AirplaneMovement: This is a class used to contain an Airplane's movement.
 
 This module contains the following exceptions:
     None
@@ -14,20 +13,23 @@ This module contains the following functions:
 import numpy as np
 
 from . import functions
+from .wing_movement import WingMovement
 
 from .. import geometry
+from .. import parameter_validation
 
 
-# NOTE: I haven't yet started refactoring this class.
+# TODO: Add unit tests for this class.
 class AirplaneMovement:
-    """This is a class used to contain the movement characteristics of an airplane.
+    """This is a class used to contain an Airplane's movement.
 
     This class contains the following public methods:
-        generate_airplanes: This method creates the current_airplane object at each
-        time current_step, and groups them into a list.
 
-        max_period: This method returns the longest period of this movement
-        object's sub-movement objects, sub-sub-movement objects, etc.
+        generate_airplanes: Creates the Airplane at each time step, and returns them
+        in a list.
+
+        max_period: This method returns the longest period of AirplaneMovement's own
+        motion and that of its sub-movement objects and sub-sub-movement objects.
 
     This class contains the following class attributes:
         None
@@ -36,217 +38,338 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
-    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_airplane,
         wing_movements,
-        x_ref_amplitude=0.0,
-        x_ref_period=0.0,
-        x_ref_spacing="sine",
-        y_ref_amplitude=0.0,
-        y_ref_period=0.0,
-        y_ref_spacing="sine",
-        z_ref_amplitude=0.0,
-        z_ref_period=0.0,
-        z_ref_spacing="sine",
+        ampCgi_E_I=(0.0, 0.0, 0.0),
+        periodCgi_E_I=(0.0, 0.0, 0.0),
+        spacingCgi_E_I=("sine", "sine", "sine"),
+        phaseCgi_E_I=(0.0, 0.0, 0.0),
+        ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
+        phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     ):
         """This is the initialization method.
 
         :param base_airplane: Airplane
-            This is the first airplane object, from which the others will be created.
-        :param wing_movements: list of WingMovement objects
-            This is a list of the WingMovement objects associated with each of the
-            base airplane's wings.
-        :param x_ref_amplitude: float, optional
-            This is the amplitude of the airplane's change in its x reference point.
-            Its units are meters and its default value is 0 meters.
-        :param x_ref_period: float, optional
-            This is the period of the airplane's change in its x reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param x_ref_spacing: string, optional
-            This value determines the spacing of the airplane's change in its x
-            reference point. The options are "sine", and "uniform". The default value
-            is "sine".
-        :param y_ref_amplitude: float, optional
-            This is the amplitude of the airplane's change in its y reference point.
-            Its units are meters and its default value is 0 meters.
-        :param y_ref_period: float, optional
-            This is the period of the airplane's change in its y reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param y_ref_spacing: string, optional
-            This value determines the spacing of the airplane's change in its y
-            reference point. The options are "sine", and "uniform". The default value
-            is "sine".
-        :param z_ref_amplitude: float, optional
-            This is the amplitude of the airplane's change in its z reference point.
-            Its units are meters and its default value is 0 meters.
-        :param z_ref_period: float, optional
-            This is the period of the airplane's change in its z reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param z_ref_spacing: string, optional
-            This value determines the spacing of the airplane's change in its z
-            reference point. The options are "sine", and "uniform". The default value
-            is "sine".
-        """
 
-        # Initialize the class attributes.
+            This is the base Airplane, from which the Airplane at each time step will
+            be created.
+
+        :param wing_movements: list of WingMovements
+
+            This is a list of the WingMovement associated with each of the
+            base Airplane's Wings.
+
+        :param ampCgi_E_I: array-like of 3 numbers, optional
+
+            The amplitudes of the AirplaneMovement's changes in its Airplanes'
+            Cgi_E_I parameters. Can be a tuple, list, or numpy array of non-negative
+            numbers (int or float). Values are converted to floats internally. The
+            default value is ( 0.0, 0.0, 0.0). The units are in meters.
+
+        :param periodCgi_E_I: array-like of 3 numbers, optional
+
+            The periods of the AirplaneMovement's changes in its Airplanes' Cgi_E_I
+            parameters. Can be a tuple, list, or numpy array of non-negative numbers
+            (int or float). Values are converted to floats internally. The default
+            value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
+            element in ampCgi_E_I is 0.0 and non-zero if not. The units are in seconds.
+
+        :param spacingCgi_E_I: array-like of 3 strs, optional
+
+            The value determines the spacing of the AirplaneMovement's change in its
+            Airplanes' Cgi_E_I parameters. Can be a tuple, list, or numpy array of
+            strings. Each element can be "sine" or "uniform". The default value is (
+            "sine", "sine", "sine").
+
+        :param phaseCgi_E_I: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Airplane's
+            Cgi_E_I parameter from the base Airplane's Cgi_E_I parameter. Can be a
+            tuple, list, or numpy array of non-negative numbers (int or float) in the
+            range [0.0, 360.0). Values are converted to floats internally. The
+            default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
+            corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
+            not. The units are in degrees.
+
+        :param ampAngles_E_to_B_izyx: array-like of 3 numbers, optional
+
+            The amplitudes of the AirplaneMovement's changes in its Airplanes'
+            angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range [0.0, 360.0). Values are converted to
+            floats internally. The default value is (0.0, 0.0, 0.0). The units are in
+            degrees.
+
+        :param periodAngles_E_to_B_izyx: array-like of 3 numbers, optional
+
+            The periods of the AirplaneMovement's changes in its Airplanes'
+            angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy array of
+            non-negative numbers (int or float). Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampAngles_E_to_B_izyx is 0.0 and
+            non-zero if not. The units are in seconds.
+
+        :param spacingAngles_E_to_B_izyx: array-like of 3 strs, optional
+
+            The value determines the spacing of the AirplaneMovement's change in its
+            Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy
+            array of strings. Each element can be "sine" or "uniform". The default
+            value is ("sine", "sine", "sine").
+
+        :param phaseAngles_E_to_B_izyx: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Airplane's
+            angles_E_to_B_izyx parameter from the base Airplane's Cgi_E_I parameter.
+            Can be a tuple, list, or numpy array of numbers (int or float) in the
+            range [0.0, 360.0). Values are converted to floats internally. The
+            default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
+            corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
+            not. The units are in degrees.
+        """
+        if not isinstance(base_airplane, geometry.airplane.Airplane):
+            raise TypeError("base_airplane must be an Airplane.")
         self.base_airplane = base_airplane
+
+        if not isinstance(wing_movements, list):
+            raise TypeError("wing_movements must be a list.")
+        if len(wing_movements) < 1:
+            raise ValueError("wing_movements must have at least one element.")
+        for wing_movement in wing_movements:
+            if not isinstance(wing_movement, WingMovement):
+                raise TypeError(
+                    "Every element in wing_movements must be a WingMovement."
+                )
         self.wing_movements = wing_movements
-        self.x_ref_base = self.base_airplane.x_ref
-        self.x_ref_amplitude = x_ref_amplitude
-        self.x_ref_period = x_ref_period
-        self.x_ref_spacing = x_ref_spacing
-        self.y_ref_base = self.base_airplane.y_ref
-        self.y_ref_amplitude = y_ref_amplitude
-        self.y_ref_period = y_ref_period
-        self.y_ref_spacing = y_ref_spacing
-        self.z_ref_base = self.base_airplane.z_ref
-        self.z_ref_amplitude = z_ref_amplitude
-        self.z_ref_period = z_ref_period
-        self.z_ref_spacing = z_ref_spacing
 
-    # NOTE: I haven't yet started refactoring this method.
-    def generate_airplanes(self, num_steps=10, delta_time=0.1):
-        """This method creates the current_airplane object at each time current_step,
-        and groups them into a list.
+        ampCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+            ampCgi_E_I, "ampCgi_E_I"
+        )
+        if not np.all(ampCgi_E_I >= 0.0):
+            raise ValueError("All elements in ampCgi_E_I must be non-negative.")
+        self.ampCgi_E_I = ampCgi_E_I
 
-        :param num_steps: int, optional
-            This is the number of time steps in this movement. The default value is 10.
-        :param delta_time: float, optional
-            This is the time, in seconds, between each time step. The default value
-            is 0.1 seconds.
-        :return airplanes: list of Airplane objects
-            This is the list of Airplane objects that is associated with this
-            AirplaneMovement object.
+        periodCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+            periodCgi_E_I, "periodCgi_E_I"
+        )
+        if not np.all(periodCgi_E_I >= 0.0):
+            raise ValueError("All elements in periodCgi_E_I must be non-negative.")
+        for period_index, period in enumerate(periodCgi_E_I):
+            amp = self.ampCgi_E_I[period_index]
+            if amp == 0 and period != 0:
+                raise ValueError(
+                    "If an elements in ampCgi_E_I is 0.0, the corresponding element in periodCgi_E_I must be also be 0.0."
+                )
+        self.periodCgi_E_I = periodCgi_E_I
+
+        spacingCgi_E_I = parameter_validation.list_return_list(
+            spacingCgi_E_I, "spacingCgi_E_I"
+        )
+        if not np.all(elem in ["sine", "uniform"] for elem in spacingCgi_E_I):
+            raise ValueError(
+                'All elements in spacingCgi_E_I must be "sine" or "uniform".'
+            )
+        self.spacingCgi_E_I = spacingCgi_E_I
+
+        phaseCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+            phaseCgi_E_I, "phaseCgi_E_I"
+        )
+        if not (np.all(phaseCgi_E_I >= 0.0) and np.all(phaseCgi_E_I < 360.0)):
+            raise ValueError(
+                "All elements in phaseCgi_E_I must be in the range [0.0, 360.0)."
+            )
+        for phase_index, phase in enumerate(phaseCgi_E_I):
+            amp = self.ampCgi_E_I[phase_index]
+            if amp == 0 and phase != 0:
+                raise ValueError(
+                    "If an elements in ampCgi_E_I is 0.0, the corresponding element in phaseCgi_E_I must be also be 0.0."
+                )
+        self.phaseCgi_E_I = phaseCgi_E_I
+
+        ampAngles_E_to_B_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                ampAngles_E_to_B_izyx, "ampAngles_E_to_B_izyx"
+            )
+        )
+        if not (
+            np.all(ampAngles_E_to_B_izyx >= 0.0)
+            and np.all(ampAngles_E_to_B_izyx < 360.0)
+        ):
+            raise ValueError(
+                "All elements in ampAngles_E_to_B_izyx must be in the range [0.0, 360.0)."
+            )
+        self.ampAngles_E_to_B_izyx = ampAngles_E_to_B_izyx
+
+        periodAngles_E_to_B_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                periodAngles_E_to_B_izyx, "periodAngles_E_to_B_izyx"
+            )
+        )
+        if not np.all(periodAngles_E_to_B_izyx >= 0.0):
+            raise ValueError(
+                "All elements in periodAngles_E_to_B_izyx must be non-negative."
+            )
+        for period_index, period in enumerate(periodAngles_E_to_B_izyx):
+            amp = self.ampAngles_E_to_B_izyx[period_index]
+            if amp == 0 and period != 0:
+                raise ValueError(
+                    "If an elements in ampAngles_E_to_B_izyx is 0.0, the corresponding element in periodAngles_E_to_B_izyx must be also be 0.0."
+                )
+        self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
+
+        spacingAngles_E_to_B_izyx = parameter_validation.list_return_list(
+            spacingAngles_E_to_B_izyx, "spacingAngles_E_to_B_izyx"
+        )
+        if not np.all(
+            elem in ["sine", "uniform"] for elem in spacingAngles_E_to_B_izyx
+        ):
+            raise ValueError(
+                'All elements in spacingAngles_E_to_B_izyx must be "sine" or "uniform".'
+            )
+        self.spacingAngles_E_to_B_izyx = spacingAngles_E_to_B_izyx
+
+        phaseAngles_E_to_B_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                phaseAngles_E_to_B_izyx, "phaseAngles_E_to_B_izyx"
+            )
+        )
+        if not (
+            np.all(phaseAngles_E_to_B_izyx >= 0.0)
+            and np.all(phaseAngles_E_to_B_izyx < 360.0)
+        ):
+            raise ValueError(
+                "All elements in phaseAngles_E_to_B_izyx must be in the range [0.0, 360.0)."
+            )
+        for phase_index, phase in enumerate(phaseAngles_E_to_B_izyx):
+            amp = self.ampAngles_E_to_B_izyx[phase_index]
+            if amp == 0 and phase != 0:
+                raise ValueError(
+                    "If an elements in ampAngles_E_to_B_izyx is 0.0, the corresponding element in phaseAngles_E_to_B_izyx must be also be 0.0."
+                )
+        self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
+
+    def generate_airplanes(self, num_steps, delta_time):
+        """Creates the Airplane at each time step, and returns them in a list.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :return: list of Airplanes
+
+            This is the list of Airplanes associated with this AirplaneMovement.
         """
+        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
+        delta_time = parameter_validation.positive_number_return_float(
+            delta_time, "delta_time"
+        )
 
-        # Check the x_ref spacing value.
-        if self.x_ref_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            x_ref_list = functions.oscillating_sinspace(
-                amplitude=self.x_ref_amplitude,
-                period=self.x_ref_period,
-                base_value=self.x_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.x_ref_spacing == "uniform":
-
-            # Create an array of points with a uniform spacing.
-            x_ref_list = functions.oscillating_linspace(
-                amplitude=self.x_ref_amplitude,
-                period=self.x_ref_period,
-                base_value=self.x_ref_base,
+        # FIXME: I'm pretty sure the oscillating_* functions are going to break if I
+        #  use them like this. They expect single values for the inputs but I'm
+        #  passing vectors. I need to modify them to accept and return vectors.
+        if self.spacingCgi_E_I == "sine":
+            # FIXME: Add a phase offset parameter to oscillating_sinspace
+            listCgi_E_I = functions.oscillating_sinspace(
+                amplitude=self.ampCgi_E_I,
+                period=self.periodCgi_E_I,
+                base_value=self.base_airplane.Cgi_E_I,
+                phase_offset=self.phaseCgi_E_I,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of x_ref_spacing!")
-
-        # Check the y_ref spacing value.
-        if self.y_ref_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            y_ref_list = functions.oscillating_sinspace(
-                amplitude=self.y_ref_amplitude,
-                period=self.y_ref_period,
-                base_value=self.y_ref_base,
+            # FIXME: Add a phase offset parameter to oscillating_linspace
+            listCgi_E_I = functions.oscillating_linspace(
+                amplitude=self.ampCgi_E_I,
+                period=self.periodCgi_E_I,
+                base_value=self.base_airplane.Cgi_E_I,
+                phase_offset=self.phaseCgi_E_I,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        elif self.y_ref_spacing == "uniform":
 
-            # Create an array of points with a uniform spacing.
-            y_ref_list = functions.oscillating_linspace(
-                amplitude=self.y_ref_amplitude,
-                period=self.y_ref_period,
-                base_value=self.y_ref_base,
+        if self.spacingAngles_E_to_B_izyx == "sine":
+            listAngles_E_to_B_izyx = functions.oscillating_sinspace(
+                amplitude=self.ampAngles_E_to_B_izyx,
+                period=self.periodAngles_E_to_B_izyx,
+                base_value=self.base_airplane.angles_E_to_B_izyx,
+                phase_offset=self.phaseAngles_E_to_B_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of y_ref_spacing!")
-
-        # Check the z_ref spacing value.
-        if self.z_ref_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            z_ref_list = functions.oscillating_sinspace(
-                amplitude=self.z_ref_amplitude,
-                period=self.z_ref_period,
-                base_value=self.z_ref_base,
+            listAngles_E_to_B_izyx = functions.oscillating_linspace(
+                amplitude=self.ampAngles_E_to_B_izyx,
+                period=self.periodAngles_E_to_B_izyx,
+                base_value=self.base_airplane.angles_E_to_B_izyx,
+                phase_offset=self.phaseAngles_E_to_B_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        elif self.z_ref_spacing == "uniform":
 
-            # Create an array of points with a uniform spacing.
-            z_ref_list = functions.oscillating_linspace(
-                amplitude=self.z_ref_amplitude,
-                period=self.z_ref_period,
-                base_value=self.z_ref_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of z_ref_spacing!")
-
-        # Create an empty array that will hold each of the airplane's wing's vector
-        # of other wing's based its movement.
+        # Create an empty 2D ndarray that will hold each of the Airplane's Wing's
+        # vector of Wings representing its changing state at each time step. The
+        # first index denotes a particular base Wing, and the second index denotes
+        # the time step.
         wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
-        # Iterate through the wing movement locations.
-        for wing_movement_location, wing_movement in enumerate(self.wing_movements):
+        # Iterate through the WingMovements.
+        for wing_movement_id, wing_movement in enumerate(self.wing_movements):
 
-            # Generate this wing's vector of other wing's based on its movement.
+            # Generate this Wing's vector of Wings representing its changing state at
+            # each time step.
             this_wings_list_of_wings = np.array(
                 wing_movement.generate_wings(num_steps=num_steps, delta_time=delta_time)
             )
 
-            # Add this vector the airplane's array of wing objects.
-            wings[wing_movement_location, :] = this_wings_list_of_wings
+            # Add this vector the Airplane's 2D ndarray of Wings' Wings.
+            wings[wing_movement_id, :] = this_wings_list_of_wings
 
-        # Create an empty list of airplanes.
+        # Create an empty list to hold each time step's Airplane.
         airplanes = []
 
-        # Generate the airplane name.
-        name = self.base_airplane.name
+        # Generate the Airplanes' names and weights.
+        this_name = self.base_airplane.name
+        this_weight = self.base_airplane.weight
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            # Get the reference position at this time step.
-            x_ref = x_ref_list[step]
-            y_ref = y_ref_list[step]
-            z_ref = z_ref_list[step]
+            thisCgi_E_I = listCgi_E_I[step]
+            theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[step]
             these_wings = wings[:, step]
 
-            # Make a new airplane object for this time step.
+            # Make a new Airplane for this time step.
             this_airplane = geometry.airplane.Airplane(
-                name=name, x_ref=x_ref, y_ref=y_ref, z_ref=z_ref, wings=these_wings
+                name=this_name,
+                wings=these_wings,
+                Cgi_E_I=thisCgi_E_I,
+                angles_E_to_B_izyx=theseAngles_E_to_B_izyx,
+                weight=this_weight,
             )
 
-            # Add this new object to the list of airplanes.
+            # Add this new Airplane to the list of Airplanes.
             airplanes.append(this_airplane)
 
-        # Return the list of airplanes.
         return airplanes
 
-    # NOTE: I haven't yet started refactoring this method.
     @property
     def max_period(self):
-        """This method returns the longest period of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """This method returns the longest period of AirplaneMovement's own motion
+        and that of its sub-movement objects and sub-sub-movement objects.
 
         :return max_period: float
-            The longest period in seconds.
+
+            The longest period in seconds. If the all the motion is static, this will
+            be 0.0.
         """
 
         wing_movement_max_periods = []
@@ -256,9 +379,8 @@ class AirplaneMovement:
 
         max_period = max(
             max_wing_movement_period,
-            self.x_ref_period,
-            self.y_ref_period,
-            self.z_ref_period,
+            self.periodCgi_E_I,
+            self.periodAngles_E_to_B_izyx,
         )
 
         return max_period

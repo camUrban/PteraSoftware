@@ -1,4 +1,3 @@
-# NOTE: I've started refactoring this module.
 """This module contains the Movement class.
 
 This module contains the following classes:
@@ -19,16 +18,17 @@ from .operating_point_movement import OperatingPointMovement
 from .. import parameter_validation
 
 
-# NOTE: I've started refactoring this class.
+# TODO: Add unit tests for this Class.
 class Movement:
-    """This is a class used to contain the movement characteristics of an
-    UnsteadyProblem.
+    """This is a class used to contain an UnsteadyProblem's movement.
 
-    TODO: Update the method descriptions.
     This class contains the following public methods:
 
-        max_period: This method returns the longest period of this movement
-        object's sub-movement objects, sub-sub-movement objects, etc.
+        max_period: Defines a property for the longest period of Movement's own
+        motion and that of its sub-movement objects, sub-sub-movement objects, etc.
+
+        static: Defines a property to flag if all the Movement itself, and all of its
+        sub-movement objects, sub-sub-movement objects, etc. represent no motion.
 
     This class contains the following class attributes:
         None
@@ -94,10 +94,10 @@ class Movement:
             be a positive int. The default value is None. If left as None,
             and Movement isn't static, Movement will calculate a value such that the
             simulation will cover some number of cycles of the maximum period of all
-            the motion described in Movement's child movement objects. If
-            num_steps is left as None, and Movement is static, it will default to the
-            number of time steps such that the wake extends back by some number of
-            reference chord lengths.
+            the motion described in Movement's sub-movement objects, sub-sub-movement
+            objects, etc. If num_steps is left as None, and Movement is static,
+            it will default to the number of time steps such that the wake extends
+            back by some number of reference chord lengths.
         """
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
@@ -226,37 +226,38 @@ class Movement:
             num_steps=self.num_steps, delta_time=self.delta_time
         )
 
-    # NOTE: I haven't yet started refactoring this method.
+    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
-        """This method returns the longest period of this movement object's sub-
-        movement objects, sub-sub-movement objects, etc.
+        """Defines a property for the longest period of Movement's own motion and
+        that of its sub-movement objects, sub-sub-movement objects, etc.
 
-        :return: float
-            The longest period in seconds.
+        :return: float The longest period in seconds. If the all the motion is
+        static, this will be 0.0.
         """
-        # Iterate through the airplane movements and find the one with the largest
-        # max period.
-        max_airplane_periods = []
+        # Iterate through the AirplaneMovements and find the one with the largest max
+        # period.
+        airplane_movement_max_periods = []
         for airplane_movement in self.airplane_movements:
-            max_airplane_periods.append(airplane_movement.max_period)
-        max_airplane_period = max(max_airplane_periods)
+            airplane_movement_max_periods.append(airplane_movement.max_period)
+        max_airplane_period = max(airplane_movement_max_periods)
 
-        # The global max period is the maximum of the max airplane period and the max
-        # operating point period.
+        # The global max period is the maximum of the max AirplaneMovement period and
+        # the OperatingPointMovement max period.
         return max(
             max_airplane_period,
             self.operating_point_movement.max_period,
         )
 
+    # TODO: Add unit tests for this method.
     @property
     def static(self):
-        """Defines a property to flag if all the Movement's child movement objects
-        represent no motion.
+        """Defines a property to flag if all the Movement itself, and all of its
+        sub-movement objects, sub-sub-movement objects, etc. represent no motion.
 
         :return: bool
 
-            True if all Movement's child movement objects represent no motion. False
-            otherwise.
+            True if all Movement and its sub-movement objects, sub-sub-movement
+            objects, etc. represent no motion. False otherwise.
         """
         return self.max_period == 0

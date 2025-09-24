@@ -582,7 +582,7 @@ def analyze_unsteady_convergence(
     convergence_logger.info("Beginning convergence analysis.")
 
     ref_movement = ref_problem.movement
-    is_static = ref_movement.get_max_period() == 0
+    is_static = ref_movement.max_period == 0
 
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement

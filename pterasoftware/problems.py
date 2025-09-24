@@ -53,7 +53,7 @@ class SteadyProblem:
                 raise TypeError("Every element in airplanes must be an Airplane.")
         self.airplanes = airplanes
         if not isinstance(operating_point, op.OperatingPoint):
-            raise TypeError("operating_point must have be an OperatingPoint.")
+            raise TypeError("operating_point must be an OperatingPoint.")
         self.operating_point = operating_point
 
 
@@ -96,9 +96,6 @@ class UnsteadyProblem:
         self.num_steps = self.movement.num_steps
         self.delta_time = self.movement.delta_time
 
-        # Find the maximum period of this UnsteadyProblem's Movement's sub-Movements.
-        self.max_period = movement.get_max_period()
-
         # For UnsteadyProblems with a static Movement, users are typically interested
         # in the final time step's forces and moments, which, assuming convergence,
         # will be the most accurate. For UnsteadyProblems with cyclic movement,
@@ -106,11 +103,13 @@ class UnsteadyProblem:
         # moments averaged over the last cycle simulated. Therefore, determine which
         # time step will be the first with relevant results based on if the Movement
         # is static or cyclic.
-        if self.max_period == 0:
+        _movement_max_period = self.movement.max_period
+        if _movement_max_period == 0:
             self.first_averaging_step = self.num_steps - 1
         else:
             self.first_averaging_step = max(
-                0, math.floor(self.num_steps - (self.max_period / self.delta_time))
+                0,
+                math.floor(self.num_steps - (_movement_max_period / self.delta_time)),
             )
 
         # If the user only wants to calculate forces and moments for the final cycle

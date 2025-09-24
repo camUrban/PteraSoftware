@@ -25,7 +25,8 @@ This package contains the following modules:
 
     meshing.py: This module contains the function for meshing Wings.
 
-    movement.py: This module contains the class definitions for the problem's movement.
+    movement.py This module contains the class definitions for a UnsteadyProblem's
+    movement.
 
     operating_point.py: This module contains the class definition for a Problem's
     operating point.

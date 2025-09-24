@@ -247,7 +247,7 @@ operating_point = ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=0.0)
 
 # Define the operating point's movement.
 operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=operating_point,
+    base_operating_point=operating_point
 )
 
 # Delete the extraneous airplane and operating point objects, as these are now

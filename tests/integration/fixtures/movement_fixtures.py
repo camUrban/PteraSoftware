@@ -177,7 +177,7 @@ def make_variable_validation_movement():
 
     # Create an operating point movement object associated with this operating point.
     unsteady_validation_operating_point_movement = ps.movement.OperatingPointMovement(
-        base_operating_point=unsteady_validation_operating_point,
+        base_operating_point=unsteady_validation_operating_point
     )
 
     # Delete the now extraneous constructing fixtures.

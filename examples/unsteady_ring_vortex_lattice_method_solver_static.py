@@ -345,17 +345,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 # Define the operating point's movement. The operating point's velocity can change
 # with respect to time.
 operating_point_movement = ps.movement.OperatingPointMovement(
-    # Define the base operating point object.
-    base_operating_point=example_operating_point,
-    # Define the amplitude of the velocity's change in time. This value is set to 0.0
-    # meters per second, which is the default value.
-    velocity_amplitude=0.0,
-    # Define the period of the velocity's change in time. This value is set to 0.0
-    # seconds, which is the default value.
-    velocity_period=0.0,
-    # Define the time step spacing of the velocity's change in time. This is "sine"
-    # by default. The options are "sine" and "uniform".
-    velocity_spacing="sine",
+    base_operating_point=example_operating_point, periodVCg__E=0.0, spacingVCg__E="sine"
 )
 
 # Define the movement object. This contains the airplane movement and the operating

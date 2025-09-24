@@ -1,4 +1,3 @@
-# NOTE: I haven't yet started refactoring this module.
 """This module contains the OperatingPointMovement class.
 
 This module contains the following classes:
@@ -15,19 +14,20 @@ This module contains the following functions:
 from . import functions
 
 from .. import operating_point
+from .. import parameter_validation
 
 
-# NOTE: I haven't yet started refactoring this class.
+# TODO: Add unit tests for this class.
 class OperatingPointMovement:
-    """This is a class used to contain the movement characteristics of an operating
-    point.
+    """This is a class used to contain the OperatingPoint movements.
 
     This class contains the following public methods:
-        generate_operating_points: This method creates the operating point objects at
-        each time current_step, and groups them into a list.
 
-        max_period: This method returns the longest period of this movement
-        object's cycles.
+        generate_operating_points: Creates the OperatingPoint at each time step,
+        and returns them in a list.
+
+        max_period: Defines a property for the longest period of
+        OperatingPointMovement's own motion.
 
     This class contains the following class attributes:
         None
@@ -36,111 +36,163 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
-    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_operating_point,
-        velocity_amplitude=0.0,
-        velocity_period=0.0,
-        velocity_spacing="sine",
+        ampVCg__E=0.0,
+        periodVCg__E=0.0,
+        spacingVCg__E="sine",
+        phaseVCg__E=0.0,
     ):
         """This is the initialization method.
 
         :param base_operating_point: OperatingPoint
-            This is the operating point object, from which the others will be created.
-        :param velocity_amplitude: float, optional
-            This is the amplitude of the operating point's change in velocity. Its
-            units are meters per second and its default value is 0 meters per second.
-        :param velocity_period: float, optional
-            This is the period of the operating point's change in its velocity. Its
-            units are seconds and its default value is 0 seconds.
-        :param velocity_spacing: string, optional
-            This value determines the spacing of the operating point's change in its
-            velocity. The options are "sine", and "uniform". The default value is
-            "sine".
-        """
 
-        # Initialize the class attributes.
+            This is the base OperatingPoint, from which the OperatingPoint at each
+            time step will be created.
+
+        :param ampVCg__E: number, optional
+
+            The amplitude of the OperatingPointMovement's changes in its
+            OperatingPoints' vCg__E parameters. Must be a non-negative number (int or
+            float), and is converted to a float internally. The default value is 0.0.
+            The units are in meters per second.
+
+        :param periodVCg__E: number, optional
+
+            The period of the OperatingPointMovement's changes in its
+            OperatingPoints' vCg__E parameter. Must be a non-negative number (int or
+            float), and is converted to a float internally. The default value is 0.0.
+            It must be 0.0 if ampVCg__E 0.0 and non-zero if not. The units are in
+            seconds.
+
+        :param spacingVCg__E: string, optional
+
+            The value determines the spacing of the OperatingPointMovement's change
+            in its OperatingPoints' Cgi_E_I parameters. Must be either "sine" or
+            "uniform". The default value is "sine".
+
+        :param phaseVCg__E: number optional
+
+            The phase offsets of the first time step's OperatingPoint's vCg__E
+            parameter relative to the base OperatingPoint's vCg__E parameter. Must be
+            a number (int or float) in the range [0.0, 360.0), and is converted to a
+            float internally. The default value is 0.0. It must be 0.0 if ampVCg__E
+            is 0.0 and non-zero if not. The units are in degrees.
+        """
+        if not isinstance(base_operating_point, operating_point.OperatingPoint):
+            raise TypeError("base_operating_point must be an OperatingPoint")
         self.base_operating_point = base_operating_point
-        self.velocity_base = self.base_operating_point.vCg__E
-        self.velocity_amplitude = velocity_amplitude
-        self.velocity_period = velocity_period
-        self.velocity_spacing = velocity_spacing
 
-    # NOTE: I haven't yet started refactoring this method.
-    def generate_operating_points(self, num_steps=10, delta_time=0.1):
-        """This method creates the operating point objects at each time current_step,
-        and groups them into a list.
+        self.ampVCg__E = parameter_validation.non_negative_number_return_float(
+            ampVCg__E, "ampVCg__E"
+        )
 
-        :param num_steps: int, optional
-            This is the number of time steps in this movement. The default value is 10.
-        :param delta_time: float, optional
-            This is the time, in seconds, between each time step. The default value
-            is 0.1 seconds.
-        :return operating_points: list of OperatingPoint objects
-            This is the list of OperatingPoint objects that is associated with this
-            OperatingPointMovement object.
+        periodVCg__E = parameter_validation.non_negative_number_return_float(
+            periodVCg__E, "periodVCg__E"
+        )
+        if self.ampVCg__E == 0 and periodVCg__E != 0:
+            raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
+        self.periodVCg__E = periodVCg__E
+
+        spacingVCg__E = parameter_validation.string_return_string(
+            spacingVCg__E, "spacingVCg__E"
+        )
+        if spacingVCg__E not in ["sine", "uniform"]:
+            raise ValueError('spacingVCg__E must be "sine" or "uniform".')
+        self.spacingVCg__E = spacingVCg__E
+
+        phaseVCg__E = parameter_validation.number_in_range_return_float(
+            phaseVCg__E, "phaseVCg__E", 0.0, True, 360.0, False
+        )
+        if self.ampVCg__E == 0 and phaseVCg__E != 0:
+            raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
+        self.phaseVCg__E = phaseVCg__E
+
+    # TODO: Add unit tests for this method.
+    def generate_operating_points(self, num_steps, delta_time):
+        """Creates the OperatingPoint at each time step, and returns them in a list.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :return: list of OperatingPoints
+
+            This is the list of OperatingPoints associated with this
+            OperatingPointMovement.
         """
+        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
+        delta_time = parameter_validation.positive_number_return_float(
+            delta_time, "delta_time"
+        )
 
-        # Check the velocity spacing value.
-        if self.velocity_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            velocity_list = functions.oscillating_sinspace(
-                amplitude=self.velocity_amplitude,
-                period=self.velocity_period,
-                base_value=self.velocity_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.velocity_spacing == "uniform":
-
-            # Create an array of points with a uniform spacing.
-            velocity_list = functions.oscillating_linspace(
-                amplitude=self.velocity_amplitude,
-                period=self.velocity_period,
-                base_value=self.velocity_base,
+        if self.spacingVCg__E == "sine":
+            # FIXME: Add a phase offset parameter to oscillating_sinspace
+            listVCg__E = functions.oscillating_sinspace(
+                amplitude=self.ampVCg__E,
+                period=self.periodVCg__E,
+                base_value=self.base_operating_point.vCg__E,
+                phase_offset=self.phaseVCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
+            # FIXME: Add a phase offset parameter to oscillating_linspace
+            listVCg__E = functions.oscillating_linspace(
+                amplitude=self.ampVCg__E,
+                period=self.periodVCg__E,
+                base_value=self.base_operating_point.vCg__E,
+                phase_offset=self.phaseVCg__E,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
 
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of velocity_spacing!")
-
-        # Create an empty list of operating points.
+        # Create an empty list to hold each time step's OperatingPoint.
         operating_points = []
 
-        # Generate the non-changing operating point attributes.
-        density = self.base_operating_point.density
-        alpha = self.base_operating_point.alpha
-        beta = self.base_operating_point.beta
+        # Get the non-changing OperatingPoint attributes.
+        this_density = self.base_operating_point.density
+        this_alpha = self.base_operating_point.alpha
+        this_beta = self.base_operating_point.beta
+        thisExternalFX_W = self.base_operating_point.externalFX_W
+        this_nu = self.base_operating_point.nu
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            # Get the velocity at this time step.
-            velocity = velocity_list[step]
+            thisVCg__E = listVCg__E[step]
 
             # Make a new operating point object for this time step.
             this_operating_point = operating_point.OperatingPoint(
-                density=density, vCg__E=velocity, alpha=alpha, beta=beta
+                density=this_density,
+                vCg__E=thisVCg__E,
+                alpha=this_alpha,
+                beta=this_beta,
+                externalFX_W=thisExternalFX_W,
+                nu=this_nu,
             )
 
-            # Add this new object to the list of operating points.
+            # Add this new OperatingPoint to the list of OperatingPoints.
             operating_points.append(this_operating_point)
 
-        # Return the list of operating points.
         return operating_points
 
-    # NOTE: I haven't yet started refactoring this method.
+    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
-        """This method returns the longest period of this movement object's cycles.
+        """Defines a property for the longest period of OperatingPointMovement's own
+        motion.
 
-        :return max_period: float
-            The longest period in seconds.
+        :return: float
+
+            The longest period in seconds. If the all the motion is static, this will
+            be 0.0.
         """
-
-        max_period = self.velocity_period
-
-        return max_period
+        return self.periodVCg__E

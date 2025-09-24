@@ -357,7 +357,7 @@ validation_operating_point = ps.operating_point.OperatingPoint(
 
 # Define an operating point movement that contains the operating point.
 validation_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=validation_operating_point,
+    base_operating_point=validation_operating_point
 )
 
 # Get the geometry-to-wind transformation matrix, which will later be used to convert

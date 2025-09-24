@@ -28,8 +28,8 @@ class AirplaneMovement:
         generate_airplanes: Creates the Airplane at each time step, and returns them
         in a list.
 
-        max_period: This method returns the longest period of AirplaneMovement's own
-        motion and that of its sub-movement objects and sub-sub-movement objects.
+        max_period: Defines a property for the longest period of AirplaneMovement's
+        own motion and that of its sub-movement objects and sub-sub-movement objects.
 
     This class contains the following class attributes:
         None
@@ -88,9 +88,9 @@ class AirplaneMovement:
         :param phaseCgi_E_I: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Airplane's
-            Cgi_E_I parameter from the base Airplane's Cgi_E_I parameter. Can be a
-            tuple, list, or numpy array of non-negative numbers (int or float) in the
-            range [0.0, 360.0). Values are converted to floats internally. The
+            Cgi_E_I parameter relative to the base Airplane's Cgi_E_I parameter. Can
+            be a tuple, list, or numpy array of non-negative numbers (int or float)
+            in the range [0.0, 360.0). Values are converted to floats internally. The
             default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
             corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
             not. The units are in degrees.
@@ -122,12 +122,12 @@ class AirplaneMovement:
         :param phaseAngles_E_to_B_izyx: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Airplane's
-            angles_E_to_B_izyx parameter from the base Airplane's Cgi_E_I parameter.
-            Can be a tuple, list, or numpy array of numbers (int or float) in the
-            range [0.0, 360.0). Values are converted to floats internally. The
-            default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
-            corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
-            not. The units are in degrees.
+            angles_E_to_B_izyx parameter relative to the base Airplane's
+            angles_E_to_B_izyx parameter. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range [0.0, 360.0). Values are converted to
+            floats internally. The default value is (0.0, 0.0, 0.0). Each element
+            must be 0.0 if the corresponding element in ampAngles_E_to_B_izyx is 0.0
+            and non-zero if not. The units are in degrees.
         """
         if not isinstance(base_airplane, geometry.airplane.Airplane):
             raise TypeError("base_airplane must be an Airplane.")
@@ -250,6 +250,7 @@ class AirplaneMovement:
                 )
         self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
 
+    # TODO: Add unit tests for this method.
     def generate_airplanes(self, num_steps, delta_time):
         """Creates the Airplane at each time step, and returns them in a list.
 
@@ -337,7 +338,7 @@ class AirplaneMovement:
         # Create an empty list to hold each time step's Airplane.
         airplanes = []
 
-        # Generate the Airplanes' names and weights.
+        # Get the non-changing Airplane attributes.
         this_name = self.base_airplane.name
         this_weight = self.base_airplane.weight
 
@@ -361,12 +362,13 @@ class AirplaneMovement:
 
         return airplanes
 
+    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
-        """This method returns the longest period of AirplaneMovement's own motion
+        """Defines a property for the longest period of AirplaneMovement's own motion
         and that of its sub-movement objects and sub-sub-movement objects.
 
-        :return max_period: float
+        :return: float
 
             The longest period in seconds. If the all the motion is static, this will
             be 0.0.
@@ -377,10 +379,8 @@ class AirplaneMovement:
             wing_movement_max_periods.append(wing_movement.max_period)
         max_wing_movement_period = max(wing_movement_max_periods)
 
-        max_period = max(
+        return max(
             max_wing_movement_period,
             self.periodCgi_E_I,
             self.periodAngles_E_to_B_izyx,
         )
-
-        return max_period

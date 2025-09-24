@@ -30,7 +30,7 @@ mid_to_tip_chord = (root_chord + tip_chord) / 2
 
 this_operating_point = ps.operating_point.OperatingPoint(vCg__E=speed, alpha=0.0)
 this_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=this_operating_point,
+    base_operating_point=this_operating_point
 )
 del this_operating_point
 

@@ -81,7 +81,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 )
 
 operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=example_operating_point,
+    base_operating_point=example_operating_point
 )
 
 movement = ps.movement.Movement(

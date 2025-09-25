@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Statistic">
+    <option name="fileTypes" value="class;svn-base;svn-work;bmp;tga;tiff;ear;war;zip;jar;iml;iws;ipr;bz2;gz;pyc;" />
+    <option name="separateTabsFileTypes" value="py;txt;md;csv;webp;ico;gif;jpg;CODEOWNERS;yml;json;png;cfg;dat;in;iss;pdf;spec;hhtoml;ui;xfl;yaml" />
+    <option name="excludeGitArtifactDirectory" value="false" />
     <option name="excludedDirectories">
       <list>
-        <option value="$PROJECT_DIR$/.github" />
         <option value="$PROJECT_DIR$/.idea" />
-        <option value="$PROJECT_DIR$/testing_in_development" />
-        <option value="$PROJECT_DIR$/venv" />
-        <option value="$PROJECT_DIR$/pterasoftware/airfoils" />
+        <option value="$PROJECT_DIR$/.venv313" />
+        <option value="$PROJECT_DIR$/experimental" />
+        <option value="$PROJECT_DIR$/pterasoftware/__pycache__" />
+        <option value="$PROJECT_DIR$/pterasoftware/geometry/__pycache__" />
+        <option value="$PROJECT_DIR$/pterasoftware/models/__pycache__" />
+        <option value="$PROJECT_DIR$/pterasoftware/airfoils/__pycache__" />
+        <option value="$PROJECT_DIR$/.git" />
       </list>
     </option>
   </component>

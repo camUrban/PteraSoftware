@@ -1,3 +1,4 @@
+# TODO: Consider making this module private.
 """This module contains useful functions for the movement classes.
 
 This module contains the following classes:

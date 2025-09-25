@@ -23,7 +23,7 @@ import numpy as np
 
 from . import geometry
 from . import problems
-from . import movement
+from . import movements
 
 from . import unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
@@ -825,7 +825,7 @@ def analyze_unsteady_convergence(
                                 )
 
                                 # 7. Create a copy of the new (sub-)movement.
-                                this_wing_cross_section_movement = movement.WingCrossSectionMovement(
+                                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
                                     # These values are copied from the reference
                                     # object.
                                     sweeping_amplitude=ref_wing_cross_section_movement.sweeping_amplitude,
@@ -872,7 +872,7 @@ def analyze_unsteady_convergence(
                             )
 
                             # 7. Create a copy of the new (sub-)movement.
-                            this_wing_movement = movement.WingMovement(
+                            this_wing_movement = movements.wing_movement.WingMovement(
                                 base_wing=this_base_wing,
                                 wing_cross_section_movements=these_wing_cross_section_movements,
                                 x_le_amplitude=ref_wing_movement.x_le_amplitude,
@@ -911,7 +911,7 @@ def analyze_unsteady_convergence(
                         )
 
                         # 7. Create a copy of the new (sub-)movement.
-                        this_airplane_movement = movement.AirplaneMovement(
+                        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
                             # These values are copied from this reference airplane
                             # movement.
                             x_ref_amplitude=ref_airplane_movement.x_ref_amplitude,
@@ -938,13 +938,13 @@ def analyze_unsteady_convergence(
 
                     # Create a new movement for this iteration.
                     if is_static:
-                        this_movement = movement.Movement(
+                        this_movement = movements.movement.Movement(
                             airplane_movements=these_airplane_movements,
                             operating_point_movement=ref_operating_point_movement,
                             num_chords=wake_length,
                         )
                     else:
-                        this_movement = movement.Movement(
+                        this_movement = movements.movement.Movement(
                             airplane_movements=these_airplane_movements,
                             operating_point_movement=ref_operating_point_movement,
                             num_cycles=wake_length,

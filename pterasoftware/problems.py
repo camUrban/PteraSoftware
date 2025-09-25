@@ -14,7 +14,7 @@ This module contains the following functions:
 import math
 
 from . import geometry
-from . import movement as mov
+from . import movements as mov
 from . import operating_point as op
 from . import parameter_validation
 
@@ -86,7 +86,7 @@ class UnsteadyProblem:
             sub-Movement with the longest period), which increases simulation speed.
             The default value is False.
         """
-        if not isinstance(movement, mov.Movement):
+        if not isinstance(movement, mov.movement.Movement):
             raise TypeError("movement must be a Movement.")
         self.movement = movement
         self.only_final_results = parameter_validation.boolLike_return_bool(

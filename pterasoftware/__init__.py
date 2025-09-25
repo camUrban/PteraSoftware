@@ -8,6 +8,8 @@ This package contains the following subpackages:
 
     geometry: This package contains the geometry classes.
 
+    movements: This package contains the movement classes and their helper functions.
+
 This package contains the following directories:
     ui_resources: This directory contains assets used by the GUI.
 
@@ -24,9 +26,6 @@ This package contains the following modules:
     pterasoftware package.
 
     meshing.py: This module contains the function for meshing Wings.
-
-    movement.py This module contains the class definitions for a UnsteadyProblem's
-    movement.
 
     operating_point.py: This module contains the class definition for a Problem's
     operating point.
@@ -62,7 +61,7 @@ import pterasoftware.aerodynamics
 import pterasoftware.convergence
 import pterasoftware.functions
 import pterasoftware.meshing
-import pterasoftware.movement
+import pterasoftware.movements
 import pterasoftware.operating_point
 import pterasoftware.output
 import pterasoftware.parameter_validation

@@ -696,20 +696,20 @@ class Airfoil:
 
             # Check to make sure the number of elements in the array is even.
             if len(outline1D_A_lp) % 2 != 0:
-                raise Exception(
-                    "Airfoil file was in airfoil database, but it could not be read correctly."
+                raise ValueError(
+                    "name matched to an airfoil in the airfoils database, but it could not be read correctly."
                 )
 
             # Populate the outline_A_lp attribute and return.
             self.outline_A_lp = np.reshape(outline1D_A_lp, (-1, 2))
             return
 
-        # TODO: Determine if I should call a particular error here instead of a
-        #  general exception.
         # If the Airfoil was not a NACA 4-series and was not found in the database,
         # throw an error.
         except FileNotFoundError:
-            raise Exception("Airfoil not in database!")
+            raise ValueError(
+                "name didn't match the NACA 4-series pattern nor was it found in the airfoils database."
+            )
 
     def _resample_outline(self, n_points_per_side):
         """This method returns a resampled version of the points on the Airfoil's

@@ -29,7 +29,7 @@ import scipy.optimize
 
 from . import steady_horseshoe_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
-from . import movement
+from . import movements
 from . import problems
 
 trim_logger = logging.getLogger("trim")
@@ -265,11 +265,13 @@ def analyze_unsteady_trim(
         external_forces = np.array([0, 0, weight])
         external_force_coefficients = external_forces / dynamic_pressure / s_ref
 
-        operating_point_movement = movement.OperatingPointMovement(
-            base_operating_point=operating_point
+        operating_point_movement = (
+            movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=operating_point
+            )
         )
 
-        this_movement = movement.Movement(
+        this_movement = movements.movement.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
         )

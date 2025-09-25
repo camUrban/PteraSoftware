@@ -413,8 +413,10 @@ class WingMovement:
             wing_cross_section_movement_max_periods
         )
 
-        return max(
-            max_wing_cross_section_movement_period,
-            self.periodPrelimLer_G_Cg,
-            self.periodAngles_G_to_prelimWn_izyx,
+        return float(
+            max(
+                max_wing_cross_section_movement_period,
+                np.max(self.periodPrelimLer_G_Cg),
+                np.max(self.periodAngles_G_to_prelimWn_izyx),
+            )
         )

@@ -381,8 +381,10 @@ class AirplaneMovement:
             wing_movement_max_periods.append(wing_movement.max_period)
         max_wing_movement_period = max(wing_movement_max_periods)
 
-        return max(
-            max_wing_movement_period,
-            self.periodCgi_E_I,
-            self.periodAngles_E_to_B_izyx,
+        return float(
+            max(
+                max_wing_movement_period,
+                np.max(self.periodCgi_E_I),
+                np.max(self.periodAngles_E_to_B_izyx),
+            )
         )

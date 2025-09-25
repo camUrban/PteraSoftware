@@ -363,7 +363,9 @@ class WingCrossSectionMovement:
             The longest period in seconds. If the all the motion is static, this will
             be 0.0.
         """
-        return max(
-            self.periodLp_Wcsp_Lpp,
-            self.periodAngles_Wcsp_to_Wcs_izyx,
+        return float(
+            max(
+                np.max(self.periodLp_Wcsp_Lpp),
+                np.max(self.periodAngles_Wcsp_to_Wcs_izyx),
+            )
         )

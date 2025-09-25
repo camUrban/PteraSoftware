@@ -40,7 +40,7 @@ airplane_movement = ps.movement.AirplaneMovement(
     wing_movements=[
         ps.movement.WingMovement(
             base_wing=airplane.wings[0],
-            wing_cross_sections_movements=[
+            wing_cross_section_movements=[
                 ps.movement.WingCrossSectionMovement(
                     base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
                 ),

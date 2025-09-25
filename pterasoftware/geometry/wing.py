@@ -94,7 +94,7 @@ class Wing:
 
     Every Wing has its axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the prelimLer_G_Cg and
-    angles_G_to_prelimWn parameters. However, the steps for transforming a vector
+    angles_G_to_prelimWn_izyx parameters. However, the steps for transforming a vector
     from geometry axes to wing axes, and the interpretation of the wing axes
     orientation and position relative to a Wing's geometry, also depend on the
     parameters symmetric, mirror_only, symmetry_normal_Wn, and symmetry_point_Wn_Ler:
@@ -115,7 +115,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn fully define this Wing's axes with respect
+                    angles_G_to_prelimWn_izyx fully define this Wing's axes with respect
                     to the geometry axes. The wing axes will also retain the
                     handedness of the geometry axes.
 
@@ -132,7 +132,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn does not fully define the orientation of
+                    angles_G_to_prelimWn_izyx does not fully define the orientation of
                     this Wing's axes with respect to the geometry axes. After
                     translation and rotation, the coordinate system also needs to be
                     reflected across the symmetry plane, which will flip the wing
@@ -150,7 +150,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn does not fully define orientation of this
+                    angles_G_to_prelimWn_izyx does not fully define orientation of this
                     Wing's axes with respect to the geometry axes. After translation
                     and rotation, the coordinate system also needs to be reflected
                     across the symmetry plane, which will flip the wing axes'
@@ -175,7 +175,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn fully define this Wing's axes with respect
+                    angles_G_to_prelimWn_izyx fully define this Wing's axes with respect
                     to the geometry axes. The wing axes will also retain the
                     handedness of the geometry axes.
 
@@ -207,7 +207,7 @@ class Wing:
         wing_cross_sections,
         name="Untitled Wing",
         prelimLer_G_Cg=(0.0, 0.0, 0.0),
-        angles_G_to_prelimWn=(0.0, 0.0, 0.0),
+        angles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
         symmetry_normal_Wn=None,
@@ -236,7 +236,7 @@ class Wing:
             from the actual position as explained in the class docstring. The units
             are meters. The default is (0.0, 0.0, 0.0).
 
-        :param angles_G_to_prelimWn: array-like of 3 numbers, optional
+        :param angles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
 
             This is the rotation angles [angleX, angleY, angleZ] in degrees that
             define the orientation of this Wing's axes relative to the geometry axes
@@ -245,7 +245,7 @@ class Wing:
             internally. All angles must be in the range (-90, 90) degrees. Rotations
             are intrinsic, and proceed in the z-y'-x'' order conventional for Euler
             angles. It may differ from the actual position as explained in the class
-            docstring. The units are degrees. The default is ( 0.0, 0.0, 0.0).
+            docstring. The units are degrees. The default is (0.0, 0.0, 0.0).
 
         :param symmetric: boolLike, optional
 
@@ -348,17 +348,19 @@ class Wing:
             )
         )
 
-        # Validate angles_G_to_prelimWn.
-        angles_G_to_prelimWn = (
+        # Validate angles_G_to_prelimWn_izyx.
+        angles_G_to_prelimWn_izyx = (
             parameter_validation.threeD_number_vectorLike_return_float(
-                angles_G_to_prelimWn, "angles_G_to_prelimWn"
+                angles_G_to_prelimWn_izyx, "angles_G_to_prelimWn_izyx"
             )
         )
-        if not np.all((-90.0 < angles_G_to_prelimWn) & (angles_G_to_prelimWn < 90.0)):
+        if not np.all(
+            (-90.0 < angles_G_to_prelimWn_izyx) & (angles_G_to_prelimWn_izyx < 90.0)
+        ):
             raise ValueError(
-                "All elements of angles_G_to_prelimWn must lie in the range (-90, 90) degrees."
+                "All elements of angles_G_to_prelimWn_izyx must lie in the range (-90, 90) degrees."
             )
-        self.angles_G_to_prelimWn = angles_G_to_prelimWn
+        self.angles_G_to_prelimWn_izyx = angles_G_to_prelimWn_izyx
 
         # Validate symmetric and mirror_only.
         symmetric = parameter_validation.boolLike_return_bool(symmetric, "symmetric")
@@ -714,7 +716,7 @@ class Wing:
         # coordinates from geometry axes to preliminary wing axes. This is the
         # rotation step.
         T_rot_pas_G_to_prelimWn = transformations.generate_rot_T(
-            self.angles_G_to_prelimWn, passive=True, intrinsic=True, order="zyx"
+            self.angles_G_to_prelimWn_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
         # Step 3: Create T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler, which maps from

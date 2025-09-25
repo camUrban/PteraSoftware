@@ -239,39 +239,20 @@ v_tail_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
 
 # Now define the main wing's movement. In addition to their wing cross sections'
 # relative movements, wings' leading edge positions can move as well.
-main_wing_movement = ps.movement.WingMovement(  # Define the base wing object.
+main_wing_movement = ps.movement.WingMovement(
     base_wing=example_airplane.wings[0],
-    # Add the list of wing cross section movement objects.
-    wing_cross_sections_movements=[
+    wing_cross_section_movements=[
         main_wing_root_wing_cross_section_movement,
         main_wing_tip_wing_cross_section_movement,
     ],
-    # Define the amplitude of the leading edge's change in x position. This value is
-    # in meters. This is set to 0.0 meters, which is the default value.
     x_le_amplitude=0.0,
-    # Define the period of the leading edge's change in x position. This is set to
-    # 0.0 seconds, which is the default value.
     x_le_period=0.0,
-    # Define the time step spacing of the leading edge's change in x position. This
-    # is "sine" by default. The options are "sine" and "uniform".
     x_le_spacing="sine",
-    # Define the amplitude of the leading edge's change in y position. This value is
-    # in meters. This is set to 0.0 meters, which is the default value.
     y_le_amplitude=0.0,
-    # Define the period of the leading edge's change in y position. This is set to
-    # 0.0 seconds, which is the default value.
     y_le_period=0.0,
-    # Define the time step spacing of the leading edge's change in y position. This
-    # is "sine" by default. The options are "sine" and "uniform".
     y_le_spacing="sine",
-    # Define the amplitude of the leading edge's change in z position. This value is
-    # in meters. This is set to 0.0 meters, which is the default value.
     z_le_amplitude=0.0,
-    # Define the period of the leading edge's change in z position. This is set to
-    # 0.0 seconds, which is the default value.
     z_le_period=0.0,
-    # Define the time step spacing of the leading edge's change in z position. This
-    # is "sine" by default. The options are "sine" and "uniform".
     z_le_spacing="sine",
 )
 
@@ -282,10 +263,9 @@ del main_wing_root_wing_cross_section_movement
 del main_wing_tip_wing_cross_section_movement
 
 # Make the v-tail's wing movement object.
-v_tail_movement = ps.movement.WingMovement(  # Define the base wing object.
+v_tail_movement = ps.movement.WingMovement(
     base_wing=example_airplane.wings[1],
-    # Add the list of wing cross section movement objects.
-    wing_cross_sections_movements=[
+    wing_cross_section_movements=[
         v_tail_root_wing_cross_section_movement,
         v_tail_tip_wing_cross_section_movement,
     ],

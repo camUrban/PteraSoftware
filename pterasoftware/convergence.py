@@ -873,8 +873,8 @@ def analyze_unsteady_convergence(
 
                             # 7. Create a copy of the new (sub-)movement.
                             this_wing_movement = movement.WingMovement(
-                                # These values are copied from this reference wing
-                                # movement.
+                                base_wing=this_base_wing,
+                                wing_cross_section_movements=these_wing_cross_section_movements,
                                 x_le_amplitude=ref_wing_movement.x_le_amplitude,
                                 x_le_period=ref_wing_movement.x_le_period,
                                 x_le_spacing=ref_wing_movement.x_le_spacing,
@@ -884,9 +884,6 @@ def analyze_unsteady_convergence(
                                 z_le_amplitude=ref_wing_movement.z_le_amplitude,
                                 z_le_period=ref_wing_movement.z_le_period,
                                 z_le_spacing=ref_wing_movement.z_le_spacing,
-                                # These values change.
-                                base_wing=this_base_wing,
-                                wing_cross_sections_movements=these_wing_cross_section_movements,
                             )
 
                             # 8. Append the new base object to the list of new base

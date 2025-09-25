@@ -680,7 +680,7 @@ class Airplane:
                 wing_cross_sections=reflected_wing_cross_sections,
                 name=f"Reflected {wing.name}",
                 prelimLer_G_Cg=np.copy(wing.prelimLer_G_Cg),
-                angles_G_to_prelimWn=np.copy(wing.angles_G_to_prelimWn),
+                angles_G_to_prelimWn_izyx=np.copy(wing.angles_G_to_prelimWn_izyx),
                 symmetric=False,
                 mirror_only=True,
                 symmetry_normal_Wn=np.copy(wing.symmetry_normal_Wn),

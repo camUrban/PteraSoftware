@@ -249,7 +249,7 @@ def make_type_1_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 1 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=False,
         symmetry_normal_Wn=None,
@@ -277,7 +277,7 @@ def make_type_2_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 2 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=True,
         symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
@@ -305,7 +305,7 @@ def make_type_3_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 3 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=True,
         symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
@@ -340,7 +340,7 @@ def make_type_4_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 4 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=True,
         mirror_only=False,
         symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
@@ -379,7 +379,7 @@ def make_type_5_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 5 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=True,
         mirror_only=False,
         symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane

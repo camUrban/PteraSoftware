@@ -332,7 +332,7 @@ for j in range(1, num_spanwise_sections + 1):
 # Define the wing movement object that contains the wing cross section movements.
 validation_main_wing_movement = ps.movement.WingMovement(
     base_wing=validation_airplane.wings[0],
-    wing_cross_sections_movements=validation_wing_cross_section_movements,
+    wing_cross_section_movements=validation_wing_cross_section_movements,
 )
 
 # Delete the extraneous pointer.

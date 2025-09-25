@@ -111,7 +111,7 @@ for airplane_id in range(num_airplanes):
         wing_movements=[
             ps.movement.WingMovement(
                 base_wing=this_airplane.wings[0],
-                wing_cross_sections_movements=[
+                wing_cross_section_movements=[
                     ps.movement.WingCrossSectionMovement(
                         base_wing_cross_section=this_airplane.wings[
                             0

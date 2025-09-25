@@ -164,7 +164,7 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                     wing_movements=[
                         ps.movement.WingMovement(
                             base_wing=this_airplane.wings[0],
-                            wing_cross_sections_movements=[
+                            wing_cross_section_movements=[
                                 ps.movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0

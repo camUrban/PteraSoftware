@@ -60,7 +60,7 @@ upper_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovemen
 
 upper_wing_movement = ps.movement.WingMovement(
     base_wing=example_airplane.wings[0],
-    wing_cross_sections_movements=[
+    wing_cross_section_movements=[
         upper_wing_root_wing_cross_section_movement,
         upper_wing_tip_wing_cross_section_movement,
     ],

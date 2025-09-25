@@ -1,4 +1,3 @@
-# NOTE: I haven't yet started refactoring this module.
 """This module contains the WingMovement class.
 
 This module contains the following classes:
@@ -14,20 +13,22 @@ This module contains the following functions:
 import numpy as np
 
 from . import functions
+from .wing_cross_section_movement import WingCrossSectionMovement
 
 from .. import geometry
+from .. import parameter_validation
 
 
-# NOTE: I haven't yet started refactoring this class.
+# TODO: Add unit tests for this class.
 class WingMovement:
-    """This is a class used to contain the movement characteristics of a wing.
+    """This is a class used to contain the Wing movements.
 
     This class contains the following public methods:
-        generate_wings: This method creates the wing object at each time step,
-        and groups them into a list.
 
-        max_period: This method returns the longest period of this movement
-        object's sub-movement objects, sub-sub-movement objects, etc.
+        generate_wings: Creates the Wing at each time step, and returns them in a list.
+
+        max_period: Defines a property for the longest period of WingMovement's own
+        motion and that of its sub-movement objects.
 
     This class contains the following class attributes:
         None
@@ -36,342 +37,373 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
-    # NOTE: I haven't yet started refactoring this method.
     def __init__(
         self,
         base_wing,
-        wing_cross_sections_movements,
-        x_le_amplitude=0.0,
-        x_le_period=0.0,
-        x_le_spacing="sine",
-        y_le_amplitude=0.0,
-        y_le_period=0.0,
-        y_le_spacing="sine",
-        z_le_amplitude=0.0,
-        z_le_period=0.0,
-        z_le_spacing="sine",
+        wing_cross_section_movements,
+        ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),
+        periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),
+        spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
+        phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
+        ampAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+        periodAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+        spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
+        phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     ):
         """This is the initialization method.
 
         :param base_wing: Wing
-            This is the first wing object, from which the others will be created.
-        :param wing_cross_sections_movements: list of WingCrossSectionMovement objects
-            This is a list of the WingCrossSectionMovement objects associated with
-            each of the base wing's cross sections.
-        :param x_le_amplitude: float, optional
-            This is the amplitude of the wing's change in its x reference point. Its
-            units are meters and its default value is 0 meters.
-        :param x_le_period: float, optional
-            This is the period of the wing's change in its x reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param x_le_spacing: string, optional
-            This value determines the spacing of the wing's change in its x reference
-            point. The options are "sine", and "uniform". The default value is "sine".
-        :param y_le_amplitude: float, optional
-            This is the amplitude of the wing's change in its y reference point. Its
-            units are meters and its default value is 0 meters.
-        :param y_le_period: float, optional
-            This is the period of the wing's change in its y reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param y_le_spacing: string, optional
-            This value determines the spacing of the wing's change in its y reference
-            point. The options are "sine", and "uniform". The default value is "sine".
-        :param z_le_amplitude: float, optional
-            This is the amplitude of the wing's change in its z reference point. Its
-            units are meters and its default value is 0 meters.
-        :param z_le_period: float, optional
-            This is the period of the wing's change in its z reference point. Its
-            units are seconds and its default value is 0 seconds.
-        :param z_le_spacing: string, optional
-            This value determines the spacing of the wing's change in its z reference
-            point. The options are "sine", and "uniform". The default value is "sine".
+
+            This is the base Wing, from which the Wing at each time step will be
+            created.
+
+        :param wing_cross_section_movements: list of WingCrossSectionMovements
+
+            This is a list of the WingCrossSectionMovements associated with each of
+            the base Wing's WingCrossSections. It must have the same length as the
+            base Wing's list of WingCrossSections.
+
+        :param ampPrelimLer_G_Cg: array-like of 3 numbers, optional
+
+            The amplitudes of the WingMovement's changes in its Wings' prelimLer_G_Cg
+            parameters. Can be a tuple, list, or numpy array of non-negative numbers
+            (int or float). Values are converted to floats internally. The default
+            value is (0.0, 0.0, 0.0). The units are in meters.
+
+        :param periodPrelimLer_G_Cg: array-like of 3 numbers, optional
+
+            The periods of the WingMovement's changes in its Wings' prelimLer_G_Cg
+            parameters. Can be a tuple, list, or numpy array of non-negative numbers
+            (int or float). Values are converted to floats internally. The default
+            value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
+            element in ampPrelimLer_G_Cg is 0.0 and non-zero if not. The units are in
+            seconds.
+
+        :param spacingPrelimLer_G_Cg: array-like of 3 strs, optional
+
+            The value determines the spacing of the WingMovement's change in its
+            Wings' prelimLer_G_Cg parameters. Can be a tuple, list, or numpy array of
+            strings. Each element can be "sine" or "uniform". The default value is (
+            "sine", "sine", "sine").
+
+        :param phasePrelimLer_G_Cg: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Wing's
+            prelimLer_G_Cg parameter relative to the base Wing's prelimLer_G_Cg
+            parameter. Can be a tuple, list, or numpy array of non-negative numbers (
+            int or float) in the range [0.0, 360.0). Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampPrelimLer_G_Cg is 0.0 and non-zero
+            if not. The units are in degrees.
+
+        :param ampAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+
+            The amplitudes of the WingMovement's changes in its Wings'
+            angles_G_to_prelimWn_izyx parameters. Can be a tuple, list, or numpy
+            array of numbers (int or float) in the range [0.0, 180.0). Values are
+            converted to floats internally. The default value is (0.0, 0.0, 0.0). The
+            units are in degrees.
+
+        :param periodAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+
+            The periods of the WingMovement's changes in its Wings'
+            angles_G_to_prelimWn_izyx parameters. Can be a tuple, list, or numpy
+            array of non-negative numbers (int or float). Values are converted to
+            floats internally. The default value is (0.0, 0.0, 0.0). Each element
+            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
+            is 0.0 and non-zero if not. The units are in seconds.
+
+        :param spacingAngles_G_to_prelimWn_izyx: array-like of 3 strs, optional
+
+            The value determines the spacing of the WingMovement's change in its
+            Wings' angles_G_to_prelimWn_izyx parameters. Can be a tuple, list,
+            or numpy array of strings. Each element can be "sine" or "uniform". The
+            default value is ("sine", "sine", "sine").
+
+        :param phaseAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Wing's
+            angles_G_to_prelimWn_izyx parameter relative to the base Wing's
+            angles_G_to_prelimWn_izyx parameter. Can be a tuple, list, or numpy array
+            of numbers (int or float) in the range [0.0, 360.0). Values are converted
+            to floats internally. The default value is (0.0, 0.0, 0.0). Each element
+            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
+            is 0.0 and non-zero if not. The units are in degrees.
         """
-        # Initialize the class attributes.
+        if not isinstance(base_wing, geometry.wing.Wing):
+            raise TypeError("base_wing must be a Wing.")
         self.base_wing = base_wing
-        self.wing_cross_section_movements = wing_cross_sections_movements
-        self.x_le_base = self.base_wing.x_le
-        self.x_le_amplitude = x_le_amplitude
-        self.x_le_period = x_le_period
-        self.x_le_spacing = x_le_spacing
-        self.y_le_base = self.base_wing.y_le
-        self.y_le_amplitude = y_le_amplitude
-        self.y_le_period = y_le_period
-        self.y_le_spacing = y_le_spacing
-        self.z_le_base = self.base_wing.z_le
-        self.z_le_amplitude = z_le_amplitude
-        self.z_le_period = z_le_period
-        self.z_le_spacing = z_le_spacing
 
-    # NOTE: I haven't yet started refactoring this method.
-    def generate_wings(self, num_steps=10, delta_time=0.1):
-        """This method creates the wing object at each time current_step, and groups
-        them into a list.
+        if not isinstance(wing_cross_section_movements, list):
+            raise TypeError("wing_cross_section_movements must be a list.")
+        if len(wing_cross_section_movements) != len(self.base_wing.wing_cross_sections):
+            raise ValueError(
+                "wing_cross_section_movements must have the same length as base_wing.wing_cross_sections."
+            )
+        for wing_cross_section_movement in wing_cross_section_movements:
+            if not isinstance(wing_cross_section_movement, WingCrossSectionMovement):
+                raise TypeError(
+                    "Every element in wing_cross_section_movements must be a WingCrossSectionMovement."
+                )
+        self.wing_cross_section_movements = wing_cross_section_movements
 
-        :param num_steps: int, optional
-            This is the number of time steps in this movement. The default value is 10.
-        :param delta_time: float, optional
-            This is the time, in seconds, between each time step. The default value
-            is 0.1 seconds.
-        :return wings: list of Wing objects
-            This is the list of Wing objects that is associated with this
-            WingMovement object.
+        ampPrelimLer_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+            ampPrelimLer_G_Cg, "ampPrelimLer_G_Cg"
+        )
+        if not np.all(ampPrelimLer_G_Cg >= 0.0):
+            raise ValueError("All elements in ampPrelimLer_G_Cg must be non-negative.")
+        self.ampPrelimLer_G_Cg = ampPrelimLer_G_Cg
+
+        periodPrelimLer_G_Cg = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                periodPrelimLer_G_Cg, "periodPrelimLer_G_Cg"
+            )
+        )
+        if not np.all(periodPrelimLer_G_Cg >= 0.0):
+            raise ValueError(
+                "All elements in periodPrelimLer_G_Cg must be non-negative."
+            )
+        for period_index, period in enumerate(periodPrelimLer_G_Cg):
+            amp = self.ampPrelimLer_G_Cg[period_index]
+            if amp == 0 and period != 0:
+                raise ValueError(
+                    "If an element in ampPrelimLer_G_Cg is 0.0, the corresponding element in periodPrelimLer_G_Cg must be also be 0.0."
+                )
+        self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
+
+        spacingPrelimLer_G_Cg = parameter_validation.list_return_list(
+            spacingPrelimLer_G_Cg, "spacingPrelimLer_G_Cg"
+        )
+        if not np.all(elem in ["sine", "uniform"] for elem in spacingPrelimLer_G_Cg):
+            raise ValueError(
+                'All elements in spacingPrelimLer_G_Cg must be "sine" or "uniform".'
+            )
+        self.spacingPrelimLer_G_Cg = spacingPrelimLer_G_Cg
+
+        phasePrelimLer_G_Cg = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                phasePrelimLer_G_Cg, "phasePrelimLer_G_Cg"
+            )
+        )
+        if not (
+            np.all(phasePrelimLer_G_Cg >= 0.0) and np.all(phasePrelimLer_G_Cg < 360.0)
+        ):
+            raise ValueError(
+                "All elements in phasePrelimLer_G_Cg must be in the range [0.0, 360.0)."
+            )
+        for phase_index, phase in enumerate(phasePrelimLer_G_Cg):
+            amp = self.ampPrelimLer_G_Cg[phase_index]
+            if amp == 0 and phase != 0:
+                raise ValueError(
+                    "If an element in ampPrelimLer_G_Cg is 0.0, the corresponding element in phasePrelimLer_G_Cg must be also be 0.0."
+                )
+        self.phasePrelimLer_G_Cg = phasePrelimLer_G_Cg
+
+        ampAngles_G_to_prelimWn_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                ampAngles_G_to_prelimWn_izyx, "ampAngles_G_to_prelimWn_izyx"
+            )
+        )
+        if not (
+            np.all(ampAngles_G_to_prelimWn_izyx >= 0.0)
+            and np.all(ampAngles_G_to_prelimWn_izyx < 180.0)
+        ):
+            raise ValueError(
+                "All elements in ampAngles_G_to_prelimWn_izyx must be in the range [0.0, 180.0)."
+            )
+        self.ampAngles_G_to_prelimWn_izyx = ampAngles_G_to_prelimWn_izyx
+
+        periodAngles_G_to_prelimWn_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                periodAngles_G_to_prelimWn_izyx, "periodAngles_G_to_prelimWn_izyx"
+            )
+        )
+        if not np.all(periodAngles_G_to_prelimWn_izyx >= 0.0):
+            raise ValueError(
+                "All elements in periodAngles_G_to_prelimWn_izyx must be non-negative."
+            )
+        for period_index, period in enumerate(periodAngles_G_to_prelimWn_izyx):
+            amp = self.ampAngles_G_to_prelimWn_izyx[period_index]
+            if amp == 0 and period != 0:
+                raise ValueError(
+                    "If an element in ampAngles_G_to_prelimWn_izyx is 0.0, the corresponding element in periodAngles_G_to_prelimWn_izyx must be also be 0.0."
+                )
+        self.periodAngles_G_to_prelimWn_izyx = periodAngles_G_to_prelimWn_izyx
+
+        spacingAngles_G_to_prelimWn_izyx = parameter_validation.list_return_list(
+            spacingAngles_G_to_prelimWn_izyx, "spacingAngles_G_to_prelimWn_izyx"
+        )
+        if not np.all(
+            elem in ["sine", "uniform"] for elem in spacingAngles_G_to_prelimWn_izyx
+        ):
+            raise ValueError(
+                'All elements in spacingAngles_G_to_prelimWn_izyx must be "sine" or "uniform".'
+            )
+        self.spacingAngles_G_to_prelimWn_izyx = spacingAngles_G_to_prelimWn_izyx
+
+        phaseAngles_G_to_prelimWn_izyx = (
+            parameter_validation.threeD_number_vectorLike_return_float(
+                phaseAngles_G_to_prelimWn_izyx, "phaseAngles_G_to_prelimWn_izyx"
+            )
+        )
+        if not (
+            np.all(phaseAngles_G_to_prelimWn_izyx >= 0.0)
+            and np.all(phaseAngles_G_to_prelimWn_izyx < 360.0)
+        ):
+            raise ValueError(
+                "All elements in phaseAngles_G_to_prelimWn_izyx must be in the range [0.0, 360.0)."
+            )
+        for phase_index, phase in enumerate(phaseAngles_G_to_prelimWn_izyx):
+            amp = self.ampAngles_G_to_prelimWn_izyx[phase_index]
+            if amp == 0 and phase != 0:
+                raise ValueError(
+                    "If an element in ampAngles_G_to_prelimWn_izyx is 0.0, the corresponding element in phaseAngles_G_to_prelimWn_izyx must be also be 0.0."
+                )
+        self.phaseAngles_G_to_prelimWn_izyx = phaseAngles_G_to_prelimWn_izyx
+
+    # TODO: Add unit tests for this method.
+    def generate_wings(self, num_steps, delta_time):
+        """Creates the Wing at each time step, and returns them in a list.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :return: list of Wings
+
+            This is the list of Wings associated with this WingMovement.
         """
-        # Check the x_le spacing value.
-        if self.x_le_spacing == "sine":
+        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
+        delta_time = parameter_validation.positive_number_return_float(
+            delta_time, "delta_time"
+        )
 
-            # Create an array of points with a sinusoidal spacing.
-            x_le_list = functions.oscillating_sinspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.x_le_spacing == "uniform":
-
-            # Create an array of points with a uniform spacing.
-            x_le_list = functions.oscillating_linspace(
-                amplitude=self.x_le_amplitude,
-                period=self.x_le_period,
-                base_value=self.x_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of x_le_spacing!")
-
-        # Check the y_le spacing value.
-        if self.y_le_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            y_le_list = functions.oscillating_sinspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        elif self.y_le_spacing == "uniform":
-
-            # Create an array of points with a uniform spacing.
-            y_le_list = functions.oscillating_linspace(
-                amplitude=self.y_le_amplitude,
-                period=self.y_le_period,
-                base_value=self.y_le_base,
+        # FIXME: I'm pretty sure the oscillating_* functions are going to break if I
+        #  use them like this. They expect single values for the inputs but I'm
+        #  passing vectors. I need to modify them to accept and return vectors.
+        if self.spacingPrelimLer_G_Cg == "sine":
+            # FIXME: Add a phase offset parameter to oscillating_sinspace
+            listPrelimLer_G_Cg = functions.oscillating_sinspace(
+                amplitude=self.ampPrelimLer_G_Cg,
+                period=self.periodPrelimLer_G_Cg,
+                base_value=self.base_wing.prelimLer_G_Cg,
+                phase_offset=self.phasePrelimLer_G_Cg,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of y_le_spacing!")
-
-        # Check the z_le spacing value.
-        if self.z_le_spacing == "sine":
-
-            # Create an array of points with a sinusoidal spacing.
-            z_le_list = functions.oscillating_sinspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
+            # FIXME: Add a phase offset parameter to oscillating_linspace
+            listPrelimLer_G_Cg = functions.oscillating_linspace(
+                amplitude=self.ampPrelimLer_G_Cg,
+                period=self.periodPrelimLer_G_Cg,
+                base_value=self.base_wing.prelimLer_G_Cg,
+                phase_offset=self.phasePrelimLer_G_Cg,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        elif self.z_le_spacing == "uniform":
 
-            # Create an array of points with a uniform spacing.
-            z_le_list = functions.oscillating_linspace(
-                amplitude=self.z_le_amplitude,
-                period=self.z_le_period,
-                base_value=self.z_le_base,
+        if self.spacingAngles_G_to_prelimWn_izyx == "sine":
+            listAngles_G_to_prelimWn_izyx = functions.oscillating_sinspace(
+                amplitude=self.ampAngles_G_to_prelimWn_izyx,
+                period=self.periodAngles_G_to_prelimWn_izyx,
+                base_value=self.base_wing.angles_G_to_prelimWn_izyx,
+                phase_offset=self.phaseAngles_G_to_prelimWn_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
+            listAngles_G_to_prelimWn_izyx = functions.oscillating_linspace(
+                amplitude=self.ampAngles_G_to_prelimWn_izyx,
+                period=self.periodAngles_G_to_prelimWn_izyx,
+                base_value=self.base_wing.angles_G_to_prelimWn_izyx,
+                phase_offset=self.phaseAngles_G_to_prelimWn_izyx,
+                num_steps=num_steps,
+                delta_time=delta_time,
+            )
 
-            # Throw an exception if the spacing value is not "sine" or "uniform".
-            raise Exception("Bad value of z_le_spacing!")
-
-        # Create an empty array that will hold each of the wing's wing cross
-        # section's vector of other wing cross section's based its movement.
+        # Create an empty 2D ndarray that will hold each of the Wings's
+        # WingCrossSection's vector of WingCrossSections representing its changing
+        # state at each time step. The first index denotes a particular base
+        # WingCrossSection, and the second index denotes the time step.
         wing_cross_sections = np.empty(
             (len(self.wing_cross_section_movements), num_steps), dtype=object
         )
 
-        # Initialize a variable to hold the inner wing cross section's list of wing
-        # cross sections for each time step.
-        last_wing_cross_section_time_histories = None
-
-        # Iterate through the wing cross section movement locations.
+        # Iterate through the WingCrossSectionMovements.
         for (
-            wing_cross_section_movement_location,
+            wing_cross_section_movement_id,
             wing_cross_section_movement,
         ) in enumerate(self.wing_cross_section_movements):
-            wing_is_vertical = False
 
-            # Check if this is this wing's root cross section.
-            if wing_cross_section_movement_location == 0:
-
-                # Get the root cross section's sweeping and heaving attributes.
-                first_wing_cross_section_movement_sweeping_amplitude = (
-                    wing_cross_section_movement.sweeping_amplitude
-                )
-                first_wing_cross_section_movement_sweeping_period = (
-                    wing_cross_section_movement.sweeping_period
-                )
-                first_wing_cross_section_movement_heaving_amplitude = (
-                    wing_cross_section_movement.heaving_amplitude
-                )
-                first_wing_cross_section_movement_heaving_period = (
-                    wing_cross_section_movement.heaving_period
-                )
-
-                # Check that the root cross section is not sweeping or heaving.
-                assert first_wing_cross_section_movement_sweeping_amplitude == 0
-                assert first_wing_cross_section_movement_sweeping_period == 0
-                assert first_wing_cross_section_movement_heaving_amplitude == 0
-                assert first_wing_cross_section_movement_heaving_period == 0
-
-                # Set the variables relating this wing cross section to the inner
-                # wing cross section to zero because this is the innermost wing cross
-                # section
-                wing_cross_section_span = 0.0
-                base_wing_cross_section_sweep = 0.0
-                base_wing_cross_section_heave = 0.0
-                last_x_les = np.zeros(num_steps) * 0.0
-                last_y_les = np.zeros(num_steps) * 0.0
-                last_z_les = np.zeros(num_steps) * 0.0
-
-            else:
-                this_base_wing_cross_section = (
-                    wing_cross_section_movement.base_wing_cross_section
-                )
-
-                this_x_le = this_base_wing_cross_section.x_le
-                this_y_le = this_base_wing_cross_section.y_le
-                this_z_le = this_base_wing_cross_section.z_le
-
-                # Initialize variables to hold the inner wing cross section's time
-                # histories of its leading edge coordinates.
-                last_x_les = []
-                last_y_les = []
-                last_z_les = []
-
-                # Iterate through the inner wing cross section's time history and
-                # populate the leading edge coordinate variables.
-                for last_wing_cross_section in last_wing_cross_section_time_histories:
-                    last_x_les.append(last_wing_cross_section.x_le)
-                    last_y_les.append(last_wing_cross_section.y_le)
-                    last_z_les.append(last_wing_cross_section.z_le)
-
-                # Find the span between this wing cross section and the inner wing
-                # cross section.
-                wing_cross_section_span = np.sqrt(
-                    (this_x_le - last_x_les[0]) ** 2
-                    + (this_y_le - last_y_les[0]) ** 2
-                    + (this_z_le - last_z_les[0]) ** 2
-                )
-
-                if this_y_le != last_y_les[0]:
-                    # Find the base sweep angle of this wing cross section compared
-                    # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_sweep = (
-                        np.arctan(
-                            (this_z_le - last_z_les[0]) / (this_y_le - last_y_les[0])
-                        )
-                        * 180
-                        / np.pi
-                    )
-
-                    # Find the base heave angle of this wing cross section compared
-                    # to the inner wing cross section at the first time step.
-                    base_wing_cross_section_heave = (
-                        np.arctan(
-                            (this_x_le - last_x_les[0]) / (this_y_le - last_y_les[0])
-                        )
-                        * 180
-                        / np.pi
-                    )
-                else:
-                    base_wing_cross_section_sweep = 0.0
-                    base_wing_cross_section_heave = 0.0
-                    wing_is_vertical = True
-
-            # Generate this wing cross section's vector of wing cross sections at
-            # each time step based on its movement.
+            # Generate this WingCrossSection's vector of WingCrossSections
+            # representing its changing state at each time step.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_wing_cross_sections(
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    cross_section_span=wing_cross_section_span,
-                    cross_section_sweep=base_wing_cross_section_sweep,
-                    cross_section_heave=base_wing_cross_section_heave,
-                    last_x_les=last_x_les,
-                    last_y_les=last_y_les,
-                    last_z_les=last_z_les,
-                    wing_is_vertical=wing_is_vertical,
+                    num_steps=num_steps, delta_time=delta_time
                 )
             )
 
-            # Add this vector the wing's array of wing cross section objects.
-            wing_cross_sections[wing_cross_section_movement_location, :] = (
+            # Add this vector the Wing's 2D ndarray of WingCrossSections'
+            # WingCrossSections.
+            wing_cross_sections[wing_cross_section_movement_id, :] = (
                 this_wing_cross_sections_list_of_wing_cross_sections
             )
 
-            # Update the inner wing cross section's list of wing cross sections for
-            # each time step.
-            last_wing_cross_section_time_histories = (
-                this_wing_cross_sections_list_of_wing_cross_sections
-            )
-
-        # Create an empty list of wings.
+        # Create an empty list to hold each time step's Wing.
         wings = []
 
-        # Generate the non-changing wing attributes.
-        name = self.base_wing.name
-        symmetric = self.base_wing.symmetric
-        num_chordwise_panels = self.base_wing.num_chordwise_panels
-        chordwise_spacing = self.base_wing.chordwise_spacing
+        # Generate the non-changing Wing attributes.
+        this_name = self.base_wing.name
+        this_symmetric = self.base_wing.symmetric
+        this_mirror_only = self.base_wing.mirror_only
+        this_symmetry_normal_Wn = self.base_wing.symmetry_normal_Wn
+        this_symmetry_point_Wn_Ler = self.base_wing.symmetry_point_Wn_Ler
+        this_num_chordwise_panels = self.base_wing.num_chordwise_panels
+        this_chordwise_spacing = self.base_wing.chordwise_spacing
 
         # Iterate through the time steps.
         for step in range(num_steps):
+            thisPrelimLer_G_Cg = listPrelimLer_G_Cg[step]
+            theseAngles_G_to_prelimWn_izyx = listAngles_G_to_prelimWn_izyx[step]
+            these_wing_cross_sections = wing_cross_sections[:, step]
 
-            # Get the reference position at this time step.
-            x_le = x_le_list[step]
-            y_le = y_le_list[step]
-            z_le = z_le_list[step]
-            cross_sections = wing_cross_sections[:, step]
-
-            # Make a new wing object for this time step.
+            # Make a new Wing for this time step.
             this_wing = geometry.wing.Wing(
-                name=name,
-                x_le=x_le,
-                y_le=y_le,
-                z_le=z_le,
-                wing_cross_sections=cross_sections,
-                symmetric=symmetric,
-                num_chordwise_panels=num_chordwise_panels,
-                chordwise_spacing=chordwise_spacing,
+                name=this_name,
+                wing_cross_sections=these_wing_cross_sections,
+                prelimLer_G_Cg=thisPrelimLer_G_Cg,
+                angles_G_to_prelimWn_izyx=theseAngles_G_to_prelimWn_izyx,
+                symmetric=this_symmetric,
+                mirror_only=this_mirror_only,
+                symmetry_normal_Wn=this_symmetry_normal_Wn,
+                symmetry_point_Wn_Ler=this_symmetry_point_Wn_Ler,
+                num_chordwise_panels=this_num_chordwise_panels,
+                chordwise_spacing=this_chordwise_spacing,
             )
 
-            # Add this new object to the list of wings.
+            # Add this new Wing to the list of Wings.
             wings.append(this_wing)
 
-        # Return the list of wings.
         return wings
 
-    # NOTE: I haven't yet started refactoring this method.
+    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
-        """This method returns the longest period of this movement object's
-        sub-movement objects, sub-sub-movement objects, etc.
+        """Defines a property for the longest period of WingMovement's own motion and
+        that of its sub-movement objects.
 
-        :return max_period: float
-            The longest period in seconds.
+        :return: float
+
+            The longest period in seconds. If the all the motion is static, this will
+            be 0.0.
         """
-
         wing_cross_section_movement_max_periods = []
         for wing_cross_section_movement in self.wing_cross_section_movements:
             wing_cross_section_movement_max_periods.append(
@@ -381,11 +413,8 @@ class WingMovement:
             wing_cross_section_movement_max_periods
         )
 
-        max_period = max(
+        return max(
             max_wing_cross_section_movement_period,
-            self.x_le_period,
-            self.y_le_period,
-            self.z_le_period,
+            self.periodPrelimLer_G_Cg,
+            self.periodAngles_G_to_prelimWn_izyx,
         )
-
-        return max_period

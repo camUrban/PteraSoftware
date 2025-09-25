@@ -87,8 +87,7 @@ class unsteadyRingVortexLatticeSolver:
             wing_movements=[  # Define the main wing's movement.
                 ps.movement.WingMovement(
                     base_wing=lead_airplane.wings[0],
-                    # Add the list of wing cross section movement objects.
-                    wing_cross_sections_movements=[
+                    wing_cross_section_movements=[
                         # Define the root wing cross section's movement object.
                         ps.movement.WingCrossSectionMovement(
                             base_wing_cross_section=lead_airplane.wings[
@@ -159,7 +158,7 @@ class unsteadyRingVortexLatticeSolver:
             wing_movements=[
                 ps.movement.WingMovement(
                     base_wing=right_airplane.wings[0],
-                    wing_cross_sections_movements=[
+                    wing_cross_section_movements=[
                         ps.movement.WingCrossSectionMovement(
                             base_wing_cross_section=right_airplane.wings[
                                 0
@@ -228,7 +227,7 @@ class unsteadyRingVortexLatticeSolver:
             wing_movements=[
                 ps.movement.WingMovement(
                     base_wing=left_airplane.wings[0],
-                    wing_cross_sections_movements=[
+                    wing_cross_section_movements=[
                         ps.movement.WingCrossSectionMovement(
                             base_wing_cross_section=left_airplane.wings[
                                 0

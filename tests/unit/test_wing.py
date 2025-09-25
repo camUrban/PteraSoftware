@@ -64,7 +64,7 @@ class TestWing(unittest.TestCase):
                 self.assertEqual(len(wing.wing_cross_sections), 2)
                 self.assertIsInstance(wing.name, str)
                 self.assertEqual(len(wing.prelimLer_G_Cg), 3)
-                self.assertEqual(len(wing.angles_G_to_prelimWn), 3)
+                self.assertEqual(len(wing.angles_G_to_prelimWn_izyx), 3)
                 self.assertIsInstance(wing.symmetric, bool)
                 self.assertIsInstance(wing.mirror_only, bool)
                 self.assertEqual(wing.num_chordwise_panels, 8)
@@ -369,7 +369,7 @@ class TestWing(unittest.TestCase):
         with self.assertRaises(TypeError):
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
-                angles_G_to_prelimWn="invalid",
+                angles_G_to_prelimWn_izyx="invalid",
             )
 
         # Test invalid num_chordwise_panels

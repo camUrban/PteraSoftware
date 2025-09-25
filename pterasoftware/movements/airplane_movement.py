@@ -60,8 +60,9 @@ class AirplaneMovement:
 
         :param wing_movements: list of WingMovements
 
-            This is a list of the WingMovement associated with each of the
-            base Airplane's Wings.
+            This is a list of the WingMovement associated with each of the base
+            Airplane's Wings. It must have the same length as the base Airplane's
+            list of Wings.
 
         :param ampCgi_E_I: array-like of 3 numbers, optional
 
@@ -92,8 +93,8 @@ class AirplaneMovement:
             be a tuple, list, or numpy array of non-negative numbers (int or float)
             in the range [0.0, 360.0). Values are converted to floats internally. The
             default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
-            corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
-            not. The units are in degrees.
+            corresponding element in ampCgi_E_I is 0.0 and non-zero if not. The units
+            are in degrees.
 
         :param ampAngles_E_to_B_izyx: array-like of 3 numbers, optional
 
@@ -135,8 +136,10 @@ class AirplaneMovement:
 
         if not isinstance(wing_movements, list):
             raise TypeError("wing_movements must be a list.")
-        if len(wing_movements) < 1:
-            raise ValueError("wing_movements must have at least one element.")
+        if len(wing_movements) != len(self.base_airplane.wings):
+            raise ValueError(
+                "wing_movements must have the same length as base_airplane.wings."
+            )
         for wing_movement in wing_movements:
             if not isinstance(wing_movement, WingMovement):
                 raise TypeError(
@@ -160,7 +163,7 @@ class AirplaneMovement:
             amp = self.ampCgi_E_I[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an elements in ampCgi_E_I is 0.0, the corresponding element in periodCgi_E_I must be also be 0.0."
+                    "If an element in ampCgi_E_I is 0.0, the corresponding element in periodCgi_E_I must be also be 0.0."
                 )
         self.periodCgi_E_I = periodCgi_E_I
 
@@ -184,7 +187,7 @@ class AirplaneMovement:
             amp = self.ampCgi_E_I[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an elements in ampCgi_E_I is 0.0, the corresponding element in phaseCgi_E_I must be also be 0.0."
+                    "If an element in ampCgi_E_I is 0.0, the corresponding element in phaseCgi_E_I must be also be 0.0."
                 )
         self.phaseCgi_E_I = phaseCgi_E_I
 
@@ -215,7 +218,7 @@ class AirplaneMovement:
             amp = self.ampAngles_E_to_B_izyx[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an elements in ampAngles_E_to_B_izyx is 0.0, the corresponding element in periodAngles_E_to_B_izyx must be also be 0.0."
+                    "If an element in ampAngles_E_to_B_izyx is 0.0, the corresponding element in periodAngles_E_to_B_izyx must be also be 0.0."
                 )
         self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
 
@@ -246,7 +249,7 @@ class AirplaneMovement:
             amp = self.ampAngles_E_to_B_izyx[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an elements in ampAngles_E_to_B_izyx is 0.0, the corresponding element in phaseAngles_E_to_B_izyx must be also be 0.0."
+                    "If an element in ampAngles_E_to_B_izyx is 0.0, the corresponding element in phaseAngles_E_to_B_izyx must be also be 0.0."
                 )
         self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
 
@@ -373,7 +376,6 @@ class AirplaneMovement:
             The longest period in seconds. If the all the motion is static, this will
             be 0.0.
         """
-
         wing_movement_max_periods = []
         for wing_movement in self.wing_movements:
             wing_movement_max_periods.append(wing_movement.max_period)

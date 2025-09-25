@@ -63,7 +63,7 @@ def make_static_validation_movement():
     # Create a wing movement object associated with this airplane's wing.
     unsteady_validation_wing_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_root_wing_cross_section_movement,
             unsteady_validation_tip_wing_cross_section_movement,
         ],
@@ -153,7 +153,7 @@ def make_variable_validation_movement():
     # Create a wing movement object associated with this airplane's wing.
     unsteady_validation_wing_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_root_wing_cross_section_movement,
             unsteady_validation_tip_wing_cross_section_movement,
         ],
@@ -276,7 +276,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing movement object associated with this airplane's main wing.
     unsteady_validation_main_wing_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
             unsteady_validation_main_wing_tip_cross_section_movement,
         ],
@@ -286,7 +286,7 @@ def make_multiple_wing_static_validation_movement():
     # stabilizer.
     unsteady_validation_hstab_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
             unsteady_validation_hstab_tip_cross_section_movement,
         ],
@@ -295,7 +295,7 @@ def make_multiple_wing_static_validation_movement():
     # Create a wing movement object associated with this airplane's vertical stabilizer.
     unsteady_validation_vstab_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
             unsteady_validation_vstab_tip_cross_section_movement,
         ],
@@ -437,7 +437,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing movement object associated with this airplane's main wing.
     unsteady_validation_main_wing_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[0],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_main_wing_root_cross_section_movement,
             unsteady_validation_main_wing_tip_cross_section_movement,
         ],
@@ -447,7 +447,7 @@ def make_multiple_wing_variable_validation_movement():
     # stabilizer.
     unsteady_validation_hstab_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[1],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_hstab_root_cross_section_movement,
             unsteady_validation_hstab_tip_cross_section_movement,
         ],
@@ -456,7 +456,7 @@ def make_multiple_wing_variable_validation_movement():
     # Create a wing movement object associated with this airplane's vertical stabilizer.
     unsteady_validation_vstab_movement = ps.movement.WingMovement(
         base_wing=unsteady_validation_airplane.wings[2],
-        wing_cross_sections_movements=[
+        wing_cross_section_movements=[
             unsteady_validation_vstab_root_cross_section_movement,
             unsteady_validation_vstab_tip_cross_section_movement,
         ],

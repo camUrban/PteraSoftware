@@ -38,6 +38,7 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
+    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_wing_cross_section,
@@ -268,45 +269,40 @@ class WingCrossSectionMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: I'm pretty sure the oscillating_* functions are going to break if I
-        #  use them like this. They expect single values for the inputs but I'm
-        #  passing vectors. I need to modify them to accept and return vectors.
         if self.spacingLp_Wcsp_Lpp == "sine":
-            # FIXME: Add a phase offset parameter to oscillating_sinspace
-            listLp_Wcsp_Lpp = functions.oscillating_sinspace(
-                amplitude=self.ampLp_Wcsp_Lpp,
-                period=self.periodLp_Wcsp_Lpp,
-                base_value=self.base_wing_cross_section.Lp_Wcsp_Lpp,
-                phase_offset=self.phaseLp_Wcsp_Lpp,
+            listLp_Wcsp_Lpp = functions.oscillating_sinspaces(
+                amps=self.ampLp_Wcsp_Lpp,
+                periods=self.periodLp_Wcsp_Lpp,
+                phases=self.phaseLp_Wcsp_Lpp,
+                bases=self.base_wing_cross_section.Lp_Wcsp_Lpp,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-            # FIXME: Add a phase offset parameter to oscillating_linspace
             listLp_Wcsp_Lpp = functions.oscillating_linspace(
-                amplitude=self.ampLp_Wcsp_Lpp,
-                period=self.periodLp_Wcsp_Lpp,
-                base_value=self.base_wing_cross_section.Lp_Wcsp_Lpp,
-                phase_offset=self.phaseLp_Wcsp_Lpp,
+                amps=self.ampLp_Wcsp_Lpp,
+                periods=self.periodLp_Wcsp_Lpp,
+                phases=self.phaseLp_Wcsp_Lpp,
+                bases=self.base_wing_cross_section.Lp_Wcsp_Lpp,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
 
         if self.spacingAngles_Wcsp_to_Wcs_izyx == "sine":
-            listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_sinspace(
-                amplitude=self.ampAngles_Wcsp_to_Wcs_izyx,
-                period=self.periodAngles_Wcsp_to_Wcs_izyx,
-                base_value=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
-                phase_offset=self.phaseAngles_Wcsp_to_Wcs_izyx,
+            listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_sinspaces(
+                amps=self.ampAngles_Wcsp_to_Wcs_izyx,
+                periods=self.periodAngles_Wcsp_to_Wcs_izyx,
+                phases=self.phaseAngles_Wcsp_to_Wcs_izyx,
+                bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
             listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_linspace(
-                amplitude=self.ampAngles_Wcsp_to_Wcs_izyx,
-                period=self.periodAngles_Wcsp_to_Wcs_izyx,
-                base_value=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
-                phase_offset=self.phaseAngles_Wcsp_to_Wcs_izyx,
+                amps=self.ampAngles_Wcsp_to_Wcs_izyx,
+                periods=self.periodAngles_Wcsp_to_Wcs_izyx,
+                phases=self.phaseAngles_Wcsp_to_Wcs_izyx,
+                bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )

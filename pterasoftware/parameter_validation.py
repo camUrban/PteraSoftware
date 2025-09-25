@@ -20,7 +20,7 @@ def boolLike_return_bool(value, name):
     boolean. name must be a string."""
     name = string_return_string(name, "name")
 
-    if not isinstance(value, (bool, np.bool)):
+    if not isinstance(value, (bool, np.bool_)):
         raise TypeError(
             f"{name} is a {type(value)} equal to {value} but it must be a boolean."
         )
@@ -233,9 +233,75 @@ def number_in_range_return_float(
                 raise ValueError(f"{name} must be less than or equal to {max_val}.")
         else:
             if not value < max_val:
-                raise ValueError(f"{name} must be less than {min_val}.")
+                raise ValueError(f"{name} must be less than {max_val}.")
 
     return float(value)
+
+
+def arrayLike_of_numbers_in_range_return_float(
+    value, name, min_val, min_inclusive, max_val, max_inclusive
+):
+    """Validates a value is a number or an array-like object of numbers, all of which
+    fall in a custom range, and returns both a number input and an array-like input
+    as a ndarray of floats (returns a () shape ndarray if value is number). If
+    min_val or max_val is None, then value's magnitude isn't checked relative to that
+    parameter. If min_val or max_val is None, the corresponding '*_inclusive'
+    parameter must also be None. If not None, these parameters must be booleans. If
+    neither min_val nor max_val are None, then min_val must be less than max_val.
+    name must be a string.
+
+    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    name = string_return_string(name, "name")
+    if min_val is not None:
+        min_val = number_return_float(min_val, "min_val")
+        min_inclusive = boolLike_return_bool(min_inclusive, "min_inclusive")
+    else:
+        if min_inclusive is not None:
+            raise ValueError("min_inclusive must be None if min_val is None")
+    if max_val is not None:
+        max_val = number_return_float(max_val, "max_val")
+        max_inclusive = boolLike_return_bool(max_inclusive, "max_inclusive")
+    else:
+        if max_inclusive is not None:
+            raise ValueError("max_inclusive must be None if max_val is None")
+
+    if min_val is not None and max_val is not None:
+        if min_val >= max_val:
+            raise ValueError("min_val must be less than max_val")
+
+    try:
+        value = np.asarray(value, dtype=float)
+    except (TypeError, ValueError):
+        raise TypeError(f"{name} must be array-like and numeric.")
+
+    if not np.isfinite(value).all():
+        raise ValueError(f"{name} (or all its elements) can't be nan, inf, or -inf.")
+
+    if min_val is not None:
+        if min_inclusive:
+            if not np.all(value >= min_val):
+                raise ValueError(
+                    f"{name} (or all its elements) must be greater than or equal to {min_val}."
+                )
+        else:
+            if not np.all(value > min_val):
+                raise ValueError(
+                    f"{name} (or all its elements) must be greater than {min_val}."
+                )
+
+    if max_val is not None:
+        if max_inclusive:
+            if not np.all(value <= max_val):
+                raise ValueError(
+                    f"{name} (or all its elements) must be less than or equal to {max_val}."
+                )
+        else:
+            if not np.all(value < max_val):
+                raise ValueError(
+                    f"{name} (or all its elements) must be less than {max_val}."
+                )
+
+    return value
 
 
 def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):

@@ -36,6 +36,7 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
+    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_operating_point,
@@ -135,22 +136,20 @@ class OperatingPointMovement:
         )
 
         if self.spacingVCg__E == "sine":
-            # FIXME: Add a phase offset parameter to oscillating_sinspace
-            listVCg__E = functions.oscillating_sinspace(
-                amplitude=self.ampVCg__E,
-                period=self.periodVCg__E,
-                base_value=self.base_operating_point.vCg__E,
-                phase_offset=self.phaseVCg__E,
+            listVCg__E = functions.oscillating_sinspaces(
+                amps=self.ampVCg__E,
+                periods=self.periodVCg__E,
+                phases=self.phaseVCg__E,
+                bases=self.base_operating_point.vCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-            # FIXME: Add a phase offset parameter to oscillating_linspace
             listVCg__E = functions.oscillating_linspace(
-                amplitude=self.ampVCg__E,
-                period=self.periodVCg__E,
-                base_value=self.base_operating_point.vCg__E,
-                phase_offset=self.phaseVCg__E,
+                amps=self.ampVCg__E,
+                periods=self.periodVCg__E,
+                phases=self.phaseVCg__E,
+                bases=self.base_operating_point.vCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )

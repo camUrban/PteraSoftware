@@ -38,6 +38,7 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
+    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_airplane,
@@ -277,45 +278,40 @@ class AirplaneMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: I'm pretty sure the oscillating_* functions are going to break if I
-        #  use them like this. They expect single values for the inputs but I'm
-        #  passing vectors. I need to modify them to accept and return vectors.
         if self.spacingCgi_E_I == "sine":
-            # FIXME: Add a phase offset parameter to oscillating_sinspace
-            listCgi_E_I = functions.oscillating_sinspace(
-                amplitude=self.ampCgi_E_I,
-                period=self.periodCgi_E_I,
-                base_value=self.base_airplane.Cgi_E_I,
-                phase_offset=self.phaseCgi_E_I,
+            listCgi_E_I = functions.oscillating_sinspaces(
+                amps=self.ampCgi_E_I,
+                periods=self.periodCgi_E_I,
+                phases=self.phaseCgi_E_I,
+                bases=self.base_airplane.Cgi_E_I,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-            # FIXME: Add a phase offset parameter to oscillating_linspace
             listCgi_E_I = functions.oscillating_linspace(
-                amplitude=self.ampCgi_E_I,
-                period=self.periodCgi_E_I,
-                base_value=self.base_airplane.Cgi_E_I,
-                phase_offset=self.phaseCgi_E_I,
+                amps=self.ampCgi_E_I,
+                periods=self.periodCgi_E_I,
+                phases=self.phaseCgi_E_I,
+                bases=self.base_airplane.Cgi_E_I,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
 
         if self.spacingAngles_E_to_B_izyx == "sine":
-            listAngles_E_to_B_izyx = functions.oscillating_sinspace(
-                amplitude=self.ampAngles_E_to_B_izyx,
-                period=self.periodAngles_E_to_B_izyx,
-                base_value=self.base_airplane.angles_E_to_B_izyx,
-                phase_offset=self.phaseAngles_E_to_B_izyx,
+            listAngles_E_to_B_izyx = functions.oscillating_sinspaces(
+                amps=self.ampAngles_E_to_B_izyx,
+                periods=self.periodAngles_E_to_B_izyx,
+                phases=self.phaseAngles_E_to_B_izyx,
+                bases=self.base_airplane.angles_E_to_B_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
             listAngles_E_to_B_izyx = functions.oscillating_linspace(
-                amplitude=self.ampAngles_E_to_B_izyx,
-                period=self.periodAngles_E_to_B_izyx,
-                base_value=self.base_airplane.angles_E_to_B_izyx,
-                phase_offset=self.phaseAngles_E_to_B_izyx,
+                amps=self.ampAngles_E_to_B_izyx,
+                periods=self.periodAngles_E_to_B_izyx,
+                phases=self.phaseAngles_E_to_B_izyx,
+                bases=self.base_airplane.angles_E_to_B_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )

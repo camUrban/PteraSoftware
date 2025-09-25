@@ -598,7 +598,8 @@ def apply_T_to_vectors(T, vectors_A, has_point):
     For passive T: interpret as mapping components from source axes/point to target
     axes/point.
 
-    For active T: interpret as re-orienting/translating the vector(s) within the same axes.
+    For active T: interpret as re-orienting/translating the vector(s) within the same
+    axes.
 
     This function handles both single vectors and arrays of vectors efficiently using
     einsum operations.

@@ -37,6 +37,7 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
+    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_wing,
@@ -285,45 +286,40 @@ class WingMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: I'm pretty sure the oscillating_* functions are going to break if I
-        #  use them like this. They expect single values for the inputs but I'm
-        #  passing vectors. I need to modify them to accept and return vectors.
         if self.spacingPrelimLer_G_Cg == "sine":
-            # FIXME: Add a phase offset parameter to oscillating_sinspace
-            listPrelimLer_G_Cg = functions.oscillating_sinspace(
-                amplitude=self.ampPrelimLer_G_Cg,
-                period=self.periodPrelimLer_G_Cg,
-                base_value=self.base_wing.prelimLer_G_Cg,
-                phase_offset=self.phasePrelimLer_G_Cg,
+            listPrelimLer_G_Cg = functions.oscillating_sinspaces(
+                amps=self.ampPrelimLer_G_Cg,
+                periods=self.periodPrelimLer_G_Cg,
+                phases=self.phasePrelimLer_G_Cg,
+                bases=self.base_wing.prelimLer_G_Cg,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
-            # FIXME: Add a phase offset parameter to oscillating_linspace
             listPrelimLer_G_Cg = functions.oscillating_linspace(
-                amplitude=self.ampPrelimLer_G_Cg,
-                period=self.periodPrelimLer_G_Cg,
-                base_value=self.base_wing.prelimLer_G_Cg,
-                phase_offset=self.phasePrelimLer_G_Cg,
+                amps=self.ampPrelimLer_G_Cg,
+                periods=self.periodPrelimLer_G_Cg,
+                phases=self.phasePrelimLer_G_Cg,
+                bases=self.base_wing.prelimLer_G_Cg,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
 
         if self.spacingAngles_G_to_prelimWn_izyx == "sine":
-            listAngles_G_to_prelimWn_izyx = functions.oscillating_sinspace(
-                amplitude=self.ampAngles_G_to_prelimWn_izyx,
-                period=self.periodAngles_G_to_prelimWn_izyx,
-                base_value=self.base_wing.angles_G_to_prelimWn_izyx,
-                phase_offset=self.phaseAngles_G_to_prelimWn_izyx,
+            listAngles_G_to_prelimWn_izyx = functions.oscillating_sinspaces(
+                amps=self.ampAngles_G_to_prelimWn_izyx,
+                periods=self.periodAngles_G_to_prelimWn_izyx,
+                phases=self.phaseAngles_G_to_prelimWn_izyx,
+                bases=self.base_wing.angles_G_to_prelimWn_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
         else:
             listAngles_G_to_prelimWn_izyx = functions.oscillating_linspace(
-                amplitude=self.ampAngles_G_to_prelimWn_izyx,
-                period=self.periodAngles_G_to_prelimWn_izyx,
-                base_value=self.base_wing.angles_G_to_prelimWn_izyx,
-                phase_offset=self.phaseAngles_G_to_prelimWn_izyx,
+                amps=self.ampAngles_G_to_prelimWn_izyx,
+                periods=self.periodAngles_G_to_prelimWn_izyx,
+                phases=self.phaseAngles_G_to_prelimWn_izyx,
+                bases=self.base_wing.angles_G_to_prelimWn_izyx,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )

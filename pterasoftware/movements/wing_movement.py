@@ -359,7 +359,7 @@ class WingMovement:
         # Create an empty list to hold each time step's Wing.
         wings = []
 
-        # Generate the non-changing Wing attributes.
+        # Get the non-changing Wing attributes.
         this_name = self.base_wing.name
         this_symmetric = self.base_wing.symmetric
         this_mirror_only = self.base_wing.mirror_only

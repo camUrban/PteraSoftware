@@ -93,9 +93,8 @@ class WingCrossSection:
         :param num_spanwise_panels: int or None
 
             This is the number of spanwise panels to be used between this
-            WingCrossSection and the next one. For tip WingCrossSections,
-            this must be None. For all other WingCrossSections, this must be a
-            positive integer.
+            WingCrossSection and the next one. For tip WingCrossSections, this must
+            be None. For all other WingCrossSections, this must be a positive integer.
 
         :param chord: number, optional
 

@@ -318,8 +318,8 @@ def mesh_wing(wing):
             wing_panels = np.hstack([np.flip(wing_section_panels, axis=1), wing_panels])
 
     # Iterate through the Panels and populate their local position attributes.
-    for chordwise_position in range(num_chordwise_panels):
-        for spanwise_position in range(num_spanwise_panels):
+    for chordwise_position in range(wing_panels.shape[0]):
+        for spanwise_position in range(wing_panels.shape[1]):
             this_panel = wing_panels[chordwise_position, spanwise_position]
             this_panel.local_chordwise_position = chordwise_position
             this_panel.local_spanwise_position = spanwise_position
@@ -327,7 +327,7 @@ def mesh_wing(wing):
                 this_panel.is_left_edge = True
             else:
                 this_panel.is_left_edge = False
-            if spanwise_position == num_spanwise_panels - 1:
+            if spanwise_position == wing_panels.shape[1] - 1:
                 this_panel.is_right_edge = True
             else:
                 this_panel.is_right_edge = False

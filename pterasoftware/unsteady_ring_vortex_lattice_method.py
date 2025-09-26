@@ -881,9 +881,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize three lists of variables, which will hold the effective strength
         # of the line vortices comprising each panel's ring vortex.
-        effective_right_vortex_line_strengths = np.zeros(self._num_panels)
-        effective_front_vortex_line_strengths = np.zeros(self._num_panels)
-        effective_left_vortex_line_strengths = np.zeros(self._num_panels)
+        effective_right_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
+        effective_front_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
+        effective_left_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
 
         # Iterate through each of this step's airplanes' wings.
         for airplane in self.current_airplanes:

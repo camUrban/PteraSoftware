@@ -19,24 +19,33 @@
       <w>avistar</w>
       <w>bacxxx</w>
       <w>bambino</w>
+      <w>bbrv</w>
       <w>bergey</w>
       <w>bfgs</w>
       <w>bhvp</w>
       <w>bhvr</w>
+      <w>blbrvp</w>
       <w>bleriot</w>
       <w>blhvp</w>
       <w>blpp</w>
       <w>blrvp</w>
       <w>blvrp</w>
+      <w>blwrvp</w>
       <w>bopp</w>
+      <w>brbrvp</w>
       <w>brhvp</w>
       <w>brpp</w>
       <w>brrvp</w>
       <w>brvp</w>
       <w>brvrp</w>
+      <w>brwrvp</w>
       <w>camberline</w>
       <w>cambre</w>
       <w>carto</w>
+      <w>cblvpb</w>
+      <w>cblvpf</w>
+      <w>cblvpl</w>
+      <w>cblvpr</w>
       <w>chordwise</w>
       <w>clvpf</w>
       <w>cmocean</w>
@@ -73,12 +82,15 @@
       <w>ezyx</w>
       <w>fage</w>
       <w>fauvel</w>
+      <w>fbrv</w>
       <w>fipp</w>
       <w>firebee</w>
+      <w>flbrvp</w>
       <w>flbvp</w>
       <w>flhvp</w>
       <w>flpp</w>
       <w>flrvp</w>
+      <w>flwrvp</w>
       <w>flyer</w>
       <w>fopp</w>
       <w>frbhvp</w>
@@ -123,6 +135,7 @@
       <w>koller</w>
       <w>kutta</w>
       <w>lachassgne</w>
+      <w>lbrv</w>
       <w>legacysolvers</w>
       <w>leishman</w>
       <w>liii</w>
@@ -167,6 +180,7 @@
       <w>pyvista</w>
       <w>quast</w>
       <w>raymer</w>
+      <w>rbrv</w>
       <w>repanel</w>
       <w>repaneled</w>
       <w>repaneling</w>

@@ -50,7 +50,6 @@ import logging
 import numpy as np
 from numba import njit
 
-from .geometry.airplane import Airplane
 from .geometry.panel import Panel
 from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
@@ -376,7 +375,7 @@ def process_unsteady_solver_loads(
 
     # Find the transformation matrix that will be used to convert from geometry axes
     # to wind axes.
-    T_pas_G_Cg_to_W_Cg = unsteady_solver.operating_point.T_pas_G_Cg_to_W_Cg
+    T_pas_G_Cg_to_W_Cg = operating_point.T_pas_G_Cg_to_W_Cg
 
     # Iterate through this solver's panels.
     for panel_num, panel in enumerate(unsteady_solver.panels):
@@ -418,7 +417,7 @@ def process_unsteady_solver_loads(
     # For each airplane, find the total force and moment it experiences in wind axes
     # from the rotation matrix and the total force and moment it experiences in
     # geometry axes.
-    for airplane_num, airplane in enumerate(unsteady_solver.airplanes):
+    for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
         airplane.total_force_wind_axes = transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
             total_forces_geometry_axes[airplane_num],
@@ -487,7 +486,6 @@ def update_ring_vortex_solvers_panel_attributes(
     ),
     global_panel_position: int,
     panel: Panel,
-    airplane: Airplane,
 ):
     """This function populates a ring vortex solver's attributes with the attributes
     of a given panel.
@@ -501,9 +499,7 @@ def update_ring_vortex_solvers_panel_attributes(
     :param panel: Panel
         This is the panel object whose attributes will be used to update the solver's
         attributes.
-    :param airplane: Airplane
-        This is the Airplane object to which the Panel object belongs.
-    :return:
+    :return: None
     """
 
     # Update the solver's list of attributes with this panel's attributes.
@@ -511,40 +507,40 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver.stackUnitNormals_G[global_panel_position, :] = panel.unitNormal_G
     ring_vortex_solver.panel_areas[global_panel_position] = panel.area
     ring_vortex_solver.stackCpp_G_Cg[global_panel_position, :] = panel.Cpp_G_Cg
-    ring_vortex_solver.stackBrhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackBrbrvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Slvp_G_Cg
     )
-    ring_vortex_solver.stackFrhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackFrbrvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Elvp_G_Cg
     )
-    ring_vortex_solver.stackFlhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackFlbrvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Slvp_G_Cg
     )
-    ring_vortex_solver.stackBlhvp_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackBlbrvp_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Elvp_G_Cg
     )
-    ring_vortex_solver.stackRightVortexCenters_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackCblvpr_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.right_leg.Clvp_G_Cg
     )
-    ring_vortex_solver.stackRightVortexVectors_G[global_panel_position, :] = (
+    ring_vortex_solver.stackRbrv_G[global_panel_position, :] = (
         panel.ring_vortex.right_leg.vector_G
     )
-    ring_vortex_solver.stackFrontVortexCenters_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackCblvpf_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.front_leg.Clvp_G_Cg
     )
-    ring_vortex_solver.stackFrontVortexVectors_G[global_panel_position, :] = (
+    ring_vortex_solver.stackFbrv_G[global_panel_position, :] = (
         panel.ring_vortex.front_leg.vector_G
     )
-    ring_vortex_solver.stackLeftVortexCenters_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackCblvpl_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.left_leg.Clvp_G_Cg
     )
-    ring_vortex_solver.stackLeftVortexVectors_G[global_panel_position, :] = (
+    ring_vortex_solver.stackLbrv_G[global_panel_position, :] = (
         panel.ring_vortex.left_leg.vector_G
     )
-    ring_vortex_solver.stackBackVortexCenters_G_Cg[global_panel_position, :] = (
+    ring_vortex_solver.stackCblvpb_G_Cg[global_panel_position, :] = (
         panel.ring_vortex.back_leg.Clvp_G_Cg
     )
-    ring_vortex_solver.stackBackVortexVectors_G[global_panel_position, :] = (
+    ring_vortex_solver.stackBbrv_G[global_panel_position, :] = (
         panel.ring_vortex.back_leg.vector_G
     )
     ring_vortex_solver.panel_is_trailing_edge[global_panel_position] = (
@@ -555,9 +551,6 @@ def update_ring_vortex_solvers_panel_attributes(
     )
     ring_vortex_solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
-    ring_vortex_solver.stackPanelMomentReference_G_Cg[global_panel_position, :] = (
-        airplane.Cgi_E_I
-    )
 
     # Check if this panel is on the trailing edge. If it is, calculate its
     # streamline seed point and add it to the solver's # array of seed points.

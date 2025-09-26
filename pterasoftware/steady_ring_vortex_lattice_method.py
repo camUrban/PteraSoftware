@@ -12,8 +12,9 @@ This module contains the following functions:
     None
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 from . import aerodynamics
 from . import functions
@@ -31,6 +32,7 @@ class SteadyRingVortexLatticeMethodSolver:
         Date of Retrieval:    04/28/2020
 
     This class contains the following public methods:
+
         run: Run the solver on the SteadyProblem.
 
         calculate_solution_velocity: This function takes in a group of points (in
@@ -60,45 +62,45 @@ class SteadyRingVortexLatticeMethodSolver:
         self.airplanes = self._steady_problem.airplanes
         self.operating_point = self._steady_problem.operating_point
         self.num_airplanes = len(self.airplanes)
-
-        # Calculate the total number of Panels for all of this SteadyProblem's
-        # Airplanes.
         self.num_panels = 0
         for airplane in self.airplanes:
             self.num_panels += airplane.num_panels
 
         # Initialize attributes to hold aerodynamic data that pertains to this
-        # SteadyProblem.
+        # simulation.
+        self.vInf_G__E = self.operating_point.vInf_G__E
+        self.stackFreestreamWingInfluences_G__E = np.zeros(self.num_panels, dtype=float)
         self._gridWingWingInfluences_G__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
-        self.vInf_G__E = self.operating_point.vInf_G__E
-        self.stackFreestreamWingInfluences_G__E = np.zeros(self.num_panels, dtype=float)
-
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
+        self.panels = np.empty(self.num_panels, dtype=object)
         self.stackUnitNormals_G = np.zeros((self.num_panels, 3), dtype=float)
         self.panel_areas = np.zeros(self.num_panels, dtype=float)
+
+        # Collocation panel points (in geometry axes, relative to the CG)
         self.stackCpp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-        self._stackBrrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackFrrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackFlrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackBlrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        # Back-right, front-right, front-left, and back-left bound ring vortex
+        # points (in geometry axes, relative to the CG).
+        self.stackBrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackBlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-        self.panels = np.empty(self.num_panels, dtype=object)
+        # Center bound line vortex points for the right, front, left, and back
+        # legs (in geometry axes, relative to the CG).
+        self.stackCblvpr_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpf_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpl_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpb_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-        self.stackRightVortexCenters_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackRightVortexVectors_G = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackFrontVortexCenters_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackFrontVortexVectors_G = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackLeftVortexCenters_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackLeftVortexVectors_G = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackBackVortexCenters_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
-        self.stackBackVortexVectors_G = np.zeros((self.num_panels, 3), dtype=float)
-
-        self.stackSeedPoints_G_Cg = np.empty((0, 3), dtype=float)
-        self.stackStreamlinePoints_G_Cg = None
+        # Right, front, left, and back bound ring vortex vectors (in geometry axes).
+        self.stackRbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackLbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackBbrv_G = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables that will hold data which characterizes this Panels'
         # HorseshoeVortex. If the Panel does not have a HorseshoeVortex, these values
@@ -118,6 +120,9 @@ class SteadyRingVortexLatticeMethodSolver:
         self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
         self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
+        self.stackSeedPoints_G_Cg = np.empty((0, 3), dtype=float)
+        self.stackStreamlinePoints_G_Cg = None
+
     def run(self, logging_level="Warning"):
         """Run the solver on the SteadyProblem.
 
@@ -130,7 +135,9 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Configure the SteadyProblem's logger.
+        logging_level = parameter_validation.string_return_string(
+            logging_level, "logging_level"
+        )
         logging_level_value = functions.convert_logging_level_name_to_value(
             logging_level
         )
@@ -176,9 +183,9 @@ class SteadyRingVortexLatticeMethodSolver:
         LineVortex at the Panel's quarter chord. The left and right legs are
         LineVortices running along the Panel's left and right legs. If the Panel is
         not along the trailing edge, they extend backwards and meet the back
-        LineVortex, at the rear Panel's quarter chord. Otherwise, they extend back
+        LineVortex, at the rear Panel's quarter chord. Otherwise, they extend
         backwards and meet the back LineVortex one quarter chord back from the
-        current Panel's back leg.
+        Panel's back leg.
 
         Panels that are at the trailing edge of a Wing have a HorseshoeVortex in
         addition to their RingVortex. The HorseshoeVortex's finite leg runs along the
@@ -269,14 +276,12 @@ class SteadyRingVortexLatticeMethodSolver:
 
                 # Iterate through the 1D ndarray of this Wing's Panels.
                 for panel in panels:
-
                     # Update the solver's list of attributes with this Panel's
                     # attributes.
                     functions.update_ring_vortex_solvers_panel_attributes(
                         ring_vortex_solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
-                        airplane=airplane,
                     )
 
                     if panel.is_trailing_edge:
@@ -316,10 +321,10 @@ class SteadyRingVortexLatticeMethodSolver:
         # the correct strengths are calculated.
         gridRingNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_ring_vortices(
             stackP_G_Cg=self.stackCpp_G_Cg,
-            stackBrrvp_G_Cg=self._stackBrrvp_G_Cg,
-            stackFrrvp_G_Cg=self._stackFrrvp_G_Cg,
-            stackFlrvp_G_Cg=self._stackFlrvp_G_Cg,
-            stackBlrvp_G_Cg=self._stackBlrvp_G_Cg,
+            stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
+            stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
+            stackFlrvp_G_Cg=self.stackFlbrvp_G_Cg,
+            stackBlrvp_G_Cg=self.stackBlbrvp_G_Cg,
             strengths=self._vortex_strengths,
         )
 
@@ -344,10 +349,10 @@ class SteadyRingVortexLatticeMethodSolver:
         gridNormVIndCpp_G__E = gridRingNormVIndCpp_G__E + gridHorseshoeNormVIndCpp_G__E
 
         # Take the batch dot product of the normalized induced velocities (in
-        # geometry axes, observed from the Earth frame) with each Panel's unit normal
-        # direction (in geometry axes). This is now the Problem's 2D ndarray of
-        # Wing-Wing influence coefficients (in geometry axes, observed from the Earth
-        # frame).
+        # geometry axes, observed from the Earth frame) with each Panel's unit
+        # normal direction (in geometry axes). This is now the 2D ndarray of
+        # Wing-Wing influence coefficients (in geometry axes, observed from the
+        # Earth frame).
         self._gridWingWingInfluences_G__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_G__E,
@@ -411,10 +416,10 @@ class SteadyRingVortexLatticeMethodSolver:
 
         stackRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
-            stackBrrvp_G_Cg=self._stackBrrvp_G_Cg,
-            stackFrrvp_G_Cg=self._stackFrrvp_G_Cg,
-            stackFlrvp_G_Cg=self._stackFlrvp_G_Cg,
-            stackBlrvp_G_Cg=self._stackBlrvp_G_Cg,
+            stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
+            stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
+            stackFlrvp_G_Cg=self.stackFlbrvp_G_Cg,
+            stackBlrvp_G_Cg=self.stackBlbrvp_G_Cg,
             strengths=self._vortex_strengths,
         )
         stackHorseshoeVInd_G__E = (
@@ -539,13 +544,13 @@ class SteadyRingVortexLatticeMethodSolver:
         # the center of every Panels' RingVortex's right LineVortex,
         # front LineVortex, and left LineVortex.
         stackVelocityRightLineVortexCenters_G__E = self.calculate_solution_velocity(
-            stackP_G_Cg=self.stackRightVortexCenters_G_Cg
+            stackP_G_Cg=self.stackCblvpr_G_Cg
         )
         stackVelocityFrontLineVortexCenters_G__E = self.calculate_solution_velocity(
-            stackP_G_Cg=self.stackFrontVortexCenters_G_Cg
+            stackP_G_Cg=self.stackCblvpf_G_Cg
         )
         stackVelocityLeftLineVortexCenters_G__E = self.calculate_solution_velocity(
-            stackP_G_Cg=self.stackLeftVortexCenters_G_Cg
+            stackP_G_Cg=self.stackCblvpl_G_Cg
         )
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
@@ -557,7 +562,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityRightLineVortexCenters_G__E,
-                self.stackRightVortexVectors_G,
+                self.stackRbrv_G,
                 axis=-1,
             )
         )
@@ -566,7 +571,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityFrontLineVortexCenters_G__E,
-                self.stackFrontVortexVectors_G,
+                self.stackFbrv_G,
                 axis=-1,
             )
         )
@@ -575,7 +580,7 @@ class SteadyRingVortexLatticeMethodSolver:
             * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityLeftLineVortexCenters_G__E,
-                self.stackLeftVortexVectors_G,
+                self.stackLbrv_G,
                 axis=-1,
             )
         )
@@ -585,17 +590,17 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the moments (in geometry axes, relative to the CG) on the Panels'
         # RingVortex's right LineVortex, front LineVortex, and left LineVortex.
         rightLegMoments_G_Cg = np.cross(
-            self.stackRightVortexCenters_G_Cg,
+            self.stackCblvpr_G_Cg,
             rightLegForces_G,
             axis=-1,
         )
         frontLegMoments_G_Cg = np.cross(
-            self.stackFrontVortexCenters_G_Cg,
+            self.stackCblvpf_G_Cg,
             frontLegForces_G,
             axis=-1,
         )
         leftLegMoments_G_Cg = np.cross(
-            self.stackLeftVortexCenters_G_Cg,
+            self.stackCblvpl_G_Cg,
             leftLegForces_G,
             axis=-1,
         )

@@ -221,10 +221,12 @@ def draw(
     if show_streamlines:
         # Iterate through the spanwise positions in the solver's streamline point
         # matrix.
-        for spanwise_position in range(solver.streamline_points.shape[1]):
+        for spanwise_position in range(solver.stackStreamlinePoints_G_Cg.shape[1]):
 
             # Get the column of streamline points at this spanwise position.
-            streamline_point_column = solver.streamline_points[:, spanwise_position, :]
+            streamline_point_column = solver.stackStreamlinePoints_G_Cg[
+                :, spanwise_position, :
+            ]
 
             # Iterate through each streamline point column.
             for point_index in range(streamline_point_column.shape[0]):
@@ -1166,19 +1168,13 @@ def _get_wake_ring_vortex_surfaces(solver, step):
         This is the PolyData object of the wake surface that can be displayed by
         other output methods.
     """
-    num_wake_ring_vortices = solver.num_wake_ring_vortices_list[step]
+    num_wake_ring_vortices = solver.list_num_wake_vortices[step]
     wake_ring_vortex_front_right_vertices = (
         solver.wake_ring_vortex_front_right_vertices_list[step]
     )
-    wake_ring_vortex_front_left_vertices = (
-        solver.wake_ring_vortex_front_left_vertices_list[step]
-    )
-    wake_ring_vortex_back_left_vertices = (
-        solver.wake_ring_vortex_back_left_vertices_list[step]
-    )
-    wake_ring_vortex_back_right_vertices = (
-        solver.wake_ring_vortex_back_right_vertices_list[step]
-    )
+    wake_ring_vortex_front_left_vertices = solver.listStackFlwrvp_G_Cg[step]
+    wake_ring_vortex_back_left_vertices = solver.listStackBlwrvp_G_Cg[step]
+    wake_ring_vortex_back_right_vertices = solver.listStackBrwrvp_G_Cg[step]
 
     # Initialize empty arrays to hold each wake ring vortex's vertices and its face.
     wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)

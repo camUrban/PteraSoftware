@@ -124,26 +124,26 @@ class UnsteadyProblem:
         # Initialize empty lists to hold the final loads and load coefficients each
         # Airplane experiences. These will only be populated if this
         # UnsteadyProblem's Movement is static.
-        self.final_near_field_forces_wind_axes = []
-        self.final_near_field_force_coefficients_wind_axes = []
-        self.final_near_field_moments_wind_axes = []
-        self.final_near_field_moment_coefficients_wind_axes = []
+        self.finalForces_W = []
+        self.finalForceCoefficients_W = []
+        self.finalMoments_W_Cg = []
+        self.finalMomentCoefficients_W_Cg = []
 
         # Initialize empty lists to hold the final cycle-averaged loads and load
         # coefficients each Airplane experiences. These will only be populated if
-        # this UnsteadyProblem's Movement is cyclic..
-        self.final_mean_near_field_forces_wind_axes = []
-        self.final_mean_near_field_force_coefficients_wind_axes = []
-        self.final_mean_near_field_moments_wind_axes = []
-        self.final_mean_near_field_moment_coefficients_wind_axes = []
+        # this UnsteadyProblem's Movement is cyclic.
+        self.finalMeanForces_W = []
+        self.finalMeanForceCoefficients_W = []
+        self.finalMeanMoments_W_Cg = []
+        self.finalMeanMomentCoefficients_W_Cg = []
 
         # Initialize empty lists to hold the final cycle-root-mean-squared loads and
         # load coefficients each airplane object experiences. These will only be
         # populated for variable geometry problems.
-        self.final_rms_near_field_forces_wind_axes = []
-        self.final_rms_near_field_force_coefficients_wind_axes = []
-        self.final_rms_near_field_moments_wind_axes = []
-        self.final_rms_near_field_moment_coefficients_wind_axes = []
+        self.finalRmsForces_W = []
+        self.finalRmsForceCoefficients_W = []
+        self.finalRmsMoments_W_Cg = []
+        self.finalRmsMomentCoefficients_W_Cg = []
 
         # Initialize an empty list to hold the SteadyProblems.
         self.steady_problems = []

@@ -273,6 +273,8 @@ class WingCrossSectionMovement:
             delta_time, "delta_time"
         )
 
+        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
+        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
         if self.spacingLp_Wcsp_Lpp == "sine":
             listLp_Wcsp_Lpp = functions.oscillating_sinspaces(
                 amps=self.ampLp_Wcsp_Lpp,
@@ -292,6 +294,8 @@ class WingCrossSectionMovement:
                 delta_time=delta_time,
             )
 
+        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
+        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
         if self.spacingAngles_Wcsp_to_Wcs_izyx == "sine":
             listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_sinspaces(
                 amps=self.ampAngles_Wcsp_to_Wcs_izyx,
@@ -331,8 +335,8 @@ class WingCrossSectionMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            thisLp_Wcsp_Lpp = listLp_Wcsp_Lpp[step]
-            theseAngles_Wcsp_to_Wcs_izyx = listAngles_Wcsp_to_Wcs_izyx[step]
+            thisLp_Wcsp_Lpp = listLp_Wcsp_Lpp[:, step]
+            theseAngles_Wcsp_to_Wcs_izyx = listAngles_Wcsp_to_Wcs_izyx[:, step]
 
             # Make a new WingCrossSection for this time step.
             this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(

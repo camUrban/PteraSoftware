@@ -175,7 +175,7 @@ def get_solver(this_solver_type, this_airplane, this_operating_point):
                 operating_point_movement=this_operating_point_movement,
                 num_steps=None,
                 delta_time=None,
-                num_chords=3,
+                num_chords=5,
             )
 
             del this_airplane_movement
@@ -212,5 +212,14 @@ ps.output.draw(
     show_wake_vortices=False,
     save=False,
 )
+
+if solver_type == "unsteady_ring":
+    ps.output.animate(
+        unsteady_solver=flat_plate_solver,
+        scalar_type="lift",
+        show_wake_vortices=True,
+        save=False,
+        testing=False,
+    )
 #
 # ps.output.print_steady_results(steady_solver=flat_plate_solver)

@@ -640,28 +640,28 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # TODO: Test if we can replace the calls to LineVortex
                         #  attributes with calls to RingVortex attributes.
                         self._lastStackBrbrvp_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.rightLeg_G.Slvp_G_Cg
+                            panel.ring_vortex.right_leg.Slvp_G_Cg
                         )
                         self._lastStackFrbrvp_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.rightLeg_G.Elvp_G_Cg
+                            panel.ring_vortex.right_leg.Elvp_G_Cg
                         )
                         self._lastStackFlbrvp_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.leftLeg_G.Slvp_G_Cg
+                            panel.ring_vortex.left_leg.Slvp_G_Cg
                         )
                         self._lastStackBlbrvp_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.leftLeg_G.Elvp_G_Cg
+                            panel.ring_vortex.left_leg.Elvp_G_Cg
                         )
                         self._lastStackCblvpr_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.rightLeg_G.Crvp_G_Cg
+                            panel.ring_vortex.right_leg.Clvp_G_Cg
                         )
                         self._lastStackCblvpf_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.frontLeg_G.Crvp_G_Cg
+                            panel.ring_vortex.front_leg.Clvp_G_Cg
                         )
                         self._lastStackCblvpl_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.leftLeg_G.Crvp_G_Cg
+                            panel.ring_vortex.left_leg.Clvp_G_Cg
                         )
                         self._lastStackCblvpb_G_Cg[global_panel_position, :] = (
-                            panel.ring_vortex.backLeg_G.Crvp_G_Cg
+                            panel.ring_vortex.back_leg.Clvp_G_Cg
                         )
 
                         # Increment the global Panel position variable.
@@ -803,7 +803,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
     # NOTE: I haven't yet started refactoring this method.
-    def calculate_solution_velocity(self, points):
+    def calculate_solution_velocity(self, stackP_G_Cg):
         """This function takes in a group of points. At every point, it finds the
         induced velocity due to every vortex and the freestream velocity.
 
@@ -817,7 +817,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         operations than using the vortex objects' class methods for calculating
         induced velocity.
 
-        :param points: 2D array of floats
+        :param stackP_G_Cg: 2D array of floats
             This variable is an array of shape (N x 3), where N is the number of
             points. Each row contains the x, y, and z float coordinates of that
             point's position in meters.
@@ -830,7 +830,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the vector of velocities induced at every point by every panel's ring
         # vortex. The effect of every ring vortex on each point will be summed.
         velocities_from_wings = aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=points,
+            stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
             stackFlrvp_G_Cg=self.stackFlbrvp_G_Cg,
@@ -843,7 +843,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the vector of velocities induced at every point by every wake ring
         # vortex. The effect of every wake ring vortex on each point will be summed.
         velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=points,
+            stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
             stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
             stackFlrvp_G_Cg=self._currentStackFlwrvp_G_Cg,
@@ -976,15 +976,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate the solution velocities at the centers of the panel's front leg,
         # left leg, and right leg.
         velocities_at_ring_vortex_front_leg_centers = (
-            self.calculate_solution_velocity(points=self.stackCblvpf_G_Cg)
+            self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpf_G_Cg)
             + self._calculate_current_flapping_velocities_at_front_leg_centers()
         )
         velocities_at_ring_vortex_left_leg_centers = (
-            self.calculate_solution_velocity(points=self.stackCblvpl_G_Cg)
+            self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpl_G_Cg)
             + self._calculate_current_flapping_velocities_at_left_leg_centers()
         )
         velocities_at_ring_vortex_right_leg_centers = (
-            self.calculate_solution_velocity(points=self.stackCblvpr_G_Cg)
+            self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpr_G_Cg)
             + self._calculate_current_flapping_velocities_at_right_leg_centers()
         )
 
@@ -1151,7 +1151,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # The position of the next front left wake ring vortex
                             # vertex is the next panel's ring vortex's back left
                             # vertex.
-                            next_front_left_vertex = next_panel.ring_vortex.Blpp_G_Cg
+                            next_front_left_vertex = next_panel.ring_vortex.Blrvp_G_Cg
 
                             # Add this to the new row of wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
@@ -1164,7 +1164,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # vortex vertex is the next panel's ring vortex's
                                 # back right vertex.
                                 next_front_right_vertex = (
-                                    next_panel.ring_vortex.Brpp_G_Cg
+                                    next_panel.ring_vortex.Brrvp_G_Cg
                                 )
 
                                 # Add this to the new row of wake ring vortex vertices.
@@ -1318,7 +1318,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # the matrix of new wake ring vortex vertices.
                             first_row_of_wake_ring_vortex_vertices[
                                 0, spanwise_position
-                            ] = next_panel.ring_vortex.Blpp_G_Cg
+                            ] = next_panel.ring_vortex.Blrvp_G_Cg
 
                             if spanwise_position == (this_wing.num_spanwise_panels - 1):
                                 # If the panel object is at the right edge of the
@@ -1326,7 +1326,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # matrix of new wake ring vortex vertices.
                                 first_row_of_wake_ring_vortex_vertices[
                                     0, spanwise_position + 1
-                                ] = next_panel.ring_vortex.Brpp_G_Cg
+                                ] = next_panel.ring_vortex.Brrvp_G_Cg
 
                         # Stack the new first row of wake ring vortex vertices above
                         # the wing's matrix of wake ring vortex vertices.
@@ -1629,15 +1629,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Iterate through this step's airplanes.
             for airplane_id, airplane in enumerate(these_airplanes):
-                total_forces_W[airplane_id, :, results_step] = airplane.total_force_W
+                total_forces_W[airplane_id, :, results_step] = airplane.forces_W
                 total_force_coefficients_W[airplane_id, :, results_step] = (
-                    airplane.total_force_coefficients_W
+                    airplane.forceCoefficients_W
                 )
-                total_moments_W_Cg[airplane_id, :, results_step] = (
-                    airplane.total_moment_W
-                )
+                total_moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
                 total_moment_coefficients_W_Cg[airplane_id, :, results_step] = (
-                    airplane.total_moment_coefficients_W_Cg
+                    airplane.momentCoefficients_W_Cg
                 )
 
             results_step += 1

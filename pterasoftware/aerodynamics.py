@@ -118,9 +118,7 @@ class RingVortex:
             Brrvp_G_Cg, "Brrvp_G_Cg"
         )
         if strength is not None:
-            strength = parameter_validation.positive_number_return_float(
-                strength, "strength"
-            )
+            strength = parameter_validation.number_return_float(strength, "strength")
         self.strength = strength
 
         # Initialize the LineVortices that make up the RingVortex.
@@ -301,9 +299,7 @@ class HorseshoeVortex:
             left_right_leg_lengths, "left_right_leg_lengths"
         )
         if strength is not None:
-            strength = parameter_validation.positive_number_return_float(
-                strength, "strength"
-            )
+            strength = parameter_validation.number_return_float(strength, "strength")
         self.strength = strength
 
         # TODO: Consider making these properties.

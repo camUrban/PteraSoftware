@@ -282,6 +282,8 @@ class AirplaneMovement:
             delta_time, "delta_time"
         )
 
+        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
+        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
         if self.spacingCgi_E_I == "sine":
             listCgi_E_I = functions.oscillating_sinspaces(
                 amps=self.ampCgi_E_I,
@@ -301,6 +303,8 @@ class AirplaneMovement:
                 delta_time=delta_time,
             )
 
+        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
+        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
         if self.spacingAngles_E_to_B_izyx == "sine":
             listAngles_E_to_B_izyx = functions.oscillating_sinspaces(
                 amps=self.ampAngles_E_to_B_izyx,
@@ -347,8 +351,8 @@ class AirplaneMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            thisCgi_E_I = listCgi_E_I[step]
-            theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[step]
+            thisCgi_E_I = listCgi_E_I[:, step]
+            theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[:, step]
             these_wings = list(wings[:, step])
 
             # Make a new Airplane for this time step.

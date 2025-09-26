@@ -371,13 +371,14 @@ def process_unsteady_solver_loads(
     operating_point = unsteady_solver.current_operating_point
 
     # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = operating_point.qInf__E
+    qInf__E = operating_point.qInf__E
 
     # Find the transformation matrix that will be used to convert from geometry axes
     # to wind axes.
     T_pas_G_Cg_to_W_Cg = operating_point.T_pas_G_Cg_to_W_Cg
 
     # Iterate through this solver's panels.
+    panel: Panel
     for panel_num, panel in enumerate(unsteady_solver.panels):
         # Get this panel's forces and moments in geometry axes and wind axes.
         this_force_geometry_axes = forces_G[panel_num, :]
@@ -397,22 +398,20 @@ def process_unsteady_solver_loads(
         panel.moments_W_Cg = this_moment_wind_axes
 
         # Update the force coefficients on this panel.
-        panel.update_coefficients(dynamic_pressure=dynamic_pressure)
+        panel.update_coefficients(freestream_q=qInf__E)
 
     # Initialize arrays for each airplane's total force and moment in geometry axes.
     num_airplanes = unsteady_solver.num_airplanes
-    total_forces_geometry_axes = np.zeros((num_airplanes, 3))
-    total_moments_geometry_axes = np.zeros((num_airplanes, 3))
+    total_forces_geometry_axes = np.zeros((num_airplanes, 3), dtype=float)
+    total_moments_geometry_axes = np.zeros((num_airplanes, 3), dtype=float)
 
     # Iterate through each airplane and find the total force and moment experienced
     # by each by summing up the contribution's from its panels.
     for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
         for wing in airplane.wings:
             for panel in np.ravel(wing.panels):
-                total_forces_geometry_axes[airplane_num, :] += panel.force_geometry_axes
-                total_moments_geometry_axes[
-                    airplane_num, :
-                ] += panel.moment_geometry_axes
+                total_forces_geometry_axes[airplane_num, :] += panel.forces_G
+                total_moments_geometry_axes[airplane_num, :] += panel.moments_G_Cg
 
     # For each airplane, find the total force and moment it experiences in wind axes
     # from the rotation matrix and the total force and moment it experiences in
@@ -433,31 +432,29 @@ def process_unsteady_solver_loads(
     for airplane in unsteady_solver.current_airplanes:
         # Calculate this airplane's force coefficients.
         induced_drag_coefficient = (
-            -airplane.total_force_wind_axes[0] / dynamic_pressure / airplane.s_ref
+            -airplane.total_force_wind_axes[0] / qInf__E / airplane.s_ref
         )
         side_force_coefficient = (
-            airplane.total_force_wind_axes[1] / dynamic_pressure / airplane.s_ref
+            airplane.total_force_wind_axes[1] / qInf__E / airplane.s_ref
         )
-        lift_coefficient = (
-            -airplane.total_force_wind_axes[2] / dynamic_pressure / airplane.s_ref
-        )
+        lift_coefficient = -airplane.total_force_wind_axes[2] / qInf__E / airplane.s_ref
 
         # Calculate this airplane's moment coefficients.
         rolling_moment_coefficient = (
             airplane.total_moment_wind_axes[0]
-            / dynamic_pressure
+            / qInf__E
             / airplane.s_ref
             / airplane.b_ref
         )
         pitching_moment_coefficient = (
             airplane.total_moment_wind_axes[1]
-            / dynamic_pressure
+            / qInf__E
             / airplane.s_ref
             / airplane.c_ref
         )
         yawing_moment_coefficient = (
             airplane.total_moment_wind_axes[2]
-            / dynamic_pressure
+            / qInf__E
             / airplane.s_ref
             / airplane.b_ref
         )

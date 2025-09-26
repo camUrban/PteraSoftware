@@ -33,6 +33,7 @@ import pyvista as pv
 import webp
 
 from . import unsteady_ring_vortex_lattice_method
+from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -1156,7 +1157,7 @@ def _get_panel_surfaces(
 
 
 # NOTE: I haven't yet started refactoring this function.
-def _get_wake_ring_vortex_surfaces(solver, step):
+def _get_wake_ring_vortex_surfaces(solver: UnsteadyRingVortexLatticeMethodSolver, step):
     """This function returns the PolyData object for the surface of wake ring
     vortices at a given time step.
 
@@ -1169,9 +1170,7 @@ def _get_wake_ring_vortex_surfaces(solver, step):
         other output methods.
     """
     num_wake_ring_vortices = solver.list_num_wake_vortices[step]
-    wake_ring_vortex_front_right_vertices = (
-        solver.wake_ring_vortex_front_right_vertices_list[step]
-    )
+    wake_ring_vortex_front_right_vertices = solver.listStackFrwrvp_G_Cg[step]
     wake_ring_vortex_front_left_vertices = solver.listStackFlwrvp_G_Cg[step]
     wake_ring_vortex_back_left_vertices = solver.listStackBlwrvp_G_Cg[step]
     wake_ring_vortex_back_right_vertices = solver.listStackBrwrvp_G_Cg[step]

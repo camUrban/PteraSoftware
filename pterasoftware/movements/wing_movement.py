@@ -172,9 +172,11 @@ class WingMovement:
                 )
         self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
 
-        spacingPrelimLer_G_Cg = parameter_validation.list_return_list(
-            spacingPrelimLer_G_Cg, "spacingPrelimLer_G_Cg"
-        )
+        # TODO: Replace this commented out validation call to one that allows
+        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
+        # spacingPrelimLer_G_Cg = parameter_validation.list_return_list(
+        #     spacingPrelimLer_G_Cg, "spacingPrelimLer_G_Cg"
+        # )
         if not np.all(elem in ["sine", "uniform"] for elem in spacingPrelimLer_G_Cg):
             raise ValueError(
                 'All elements in spacingPrelimLer_G_Cg must be "sine" or "uniform".'
@@ -231,9 +233,11 @@ class WingMovement:
                 )
         self.periodAngles_G_to_prelimWn_izyx = periodAngles_G_to_prelimWn_izyx
 
-        spacingAngles_G_to_prelimWn_izyx = parameter_validation.list_return_list(
-            spacingAngles_G_to_prelimWn_izyx, "spacingAngles_G_to_prelimWn_izyx"
-        )
+        # TODO: Replace this commented out validation call to one that allows
+        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
+        # spacingAngles_G_to_prelimWn_izyx = parameter_validation.list_return_list(
+        #     spacingAngles_G_to_prelimWn_izyx, "spacingAngles_G_to_prelimWn_izyx"
+        # )
         if not np.all(
             elem in ["sine", "uniform"] for elem in spacingAngles_G_to_prelimWn_izyx
         ):
@@ -368,7 +372,7 @@ class WingMovement:
         for step in range(num_steps):
             thisPrelimLer_G_Cg = listPrelimLer_G_Cg[step]
             theseAngles_G_to_prelimWn_izyx = listAngles_G_to_prelimWn_izyx[step]
-            these_wing_cross_sections = wing_cross_sections[:, step]
+            these_wing_cross_sections = list(wing_cross_sections[:, step])
 
             # Make a new Wing for this time step.
             this_wing = geometry.wing.Wing(

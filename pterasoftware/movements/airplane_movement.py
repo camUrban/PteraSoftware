@@ -168,9 +168,11 @@ class AirplaneMovement:
                 )
         self.periodCgi_E_I = periodCgi_E_I
 
-        spacingCgi_E_I = parameter_validation.list_return_list(
-            spacingCgi_E_I, "spacingCgi_E_I"
-        )
+        # TODO: Replace this commented out validation call to one that allows
+        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
+        # spacingCgi_E_I = parameter_validation.list_return_list(
+        #     spacingCgi_E_I, "spacingCgi_E_I"
+        # )
         if not np.all(elem in ["sine", "uniform"] for elem in spacingCgi_E_I):
             raise ValueError(
                 'All elements in spacingCgi_E_I must be "sine" or "uniform".'
@@ -223,9 +225,11 @@ class AirplaneMovement:
                 )
         self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
 
-        spacingAngles_E_to_B_izyx = parameter_validation.list_return_list(
-            spacingAngles_E_to_B_izyx, "spacingAngles_E_to_B_izyx"
-        )
+        # TODO: Replace this commented out validation call to one that allows
+        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
+        # spacingAngles_E_to_B_izyx = parameter_validation.list_return_list(
+        #     spacingAngles_E_to_B_izyx, "spacingAngles_E_to_B_izyx"
+        # )
         if not np.all(
             elem in ["sine", "uniform"] for elem in spacingAngles_E_to_B_izyx
         ):
@@ -345,7 +349,7 @@ class AirplaneMovement:
         for step in range(num_steps):
             thisCgi_E_I = listCgi_E_I[step]
             theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[step]
-            these_wings = wings[:, step]
+            these_wings = list(wings[:, step])
 
             # Make a new Airplane for this time step.
             this_airplane = geometry.airplane.Airplane(

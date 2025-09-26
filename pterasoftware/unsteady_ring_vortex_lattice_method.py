@@ -68,7 +68,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_operating_point = None
         self.num_airplanes = len(self.steady_problems[0].airplanes)
         _num_panels = 0
-        for airplane in self.current_airplanes:
+        for airplane in self.steady_problems[0].airplanes:
             _num_panels += airplane.num_panels
         self._num_panels = _num_panels
 
@@ -84,7 +84,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
         self.panels = None
-        self._stackUnitNormals_G = None
+        self.stackUnitNormals_G = None
         self.panel_areas = None
 
         # The current and last time step's collocation panel points (in geometry
@@ -361,7 +361,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Initialize attributes to hold geometric data that pertain to this
                 # UnsteadyProblem.
                 self.panels = np.empty(self._num_panels, dtype=object)
-                self._stackUnitNormals_G = np.zeros((self._num_panels, 3), dtype=float)
+                self.stackUnitNormals_G = np.zeros((self._num_panels, 3), dtype=float)
                 self.panel_areas = np.zeros(self._num_panels, dtype=float)
 
                 self.stackCpp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
@@ -698,7 +698,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentGridWingWingInfluences_G__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_G__E,
-            np.expand_dims(self._stackUnitNormals_G, axis=1),
+            np.expand_dims(self.stackUnitNormals_G, axis=1),
         )
 
     # NOTE: I've started refactoring this method.
@@ -716,7 +716,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # taking a batch dot product.
         freestream_influences = np.einsum(
             "ij,j->i",
-            self._stackUnitNormals_G,
+            self.stackUnitNormals_G,
             self._currentVInf_G__E,
         )
 
@@ -729,7 +729,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # collocation points by taking a batch dot product.
         flapping_influences = np.einsum(
             "ij,ij->i",
-            self._stackUnitNormals_G,
+            self.stackUnitNormals_G,
             current_flapping_velocities_at_collocation_points,
         )
 
@@ -770,7 +770,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Set the current wake-wing influences to the normal component of the
             # wake induced velocities at each panel.
             self._currentStackWakeWingInfluences_G__E = np.einsum(
-                "ij,ij->i", velocities_from_wake, self._stackUnitNormals_G
+                "ij,ij->i", velocities_from_wake, self.stackUnitNormals_G
             )
 
         else:
@@ -1026,7 +1026,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 axis=1,
             )
             * np.expand_dims(self.panel_areas, axis=1)
-            * self._stackUnitNormals_G
+            * self.stackUnitNormals_G
             / self.delta_time
         )
 

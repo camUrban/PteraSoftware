@@ -74,20 +74,20 @@ lead_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Now define the lead airplane's movement object.
-lead_airplane_movement = ps.movement.AirplaneMovement(
+lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=lead_airplane,
     wing_movements=[  # Define the main wing's movement.
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=lead_airplane.wings[0],
             wing_cross_section_movements=[
                 # Define the root wing cross section's movement object.
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         0
                     ],
                 ),
                 # Define the tip wing cross section's movement object.
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         1
                     ],
@@ -145,18 +145,18 @@ right_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Now define the trailing right airplane's movement object.
-right_airplane_movement = ps.movement.AirplaneMovement(
+right_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=right_airplane,
     wing_movements=[
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=right_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
                         0
                     ],
                 ),
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
                         1
                     ],
@@ -214,18 +214,18 @@ left_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Now define the trailing left airplane's movement object.
-left_airplane_movement = ps.movement.AirplaneMovement(
+left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=left_airplane,
     wing_movements=[
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=left_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
                         0
                     ],
                 ),
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
                         1
                     ],
@@ -246,7 +246,7 @@ left_airplane_movement = ps.movement.AirplaneMovement(
 operating_point = ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=0.0)
 
 # Define the operating point's movement.
-operating_point_movement = ps.movement.OperatingPointMovement(
+operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=operating_point
 )
 

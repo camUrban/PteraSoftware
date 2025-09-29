@@ -184,7 +184,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 # relative rotation of this wing cross section's leading edge to the preceding wing
 # cross section's leading edge about the body z axis. The sign of all rotations is
 # determined via the right-hand-rule.
-main_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
+main_wing_root_wing_cross_section_movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
     # Provide the base cross section.
     base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
     # Define the sweeping amplitude. This value is in degrees. As this is the first
@@ -219,27 +219,33 @@ main_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovemen
 # Define the main wing's tip wing cross section's movement. As the example has static
 # geometry, the movement attributes can be excluded, and the default values will
 # suffice.
-main_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+main_wing_tip_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+    )
 )
 
 # Define the v-tail's root wing cross section's movement. As the example has static
 # geometry, the movement attributes can be excluded, and the default values will
 # suffice.
-v_tail_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
+v_tail_root_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
+    )
 )
 
 # Define the v-tail's tip wing cross section's movement. As the example has static
 # geometry, the movement attributes can be excluded, and the default values will
 # suffice.
-v_tail_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
+v_tail_tip_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
+    )
 )
 
 # Now define the main wing's movement. In addition to their wing cross sections'
 # relative movements, wings' leading edge positions can move as well.
-main_wing_movement = ps.movement.WingMovement(
+main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
         main_wing_root_wing_cross_section_movement,
@@ -263,7 +269,7 @@ del main_wing_root_wing_cross_section_movement
 del main_wing_tip_wing_cross_section_movement
 
 # Make the v-tail's wing movement object.
-v_tail_movement = ps.movement.WingMovement(
+v_tail_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[1],
     wing_cross_section_movements=[
         v_tail_root_wing_cross_section_movement,
@@ -279,7 +285,7 @@ del v_tail_tip_wing_cross_section_movement
 
 # Now define the airplane's movement object. In addition to their wing's and wing
 # cross sections' relative movements, airplane's reference positions can move as well.
-airplane_movement = ps.movement.AirplaneMovement(  # Define the base airplane object.
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(  # Define the base airplane object.
     base_airplane=example_airplane,  # Add the list of wing movement objects.
     wing_movements=[main_wing_movement, v_tail_movement],
     # Define the amplitude of the reference position's change in x position. This
@@ -324,7 +330,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
 
 # Define the operating point's movement. The operating point's velocity can change
 # with respect to time.
-operating_point_movement = ps.movement.OperatingPointMovement(
+operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point, periodVCg__E=0.0, spacingVCg__E="sine"
 )
 

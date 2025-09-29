@@ -65,18 +65,18 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 # Create a movement for this example's airplane. Read through the unsteady solver
 # examples for more details on this type of object.
-example_airplane_movement = ps.movement.AirplaneMovement(
+example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=example_airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[0]
                 ),
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         0
                     ].wing_cross_sections[1],
@@ -87,15 +87,15 @@ example_airplane_movement = ps.movement.AirplaneMovement(
                 ),
             ],
         ),
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=example_airplane.wings[1],
             wing_cross_section_movements=[
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         1
                     ].wing_cross_sections[0]
                 ),
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         1
                     ].wing_cross_sections[1]
@@ -110,8 +110,10 @@ example_operating_point = ps.operating_point.OperatingPoint()
 
 # Create an operating point movement object. Read through the unsteady solver
 # examples for more details on this type of object.
-example_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=example_operating_point
+example_operating_point_movement = (
+    ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=example_operating_point
+    )
 )
 
 # Construct this example's movement and problem object. Only calculate final results

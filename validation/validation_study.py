@@ -220,8 +220,10 @@ del validation_airplane_wing_cross_sections
 validation_wing_cross_section_movements = []
 
 # Define the first wing cross section movement, which is stationary.
-first_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[0],
+first_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[0],
+    )
 )
 
 # Append the first wing cross section movement object to the list.
@@ -317,12 +319,14 @@ for j in range(1, num_spanwise_sections + 1):
     # Define the wing cross section movement for this wing cross section. The
     # amplitude and period are both set to one because the true amplitude and period
     # are already accounted for in the custom sweep function.
-    this_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j],
-        sweeping_amplitude=1,
-        sweeping_period=1,
-        sweeping_spacing="custom",
-        custom_sweep_function=validation_geometry_sweep_function,
+    this_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j],
+            sweeping_amplitude=1,
+            sweeping_period=1,
+            sweeping_spacing="custom",
+            custom_sweep_function=validation_geometry_sweep_function,
+        )
     )
 
     # Append this wing cross section movement to the list of wing cross section
@@ -330,7 +334,7 @@ for j in range(1, num_spanwise_sections + 1):
     validation_wing_cross_section_movements.append(this_wing_cross_section_movement)
 
 # Define the wing movement object that contains the wing cross section movements.
-validation_main_wing_movement = ps.movement.WingMovement(
+validation_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_section_movements=validation_wing_cross_section_movements,
 )
@@ -339,7 +343,7 @@ validation_main_wing_movement = ps.movement.WingMovement(
 del validation_wing_cross_section_movements
 
 # Define the airplane movement that contains the wing movement.
-validation_airplane_movement = ps.movement.AirplaneMovement(
+validation_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=validation_airplane,
     wing_movements=[
         validation_main_wing_movement,
@@ -356,8 +360,10 @@ validation_operating_point = ps.operating_point.OperatingPoint(
 )
 
 # Define an operating point movement that contains the operating point.
-validation_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=validation_operating_point
+validation_operating_point_movement = (
+    ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=validation_operating_point
+    )
 )
 
 # Get the geometry-to-wind transformation matrix, which will later be used to convert

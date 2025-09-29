@@ -35,16 +35,16 @@ airplane = ps.geometry.airplane.Airplane(
         ),
     ],
 )
-airplane_movement = ps.movement.AirplaneMovement(
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=airplane,
     wing_movements=[
-        ps.movement.WingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=airplane.wings[0],
             wing_cross_section_movements=[
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
                 ),
-                ps.movement.WingCrossSectionMovement(
+                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
                     sweeping_amplitude=15.0,
                     sweeping_period=1.0,
@@ -56,7 +56,7 @@ airplane_movement = ps.movement.AirplaneMovement(
 
 # Create an operating point and an operating point movement object.
 operating_point = ps.operating_point.OperatingPoint()
-operating_point_movement = ps.movement.OperatingPointMovement(
+operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=operating_point
 )
 

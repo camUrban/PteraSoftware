@@ -8,60 +8,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ptera Software is a fast, easy-to-use, and open-source package for analyzing flapping-wing flight using unsteady and steady vortex lattice methods. It supports steady and unsteady aerodynamic simulations with formation flight capabilities.
 
-## Development Commands
-
-### Testing
-```bash
-# Run all tests with coverage
-coverage run --source=pterasoftware -m unittest discover -s tests
-
-# Run unit tests only
-python -m unittest discover -s tests/unit
-
-# Run integration tests only  
-python -m unittest discover -s tests/integration
-
-# Run a specific test file
-python -m unittest tests.unit.test_vortex
-```
-
-### Code Quality
-```bash
-# Format code (handled by pre-commit hooks)
-black .
-
-# Build package for distribution
-python -m build
-
-# Install development dependencies
-pip install -r requirements_dev.txt
-
-# Install package in development mode
-pip install -e .
-```
-
-### GUI Development
-```bash
-# Run GUI application
-python main.py
-
-# Build GUI executable
-python -O -m PyInstaller --noconfirm "pterasoftware.spec"
-```
-
 ## Architecture Overview
 
 ### Core Package Structure
 - **pterasoftware/**: Main package with modular solver architecture
-  - **Geometry**: `geometry/` package (Airplane → Wing → WingCrossSection → Airfoil hierarchy)
+  - **Geometry**: `geometry/` package (complete object hierarchy)
     - `geometry/airplane.py`: Airplane class with coordinate transformations
     - `geometry/wing.py`: Wing class with symmetry processing
     - `geometry/wing_cross_section.py`: WingCrossSection class with validation
     - `geometry/airfoil.py`: Airfoil class with coordinate generation
-  - **Transformations**: `transformations.py` (coordinate system transformations and rotations)
-  - **Solvers**: Three VLM implementations (steady horseshoe, steady ring, unsteady ring)
-  - **Problems**: `problems.py` (SteadyProblem, UnsteadyProblem classes)
-  - **Support**: meshing, movement, output, trim, convergence modules
+    - `geometry/panel.py`: Panel class for discretized mesh elements
+  - **Movement System**: `movements/` package (flapping dynamics and motion)
+    - `movements/movement.py`: Core Movement class
+    - `movements/airplane_movement.py`: Airplane motion definitions
+    - `movements/wing_movement.py`: Wing flapping motion
+    - `movements/wing_cross_section_movement.py`: Cross section motion
+    - `movements/operating_point_movement.py`: Operating condition changes
+    - `movements/functions.py`: Movement utility functions
+  - **Coordinate System**: `transformations.py` (coordinate transformations and rotations)
+  - **VLM Solvers**: Three solver implementations
+    - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
+    - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
+    - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
+  - **Problem Definitions**: `problems.py` (SteadyProblem, UnsteadyProblem classes)
+  - **Operating Conditions**: `operating_point.py` (OperatingPoint class)
+  - **Core Support Modules**:
+    - `meshing.py`: Wing mesh generation
+    - `aerodynamics.py`: Vortex elements and velocity calculations
+    - `output.py`: Visualization and results processing
+    - `trim.py`: Trim analysis functionality
+    - `convergence.py`: Convergence analysis tools
+    - `functions.py`: Shared utility functions
+    - `parameter_validation.py`: Input validation functions
+  - **Data and Resources**:
+    - `airfoils/`: Airfoil coordinate data collection
+    - `models/`: Example models for GUI
+    - `ui_resources/`: GUI assets and interface components
 
 ### Key Features
 - **Multiple Simulation Methods**: Steady horseshoe VLM, steady ring VLM, unsteady ring UVLM
@@ -115,7 +97,7 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
   - ❌ "this wing"
   - ✅ "update the Wings"
   - ❌ "update the Wing objects" (unnecessary)
-- **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and"the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
+- **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 
 ### Docstring Style
 - Follow existing PteraSoftware docstring conventions  
@@ -140,19 +122,23 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
 
 #### Coordinate System Variable Naming Patterns
 
-Variables must follow one of these three patterns based on their requirements:
+Variables must follow one of these four patterns based on their requirements:
 
-1. **Axes without a point and without a frame**  
+1. **Axes without a point and without a frame**
    `[variable name]_[axes ID]`
-   - Example: `force_W` (force in wind axes)
+   - Example: `force_W` force (in wind axes)
 
-2. **Axes without a point and with a frame**  
+2. **Axes without a point and with a frame**
    `[variable name]_[axes ID]__[frame ID]` (note double underscore)
-   - Example: `velocity_W__B` (velocity in wind axes, observed from body frame)
+   - Example: `velocity_W__B` velocity (in wind axes, observed from body frame)
 
-3. **Axes with a point and without a frame**  
+3. **Axes with a point and without a frame**
    `[variable name]_[axes ID]_[point ID]`
-   - Example: `position_G_Cg` (position in geometry axes, relative to CG point)
+   - Example: `position_G_Cg` position (in geometry axes, relative to CG point)
+
+4. **Only a frame (for scalar values like speed)**
+   `[variable name]__[frame ID]`
+   - Example: `speed__E` speed (observed from Earth frame)
 
 #### Standardized IDs
 
@@ -191,17 +177,21 @@ Variables must follow one of these three patterns based on their requirements:
 
 When referencing coordinate variables in comments and docstrings, use the following patterns:
 
-1. **Axes without a point and without a frame**  
+1. **Axes without a point and without a frame**
    "[variable name] (in [axes name])"
    - Example: "force (in wind axes)"
 
-2. **Axes without a point and with a frame**  
+2. **Axes without a point and with a frame**
    "[variable name] (in [axes name], observed from the [frame name])"
    - Example: "velocity (in wind axes, observed from the body frame)"
 
-3. **Axes with a point and without a frame**  
+3. **Axes with a point and without a frame**
    "[variable name] (in [axes name], relative to the [point name])"
    - Example: "position (in geometry axes, relative to the CG point)"
+
+4. **Only a frame (for scalar values like speed)**
+   "[variable name] (observed from the [frame name])"
+   - Example: "speed (observed from the Earth frame)"
 
 **Context-Dependent References:**
 - **Local context**: "...in wing axes..." (when already within Wing class)
@@ -221,7 +211,7 @@ When referencing coordinate variables in comments and docstrings, use the follow
 - This applies to both passive and active angle vectors
 - Angles are always in degrees unless explicitly noted otherwise
 - Example: `angles_E_to_B_izyx = np.array([15.0, -5.2, 30.0])`
-- Example: `rotation_angles_act_izyx = np.array([0.0, 45.0, 0.0])`
+- Example: `rotationAngles_act_izyx = np.array([0.0, 45.0, 0.0])`
 
 **Homogeneous Coordinates:**
 - For 4x4 transformation matrices, vectors are converted to homogeneous form
@@ -247,19 +237,23 @@ Ptera Software simulates flapping-wing dynamics and aerodynamics using several d
 
 ### Variable Naming Patterns
 
-There are three useful combinations of axes, points, and frames. Variables are denoted by appending information using **IDs**, and described in text using **names**:
+There are four useful combinations of axes, points, and frames. Variables are denoted by appending information using **IDs**, and described in text using **names**:
 
-1. **Axes without a point and without a frame**  
-   `[variable name]_[axes ID]`  
+1. **Axes without a point and without a frame**
+   `[variable name]_[axes ID]`
    "[variable name] (in [axes name])"
 
-2. **Axes without a point and with a frame**  
-   `[variable name]_[axes ID]__[frame ID]`  
-   "[variable name] (in [axes name], observed from the [frame name])"  
+2. **Axes without a point and with a frame**
+   `[variable name]_[axes ID]__[frame ID]`
+   "[variable name] (in [axes name], observed from the [frame name])"
 
-3. **Axes with a point and without a frame**  
-   `[variable name]_[axes ID]_[point ID]`  
+3. **Axes with a point and without a frame**
+   `[variable name]_[axes ID]_[point ID]`
    "[variable name] (in [axes name], relative to the [point name])"
+
+4. **Only a frame (for scalar values like speed)**
+   `[variable name]__[frame ID]`
+   "[variable name] (observed from the [frame name])"
 
 **Naming Convention:** IDs move in scope from most to least specific. Names move from least to most specific.
 
@@ -351,9 +345,9 @@ There are three useful combinations of axes, points, and frames. Variables are d
 - Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic z-y'-x" sequence"
 
 **Active Angle Vectors (rotating within axis system):**
-- Variable pattern: `[name]_[sequence ID]`
+- Variable pattern: `[name]_act_[sequence ID]`
 - Text pattern: "[name] for rotation using an [sequence name] sequence"
-- Example: `angles_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
+- Example: `angles_act_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
 
 **Rotation and Transformation Matrices:**
 - **Passive rotation matrices:** `R_pas_[source]_to_[target]` (3x3)

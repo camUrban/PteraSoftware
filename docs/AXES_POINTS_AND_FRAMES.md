@@ -1,8 +1,8 @@
 # Axes, Points, and Frames
 
-In simulating flapping-wing dynamics and aerodynamics, Ptera Software uses several vector-valued quantities. To avoid ambiguity, these vectors often require additional details about their interpretation, such as axis systems, reference points, and reference frames.
+In simulating flapping-wing dynamics and aerodynamics, Ptera Software uses several vector-valued quantities. To avoid ambiguity, these vectors often require additional details about their interpretation, such as axis systems, reference points, and reference frames. While generally simpler to denote, some scalar quantities can also require additional details to avoid ambiguity.
 
-This document lays out Ptera Software's notation for defining vectors using these constructs. The notation and terminology I use is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
+This document lays out Ptera Software's notation for defining vectors and scalars using these constructs. The notation and terminology I use is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
 
 ## Axis Systems vs. Reference Points vs. Reference Frames
 
@@ -12,7 +12,6 @@ Reference points, also called "points," contain information about the location o
 
 Lastly, a reference frame, also called a "frame," contains information about the location of an "observer," and their motion relative to what is observed.
 
-Consider the arbitrary vector **r**, which exists in 3D space. For now, let's say that **r** is a force vector. In order to express **r** using components (x, y, z), we must, at a minimum, pick an axis system. If instead **r** is a position vector, we need both axes and a reference point to serve as an origin, so we must pick both before writing down **r**'s three components. The same is true if **r** is a moment, but now the reference point no longer serves as an origin, but instead the point about which the moment acts. Lastly, if **r** is some time derivative of position, such as a velocity or acceleration vector, then we no longer need a reference point, but we do require both an axis system and a reference frame. Finally, some scalar quantities, such as speed, also depend on an observer's reference frame.
 Consider the arbitrary vector **r**, which exists in 3D space. For now, let's say that **r** is a force vector. In order to express **r** using components (x, y, z), we must, at a minimum, pick an axis system. If instead **r** is a position vector, we need both axes and a reference point to serve as an origin, so we must pick both before writing down **r**'s three components. The same is true if **r** is a moment, but now the reference point no longer serves as an origin, but instead the point about which the moment acts. Lastly, if **r** is some time derivative of position, such as a velocity or acceleration vector, then we no longer need a reference point, but we do require both an axis system and a reference frame. Finally, some scalar quantities, such as speed, also depend on an observer's reference frame.
 
 Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. An example of this next structure for an unsteady vortex lattice method simulation is shown below.
@@ -27,7 +26,7 @@ Given the varied requirements for vector-valued quantities, it is important that
 
 ## Patterns
 
-There are three useful combinations of axes, points, and frames. For variables that fall into each of these three cases, we denote them by appending information to their variable names using **IDs**. When referencing the variables in comments and docstrings, we add this additional information parenthetically using **names**:
+There are four useful combinations of axes, points, and frames. For variables that fall into each of these three cases, we denote them by appending information to their variable names using **IDs**. When referencing the variables in comments and docstrings, we add this additional information parenthetically using **names**:
 
 1. Axes without a point and without a frame  
    \[variable name\]\_\[axes ID\]  
@@ -38,6 +37,9 @@ There are three useful combinations of axes, points, and frames. For variables t
 3. Axes with a point and without a frame  
    \[variable name\]\_\[axes ID\]\_\[point ID\]  
    "\[variable name\] (in \[axes name\], relative to the \[point name\])"
+4. Only a frame (for scalar values like speed)
+   \[variable name\]\_\_\[frame ID\]   
+   "\[variable name\] (observed from the \[frame name\])"
 
 The correct name and ID for a particular axis system, point, or frame depends on the level of context. However, in all cases IDs consist of a series of abbreviations, moving in scope from most specific to least specific. By contrast, names move from least specific to most specific. Also, in contrast with IDs, the exact syntax for names is slightly flexible to allow for the description to sound correct in plain English.
 

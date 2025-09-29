@@ -29,8 +29,10 @@ root_to_mid_chord = root_chord
 mid_to_tip_chord = (root_chord + tip_chord) / 2
 
 this_operating_point = ps.operating_point.OperatingPoint(vCg__E=speed, alpha=0.0)
-this_operating_point_movement = ps.movement.OperatingPointMovement(
-    base_operating_point=this_operating_point
+this_operating_point_movement = (
+    ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=this_operating_point
+    )
 )
 del this_operating_point
 
@@ -106,18 +108,18 @@ for airplane_id in range(num_airplanes):
         ],
     )
 
-    this_airplane_movement = ps.movement.AirplaneMovement(
+    this_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
         base_airplane=this_airplane,
         wing_movements=[
-            ps.movement.WingMovement(
+            ps.movements.wing_movement.WingMovement(
                 base_wing=this_airplane.wings[0],
                 wing_cross_section_movements=[
-                    ps.movement.WingCrossSectionMovement(
+                    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                         base_wing_cross_section=this_airplane.wings[
                             0
                         ].wing_cross_sections[0],
                     ),
-                    ps.movement.WingCrossSectionMovement(
+                    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                         base_wing_cross_section=this_airplane.wings[
                             0
                         ].wing_cross_sections[1],
@@ -125,7 +127,7 @@ for airplane_id in range(num_airplanes):
                         sweeping_period=period,
                         sweeping_spacing="sine",
                     ),
-                    ps.movement.WingCrossSectionMovement(
+                    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                         base_wing_cross_section=this_airplane.wings[
                             0
                         ].wing_cross_sections[2],

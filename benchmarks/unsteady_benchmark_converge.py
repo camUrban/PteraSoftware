@@ -36,24 +36,28 @@ example_airplane = ps.geometry.airplane.Airplane(
     ],
 )
 
-upper_wing_root_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
+upper_wing_root_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
+    )
 )
 
-upper_wing_tip_wing_cross_section_movement = ps.movement.WingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
-    sweeping_amplitude=15.0,
-    sweeping_period=1 / flapping_frequency,
-    sweeping_spacing="sine",
-    pitching_amplitude=5.0,
-    pitching_period=1 / flapping_frequency,
-    pitching_spacing="sine",
-    heaving_amplitude=5.0,
-    heaving_period=1 / flapping_frequency,
-    heaving_spacing="sine",
+upper_wing_tip_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+        sweeping_amplitude=15.0,
+        sweeping_period=1 / flapping_frequency,
+        sweeping_spacing="sine",
+        pitching_amplitude=5.0,
+        pitching_period=1 / flapping_frequency,
+        pitching_spacing="sine",
+        heaving_amplitude=5.0,
+        heaving_period=1 / flapping_frequency,
+        heaving_spacing="sine",
+    )
 )
 
-upper_wing_movement = ps.movement.WingMovement(
+upper_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
         upper_wing_root_wing_cross_section_movement,
@@ -64,7 +68,7 @@ upper_wing_movement = ps.movement.WingMovement(
 del upper_wing_root_wing_cross_section_movement
 del upper_wing_tip_wing_cross_section_movement
 
-airplane_movement = ps.movement.AirplaneMovement(
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[upper_wing_movement],
 )
@@ -76,7 +80,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     density=1.225, vCg__E=10.0, alpha=0.0, beta=0.0
 )
 
-operating_point_movement = ps.movement.OperatingPointMovement(
+operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point
 )
 

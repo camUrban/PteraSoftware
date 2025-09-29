@@ -70,11 +70,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Initialize attributes to hold aerodynamic data that pertains to this
         # SteadyProblem.
-        self._gridWingWingInfluences_G__E = np.zeros(
+        self._gridWingWingInfluences__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
         self.vInf_G__E = self.operating_point.vInf_G__E
-        self.stackFreestreamWingInfluences_G__E = np.zeros(self.num_panels, dtype=float)
+        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
 
         # TODO: The steady ring vortex lattice initializes the strengths to ones,
         #  which makes more sense because then they can be passed in to find the
@@ -250,7 +250,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
     def _calculate_wing_wing_influences(self):
         """This method finds this SteadyProblem's 2D ndarray of Wing-Wing influence
-        coefficients (in geometry axes, observed from the Earth frame).
+        coefficients (observed from the Earth frame).
 
         :return: None
         """
@@ -264,14 +264,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
             stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
             strengths=np.ones(self.num_panels),
+            ages=None,
+            nu=self.operating_point.nu,
         )
 
         # Take the batch dot product of the normalized induced velocities (in
-        # geometry axes, observed from the Earth frame) with each Panel's unit normal
-        # direction (in geometry axes). This is now the Problem's 2D ndarray of
-        # Wing-Wing influence coefficients (in geometry axes, observed from the Earth
+        # geometry axes, observed from the Earth frame) with each Panel's unit
+        # normal direction (in geometry axes). This is now the Problem's 2D
+        # ndarray of Wing-Wing influence coefficients (observed from the Earth
         # frame).
-        self._gridWingWingInfluences_G__E = np.einsum(
+        self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_G__E,
             np.expand_dims(self.stackUnitNormals_G, axis=1),
@@ -283,7 +285,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
         self._vortex_strengths = np.linalg.solve(
-            self._gridWingWingInfluences_G__E, -self.stackFreestreamWingInfluences_G__E
+            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
         )
 
         # Update the HorseshoeVortices' strengths.
@@ -330,6 +332,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
             stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
             strengths=self._vortex_strengths,
+            ages=None,
+            nu=self.operating_point.nu,
         )
 
         return stackVInd_G__E + self.vInf_G__E

@@ -575,7 +575,7 @@ def calculate_steady_freestream_wing_influences(
     # Take the batch dot product of the freestream velocity with each panel's
     # normal direction. This is now the problem's 1D array of freestream-wing
     # influence coefficients.
-    steady_solver.stackFreestreamWingInfluences_G__E = np.einsum(
+    steady_solver.stackFreestreamWingInfluences__E = np.einsum(
         "ij,j->i",
         steady_solver.stackUnitNormals_G,
         steady_solver.vInf_G__E,

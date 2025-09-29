@@ -29,14 +29,14 @@ from . import problems
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
-    TODO: Update the method descriptions.
     This class contains the following public methods:
 
         run: This method runs the solver on the UnsteadyProblem.
 
-        calculate_solution_velocity: This function takes in a group of points. At
-        every point, it finds the induced velocity due to every vortex and the
-        freestream velocity.
+        calculate_solution_velocity: This function takes in a group of points (in
+        geometry axes, relative to the CG). At every point, it finds the fluid
+        velocity (in geometry axes, observed from the Earth frame) at that point due
+        to the freestream velocity and the induced velocity from every RingVortex.
 
     This class contains the following class attributes:
         None
@@ -75,9 +75,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold aerodynamic data that pertain to the
         # simulation.
         self._currentVInf_G__E = None
-        self._currentStackFreestreamWingInfluences_G__E = None
-        self._currentGridWingWingInfluences_G__E = None
-        self._currentStackWakeWingInfluences_G__E = None
+        self._currentStackFreestreamWingInfluences__E = None
+        self._currentGridWingWingInfluences__E = None
+        self._currentStackWakeWingInfluences__E = None
         self._current_bound_vortex_strengths = None
         self._last_bound_vortex_strengths = None
 
@@ -342,13 +342,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Initialize attributes to hold aerodynamic data that pertain
                 # to the simulation at this time step.
                 self._currentVInf_G__E = self.current_operating_point.vInf_G__E
-                self._currentStackFreestreamWingInfluences_G__E = np.zeros(
+                self._currentStackFreestreamWingInfluences__E = np.zeros(
                     self._num_panels, dtype=float
                 )
-                self._currentGridWingWingInfluences_G__E = np.zeros(
+                self._currentGridWingWingInfluences__E = np.zeros(
                     (self._num_panels, self._num_panels), dtype=float
                 )
-                self._currentStackWakeWingInfluences_G__E = np.zeros(
+                self._currentStackWakeWingInfluences__E = np.zeros(
                     self._num_panels, dtype=float
                 )
                 self._current_bound_vortex_strengths = np.ones(
@@ -668,16 +668,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         global_panel_position += 1
 
     def _calculate_wing_wing_influences(self):
-        """This method finds the 2d ndarray of Wing-Wing influence coefficients (in
-        geometry axes, observed from the Earth frame).
+        """This method finds the 2d ndarray of Wing-Wing influence coefficients (
+        observed from the Earth frame).
 
         :return: None
         """
 
         # Find the 2D ndarray of normalized velocities (in geometry axes, observed
-        # from the Earth frame) induced at each Panel's collocation point by each
-        # RingVortex. The answer is normalized because the solver's list of
-        # RingVortex strengths was initialized to all ones. This will be updated once
+        # from the Earth frame) induced at each Panel's collocation point by each bound
+        # RingVortex. The answer is normalized because the solver's list of bound
+        # RingVortex strengths was initialized to all be 1.0. This will be updated once
         # the correct strengths are calculated.
         gridNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_ring_vortices(
             stackP_G_Cg=self.stackCpp_G_Cg,
@@ -693,143 +693,148 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized induced velocities (in
         # geometry axes, observed from the Earth frame) with each Panel's unit
         # normal direction (in geometry axes). This is now the 2D ndarray of
-        # Wing-Wing influence coefficients (in geometry axes, observed from the
-        # Earth frame).
-        self._currentGridWingWingInfluences_G__E = np.einsum(
+        # Wing-Wing influence coefficients (observed from the Earth frame).
+        self._currentGridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_G__E,
             np.expand_dims(self.stackUnitNormals_G, axis=1),
         )
 
-    # NOTE: I've started refactoring this method.
     def _calculate_freestream_wing_influences(self):
         """This method finds the 1D ndarray of freestream-Wing influence coefficients
-        (in geometry axes, observed from the Earth frame).
+        (observed from the Earth frame).
 
-        Note: This method also includes the influence due to flapping (in geometry
-        axes, observed from the Earth frame) at every collocation point.
+        Note: This method also includes the influence coefficients due to motion
+        defined in Movement (observed from the Earth frame) at every collocation point.
 
         :return: None
         """
-        # NOTE: I've refactored up to here.
-        # Find the normal components of the freestream velocity on every panel by
-        # taking a batch dot product.
-        freestream_influences = np.einsum(
+        # Find the normal components of the freestream-only-Wing influence
+        # coefficients (observed from the Earth frame) at each Panel's
+        # collocation point by taking a batch dot product.
+        currentStackFreestreamOnlyWingInfluences__E = np.einsum(
             "ij,j->i",
             self.stackUnitNormals_G,
             self._currentVInf_G__E,
         )
 
-        # Get the current flapping velocities at every collocation point.
-        current_flapping_velocities_at_collocation_points = (
+        # Get the current apparent velocities at each Panel's collocation point
+        # due to any motion defined in Movement (in geometry axes, observed from
+        # the Earth frame).
+        currentStackMovementV_G__E = (
             self._calculate_current_flapping_velocities_at_collocation_points()
         )
 
-        # Find the normal components of every panel's flapping velocities at their
-        # collocation points by taking a batch dot product.
-        flapping_influences = np.einsum(
+        # Get the current motion influence coefficients at each Panel's
+        # collocation point (observed from the Earth frame) by taking a batch dot
+        # product.
+        currentStackMovementInfluences__E = np.einsum(
             "ij,ij->i",
             self.stackUnitNormals_G,
-            current_flapping_velocities_at_collocation_points,
+            currentStackMovementV_G__E,
         )
 
-        # Calculate the total current freestream-wing influences by summing the
-        # freestream influences and the flapping influences.
-        self._currentStackFreestreamWingInfluences_G__E = (
-            freestream_influences + flapping_influences
+        # Calculate the total current freestream-Wing influence coefficients by
+        # summing the freestream-only influence coefficients and the motion
+        # influence coefficients (all observed from the Earth frame).
+        self._currentStackFreestreamWingInfluences__E = (
+            currentStackFreestreamOnlyWingInfluences__E
+            + currentStackMovementInfluences__E
         )
 
-    # NOTE: I haven't yet started refactoring this method.
     def _calculate_wake_wing_influences(self):
-        """This method finds the vector of the wake-wing influences associated with
-        the problem at this time step.
+        """This method finds the 1D ndarray of the wake-Wing influence coefficients (
+        observed from the Earth frame) associated with the UnsteadyProblem at the
+        current time step.
 
-        Note: If the current time step is the first time step, no wake has yet been
-        shed, and this method will set the current wake-wing influence vector to all
-        zeros.
+        Note: If the current time step is the first time step, no wake has been shed,
+        so this method will return zero for all the wake-Wing influence coefficients
+        (observed from the Earth frame).
 
         :return: None
         """
-        # Check if this time step is not the first time step.
         if self._current_step > 0:
-
-            # Get the wake induced velocities. This is a (M x 3) array with the x, y,
-            # and z components of the velocity induced by the entire wake at each of
-            # the M panels.
-            velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
-                stackP_G_Cg=self.stackCpp_G_Cg,
-                stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
-                stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
-                stackFlrvp_G_Cg=self._currentStackFlwrvp_G_Cg,
-                stackBlrvp_G_Cg=self._currentStackBlwrvp_G_Cg,
-                strengths=self._current_wake_vortex_strengths,
-                ages=self._current_wake_vortex_ages,
-                nu=self.current_operating_point.nu,
+            # Get the velocities (in geometry axes, observed from the Earth frame)
+            # induced by the wake RingVortices at each Panel's collocation point.
+            currentStackWakeV_G__E = (
+                aerodynamics.collapsed_velocities_from_ring_vortices(
+                    stackP_G_Cg=self.stackCpp_G_Cg,
+                    stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
+                    stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
+                    stackFlrvp_G_Cg=self._currentStackFlwrvp_G_Cg,
+                    stackBlrvp_G_Cg=self._currentStackBlwrvp_G_Cg,
+                    strengths=self._current_wake_vortex_strengths,
+                    ages=self._current_wake_vortex_ages,
+                    nu=self.current_operating_point.nu,
+                )
             )
 
-            # Set the current wake-wing influences to the normal component of the
-            # wake induced velocities at each panel.
-            self._currentStackWakeWingInfluences_G__E = np.einsum(
-                "ij,ij->i", velocities_from_wake, self.stackUnitNormals_G
+            # Get the current wake-Wing influence coefficients (observed from
+            # the Earth frame) by taking a batch dot product with each Panel's
+            # normal vector (in geometry axes).
+            self._currentStackWakeWingInfluences__E = np.einsum(
+                "ij,ij->i", currentStackWakeV_G__E, self.stackUnitNormals_G
             )
 
         else:
+            # If this is the first time step, set all the current Wake-wing
+            # influence coefficients to 0.0 (observed from the Earth frame)
+            # because no wake RingVortices have been shed.
+            self._currentStackWakeWingInfluences__E = np.zeros(
+                self._num_panels, dtype=float
+            )
 
-            # If this is the first time step, set the current wake-wing influences to
-            # zero everywhere, as there is no wake yet.
-            self._currentStackWakeWingInfluences_G__E = np.zeros(self._num_panels)
-
-    # NOTE: I haven't yet started refactoring this method.
     def _calculate_vortex_strengths(self):
-        """This method solves for each panel's vortex strength.
+        """Solve for the strength of each Panel's bound RingVortex.
 
         :return: None
         """
-        # Solve for the strength of each panel's vortex.
         self._current_bound_vortex_strengths = np.linalg.solve(
-            self._currentGridWingWingInfluences_G__E,
-            -self._currentStackWakeWingInfluences_G__E
-            - self._currentStackFreestreamWingInfluences_G__E,
+            self._currentGridWingWingInfluences__E,
+            -self._currentStackWakeWingInfluences__E
+            - self._currentStackFreestreamWingInfluences__E,
         )
 
-        # Iterate through the panels and update their vortex strengths.
+        # Update the bound RingVortices' strengths.
         for panel_num in range(self.panels.size):
-            # Get the panel at this location.
             panel = self.panels[panel_num]
 
-            # Update this panel's ring vortex strength.
             panel.ring_vortex.update_strength(
                 self._current_bound_vortex_strengths[panel_num]
             )
 
-    # NOTE: I haven't yet started refactoring this method.
     def calculate_solution_velocity(self, stackP_G_Cg):
-        """This function takes in a group of points. At every point, it finds the
-        induced velocity due to every vortex and the freestream velocity.
+        """This function takes in a group of points (in geometry axes, relative to
+        the CG). At every point, it finds the fluid velocity (in geometry axes,
+        observed from the Earth frame) at that point due to the freestream velocity
+        and the induced velocity from every RingVortex.
 
-        Note: The velocity calculated by this method is in geometry axes. Also,
-        this method assumes that the correct vortex strengths have already been
-        calculated. This method also does not include the velocity due to flapping at
-        any of the points provided, as it has no way of knowing if any of the points
-        lie on panels.
+        Note: This method assumes that the correct strengths for the RingVortices and
+        HorseshoeVortices have already been calculated and set. This method also does
+        not include the velocity due to the Movement's motion at any of the points
+        provided, as it has no way of knowing if any of the points lie on panels.
 
-        This method uses vectorization, and therefore is much faster for batch
-        operations than using the vortex objects' class methods for calculating
-        induced velocity.
+        :param stackP_G_Cg: (N,3) array-like of numbers
 
-        :param stackP_G_Cg: 2D array of floats
-            This variable is an array of shape (N x 3), where N is the number of
-            points. Each row contains the x, y, and z float coordinates of that
-            point's position in meters.
-        :return: 2D array of floats
-            The output is the summed effects from every vortex, and from the
-            freestream on a given point. The result will be of shape (N x 3),
-            where each row identifies the velocity at a point. The results units are
-            meters per second.
+            Positions of the evaluation points (in geometry axes, relative to the
+            CG). Can be any array-like object (tuple, list, or ndarray) with size (N,
+            3) that has numeric elements (int or float). Values are converted to
+            floats internally. The units are in meters.
+
+        :return: (N,3) ndarray of floats
+
+            The velocity (in geometry axes, observed from the Earth frame) at every
+            evaluation point due to the summed effects of the freestream velocity and
+            the induced velocity from every RingVortex. The units are in meters per
+            second.
         """
-        # Find the vector of velocities induced at every point by every panel's ring
-        # vortex. The effect of every ring vortex on each point will be summed.
-        velocities_from_wings = aerodynamics.collapsed_velocities_from_ring_vortices(
+        stackP_G_Cg = (
+            parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+                stackP_G_Cg, "stackP_G_Cg"
+            )
+        )
+
+        stackBoundRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
@@ -839,10 +844,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ages=None,
             nu=self.current_operating_point.nu,
         )
-
-        # Find the vector of velocities induced at every point by every wake ring
-        # vortex. The effect of every wake ring vortex on each point will be summed.
-        velocities_from_wake = aerodynamics.collapsed_velocities_from_ring_vortices(
+        stackWakeRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
             stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
@@ -853,13 +855,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             nu=self.current_operating_point.nu,
         )
 
-        # Find the total influence of the vortices, which is the sum of the influence
-        # due to the bound ring vortices and the wake ring vortices.
-        total_vortex_velocities = velocities_from_wings + velocities_from_wake
-
-        # Calculate and return the sum of the velocities induced by the vortices and
-        # freestream at every point.
-        return total_vortex_velocities + self._currentVInf_G__E
+        return stackBoundRingVInd_G__E + stackWakeRingVInd_G__E + self._currentVInf_G__E
 
     # NOTE: I haven't yet started refactoring this method.
     def _calculate_forces_and_moments(self):

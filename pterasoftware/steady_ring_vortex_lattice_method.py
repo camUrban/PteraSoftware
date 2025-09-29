@@ -69,8 +69,8 @@ class SteadyRingVortexLatticeMethodSolver:
         # Initialize attributes to hold aerodynamic data that pertains to this
         # simulation.
         self.vInf_G__E = self.operating_point.vInf_G__E
-        self.stackFreestreamWingInfluences_G__E = np.zeros(self.num_panels, dtype=float)
-        self._gridWingWingInfluences_G__E = np.zeros(
+        self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+        self._gridWingWingInfluences__E = np.zeros(
             (self.num_panels, self.num_panels), dtype=float
         )
         self._vortex_strengths = np.ones(self.num_panels, dtype=float)
@@ -156,8 +156,8 @@ class SteadyRingVortexLatticeMethodSolver:
         logging.info("Calculating the Wing-Wing influences.")
         self._calculate_wing_wing_influences()
 
-        # Find the normal velocity (in geometry axes, observed from the Earth frame)
-        # at every collocation point due solely to the freestream.
+        # Find the normal fluid speed (observed from the Earth frame) at every
+        # collocation point due solely to the freestream.
         logging.info("Calculating the freestream-Wing influences.")
         functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
@@ -310,15 +310,15 @@ class SteadyRingVortexLatticeMethodSolver:
 
     def _calculate_wing_wing_influences(self):
         """This method finds this SteadyProblem's 2D ndarray of Wing-Wing influence
-        coefficients (in geometry axes, observed from the Earth frame).
+        coefficients (observed from the Earth frame).
 
         :return: None
         """
-        # Find the 2D ndarray of normalized velocities (in geometry axes, observed
-        # from the Earth frame) induced at each Panel's collocation point by each
-        # RingVortex. The answer is normalized because the solver's list of
-        # RingVortex strengths was initialized to all ones. This will be updated once
-        # the correct strengths are calculated.
+        # Find the 2D ndarray of normalized velocities (in geometry axes,
+        # observed from the Earth frame) induced at each Panel's collocation
+        # point by each RingVortex. The answer is normalized because the
+        # solver's list of RingVortex strengths was initialized to all be 1.0.
+        # This will be updated once the correct strengths are calculated.
         gridRingNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_ring_vortices(
             stackP_G_Cg=self.stackCpp_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
@@ -326,15 +326,18 @@ class SteadyRingVortexLatticeMethodSolver:
             stackFlrvp_G_Cg=self.stackFlbrvp_G_Cg,
             stackBlrvp_G_Cg=self.stackBlbrvp_G_Cg,
             strengths=self._vortex_strengths,
+            ages=None,
+            nu=self.operating_point.nu,
         )
 
-        # Find the 2D ndarray of normalized velocities (in geometry axes, observed
-        # from the Earth frame) induced at every Panel's collocation point by every
-        # HorseshoeVortex. The answer is normalized because the solver's list of
-        # HorseshoeVortex strengths was initialized to ones for locations which have
-        # a HorseshoeVortex, and zeros everywhere else. The strengths at the
-        # positions with a HorseshoeVortex will be updated once the correct vortex
-        # strengths are calculated. The positions elsewhere will remain zero.
+        # Find the 2D ndarray of normalized velocities (in geometry axes,
+        # observed from the Earth frame) induced at every Panel's collocation
+        # point by every HorseshoeVortex. The answer is normalized because the
+        # solver's list of HorseshoeVortex strengths was initialized to 1.0 for
+        # locations which have a HorseshoeVortex, and zeros everywhere else. The
+        # strengths at the positions with a HorseshoeVortex will be updated once
+        # the correct vortex strengths are calculated. The positions elsewhere
+        # will remain zero.
         gridHorseshoeNormVIndCpp_G__E = (
             aerodynamics.expanded_velocities_from_horseshoe_vortices(
                 stackP_G_Cg=self.stackCpp_G_Cg,
@@ -343,6 +346,8 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
                 stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
                 strengths=self._horseshoe_vortex_strengths,
+                ages=None,
+                nu=self.operating_point.nu,
             )
         )
 
@@ -351,9 +356,8 @@ class SteadyRingVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized induced velocities (in
         # geometry axes, observed from the Earth frame) with each Panel's unit
         # normal direction (in geometry axes). This is now the 2D ndarray of
-        # Wing-Wing influence coefficients (in geometry axes, observed from the
-        # Earth frame).
-        self._gridWingWingInfluences_G__E = np.einsum(
+        # Wing-Wing influence coefficients (observed from the Earth frame).
+        self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_G__E,
             np.expand_dims(self.stackUnitNormals_G, axis=1),
@@ -365,7 +369,7 @@ class SteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         self._vortex_strengths = np.linalg.solve(
-            self._gridWingWingInfluences_G__E, -self.stackFreestreamWingInfluences_G__E
+            self._gridWingWingInfluences__E, -self.stackFreestreamWingInfluences__E
         )
 
         # Update the RingVortices' and HorseshoeVortices' strengths.
@@ -405,8 +409,8 @@ class SteadyRingVortexLatticeMethodSolver:
 
             The velocity (in geometry axes, observed from the Earth frame) at every
             evaluation point due to the summed effects of the freestream velocity and
-            the induced velocity from every HorseshoeVortex. The units are in meters
-            per second.
+            the induced velocity from every RingVortex and HorseshoeVortex. The
+            units are in meters per second.
         """
         stackP_G_Cg = (
             parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
@@ -421,6 +425,8 @@ class SteadyRingVortexLatticeMethodSolver:
             stackFlrvp_G_Cg=self.stackFlbrvp_G_Cg,
             stackBlrvp_G_Cg=self.stackBlbrvp_G_Cg,
             strengths=self._vortex_strengths,
+            ages=None,
+            nu=self.operating_point.nu,
         )
         stackHorseshoeVInd_G__E = (
             aerodynamics.collapsed_velocities_from_horseshoe_vortices(
@@ -430,6 +436,8 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
                 stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
                 strengths=self._horseshoe_vortex_strengths,
+                ages=None,
+                nu=self.operating_point.nu,
             )
         )
 

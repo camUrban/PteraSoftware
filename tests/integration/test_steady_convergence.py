@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains testing cases for the steady convergence function.
 
 This module contains the following classes:

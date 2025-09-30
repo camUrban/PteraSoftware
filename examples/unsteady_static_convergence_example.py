@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This script is an example of analyzing the unsteady convergence of a problem with
 static geometry. It should take a few minutes to run. It will display the convergence
 progress and results in the console."""

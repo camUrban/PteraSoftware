@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This script opens the GUI to demonstrate Ptera Software analyzing example models.
 It is in development and will be able to run custom models in the future"""
 

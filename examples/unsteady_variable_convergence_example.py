@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This script is an example of analyzing the unsteady convergence of a problem with
 variable geometry. It should take about 30 minutes to run. It will display the
 convergence progress and results in the console."""

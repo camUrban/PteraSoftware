@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module is a testing case for the output module.
 
 Note: Most of the tests in this case do not currently test the output against an

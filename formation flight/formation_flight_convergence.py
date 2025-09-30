@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 # TODO: Document this script.
 import time
 

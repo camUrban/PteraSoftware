@@ -15,7 +15,7 @@ This module contains the following functions:
 
     make_strength_fixture: This method makes a fixture that holds a value.
 
-    make_line_vortex_fixture: This method makes a fixture that is a line vortex object.
+    make_line_vortex_fixture: This method makes a fixture that is a LineVortex.
 
     make_infinite_leg_direction_fixture: This method makes a direction fixture.
 
@@ -79,17 +79,17 @@ def make_strength_fixture():
 
 
 def make_line_vortex_fixture():
-    """This method makes a fixture that is a line vortex object.
+    """This method makes a fixture that is a LineVortex.
 
     :return line_vortex_fixture: LineVortex
-        This is the line vortex object.
+        This is the LineVortex.
     """
     # Initialize the origin, termination, and strength.
     origin_fixture = make_origin_fixture()
     termination_fixture = make_termination_fixture()
     strength_fixture = make_strength_fixture()
 
-    # Create the line vortex object.
+    # Create the LineVortex.
     line_vortex_fixture = ps.aerodynamics._LineVortex(
         Slvp_G_Cg=origin_fixture,
         Elvp_G_Cg=termination_fixture,
@@ -128,10 +128,10 @@ def make_infinite_leg_length_fixture():
 
 
 def make_horseshoe_vortex_fixture():
-    """This method makes a fixture that is a horseshoe vortex object.
+    """This method makes a fixture that is a HorseshoeVortex.
 
     :return horseshoe_vortex_fixture: HorseshoeVortex
-        This is the horseshoe vortex object.
+        This is the HorseshoeVortex.
     """
     # Initialize the constructing fixtures.
     origin_fixture = make_origin_fixture()
@@ -140,7 +140,7 @@ def make_horseshoe_vortex_fixture():
     infinite_leg_direction_fixture = make_infinite_leg_direction_fixture()
     infinite_leg_length_fixture = make_infinite_leg_length_fixture()
 
-    # Create the horseshoe vortex object.
+    # Create the HorseshoeVortex.
     horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=origin_fixture,
         Flhvp_G_Cg=termination_fixture,
@@ -156,7 +156,7 @@ def make_horseshoe_vortex_fixture():
     del infinite_leg_direction_fixture
     del infinite_leg_length_fixture
 
-    # Return the horseshoe vortex fixture.
+    # Return the HorseshoeVortex.
     return horseshoe_vortex_fixture
 
 
@@ -205,10 +205,10 @@ def make_back_right_vertex_fixture():
 
 
 def make_ring_vortex_fixture():
-    """This method makes a fixture that is a ring vortex object.
+    """This method makes a fixture that is a RingVortex.
 
     :return ring_vortex_fixture: RingVortex
-        This is the ring vortex object.
+        This is the RingVortex.
     """
     # Initialize the constructing fixtures.
     front_left_vertex_fixture = make_front_left_vertex_fixture()
@@ -217,7 +217,7 @@ def make_ring_vortex_fixture():
     back_right_vertex_fixture = make_back_right_vertex_fixture()
     strength_fixture = make_strength_fixture()
 
-    # Create the ring vortex object.
+    # Create the RingVortex.
     ring_vortex_fixture = ps.aerodynamics.RingVortex(
         Flrvp_G_Cg=front_left_vertex_fixture,
         Frrvp_G_Cg=front_right_vertex_fixture,
@@ -233,5 +233,5 @@ def make_ring_vortex_fixture():
     del back_right_vertex_fixture
     del strength_fixture
 
-    # Return the ring vortex fixture.
+    # Return the RingVortex.
     return ring_vortex_fixture

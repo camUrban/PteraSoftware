@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This is script is an example of how to run Ptera Software's steady ring vortex
 lattice method solver on a custom airplane."""
 

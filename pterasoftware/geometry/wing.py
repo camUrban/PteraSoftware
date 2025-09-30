@@ -945,8 +945,7 @@ class Wing:
 
         return wetted_area
 
-    # TODO: (1) Consider if there's a better way of implementing this method using
-    #  one of the children_T_pas_* properties. (2) Validate this method.
+    # TODO: Validate this method.
     @property
     def span(self):
         """This method sets a property for the Wing's span.
@@ -963,6 +962,8 @@ class Wing:
             This is the Wing's span. It has units of meters. None is returned in
             cases where the Wing's symmetry type hasn't been defined yet
         """
+        # TODO: Consider if there's a better way of implementing this method using
+        #  one of the children_T_pas_* properties.
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
         if self.symmetry_type is None:
@@ -1032,8 +1033,7 @@ class Wing:
 
         return self.projected_area / self.span
 
-    # TODO: (1) Consider if there's a better way of implementing this method using
-    #  one of the children_T_pas_* properties. (2) Validate this method.
+    # TODO: Validate this method.
     @property
     def mean_aerodynamic_chord(self):
         """This method sets a property for the mean aerodynamic chord of the Wing.
@@ -1043,6 +1043,8 @@ class Wing:
             None is returned in cases where the Wing's symmetry type hasn't been
             defined yet.
         """
+        # TODO: Consider if there's a better way of implementing this method using
+        #  one of the children_T_pas_* properties.
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
         if self.symmetry_type is None:

@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This example script demonstrates how to automatically find the trim condition for
 an unsteady simulation. It is not as well documented as some solver example scripts,
 as it assumes you have read and understood those first."""

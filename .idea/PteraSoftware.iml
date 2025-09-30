@@ -15,7 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv312" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 (PteraSoftware)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="PteraSoftware Python 3.13" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

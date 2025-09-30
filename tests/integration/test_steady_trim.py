@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains a testing case for the steady trim function.
 
 This module contains the following classes:

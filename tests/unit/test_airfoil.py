@@ -179,7 +179,7 @@ class TestAirfoil(unittest.TestCase):
             hinge_point=hinge_point,
         )
 
-        # Check that we get a new Airfoil object
+        # Check that we get a new Airfoil
         self.assertIsInstance(modified_airfoil, ps.geometry.airfoil.Airfoil)
         self.assertIsNot(modified_airfoil, self.naca0012_airfoil)
 

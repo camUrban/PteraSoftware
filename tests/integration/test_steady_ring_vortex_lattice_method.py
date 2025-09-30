@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module is a testing case for the steady ring vortex lattice method solver.
 
 Based on an identical XFLR5 VLM2 testing case, the expected output for this case is:

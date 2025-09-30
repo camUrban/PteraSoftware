@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module creates airplane objects to be used as fixtures.
 
 This module contains the following classes:

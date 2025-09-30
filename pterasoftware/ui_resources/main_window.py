@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 # -*- coding: utf-8 -*-
 
 ################################################################################

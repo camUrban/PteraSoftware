@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This is a testing case for the unsteady ring vortex lattice method solver with
 static geometry.
 

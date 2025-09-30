@@ -1,3 +1,4 @@
+# NOTE: I haven't yet started refactoring this module.
 """This module contains a class to test line vortex objects.
 
 This module contains the following classes:

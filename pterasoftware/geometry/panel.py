@@ -16,7 +16,6 @@ import numpy as np
 from .. import parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class Panel:
     """This class is used to contain the panels of a wing.
 

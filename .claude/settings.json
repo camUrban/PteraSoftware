@@ -90,7 +90,7 @@
       "Bash(rm:*)",
       "Bash(rsync:*)",
       "Bash(scp:*)",
-      "Bash(sed:-i*)",
+      "Bash(sed:-i:*)",
       "Bash(sh:*)",
       "Bash(shutdown:*)",
       "Bash(sudo:*)",

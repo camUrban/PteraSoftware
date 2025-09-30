@@ -22,6 +22,25 @@ If that fails, try:
 Bash(.venv/bin/python:-m:unittest:discover:-s:${WORKSPACE}/tests:*)
 ```
 
+### Running Scripts That Import Ptera Software
+
+When running scripts outside the main pterasoftware directory that import the package (e.g., scripts in `experimental/`), you need to set `PYTHONPATH` to the project root:
+
+```bash
+cd ${WORKSPACE}/experimental && PYTHONPATH="$PWD/.." ../.venv/Scripts/python.exe script_name.py
+```
+
+On Unix-like systems:
+
+```bash
+cd ${WORKSPACE}/experimental && PYTHONPATH="$PWD/.." ../.venv/bin/python script_name.py
+```
+
+This pattern:
+1. Changes to the script's directory
+2. Sets `PYTHONPATH` to the parent directory (project root)
+3. Runs the script using the virtual environment's Python interpreter
+
 ## Architecture Overview
 
 ### Core Package Structure

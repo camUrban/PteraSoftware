@@ -694,6 +694,10 @@ class Airplane:
             wing.symmetry_normal_Wn = None
             wing.symmetry_point_Wn_Ler = None
 
+            # Reset control_surface_symmetry_type to None for Type 1 symmetry.
+            for wing_cross_section in wing.wing_cross_sections:
+                wing_cross_section.control_surface_symmetry_type = None
+
             wing.generate_mesh(symmetry_type=1)
             reflected_wing.generate_mesh(symmetry_type=3)
             return [wing, reflected_wing]

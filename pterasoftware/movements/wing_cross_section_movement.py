@@ -38,7 +38,6 @@ class WingCrossSectionMovement:
         This class is not meant to be subclassed.
     """
 
-    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_wing_cross_section,
@@ -75,12 +74,19 @@ class WingCrossSectionMovement:
             must be 0.0 if the corresponding element in ampLp_Wcsp_Lpp is 0.0 and
             non-zero if not. The units are in seconds.
 
-        :param spacingLp_Wcsp_Lpp: array-like of 3 strs, optional
+        :param spacingLp_Wcsp_Lpp: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingCrossSectionMovement's change
             in its WingCrossSections' Lp_Wcsp_Lpp parameters. Can be a tuple, list,
-            or numpy array of strings. Each element can be "sine" or "uniform". The
-            default value is ("sine", "sine", "sine").
+            or numpy array. Each element can be the string "sine", the string
+            "uniform", or a callable custom spacing function. Custom spacing functions
+            are for advanced users and must start at 0, return to 0 after one period
+            of 2*pi radians, have zero mean, have amplitude of 1, be periodic, return
+            finite values only, and accept a ndarray as input and return a ndarray of
+            the same shape. The custom function is scaled by ampLp_Wcsp_Lpp, shifted
+            by phaseLp_Wcsp_Lpp, and centered around the base value, with the period
+            controlled by periodLp_Wcsp_Lpp. The default value is ("sine", "sine",
+            "sine").
 
         :param phaseLp_Wcsp_Lpp: array-like of 3 numbers, optional
 
@@ -110,12 +116,20 @@ class WingCrossSectionMovement:
             ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
             seconds.
 
-        :param spacingAngles_Wcsp_to_Wcs_izyx: array-like of 3 strs, optional
+        :param spacingAngles_Wcsp_to_Wcs_izyx: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingCrossSectionMovement's change
             in its WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a
-            tuple, list, or numpy array of strings. Each element can be "sine" or
-            "uniform". The default value is ("sine", "sine", "sine").
+            tuple, list, or numpy array. Each element can be the string "sine", the
+            string "uniform", or a callable custom spacing function. Custom spacing
+            functions are for advanced users and must start at 0, return to 0 after
+            one period of 2*pi radians, have zero mean, have amplitude of 1, be
+            periodic, return finite values only, and accept a ndarray as input and
+            return a ndarray of the same shape. The custom function is scaled by
+            ampAngles_Wcsp_to_Wcs_izyx, shifted by phaseAngles_Wcsp_to_Wcs_izyx, and
+            centered around the base value, with the period controlled by
+            periodAngles_Wcsp_to_Wcs_izyx. The default value is ("sine", "sine",
+            "sine").
 
         :param phaseAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
 
@@ -155,8 +169,8 @@ class WingCrossSectionMovement:
         self.periodLp_Wcsp_Lpp = periodLp_Wcsp_Lpp
 
         spacingLp_Wcsp_Lpp = (
-            parameter_validation.threeD_string_vectorLike_return_tuple(
-                spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp", valid_values=["sine", "uniform"]
+            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+                spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp"
             )
         )
         self.spacingLp_Wcsp_Lpp = spacingLp_Wcsp_Lpp
@@ -208,10 +222,9 @@ class WingCrossSectionMovement:
         self.periodAngles_Wcsp_to_Wcs_izyx = periodAngles_Wcsp_to_Wcs_izyx
 
         spacingAngles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_string_vectorLike_return_tuple(
+            parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_Wcsp_to_Wcs_izyx,
                 "spacingAngles_Wcsp_to_Wcs_izyx",
-                valid_values=["sine", "uniform"],
             )
         )
         self.spacingAngles_Wcsp_to_Wcs_izyx = spacingAngles_Wcsp_to_Wcs_izyx
@@ -268,7 +281,8 @@ class WingCrossSectionMovement:
         # Generate oscillating values for each dimension of Lp_Wcsp_Lpp.
         listLp_Wcsp_Lpp = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingLp_Wcsp_Lpp[dim] == "sine":
+            spacing = self.spacingLp_Wcsp_Lpp[dim]
+            if spacing == "sine":
                 listLp_Wcsp_Lpp[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampLp_Wcsp_Lpp[dim],
                     periods=self.periodLp_Wcsp_Lpp[dim],
@@ -277,8 +291,8 @@ class WingCrossSectionMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampLp_Wcsp_Lpp[dim],
                     periods=self.periodLp_Wcsp_Lpp[dim],
                     phases=self.phaseLp_Wcsp_Lpp[dim],
@@ -286,11 +300,24 @@ class WingCrossSectionMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_izyx.
         listAngles_Wcsp_to_Wcs_izyx = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingAngles_Wcsp_to_Wcs_izyx[dim] == "sine":
+            spacing = self.spacingAngles_Wcsp_to_Wcs_izyx[dim]
+            if spacing == "sine":
                 listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
                     periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
@@ -299,8 +326,8 @@ class WingCrossSectionMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
                     periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
                     phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
@@ -308,6 +335,18 @@ class WingCrossSectionMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
+                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Create an empty list to hold each time step's WingCrossSection.
         wing_cross_sections = []

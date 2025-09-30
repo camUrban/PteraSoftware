@@ -115,7 +115,7 @@ def oscillating_sinspaces(amps, periods, phases, bases, num_steps, delta_time):
 
 
 # TODO: Create unit tests for this function.
-def oscillating_linspace(amps, periods, phases, bases, num_steps, delta_time):
+def oscillating_linspaces(amps, periods, phases, bases, num_steps, delta_time):
     """This function returns a (..., num_steps) ndarray of floats that are calculated
     by inputting a vector of linearly spaced time steps into a triangular wave
     function defined with the parameters given by the scalars or array-like objects
@@ -200,7 +200,7 @@ def oscillating_linspace(amps, periods, phases, bases, num_steps, delta_time):
 
 
 # TODO: Create unit tests for this function.
-def oscillating_customspace(
+def oscillating_customspaces(
     amps, periods, bases, phases, num_steps, delta_time, custom_function
 ):
     """This function returns a (..., num_steps) ndarray of floats that are calculated
@@ -208,8 +208,25 @@ def oscillating_customspace(
     function defined with the parameters given by the scalars or array-like objects
     amp, period, phase, and base.
 
-    Note: This function performs vary basic validation on custom_function,
-    but it could fail in unexpected ways. It is intended for advanced users.
+    Note: This function is intended for advanced users. The custom function is
+    validated to ensure it meets requirements, but users should thoroughly test their
+    functions before use in simulations.
+
+    Custom Function Requirements:
+        The function must start at 0 with f(0) = 0, and must return to 0 after one
+        period with f(2*pi) = 0. The function must have zero mean over one period and
+        must have amplitude of 1, meaning (max - min) / 2 = 1.0. The function must be
+        periodic with period 2*pi such that f(x) = f(x + 2*pi). The function must
+        return finite values only with no NaN or Inf. The function must accept a
+        ndarray as input and return a ndarray of the same shape.
+
+    Parameter Interaction:
+        The custom function is transformed by the amps, periods, phases, and bases
+        parameters. The output is calculated as amps * custom_function(2*pi * time /
+        periods + deg2rad(phases)) + bases. The amps parameter scales the vertical
+        amplitude of the custom function. The periods parameter scales the horizontal
+        period of the custom function. The phases parameter shifts the function
+        horizontally in degrees. The bases parameter shifts the function vertically.
 
     :param amps: number or array-like of numbers
 
@@ -256,18 +273,17 @@ def oscillating_customspace(
         or float), and will be converted to a float internally. Its units are in
         seconds.
 
-    :param custom_function: function
+    :param custom_function: callable
 
-        This is a custom oscillating function used to return the values. For example,
-        it could be np.cos or np.sinh (assuming numpy had previously been imported as
-        np). It will be horizontally scaled by periods and vertically scaled by amps.
-        For example, say the function has an internal amplitude of 2 units,
-        an internal period of 3 units, a particular location in amps is set to 4
-        units and in periods to 5 units. The result will have a net amplitude of 8
-        units and a net period of 15 units. It will also be shifted vertically by the
-        bases and horizontally by phases. The function must take a ndarray as an
-        input, operate elementwise, and return a ndarray of the same shape (or a
-        scalar if the inputs are scalars/0D ndarrays).
+        A custom oscillating function that defines the waveform shape. The function
+        must meet all requirements listed above. It must accept a ndarray as input
+        and return a ndarray of the same shape. The function will be scaled and
+        shifted by the amps, periods, phases, and bases parameters. Example valid
+        functions, assuming numpy is imported as np, include np.sin for a standard
+        sine wave, lambda x: 2 * np.sin(x) - np.sin(2 * x) for a custom harmonic,
+        or lambda x: np.where(x < np.pi, x / np.pi, 2 - x / np.pi) for a triangle
+        wave. Custom functions are validated before use, and if validation fails,
+        a detailed error message will indicate which requirement was not met.
 
     :return: (num_steps,) or (..., num_steps) ndarray of floats
 
@@ -280,6 +296,9 @@ def oscillating_customspace(
             amps, periods, phases, bases, num_steps, delta_time
         )
     )
+
+    # Validate the custom function before using it.
+    _validate_custom_spacing_function(custom_function)
 
     total_time = num_steps * delta_time
 
@@ -295,7 +314,7 @@ def oscillating_customspace(
     b[~mask_static] = 2 * np.pi / periods[~mask_static]
     b = b[..., None]
 
-    h = (np.pi / 2) + np.deg2rad(phases)[..., None]
+    h = np.deg2rad(phases)[..., None]
     k = bases[..., None]
 
     # Calculate the output or raise an exception if custom_functions throws.
@@ -366,3 +385,99 @@ def _validate_oscillating_function_parameters(
     )
 
     return [amps, periods, phases, bases, num_steps, delta_time, mask_static]
+
+
+def _validate_custom_spacing_function(custom_function):
+    """Validates that a custom spacing function meets requirements for use in
+    oscillating_customspaces.
+
+    The function must start at 0 with f(0) approximately equal to 0, and return to
+    0 after one period with f(2*pi) approximately equal to 0. The function must have
+    zero mean over one period and have amplitude of 1 with (max - min) / 2
+    approximately equal to 1.0. The function must be periodic such that f(x) is
+    approximately equal to f(x + 2*pi). The function must return finite values only.
+
+    :param custom_function: callable
+        The custom spacing function to validate.
+
+    :raises ValueError: If the function doesn't meet the requirements.
+    """
+    # Test the function over two full periods.
+    test_input = np.linspace(0, 4 * np.pi, 200)
+
+    try:
+        test_output = custom_function(test_input)
+    except Exception as e:
+        raise ValueError(
+            f"Custom spacing function failed when called with test input: {e}"
+        )
+
+    # Convert to ndarray and check shape.
+    test_output = np.asarray(test_output)
+    if test_output.shape != test_input.shape:
+        raise ValueError(
+            f"Custom spacing function must return a ndarray of the same shape as its input. "
+            f"Input shape: {test_input.shape}, output shape: {test_output.shape}."
+        )
+
+    # Check for finite values.
+    if not np.isfinite(test_output).all():
+        raise ValueError(
+            "Custom spacing function must return finite values only (no NaN or Inf)."
+        )
+
+    # Extract one period of data for validation (first period).
+    one_period_indices = test_input <= 2 * np.pi
+    one_period_output = test_output[one_period_indices]
+
+    tolerance = 0.05
+
+    # Check that function starts at 0.
+    start_value = test_output[0]
+    if not np.isclose(start_value, 0.0, atol=tolerance):
+        raise ValueError(
+            f"Custom spacing function must start at 0. f(0) = {start_value:.4f}, "
+            f"but should be within {tolerance} of 0."
+        )
+
+    # Check that function returns to 0 after one period.
+    # Find the index closest to 2*pi.
+    end_period_idx = np.argmin(np.abs(test_input - 2 * np.pi))
+    end_value = test_output[end_period_idx]
+    if not np.isclose(end_value, 0.0, atol=tolerance):
+        raise ValueError(
+            f"Custom spacing function must return to 0 after one period. "
+            f"f(2*pi) = {end_value:.4f}, but should be within {tolerance} of 0."
+        )
+
+    # Check zero mean.
+    mean_value = np.mean(one_period_output)
+    if not np.isclose(mean_value, 0.0, atol=tolerance):
+        raise ValueError(
+            f"Custom spacing function must have zero mean over one period. "
+            f"Mean = {mean_value:.4f}, but should be within {tolerance} of 0."
+        )
+
+    # Check amplitude = 1.
+    max_value = np.max(one_period_output)
+    min_value = np.min(one_period_output)
+    amplitude = (max_value - min_value) / 2.0
+    if not np.isclose(amplitude, 1.0, atol=tolerance):
+        raise ValueError(
+            f"Custom spacing function must have amplitude of 1. "
+            f"Amplitude = {amplitude:.4f}, but should be within {tolerance} of 1."
+        )
+
+    # Check periodicity by comparing first and second periods.
+    second_period_indices = (test_input > 2 * np.pi) & (test_input <= 4 * np.pi)
+    second_period_output = test_output[second_period_indices]
+
+    # They should have the same length if properly sampled.
+    if len(one_period_output) == len(second_period_output):
+        if not np.allclose(one_period_output, second_period_output, atol=tolerance):
+            max_diff = np.max(np.abs(one_period_output - second_period_output))
+            raise ValueError(
+                f"Custom spacing function must be periodic with period 2*pi. "
+                f"Maximum difference between first and second period: {max_diff:.4f}, "
+                f"but should be within {tolerance}."
+            )

@@ -409,22 +409,26 @@ def threeD_number_vectorLike_return_float_unit_vector(vector, name):
     return vector
 
 
-def threeD_string_vectorLike_return_tuple(vector, name, valid_values=None):
+def threeD_spacing_vectorLike_return_tuple(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
-    )) of strings. It then returns it as a tuple of 3 strings. name must be a string.
+    )) of spacing specifications. Each element can be either a string ("sine" or
+    "uniform") or a callable (custom spacing function). It then returns it as a tuple
+    of 3 elements. name must be a string.
 
     :param vector: array-like
+
         The value to validate. Can be a tuple, list, or numpy array with exactly 3
-        string elements.
+        elements. Each element must be either the string "sine", the string "uniform",
+        or a callable object.
 
     :param name: str
+
         The name of the parameter being validated.
 
-    :param valid_values: list or set, optional
-        If provided, each element in vector must be in this set of valid values.
+    :return: tuple of 3 elements
 
-    :return: tuple of 3 strings
-        The validated vector as a tuple.
+        The validated vector as a tuple. Each element is either a string ("sine" or
+        "uniform") or a callable.
     """
     name = string_return_string(name, "name")
 
@@ -439,21 +443,23 @@ def threeD_string_vectorLike_return_tuple(vector, name, valid_values=None):
     else:
         raise TypeError(f"{name} must be array-like (tuple, list, or numpy array).")
 
-    # Check all elements are strings.
+    # Check each element is either a valid string or a callable.
+    validated = []
     for i, elem in enumerate(vector):
-        if not isinstance(elem, str):
-            raise TypeError(f"Element {i} of {name} must be a string.")
-
-    # If valid_values is provided, check each element is in valid_values.
-    if valid_values is not None:
-        valid_values_set = set(valid_values)
-        for i, elem in enumerate(vector):
-            if elem not in valid_values_set:
+        if isinstance(elem, str):
+            if elem not in ["sine", "uniform"]:
                 raise ValueError(
-                    f"Element {i} of {name} must be one of {list(valid_values_set)}."
+                    f"Element {i} of {name} must be 'sine', 'uniform', or a callable, got string '{elem}'."
                 )
+            validated.append(elem)
+        elif callable(elem):
+            validated.append(elem)
+        else:
+            raise TypeError(
+                f"Element {i} of {name} must be a string ('sine' or 'uniform') or a callable, got {type(elem).__name__}."
+            )
 
-    return tuple(vector)
+    return tuple(validated)
 
 
 def fourD_homog_number_vectorLike_return_float(vector, name):

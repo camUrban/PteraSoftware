@@ -412,10 +412,12 @@ There are four useful combinations of axes, points, and frames. Variables are de
 - Different sequences have different gimbal lock singularities
 
 ## Miscellaneous Guidelines
-- Use clear, descriptive variable names  
-- Avoid abbreviations unless they are well-known in the context  
-- In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use hyphens (-) for clarity  
+- Use clear, descriptive variable names
+- Avoid abbreviations unless they are well-known in the context
+- In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use hyphens (-) for clarity
 - In docstrings and comments, never use a multiplication sign (×); always use a lowercase x (x)
+- In docstrings and comments, never use the pi symbol (π); always write "pi" instead (e.g., "2*pi" not "2π")
+- In docstrings and comments, never use the approximately-equal sign (≈); always write "~" instead (e.g., "a~b" not "a≈b")
 - **Coordinate and axis references**: When referring to axes, coordinates, or planes, use  lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", "y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and "axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes").  Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, or docstrings
 - Always use straight single and double quotes, not curly ones

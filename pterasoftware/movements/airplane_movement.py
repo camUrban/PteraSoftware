@@ -38,7 +38,6 @@ class AirplaneMovement:
         This class is not meant to be subclassed.
     """
 
-    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_airplane,
@@ -80,12 +79,18 @@ class AirplaneMovement:
             value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
             element in ampCgi_E_I is 0.0 and non-zero if not. The units are in seconds.
 
-        :param spacingCgi_E_I: array-like of 3 strs, optional
+        :param spacingCgi_E_I: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the AirplaneMovement's change in its
-            Airplanes' Cgi_E_I parameters. Can be a tuple, list, or numpy array of
-            strings. Each element can be "sine" or "uniform". The default value is (
-            "sine", "sine", "sine").
+            Airplanes' Cgi_E_I parameters. Can be a tuple, list, or numpy array. Each
+            element can be the string "sine", the string "uniform", or a callable
+            custom spacing function. Custom spacing functions are for advanced users
+            and must start at 0, return to 0 after one period of 2*pi radians, have
+            zero mean, have amplitude of 1, be periodic, return finite values only,
+            and accept a ndarray as input and return a ndarray of the same shape. The
+            custom function is scaled by ampCgi_E_I, shifted by phaseCgi_E_I, and
+            centered around the base value, with the period controlled by
+            periodCgi_E_I. The default value is ("sine", "sine", "sine").
 
         :param phaseCgi_E_I: array-like of 3 numbers, optional
 
@@ -114,12 +119,19 @@ class AirplaneMovement:
             0.0 if the corresponding element in ampAngles_E_to_B_izyx is 0.0 and
             non-zero if not. The units are in seconds.
 
-        :param spacingAngles_E_to_B_izyx: array-like of 3 strs, optional
+        :param spacingAngles_E_to_B_izyx: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the AirplaneMovement's change in its
             Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy
-            array of strings. Each element can be "sine" or "uniform". The default
-            value is ("sine", "sine", "sine").
+            array. Each element can be the string "sine", the string "uniform", or a
+            callable custom spacing function. Custom spacing functions are for advanced
+            users and must start at 0, return to 0 after one period of 2*pi radians,
+            have zero mean, have amplitude of 1, be periodic, return finite values
+            only, and accept a ndarray as input and return a ndarray of the same shape.
+            The custom function is scaled by ampAngles_E_to_B_izyx, shifted by
+            phaseAngles_E_to_B_izyx, and centered around the base value, with the
+            period controlled by periodAngles_E_to_B_izyx. The default value is
+            ("sine", "sine", "sine").
 
         :param phaseAngles_E_to_B_izyx: array-like of 3 numbers, optional
 
@@ -168,8 +180,8 @@ class AirplaneMovement:
                 )
         self.periodCgi_E_I = periodCgi_E_I
 
-        spacingCgi_E_I = parameter_validation.threeD_string_vectorLike_return_tuple(
-            spacingCgi_E_I, "spacingCgi_E_I", valid_values=["sine", "uniform"]
+        spacingCgi_E_I = parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            spacingCgi_E_I, "spacingCgi_E_I"
         )
         self.spacingCgi_E_I = spacingCgi_E_I
 
@@ -220,10 +232,9 @@ class AirplaneMovement:
         self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
 
         spacingAngles_E_to_B_izyx = (
-            parameter_validation.threeD_string_vectorLike_return_tuple(
+            parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_E_to_B_izyx,
                 "spacingAngles_E_to_B_izyx",
-                valid_values=["sine", "uniform"],
             )
         )
         self.spacingAngles_E_to_B_izyx = spacingAngles_E_to_B_izyx
@@ -275,7 +286,8 @@ class AirplaneMovement:
         # Generate oscillating values for each dimension of Cgi_E_I.
         listCgi_E_I = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingCgi_E_I[dim] == "sine":
+            spacing = self.spacingCgi_E_I[dim]
+            if spacing == "sine":
                 listCgi_E_I[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampCgi_E_I[dim],
                     periods=self.periodCgi_E_I[dim],
@@ -284,8 +296,8 @@ class AirplaneMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listCgi_E_I[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listCgi_E_I[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampCgi_E_I[dim],
                     periods=self.periodCgi_E_I[dim],
                     phases=self.phaseCgi_E_I[dim],
@@ -293,11 +305,24 @@ class AirplaneMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listCgi_E_I[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampCgi_E_I[dim],
+                    periods=self.periodCgi_E_I[dim],
+                    phases=self.phaseCgi_E_I[dim],
+                    bases=self.base_airplane.Cgi_E_I[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Generate oscillating values for each dimension of angles_E_to_B_izyx.
         listAngles_E_to_B_izyx = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingAngles_E_to_B_izyx[dim] == "sine":
+            spacing = self.spacingAngles_E_to_B_izyx[dim]
+            if spacing == "sine":
                 listAngles_E_to_B_izyx[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampAngles_E_to_B_izyx[dim],
                     periods=self.periodAngles_E_to_B_izyx[dim],
@@ -306,8 +331,8 @@ class AirplaneMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampAngles_E_to_B_izyx[dim],
                     periods=self.periodAngles_E_to_B_izyx[dim],
                     phases=self.phaseAngles_E_to_B_izyx[dim],
@@ -315,6 +340,18 @@ class AirplaneMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Create an empty 2D ndarray that will hold each of the Airplane's Wing's
         # vector of Wings representing its changing state at each time step. The

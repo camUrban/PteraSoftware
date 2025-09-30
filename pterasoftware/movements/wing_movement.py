@@ -37,7 +37,6 @@ class WingMovement:
         This class is not meant to be subclassed.
     """
 
-    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_wing,
@@ -80,12 +79,19 @@ class WingMovement:
             element in ampPrelimLer_G_Cg is 0.0 and non-zero if not. The units are in
             seconds.
 
-        :param spacingPrelimLer_G_Cg: array-like of 3 strs, optional
+        :param spacingPrelimLer_G_Cg: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingMovement's change in its
-            Wings' prelimLer_G_Cg parameters. Can be a tuple, list, or numpy array of
-            strings. Each element can be "sine" or "uniform". The default value is (
-            "sine", "sine", "sine").
+            Wings' prelimLer_G_Cg parameters. Can be a tuple, list, or numpy array.
+            Each element can be the string "sine", the string "uniform", or a callable
+            custom spacing function. Custom spacing functions are for advanced users
+            and must start at 0, return to 0 after one period of 2*pi radians, have
+            zero mean, have amplitude of 1, be periodic, return finite values only,
+            and accept a ndarray as input and return a ndarray of the same shape. The
+            custom function is scaled by ampPrelimLer_G_Cg, shifted by
+            phasePrelimLer_G_Cg, and centered around the base value, with the period
+            controlled by periodPrelimLer_G_Cg. The default value is ("sine", "sine",
+            "sine").
 
         :param phasePrelimLer_G_Cg: array-like of 3 numbers, optional
 
@@ -114,12 +120,20 @@ class WingMovement:
             must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
             is 0.0 and non-zero if not. The units are in seconds.
 
-        :param spacingAngles_G_to_prelimWn_izyx: array-like of 3 strs, optional
+        :param spacingAngles_G_to_prelimWn_izyx: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingMovement's change in its
             Wings' angles_G_to_prelimWn_izyx parameters. Can be a tuple, list,
-            or numpy array of strings. Each element can be "sine" or "uniform". The
-            default value is ("sine", "sine", "sine").
+            or numpy array. Each element can be the string "sine", the string
+            "uniform", or a callable custom spacing function. Custom spacing functions
+            are for advanced users and must start at 0, return to 0 after one period
+            of 2*pi radians, have zero mean, have amplitude of 1, be periodic, return
+            finite values only, and accept a ndarray as input and return a ndarray of
+            the same shape. The custom function is scaled by
+            ampAngles_G_to_prelimWn_izyx, shifted by phaseAngles_G_to_prelimWn_izyx,
+            and centered around the base value, with the period controlled by
+            periodAngles_G_to_prelimWn_izyx. The default value is ("sine", "sine",
+            "sine").
 
         :param phaseAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
 
@@ -173,10 +187,9 @@ class WingMovement:
         self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
 
         spacingPrelimLer_G_Cg = (
-            parameter_validation.threeD_string_vectorLike_return_tuple(
+            parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingPrelimLer_G_Cg,
                 "spacingPrelimLer_G_Cg",
-                valid_values=["sine", "uniform"],
             )
         )
         self.spacingPrelimLer_G_Cg = spacingPrelimLer_G_Cg
@@ -232,10 +245,9 @@ class WingMovement:
         self.periodAngles_G_to_prelimWn_izyx = periodAngles_G_to_prelimWn_izyx
 
         spacingAngles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_string_vectorLike_return_tuple(
+            parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_G_to_prelimWn_izyx,
                 "spacingAngles_G_to_prelimWn_izyx",
-                valid_values=["sine", "uniform"],
             )
         )
         self.spacingAngles_G_to_prelimWn_izyx = spacingAngles_G_to_prelimWn_izyx
@@ -287,7 +299,8 @@ class WingMovement:
         # Generate oscillating values for each dimension of prelimLer_G_Cg.
         listPrelimLer_G_Cg = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingPrelimLer_G_Cg[dim] == "sine":
+            spacing = self.spacingPrelimLer_G_Cg[dim]
+            if spacing == "sine":
                 listPrelimLer_G_Cg[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampPrelimLer_G_Cg[dim],
                     periods=self.periodPrelimLer_G_Cg[dim],
@@ -296,8 +309,8 @@ class WingMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listPrelimLer_G_Cg[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listPrelimLer_G_Cg[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampPrelimLer_G_Cg[dim],
                     periods=self.periodPrelimLer_G_Cg[dim],
                     phases=self.phasePrelimLer_G_Cg[dim],
@@ -305,11 +318,24 @@ class WingMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listPrelimLer_G_Cg[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampPrelimLer_G_Cg[dim],
+                    periods=self.periodPrelimLer_G_Cg[dim],
+                    phases=self.phasePrelimLer_G_Cg[dim],
+                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Generate oscillating values for each dimension of angles_G_to_prelimWn_izyx.
         listAngles_G_to_prelimWn_izyx = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            if self.spacingAngles_G_to_prelimWn_izyx[dim] == "sine":
+            spacing = self.spacingAngles_G_to_prelimWn_izyx[dim]
+            if spacing == "sine":
                 listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_sinspaces(
                     amps=self.ampAngles_G_to_prelimWn_izyx[dim],
                     periods=self.periodAngles_G_to_prelimWn_izyx[dim],
@@ -318,8 +344,8 @@ class WingMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
-            else:
-                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_linspace(
+            elif spacing == "uniform":
+                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_linspaces(
                     amps=self.ampAngles_G_to_prelimWn_izyx[dim],
                     periods=self.periodAngles_G_to_prelimWn_izyx[dim],
                     phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
@@ -327,6 +353,18 @@ class WingMovement:
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
+            elif callable(spacing):
+                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_customspaces(
+                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
 
         # Create an empty 2D ndarray that will hold each of the Wings's
         # WingCrossSection's vector of WingCrossSections representing its changing

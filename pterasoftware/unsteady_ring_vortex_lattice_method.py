@@ -983,7 +983,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # vortex strengths. Also calculate the unsteady component of the force on each
         # Panel, which is derived from the unsteady Bernoulli equation.
         rightLegForces_G = (
-            self.current_operating_point.density
+            self.current_operating_point.rho
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
                 stackVelocityRightLineVortexCenters_G__E,
@@ -991,7 +991,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         )
         frontLegForces_G = (
-            self.current_operating_point.density
+            self.current_operating_point.rho
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
                 stackVelocityFrontLineVortexCenters_G__E,
@@ -999,7 +999,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         )
         leftLegForces_G = (
-            self.current_operating_point.density
+            self.current_operating_point.rho
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
             * functions.numba_1d_explicit_cross(
                 stackVelocityLeftLineVortexCenters_G__E,
@@ -1016,7 +1016,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate the unsteady component of the force on each Panel (in
         # geometry axes), which is derived from the unsteady Bernoulli equation.
         unsteady_forces_G = (
-            self.current_operating_point.density
+            self.current_operating_point.rho
             * np.expand_dims(
                 (
                     self._current_bound_vortex_strengths

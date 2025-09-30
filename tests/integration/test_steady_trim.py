@@ -58,12 +58,10 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         this_airplane = (
             airplane_fixtures.make_multiple_wing_steady_validation_airplane()
         )
-        this_operating_point = ps.operating_point.OperatingPoint(
-            vCg__E=corrupted_v_x,
-            alpha=corrupted_alpha,
-            beta=corrupted_beta,
-            externalFX_W=corrupted_thrust,
-        )
+        this_operating_point = ps.operating_point.OperatingPoint(vCg__E=corrupted_v_x,
+                                                                 alpha=corrupted_alpha,
+                                                                 beta=corrupted_beta,
+                                                                 externalFX_W=corrupted_thrust)
 
         # Create the steady problem.
         self.steady_validation_problem = ps.problems.SteadyProblem(

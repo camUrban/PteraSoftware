@@ -1,4 +1,3 @@
-# NOTE: I haven't yet started refactoring this module.
 """This is script is an example of how to run Ptera Software's steady horseshoe
 vortex lattice method solver on a custom airplane."""
 
@@ -13,12 +12,13 @@ import pterasoftware as ps
 example_airplane = ps.geometry.airplane.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
-    # Specify the location of the airplane's center of gravity. This is the point
-    # around about which the solver will calculate the moments on the airplane. These
-    # three values default to 0.0 meters. This and every input and output of this
-    # program is in SI units. Note: these values are relative to the global
-    # coordinate system fixed front left corner of the first airplane's first wing's
-    # root wing cross section.
+    # Specify the location of the airplane's starting point (the location of its
+    # center of gravity at t=0). This is the point about which the solver will
+    # calculate moments. These three values (x, y, z) are in Earth axes, relative
+    # to the simulation's starting point. For the first Airplane in a simulation,
+    # this must be [0.0, 0.0, 0.0] since the simulation's starting point is defined
+    # as the first Airplane's starting point. The default is (0.0, 0.0, 0.0). This
+    # and every input and output of this program is in SI units (meters).
     x_ref=0.0,
     y_ref=0.0,
     z_ref=0.0,
@@ -34,21 +34,16 @@ example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             name="Main Wing",
-            # Define the location of the leading edge of the wing relative to the
-            # global coordinate system fixed front left corner of the first
-            # airplane's first wing's root wing cross section. These values all
+            # Define the position of this Wing's leading edge root point (in geometry
+            # axes, relative to the CG point). Geometry axes are defined with +x
+            # pointing aft, +y pointing right, and +z pointing up. These values all
             # default to 0.0 meters.
             x_le=0.0,
             y_le=0.0,
             z_le=0.0,
-            # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across plane of this wing's root wing cross section. Note
-            # that the geometry coordinates are defined as such: If you were riding
-            # in the airplane, the positive x direction would point behind you,
-            # the positive y direction would point out of your right wing, and the
-            # positive z direction would point upwards, out of your chair. These
-            # directions form a right-handed coordinate system. The default value of
-            # "symmetric" is False.
+            # Declare that this Wing is symmetric. This means that the geometry will
+            # be reflected across the xz-plane of this Wing's axes. The default value
+            # of "symmetric" is False.
             symmetric=True,
             # Define the number of chordwise panels on the wing, and the spacing
             # between them. The number of chordwise panels defaults to 8 panels. The
@@ -174,9 +169,8 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = ps.operating_point.OperatingPoint(
-    density=1.225, vCg__E=10.0, alpha=1.0, beta=0.0
-)
+example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
+                                                            alpha=1.0, beta=0.0)
 
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.

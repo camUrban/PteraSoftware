@@ -80,9 +80,8 @@ airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 del upper_wing_movement
 
-example_operating_point = ps.operating_point.OperatingPoint(
-    density=1.225, vCg__E=10.0, alpha=0.0, beta=0.0
-)
+example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
+                                                            alpha=0.0, beta=0.0)
 
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point

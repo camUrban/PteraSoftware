@@ -565,7 +565,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # LineVortex, front LineVortex, and left LineVortex using the effective
         # vortex strengths.
         rightLegForces_G = (
-            self.operating_point.density
+            self.operating_point.rho
             * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityRightLineVortexCenters_G__E,
@@ -574,7 +574,7 @@ class SteadyRingVortexLatticeMethodSolver:
             )
         )
         frontLegForces_G = (
-            self.operating_point.density
+            self.operating_point.rho
             * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityFrontLineVortexCenters_G__E,
@@ -583,7 +583,7 @@ class SteadyRingVortexLatticeMethodSolver:
             )
         )
         leftLegForces_G = (
-            self.operating_point.density
+            self.operating_point.rho
             * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityLeftLineVortexCenters_G__E,

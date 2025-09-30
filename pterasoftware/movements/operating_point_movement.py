@@ -158,7 +158,7 @@ class OperatingPointMovement:
         operating_points = []
 
         # Get the non-changing OperatingPoint attributes.
-        this_density = self.base_operating_point.density
+        this_rho = self.base_operating_point.rho
         this_alpha = self.base_operating_point.alpha
         this_beta = self.base_operating_point.beta
         thisExternalFX_W = self.base_operating_point.externalFX_W
@@ -169,14 +169,12 @@ class OperatingPointMovement:
             thisVCg__E = listVCg__E[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = operating_point.OperatingPoint(
-                density=this_density,
-                vCg__E=thisVCg__E,
-                alpha=this_alpha,
-                beta=this_beta,
-                externalFX_W=thisExternalFX_W,
-                nu=this_nu,
-            )
+            this_operating_point = operating_point.OperatingPoint(rho=this_rho,
+                                                                  vCg__E=thisVCg__E,
+                                                                  alpha=this_alpha,
+                                                                  beta=this_beta,
+                                                                  externalFX_W=thisExternalFX_W,
+                                                                  nu=this_nu)
 
             # Add this new OperatingPoint to the list of OperatingPoints.
             operating_points.append(this_operating_point)

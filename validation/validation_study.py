@@ -356,8 +356,7 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    vCg__E=validation_velocity, alpha=validation_alpha
-)
+    vCg__E=validation_velocity, alpha=validation_alpha)
 
 # Define an operating point movement that contains the operating point.
 validation_operating_point_movement = (

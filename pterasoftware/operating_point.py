@@ -53,7 +53,7 @@ class OperatingPoint:
 
     def __init__(
         self,
-        density=1.225,
+        rho=1.225,
         vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
@@ -62,34 +62,58 @@ class OperatingPoint:
     ):
         """This is the initialization method.
 
-        # TODO: Update the parameters' descriptions and types.
-        :param density: float, optional
-            This parameter is the density. The units are kilograms per meters cubed.
-            The default value is 1.225.
-        :param vCg__E: float, optional
-            This parameter is the freestream speed in the positive x direction. The
-            units are meters per second. The
+        :param rho: number, optional
+
+            This parameter is the fluid's density. It must be a positive number and
+            will be converted internally to a float. The units are kilograms per
+            meters cubed. The default value is 1.225.
+
+        :param vCg__E: number, optional
+
+            This parameter is the speed of the Airplane's CG (observed from the Earth
+            frame). Given that (1) this is the magnitude of a vector, and (2) we
+            always assume a still fluid in our simulations, this value is equivalent
+            to the freestream speed (the speed of the apparent wind, infinitely far
+            away from the Airplane, observed while moving at the same speed as the
+            Airplane's non-accelerating CG). It must be a positive number and will be
+            converted internally to a float. Its units are in meters per second. The
             default value is 10.0.
-        :param alpha: float, optional
-            This parameter is the angle of attack. The units are degrees. The default
-            value is 5.0.
-        :param beta: float, optional
-            This parameter is the sideslip angle. The units are degrees. The default
-            value is 0.0.
-        :param externalFX_W: float, optional
-            This parameter is for any thrust that's due to the airplanes' wings. For
-            example, this may hold thrust due to a non-modeled propeller or engine.
-            The default value is 0.0.
-        :param nu: float, optional
-            This parameter is the air's kinematic viscosity. The units are meters
+
+        :param alpha: number, optional
+
+            This parameter is the angle of attack. For more details on the exact
+            interpretation of this value, see the description of wind axes in
+            docs/AXES_POINTS_AND_FRAMES.md. It must be a number in the range (-180.0,
+            180.0] and will be converted internally to a float. The units are
+            degrees. The default value is 5.0.
+
+        :param beta: number, optional
+
+            This parameter is the sideslip angle. For more details on the exact
+            interpretation of this value, see the description of wind axes in
+            docs/AXES_POINTS_AND_FRAMES.md. It must be a number in the range (-180.0,
+            180.0] and will be converted internally to a float. The units are
+            degrees. The default value is 0.0.
+
+        :param externalFX_W: number, optional
+
+            This parameter is for any additional thrust or drag on the Airplane's
+            body (in wind axes) not due to the Airplane's Wings. It is useful for
+            trim analyses. It must be a number and will be converted internally to a
+            float. The units are Newtons. The default value is 0.0.
+
+        :param nu: number, optional
+
+            This parameter is the fluid's kinematic viscosity. The units are meters
             squared per second. This parameter is only used in the unsteady ring
-            vortex lattice method's vortex core growth model. The default value is
-            15.06e-6 meters squared per second, which corresponds to air's kinematic
-            viscosity at 20 degrees Celsius [source:
-            https://www.engineeringtoolbox.com].
+            vortex lattice method's vortex core growth model. It must be a positive
+            number and will be converted internally to a float. Its units are in
+            meters squared per second. The default value is 15.06e-6,
+            which corresponds to air's kinematic viscosity at 20 degrees Celsius
+            [source: https://www.engineeringtoolbox.com].
         """
-        self.density = parameter_validation.positive_number_return_float(
-            density, "density"
+        self.rho = parameter_validation.positive_number_return_float(
+            rho, "rho"
         )
         # TODO: In the future, test what happens with vCg__E = 0.
         self.vCg__E = parameter_validation.positive_number_return_float(
@@ -118,7 +142,7 @@ class OperatingPoint:
             This is the freestream dynamic pressure (observed in the Earth frame).
             Its units are Pascals.
         """
-        return 0.5 * self.density * self.vCg__E**2
+        return 0.5 * self.rho * self.vCg__E**2
 
     @property
     def T_pas_G_Cg_to_W_Cg(self):

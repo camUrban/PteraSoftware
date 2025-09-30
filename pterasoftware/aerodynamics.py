@@ -81,29 +81,51 @@ class RingVortex:
 
     def __init__(
         self,
-        Flrvp_G_Cg,
         Frrvp_G_Cg,
+        Flrvp_G_Cg,
         Blrvp_G_Cg,
         Brrvp_G_Cg,
         strength,
     ):
         """This is the initialization method.
 
-        # TODO: Update docstring parameters' descriptions and types.
-        :param Flrvp_G_Cg: 1D array This is a vector containing the x, y, and z
-            coordinates of the vortex's front left point. It's a (,3) array with units
-            of meters.
-        :param Frrvp_G_Cg: 1D array This is a vector containing the x, y, and
-            z coordinates of the vortex's front right point. It's a (,3) array with
-            units of meters.
-        :param Blrvp_G_Cg: 1D array This is a vector containing the x, y, and z
-            coordinates of the vortex's back left point. It's a (,3) array with units of
-            meters.
-        :param Brrvp_G_Cg: 1D array This is a vector containing the x, y, and z
-            coordinates of the vortex's back right point. It's a (,3) array with units
-            of meters.
-        :param strength: float This is the strength of the vortex in meters squared per
-            second.
+        :param Frrvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the RingVortex's front-right point (in geometry
+            axes, relative to the CG). The front-right point is defined as the end
+            point of the RingVortex's right leg and the start point of its front leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
+        :param Flrvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the RingVortex's front-left point (in geometry
+            axes, relative to the CG). The front-left point is defined as the end
+            point of the RingVortex's front leg and the start point of its left leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
+        :param Blrvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the RingVortex's back-left point (in geometry axes,
+            relative to the CG). The back-left point is defined as the end point of
+            the RingVortex's left leg and the start point of its back leg. Can be a
+            list, tuple, or numpy array of numbers (int or float). Values are
+            converted to floats internally. The units are in meters.
+
+        :param Brrvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the RingVortex's back-right point (in geometry
+            axes, relative to the CG). The back-right point is defined as the end
+            point of the RingVortex's back leg and the start point of its right leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
+        :param strength: number
+
+            This is the strength of the RingVortex It must be a positive number and
+            will be converted internally to a float. Its units are in meters squared
+            per second.
         """
         self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
             Flrvp_G_Cg, "Flrvp_G_Cg"
@@ -160,8 +182,11 @@ class RingVortex:
         """This method updates the strength of this RingVortex, and the strength
         of its four legs' LineVortices.
 
-        :param strength: float This is the strength of this vortex, and of its four
+        :param strength: float
+
+            This is the strength of this vortex, and of its four
             legs' LineVortices. Its units are meters squared per second.
+
         :return: None
         """
         self.strength = strength
@@ -170,23 +195,42 @@ class RingVortex:
         self.left_leg.strength = strength
         self.back_leg.strength = strength
 
-    def update_position(self, Flrvp_G_Cg, Frrvp_G_Cg, Blrvp_G_Cg, Brrvp_G_Cg):
+    def update_position(self, Frrvp_G_Cg, Flrvp_G_Cg, Blrvp_G_Cg, Brrvp_G_Cg):
         """This method updates the position of the RingVortex, and the positions of all
         its attributes.
 
-        # TODO: Update docstring parameters descriptions and types.
-        :param Flrvp_G_Cg: 1D array This is the new position of the x, y, and z
-            coordinates of the front left vertex. It is a (,3) array with units of
-            meters.
-        :param Frrvp_G_Cg: 1D array This is the new position of the x, y, and z
-            coordinates of the front right vertex. It is a (,3) array with units of
-            meters.
-        :param Blrvp_G_Cg: 1D array This is the new position of the x, y, and z
-            coordinates of the back left vertex. It is a (,3) array with units of
-            meters.
-        :param Brrvp_G_Cg: 1D array This is the new position of the x, y, and z
-            coordinates of the back right vertex. It is a (,3) array with units of
-            meters.
+        :param Frrvp_G_Cg: array-like of 3 numbers
+
+            New position [x, y, z] of the RingVortex's front-right point (in geometry
+            axes, relative to the CG). The front-right point is defined as the end
+            point of the RingVortex's right leg and the start point of its front leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
+        :param Flrvp_G_Cg: array-like of 3 numbers
+
+            New position [x, y, z] of the RingVortex's front-left point (in geometry
+            axes, relative to the CG). The front-left point is defined as the end
+            point of the RingVortex's front leg and the start point of its left leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
+        :param Blrvp_G_Cg: array-like of 3 numbers
+
+            New position [x, y, z] of the RingVortex's back-left point (in geometry axes,
+            relative to the CG). The back-left point is defined as the end point of
+            the RingVortex's left leg and the start point of its back leg. Can be a
+            list, tuple, or numpy array of numbers (int or float). Values are
+            converted to floats internally. The units are in meters.
+
+        :param Brrvp_G_Cg: array-like of 3 numbers
+
+            New position [x, y, z] of the RingVortex's back-right point (in geometry
+            axes, relative to the CG). The back-right point is defined as the end
+            point of the RingVortex's back leg and the start point of its right leg.
+            Can be a list, tuple, or numpy array of numbers (int or float). Values
+            are converted to floats internally. The units are in meters.
+
         :return: None
         """
         self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
@@ -240,39 +284,44 @@ class RingVortex:
 class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
-    # TODO: Update docstring parameters' descriptions and types.
-    :param Frhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-right point (in
-        geometry axes, relative to the CG). The front-right point is defined as the
-        start point of the HorseshoeVortex's front leg, which is also its one finite
-        leg. Can be a list, tuple, or numpy array of numbers (int or float). Values are
+    :param Frhvp_G_Cg: array-like of 3 numbers
+
+        Position [x, y, z] of the HorseshoeVortex's front-right point (in geometry
+        axes, relative to the CG). The front-right point is defined as the start
+        point of the HorseshoeVortex's front leg, which is also its one finite leg.
+        Can be a list, tuple, or numpy array of numbers (int or float). Values are
         converted to floats internally. The units are in meters.
-    :type Frhvp_G_Cg: array-like of 3 numbers
-    :param Flhvp_G_Cg: Position [x, y, z] of the HorseshoeVortex's front-left point (in
-        geometry axes, relative to the CG). The front-left point is defined as the end
-        point of the HorseshoeVortex's front leg, which is also its one finite leg. Can
-        be a list, tuple, or numpy array of numbers (int or float). Values are converted
+
+    :param Flhvp_G_Cg: array-like of 3 numbers
+
+        Position [x, y, z] of the HorseshoeVortex's front-left point (in geometry
+        axes, relative to the CG). The front-left point is defined as the end point
+        of the HorseshoeVortex's front leg, which is also its one finite leg. Can be
+        a list, tuple, or numpy array of numbers (int or float). Values are converted
         to floats internally. The units are in meters.
-    :type Flhvp_G_Cg: array-like of 3 numbers
-    :param leftLegVector_G: Direction vector of the HorseshoeVortex's left leg (in
-        geometry axes). The left leg starts from the front-left point and ends at the
-        back-left point. It is one of the HorseshoeVortex's two quasi-infinite legs, the
-        other being the right-leg. It can be a list, tuple, or numpy array of numbers
-        (int or float). Values are converted to floats internally. If this isn't already
-        a unit vector, it will be converted to one during initialization. The right-
-        leg's vector (in geometry axes) is defined as -1 times this vector. The units
-        are in meters.
-    :type leftLegVector_G: array-like of 3 numbers
-    :param left_right_leg_lengths: This is the length of the HorseshoeVortex's left and
-        right quasi-infinite legs. It must be a positive number and will be converted
-        internally to a float. I recommend setting it to at least 20 times the length of
-        the finite leg. The units are in meters.
-    :type left_right_leg_lengths: number
-    :param strength: This is the strength of the HorseshoeVortex It must be a positive
-        number and will be converted internally to a float. Its units are in meters
-        squared per second.
-    :type strength: number :raises [ErrorType]: [ErrorDescription]
-    :return: [ ReturnDescription]
-    :rtype: [ReturnType]
+
+    :param leftLegVector_G: array-like of 3 numbers
+
+        Direction vector of the HorseshoeVortex's left leg (in geometry axes). The
+        left leg starts from the front-left point and ends at the back-left point. It
+        is one of the HorseshoeVortex's two quasi-infinite legs, the other being the
+        right leg. It can be a list, tuple, or numpy array of numbers (int or float).
+        Values are converted to floats internally. If this isn't already a unit
+        vector, it will be converted to one during initialization. The right leg's
+        vector (in geometry axes) is defined as -1 times this vector. The units are
+        in meters.
+
+    :param left_right_leg_lengths: number
+
+        This is the length of the HorseshoeVortex's left and right quasi-infinite
+        legs. It must be a positive number and will be converted internally to a
+        float. I recommend setting it to at least 20 times the length of the finite
+        leg. The units are in meters.
+
+    :param strength: number
+
+        This is the strength of the HorseshoeVortex. It must be a number and will be
+        converted internally to a float. Its units are in meters squared per second.
     """
 
     def __init__(
@@ -331,9 +380,10 @@ class HorseshoeVortex:
         """This method updates the strength of this HorseshoeVortex object, and the
         strength of its leg LineVortices.
 
-        :param strength: This is the strength of this vortex, and of its LineVortex
-            legs. Its units are meters squared per second.
-        :type strength: float
+        :param strength: float
+
+            This is the strength of this vortex, and of its LineVortex legs. Its
+            units are meters squared per second.
         """
         self.strength = strength
         self.right_leg.strength = strength
@@ -361,17 +411,24 @@ class _LineVortex:
         Note: This is a private class, so it doesn't validate its parameters.
         Validate them before passing them in.
 
-        :param Slvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
-            start point (in geometry axes, relative to the CG). Can be a list, tuple, or
-            numpy array of numbers (int or float). Values are converted to floats
-            internally. The units are in meters.
-        :param Elvp_G_Cg: array-like of 3 numbers Position [x, y, z] of the LineVortex's
-            end point (in geometry axes, relative to the CG). Can be a list, tuple, or
-            numpy array of numbers (int or float). Values are converted to floats
-            internally. The units are in meters.
-        :param strength: number This is the strength of the LineVortex. It can be a
-            positive int or float and will be converted to a float internally. The units
-            are in meters squared per second.
+        :param Slvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the LineVortex's start point (in geometry axes,
+            relative to the CG). Can be a list, tuple, or numpy array of numbers (int
+            or float). Values are converted to floats internally. The units are in
+            meters.
+
+        :param Elvp_G_Cg: array-like of 3 numbers
+
+            Position [x, y, z] of the LineVortex's end point (in geometry axes,
+            relative to the CG). Can be a list, tuple, or numpy array of numbers (int
+            or float). Values are converted to floats internally. The units are in
+            meters.
+
+        :param strength: number
+
+            This is the strength of the LineVortex. It must be a number and will be
+            converted internally to a float. Its units are in meters squared per second.
         """
         self.Slvp_G_Cg = Slvp_G_Cg
         self.Elvp_G_Cg = Elvp_G_Cg

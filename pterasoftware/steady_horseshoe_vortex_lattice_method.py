@@ -356,7 +356,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Calculate the force (in geometry axes) on each Panel's HorseshoeVortex's
         # finite leg using the Kutta-Joukowski theorem.
         forces_G = (
-            self.operating_point.density
+            self.operating_point.rho
             * np.expand_dims(self._vortex_strengths, axis=1)
             * np.cross(
                 stackVelocityBoundVortexCenters_G__E,

@@ -459,8 +459,8 @@ def _validate_custom_spacing_function(custom_function):
         )
 
     # Check amplitude = 1.
-    max_value = np.max(one_period_output)
-    min_value = np.min(one_period_output)
+    max_value = float(np.max(one_period_output))
+    min_value = float(np.min(one_period_output))
     amplitude = (max_value - min_value) / 2.0
     if not np.isclose(amplitude, 1.0, atol=tolerance):
         raise ValueError(

@@ -353,10 +353,9 @@ class AirplaneMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
 
-        # Create an empty 2D ndarray that will hold each of the Airplane's Wing's
-        # vector of Wings representing its changing state at each time step. The
-        # first index denotes a particular base Wing, and the second index denotes
-        # the time step.
+        # Create an empty 2D ndarray that will hold each of the Airplane's Wing's vector
+        # of Wings representing its changing state at each time step. The first index
+        # denotes a particular base Wing, and the second index denotes the time step.
         wings = np.empty((len(self.wing_movements), num_steps), dtype=object)
 
         # Iterate through the WingMovements.

@@ -83,9 +83,9 @@ class steadyHorseshoeVortexLatticeMethodSolver:
             ],
         )
 
-        example_operating_point = ps.operating_point.OperatingPoint(
-            density=1.225, vCg__E=10.0, alpha=1.0, beta=0.0
-        )
+        example_operating_point = ps.operating_point.OperatingPoint(rho=1.225,
+                                                                    vCg__E=10.0,
+                                                                    alpha=1.0, beta=0.0)
 
         example_problem = ps.problems.SteadyProblem(
             airplanes=[example_airplane],

@@ -141,7 +141,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Solve for the forces (in geometry axes) and moments (in geometry axes,
         # relative to the CG) on each Panel.
         logging.info("Calculating the forces and moments.")
-        self._calculate_forces_and_moments()
+        self._calculate_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges.
@@ -338,7 +338,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         return stackVInd_G__E + self.vInf_G__E
 
-    def _calculate_forces_and_moments(self):
+    def _calculate_loads(self):
         """Calculate the forces (in geometry axes) and moments (in geometry axes,
         relative to the CG) on every Panel.
 
@@ -365,6 +365,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
         )
 
+        # TODO: Determine if we get any performance gains by switching to the
+        #  functions.numba1d_explicit_cross function here.
         # Calculate the moment (in geometry axes, relative to the CG), on each
         # Panel's HorseshoeVortex's finite leg.
         moments_G_Cg = np.cross(

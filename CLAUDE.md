@@ -22,6 +22,18 @@ If that fails, try:
 Bash(.venv/bin/python:-m:unittest:discover:-s:${WORKSPACE}/tests:*)
 ```
 
+To run a specific test module in tests\unit\:
+
+```
+".venv/Scripts/python.exe" -m unittest tests.unit.test_module_name -v
+```
+
+For example:
+
+```
+".venv/Scripts/python.exe" -m unittest tests.unit.test_wing_cross_section_movement -v
+```
+
 ### Running Scripts That Import Ptera Software
 
 When running scripts outside the main pterasoftware directory that import the package (e.g., scripts in `experimental/`), you need to set `PYTHONPATH` to the project root:
@@ -144,9 +156,11 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
 ## Code Style Guidelines
 
 ### Code Formatting
-- Follow existing code style (black) and conventions  
-- Maintain consistent indentation and spacing  
-- Preserve existing comment structure and detail level  
+- Follow existing code style (black) and conventions
+- Maintain consistent indentation and spacing
+- Preserve existing comment structure and detail level
+- Write comments as complete sentences ending with a period
+- When initializing numpy arrays (e.g., using np.zeros, np.ones, np.empty, etc.), always specify the dtype parameter (e.g., dtype=float, dtype=int, dtype=object, etc.)
 
 ### Variable Naming
 - Use descriptive variable names that clearly indicate their purpose  

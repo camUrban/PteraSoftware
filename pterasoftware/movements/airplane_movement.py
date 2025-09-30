@@ -282,47 +282,49 @@ class AirplaneMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingCgi_E_I == "sine":
-            listCgi_E_I = functions.oscillating_sinspaces(
-                amps=self.ampCgi_E_I,
-                periods=self.periodCgi_E_I,
-                phases=self.phaseCgi_E_I,
-                bases=self.base_airplane.Cgi_E_I,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listCgi_E_I = functions.oscillating_linspace(
-                amps=self.ampCgi_E_I,
-                periods=self.periodCgi_E_I,
-                phases=self.phaseCgi_E_I,
-                bases=self.base_airplane.Cgi_E_I,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of Cgi_E_I.
+        listCgi_E_I = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingCgi_E_I[dim] == "sine":
+                listCgi_E_I[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampCgi_E_I[dim],
+                    periods=self.periodCgi_E_I[dim],
+                    phases=self.phaseCgi_E_I[dim],
+                    bases=self.base_airplane.Cgi_E_I[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listCgi_E_I[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampCgi_E_I[dim],
+                    periods=self.periodCgi_E_I[dim],
+                    phases=self.phaseCgi_E_I[dim],
+                    bases=self.base_airplane.Cgi_E_I[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingAngles_E_to_B_izyx == "sine":
-            listAngles_E_to_B_izyx = functions.oscillating_sinspaces(
-                amps=self.ampAngles_E_to_B_izyx,
-                periods=self.periodAngles_E_to_B_izyx,
-                phases=self.phaseAngles_E_to_B_izyx,
-                bases=self.base_airplane.angles_E_to_B_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listAngles_E_to_B_izyx = functions.oscillating_linspace(
-                amps=self.ampAngles_E_to_B_izyx,
-                periods=self.periodAngles_E_to_B_izyx,
-                phases=self.phaseAngles_E_to_B_izyx,
-                bases=self.base_airplane.angles_E_to_B_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of angles_E_to_B_izyx.
+        listAngles_E_to_B_izyx = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingAngles_E_to_B_izyx[dim] == "sine":
+                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
         # Create an empty 2D ndarray that will hold each of the Airplane's Wing's
         # vector of Wings representing its changing state at each time step. The

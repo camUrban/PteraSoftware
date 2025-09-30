@@ -290,47 +290,49 @@ class WingMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingPrelimLer_G_Cg == "sine":
-            listPrelimLer_G_Cg = functions.oscillating_sinspaces(
-                amps=self.ampPrelimLer_G_Cg,
-                periods=self.periodPrelimLer_G_Cg,
-                phases=self.phasePrelimLer_G_Cg,
-                bases=self.base_wing.prelimLer_G_Cg,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listPrelimLer_G_Cg = functions.oscillating_linspace(
-                amps=self.ampPrelimLer_G_Cg,
-                periods=self.periodPrelimLer_G_Cg,
-                phases=self.phasePrelimLer_G_Cg,
-                bases=self.base_wing.prelimLer_G_Cg,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of prelimLer_G_Cg.
+        listPrelimLer_G_Cg = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingPrelimLer_G_Cg[dim] == "sine":
+                listPrelimLer_G_Cg[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampPrelimLer_G_Cg[dim],
+                    periods=self.periodPrelimLer_G_Cg[dim],
+                    phases=self.phasePrelimLer_G_Cg[dim],
+                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listPrelimLer_G_Cg[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampPrelimLer_G_Cg[dim],
+                    periods=self.periodPrelimLer_G_Cg[dim],
+                    phases=self.phasePrelimLer_G_Cg[dim],
+                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingAngles_G_to_prelimWn_izyx == "sine":
-            listAngles_G_to_prelimWn_izyx = functions.oscillating_sinspaces(
-                amps=self.ampAngles_G_to_prelimWn_izyx,
-                periods=self.periodAngles_G_to_prelimWn_izyx,
-                phases=self.phaseAngles_G_to_prelimWn_izyx,
-                bases=self.base_wing.angles_G_to_prelimWn_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listAngles_G_to_prelimWn_izyx = functions.oscillating_linspace(
-                amps=self.ampAngles_G_to_prelimWn_izyx,
-                periods=self.periodAngles_G_to_prelimWn_izyx,
-                phases=self.phaseAngles_G_to_prelimWn_izyx,
-                bases=self.base_wing.angles_G_to_prelimWn_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of angles_G_to_prelimWn_izyx.
+        listAngles_G_to_prelimWn_izyx = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingAngles_G_to_prelimWn_izyx[dim] == "sine":
+                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
         # Create an empty 2D ndarray that will hold each of the Wings's
         # WingCrossSection's vector of WingCrossSections representing its changing

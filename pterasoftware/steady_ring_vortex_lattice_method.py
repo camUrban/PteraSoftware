@@ -168,7 +168,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Solve for the forces (in geometry axes) and moments (in geometry axes,
         # relative to the CG) on each Panel.
         logging.info("Calculating forces and moments.")
-        self._calculate_forces_and_moments()
+        self._calculate_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges.
@@ -443,7 +443,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         return stackRingVInd_G__E + stackHorseshoeVInd_G__E + self.vInf_G__E
 
-    def _calculate_forces_and_moments(self):
+    def _calculate_loads(self):
         """Calculate the forces (in geometry axes) and moments (in geometry axes,
         relative to the CG) on every Panel.
 
@@ -474,6 +474,16 @@ class SteadyRingVortexLatticeMethodSolver:
 
                 # Iterate through this Wing's 1D ndarray of Panels.
                 for panel in panels:
+                    # FIXME: After rereading pages 9-10 of "Modeling of
+                    #  aerodynamic forces in flapping flight with the Unsteady
+                    #  Vortex Lattice Method" by Thomas Lambert, I think our
+                    #  implementation here is critically wrong. Consider we have
+                    #  a wing with a (1,2) ndarray of Panels. Let's call them
+                    #  Panel A and Panel B. With our current method, we calculate
+                    #  the force on Panel A's right LineVortex as though it had a
+                    #  strength of Gamma_a - Gamma_b, and the force on Panel B's
+                    #  left LineVortex as Gamma_b - Gamma_a. I think these forces
+                    #  will precisely cancel-out!
                     if panel.is_right_edge:
                         # Set the effective right LineVortex strength to this Panel's
                         # RingVortex's strength.
@@ -485,17 +495,6 @@ class SteadyRingVortexLatticeMethodSolver:
                             panel.local_chordwise_position,
                             panel.local_spanwise_position + 1,
                         ]
-
-                        # FIXME: After rereading pages 9-10 of "Modeling of
-                        #  aerodynamic forces in flapping flight with the Unsteady
-                        #  Vortex Lattice Method" by Thomas Lambert, I think our
-                        #  implementation here is critically wrong. Consider we have
-                        #  a wing with a (1,2) ndarray of Panels. Let's call them
-                        #  Panel A and Panel B. With our current method, we calculate
-                        #  the force on Panel A's right LineVortex as though it had a
-                        #  strength of Gamma_a - Gamma_b, and the force on Panel B's
-                        #  left LineVortex as Gamma_b - Gamma_a. I think these forces
-                        #  will precisely cancel-out!
 
                         # Set the effective right LineVortex strength to the
                         # difference between this Panel's RingVortex's strength,
@@ -593,8 +592,10 @@ class SteadyRingVortexLatticeMethodSolver:
             )
         )
 
-        forces_G = frontLegForces_G + leftLegForces_G + rightLegForces_G
+        forces_G = rightLegForces_G + frontLegForces_G + leftLegForces_G
 
+        # TODO: Determine if we get any performance gains by switching to the
+        #  functions.numba_1d_explicit_cross function here.
         # Find the moments (in geometry axes, relative to the CG) on the Panels'
         # RingVortex's right LineVortex, front LineVortex, and left LineVortex.
         rightLegMoments_G_Cg = np.cross(
@@ -613,6 +614,6 @@ class SteadyRingVortexLatticeMethodSolver:
             axis=-1,
         )
 
-        moments_G_Cg = frontLegMoments_G_Cg + leftLegMoments_G_Cg + rightLegMoments_G_Cg
+        moments_G_Cg = rightLegMoments_G_Cg + frontLegMoments_G_Cg + leftLegMoments_G_Cg
 
         functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)

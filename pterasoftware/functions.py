@@ -144,7 +144,13 @@ def numba_centroid_of_quadrilateral(
 
 
 # NOTE: I haven't yet started refactoring this function.
-def calculate_streamlines(solver, num_steps=25, delta_time=0.02):
+def calculate_streamlines(
+        solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver | UnsteadyRingVortexLatticeMethodSolver
+        ),
+        num_steps=25,
+        delta_time=0.02
+):
     """This function calculates the location of the streamlines coming off the back
     of the wings.
 

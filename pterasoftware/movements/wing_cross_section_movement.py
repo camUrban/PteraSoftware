@@ -273,47 +273,49 @@ class WingCrossSectionMovement:
             delta_time, "delta_time"
         )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingLp_Wcsp_Lpp == "sine":
-            listLp_Wcsp_Lpp = functions.oscillating_sinspaces(
-                amps=self.ampLp_Wcsp_Lpp,
-                periods=self.periodLp_Wcsp_Lpp,
-                phases=self.phaseLp_Wcsp_Lpp,
-                bases=self.base_wing_cross_section.Lp_Wcsp_Lpp,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listLp_Wcsp_Lpp = functions.oscillating_linspace(
-                amps=self.ampLp_Wcsp_Lpp,
-                periods=self.periodLp_Wcsp_Lpp,
-                phases=self.phaseLp_Wcsp_Lpp,
-                bases=self.base_wing_cross_section.Lp_Wcsp_Lpp,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of Lp_Wcsp_Lpp.
+        listLp_Wcsp_Lpp = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingLp_Wcsp_Lpp[dim] == "sine":
+                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
-        # FIXME: This is broken because self.spacingLp_Wcsp_Lpp is a
-        #  list/tuple/ndarray. Therefore it always defaults to oscillating_linspace.
-        if self.spacingAngles_Wcsp_to_Wcs_izyx == "sine":
-            listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_sinspaces(
-                amps=self.ampAngles_Wcsp_to_Wcs_izyx,
-                periods=self.periodAngles_Wcsp_to_Wcs_izyx,
-                phases=self.phaseAngles_Wcsp_to_Wcs_izyx,
-                bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
-        else:
-            listAngles_Wcsp_to_Wcs_izyx = functions.oscillating_linspace(
-                amps=self.ampAngles_Wcsp_to_Wcs_izyx,
-                periods=self.periodAngles_Wcsp_to_Wcs_izyx,
-                phases=self.phaseAngles_Wcsp_to_Wcs_izyx,
-                bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
-                num_steps=num_steps,
-                delta_time=delta_time,
-            )
+        # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_izyx.
+        listAngles_Wcsp_to_Wcs_izyx = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            if self.spacingAngles_Wcsp_to_Wcs_izyx[dim] == "sine":
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_sinspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
+                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            else:
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_linspace(
+                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
+                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
 
         # Create an empty list to hold each time step's WingCrossSection.
         wing_cross_sections = []

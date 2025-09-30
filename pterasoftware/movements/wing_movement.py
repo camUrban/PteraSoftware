@@ -172,15 +172,13 @@ class WingMovement:
                 )
         self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingPrelimLer_G_Cg = parameter_validation.list_return_list(
-        #     spacingPrelimLer_G_Cg, "spacingPrelimLer_G_Cg"
-        # )
-        if not np.all(elem in ["sine", "uniform"] for elem in spacingPrelimLer_G_Cg):
-            raise ValueError(
-                'All elements in spacingPrelimLer_G_Cg must be "sine" or "uniform".'
+        spacingPrelimLer_G_Cg = (
+            parameter_validation.threeD_string_vectorLike_return_tuple(
+                spacingPrelimLer_G_Cg,
+                "spacingPrelimLer_G_Cg",
+                valid_values=["sine", "uniform"],
             )
+        )
         self.spacingPrelimLer_G_Cg = spacingPrelimLer_G_Cg
 
         phasePrelimLer_G_Cg = (
@@ -233,17 +231,13 @@ class WingMovement:
                 )
         self.periodAngles_G_to_prelimWn_izyx = periodAngles_G_to_prelimWn_izyx
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingAngles_G_to_prelimWn_izyx = parameter_validation.list_return_list(
-        #     spacingAngles_G_to_prelimWn_izyx, "spacingAngles_G_to_prelimWn_izyx"
-        # )
-        if not np.all(
-            elem in ["sine", "uniform"] for elem in spacingAngles_G_to_prelimWn_izyx
-        ):
-            raise ValueError(
-                'All elements in spacingAngles_G_to_prelimWn_izyx must be "sine" or "uniform".'
+        spacingAngles_G_to_prelimWn_izyx = (
+            parameter_validation.threeD_string_vectorLike_return_tuple(
+                spacingAngles_G_to_prelimWn_izyx,
+                "spacingAngles_G_to_prelimWn_izyx",
+                valid_values=["sine", "uniform"],
             )
+        )
         self.spacingAngles_G_to_prelimWn_izyx = spacingAngles_G_to_prelimWn_izyx
 
         phaseAngles_G_to_prelimWn_izyx = (

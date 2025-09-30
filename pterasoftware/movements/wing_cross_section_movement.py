@@ -154,15 +154,11 @@ class WingCrossSectionMovement:
                 )
         self.periodLp_Wcsp_Lpp = periodLp_Wcsp_Lpp
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingLp_Wcsp_Lpp = parameter_validation.list_return_list(
-        #     spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp"
-        # )
-        if not np.all(elem in ["sine", "uniform"] for elem in spacingLp_Wcsp_Lpp):
-            raise ValueError(
-                'All elements in spacingLp_Wcsp_Lpp must be "sine" or "uniform".'
+        spacingLp_Wcsp_Lpp = (
+            parameter_validation.threeD_string_vectorLike_return_tuple(
+                spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp", valid_values=["sine", "uniform"]
             )
+        )
         self.spacingLp_Wcsp_Lpp = spacingLp_Wcsp_Lpp
 
         phaseLp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
@@ -211,17 +207,13 @@ class WingCrossSectionMovement:
                 )
         self.periodAngles_Wcsp_to_Wcs_izyx = periodAngles_Wcsp_to_Wcs_izyx
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingAngles_Wcsp_to_Wcs_izyx = parameter_validation.list_return_list(
-        #     spacingAngles_Wcsp_to_Wcs_izyx, "spacingAngles_Wcsp_to_Wcs_izyx"
-        # )
-        if not np.all(
-            elem in ["sine", "uniform"] for elem in spacingAngles_Wcsp_to_Wcs_izyx
-        ):
-            raise ValueError(
-                'All elements in spacingAngles_Wcsp_to_Wcs_izyx must be "sine" or "uniform".'
+        spacingAngles_Wcsp_to_Wcs_izyx = (
+            parameter_validation.threeD_string_vectorLike_return_tuple(
+                spacingAngles_Wcsp_to_Wcs_izyx,
+                "spacingAngles_Wcsp_to_Wcs_izyx",
+                valid_values=["sine", "uniform"],
             )
+        )
         self.spacingAngles_Wcsp_to_Wcs_izyx = spacingAngles_Wcsp_to_Wcs_izyx
 
         phaseAngles_Wcsp_to_Wcs_izyx = (

@@ -409,6 +409,53 @@ def threeD_number_vectorLike_return_float_unit_vector(vector, name):
     return vector
 
 
+def threeD_string_vectorLike_return_tuple(vector, name, valid_values=None):
+    """Validates a value is a 3D vector-like object (array-like object with shape (3,
+    )) of strings. It then returns it as a tuple of 3 strings. name must be a string.
+
+    :param vector: array-like
+        The value to validate. Can be a tuple, list, or numpy array with exactly 3
+        string elements.
+
+    :param name: str
+        The name of the parameter being validated.
+
+    :param valid_values: list or set, optional
+        If provided, each element in vector must be in this set of valid values.
+
+    :return: tuple of 3 strings
+        The validated vector as a tuple.
+    """
+    name = string_return_string(name, "name")
+
+    # Convert to list if numpy array, or validate it's a list/tuple.
+    if isinstance(vector, np.ndarray):
+        if vector.ndim != 1 or vector.shape[0] != 3:
+            raise ValueError(f"{name} must be a 3-element vector.")
+        vector = vector.tolist()
+    elif isinstance(vector, (list, tuple)):
+        if len(vector) != 3:
+            raise ValueError(f"{name} must be a 3-element vector.")
+    else:
+        raise TypeError(f"{name} must be array-like (tuple, list, or numpy array).")
+
+    # Check all elements are strings.
+    for i, elem in enumerate(vector):
+        if not isinstance(elem, str):
+            raise TypeError(f"Element {i} of {name} must be a string.")
+
+    # If valid_values is provided, check each element is in valid_values.
+    if valid_values is not None:
+        valid_values_set = set(valid_values)
+        for i, elem in enumerate(vector):
+            if elem not in valid_values_set:
+                raise ValueError(
+                    f"Element {i} of {name} must be one of {list(valid_values_set)}."
+                )
+
+    return tuple(vector)
+
+
 def fourD_homog_number_vectorLike_return_float(vector, name):
     """Validates a value is a 4D homogeneous vector-like object (array-like object
     with shape (4,) with a final value equal to 0.0 or 1.0). It then returns it as a

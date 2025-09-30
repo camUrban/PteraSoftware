@@ -168,15 +168,9 @@ class AirplaneMovement:
                 )
         self.periodCgi_E_I = periodCgi_E_I
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingCgi_E_I = parameter_validation.list_return_list(
-        #     spacingCgi_E_I, "spacingCgi_E_I"
-        # )
-        if not np.all(elem in ["sine", "uniform"] for elem in spacingCgi_E_I):
-            raise ValueError(
-                'All elements in spacingCgi_E_I must be "sine" or "uniform".'
-            )
+        spacingCgi_E_I = parameter_validation.threeD_string_vectorLike_return_tuple(
+            spacingCgi_E_I, "spacingCgi_E_I", valid_values=["sine", "uniform"]
+        )
         self.spacingCgi_E_I = spacingCgi_E_I
 
         phaseCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
@@ -225,17 +219,13 @@ class AirplaneMovement:
                 )
         self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
 
-        # TODO: Replace this commented out validation call to one that allows
-        #  tuples, lists, or 1D ndarrays. Also, only let it be size (3,).
-        # spacingAngles_E_to_B_izyx = parameter_validation.list_return_list(
-        #     spacingAngles_E_to_B_izyx, "spacingAngles_E_to_B_izyx"
-        # )
-        if not np.all(
-            elem in ["sine", "uniform"] for elem in spacingAngles_E_to_B_izyx
-        ):
-            raise ValueError(
-                'All elements in spacingAngles_E_to_B_izyx must be "sine" or "uniform".'
+        spacingAngles_E_to_B_izyx = (
+            parameter_validation.threeD_string_vectorLike_return_tuple(
+                spacingAngles_E_to_B_izyx,
+                "spacingAngles_E_to_B_izyx",
+                valid_values=["sine", "uniform"],
             )
+        )
         self.spacingAngles_E_to_B_izyx = spacingAngles_E_to_B_izyx
 
         phaseAngles_E_to_B_izyx = (

@@ -35,6 +35,9 @@ class Airplane:
 
         draw: Draw the 3D geometry of this Airplane.
 
+        num_panels: This method sets a property for the total number of Panels
+        across all Wings.
+
         validate_first_airplane_constraints: This method validates that the first
         Airplane in a simulation has Cgi_E_I set to zeros, as required by the
         definition of the simulation's starting point.
@@ -194,11 +197,6 @@ class Airplane:
             self.b_ref = parameter_validation.positive_number_return_float(
                 b_ref, "b_ref"
             )
-
-        # Add up the total number of panels of all the Wings.
-        self.num_panels = 0
-        for wing in self.wings:
-            self.num_panels += wing.num_panels
 
         # Initialize empty class attributes to hold the force, moment,
         # force coefficients, and moment coefficients this Airplane experiences.
@@ -540,6 +538,15 @@ class Airplane:
         )
 
         return None
+
+    @property
+    def num_panels(self):
+        """This method sets a property for the total number of Panels across all Wings.
+
+        :return: int
+            The total number of Panels.
+        """
+        return sum(wing.num_panels for wing in self.wings)
 
     def validate_first_airplane_constraints(self):
         """This method validates constraints specific to the first Airplane in a

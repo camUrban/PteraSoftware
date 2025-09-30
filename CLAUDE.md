@@ -8,6 +8,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ptera Software is a fast, easy-to-use, and open-source package for analyzing flapping-wing flight using unsteady and steady vortex lattice methods. It supports steady and unsteady aerodynamic simulations with formation flight capabilities.
 
+## Example Commands
+
+### Running Tests
+
+```
+Bash(.venv/Scripts/python.exe:-m:unittest:discover:-s:${WORKSPACE}/tests:*)
+```
+
+If that fails, try:
+
+```
+Bash(.venv/bin/python:-m:unittest:discover:-s:${WORKSPACE}/tests:*)
+```
+
 ## Architecture Overview
 
 ### Core Package Structure
@@ -22,7 +36,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
     - `movements/movement.py`: Core Movement class
     - `movements/airplane_movement.py`: Airplane motion definitions
     - `movements/wing_movement.py`: Wing flapping motion
-    - `movements/wing_cross_section_movement.py`: Cross section motion
+    - `movements/wing_cross_section_movement.py`: Wing cross section motion
     - `movements/operating_point_movement.py`: Operating condition changes
     - `movements/functions.py`: Movement utility functions
   - **Coordinate System**: `transformations.py` (coordinate transformations and rotations)
@@ -222,7 +236,7 @@ When referencing coordinate variables in comments and docstrings, use the follow
 
 ### Axes, Points, and Frames Overview
 
-Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames. The notation and terminology used is an extended version of that introduced in "Flight Vehicle Aerodynamics" by Mark Drela.
+Ptera Software simulates flapping-wing dynamics and aerodynamics using several different axis systems, reference points, and reference frames.
 
 **Key Concepts:**
 - **Axis system** ("axes"): Contains information about three cartesian directions. They do not have an origin, therefore it's incorrect to write something like "the wing axes' origin."
@@ -234,6 +248,7 @@ Ptera Software simulates flapping-wing dynamics and aerodynamics using several d
 - Position vectors: require both axes and a reference point (origin)
 - Moment vectors: require axes and reference point (point about which moment acts)
 - Velocity/acceleration vectors: require both axis system and reference frame
+- Some scalars (e.g., speed): require a reference frame
 
 ### Variable Naming Patterns
 
@@ -362,50 +377,6 @@ There are four useful combinations of axes, points, and frames. Variables are de
 - Angle wrapping to (-180, 180] range
 - Vectors treated as column vectors with left-multiplication by matrices
 - Different sequences have different gimbal lock singularities
-
-## Example Usage Pattern
-
-Basic usage follows this pattern:
-```python
-import pterasoftware as ps
-
-# Define geometry using the new package structure
-airplane = ps.geometry.airplane.Airplane(
-    wings=[
-        ps.geometry.wing.Wing(
-            symmetric=True,
-            wing_cross_sections=[
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
-                    num_spanwise_panels=8,
-                ),
-                ps.geometry.wing_cross_section.WingCrossSection(
-                    Lp_Wcsp_Lpp=[0.0, 5.0, 0.0],
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
-                    num_spanwise_panels=None,  # Tip cross section
-                ),
-            ],
-        ),
-    ],
-)
-
-# Define operating conditions
-operating_point = ps.operating_point.OperatingPoint()
-
-# Create problem
-problem = ps.problems.SteadyProblem(
-    airplanes=[airplane], operating_point=operating_point
-)
-
-# Choose and run solver
-solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-    steady_problem=problem
-)
-solver.run()
-
-# Visualize results
-ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
-```
 
 ## Miscellaneous Guidelines
 - Use clear, descriptive variable names  

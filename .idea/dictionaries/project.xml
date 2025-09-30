@@ -46,7 +46,9 @@
       <w>cblvpf</w>
       <w>cblvpl</w>
       <w>cblvpr</w>
+      <w>chgrp</w>
       <w>chordwise</w>
+      <w>chown</w>
       <w>clvpf</w>
       <w>cmocean</w>
       <w>coanda</w>
@@ -62,6 +64,7 @@
       <w>dbln</w>
       <w>dfvlr</w>
       <w>dicke</w>
+      <w>diskpart</w>
       <w>dormoy</w>
       <w>dornier</w>
       <w>downsampled</w>
@@ -152,6 +155,7 @@
       <w>maxtime</w>
       <w>midspan</w>
       <w>miley</w>
+      <w>mklink</w>
       <w>monge</w>
       <w>mook</w>
       <w>naca</w>
@@ -213,6 +217,7 @@
       <w>strouhal</w>
       <w>suhas</w>
       <w>supercritical</w>
+      <w>takeown</w>
       <w>tqdm</w>
       <w>tsagi</w>
       <w>uiuc</w>

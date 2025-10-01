@@ -676,7 +676,7 @@ class Airplane:
                         angles_Wcsp_to_Wcs_izyx=np.copy(
                             wing_cross_section.angles_Wcsp_to_Wcs_izyx
                         ),
-                        control_surface_symmetry_type="symmetric",
+                        control_surface_symmetry_type=None,
                         control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
                         control_surface_deflection=reflected_control_surface_deflection,
                         spanwise_spacing=wing_cross_section.spanwise_spacing,

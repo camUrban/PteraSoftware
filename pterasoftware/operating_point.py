@@ -17,7 +17,6 @@ from . import transformations
 from . import parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class OperatingPoint:
     """This is a class used to contain a Problem's operating point characteristics.
 

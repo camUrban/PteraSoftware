@@ -52,6 +52,11 @@ class Airfoil:
         This class is not meant to be subclassed.
     """
 
+    # FIXME: Explicitly disallow NACA0000 Airfoils. They occasionally generate
+    #  correctly but often causes issues due to their infinitesimal thickness.
+    #  Mention the alternative of using any NACA00XX Airfoil, as these are the same
+    #  thing for vortex lattice methods.
+
     def __init__(
         self,
         name="NACA0012",

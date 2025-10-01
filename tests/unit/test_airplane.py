@@ -435,8 +435,8 @@ class TestAirplane(unittest.TestCase):
         # Find corresponding WingCrossSections with asymmetric control surfaces
         for i, wcs in enumerate(original_wing.wing_cross_sections):
             reflected_wcs = reflected_wing.wing_cross_sections[i]
-            # Reflected Wing should have symmetric control surfaces
-            self.assertEqual(reflected_wcs.control_surface_symmetry_type, "symmetric")
+            # Reflected Wing should have None-type control surface symmetry
+            self.assertEqual(reflected_wcs.control_surface_symmetry_type, None)
 
     def test_comprehensive_airplane_properties(self):
         """Test comprehensive property access for different Airplane configurations."""

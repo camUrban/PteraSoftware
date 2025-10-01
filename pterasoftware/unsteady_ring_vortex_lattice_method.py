@@ -527,11 +527,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # of "Modeling of aerodynamic forces in flapping
                                 # flight with the Unsteady Vortex Lattice Method" by
                                 # Thomas Lambert.
+
                                 # FIXME: I think this might be a bug. It looks like we
                                 #  are already spacing the points back from the Panels'
                                 #  rear points by a quarter-chord of each Panel. This
                                 #  is spacing even further beyond that. Double check if
                                 #  that is actually correct.
+
                                 Blrvp_G_Cg = (
                                     Flrvp_G_Cg
                                     + (panel.Blpp_G_Cg - panel.Flpp_G_Cg)
@@ -673,7 +675,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-
         # Find the 2D ndarray of normalized velocities (in geometry axes, observed
         # from the Earth frame) induced at each Panel's collocation point by each bound
         # RingVortex. The answer is normalized because the solver's list of bound
@@ -888,6 +889,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Iterate through this Wing's 1D ndarray of Panels.
                 for panel in panels:
+
                     # FIXME: After rereading pages 9-10 of "Modeling of
                     #  aerodynamic forces in flapping flight with the Unsteady
                     #  Vortex Lattice Method" by Thomas Lambert, I think our
@@ -898,6 +900,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     #  strength of Gamma_a - Gamma_b, and the force on Panel B's
                     #  left LineVortex as Gamma_b - Gamma_a. I think these forces
                     #  will precisely cancel-out!
+
                     if panel.is_right_edge:
                         # Set the effective right LineVortex strength to this Panel's
                         # RingVortex's strength.
@@ -965,8 +968,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # the center of every Panels' RingVortex's right LineVortex,
         # front LineVortex, and left LineVortex.
         stackVelocityRightLineVortexCenters_G__E = (
-                self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpr_G_Cg)
-                + self._calculate_current_flapping_velocities_at_right_leg_centers()
+            self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpr_G_Cg)
+            + self._calculate_current_flapping_velocities_at_right_leg_centers()
         )
         stackVelocityFrontLineVortexCenters_G__E = (
             self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpf_G_Cg)
@@ -1013,6 +1016,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  and investigation is needed. See
         #  https://github.com/camUrban/PteraSoftware/issues/27 for more details
         #  and updates.
+
         # Calculate the unsteady component of the force on each Panel (in
         # geometry axes), which is derived from the unsteady Bernoulli equation.
         unsteady_forces_G = (
@@ -1030,10 +1034,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         forces_G = (
-                rightLegForces_G
-                + leftLegForces_G
-                + rightLegForces_G
-                + unsteady_forces_G
+            rightLegForces_G + leftLegForces_G + rightLegForces_G + unsteady_forces_G
         )
 
         # Find the moments (in geometry axes, relative to the CG) on the Panels'
@@ -1055,6 +1056,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  we are using the position of the collocation points (in geometry axes,
         #  relative to the CG) to calculate the moment, but shouldn't we instead
         #  use the  to the locations of the Panels' centroids?
+
         # Find the moments (in geometry axes, relative to the CG) due to the
         # unsteady component of the force on each Panel.
         unsteady_moments_G_Cg = functions.numba_1d_explicit_cross(
@@ -1063,10 +1065,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         moments_G_Cg = (
-                rightLegMoments_G_Cg
-                + frontLegMoments_G_Cg
-                + leftLegMoments_G_Cg
-                + unsteady_moments_G_Cg
+            rightLegMoments_G_Cg
+            + frontLegMoments_G_Cg
+            + leftLegMoments_G_Cg
+            + unsteady_moments_G_Cg
         )
 
         functions.process_unsteady_solver_loads(

@@ -474,6 +474,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
                 # Iterate through this Wing's 1D ndarray of Panels.
                 for panel in panels:
+
                     # FIXME: After rereading pages 9-10 of "Modeling of
                     #  aerodynamic forces in flapping flight with the Unsteady
                     #  Vortex Lattice Method" by Thomas Lambert, I think our
@@ -484,6 +485,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     #  strength of Gamma_a - Gamma_b, and the force on Panel B's
                     #  left LineVortex as Gamma_b - Gamma_a. I think these forces
                     #  will precisely cancel-out!
+
                     if panel.is_right_edge:
                         # Set the effective right LineVortex strength to this Panel's
                         # RingVortex's strength.

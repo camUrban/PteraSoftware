@@ -202,7 +202,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=45.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+    rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
 # Define a new steady problem. A steady problem contains an airplane object and an

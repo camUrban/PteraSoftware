@@ -60,7 +60,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
 )
 
 flat_plate_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=1.0, alpha=10.0, beta=0.0, nu=15.06e-6
+    rho=1.225, vCg__E=1.0, alpha=15.0, beta=10.0, nu=15.06e-6
 )
 
 

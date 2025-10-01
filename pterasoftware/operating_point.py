@@ -163,7 +163,7 @@ class OperatingPoint:
             order="xyz",
         )
 
-        angles_B_to_W_exyz = np.array([0.0, -self.alpha, -self.beta])
+        angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
 
         T_pas_B_Cg_to_W_Cg = transformations.generate_rot_T(
             angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"

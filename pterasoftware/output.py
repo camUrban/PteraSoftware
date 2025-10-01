@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# NOTE: I've started refactoring this module.
 """This module contains useful functions for visualizing solutions to problems.
 
 This module contains the following classes:
@@ -7,6 +7,7 @@ This module contains the following classes:
 This module contains the following exceptions:
     None
 
+# TODO: Update the function descriptions.
 This module contains the following functions:
     draw: Draw the geometry of the airplanes in a solver object.
 
@@ -16,8 +17,9 @@ This module contains the following functions:
     and plots the geometries' forces, moments, force coefficients, and moment
     coefficients as a function of time.
 
-    print_steady_results: This function prints the forces, moments,
-    force coefficients, and moment coefficients calculated by a steady solver.
+    print_steady_results: This function prints the forces, and force coefficients (in
+    wind axes) and the moments, and moment coefficients (in wind axes, relative to
+    the CG) calculated by a steady solver.
 
     print_unsteady_results: This function prints the final cycle-averaged of the
     forces, moments, force coefficients, and moment coefficients calculated by an
@@ -33,6 +35,11 @@ import pyvista as pv
 import webp
 
 from . import unsteady_ring_vortex_lattice_method
+
+from .steady_horseshoe_vortex_lattice_method import (
+    SteadyHorseshoeVortexLatticeMethodSolver,
+)
+from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
 from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 # Define the color and colormaps used by the visualization functions.
@@ -95,7 +102,11 @@ _marker_spacing = 1.0 / _num_markers
 
 # NOTE: I haven't yet started refactoring this function.
 def draw(
-    solver,
+    solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver
+        | SteadyRingVortexLatticeMethodSolver
+        | UnsteadyRingVortexLatticeMethodSolver
+    ),
     scalar_type=None,
     show_streamlines=False,
     show_wake_vortices=False,
@@ -293,7 +304,7 @@ def draw(
 
 # NOTE: I haven't yet started refactoring this function.
 def animate(
-    unsteady_solver,
+    unsteady_solver: UnsteadyRingVortexLatticeMethodSolver,
     scalar_type=None,
     show_wake_vortices=False,
     save=False,
@@ -554,7 +565,9 @@ def animate(
 
 
 # NOTE: I haven't yet started refactoring this function.
-def plot_results_versus_time(unsteady_solver, show=True, save=False):
+def plot_results_versus_time(
+    unsteady_solver: UnsteadyRingVortexLatticeMethodSolver, show=True, save=False
+):
     """This method takes in an unsteady solver object, and plots the geometries'
     forces, moments, force coefficients, and moment coefficients as a function of time.
 
@@ -593,18 +606,10 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
     # Initialize matrices to hold the forces, moments, and coefficients at each time
     # step which has results.
-    total_near_field_force_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average)
-    )
-    total_near_field_force_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average)
-    )
-    total_near_field_moment_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average)
-    )
-    total_near_field_moment_coefficients_wind_axes = np.zeros(
-        (num_airplanes, 3, num_steps_to_average)
-    )
+    forces_W = np.zeros((num_airplanes, 3, num_steps_to_average))
+    forceCoefficients_W = np.zeros((num_airplanes, 3, num_steps_to_average))
+    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average))
+    momentCoefficients_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average))
 
     # Initialize a variable to track position in the results arrays.
     results_step = 0
@@ -617,18 +622,14 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
 
         # Iterate through this step's airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            total_near_field_force_wind_axes[airplane_id, :, results_step] = (
-                airplane.total_near_field_force_wind_axes
+            forces_W[airplane_id, :, results_step] = airplane.forces_W
+            forceCoefficients_W[airplane_id, :, results_step] = (
+                airplane.forceCoefficients_W
             )
-            total_near_field_force_coefficients_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_force_coefficients_wind_axes
-            total_near_field_moment_wind_axes[airplane_id, :, results_step] = (
-                airplane.total_near_field_moment_wind_axes
+            moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
+            momentCoefficients_W_Cg[airplane_id, :, results_step] = (
+                airplane.momentCoefficients_W_Cg
             )
-            total_near_field_moment_coefficients_wind_axes[
-                airplane_id, :, results_step
-            ] = airplane.total_near_field_moment_coefficients_wind_axes
 
         results_step += 1
 
@@ -692,7 +693,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         # Populate the plots.
         force_axes.plot(
             times,
-            total_near_field_force_wind_axes[airplane_id, 0],
+            forces_W[airplane_id, 0],
             label="Induced Drag",
             color=_drag_color,
             marker=".",
@@ -701,7 +702,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         force_axes.plot(
             times,
-            total_near_field_force_wind_axes[airplane_id, 1],
+            forces_W[airplane_id, 1],
             label="Side Force",
             color=_side_color,
             marker=".",
@@ -710,7 +711,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         force_axes.plot(
             times,
-            total_near_field_force_wind_axes[airplane_id, 2],
+            forces_W[airplane_id, 2],
             label="Lift",
             color=_lift_color,
             marker=".",
@@ -719,7 +720,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         force_coefficients_axes.plot(
             times,
-            total_near_field_force_coefficients_wind_axes[airplane_id, 0],
+            forceCoefficients_W[airplane_id, 0],
             label="Induced Drag",
             color=_drag_color,
             marker=".",
@@ -728,7 +729,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         force_coefficients_axes.plot(
             times,
-            total_near_field_force_coefficients_wind_axes[airplane_id, 1],
+            forceCoefficients_W[airplane_id, 1],
             label="Side Force",
             color=_side_color,
             marker=".",
@@ -737,7 +738,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         force_coefficients_axes.plot(
             times,
-            total_near_field_force_coefficients_wind_axes[airplane_id, 2],
+            forceCoefficients_W[airplane_id, 2],
             label="Lift",
             color=_lift_color,
             marker=".",
@@ -746,7 +747,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_axes.plot(
             times,
-            total_near_field_moment_wind_axes[airplane_id, 0],
+            moments_W_Cg[airplane_id, 0],
             label="Roll",
             color=_roll_color,
             marker=".",
@@ -755,7 +756,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_axes.plot(
             times,
-            total_near_field_moment_wind_axes[airplane_id, 1],
+            moments_W_Cg[airplane_id, 1],
             label="Pitch",
             color=_pitch_color,
             marker=".",
@@ -764,7 +765,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_axes.plot(
             times,
-            total_near_field_moment_wind_axes[airplane_id, 2],
+            moments_W_Cg[airplane_id, 2],
             label="Yaw",
             color=_yaw_color,
             marker=".",
@@ -773,7 +774,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_coefficients_axes.plot(
             times,
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 0],
+            momentCoefficients_W_Cg[airplane_id, 0],
             label="Roll",
             color=_roll_color,
             marker=".",
@@ -782,7 +783,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_coefficients_axes.plot(
             times,
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 1],
+            momentCoefficients_W_Cg[airplane_id, 1],
             label="Pitch",
             color=_pitch_color,
             marker=".",
@@ -791,7 +792,7 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
         )
         moment_coefficients_axes.plot(
             times,
-            total_near_field_moment_coefficients_wind_axes[airplane_id, 2],
+            momentCoefficients_W_Cg[airplane_id, 2],
             label="Yaw",
             color=_yaw_color,
             marker=".",
@@ -871,106 +872,134 @@ def plot_results_versus_time(unsteady_solver, show=True, save=False):
             plt.close("all")
 
 
-# NOTE: I haven't yet started refactoring this function.
-def print_steady_results(steady_solver):
-    """This function prints the forces, moments, force coefficients, and moment
-    coefficients calculated by a steady solver.
+# TODO: Add a unit test for this function.
+def print_steady_results(
+    steady_solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver
+    ),
+):
+    """This function prints the forces, and force coefficients (in wind axes) and the
+    moments, and moment coefficients (in wind axes, relative to the CG) calculated by
+    a steady solver.
 
     :param steady_solver: SteadyHorseshoeVortexLatticeMethodSolver or
     SteadyRingVortexLatticeMethodSolver
-        This is the solver object with the results to be printed.
+
+        This is the steady solver with the results to be printed.
+
     :return: None
     """
+    if not isinstance(
+        steady_solver,
+        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
+    ):
+        raise TypeError(
+            "steady_solver must be either a SteadyHorseshoeVortexLatticeMethodSolver or a SteadyRingVortexLatticeMethodSolver."
+        )
+
+    padding_spaces = 2
+
+    col1 = [
+        "FX_W",
+        "FY_W",
+        "FZ_W",
+        "MX_W_Cg",
+        "MY_W_Cg",
+        "MZ_W_Cg",
+        "cFX_W",
+        "cFY_W",
+        "cFZ_W",
+        "cMX_W_Cg",
+        "cMY_W_Cg",
+        "cMZ_W_Cg",
+    ]
+    col1 = [label + ":" for label in col1]
+    col1_space = max(len(elem) for elem in col1) + padding_spaces
+
+    col2 = [
+        steady_solver.airplanes[0].forces_W[0],
+        steady_solver.airplanes[0].forces_W[1],
+        steady_solver.airplanes[0].forces_W[2],
+        steady_solver.airplanes[0].moments_W_Cg[0],
+        steady_solver.airplanes[0].moments_W_Cg[1],
+        steady_solver.airplanes[0].moments_W_Cg[2],
+        steady_solver.airplanes[0].forceCoefficients_W[0],
+        steady_solver.airplanes[0].forceCoefficients_W[1],
+        steady_solver.airplanes[0].forceCoefficients_W[2],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[0],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[1],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[2],
+    ]
+    col2 = [str(np.round(val, 3)) for val in col2]
+    col2 = [
+        val + " N" if i < 3 else val + " Nm" if i < 6 else val
+        for i, val in enumerate(col2)
+    ]
+    col2_space = max(len(elem) for elem in col2) + 2 * padding_spaces
+
+    col3 = [
+        "Drag",
+        "Side Force",
+        "Lift",
+        "Rolling Moment",
+        "Pitching Moment",
+        "Yawing Moment",
+        "CDi",
+        "CY",
+        "CL",
+        "Cl",
+        "Cm",
+        "Cn",
+    ]
+    col3 = [label + ":" for label in col3]
+    col3_space = max(len(elem) for elem in col3) + padding_spaces
+
+    col4 = [
+        -steady_solver.airplanes[0].forces_W[0],
+        steady_solver.airplanes[0].forces_W[1],
+        -steady_solver.airplanes[0].forces_W[2],
+        steady_solver.airplanes[0].moments_W_Cg[0],
+        steady_solver.airplanes[0].moments_W_Cg[1],
+        steady_solver.airplanes[0].moments_W_Cg[2],
+        -steady_solver.airplanes[0].forceCoefficients_W[0],
+        steady_solver.airplanes[0].forceCoefficients_W[1],
+        -steady_solver.airplanes[0].forceCoefficients_W[2],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[0],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[1],
+        steady_solver.airplanes[0].momentCoefficients_W_Cg[2],
+    ]
+    col4 = [str(np.round(val, 3)) for val in col4]
+    col4 = [
+        val + " N" if i < 3 else val + " Nm" if i < 6 else val
+        for i, val in enumerate(col4)
+    ]
+
+    pad = " " * padding_spaces
 
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
-        print("Airplane ", airplane.name, ":", sep="")
+        print(f'Airplane "{airplane.name}":')
 
-        # Print out this airplane's forces.
-        print("\tForces in Wind Axes:")
-        print(
-            "\t\tInduced Drag:\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[0], 3),
-            " N",
-            sep="",
-        )
-        print(
-            "\t\tSide Force:\t\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[1], 3),
-            " N",
-            sep="",
-        )
-        print(
-            "\t\tLift:\t\t\t\t\t",
-            np.round(airplane.total_near_field_force_wind_axes[2], 3),
-            " N",
-            sep="",
-        )
+        for i in range(len(col1)):
+            if i == 0:
+                print(f"{pad}Forces (in wind axes):")
+            elif i == 3:
+                print(f"\n{pad}Moments (in wind axes, relative to the CG):")
+            elif i == 6:
+                print(f"\n{pad}Force Coefficients (in wind axes):")
+            elif i == 9:
+                print(f"\n{pad}Moment Coefficients (in wind axes, relative to the CG):")
 
-        # Print out this airplane's moments.
-        print("\n\tMoments in Wind Axes:")
-        print(
-            "\t\tRolling Moment:\t\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[0], 3),
-            " Nm",
-            sep="",
-        )
-        print(
-            "\t\tPitching Moment:\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[1], 3),
-            " Nm",
-            sep="",
-        )
-        print(
-            "\t\tYawing Moment:\t\t\t",
-            np.round(airplane.total_near_field_moment_wind_axes[2], 3),
-            " Nm",
-            sep="",
-        )
+            s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
+            print(s)
 
-        # Print out this airplane's force coefficients.
-        print("\n\tForce Coefficients in Wind Axes:")
-        print(
-            "\t\tCDi:\t\t\t\t\t",
-            np.round(airplane.total_near_field_force_coefficients_wind_axes[0], 3),
-            sep="",
-        )
-        print(
-            "\t\tCY:\t\t\t\t\t\t",
-            np.round(airplane.total_near_field_force_coefficients_wind_axes[1], 3),
-            sep="",
-        )
-        print(
-            "\t\tCL:\t\t\t\t\t\t",
-            np.round(airplane.total_near_field_force_coefficients_wind_axes[2], 3),
-            sep="",
-        )
-
-        # Print out this airplane's moment coefficients.
-        print("\n\tMoment Coefficients in Wind Axes:")
-        print(
-            "\t\tCl:\t\t\t\t\t\t",
-            np.round(airplane.total_near_field_moment_coefficients_wind_axes[0], 3),
-            sep="",
-        )
-        print(
-            "\t\tCm:\t\t\t\t\t\t",
-            np.round(airplane.total_near_field_moment_coefficients_wind_axes[1], 3),
-            sep="",
-        )
-        print(
-            "\t\tCn:\t\t\t\t\t\t",
-            np.round(airplane.total_near_field_moment_coefficients_wind_axes[2], 3),
-            sep="",
-        )
-
-        # If the results from more airplanes are going to be printed, print new line
-        # to separate them.
+        # If the results from more Airplanes are going to be printed, print two new
+        # lines to separate them.
         if (airplane_num + 1) < steady_solver.num_airplanes:
-            print("")
+            print("\n")
 
 
 # NOTE: I haven't yet started refactoring this function.
-def print_unsteady_results(unsteady_solver):
+def print_unsteady_results(unsteady_solver: UnsteadyRingVortexLatticeMethodSolver):
     """This function prints the final cycle-averaged of the forces, moments,
     force coefficients, and moment coefficients calculated by an unsteady solver.
 
@@ -1157,7 +1186,7 @@ def _get_panel_surfaces(
 
 
 # NOTE: I haven't yet started refactoring this function.
-def _get_wake_ring_vortex_surfaces(solver: UnsteadyRingVortexLatticeMethodSolver, step):
+def _get_wake_ring_vortex_surfaces(solver, step):
     """This function returns the PolyData object for the surface of wake ring
     vortices at a given time step.
 

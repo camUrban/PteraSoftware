@@ -502,24 +502,22 @@ class Panel:
         )
         return np.linalg.norm(projDiagonalsOnPlaneCross_G) / 2
 
-    def update_coefficients(self, freestream_q):
+    def update_coefficients(self, qInf__E):
         """This method updates the Panel's force coefficients.
 
-        :param freestream_q: number
-            This is the freestream dynamic pressure, as calculated for the current
-            operating point. It must be a positive number, and will be converted to a
-            float internally. The units are in Pascals.
+        :param qInf__E: number
+            This is the fluid's freestream dynamic pressure, as calculated for the
+            current OperatingPoint. It must be a positive number, and will be
+            converted to a float internally. The units are in Pascals.
         :return: None
         """
-        freestream_q = parameter_validation.positive_number_return_float(
-            freestream_q, "freestream_q"
-        )
+        qInf__E = parameter_validation.positive_number_return_float(qInf__E, "qInf__E")
 
         # TODO: Update and standardize these definitions for force coefficients.
         induced_drag = -self.forces_W[0]
         side_force = self.forces_W[1]
         lift = -self.forces_W[2]
 
-        self.induced_drag_coefficient = induced_drag / self.area / freestream_q
-        self.side_force_coefficient = side_force / self.area / freestream_q
-        self.lift_coefficient = lift / self.area / freestream_q
+        self.induced_drag_coefficient = induced_drag / self.area / qInf__E
+        self.side_force_coefficient = side_force / self.area / qInf__E
+        self.lift_coefficient = lift / self.area / qInf__E

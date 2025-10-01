@@ -288,7 +288,7 @@ class TestPanel(unittest.TestCase):
         self.assertAlmostEqual(projected_area, 0.0, places=10)
 
     def test_calculate_projected_area_45_degrees(self):
-        """Test projected area at 45 degree angle."""
+        """Test projected area at a 45 degree angle."""
         panel = self.basic_panel
 
         # Project at 45 degrees
@@ -330,41 +330,41 @@ class TestPanel(unittest.TestCase):
         panel.forces_W = np.array([-10.0, 2.0, -50.0])
 
         # Calculate coefficients with a test dynamic pressure
-        freestream_q = 100.0  # Pascals
-        panel.update_coefficients(freestream_q)
+        qInf__E = 100.0  # Pascals
+        panel.update_coefficients(qInf__E)
 
         # Test induced drag coefficient: -forces_W[0] / area / q
-        expected_induced_drag_coeff = 10.0 / panel.area / freestream_q
+        expected_induced_drag_coefficient = 10.0 / panel.area / qInf__E
         self.assertAlmostEqual(
-            panel.induced_drag_coefficient, expected_induced_drag_coeff, places=10
+            panel.induced_drag_coefficient, expected_induced_drag_coefficient, places=10
         )
 
         # Test side force coefficient: forces_W[1] / area / q
-        expected_side_force_coeff = 2.0 / panel.area / freestream_q
+        expected_side_force_coefficient = 2.0 / panel.area / qInf__E
         self.assertAlmostEqual(
-            panel.side_force_coefficient, expected_side_force_coeff, places=10
+            panel.side_force_coefficient, expected_side_force_coefficient, places=10
         )
 
         # Test lift coefficient: -forces_W[2] / area / q
-        expected_lift_coeff = 50.0 / panel.area / freestream_q
+        expected_lift_coefficient = 50.0 / panel.area / qInf__E
         self.assertAlmostEqual(
-            panel.lift_coefficient, expected_lift_coeff, places=10
+            panel.lift_coefficient, expected_lift_coefficient, places=10
         )
 
     def test_update_coefficients_validation(self):
-        """Test validation of freestream_q parameter."""
+        """Test validation of qInf__E parameter."""
         panel = self.basic_panel
         panel.forces_W = np.array([1.0, 0.0, 1.0])
 
-        # Test invalid freestream_q type
+        # Test invalid qInf__E type
         with self.assertRaises(TypeError):
             panel.update_coefficients("invalid")
 
-        # Test negative freestream_q
+        # Test negative qInf__E
         with self.assertRaises((ValueError, TypeError)):
             panel.update_coefficients(-100.0)
 
-        # Test zero freestream_q
+        # Test zero qInf__E
         with self.assertRaises((ValueError, TypeError, ZeroDivisionError)):
             panel.update_coefficients(0.0)
 

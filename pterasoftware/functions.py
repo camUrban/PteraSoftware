@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# NOTE: I've started refactoring this module.
 # TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains functions shared by other modules in the pterasoftware package.
 
@@ -8,6 +8,7 @@ This module contains the following classes:
 This module contains the following exceptions:
     None
 
+# TODO: Update the function descriptions.
 This module contains the following functions:
     cosspace: This function is used to create an array containing a specified number
     of values between a specified minimum and maximum value that are spaced via a
@@ -23,9 +24,9 @@ This module contains the following functions:
     represents the logging level and returns the integer that can be used to set the
     logger to this level.
 
-    process_steady_solver_loads: This function uses the forces and moments a solver
-    has found on its panels to find the forces, moments, and associated coefficients
-    on each airplane in the solver.
+    process_steady_solver_loads: This function uses the forces (in geometry axes) and
+    moments (in geometry axes, relative to the CG) a steady solver has found on its
+    Panels to find the net loads and associated coefficients for each Airplane.
 
     process_unsteady_solver_loads: This function uses the forces and moments a solver
     has found on its panels to find the forces, moments, and associated coefficients
@@ -55,7 +56,7 @@ from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
 from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
-from . import transformations
+from . import transformations, geometry, parameter_validation
 from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 
@@ -145,11 +146,13 @@ def numba_centroid_of_quadrilateral(
 
 # NOTE: I haven't yet started refactoring this function.
 def calculate_streamlines(
-        solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver | UnsteadyRingVortexLatticeMethodSolver
-        ),
-        num_steps=25,
-        delta_time=0.02
+    solver: (
+        SteadyHorseshoeVortexLatticeMethodSolver
+        | SteadyRingVortexLatticeMethodSolver
+        | UnsteadyRingVortexLatticeMethodSolver
+    ),
+    num_steps=25,
+    delta_time=0.02,
 ):
     """This function calculates the location of the streamlines coming off the back
     of the wings.
@@ -223,135 +226,126 @@ def convert_logging_level_name_to_value(name):
         raise Exception("The name of the logging level provided is not a valid option.")
 
 
-# NOTE: I haven't yet started refactoring this function.
+# TODO: Add unit tests for this function.
 def process_steady_solver_loads(
     steady_solver: (
         SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver
     ),
-    forces_G,
-    moments_G_Cg,
+    stackPanelForces_G,
+    stackPanelMoments_G_Cg,
 ):
-    """This function uses the forces and moments a solver has found on its panels to
-    find the forces, moments, and associated coefficients on each airplane in the
-    solver.
+    """This function uses the forces (in geometry axes) and moments (in geometry
+    axes, relative to the CG) a steady solver has found on its Panels to find the net
+    loads and associated coefficients for each Airplane.
 
-    :param steady_solver: SteadySolver
-        This is the solver whose forces will be processed.
-    :param forces_G: Nx3 array of floats
-        This is an array of the forces in geometry axes on each of the
-        solver's panels. The array is size Nx3, where N is the number of panels. The
-        units are Newtons.
-    :param moments_G_Cg: Nx3 array of floats
-        This is an array of the moments in geometry axes on each of the
-        solver's panels. The array is size Nx3, where N is the number of panels. The
-        units are Newton-meters.
+    :param steady_solver: SteadyHorseshoeVortexLatticeMethodSolver or
+    SteadyRingVortexLatticeMethodSolver
+
+        This is the steady solver whose loads will be processed.
+
+    :param stackPanelForces_G: (N,3) array-like of numbers
+
+        This is an array of the forces (in geometry axes) on each of the solver's
+        Panels. Can be any array-like object (tuple, list, or ndarray) with size (N,
+        3) that has numeric elements (int or float). N must be equal to the solver's
+        number of Panels. Values are converted to floats internally. The units are
+        Newtons.
+
+    :param stackPanelMoments_G_Cg: (N,3) array-like of numbers
+
+        This is an array of the moments (in geometry axes, relative to the CG) on
+        each of the solver's Panels. Can be any array-like object (tuple, list,
+        or ndarray) with size (N, 3) that has numeric elements (int or float). N must
+        be equal to the solver's number of Panels. Values are converted to floats
+        internally. The units are Newton-meters.
+
     :return:
     """
-    # Find this operating point's dynamic pressure. The units are Pascals.
-    dynamic_pressure = steady_solver.operating_point.qInf__E
+    stackPanelForces_G = (
+        parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+            stackPanelForces_G, "stackPanelForces_G"
+        )
+    )
+    if stackPanelForces_G.shape[0] != steady_solver.num_panels:
+        raise ValueError(
+            f"The first dimension of stackPanelForces_G must equal steady_solver.num_panels ({steady_solver.num_panels}), got {stackPanelForces_G.shape[0]}."
+        )
 
-    # Find the transformation matrix that will be used to convert from geometry axes
-    # to wind axes.
+    stackPanelMoments_G_Cg = (
+        parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+            stackPanelMoments_G_Cg, "stackPanelMoments_G_Cg"
+        )
+    )
+    if stackPanelMoments_G_Cg.shape[0] != steady_solver.num_panels:
+        raise ValueError(
+            f"The first dimension of stackPanelMoments_G_Cg must equal steady_solver.num_panels ({steady_solver.num_panels}), got {stackPanelMoments_G_Cg.shape[0]}."
+        )
+
+    qInf__E = steady_solver.operating_point.qInf__E
     T_pas_G_Cg_to_W_Cg = steady_solver.operating_point.T_pas_G_Cg_to_W_Cg
 
-    # Iterate through this solver's panels.
+    # Iterate through this solver's Panels.
+    panel: geometry.panel.Panel
     for panel_num, panel in enumerate(steady_solver.panels):
-        # Get this panel's forces and moments in geometry axes and wind axes.
-        this_force_geometry_axes = forces_G[panel_num, :]
-        this_moment_geometry_axes = moments_G_Cg[panel_num, :]
+        theseForces_G = stackPanelForces_G[panel_num, :]
+        theseMoments_G_Cg = stackPanelMoments_G_Cg[panel_num, :]
 
-        this_force_wind_axes = transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg, this_force_geometry_axes, has_point=False
+        theseForces_W = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, theseForces_G, has_point=False
         )
-        this_moment_wind_axes = transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg, this_moment_geometry_axes, has_point=True
+        theseMoments_W_Cg = transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_W_Cg, theseMoments_G_Cg, has_point=True
         )
 
-        # Update the force and moment on this panel.
-        panel.forces_G = this_force_geometry_axes
-        panel.moments_G_Cg = this_moment_geometry_axes
-        panel.forces_W = this_force_wind_axes
-        panel.moments_W_Cg = this_moment_wind_axes
+        # Update this Panel's loads.
+        panel.forces_G = theseForces_G
+        panel.moments_G_Cg = theseMoments_G_Cg
+        panel.forces_W = theseForces_W
+        panel.moments_W_Cg = theseMoments_W_Cg
 
-        # Update the force coefficients this panel.
-        panel.update_coefficients(dynamic_pressure)
+        # Update this Panel's load coefficients.
+        panel.update_coefficients(qInf__E)
 
-    # Initialize arrays to hold each airplane's total force and moment in geometry
-    # axes.
-    total_forces_geometry_axes = np.zeros((steady_solver.num_airplanes, 3))
-    total_moments_geometry_axes = np.zeros((steady_solver.num_airplanes, 3))
+    # Initialize ndarrays to hold each Airplane's loads.
+    stackAirplaneForces_G = np.zeros((steady_solver.num_airplanes, 3), dtype=float)
+    stackAirplaneMoments_G_Cg = np.zeros((steady_solver.num_airplanes, 3), dtype=float)
 
-    # Iterate through each airplane and find the total force and moment experienced
-    # by each by summing up the contribution's from its panels.
+    # Iterate through each Airplane and find the total load by each by summing up the
+    # contributions from its Panels.
+    airplane: geometry.airplane.Airplane
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
         for wing in airplane.wings:
             for panel in np.ravel(wing.panels):
-                total_forces_geometry_axes[airplane_num, :] += panel.forces_G
-                total_moments_geometry_axes[airplane_num, :] += panel.moments_G_Cg
+                stackAirplaneForces_G[airplane_num, :] += panel.forces_G
+                stackAirplaneMoments_G_Cg[airplane_num, :] += panel.moments_G_Cg
 
-    # For each airplane, find the total force and moment it experiences in wind axes
-    # from the rotation matrix and the total force and moment it experiences in
-    # geometry axes.
+    airplane: geometry.airplane.Airplane
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
-        airplane.total_force_wind_axes = transformations.apply_T_to_vectors(
+        airplane.forces_W = transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
-            total_forces_geometry_axes[airplane_num],
+            stackAirplaneForces_G[airplane_num],
             has_point=False,
         )
-        airplane.total_moment_wind_axes = transformations.apply_T_to_vectors(
+        airplane.moments_W_Cg = transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
-            total_moments_geometry_axes[airplane_num],
+            stackAirplaneMoments_G_Cg[airplane_num],
             has_point=True,
         )
 
-    # Iterate through the airplanes and calculate each one's coefficients.
+    # Iterate through the Airplanes and calculate each one's load coefficients.
+    airplane: geometry.airplane.Airplane
     for airplane in steady_solver.airplanes:
-        # Calculate this airplane's force coefficients.
-        induced_drag_coefficient = (
-            -airplane.total_force_wind_axes[0] / dynamic_pressure / airplane.s_ref
-        )
-        side_force_coefficient = (
-            airplane.total_force_wind_axes[1] / dynamic_pressure / airplane.s_ref
-        )
-        lift_coefficient = (
-            -airplane.total_force_wind_axes[2] / dynamic_pressure / airplane.s_ref
-        )
+        cFX_W = airplane.forces_W[0] / qInf__E / airplane.s_ref
+        cFY_W = airplane.forces_W[1] / qInf__E / airplane.s_ref
+        cFZ_W = airplane.forces_W[2] / qInf__E / airplane.s_ref
 
-        # Calculate this airplane's moment coefficients.
-        rolling_moment_coefficient = (
-            airplane.total_moment_wind_axes[0]
-            / dynamic_pressure
-            / airplane.s_ref
-            / airplane.b_ref
-        )
-        pitching_moment_coefficient = (
-            airplane.total_moment_wind_axes[1]
-            / dynamic_pressure
-            / airplane.s_ref
-            / airplane.c_ref
-        )
-        yawing_moment_coefficient = (
-            airplane.total_moment_wind_axes[2]
-            / dynamic_pressure
-            / airplane.s_ref
-            / airplane.b_ref
-        )
+        cMX_W_Cg = airplane.moments_W_Cg[0] / qInf__E / airplane.s_ref / airplane.b_ref
+        cMY_W_Cg = airplane.moments_W_Cg[1] / qInf__E / airplane.s_ref / airplane.c_ref
+        cMZ_W_Cg = airplane.moments_W_Cg[2] / qInf__E / airplane.s_ref / airplane.b_ref
 
-        # Populate this airplane's force and moment coefficient attributes.
-        airplane.total_force_coefficients_wind_axes = np.array(
-            [
-                induced_drag_coefficient,
-                side_force_coefficient,
-                lift_coefficient,
-            ]
-        )
-        airplane.total_moment_coefficients_wind_axes = np.array(
-            [
-                rolling_moment_coefficient,
-                pitching_moment_coefficient,
-                yawing_moment_coefficient,
-            ]
-        )
+        # Populate this Airplane's load coefficients.
+        airplane.forceCoefficients_W = np.array([cFX_W, cFY_W, cFZ_W])
+        airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
 
 
 # NOTE: I haven't yet started refactoring this function.
@@ -404,7 +398,7 @@ def process_unsteady_solver_loads(
         panel.moments_W_Cg = this_moment_wind_axes
 
         # Update the force coefficients on this panel.
-        panel.update_coefficients(freestream_q=qInf__E)
+        panel.update_coefficients(qInf__E=qInf__E)
 
     # Initialize arrays for each airplane's total force and moment in geometry axes.
     num_airplanes = unsteady_solver.num_airplanes

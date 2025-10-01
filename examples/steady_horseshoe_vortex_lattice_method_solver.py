@@ -1,3 +1,4 @@
+# NOTE: I've started refactoring this module.
 """This is script is an example of how to run Ptera Software's steady horseshoe
 vortex lattice method solver on a custom airplane."""
 
@@ -12,16 +13,22 @@ import pterasoftware as ps
 example_airplane = ps.geometry.airplane.Airplane(
     # Give the airplane object a name. This value defaults to "Untitled".
     name="Example Airplane",
-    # Specify the location of the airplane's starting point (the location of its
+    # Specify the location of the Airplane's starting point (the location of its
     # center of gravity at t=0). This is the point about which the solver will
-    # calculate moments. These three values (x, y, z) are in Earth axes, relative
-    # to the simulation's starting point. For the first Airplane in a simulation,
-    # this must be [0.0, 0.0, 0.0] since the simulation's starting point is defined
-    # as the first Airplane's starting point. The default is (0.0, 0.0, 0.0). This
-    # and every input and output of this program is in SI units (meters).
-    x_ref=0.0,
-    y_ref=0.0,
-    z_ref=0.0,
+    # calculate moments. This value is in Earth axes, relative to the simulation's
+    # starting point. For the first Airplane in a simulation, this must be (0.0,
+    # 0.0, 0.0) since the simulation's starting point is defined as the first
+    # Airplane's starting point. The default is (0.0, 0.0, 0.0). This and every
+    # input and output of this program is in SI units. Units are meters.
+    Cgi_E_I=(0.0, 0.0, 0.0),
+    # Define the orientation of the Airplane's body axes relative to Earth axes
+    # using rotation angles with an intrinsic z-y'-x" sequence. For a standard
+    # orientation aligned with Earth axes, use (0.0, 0.0, 0.0). The default is
+    # (0.0, 0.0, 0.0). Units are degrees.
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    # Specify the weight of the Airplane in Newtons. This is used by trim
+    # functions. The default is 0.0.
+    weight=0.0,
     # Give the reference dimensions of this aircraft. "s_ref" is the reference area
     # in meters squared, "b_ref" is the reference span in meters, and "c_ref" is the
     # reference chord in meters. I set these values to None, which is their default,
@@ -36,15 +43,31 @@ example_airplane = ps.geometry.airplane.Airplane(
             name="Main Wing",
             # Define the position of this Wing's leading edge root point (in geometry
             # axes, relative to the CG point). Geometry axes are defined with +x
-            # pointing aft, +y pointing right, and +z pointing up. These values all
-            # default to 0.0 meters.
-            x_le=0.0,
-            y_le=0.0,
-            z_le=0.0,
-            # Declare that this Wing is symmetric. This means that the geometry will
-            # be reflected across the xz-plane of this Wing's axes. The default value
-            # of "symmetric" is False.
+            # pointing aft, +y pointing right, and +z pointing up. The default is (0.0,
+            # 0.0, 0.0). Units are meters.
+            prelimLer_G_Cg=(0.0, 0.0, 0.0),
+            # Define the orientation of this Wing's axes relative to geometry axes using
+            # rotation angles with an intrinsic z-y'-x" sequence. For a Wing aligned
+            # with geometry axes, use (0.0, 0.0, 0.0). The default is (0.0, 0.0, 0.0).
+            # Units are degrees.
+            angles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+            # Declare that this Wing is symmetric. Set to True to reflect the geometry
+            # across a symmetry plane while retaining the non-reflected geometry. The
+            # default is False.
             symmetric=True,
+            # Set to True to reflect the geometry across a symmetry plane without
+            # retaining the non-reflected geometry. If symmetric is True, mirror_only
+            # must be False. The default is False.
+            mirror_only=False,
+            # Define the unit normal vector to the symmetry plane (in wing axes). For a
+            # standard symmetric wing across the xz-plane, use (0.0, 1.0, 0.0). Must be
+            # specified if symmetric or mirror_only is True.
+            symmetry_normal_Wn=(0.0, 1.0, 0.0),
+            # Define a point on the symmetry plane (in wing axes, relative to the
+            # leading edge root point). For a standard symmetric wing, use (0.0, 0.0,
+            # 0.0). Must be specified if symmetric or mirror_only is True. Units are
+            # meters.
+            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
             # Define the number of chordwise panels on the wing, and the spacing
             # between them. The number of chordwise panels defaults to 8 panels. The
             # spacing defaults to "cosine", which makes the panels relatively finer,
@@ -57,26 +80,33 @@ example_airplane = ps.geometry.airplane.Airplane(
             # sections.
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
+                    # Define the number of spanwise panels on the wing cross section.
+                    # The number of spanwise panels
+                    # defaults to 8 panels.
+                    num_spanwise_panels=8,
+                    # Set the chord of this cross section to be 1.75 meters. This
+                    # value defaults to 1.0 meter.
+                    chord=1.75,
                     # Define the location of the leading edge of the wing cross
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
-                    x_le=0.0,
-                    y_le=0.0,
-                    z_le=0.0,
-                    # Define the twist of the wing cross section in degrees. This is
-                    # equivalent to incidence angle of cross section. The twist is
-                    # about the leading edge. Note that the twist is only stable up
-                    # to 45.0 degrees. Values above that produce unexpected results.
-                    # This will be fixed in a future release. The default value is
-                    # 0.0 degrees. Positive twist corresponds to positive rotation
-                    # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,  # Define the type of control surface. The options are "symmetric"
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    # Define the orientation of this WingCrossSection's axes relative
+                    # to the wing cross section parent axes using rotation angles with
+                    # an intrinsic z-y'-x" sequence. The angle vector has the form
+                    # (angleX, angleY, angleZ) where angleX is rotation about the
+                    # x-axis, angleY is rotation about the y-axis, and angleZ is
+                    # rotation about the z-axis. For the root WingCrossSection, this
+                    # must be (0.0, 0.0, 0.0). The default is (0.0, 0.0, 0.0). Units
+                    # are degrees.
+                    angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+                    # Define the type of control surface. The options are "symmetric"
                     # and "asymmetric". This is only applicable if your wing is also
                     # symmetric. If so, symmetric control surfaces will deflect in
                     # the same direction, like flaps, while asymmetric control
                     # surfaces will deflect in opposite directions, like ailerons.
                     # The default value is "symmetric".
-                    control_surface_type="symmetric",
+                    control_surface_symmetry_type="symmetric",
                     # Define the point on the airfoil where the control surface
                     # hinges. This is expressed as a fraction of the chord length,
                     # back from the leading edge. The default value is 0.75.
@@ -84,17 +114,11 @@ example_airplane = ps.geometry.airplane.Airplane(
                     # Define the deflection of the control surface in degrees. The
                     # default is 0.0 degrees.
                     control_surface_deflection=0.0,
-                    # Define the number of spanwise panels on the wing cross section,
-                    # and the spacing between them. The number of spanwise panels
-                    # defaults to 8 panels. The spacing defaults to "cosine",
-                    # which makes the panels relatively finer, in the spanwise
-                    # direction, near the cross section ends. The other option is
-                    # "uniform".
-                    num_spanwise_panels=8,
+                    # Define the spacing between the spanwise panels. The spacing
+                    # defaults to "cosine", which makes the panels relatively finer,
+                    # in the spanwise direction, near the cross section ends. The
+                    # other option is "uniform".
                     spanwise_spacing="cosine",
-                    # Set the chord of this cross section to be 1.75 meters. This
-                    # value defaults to 1.0 meter.
-                    chord=1.75,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         # Give the airfoil a name. This defaults to "Untitled
                         # Airfoil". This name should correspond to a name in the
@@ -108,27 +132,27 @@ example_airplane = ps.geometry.airplane.Airplane(
                         # coordinates from the airfoil directory, leave this as None.
                         # The default is None. Make sure that any airfoil coordinates
                         # used range in x from 0 to 1.
-                        coordinates=None,
+                        outline_A_lp=None,
                         # This is the variable that determines whether you would like
                         # to repanel the airfoil coordinates. This applies to
                         # coordinates passed in by the user or to the directory
                         # coordinates. I highly recommended setting this to True. The
                         # default is True.
-                        repanel=True,
+                        resample=True,
                         # This is number of points to use if repaneling the airfoil.
                         # It is ignored if the repanel is False. The default is 400.
                         n_points_per_side=400,
                     ),
                 ),
-                # Define the next wing cross section. From here on out,
-                # the declarations will not be as commented as the previous. See the
-                # above comments if you have questions.
+                # Define the tip WingCrossSection. This cross section defines the
+                # wing's tip geometry. The num_spanwise_panels is None because this
+                # is the tip cross section.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.75,
-                    y_le=6.0,
-                    z_le=1.0,
+                    num_spanwise_panels=None,
                     chord=1.5,
-                    twist=5.0,
+                    Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
+                    angles_Wcsp_to_Wcs_izyx=(0.0, 5.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
@@ -138,26 +162,34 @@ example_airplane = ps.geometry.airplane.Airplane(
         # Define the next wing.
         ps.geometry.wing.Wing(
             name="V-Tail",
-            x_le=6.75,
-            z_le=0.25,
+            prelimLer_G_Cg=(6.75, 0.0, 0.25),
+            angles_G_to_prelimWn_izyx=(0.0, 5.0, 0.0),
             symmetric=True,
+            mirror_only=False,
+            symmetry_normal_Wn=(0.0, 1.0, 0.0),
+            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
+            num_chordwise_panels=8,
+            chordwise_spacing="cosine",
             # Define this wing's root wing cross section.
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
+                    num_spanwise_panels=8,
                     chord=1.5,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
                     # Give the root wing cross section an airfoil.
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
-                    twist=-5.0,
                 ),
                 # Define the wing's tip wing cross section.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.5,
-                    y_le=2.0,
-                    z_le=1.0,
+                    num_spanwise_panels=None,
                     chord=1.0,
-                    twist=-5.0,
+                    Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
+                    angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
@@ -169,8 +201,9 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
-                                                            alpha=1.0, beta=0.0)
+example_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=10.0, alpha=45.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+)
 
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.

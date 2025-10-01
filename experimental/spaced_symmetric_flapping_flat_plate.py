@@ -30,7 +30,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     control_surface_deflection=0.0,
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca2412",
+                        name="naca0012",
                         outline_A_lp=None,
                         resample=True,
                         n_points_per_side=400,
@@ -46,7 +46,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     control_surface_deflection=0.0,
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca2412",
+                        name="naca0012",
                         outline_A_lp=None,
                         resample=True,
                         n_points_per_side=400,
@@ -103,7 +103,7 @@ flat_plate_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_G_to_prelimWn_izyx=(15.0, 0.0, 0.0),
     periodAngles_G_to_prelimWn_izyx=(5.0, 0.0, 0.0),
     spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(90.0, 0.0, 0.0),
+    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
 )
 
 reflected_wing_root_wing_cross_section_movement = (
@@ -207,14 +207,6 @@ flat_plate_solver = (
 
 flat_plate_solver.run(
     logging_level="Warning",
-)
-
-ps.output.draw(
-    solver=flat_plate_solver,
-    scalar_type="lift",
-    show_streamlines=False,
-    show_wake_vortices=True,
-    save=False,
 )
 
 ps.output.animate(

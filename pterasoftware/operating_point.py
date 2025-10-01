@@ -112,9 +112,7 @@ class OperatingPoint:
             which corresponds to air's kinematic viscosity at 20 degrees Celsius
             [source: https://www.engineeringtoolbox.com].
         """
-        self.rho = parameter_validation.positive_number_return_float(
-            rho, "rho"
-        )
+        self.rho = parameter_validation.positive_number_return_float(rho, "rho")
         # TODO: In the future, test what happens with vCg__E = 0.
         self.vCg__E = parameter_validation.positive_number_return_float(
             vCg__E, "vCg__E"
@@ -156,16 +154,16 @@ class OperatingPoint:
             coordinates from geometry axes relative to the CG to wind axes relative
             to the CG.
         """
-        alpha_rad = np.radians(self.alpha)
-        beta_rad = np.radians(self.beta)
-
-        T_pas_G_Cg_to_B_Cg = transformations.generate_reflect_T(
-            plane_point_A_a=np.array([0.0, 0.0, 0.0]),
-            plane_normal_A=np.array([1.0, 0.0, 0.0]),
+        # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
+        # to down). This is equivalent to a 180-degree rotation about y.
+        T_pas_G_Cg_to_B_Cg = transformations.generate_rot_T(
+            angles=np.array([0.0, 180.0, 0.0]),
             passive=True,
+            intrinsic=False,
+            order="xyz",
         )
 
-        angles_B_to_W_exyz = np.array([0.0, alpha_rad, beta_rad])
+        angles_B_to_W_exyz = np.array([0.0, -self.alpha, -self.beta])
 
         T_pas_B_Cg_to_W_Cg = transformations.generate_rot_T(
             angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
@@ -186,39 +184,6 @@ class OperatingPoint:
             to the CG.
         """
         return transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
-
-        # TODO: Delete the following older method of finding the rotation matrix once
-        #  we've confirmed that the new method delivers equivalent results.
-        # sin_alpha = np.sin(np.radians(self.alpha))
-        # cos_alpha = np.cos(np.radians(self.alpha))
-        # sin_beta = np.sin(np.radians(self.beta))
-        # cos_beta = np.cos(np.radians(self.beta))
-        # eye = np.eye(3)
-        #
-        # alpha_rotation = np.array(
-        #     [[cos_alpha, 0, -sin_alpha], [0, 1, 0], [sin_alpha, 0, cos_alpha]]
-        # )
-        # beta_rotation = np.array(
-        #     [[cos_beta, -sin_beta, 0], [sin_beta, cos_beta, 0], [0, 0, 1]]
-        # )
-        #
-        # # Flip the axes because in geometry axes x is downstream by convention,
-        # # while in wind axes x is upstream by convention. Same with z being up/down
-        # # respectively.
-        # axes_flip = np.array(
-        #     [
-        #         [-1, 0, 0],
-        #         [0, 1, 0],
-        #         [0, 0, -1],
-        #     ]
-        # )
-        #
-        # # Calculate and return the rotation matrix to convert wind axes to geometry
-        # # axes.
-        # rotation_matrix_wind_axes_to_geometry_axes = (
-        #     axes_flip @ alpha_rotation @ beta_rotation @ eye
-        # )
-        # return rotation_matrix_wind_axes_to_geometry_axes
 
     @property
     def vInfHat_G__E(self):
@@ -256,6 +221,4 @@ class OperatingPoint:
             This is the freestream velocity vector (in geometry axes, observed from
             the Earth frame).
         """
-        freestream_velocity_geometry_axes = self.vInfHat_G__E * self.vCg__E
-
-        return freestream_velocity_geometry_axes
+        return self.vInfHat_G__E * self.vCg__E

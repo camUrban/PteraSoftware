@@ -1,6 +1,6 @@
 import pterasoftware as ps
 
-solver_type = "unsteady_ring"
+solver_type = "steady_horseshoe"
 
 flat_plate_airplane = ps.geometry.airplane.Airplane(
     name="Flat Plate Airplane",
@@ -13,17 +13,17 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             name="Right Wing",
-            prelimLer_G_Cg=(0.0, 0.0, 0.0),
+            prelimLer_G_Cg=(-0.5, -0.5, 0.0),
             angles_G_to_prelimWn_izyx=(0, 0, 0),
             symmetric=False,
             mirror_only=False,
-            num_chordwise_panels=1,
+            num_chordwise_panels=5,
             chordwise_spacing="uniform",
             symmetry_normal_Wn=None,
             symmetry_point_Wn_Ler=None,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=3,
+                    num_spanwise_panels=5,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
@@ -41,7 +41,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
-                    Lp_Wcsp_Lpp=(0.0, 3.0, 0.0),
+                    Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
                     angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
                     control_surface_symmetry_type=None,
                     control_surface_hinge_point=0.75,
@@ -59,9 +59,9 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
     ],
 )
 
-flat_plate_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=1.0,
-                                                               alpha=10.0, beta=0.0,
-                                                               nu=15.06e-6)
+flat_plate_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=1.0, alpha=10.0, beta=0.0, nu=15.06e-6
+)
 
 
 def get_solver(this_solver_type, this_airplane, this_operating_point):
@@ -205,15 +205,25 @@ flat_plate_solver.run(
     logging_level="Warning",
 )
 
-ps.output.draw(
-    solver=flat_plate_solver,
-    scalar_type="lift",
-    show_streamlines=False,
-    show_wake_vortices=False,
-    save=False,
-)
+if solver_type in ("steady_horseshoe", "steady_ring"):
+    ps.output.draw(
+        solver=flat_plate_solver,
+        scalar_type="lift",
+        show_streamlines=True,
+        show_wake_vortices=False,
+        save=False,
+    )
 
-if solver_type == "unsteady_ring":
+    ps.output.print_steady_results(steady_solver=flat_plate_solver)
+else:
+    ps.output.draw(
+        solver=flat_plate_solver,
+        scalar_type="lift",
+        show_streamlines=False,
+        show_wake_vortices=True,
+        save=False,
+    )
+
     ps.output.animate(
         unsteady_solver=flat_plate_solver,
         scalar_type="lift",
@@ -221,5 +231,3 @@ if solver_type == "unsteady_ring":
         save=False,
         testing=False,
     )
-#
-# ps.output.print_steady_results(steady_solver=flat_plate_solver)

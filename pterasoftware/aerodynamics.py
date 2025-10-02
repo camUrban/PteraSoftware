@@ -352,10 +352,14 @@ class HorseshoeVortex:
         self.strength = strength
 
         # TODO: Consider making these properties.
-        # Save attributes for the back right and back left horseshoe vortex points (
-        # in geometry axes, relative to the CG).
-        self.Brhvp_G_Cg = self.Frhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
-        self.Blhvp_G_Cg = self.Flhvp_G_Cg + leftLegVector_G * left_right_leg_lengths
+        # Save attributes for the back right and back left horseshoe vortex points (in
+        # geometry axes, relative to the CG).
+        self.Brhvp_G_Cg = (
+            self.Frhvp_G_Cg + self.leftLegVector_G * self.left_right_leg_lengths
+        )
+        self.Blhvp_G_Cg = (
+            self.Flhvp_G_Cg + self.leftLegVector_G * self.left_right_leg_lengths
+        )
 
         # TODO: Consider making these properties.
         # Initialize LineVortices to represent the HorseshoeVortex's legs.

@@ -9,6 +9,9 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
+    test_aerodynamics_functions.py: This module contains a class to test aerodynamics
+    functions.
+
     test_airfoils.py: This module contains a class to test Airfoils.
 
     test_airplane.py: This module contains a class to test Airplanes.
@@ -16,8 +19,6 @@ This package contains the following modules:
     test_airplane_movement.py: This module contains a class to test AirplaneMovements.
 
     test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
-
-    test_line_vortex.py: This module contains a class to test LineVortices.
 
     test_operating_point.py: This module contains a class to test OperatingPoints.
 
@@ -38,11 +39,11 @@ This package contains the following modules:
     test_wing_movement.py: This module contains a class to test WingMovements.
 """
 
+import tests.unit.test_aerodynamics_functions
 import tests.unit.test_airfoil
 import tests.unit.test_airplane
 import tests.unit.test_airplane_movement
 import tests.unit.test_horseshoe_vortex
-import tests.unit.test_line_vortex
 import tests.unit.test_operating_point
 import tests.unit.test_panel
 import tests.unit.test_ring_vortex

@@ -15,6 +15,8 @@ example_airplane = ps.geometry.airplane.Airplane(
         ps.geometry.wing.Wing(
             name="Main Wing",
             symmetric=True,
+            symmetry_normal_Wn=(0.0, 1.0, 0.0),
+            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[
@@ -23,18 +25,19 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     chord=1.75,
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0000",
+                        name="naca0012",
                     ),
+                    control_surface_symmetry_type="symmetric",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=num_spanwise_panels,
-                    spanwise_spacing="uniform",
-                    x_le=0.625,
-                    y_le=5.0,
+                    num_spanwise_panels=None,
+                    spanwise_spacing=None,
+                    Lp_Wcsp_Lpp=(0.625, 5.0, 0.0),
                     chord=0.5,
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0000",
+                        name="naca0012",
                     ),
+                    control_surface_symmetry_type="symmetric",
                 ),
             ],
         ),
@@ -50,15 +53,13 @@ upper_wing_root_wing_cross_section_movement = (
 upper_wing_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
-        sweeping_amplitude=15.0,
-        sweeping_period=1 / flapping_frequency,
-        sweeping_spacing="sine",
-        pitching_amplitude=5.0,
-        pitching_period=1 / flapping_frequency,
-        pitching_spacing="sine",
-        heaving_amplitude=5.0,
-        heaving_period=1 / flapping_frequency,
-        heaving_spacing="sine",
+        ampAngles_Wcsp_to_Wcs_izyx=(15.0, 5.0, 5.0),
+        periodAngles_Wcsp_to_Wcs_izyx=(
+            1 / flapping_frequency,
+            1 / flapping_frequency,
+            1 / flapping_frequency,
+        ),
+        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
     )
 )
 
@@ -80,16 +81,18 @@ airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 del upper_wing_movement
 
-example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
-                                                            alpha=0.0, beta=0.0)
+example_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0
+)
 
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point
 )
 
-movement = ps.movement.Movement(
+movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
+    num_cycles=3,
 )
 
 del airplane_movement

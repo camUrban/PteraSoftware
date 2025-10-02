@@ -10,8 +10,8 @@ Generate comprehensive unit tests and fixtures for the contents of $ARGUMENTS.
 
 Follow these steps carefully and track your progress:
 
-- [ ] Read $ARGUMENTS carefully, noting the classes and functions it contains
-- [ ] Understand the structure of each class and function
+- [ ] Read $ARGUMENTS carefully, noting the public classes and functions it contains
+- [ ] Understand the structure of each public class and function
 - [ ] Search the codebase for other relevant files
 - [ ] Read and understand any relevant files found
 - [ ] Read test pattern examples (tests/unit/test_wing_cross_section.py, tests/unit/test_wing_cross_section_movement.py)
@@ -19,8 +19,11 @@ Follow these steps carefully and track your progress:
 - [ ] Understand how geometry/wing_cross_section.py and movements/wing_cross_section_movement.py inform design of example tests and fixtures
 - [ ] Review **all** of CLAUDE.md for guidance
 - [ ] Search existing tests/fixtures to avoid redundancy
-- [ ] Create comprehensive tests and fixtures for each class/function in $ARGUMENTS
-- [ ] Review and polish the tests and fixtures for each class/function in $ARGUMENTS
+- [ ] Create comprehensive tests and fixtures for each public class/function in $ARGUMENTS
+- [ ] Review the tests and fixtures for each public class/function in $ARGUMENTS, both those you created any pre-existing ones
+- [ ] Explain how you checked if the tests and fixtures are non-redundant
+- [ ] Explain how you checked if the tests and fixtures follow your guidelines
+- [ ] Edit or delete any tests and fixtures relevant to $ARGUMENTS that are redundant or don't follow your guidelines
 - [ ] Update tests/unit/__init__.py and tests/unit/fixtures/__init__.py with any new files or edited docstrings
 
 ## Detailed Steps
@@ -73,6 +76,7 @@ Follow these steps carefully and track your progress:
       - Check if they match the guidance in CLAUDE.md
       - Verify they match the unit testing patterns
       - Ensure they aren't redundant with existing tests
+      - Explain what you checked and your findings
       - Polish any identified areas of improvement, including potentially removing redundant tests/fixtures.
    
    f. **Repeat these sub-steps** for all remaining classes and functions within $ARGUMENTS
@@ -90,10 +94,11 @@ If any step fails or information is missing:
 ## Quality Checklist
 
 Before finalizing:
-- [ ] All public methods have tests
+- [ ] All public classes and functions have tests
 - [ ] Edge cases are covered
 - [ ] Error conditions are tested
 - [ ] Fixtures are reusable
 - [ ] Tests are independent
 - [ ] Naming is consistent with project patterns
 - [ ] Documentation is clear
+- [ ] Python files end with a blank newline

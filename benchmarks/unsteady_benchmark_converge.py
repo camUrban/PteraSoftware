@@ -18,7 +18,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     chord=1.75,
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0000",
+                        name="naca0012",
                     ),
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
@@ -28,7 +28,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     y_le=5.0,
                     chord=0.5,
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0000",
+                        name="naca0012",
                     ),
                 ),
             ],
@@ -76,8 +76,9 @@ airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 del example_airplane
 del upper_wing_movement
 
-example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
-                                                            alpha=0.0, beta=0.0)
+example_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0
+)
 
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point

@@ -12,25 +12,33 @@ This package contains the following modules:
     aerodynamics_functions_fixtures.py: This module contains functions to create
     fixtures for aerodynamics function tests.
 
+    airplane_movement_fixtures.py: This module contains functions to create
+    AirplaneMovements for use in tests.
+
     geometry_fixtures.py: This module contains functions to create geometry objects
     for use in tests.
 
     horseshoe_vortex_fixtures.py: This module contains functions to create
     HorseshoeVortices for uses in tests.
 
-    movement_fixtures.py: This module contains functions to create movement objects
-    for use in tests.
-
     operating_point_fixtures.py: This module contains functions to create
     OperatingPoints.
 
     ring_vortex_fixtures.py: This module contains functions to create RingVortices
     for uses in tests.
+
+    wing_cross_section_movement_fixtures.py: This module contains functions to create
+    WingCrossSectionMovements for use in tests.
+
+    wing_movement_fixtures.py: This module contains functions to create
+    WingMovements for use in tests.
 """
 
 import tests.unit.fixtures.aerodynamics_functions_fixtures
+import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
-import tests.unit.fixtures.movement_fixtures
 import tests.unit.fixtures.operating_point_fixtures
 import tests.unit.fixtures.ring_vortex_fixtures
+import tests.unit.fixtures.wing_cross_section_movement_fixtures
+import tests.unit.fixtures.wing_movement_fixtures

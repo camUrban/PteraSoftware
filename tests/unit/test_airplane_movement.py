@@ -6,7 +6,10 @@ import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
-from tests.unit.fixtures import movement_fixtures
+
+from tests.unit.fixtures import airplane_movement_fixtures
+from tests.unit.fixtures import geometry_fixtures
+from tests.unit.fixtures import wing_movement_fixtures
 
 
 class TestAirplaneMovement(unittest.TestCase):
@@ -16,54 +19,54 @@ class TestAirplaneMovement(unittest.TestCase):
         """Set up test fixtures for AirplaneMovement tests."""
         # Spacing test fixtures.
         self.sine_spacing_Cgi_airplane_movement = (
-            movement_fixtures.make_sine_spacing_Cgi_airplane_movement_fixture()
+            airplane_movement_fixtures.make_sine_spacing_Cgi_airplane_movement_fixture()
         )
         self.uniform_spacing_Cgi_airplane_movement = (
-            movement_fixtures.make_uniform_spacing_Cgi_airplane_movement_fixture()
+            airplane_movement_fixtures.make_uniform_spacing_Cgi_airplane_movement_fixture()
         )
         self.mixed_spacing_Cgi_airplane_movement = (
-            movement_fixtures.make_mixed_spacing_Cgi_airplane_movement_fixture()
+            airplane_movement_fixtures.make_mixed_spacing_Cgi_airplane_movement_fixture()
         )
         self.sine_spacing_angles_airplane_movement = (
-            movement_fixtures.make_sine_spacing_angles_airplane_movement_fixture()
+            airplane_movement_fixtures.make_sine_spacing_angles_airplane_movement_fixture()
         )
         self.uniform_spacing_angles_airplane_movement = (
-            movement_fixtures.make_uniform_spacing_angles_airplane_movement_fixture()
+            airplane_movement_fixtures.make_uniform_spacing_angles_airplane_movement_fixture()
         )
         self.mixed_spacing_angles_airplane_movement = (
-            movement_fixtures.make_mixed_spacing_angles_airplane_movement_fixture()
+            airplane_movement_fixtures.make_mixed_spacing_angles_airplane_movement_fixture()
         )
 
         # Additional test fixtures.
         self.static_airplane_movement = (
-            movement_fixtures.make_static_airplane_movement_fixture()
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
         )
         self.basic_airplane_movement = (
-            movement_fixtures.make_basic_airplane_movement_fixture()
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         )
         self.Cgi_only_airplane_movement = (
-            movement_fixtures.make_Cgi_only_airplane_movement_fixture()
+            airplane_movement_fixtures.make_Cgi_only_airplane_movement_fixture()
         )
         self.angles_only_airplane_movement = (
-            movement_fixtures.make_angles_only_airplane_movement_fixture()
+            airplane_movement_fixtures.make_angles_only_airplane_movement_fixture()
         )
         self.phase_offset_Cgi_airplane_movement = (
-            movement_fixtures.make_phase_offset_Cgi_airplane_movement_fixture()
+            airplane_movement_fixtures.make_phase_offset_Cgi_airplane_movement_fixture()
         )
         self.phase_offset_angles_airplane_movement = (
-            movement_fixtures.make_phase_offset_angles_airplane_movement_fixture()
+            airplane_movement_fixtures.make_phase_offset_angles_airplane_movement_fixture()
         )
         self.multiple_periods_airplane_movement = (
-            movement_fixtures.make_multiple_periods_airplane_movement_fixture()
+            airplane_movement_fixtures.make_multiple_periods_airplane_movement_fixture()
         )
         self.custom_spacing_Cgi_airplane_movement = (
-            movement_fixtures.make_custom_spacing_Cgi_airplane_movement_fixture()
+            airplane_movement_fixtures.make_custom_spacing_Cgi_airplane_movement_fixture()
         )
         self.custom_spacing_angles_airplane_movement = (
-            movement_fixtures.make_custom_spacing_angles_airplane_movement_fixture()
+            airplane_movement_fixtures.make_custom_spacing_angles_airplane_movement_fixture()
         )
         self.mixed_custom_and_standard_spacing_airplane_movement = (
-            movement_fixtures.make_mixed_custom_and_standard_spacing_airplane_movement_fixture()
+            airplane_movement_fixtures.make_mixed_custom_and_standard_spacing_airplane_movement_fixture()
         )
 
     def tearDown(self):
@@ -265,25 +268,27 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_base_airplane_validation(self):
         """Test that base_airplane parameter validation works correctly."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         # Test non-Airplane raises error.
         with self.assertRaises(TypeError):
             ps.movements.airplane_movement.AirplaneMovement(
                 base_airplane="not an airplane",
-                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+                wing_movements=[
+                    wing_movement_fixtures.make_static_wing_movement_fixture()
+                ],
             )
 
         # Test None raises error.
         with self.assertRaises(TypeError):
             ps.movements.airplane_movement.AirplaneMovement(
                 base_airplane=None,
-                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+                wing_movements=[
+                    wing_movement_fixtures.make_static_wing_movement_fixture()
+                ],
             )
 
         # Test valid Airplane works.
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane, wing_movements=wing_movements
         )
@@ -291,8 +296,6 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_wing_movements_validation(self):
         """Test that wing_movements parameter validation works correctly."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
 
         # Test non-list raises error.
@@ -312,7 +315,9 @@ class TestAirplaneMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps.movements.airplane_movement.AirplaneMovement(
                 base_airplane=base_airplane_multi_wing,
-                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+                wing_movements=[
+                    wing_movement_fixtures.make_static_wing_movement_fixture()
+                ],
             )
 
         # Test non-WingMovement element raises error.
@@ -322,7 +327,7 @@ class TestAirplaneMovement(unittest.TestCase):
             )
 
         # Test valid list works.
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane, wing_movements=wing_movements
         )
@@ -330,10 +335,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_ampCgi_E_I_validation(self):
         """Test ampCgi_E_I parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid values.
         valid_amps = [
@@ -369,10 +372,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_periodCgi_E_I_validation(self):
         """Test periodCgi_E_I parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid values.
         valid_periods = [(0.0, 0.0, 0.0), (1.0, 2.0, 3.0), [0.5, 1.5, 2.5]]
@@ -399,10 +400,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_spacingCgi_E_I_validation(self):
         """Test spacingCgi_E_I parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid string values.
         valid_spacings = [
@@ -429,10 +428,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_phaseCgi_E_I_validation(self):
         """Test phaseCgi_E_I parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid phase values within range (-180.0, 180.0].
         valid_phases = [
@@ -476,10 +473,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_ampAngles_E_to_B_izyx_validation(self):
         """Test ampAngles_E_to_B_izyx parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid amplitude values within range [0.0, 360.0).
         valid_amps = [
@@ -515,10 +510,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_periodAngles_E_to_B_izyx_validation(self):
         """Test periodAngles_E_to_B_izyx parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid periods.
         valid_periods = [(0.0, 0.0, 0.0), (1.0, 2.0, 3.0)]
@@ -546,10 +539,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_spacingAngles_E_to_B_izyx_validation(self):
         """Test spacingAngles_E_to_B_izyx parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid string values.
         valid_spacings = [
@@ -576,10 +567,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_phaseAngles_E_to_B_izyx_validation(self):
         """Test phaseAngles_E_to_B_izyx parameter validation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test valid phase values within range (-180.0, 180.0].
         valid_phases = [(0.0, 0.0, 0.0), (90.0, 180.0, -90.0), (179.9, 0.0, -179.9)]
@@ -608,10 +597,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_amp_period_relationship_Cgi(self):
         """Test that if ampCgi_E_I element is 0, corresponding period must be 0."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test amp=0 with period=0 works.
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -633,10 +620,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_amp_phase_relationship_Cgi(self):
         """Test that if ampCgi_E_I element is 0, corresponding phase must be 0."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test amp=0 with phase=0 works.
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -659,11 +644,10 @@ class TestAirplaneMovement(unittest.TestCase):
             )
 
     def test_amp_period_relationship_angles(self):
-        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding period must be 0."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
+        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding period must
+        be 0."""
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test amp=0 with period=0 works.
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -684,11 +668,10 @@ class TestAirplaneMovement(unittest.TestCase):
             )
 
     def test_amp_phase_relationship_angles(self):
-        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding phase must be 0."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
+        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding phase must
+        be 0."""
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test amp=0 with phase=0 works.
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -909,10 +892,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_boundary_amplitude_angles(self):
         """Test amplitude at boundary value (179.9 degrees)."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test amplitude just below 180.0 works.
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -925,10 +906,8 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_boundary_phase_values(self):
         """Test phase at boundary values (-179.9, 0.0, and 180.0)."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Test phase = 0.0 works.
         airplane_movement1 = ps.movements.airplane_movement.AirplaneMovement(
@@ -1006,8 +985,6 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_unsafe_amplitude_causes_error_angles(self):
         """Test that amplitude too high for base angle value causes error during generation."""
-        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
-
         # Create base Airplane with non-zero base angles.
         base_airplane = ps.geometry.airplane.Airplane(
             name="Test Airplane",
@@ -1015,7 +992,7 @@ class TestAirplaneMovement(unittest.TestCase):
             Cgi_E_I=(0.0, 0.0, 0.0),
             angles_E_to_B_izyx=(1.0, 0.0, 0.0),
         )
-        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
         # Create AirplaneMovement with amplitude that will drive angles out of valid
         # range. Valid range for angles is (-180, 180], so with base angle 1.0 and

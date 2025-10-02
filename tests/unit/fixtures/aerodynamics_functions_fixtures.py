@@ -157,10 +157,10 @@ def make_multiple_horseshoe_vortex_arrays_fixture():
 
 
 def make_ages_fixture():
-    """This method makes a fixture that is an ndarray of ages for wake vortices.
+    """This method makes a fixture that is a ndarray of ages for wake vortices.
 
     :return ages_fixture: (3,) ndarray of floats
-        This is an ndarray of ages in seconds for 3 vortices.
+        This is a ndarray of ages in seconds for 3 vortices.
     """
     ages_fixture = np.array([0.1, 0.5, 1.0], dtype=float)
 
@@ -168,10 +168,10 @@ def make_ages_fixture():
 
 
 def make_zero_ages_fixture():
-    """This method makes a fixture that is an ndarray of zero ages for bound vortices.
+    """This method makes a fixture that is a ndarray of zero ages for bound vortices.
 
     :return zero_ages_fixture: (3,) ndarray of floats
-        This is an ndarray of zero ages for 3 vortices (simulating bound vortices
+        This is a ndarray of zero ages for 3 vortices (simulating bound vortices
         with no core radius).
     """
     zero_ages_fixture = np.array([0.0, 0.0, 0.0], dtype=float)

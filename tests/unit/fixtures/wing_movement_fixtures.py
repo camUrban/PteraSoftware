@@ -35,10 +35,6 @@ def make_static_wing_movement_fixture():
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return static_wing_movement_fixture
 
@@ -70,10 +66,6 @@ def make_basic_wing_movement_fixture():
         spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return basic_wing_movement_fixture
@@ -109,10 +101,6 @@ def make_sine_spacing_prelimLer_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return sine_spacing_prelimLer_wing_movement_fixture
 
@@ -146,10 +134,6 @@ def make_uniform_spacing_prelimLer_wing_movement_fixture():
             phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return uniform_spacing_prelimLer_wing_movement_fixture
@@ -185,10 +169,6 @@ def make_mixed_spacing_prelimLer_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return mixed_spacing_prelimLer_wing_movement_fixture
 
@@ -220,10 +200,6 @@ def make_sine_spacing_angles_wing_movement_fixture():
         spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return sine_spacing_angles_wing_movement_fixture
@@ -259,10 +235,6 @@ def make_uniform_spacing_angles_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return uniform_spacing_angles_wing_movement_fixture
 
@@ -297,10 +269,6 @@ def make_mixed_spacing_angles_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return mixed_spacing_angles_wing_movement_fixture
 
@@ -333,10 +301,6 @@ def make_prelimLer_only_wing_movement_fixture():
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return prelimLer_only_wing_movement_fixture
 
@@ -368,10 +332,6 @@ def make_angles_only_wing_movement_fixture():
         spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return angles_only_wing_movement_fixture
@@ -407,10 +367,6 @@ def make_phase_offset_prelimLer_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return phase_offset_prelimLer_wing_movement_fixture
 
@@ -443,10 +399,6 @@ def make_phase_offset_angles_wing_movement_fixture():
         phaseAngles_G_to_prelimWn_izyx=(45.0, 90.0, -30.0),
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return phase_offset_angles_wing_movement_fixture
 
@@ -478,10 +430,6 @@ def make_multiple_periods_wing_movement_fixture():
         spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
         phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return multiple_periods_wing_movement_fixture
@@ -534,10 +482,6 @@ def make_custom_spacing_prelimLer_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return custom_spacing_prelimLer_wing_movement_fixture
 
@@ -589,10 +533,6 @@ def make_custom_spacing_angles_wing_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
-
     # Return the WingMovement fixture.
     return custom_spacing_angles_wing_movement_fixture
 
@@ -640,10 +580,6 @@ def make_mixed_custom_and_standard_spacing_wing_movement_fixture():
             phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_wing
-    del wcs_movements
 
     # Return the WingMovement fixture.
     return mixed_custom_and_standard_spacing_wing_movement_fixture

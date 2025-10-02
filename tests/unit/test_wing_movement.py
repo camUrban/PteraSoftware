@@ -15,59 +15,60 @@ from tests.unit.fixtures import wing_movement_fixtures
 class TestWingMovement(unittest.TestCase):
     """This is a class with functions to test WingMovements."""
 
-    def setUp(self):
-        """Set up test fixtures for WingMovement tests."""
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all WingMovement tests."""
         # Spacing test fixtures for prelimLer_G_Cg.
-        self.sine_spacing_prelimLer_wing_movement = (
+        cls.sine_spacing_prelimLer_wing_movement = (
             wing_movement_fixtures.make_sine_spacing_prelimLer_wing_movement_fixture()
         )
-        self.uniform_spacing_prelimLer_wing_movement = (
+        cls.uniform_spacing_prelimLer_wing_movement = (
             wing_movement_fixtures.make_uniform_spacing_prelimLer_wing_movement_fixture()
         )
-        self.mixed_spacing_prelimLer_wing_movement = (
+        cls.mixed_spacing_prelimLer_wing_movement = (
             wing_movement_fixtures.make_mixed_spacing_prelimLer_wing_movement_fixture()
         )
 
         # Spacing test fixtures for angles_G_to_prelimWn_izyx.
-        self.sine_spacing_angles_wing_movement = (
+        cls.sine_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_sine_spacing_angles_wing_movement_fixture()
         )
-        self.uniform_spacing_angles_wing_movement = (
+        cls.uniform_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_uniform_spacing_angles_wing_movement_fixture()
         )
-        self.mixed_spacing_angles_wing_movement = (
+        cls.mixed_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_mixed_spacing_angles_wing_movement_fixture()
         )
 
         # Additional test fixtures.
-        self.static_wing_movement = (
+        cls.static_wing_movement = (
             wing_movement_fixtures.make_static_wing_movement_fixture()
         )
-        self.basic_wing_movement = (
+        cls.basic_wing_movement = (
             wing_movement_fixtures.make_basic_wing_movement_fixture()
         )
-        self.prelimLer_only_wing_movement = (
+        cls.prelimLer_only_wing_movement = (
             wing_movement_fixtures.make_prelimLer_only_wing_movement_fixture()
         )
-        self.angles_only_wing_movement = (
+        cls.angles_only_wing_movement = (
             wing_movement_fixtures.make_angles_only_wing_movement_fixture()
         )
-        self.phase_offset_prelimLer_wing_movement = (
+        cls.phase_offset_prelimLer_wing_movement = (
             wing_movement_fixtures.make_phase_offset_prelimLer_wing_movement_fixture()
         )
-        self.phase_offset_angles_wing_movement = (
+        cls.phase_offset_angles_wing_movement = (
             wing_movement_fixtures.make_phase_offset_angles_wing_movement_fixture()
         )
-        self.multiple_periods_wing_movement = (
+        cls.multiple_periods_wing_movement = (
             wing_movement_fixtures.make_multiple_periods_wing_movement_fixture()
         )
-        self.custom_spacing_prelimLer_wing_movement = (
+        cls.custom_spacing_prelimLer_wing_movement = (
             wing_movement_fixtures.make_custom_spacing_prelimLer_wing_movement_fixture()
         )
-        self.custom_spacing_angles_wing_movement = (
+        cls.custom_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_custom_spacing_angles_wing_movement_fixture()
         )
-        self.mixed_custom_and_standard_spacing_wing_movement = (
+        cls.mixed_custom_and_standard_spacing_wing_movement = (
             wing_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_movement_fixture()
         )
 
@@ -401,10 +402,6 @@ class TestWingMovement(unittest.TestCase):
             wing_movement.phaseAngles_G_to_prelimWn_izyx, np.array([30.0, 0.0, -45.0])
         )
 
-        del base_wing
-        del wcs_movements
-        del wing_movement
-
     def test_initialization_invalid_base_wing(self):
         """Test that WingMovement initialization fails with invalid base_wing."""
         wcs_movements = [
@@ -417,8 +414,6 @@ class TestWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wcs_movements,
             )
 
-        del wcs_movements
-
     def test_initialization_invalid_wing_cross_section_movements_type(self):
         """Test that WingMovement initialization fails with invalid
         wing_cross_section_movements type."""
@@ -429,8 +424,6 @@ class TestWingMovement(unittest.TestCase):
                 base_wing=base_wing,
                 wing_cross_section_movements="not_a_list",
             )
-
-        del base_wing
 
     def test_initialization_invalid_wing_cross_section_movements_length(self):
         """Test that WingMovement initialization fails when
@@ -445,9 +438,6 @@ class TestWingMovement(unittest.TestCase):
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
             )
-
-        del base_wing
-        del wcs_movements
 
     def test_initialization_ampPrelimLer_G_Cg_validation(self):
         """Test ampPrelimLer_G_Cg parameter validation."""
@@ -466,9 +456,6 @@ class TestWingMovement(unittest.TestCase):
                 periodPrelimLer_G_Cg=(1.0, 0.0, 0.0),
             )
 
-        del base_wing
-        del wcs_movements
-
     def test_initialization_periodPrelimLer_G_Cg_validation(self):
         """Test periodPrelimLer_G_Cg parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
@@ -485,9 +472,6 @@ class TestWingMovement(unittest.TestCase):
                 ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),
                 periodPrelimLer_G_Cg=(1.0, 0.0, 0.0),
             )
-
-        del base_wing
-        del wcs_movements
 
     def test_initialization_phasePrelimLer_G_Cg_validation(self):
         """Test phasePrelimLer_G_Cg parameter validation."""
@@ -517,9 +501,6 @@ class TestWingMovement(unittest.TestCase):
                 phasePrelimLer_G_Cg=(45.0, 0.0, 0.0),
             )
 
-        del base_wing
-        del wcs_movements
-
     def test_initialization_ampAngles_G_to_prelimWn_izyx_validation(self):
         """Test ampAngles_G_to_prelimWn_izyx parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
@@ -546,9 +527,6 @@ class TestWingMovement(unittest.TestCase):
                 periodAngles_G_to_prelimWn_izyx=(1.0, 0.0, 0.0),
             )
 
-        del base_wing
-        del wcs_movements
-
     def test_initialization_periodAngles_G_to_prelimWn_izyx_validation(self):
         """Test periodAngles_G_to_prelimWn_izyx parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
@@ -565,9 +543,6 @@ class TestWingMovement(unittest.TestCase):
                 ampAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
                 periodAngles_G_to_prelimWn_izyx=(1.0, 0.0, 0.0),
             )
-
-        del base_wing
-        del wcs_movements
 
     def test_initialization_phaseAngles_G_to_prelimWn_izyx_validation(self):
         """Test phaseAngles_G_to_prelimWn_izyx parameter validation."""
@@ -596,9 +571,6 @@ class TestWingMovement(unittest.TestCase):
                 periodAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
                 phaseAngles_G_to_prelimWn_izyx=(45.0, 0.0, 0.0),
             )
-
-        del base_wing
-        del wcs_movements
 
     def test_custom_spacing_prelimLer_produces_expected_motion(self):
         """Test that custom spacing function for prelimLer_G_Cg produces

@@ -45,10 +45,6 @@ def make_basic_wing_cross_section_fixture(airfoil=None):
         spanwise_spacing="cosine",
     )
 
-    # Only delete the fixture if we created it locally.
-    if airfoil is None:
-        del test_airfoil_fixture
-
     # Return the WingCrossSection fixture.
     return basic_wing_cross_section_fixture
 
@@ -71,9 +67,6 @@ def make_root_wing_cross_section_fixture():
         Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
         angles_Wcsp_to_Wcs_izyx=[0.0, 0.0, 0.0],
     )
-
-    # Delete the constructing fixture.
-    del test_airfoil_fixture
 
     # Return the root WingCrossSection fixture.
     return root_wing_cross_section_fixture
@@ -99,9 +92,6 @@ def make_tip_wing_cross_section_fixture():
         spanwise_spacing=None,
     )
 
-    # Delete the constructing fixture.
-    del test_airfoil_fixture
-
     # Return the tip WingCrossSection fixture.
     return tip_wing_cross_section_fixture
 
@@ -123,9 +113,6 @@ def make_minimal_wing_cross_section_fixture():
             num_spanwise_panels=1,  # Minimum valid value
         )
     )
-
-    # Delete the constructing fixture.
-    del test_airfoil_fixture
 
     # Return the minimal WingCrossSection fixture.
     return minimal_wing_cross_section_fixture
@@ -155,9 +142,6 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
             spanwise_spacing=None,
         )
     )
-
-    # Delete the constructing fixture.
-    del test_airfoil_fixture
 
     # Return the asymmetric WingCrossSection fixture.
     return asymmetric_wing_cross_section_fixture

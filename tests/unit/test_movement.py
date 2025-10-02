@@ -12,20 +12,21 @@ from tests.unit.fixtures import operating_point_fixtures
 class TestMovement(unittest.TestCase):
     """This is a class with functions to test Movements."""
 
-    def setUp(self):
-        """Set up test fixtures for Movement tests."""
-        self.static_movement = movement_fixtures.make_static_movement_fixture()
-        self.basic_movement = movement_fixtures.make_basic_movement_fixture()
-        self.static_movement_with_explicit_num_steps = (
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all Movement tests."""
+        cls.static_movement = movement_fixtures.make_static_movement_fixture()
+        cls.basic_movement = movement_fixtures.make_basic_movement_fixture()
+        cls.static_movement_with_explicit_num_steps = (
             movement_fixtures.make_static_movement_with_explicit_num_steps_fixture()
         )
-        self.non_static_movement_with_explicit_num_steps = (
+        cls.non_static_movement_with_explicit_num_steps = (
             movement_fixtures.make_non_static_movement_with_explicit_num_steps_fixture()
         )
-        self.movement_with_custom_delta_time = (
+        cls.movement_with_custom_delta_time = (
             movement_fixtures.make_movement_with_custom_delta_time_fixture()
         )
-        self.movement_with_multiple_airplanes = (
+        cls.movement_with_multiple_airplanes = (
             movement_fixtures.make_movement_with_multiple_airplanes_fixture()
         )
 

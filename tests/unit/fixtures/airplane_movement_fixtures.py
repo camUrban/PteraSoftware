@@ -32,10 +32,6 @@ def make_static_airplane_movement_fixture():
         phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return static_airplane_movement_fixture
 
@@ -64,10 +60,6 @@ def make_basic_airplane_movement_fixture():
         spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
         phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return basic_airplane_movement_fixture
@@ -100,10 +92,6 @@ def make_sine_spacing_Cgi_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return sine_spacing_Cgi_airplane_movement_fixture
 
@@ -134,10 +122,6 @@ def make_uniform_spacing_Cgi_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return uniform_spacing_Cgi_airplane_movement_fixture
@@ -170,10 +154,6 @@ def make_mixed_spacing_Cgi_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return mixed_spacing_Cgi_airplane_movement_fixture
 
@@ -204,10 +184,6 @@ def make_sine_spacing_angles_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return sine_spacing_angles_airplane_movement_fixture
@@ -240,10 +216,6 @@ def make_uniform_spacing_angles_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return uniform_spacing_angles_airplane_movement_fixture
 
@@ -274,10 +246,6 @@ def make_mixed_spacing_angles_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return mixed_spacing_angles_airplane_movement_fixture
@@ -310,10 +278,6 @@ def make_Cgi_only_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return Cgi_only_airplane_movement_fixture
 
@@ -344,10 +308,6 @@ def make_angles_only_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return angles_only_airplane_movement_fixture
@@ -380,10 +340,6 @@ def make_phase_offset_Cgi_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return phase_offset_Cgi_airplane_movement_fixture
 
@@ -414,10 +370,6 @@ def make_phase_offset_angles_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(45.0, 90.0, -30.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return phase_offset_angles_airplane_movement_fixture
@@ -451,10 +403,6 @@ def make_multiple_periods_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return multiple_periods_airplane_movement_fixture
@@ -504,10 +452,6 @@ def make_custom_spacing_Cgi_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return custom_spacing_Cgi_airplane_movement_fixture
 
@@ -556,10 +500,6 @@ def make_custom_spacing_angles_airplane_movement_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
-
     # Return the AirplaneMovement fixture.
     return custom_spacing_angles_airplane_movement_fixture
 
@@ -606,10 +546,6 @@ def make_mixed_custom_and_standard_spacing_airplane_movement_fixture():
             phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixtures.
-    del base_airplane
-    del wing_movements
 
     # Return the AirplaneMovement fixture.
     return mixed_custom_and_standard_spacing_airplane_movement_fixture

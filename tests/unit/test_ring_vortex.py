@@ -364,9 +364,6 @@ class TestRingVortex(unittest.TestCase):
         self.assertIsNone(ring_vortex.back_leg.strength)
         self.assertIsNone(ring_vortex.right_leg.strength)
 
-        # Clean up.
-        del ring_vortex
-
     def test_very_small_vortex(self):
         """Test RingVortex with very small dimensions."""
         # Should handle very small RingVortices without issues.

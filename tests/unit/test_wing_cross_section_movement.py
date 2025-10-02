@@ -13,57 +13,58 @@ from tests.unit.fixtures import wing_cross_section_movement_fixtures
 class TestWingCrossSectionMovement(unittest.TestCase):
     """This is a class with functions to test WingCrossSectionMovements."""
 
-    def setUp(self):
-        """Set up test fixtures for WingCrossSectionMovement tests."""
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all WingCrossSectionMovement tests."""
         # Spacing test fixtures.
-        self.sine_spacing_Lp_wcs_movement = (
+        cls.sine_spacing_Lp_wcs_movement = (
             wing_cross_section_movement_fixtures.make_sine_spacing_Lp_wing_cross_section_movement_fixture()
         )
-        self.uniform_spacing_Lp_wcs_movement = (
+        cls.uniform_spacing_Lp_wcs_movement = (
             wing_cross_section_movement_fixtures.make_uniform_spacing_Lp_wing_cross_section_movement_fixture()
         )
-        self.mixed_spacing_Lp_wcs_movement = (
+        cls.mixed_spacing_Lp_wcs_movement = (
             wing_cross_section_movement_fixtures.make_mixed_spacing_Lp_wing_cross_section_movement_fixture()
         )
-        self.sine_spacing_angles_wcs_movement = (
+        cls.sine_spacing_angles_wcs_movement = (
             wing_cross_section_movement_fixtures.make_sine_spacing_angles_wing_cross_section_movement_fixture()
         )
-        self.uniform_spacing_angles_wcs_movement = (
+        cls.uniform_spacing_angles_wcs_movement = (
             wing_cross_section_movement_fixtures.make_uniform_spacing_angles_wing_cross_section_movement_fixture()
         )
-        self.mixed_spacing_angles_wcs_movement = (
+        cls.mixed_spacing_angles_wcs_movement = (
             wing_cross_section_movement_fixtures.make_mixed_spacing_angles_wing_cross_section_movement_fixture()
         )
 
         # Additional test fixtures.
-        self.static_wcs_movement = (
+        cls.static_wcs_movement = (
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
         )
-        self.basic_wcs_movement = (
+        cls.basic_wcs_movement = (
             wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture()
         )
-        self.Lp_only_wcs_movement = (
+        cls.Lp_only_wcs_movement = (
             wing_cross_section_movement_fixtures.make_Lp_only_wing_cross_section_movement_fixture()
         )
-        self.angles_only_wcs_movement = (
+        cls.angles_only_wcs_movement = (
             wing_cross_section_movement_fixtures.make_angles_only_wing_cross_section_movement_fixture()
         )
-        self.phase_offset_Lp_wcs_movement = (
+        cls.phase_offset_Lp_wcs_movement = (
             wing_cross_section_movement_fixtures.make_phase_offset_Lp_wing_cross_section_movement_fixture()
         )
-        self.phase_offset_angles_wcs_movement = (
+        cls.phase_offset_angles_wcs_movement = (
             wing_cross_section_movement_fixtures.make_phase_offset_angles_wing_cross_section_movement_fixture()
         )
-        self.multiple_periods_wcs_movement = (
+        cls.multiple_periods_wcs_movement = (
             wing_cross_section_movement_fixtures.make_multiple_periods_wing_cross_section_movement_fixture()
         )
-        self.custom_spacing_Lp_wcs_movement = (
+        cls.custom_spacing_Lp_wcs_movement = (
             wing_cross_section_movement_fixtures.make_custom_spacing_Lp_wing_cross_section_movement_fixture()
         )
-        self.custom_spacing_angles_wcs_movement = (
+        cls.custom_spacing_angles_wcs_movement = (
             wing_cross_section_movement_fixtures.make_custom_spacing_angles_wing_cross_section_movement_fixture()
         )
-        self.mixed_custom_and_standard_spacing_wcs_movement = (
+        cls.mixed_custom_and_standard_spacing_wcs_movement = (
             wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_cross_section_movement_fixture()
         )
 

@@ -28,9 +28,6 @@ def make_sine_spacing_Lp_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return sine_spacing_Lp_wing_cross_section_movement_fixture
 
@@ -56,9 +53,6 @@ def make_uniform_spacing_Lp_wing_cross_section_movement_fixture():
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return uniform_spacing_Lp_wing_cross_section_movement_fixture
@@ -86,9 +80,6 @@ def make_mixed_spacing_Lp_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return mixed_spacing_Lp_wing_cross_section_movement_fixture
 
@@ -114,9 +105,6 @@ def make_sine_spacing_angles_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return sine_spacing_angles_wing_cross_section_movement_fixture
@@ -144,9 +132,6 @@ def make_uniform_spacing_angles_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return uniform_spacing_angles_wing_cross_section_movement_fixture
 
@@ -172,9 +157,6 @@ def make_mixed_spacing_angles_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return mixed_spacing_angles_wing_cross_section_movement_fixture
@@ -204,9 +186,6 @@ def make_static_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return static_wing_cross_section_movement_fixture
@@ -238,9 +217,6 @@ def make_static_tip_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return static_tip_wing_cross_section_movement_fixture
 
@@ -270,9 +246,6 @@ def make_basic_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return basic_wing_cross_section_movement_fixture
@@ -304,9 +277,6 @@ def make_Lp_only_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return Lp_only_wing_cross_section_movement_fixture
 
@@ -336,9 +306,6 @@ def make_angles_only_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return angles_only_wing_cross_section_movement_fixture
@@ -370,9 +337,6 @@ def make_phase_offset_Lp_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return phase_offset_Lp_wing_cross_section_movement_fixture
 
@@ -403,9 +367,6 @@ def make_phase_offset_angles_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return phase_offset_angles_wing_cross_section_movement_fixture
 
@@ -435,9 +396,6 @@ def make_multiple_periods_wing_cross_section_movement_fixture():
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return multiple_periods_wing_cross_section_movement_fixture
@@ -486,9 +444,6 @@ def make_custom_spacing_Lp_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return custom_spacing_Lp_wing_cross_section_movement_fixture
 
@@ -536,9 +491,6 @@ def make_custom_spacing_angles_wing_cross_section_movement_fixture():
         )
     )
 
-    # Delete the constructing fixture.
-    del base_wing_cross_section
-
     # Return the WingCrossSectionMovement fixture.
     return custom_spacing_angles_wing_cross_section_movement_fixture
 
@@ -583,9 +535,6 @@ def make_mixed_custom_and_standard_spacing_wing_cross_section_movement_fixture()
             phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
         )
     )
-
-    # Delete the constructing fixture.
-    del base_wing_cross_section
 
     # Return the WingCrossSectionMovement fixture.
     return mixed_custom_and_standard_spacing_wing_cross_section_movement_fixture

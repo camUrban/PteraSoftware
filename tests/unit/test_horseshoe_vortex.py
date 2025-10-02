@@ -312,9 +312,6 @@ class TestHorseshoeVortex(unittest.TestCase):
         self.assertIsNone(horseshoe_vortex.finite_leg.strength)
         self.assertIsNone(horseshoe_vortex.left_leg.strength)
 
-        # Clean up.
-        del horseshoe_vortex
-
     def test_tilted_leg_vector(self):
         """Test HorseshoeVortex with tilted leg vector."""
         # The tilted legs fixture should have a normalized vector.

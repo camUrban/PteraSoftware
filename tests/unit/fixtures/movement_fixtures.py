@@ -27,10 +27,6 @@ def make_static_movement_fixture():
         num_chords=3,
     )
 
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
-
     # Return the Movement fixture.
     return static_movement_fixture
 
@@ -55,10 +51,6 @@ def make_basic_movement_fixture():
         operating_point_movement=operating_point_movement,
         num_cycles=1,
     )
-
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
 
     # Return the Movement fixture.
     return basic_movement_fixture
@@ -85,10 +77,6 @@ def make_static_movement_with_explicit_num_steps_fixture():
         operating_point_movement=operating_point_movement,
         num_steps=5,
     )
-
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
 
     # Return the Movement fixture.
     return static_movement_with_explicit_num_steps_fixture
@@ -118,10 +106,6 @@ def make_non_static_movement_with_explicit_num_steps_fixture():
         )
     )
 
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
-
     # Return the Movement fixture.
     return non_static_movement_with_explicit_num_steps_fixture
 
@@ -148,10 +132,6 @@ def make_movement_with_custom_delta_time_fixture():
         num_cycles=1,
     )
 
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
-
     # Return the Movement fixture.
     return movement_with_custom_delta_time_fixture
 
@@ -177,10 +157,6 @@ def make_movement_with_multiple_airplanes_fixture():
         operating_point_movement=operating_point_movement,
         num_cycles=1,
     )
-
-    # Delete the constructing fixtures.
-    del airplane_movements
-    del operating_point_movement
 
     # Return the Movement fixture.
     return movement_with_multiple_airplanes_fixture

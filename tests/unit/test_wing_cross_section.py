@@ -70,8 +70,6 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(wing_cross_section.control_surface_deflection, 0.0)
         self.assertIsNone(wing_cross_section.spanwise_spacing)
 
-        del wing_cross_section
-
     def test_airfoil_parameter_validation(self):
         """Test that airfoil parameter is properly validated."""
         # Test with invalid airfoil type
@@ -89,7 +87,6 @@ class TestWingCrossSection(unittest.TestCase):
             num_spanwise_panels=15,
         )
         self.assertEqual(wing_cross_section.num_spanwise_panels, 15)
-        del wing_cross_section
 
         # Test with None (valid for tip cross sections)
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -97,7 +94,6 @@ class TestWingCrossSection(unittest.TestCase):
             num_spanwise_panels=None,
         )
         self.assertIsNone(wing_cross_section.num_spanwise_panels)
-        del wing_cross_section
 
         # Test with invalid values
         invalid_values = [0, -5, 2.5, "eight"]
@@ -121,7 +117,6 @@ class TestWingCrossSection(unittest.TestCase):
                     chord=chord,
                 )
                 self.assertEqual(wing_cross_section.chord, chord)
-                del wing_cross_section
 
         # Test with invalid values
         invalid_chords = [0.0, -1.0, -0.5, "one"]
@@ -152,7 +147,6 @@ class TestWingCrossSection(unittest.TestCase):
                     Lp_Wcsp_Lpp=vector,
                 )
                 np.testing.assert_array_equal(wing_cross_section.Lp_Wcsp_Lpp, vector)
-                del wing_cross_section
 
         # Test that second component must be non-negative
         with self.assertRaises(ValueError):
@@ -197,7 +191,6 @@ class TestWingCrossSection(unittest.TestCase):
                 np.testing.assert_array_equal(
                     wing_cross_section.angles_Wcsp_to_Wcs_izyx, angles
                 )
-                del wing_cross_section
 
         # Test with angles outside valid range (using various array-like formats)
         invalid_angles = [
@@ -229,7 +222,6 @@ class TestWingCrossSection(unittest.TestCase):
                 self.assertEqual(
                     wing_cross_section.control_surface_symmetry_type, control_type
                 )
-                del wing_cross_section
 
         # Test with invalid types
         invalid_types = ["invalid", "flap", "", 123]
@@ -256,7 +248,6 @@ class TestWingCrossSection(unittest.TestCase):
                 self.assertEqual(
                     wing_cross_section.control_surface_hinge_point, hinge_point
                 )
-                del wing_cross_section
 
         # Test with invalid values (outside range or edge values)
         invalid_hinge_points = [0.0, 1.0, -0.1, 1.1, "point"]
@@ -283,7 +274,6 @@ class TestWingCrossSection(unittest.TestCase):
                 self.assertEqual(
                     wing_cross_section.control_surface_deflection, deflection
                 )
-                del wing_cross_section
 
         # Test with invalid values (outside range or edge values)
         invalid_deflections = [-90.0, 90.0, -100.0, 120.0, "deflection"]
@@ -308,7 +298,6 @@ class TestWingCrossSection(unittest.TestCase):
                     spanwise_spacing=spacing,
                 )
                 self.assertEqual(wing_cross_section.spanwise_spacing, spacing)
-                del wing_cross_section
 
         # Test with invalid values
         invalid_spacings = ["linear", "exponential", "", 123]
@@ -391,7 +380,6 @@ class TestWingCrossSection(unittest.TestCase):
             geometry_fixtures.make_minimal_wing_cross_section_fixture()
         )
         self.assertEqual(minimal_wing_cross_section.num_spanwise_panels, 1)
-        del minimal_wing_cross_section
 
         # Test with maximum reasonable values
         max_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -405,7 +393,6 @@ class TestWingCrossSection(unittest.TestCase):
         )
         self.assertEqual(max_wing_cross_section.num_spanwise_panels, 100)
         self.assertEqual(max_wing_cross_section.chord, 50.0)
-        del max_wing_cross_section
 
     # TODO: Finalize WingCrossSection's get_plottable_data testing.
     # def test_wing_cross_section_get_plottable_data(self):

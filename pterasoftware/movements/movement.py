@@ -18,7 +18,6 @@ from .operating_point_movement import OperatingPointMovement
 from .. import parameter_validation
 
 
-# TODO: Add unit tests for this Class.
 class Movement:
     """This is a class used to contain an UnsteadyProblem's movement.
 
@@ -233,7 +232,6 @@ class Movement:
             num_steps=self.num_steps, delta_time=self.delta_time
         )
 
-    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
         """Defines a property for the longest period of Movement's own motion and
@@ -256,7 +254,6 @@ class Movement:
             self.operating_point_movement.max_period,
         )
 
-    # TODO: Add unit tests for this method.
     @property
     def static(self):
         """Defines a property to flag if all the Movement itself, and all of its

@@ -402,8 +402,9 @@ def _validate_custom_spacing_function(custom_function):
 
     :raises ValueError: If the function doesn't meet the requirements.
     """
-    # Test the function over two full periods.
-    test_input = np.linspace(0, 4 * np.pi, 200)
+    # Test the function over two full periods. Us an odd number of points so that one
+    # lies exactly on 2*pi.
+    test_input = np.linspace(0, 4 * np.pi, 201)
 
     try:
         test_output = custom_function(test_input)

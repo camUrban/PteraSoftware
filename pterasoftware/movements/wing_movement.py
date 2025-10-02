@@ -67,8 +67,11 @@ class WingMovement:
 
             The amplitudes of the WingMovement's changes in its Wings' prelimLer_G_Cg
             parameters. Can be a tuple, list, or numpy array of non-negative numbers
-            (int or float). Values are converted to floats internally. The default
-            value is (0.0, 0.0, 0.0). The units are in meters.
+            (int or float). Also, each amplitude must be low enough that it doesn't
+            drive its base value out of the range of valid values. Otherwise,
+            this WingMovement will try to create Wings with invalid parameters
+            values. Values are converted to floats internally. The default value is (
+            0.0, 0.0, 0.0). The units are in meters.
 
         :param periodPrelimLer_G_Cg: array-like of 3 numbers, optional
 
@@ -98,7 +101,7 @@ class WingMovement:
             The phase offsets of the elements in the first time step's Wing's
             prelimLer_G_Cg parameter relative to the base Wing's prelimLer_G_Cg
             parameter. Can be a tuple, list, or numpy array of non-negative numbers (
-            int or float) in the range [0.0, 360.0). Values are converted to floats
+            int or float) in the range (-180.0, 180.0]. Values are converted to floats
             internally. The default value is (0.0, 0.0, 0.0). Each element must be
             0.0 if the corresponding element in ampPrelimLer_G_Cg is 0.0 and non-zero
             if not. The units are in degrees.
@@ -107,9 +110,12 @@ class WingMovement:
 
             The amplitudes of the WingMovement's changes in its Wings'
             angles_G_to_prelimWn_izyx parameters. Can be a tuple, list, or numpy
-            array of numbers (int or float) in the range [0.0, 180.0). Values are
-            converted to floats internally. The default value is (0.0, 0.0, 0.0). The
-            units are in degrees.
+            array of numbers (int or float) in the range [0.0, 180.0). Also,
+            each amplitude must be low enough that it doesn't drive its base value
+            out of the range of valid values. Otherwise, this WingMovement will try
+            to create Wings with invalid parameters values. Values are converted to
+            floats internally. The default value is (0.0, 0.0, 0.0). The units are in
+            degrees.
 
         :param periodAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
 
@@ -140,7 +146,7 @@ class WingMovement:
             The phase offsets of the elements in the first time step's Wing's
             angles_G_to_prelimWn_izyx parameter relative to the base Wing's
             angles_G_to_prelimWn_izyx parameter. Can be a tuple, list, or numpy array
-            of numbers (int or float) in the range [0.0, 360.0). Values are converted
+            of numbers (int or float) in the range (-180.0, 180.0]. Values are converted
             to floats internally. The default value is (0.0, 0.0, 0.0). Each element
             must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
             is 0.0 and non-zero if not. The units are in degrees.
@@ -200,10 +206,11 @@ class WingMovement:
             )
         )
         if not (
-            np.all(phasePrelimLer_G_Cg >= 0.0) and np.all(phasePrelimLer_G_Cg < 360.0)
+            np.all(phasePrelimLer_G_Cg > -180.0)
+            and np.all(phasePrelimLer_G_Cg <= 180.0)
         ):
             raise ValueError(
-                "All elements in phasePrelimLer_G_Cg must be in the range [0.0, 360.0)."
+                "All elements in phasePrelimLer_G_Cg must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phasePrelimLer_G_Cg):
             amp = self.ampPrelimLer_G_Cg[phase_index]
@@ -258,11 +265,11 @@ class WingMovement:
             )
         )
         if not (
-            np.all(phaseAngles_G_to_prelimWn_izyx >= 0.0)
-            and np.all(phaseAngles_G_to_prelimWn_izyx < 360.0)
+            np.all(phaseAngles_G_to_prelimWn_izyx > -180.0)
+            and np.all(phaseAngles_G_to_prelimWn_izyx <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_G_to_prelimWn_izyx must be in the range [0.0, 360.0)."
+                "All elements in phaseAngles_G_to_prelimWn_izyx must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseAngles_G_to_prelimWn_izyx):
             amp = self.ampAngles_G_to_prelimWn_izyx[phase_index]
@@ -354,14 +361,16 @@ class WingMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_customspaces(
-                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
-                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
-                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
-                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
+                listAngles_G_to_prelimWn_izyx[dim, :] = (
+                    functions.oscillating_customspaces(
+                        amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                        periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                        phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                        bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                        num_steps=num_steps,
+                        delta_time=delta_time,
+                        custom_function=spacing,
+                    )
                 )
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")

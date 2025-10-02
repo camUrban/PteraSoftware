@@ -56,7 +56,10 @@ class OperatingPointMovement:
 
             The amplitude of the OperatingPointMovement's changes in its
             OperatingPoints' vCg__E parameters. Must be a non-negative number (int or
-            float), and is converted to a float internally. The default value is 0.0.
+            float), and is converted to a float internally.  Also, the amplitude must
+            be low enough that it doesn't drive its base value out of the range of
+            valid values. Otherwise, this OperatingPointMovement will try to create
+            OperatingPoints with invalid parameters values.The default value is 0.0.
             The units are in meters per second.
 
         :param periodVCg__E: number, optional
@@ -77,7 +80,7 @@ class OperatingPointMovement:
 
             The phase offsets of the first time step's OperatingPoint's vCg__E
             parameter relative to the base OperatingPoint's vCg__E parameter. Must be
-            a number (int or float) in the range [0.0, 360.0), and is converted to a
+            a number (int or float) in the range (-180.0, 180.0], and is converted to a
             float internally. The default value is 0.0. It must be 0.0 if ampVCg__E
             is 0.0 and non-zero if not. The units are in degrees.
         """
@@ -104,7 +107,7 @@ class OperatingPointMovement:
         self.spacingVCg__E = spacingVCg__E
 
         phaseVCg__E = parameter_validation.number_in_range_return_float(
-            phaseVCg__E, "phaseVCg__E", 0.0, True, 360.0, False
+            phaseVCg__E, "phaseVCg__E", -180.0, False, 180.0, True
         )
         if self.ampVCg__E == 0 and phaseVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
@@ -145,7 +148,7 @@ class OperatingPointMovement:
                 delta_time=delta_time,
             )
         else:
-            listVCg__E = functions.oscillating_linspace(
+            listVCg__E = functions.oscillating_linspaces(
                 amps=self.ampVCg__E,
                 periods=self.periodVCg__E,
                 phases=self.phaseVCg__E,
@@ -169,12 +172,14 @@ class OperatingPointMovement:
             thisVCg__E = listVCg__E[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = operating_point.OperatingPoint(rho=this_rho,
-                                                                  vCg__E=thisVCg__E,
-                                                                  alpha=this_alpha,
-                                                                  beta=this_beta,
-                                                                  externalFX_W=thisExternalFX_W,
-                                                                  nu=this_nu)
+            this_operating_point = operating_point.OperatingPoint(
+                rho=this_rho,
+                vCg__E=thisVCg__E,
+                alpha=this_alpha,
+                beta=this_beta,
+                externalFX_W=thisExternalFX_W,
+                nu=this_nu,
+            )
 
             # Add this new OperatingPoint to the list of OperatingPoints.
             operating_points.append(this_operating_point)

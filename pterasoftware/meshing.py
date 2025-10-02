@@ -37,7 +37,6 @@ def mesh_wing(wing):
     symmetry_normal_Wn = wing.symmetry_normal_Wn
     symmetry_point_Wn_Ler = wing.symmetry_point_Wn_Ler
     num_chordwise_panels = wing.num_chordwise_panels
-    num_spanwise_panels = wing.num_spanwise_panels
     chordwise_spacing = wing.chordwise_spacing
     T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
     children_T_pas_Wcs_Lp_to_Wn_Ler = wing.children_T_pas_Wcs_Lp_to_Wn_Ler

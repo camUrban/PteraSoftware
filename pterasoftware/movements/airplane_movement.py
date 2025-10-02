@@ -68,8 +68,11 @@ class AirplaneMovement:
 
             The amplitudes of the AirplaneMovement's changes in its Airplanes'
             Cgi_E_I parameters. Can be a tuple, list, or numpy array of non-negative
-            numbers (int or float). Values are converted to floats internally. The
-            default value is ( 0.0, 0.0, 0.0). The units are in meters.
+            numbers (int or float). Also, each amplitude must be low enough that it
+            doesn't drive its base value out of the range of valid values. Otherwise,
+            this AirplaneMovement will try to create Airplanes with invalid
+            parameters values. Values are converted to floats internally. The default
+            value is (0.0, 0.0, 0.0). The units are in meters.
 
         :param periodCgi_E_I: array-like of 3 numbers, optional
 
@@ -97,7 +100,7 @@ class AirplaneMovement:
             The phase offsets of the elements in the first time step's Airplane's
             Cgi_E_I parameter relative to the base Airplane's Cgi_E_I parameter. Can
             be a tuple, list, or numpy array of non-negative numbers (int or float)
-            in the range [0.0, 360.0). Values are converted to floats internally. The
+            in the range (-180.0, 180.0]. Values are converted to floats internally. The
             default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
             corresponding element in ampCgi_E_I is 0.0 and non-zero if not. The units
             are in degrees.
@@ -106,9 +109,11 @@ class AirplaneMovement:
 
             The amplitudes of the AirplaneMovement's changes in its Airplanes'
             angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy array of
-            numbers (int or float) in the range [0.0, 360.0). Values are converted to
-            floats internally. The default value is (0.0, 0.0, 0.0). The units are in
-            degrees.
+            numbers (int or float) in the range [0.0, 360.0). Also, each amplitude
+            must be low enough that it doesn't drive its base value out of the range
+            of valid values. Otherwise, this AirplaneMovement will try to create
+            Airplanes with invalid parameters values. Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). The units are in degrees.
 
         :param periodAngles_E_to_B_izyx: array-like of 3 numbers, optional
 
@@ -138,7 +143,7 @@ class AirplaneMovement:
             The phase offsets of the elements in the first time step's Airplane's
             angles_E_to_B_izyx parameter relative to the base Airplane's
             angles_E_to_B_izyx parameter. Can be a tuple, list, or numpy array of
-            numbers (int or float) in the range [0.0, 360.0). Values are converted to
+            numbers (int or float) in the range (-180.0, 180.0]. Values are converted to
             floats internally. The default value is (0.0, 0.0, 0.0). Each element
             must be 0.0 if the corresponding element in ampAngles_E_to_B_izyx is 0.0
             and non-zero if not. The units are in degrees.
@@ -188,9 +193,9 @@ class AirplaneMovement:
         phaseCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
             phaseCgi_E_I, "phaseCgi_E_I"
         )
-        if not (np.all(phaseCgi_E_I >= 0.0) and np.all(phaseCgi_E_I < 360.0)):
+        if not (np.all(phaseCgi_E_I > -180.0) and np.all(phaseCgi_E_I <= 180.0)):
             raise ValueError(
-                "All elements in phaseCgi_E_I must be in the range [0.0, 360.0)."
+                "All elements in phaseCgi_E_I must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseCgi_E_I):
             amp = self.ampCgi_E_I[phase_index]
@@ -245,11 +250,11 @@ class AirplaneMovement:
             )
         )
         if not (
-            np.all(phaseAngles_E_to_B_izyx >= 0.0)
-            and np.all(phaseAngles_E_to_B_izyx < 360.0)
+            np.all(phaseAngles_E_to_B_izyx > -180.0)
+            and np.all(phaseAngles_E_to_B_izyx <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_E_to_B_izyx must be in the range [0.0, 360.0)."
+                "All elements in phaseAngles_E_to_B_izyx must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseAngles_E_to_B_izyx):
             amp = self.ampAngles_E_to_B_izyx[phase_index]

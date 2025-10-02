@@ -19,7 +19,6 @@ from .. import geometry
 from .. import parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class WingCrossSectionMovement:
     """This is a class used to contain the WingCrossSection movements.
 
@@ -61,7 +60,10 @@ class WingCrossSectionMovement:
 
             The amplitudes of the WingCrossSectionMovement's changes in its
             WingCrossSections' Lp_Wcsp_Lpp parameters. Can be a tuple, list, or numpy
-            array of non-negative numbers (int or float). Values are converted to
+            array of non-negative numbers (int or float). Also, each amplitude must
+            be low enough that it doesn't drive its base value out of the range of
+            valid values. Otherwise, this WingCrossSectionMovement will try to create
+            WingCrossSections with invalid parameters values. Values are converted to
             floats internally. The default value is (0.0, 0.0, 0.0). The units are in
             meters.
 
@@ -93,9 +95,9 @@ class WingCrossSectionMovement:
             The phase offsets of the elements in the first time step's
             WingCrossSection's Lp_Wcsp_Lpp parameter relative to the base
             WingCrossSection's Lp_Wcsp_Lpp parameter. Can be a tuple, list, or numpy
-            array of non-negative numbers (int or float) in the range [0.0, 360.0).
-            Values are converted to floats internally. The default value is (0.0,
-            0.0, 0.0). Each element must be 0.0 if the corresponding element in
+            array of non-negative numbers (int or float) in the range (-180.0,
+            180.0]. Values are converted to floats internally. The default value is (
+            0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding element in
             ampLp_Wcsp_Lpp is 0.0 and non-zero if not. The units are in degrees.
 
         :param ampAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
@@ -103,8 +105,11 @@ class WingCrossSectionMovement:
             The amplitudes of the WingCrossSectionMovement's changes in its
             WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range [0.0,
-            180.0). Values are converted to floats internally. The default value is (
-            0.0, 0.0, 0.0). The units are in degrees.
+            180.0). Also, each amplitude must be low enough that it doesn't drive its
+            base value out of the range of valid values. Otherwise,
+            this WingCrossSectionMovement will try to create WingCrossSections with
+            invalid parameters values. Values are converted to floats internally. The
+            default value is ( 0.0, 0.0, 0.0). The units are in degrees.
 
         :param periodAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
 
@@ -136,8 +141,8 @@ class WingCrossSectionMovement:
             The phase offsets of the elements in the first time step's
             WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter relative to the base
             WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter. Can be a tuple,
-            list, or numpy array of numbers (int or float) in the range [0.0,
-            360.0). Values are converted to floats internally. The default value is (
+            list, or numpy array of numbers (int or float) in the range (-180.0,
+            180.0]. Values are converted to floats internally. The default value is (
             0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding element in
             ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
             degrees.
@@ -178,9 +183,11 @@ class WingCrossSectionMovement:
         phaseLp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
             phaseLp_Wcsp_Lpp, "phaseLp_Wcsp_Lpp"
         )
-        if not (np.all(phaseLp_Wcsp_Lpp >= 0.0) and np.all(phaseLp_Wcsp_Lpp < 360.0)):
+        if not (
+            np.all(phaseLp_Wcsp_Lpp > -180.0) and np.all(phaseLp_Wcsp_Lpp <= 180.0)
+        ):
             raise ValueError(
-                "All elements in phaseLp_Wcsp_Lpp must be in the range [0.0, 360.0)."
+                "All elements in phaseLp_Wcsp_Lpp must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseLp_Wcsp_Lpp):
             amp = self.ampLp_Wcsp_Lpp[phase_index]
@@ -235,11 +242,11 @@ class WingCrossSectionMovement:
             )
         )
         if not (
-            np.all(phaseAngles_Wcsp_to_Wcs_izyx >= 0.0)
-            and np.all(phaseAngles_Wcsp_to_Wcs_izyx < 360.0)
+            np.all(phaseAngles_Wcsp_to_Wcs_izyx > -180.0)
+            and np.all(phaseAngles_Wcsp_to_Wcs_izyx <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_Wcsp_to_Wcs_izyx must be in the range [0.0, 360.0)."
+                "All elements in phaseAngles_Wcsp_to_Wcs_izyx must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseAngles_Wcsp_to_Wcs_izyx):
             amp = self.ampAngles_Wcsp_to_Wcs_izyx[phase_index]
@@ -249,7 +256,6 @@ class WingCrossSectionMovement:
                 )
         self.phaseAngles_Wcsp_to_Wcs_izyx = phaseAngles_Wcsp_to_Wcs_izyx
 
-    # TODO: Add unit tests for this method.
     def generate_wing_cross_sections(
         self,
         num_steps,
@@ -336,14 +342,16 @@ class WingCrossSectionMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_customspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = (
+                    functions.oscillating_customspaces(
+                        amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
+                        periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
+                        phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
+                        bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                        num_steps=num_steps,
+                        delta_time=delta_time,
+                        custom_function=spacing,
+                    )
                 )
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
@@ -389,7 +397,6 @@ class WingCrossSectionMovement:
 
         return wing_cross_sections
 
-    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
         """Defines a property for the longest period of WingCrossSectionMovement's

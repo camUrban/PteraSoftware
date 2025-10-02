@@ -4,7 +4,9 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-import pterasoftware as ps
+# noinspection PyProtectedMember
+from pterasoftware import _aerodynamics
+
 from tests.unit.fixtures import ring_vortex_fixtures
 
 
@@ -34,7 +36,7 @@ class TestRingVortex(unittest.TestCase):
     def test_initialization_valid_parameters(self):
         """Test RingVortex initialization with valid parameters."""
         # Test that basic RingVortex initializes correctly.
-        self.assertIsInstance(self.basic_ring_vortex, ps.aerodynamics.RingVortex)
+        self.assertIsInstance(self.basic_ring_vortex, _aerodynamics.RingVortex)
         npt.assert_array_equal(
             self.basic_ring_vortex.Frrvp_G_Cg, np.array([0.0, 0.5, 0.0], dtype=float)
         )
@@ -317,7 +319,7 @@ class TestRingVortex(unittest.TestCase):
         """Test parameter validation with invalid types."""
         # Test with string instead of array.
         with self.assertRaises((TypeError, ValueError)):
-            ps.aerodynamics.RingVortex(
+            _aerodynamics.RingVortex(
                 Frrvp_G_Cg="not_an_array",
                 Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
                 Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -327,7 +329,7 @@ class TestRingVortex(unittest.TestCase):
 
         # Test with wrong-sized ndarray.
         with self.assertRaises((TypeError, ValueError)):
-            ps.aerodynamics.RingVortex(
+            _aerodynamics.RingVortex(
                 Frrvp_G_Cg=np.array([0.0, 0.5], dtype=float),  # Only 2 elements
                 Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
                 Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -337,7 +339,7 @@ class TestRingVortex(unittest.TestCase):
 
         # Test with string strength.
         with self.assertRaises((TypeError, ValueError)):
-            ps.aerodynamics.RingVortex(
+            _aerodynamics.RingVortex(
                 Frrvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
                 Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
                 Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -347,7 +349,7 @@ class TestRingVortex(unittest.TestCase):
 
     def test_none_strength_handling(self):
         """Test that None strength is handled correctly."""
-        ring_vortex = ps.aerodynamics.RingVortex(
+        ring_vortex = _aerodynamics.RingVortex(
             Frrvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
             Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
             Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),

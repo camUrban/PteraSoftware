@@ -1,33 +1,9 @@
-# TODO: Consider making this module private.
-"""This module contains useful functions for the movement classes.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-
-    oscillating_sinspaces: This function returns a (..., num_steps) ndarray of floats
-    that are calculated by inputting a vector of linearly spaced time steps into one
-    or more sine functions defined with the parameters given by the scalars or
-    array-like objects amp, period, phase, and base.
-
-    oscillating_linspace: This function returns a (..., num_steps) ndarray of floats
-    that are calculated by inputting a vector of linearly spaced time steps into one
-    or more triangular wave functions defined with the parameters given by the
-    scalars or array-like objects amp, period, phase, and base.
-
-    oscillating_customspace: This function returns a (..., num_steps) ndarray of
-    floats that are calculated by inputting a vector of linearly spaced time steps
-    into a custom oscillating function defined with the parameters given by the
-    scalars or array-like objects amp, period, phase, and base."""
+"""This module contains useful functions for the movement classes."""
 
 import numpy as np
 from scipy import signal
 
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 # TODO: Create unit tests for this function.
@@ -342,16 +318,16 @@ def _validate_oscillating_function_parameters(
     functions. See their docstrings for details on the requirements for the
     parameters. It also returns the array mask for identifying static cases.
     """
-    amps = parameter_validation.arrayLike_of_numbers_in_range_return_float(
+    amps = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
         amps, "amps", 0.0, True, None, None
     )
-    periods = parameter_validation.arrayLike_of_numbers_in_range_return_float(
+    periods = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
         periods, "periods", 0.0, True, None, None
     )
-    phases = parameter_validation.arrayLike_of_numbers_in_range_return_float(
+    phases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
         phases, "phases", -180.0, False, 180.0, True
     )
-    bases = parameter_validation.arrayLike_of_numbers_in_range_return_float(
+    bases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
         bases, "bases", None, None, None, None
     )
 
@@ -379,8 +355,8 @@ def _validate_oscillating_function_parameters(
             "If the elements at a given location in amps and periods are 0.0, the corresponding element in phases must also be 0.0."
         )
 
-    num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
-    delta_time = parameter_validation.positive_number_return_float(
+    num_steps = _parameter_validation.positive_int_return_int(num_steps, "num_steps")
+    delta_time = _parameter_validation.positive_number_return_float(
         delta_time, "delta_time"
     )
 

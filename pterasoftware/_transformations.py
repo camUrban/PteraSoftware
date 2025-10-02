@@ -1,46 +1,8 @@
-# TODO: Consider making this module private (renaming it with a _ prefix).
-"""This module contains functions used for geometric transformations.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    generate_rot_T: This function generates a transformation matrix representing a
-    passive or active rotation using an angle vector, and parameters specifying if
-    the matrix should be passive or active, intrinsic or extrinsic, and the order by
-    which to apply the rotations about each axis.
-
-    generate_trans_T: This function generates either a passive or active
-    translational transformation matrix using a vector and a parameter specifying if
-    the transformation should be passive or active.
-
-    generate_reflect_T: This function generates either a passive or active
-    reflectional transformation matrix about a plane which is defined by a point (in
-    "A" axes, relative to point "a") and a normal unit vector (in "A" axes).
-
-    compose_T_pas: Compose a chain of passive homogeneous transforms.
-
-    compose_T_act: Compose a chain of active homogeneous transforms.
-
-    invert_T_pas: Invert a passive homogeneous transform.
-
-    invert_T_act: Invert an active homogeneous transform.
-
-    convert_T_pas_to_T_act: Convert a passive transformation matrix to an active
-    transformation matrix.
-
-    convert_T_act_to_T_pas: Convert an active transformation matrix to a passive
-    transformation matrix.
-
-    apply_T_to_vectors: Apply a homogeneous transform to 3-element vector(s) and
-    return 3-element vector(s)."""
+"""This module contains functions used for geometric transformations."""
 
 import numpy as np
 
-from . import parameter_validation
+from . import _parameter_validation
 
 
 def _generate_homogs(vectors_A, has_point):
@@ -142,12 +104,12 @@ def generate_rot_T(angles, passive, intrinsic, order):
 
         This is the transformation matrix.
     """
-    angles = parameter_validation.threeD_number_vectorLike_return_float(
+    angles = _parameter_validation.threeD_number_vectorLike_return_float(
         angles, "angles"
     )
-    passive = parameter_validation.boolLike_return_bool(passive, "passive")
-    intrinsic = parameter_validation.boolLike_return_bool(intrinsic, "intrinsic")
-    order = parameter_validation.rotation_order_return_string(order, "order")
+    passive = _parameter_validation.boolLike_return_bool(passive, "passive")
+    intrinsic = _parameter_validation.boolLike_return_bool(intrinsic, "intrinsic")
+    order = _parameter_validation.rotation_order_return_string(order, "order")
 
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
 
@@ -242,10 +204,10 @@ def generate_trans_T(translations, passive):
 
         This is the transformation matrix.
     """
-    p = parameter_validation.threeD_number_vectorLike_return_float(
+    p = _parameter_validation.threeD_number_vectorLike_return_float(
         translations, "translations"
     )
-    passive = parameter_validation.boolLike_return_bool(passive, "passive")
+    passive = _parameter_validation.boolLike_return_bool(passive, "passive")
     T_trans = np.eye(4, dtype=float)
 
     T_trans[:3, 3] = -p if passive else p
@@ -309,13 +271,13 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
 
         This is the transformation matrix.
     """
-    p = parameter_validation.threeD_number_vectorLike_return_float(
+    p = _parameter_validation.threeD_number_vectorLike_return_float(
         plane_point_A_a, "plane_point_A_a"
     )
-    n_hat = parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+    n_hat = _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
         plane_normal_A, "plane_normal_A"
     )
-    passive = parameter_validation.boolLike_return_bool(passive, "passive")
+    passive = _parameter_validation.boolLike_return_bool(passive, "passive")
 
     T_reflect = np.eye(4, dtype=float)
 
@@ -369,7 +331,7 @@ def compose_T_pas(*T_pas_chain):
     valid_T_pas_chain = []
     for T_pas_id, T_pas in enumerate(T_pas_chain):
         valid_T_pas_chain.append(
-            parameter_validation.fourByFour_number_arrayLike_return_float(
+            _parameter_validation.fourByFour_number_arrayLike_return_float(
                 T_pas, f"T_pas_chain[{T_pas_id}]"
             )
         )
@@ -426,7 +388,7 @@ def compose_T_act(*T_act_chain):
     valid_T_act_chain = []
     for T_act_id, T_act in enumerate(T_act_chain):
         valid_T_act_chain.append(
-            parameter_validation.fourByFour_number_arrayLike_return_float(
+            _parameter_validation.fourByFour_number_arrayLike_return_float(
                 T_act, f"T_act_chain[{T_act_id}]"
             )
         )
@@ -504,7 +466,7 @@ def invert_T_pas(T_pas):
         The passive transform that maps back from the target axes + reference point
         to the original axes + reference point.
     """
-    valid_T_pas = parameter_validation.fourByFour_number_arrayLike_return_float(
+    valid_T_pas = _parameter_validation.fourByFour_number_arrayLike_return_float(
         T_pas, "T_pas"
     )
     return _invert_T_rigid(valid_T_pas)
@@ -551,7 +513,7 @@ def invert_T_act(T_act):
 
         The active transform that exactly undoes T_act.
     """
-    valid_T_act = parameter_validation.fourByFour_number_arrayLike_return_float(
+    valid_T_act = _parameter_validation.fourByFour_number_arrayLike_return_float(
         T_act, "T_act"
     )
     return _invert_T_rigid(valid_T_act)
@@ -568,7 +530,7 @@ def convert_T_pas_to_T_act(T_pas):
 
         The converted active transformation matrix.
     """
-    valid_T_pas = parameter_validation.fourByFour_number_arrayLike_return_float(
+    valid_T_pas = _parameter_validation.fourByFour_number_arrayLike_return_float(
         T_pas, "T_pas"
     )
     return np.linalg.inv(valid_T_pas)
@@ -585,7 +547,7 @@ def convert_T_act_to_T_pas(T_act):
 
         The converted passive transformation matrix.
     """
-    valid_T_act = parameter_validation.fourByFour_number_arrayLike_return_float(
+    valid_T_act = _parameter_validation.fourByFour_number_arrayLike_return_float(
         T_act, "T_act"
     )
     return np.linalg.inv(valid_T_act)
@@ -625,13 +587,13 @@ def apply_T_to_vectors(T, vectors_A, has_point):
 
         The transformed vector(s).
     """
-    T = parameter_validation.fourByFour_number_arrayLike_return_float(T, "T")
+    T = _parameter_validation.fourByFour_number_arrayLike_return_float(T, "T")
     vectors_A = (
-        parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+        _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
             vectors_A, "vectors_A"
         )
     )
-    has_point = parameter_validation.boolLike_return_bool(has_point, "has_point")
+    has_point = _parameter_validation.boolLike_return_bool(has_point, "has_point")
 
     vectorsHomog_A = _generate_homogs(vectors_A, has_point)
 

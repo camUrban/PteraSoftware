@@ -19,8 +19,8 @@ from .airfoil import Airfoil
 from .wing import Wing
 from .wing_cross_section import WingCrossSection
 
-from .. import parameter_validation
-from .. import transformations
+from .. import _parameter_validation
+from .. import _transformations
 
 
 class Airplane:
@@ -145,7 +145,7 @@ class Airplane:
             span. If not set or set to None (the default value), it populates from
             first Wing. If set, it must be greater than zero. The units are meters.
         """
-        wings = parameter_validation.non_empty_list_return_list(wings, "wings")
+        wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings = []
         for wing in wings:
             if not isinstance(wing, Wing):
@@ -153,26 +153,28 @@ class Airplane:
             processed_wings.extend(self.process_wing_symmetry(wing))
         self.wings = processed_wings
 
-        self.name = parameter_validation.string_return_string(name, "name")
-        self.Cgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+        self.name = _parameter_validation.string_return_string(name, "name")
+        self.Cgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
             Cgi_E_I, "Cgi_E_I"
         )
 
-        angles_E_to_B_izyx = parameter_validation.threeD_number_vectorLike_return_float(
-            angles_E_to_B_izyx, "angles_E_to_B_izyx"
+        angles_E_to_B_izyx = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                angles_E_to_B_izyx, "angles_E_to_B_izyx"
+            )
         )
-        angles_E_to_B_izyx[0] = parameter_validation.number_in_range_return_float(
+        angles_E_to_B_izyx[0] = _parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[0], "angles_E_to_B_izyx[0]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_izyx[1] = parameter_validation.number_in_range_return_float(
+        angles_E_to_B_izyx[1] = _parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[1], "angles_E_to_B_izyx[1]", -180.0, False, 180.0, True
         )
-        angles_E_to_B_izyx[2] = parameter_validation.number_in_range_return_float(
+        angles_E_to_B_izyx[2] = _parameter_validation.number_in_range_return_float(
             angles_E_to_B_izyx[2], "angles_E_to_B_izyx[2]", -180.0, False, 180.0, True
         )
         self.angles_E_to_B_izyx = angles_E_to_B_izyx
 
-        self.weight = parameter_validation.non_negative_number_return_float(
+        self.weight = _parameter_validation.non_negative_number_return_float(
             weight, "weight"
         )
 
@@ -182,19 +184,19 @@ class Airplane:
         if s_ref is None:
             self.s_ref = self.wings[0].projected_area
         else:
-            self.s_ref = parameter_validation.positive_number_return_float(
+            self.s_ref = _parameter_validation.positive_number_return_float(
                 s_ref, "s_ref"
             )
         if c_ref is None:
             self.c_ref = self.wings[0].mean_aerodynamic_chord
         else:
-            self.c_ref = parameter_validation.positive_number_return_float(
+            self.c_ref = _parameter_validation.positive_number_return_float(
                 c_ref, "c_ref"
             )
         if b_ref is None:
             self.b_ref = self.wings[0].span
         else:
-            self.b_ref = parameter_validation.positive_number_return_float(
+            self.b_ref = _parameter_validation.positive_number_return_float(
                 b_ref, "b_ref"
             )
 
@@ -330,7 +332,7 @@ class Airplane:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolLike_return_bool(show, "show")
+        show = _parameter_validation.boolLike_return_bool(show, "show")
 
         airfoilOutlines_G_Cg = []
         airfoilMcls_G_Cg = []
@@ -345,10 +347,10 @@ class Airplane:
                 airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[airfoil_id]
                 airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[airfoil_id]
 
-                airfoilOutline_G_Cg = transformations.apply_T_to_vectors(
+                airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
                     wing.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
                 )
-                airfoilMcl_G_Cg = transformations.apply_T_to_vectors(
+                airfoilMcl_G_Cg = _transformations.apply_T_to_vectors(
                     wing.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, has_point=True
                 )
 

@@ -11,8 +11,6 @@ This package contains the following modules:
 
     airplane_movement.py: This module contains the AirplaneMovement class.
 
-    functions.py: This module contains useful functions for the movement classes.
-
     movement.py: This module contains the Movement class.
 
     operating_point_movement.py: This module contains the OperatingPointMovement class.
@@ -24,7 +22,6 @@ This package contains the following modules:
 """
 
 import pterasoftware.movements.airplane_movement
-import pterasoftware.movements.functions
 import pterasoftware.movements.movement
 import pterasoftware.movements.operating_point_movement
 import pterasoftware.movements.wing_cross_section_movement

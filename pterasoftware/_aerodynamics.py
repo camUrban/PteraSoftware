@@ -1,45 +1,13 @@
-# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains vortex class definitions, and functions for calculating
-induced velocities.
-
-This module contains the following classes:
-    RingVortex: This class is used to contain ring vortices.
-
-    HorseshoeVortex: This class is used to contain horseshoe vortices.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    collapsed_velocities_from_ring_vortices: This function takes in a group of
-    points, and the attributes of a group of RingVortices. At every point, it finds
-    the cumulative induced velocity due to all the RingVortices.
-
-    collapsed_velocities_from_ring_vortices_chordwise_segments: This function takes
-    in a group of points, and the attributes of a group of RingVortices. At every
-    point, it finds the cumulative induced velocity due to all the RingVortices'
-    chordwise segments.
-
-    expanded_velocities_from_ring_vortices: This function takes in a group of points,
-    and the attributes of a group of RingVortices. At every point, it finds the
-    induced velocity due to each RingVortex.
-
-    collapsed_velocities_from_horseshoe_vortices: This function takes in a group of
-    points, and the attributes of a group of HorseshoeVortices. At every point,
-    it finds the cumulative induced velocity due to all the HorseshoeVortices.
-
-    expanded_velocities_from_horseshoe_vortices: This function takes in a group of
-    points, and the attributes of a group of HorseshoeVortices. At every point,
-    it finds the induced velocity due to each HorseshoeVortex.
-"""
+induced velocities."""
 
 import math
 
 import numpy as np
 from numba import njit
 
-from . import functions
-from . import parameter_validation
+from . import _functions
+from . import _parameter_validation
 
 # Set the value of Squire's parameter that will be used by the induced velocity
 # functions. Squire's parameter relates to the size of the vortex cores and the rate
@@ -126,20 +94,20 @@ class RingVortex:
             will be converted internally to a float. Its units are in meters squared
             per second.
         """
-        self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Flrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Flrvp_G_Cg, "Flrvp_G_Cg"
         )
-        self.Frrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Frrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Frrvp_G_Cg, "Frrvp_G_Cg"
         )
-        self.Blrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Blrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Blrvp_G_Cg, "Blrvp_G_Cg"
         )
-        self.Brrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Brrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Brrvp_G_Cg, "Brrvp_G_Cg"
         )
         if strength is not None:
-            strength = parameter_validation.number_return_float(strength, "strength")
+            strength = _parameter_validation.number_return_float(strength, "strength")
         self.strength = strength
 
         # Initialize the LineVortices that make up the RingVortex.
@@ -166,7 +134,7 @@ class RingVortex:
 
         # TODO: Consider making this a property.
         # Initialize a variable to hold the centroid of the RingVortex.
-        self.Crvp_G_Cg = functions.numba_centroid_of_quadrilateral(
+        self.Crvp_G_Cg = _functions.numba_centroid_of_quadrilateral(
             self.Flrvp_G_Cg,
             self.Frrvp_G_Cg,
             self.Blrvp_G_Cg,
@@ -232,16 +200,16 @@ class RingVortex:
 
         :return: None
         """
-        self.Flrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Flrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Flrvp_G_Cg, "Flrvp_G_Cg"
         )
-        self.Frrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Frrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Frrvp_G_Cg, "Frrvp_G_Cg"
         )
-        self.Blrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Blrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Blrvp_G_Cg, "Blrvp_G_Cg"
         )
-        self.Brrvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Brrvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Brrvp_G_Cg, "Brrvp_G_Cg"
         )
 
@@ -271,7 +239,7 @@ class RingVortex:
         )
 
         # Update the variable with the centroid of the RingVortex.
-        self.Crvp_G_Cg = functions.numba_centroid_of_quadrilateral(
+        self.Crvp_G_Cg = _functions.numba_centroid_of_quadrilateral(
             self.Flrvp_G_Cg,
             self.Frrvp_G_Cg,
             self.Blrvp_G_Cg,
@@ -331,22 +299,24 @@ class HorseshoeVortex:
         strength,
     ):
         """This is the constructor method."""
-        self.Frhvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Frhvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Frhvp_G_Cg, "Frhvp_G_Cg"
         )
-        self.Flhvp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Flhvp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Flhvp_G_Cg, "Flhvp_G_Cg"
         )
         self.leftLegVector_G = (
-            parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+            _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
                 leftLegVector_G, "leftLegVector_G"
             )
         )
-        self.left_right_leg_lengths = parameter_validation.positive_number_return_float(
-            left_right_leg_lengths, "left_right_leg_lengths"
+        self.left_right_leg_lengths = (
+            _parameter_validation.positive_number_return_float(
+                left_right_leg_lengths, "left_right_leg_lengths"
+            )
         )
         if strength is not None:
-            strength = parameter_validation.number_return_float(strength, "strength")
+            strength = _parameter_validation.number_return_float(strength, "strength")
         self.strength = strength
 
         # TODO: Consider making these properties.

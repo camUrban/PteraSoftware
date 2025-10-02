@@ -16,24 +16,14 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
-    aerodynamics.py: This module contains vortex class definitions, and functions for
-    calculating induced velocities.
-
     convergence.py: This module contains functions for analyzing the convergence of
     steady and unsteady problems.
-
-    functions.py: This module contains functions shared by other modules in the
-    pterasoftware package.
-
-    meshing.py: This module contains the function for meshing Wings.
 
     operating_point.py: This module contains the class definition for a Problem's
     operating point.
 
     output.py: This module contains useful functions for visualizing solutions to
     problems.
-
-    parameter_validation.py: This module contains common parameter validation functions.
 
     problems.py: This module contains the class definitions for different types of
     problems.
@@ -43,9 +33,6 @@ This package contains the following modules:
 
     steady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's steady ring vortex lattice solver.
-
-    transformations.py This module contains functions used for geometric
-    transformations.
 
     trim.py: This module contains functions to analyze the trim conditions of steady
     and unsteady solvers.
@@ -57,17 +44,12 @@ This package contains the following modules:
 import pterasoftware.airfoils
 import pterasoftware.geometry
 import pterasoftware.models
-import pterasoftware.aerodynamics
-import pterasoftware.convergence
-import pterasoftware.functions
-import pterasoftware.meshing
 import pterasoftware.movements
+import pterasoftware.convergence
 import pterasoftware.operating_point
 import pterasoftware.output
-import pterasoftware.parameter_validation
 import pterasoftware.problems
 import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
-import pterasoftware.transformations
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method

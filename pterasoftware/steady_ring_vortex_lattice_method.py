@@ -16,10 +16,10 @@ import logging
 
 import numpy as np
 
-from . import aerodynamics
-from . import functions
+from . import _aerodynamics
+from . import _functions
 from . import geometry
-from . import parameter_validation
+from . import _parameter_validation
 from . import problems
 
 
@@ -135,10 +135,10 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        logging_level = parameter_validation.string_return_string(
+        logging_level = _parameter_validation.string_return_string(
             logging_level, "logging_level"
         )
-        logging_level_value = functions.convert_logging_level_name_to_value(
+        logging_level_value = _functions.convert_logging_level_name_to_value(
             logging_level
         )
         logging.basicConfig(level=logging_level_value)
@@ -159,7 +159,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Find the normal fluid speed (observed from the Earth frame) at every
         # collocation point due solely to the freestream.
         logging.info("Calculating the freestream-Wing influences.")
-        functions.calculate_steady_freestream_wing_influences(steady_solver=self)
+        _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each Panel's RingVortex's and HorseshoeVortex's strength.
         logging.info("Calculating RingVortex and HorseshoeVortex strengths.")
@@ -173,7 +173,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges.
         logging.info("Calculating streamlines.")
-        functions.calculate_streamlines(self)
+        _functions.calculate_streamlines(self)
 
     def _initialize_panel_vortices(self):
         """This method calculates the locations of the RingVortex and HorseshoeVortex
@@ -240,7 +240,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
                             # If the Panel is along the trailing edge, initialize its
                             # HorseshoeVortex.
-                            panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
+                            panel.horseshoe_vortex = _aerodynamics.HorseshoeVortex(
                                 Frhvp_G_Cg=Brrvp_G_Cg,
                                 Flhvp_G_Cg=Blrvp_G_Cg,
                                 leftLegVector_G=vInfHat_G__E,
@@ -249,7 +249,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the Panel's RingVortex.
-                        panel.ring_vortex = aerodynamics.RingVortex(
+                        panel.ring_vortex = _aerodynamics.RingVortex(
                             Flrvp_G_Cg=Flrvp_G_Cg,
                             Frrvp_G_Cg=Frrvp_G_Cg,
                             Blrvp_G_Cg=Blrvp_G_Cg,
@@ -278,7 +278,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 for panel in panels:
                     # Update the solver's list of attributes with this Panel's
                     # attributes.
-                    functions.update_ring_vortex_solvers_panel_attributes(
+                    _functions.update_ring_vortex_solvers_panel_attributes(
                         ring_vortex_solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
@@ -319,7 +319,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # point by each RingVortex. The answer is normalized because the
         # solver's list of RingVortex strengths was initialized to all be 1.0.
         # This will be updated once the correct strengths are calculated.
-        gridRingNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_ring_vortices(
+        gridRingNormVIndCpp_G__E = _aerodynamics.expanded_velocities_from_ring_vortices(
             stackP_G_Cg=self.stackCpp_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
@@ -339,7 +339,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # the correct vortex strengths are calculated. The positions elsewhere
         # will remain zero.
         gridHorseshoeNormVIndCpp_G__E = (
-            aerodynamics.expanded_velocities_from_horseshoe_vortices(
+            _aerodynamics.expanded_velocities_from_horseshoe_vortices(
                 stackP_G_Cg=self.stackCpp_G_Cg,
                 stackBrhvp_G_Cg=self._stackBrhvp_G_Cg,
                 stackFrhvp_G_Cg=self._stackFrhvp_G_Cg,
@@ -413,12 +413,12 @@ class SteadyRingVortexLatticeMethodSolver:
             units are in meters per second.
         """
         stackP_G_Cg = (
-            parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
                 stackP_G_Cg, "stackP_G_Cg"
             )
         )
 
-        stackRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
+        stackRingVInd_G__E = _aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
@@ -429,7 +429,7 @@ class SteadyRingVortexLatticeMethodSolver:
             nu=self.operating_point.nu,
         )
         stackHorseshoeVInd_G__E = (
-            aerodynamics.collapsed_velocities_from_horseshoe_vortices(
+            _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
                 stackP_G_Cg=stackP_G_Cg,
                 stackBrhvp_G_Cg=self._stackBrhvp_G_Cg,
                 stackFrhvp_G_Cg=self._stackFrhvp_G_Cg,
@@ -618,4 +618,4 @@ class SteadyRingVortexLatticeMethodSolver:
 
         moments_G_Cg = rightLegMoments_G_Cg + frontLegMoments_G_Cg + leftLegMoments_G_Cg
 
-        functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)
+        _functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)

@@ -16,9 +16,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-from .. import functions
-from .. import parameter_validation
-from .. import transformations
+from .. import _functions
+from .. import _parameter_validation
+from .. import _transformations
 
 # Create a token object for bypassing outline_A_lp parameter validation in Airfoil's
 # __init__ method.
@@ -101,7 +101,7 @@ class Airfoil:
             have a total number of points equal to (2 * n_points_per_side) - 1. I
             highly recommend setting this to at least 100. The default value is 400.
         """
-        self.name = parameter_validation.string_return_string(name, "name")
+        self.name = _parameter_validation.string_return_string(name, "name")
 
         if outline_A_lp is not None:
             if _trust is not _TRUST:
@@ -111,9 +111,9 @@ class Airfoil:
         else:
             self._populate_outline()
 
-        self.resample = parameter_validation.boolLike_return_bool(resample, "resample")
+        self.resample = _parameter_validation.boolLike_return_bool(resample, "resample")
 
-        self.n_points_per_side = parameter_validation.int_in_range_return_int(
+        self.n_points_per_side = _parameter_validation.int_in_range_return_int(
             n_points_per_side, "n_points_per_side", 3, True, None, None
         )
 
@@ -149,10 +149,10 @@ class Airfoil:
             This is the new airfoil with the control surface added.
         """
         # Validate the deflection and hinge_point inputs.
-        deflection = parameter_validation.number_in_range_return_float(
+        deflection = _parameter_validation.number_in_range_return_float(
             deflection, "deflection", -5.0, True, 5.0, True
         )
-        hinge_point = parameter_validation.number_in_range_return_float(
+        hinge_point = _parameter_validation.number_in_range_return_float(
             hinge_point, "hinge_point", 0.0, False, 1.0, False
         )
 
@@ -197,39 +197,39 @@ class Airfoil:
             [mclHingePoint_A_lp[0], 0.0, mclHingePoint_A_lp[1]]
         )
 
-        flippedUpperOutlineToOrigin_T_act = transformations.generate_trans_T(
+        flippedUpperOutlineToOrigin_T_act = _transformations.generate_trans_T(
             -flippedUpperOutlineHingePoint_Wcs_lp, passive=False
         )
-        lowerOutlineToOrigin_T_act = transformations.generate_trans_T(
+        lowerOutlineToOrigin_T_act = _transformations.generate_trans_T(
             -lowerOutlineHingePoint_Wcs_lp, passive=False
         )
-        mclToOrigin_T_act = transformations.generate_trans_T(
+        mclToOrigin_T_act = _transformations.generate_trans_T(
             -mclHingePoint_Wcs_lp, passive=False
         )
 
         # Make the active rotational homogeneous transformation matrix for the given
         # angle.
-        rot_T = transformations.generate_rot_T(
+        rot_T = _transformations.generate_rot_T(
             (0, 0, -deflection), passive=False, intrinsic=False, order="zyx"
         )
 
-        flippedUpperOutlineBack_T_act = transformations.generate_trans_T(
+        flippedUpperOutlineBack_T_act = _transformations.generate_trans_T(
             flippedUpperOutlineHingePoint_Wcs_lp, passive=False
         )
-        lowerOutlineBack_T_act = transformations.generate_trans_T(
+        lowerOutlineBack_T_act = _transformations.generate_trans_T(
             lowerOutlineHingePoint_Wcs_lp, passive=False
         )
-        mclBack_T_act = transformations.generate_trans_T(
+        mclBack_T_act = _transformations.generate_trans_T(
             mclHingePoint_Wcs_lp, passive=False
         )
 
-        postHingeFlippedUpperOutline_T_act = transformations.compose_T_act(
+        postHingeFlippedUpperOutline_T_act = _transformations.compose_T_act(
             flippedUpperOutlineToOrigin_T_act, rot_T, flippedUpperOutlineBack_T_act
         )
-        postHingeLowerOutline_T_act = transformations.compose_T_act(
+        postHingeLowerOutline_T_act = _transformations.compose_T_act(
             lowerOutlineToOrigin_T_act, rot_T, lowerOutlineBack_T_act
         )
-        postHingeMcl_T_act = transformations.compose_T_act(
+        postHingeMcl_T_act = _transformations.compose_T_act(
             mclToOrigin_T_act, rot_T, mclBack_T_act
         )
 
@@ -256,18 +256,18 @@ class Airfoil:
         )
 
         flappedPostHingeFlippedUpperOutline_A_lp = (
-            transformations.apply_T_to_vectors(
+            _transformations.apply_T_to_vectors(
                 postHingeFlippedUpperOutline_T_act,
                 postHingeFlippedUpperOutline_Wcs_lp,
                 has_point=True,
             )
         )[:, [0, 2]]
-        flappedPostHingeLowerOutline_A_lp = transformations.apply_T_to_vectors(
+        flappedPostHingeLowerOutline_A_lp = _transformations.apply_T_to_vectors(
             postHingeLowerOutline_T_act,
             postHingeLowerOutline_Wcs_lp,
             has_point=True,
         )[:, [0, 2]]
-        flappedPostHingeMcl_A_lp = transformations.apply_T_to_vectors(
+        flappedPostHingeMcl_A_lp = _transformations.apply_T_to_vectors(
             postHingeMcl_T_act,
             postHingeMcl_Wcs_lp,
             has_point=True,
@@ -339,7 +339,7 @@ class Airfoil:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolLike_return_bool(show, "show")
+        show = _parameter_validation.boolLike_return_bool(show, "show")
 
         outline_A_lp = self.outline_A_lp
         mcl_A_lp = self.mcl_A_lp
@@ -401,7 +401,7 @@ class Airfoil:
             resampled MCL points (in airfoil axes, relative to the leading point).
         """
         # Validate the mcl_fractions input parameter.
-        mcl_fractions = parameter_validation.nD_number_vectorLike_return_float(
+        mcl_fractions = _parameter_validation.nD_number_vectorLike_return_float(
             mcl_fractions, "mcl_fractions"
         )
         if len(mcl_fractions) < 2:
@@ -518,7 +518,7 @@ class Airfoil:
         flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
         lowerOutline_A_lp = self._lower_outline()
 
-        cosine_spaced_chord_fractions = functions.cosspace(
+        cosine_spaced_chord_fractions = _functions.cosspace(
             0.0, 1.0, self.n_points_per_side
         )
 
@@ -583,7 +583,7 @@ class Airfoil:
                     n_points_per_side = 400
 
                     # Get the x component of the MCL.
-                    mclX_A_lp = functions.cosspace(0, 1, n_points_per_side)
+                    mclX_A_lp = _functions.cosspace(0, 1, n_points_per_side)
 
                     # Find the half-thickness of the outline perpendicular to the MCL
                     # (in airfoil axes).
@@ -817,7 +817,7 @@ class Airfoil:
         )
 
         # Generate a cosine-spaced list of normalized distances from 0.0 to 1.0.
-        cosine_spaced_normalized_distances = functions.cosspace(
+        cosine_spaced_normalized_distances = _functions.cosspace(
             0.0, 1.0, n_points_per_side
         )
 
@@ -876,7 +876,7 @@ class Airfoil:
             This is the validated version of outline_A_lp
         """
         outline_A_lp = (
-            parameter_validation.arrayLike_of_twoD_number_vectorLikes_return_float(
+            _parameter_validation.arrayLike_of_twoD_number_vectorLikes_return_float(
                 outline_A_lp, "outline_A_lp"
             )
         )

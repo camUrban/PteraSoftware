@@ -1,4 +1,3 @@
-# TODO: Consider making this module private (renaming it with a _ prefix).
 """This module contains common parameter validation functions."""
 
 import numpy as np

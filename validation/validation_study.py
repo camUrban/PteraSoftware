@@ -356,7 +356,8 @@ del validation_main_wing_movement
 
 # Define an operating point corresponding to the conditions of the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    vCg__E=validation_velocity, alpha=validation_alpha)
+    vCg__E=validation_velocity, alpha=validation_alpha
+)
 
 # Define an operating point movement that contains the operating point.
 validation_operating_point_movement = (
@@ -627,7 +628,7 @@ exp_net_z_forces_wind_axes = np.zeros(exp_net_z_forces_geometry_axes.size)
 # to shift the experimental force z-direction force to the wind frame.
 for force_id, force in enumerate(exp_net_z_forces_geometry_axes):
     exp_net_force_geometry_axes = np.array([0, 0, force])
-    exp_net_force_wind_axes = ps.transformations.apply_T_to_vectors(
+    exp_net_force_wind_axes = ps._transformations.apply_T_to_vectors(
         T_pas_G_Cg_to_W_Cg, exp_net_force_geometry_axes, has_point=False
     )
     exp_net_z_force_wind_axes = exp_net_force_wind_axes[2]

@@ -1,50 +1,6 @@
 # NOTE: I've started refactoring this module.
-# TODO: Consider making this module private (renaming it with a _ prefix).
-"""This module contains functions shared by other modules in the pterasoftware package.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-# TODO: Update the function descriptions.
-This module contains the following functions:
-    cosspace: This function is used to create an array containing a specified number
-    of values between a specified minimum and maximum value that are spaced via a
-    cosine function.
-
-    numba_centroid_of_quadrilateral: This function is used to find the centroid of a
-    quadrilateral. It has been optimized for JIT compilation using Numba.
-
-    calculate_streamlines: This function calculates the location of the streamlines
-    coming off the back of the wings.
-
-    convert_logging_level_name_to_value: This function takes in a string that
-    represents the logging level and returns the integer that can be used to set the
-    logger to this level.
-
-    process_steady_solver_loads: This function uses the forces (in geometry axes) and
-    moments (in geometry axes, relative to the CG) a steady solver has found on its
-    Panels to find the net loads and associated coefficients for each Airplane.
-
-    process_unsteady_solver_loads: This function uses the forces and moments a solver
-    has found on its panels to find the forces, moments, and associated coefficients
-    on each airplane in the solver.
-
-    update_ring_vortex_solvers_panel_attributes: This function populates a ring
-    vortex solver's attributes with the attributes of a given panel.
-
-    calculate_steady_freestream_wing_influences: This function finds the vector of
-    freestream-wing influence coefficients associated with this problem.
-
-    numba_1d_explicit_cross: This function takes in two arrays, each of which contain
-    N vectors of 3 components. The function then calculates and returns the cross
-    product of the two vectors at each position.
-
-    interp_between_points: This function finds the MxN points between M pairs of
-    points in 3D space given an array of N normalized spacings.
-"""
+"""This module contains functions shared by other modules in the pterasoftware
+package."""
 
 import logging
 
@@ -56,7 +12,7 @@ from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
 from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
-from . import transformations, geometry, parameter_validation
+from . import _transformations, geometry, _parameter_validation
 from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 
@@ -262,7 +218,7 @@ def process_steady_solver_loads(
     :return:
     """
     stackPanelForces_G = (
-        parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+        _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
             stackPanelForces_G, "stackPanelForces_G"
         )
     )
@@ -272,7 +228,7 @@ def process_steady_solver_loads(
         )
 
     stackPanelMoments_G_Cg = (
-        parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+        _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
             stackPanelMoments_G_Cg, "stackPanelMoments_G_Cg"
         )
     )
@@ -290,10 +246,10 @@ def process_steady_solver_loads(
         theseForces_G = stackPanelForces_G[panel_num, :]
         theseMoments_G_Cg = stackPanelMoments_G_Cg[panel_num, :]
 
-        theseForces_W = transformations.apply_T_to_vectors(
+        theseForces_W = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg, theseForces_G, has_point=False
         )
-        theseMoments_W_Cg = transformations.apply_T_to_vectors(
+        theseMoments_W_Cg = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg, theseMoments_G_Cg, has_point=True
         )
 
@@ -321,12 +277,12 @@ def process_steady_solver_loads(
 
     airplane: geometry.airplane.Airplane
     for airplane_num, airplane in enumerate(steady_solver.airplanes):
-        airplane.forces_W = transformations.apply_T_to_vectors(
+        airplane.forces_W = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
             stackAirplaneForces_G[airplane_num],
             has_point=False,
         )
-        airplane.moments_W_Cg = transformations.apply_T_to_vectors(
+        airplane.moments_W_Cg = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
             stackAirplaneMoments_G_Cg[airplane_num],
             has_point=True,
@@ -384,10 +340,10 @@ def process_unsteady_solver_loads(
         this_force_geometry_axes = forces_G[panel_num, :]
         this_moment_geometry_axes = moments_G_Cg[panel_num, :]
 
-        this_force_wind_axes = transformations.apply_T_to_vectors(
+        this_force_wind_axes = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg, this_force_geometry_axes, has_point=False
         )
-        this_moment_wind_axes = transformations.apply_T_to_vectors(
+        this_moment_wind_axes = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg, this_moment_geometry_axes, has_point=True
         )
 
@@ -417,12 +373,12 @@ def process_unsteady_solver_loads(
     # from the rotation matrix and the total force and moment it experiences in
     # geometry axes.
     for airplane_num, airplane in enumerate(unsteady_solver.current_airplanes):
-        airplane.total_force_wind_axes = transformations.apply_T_to_vectors(
+        airplane.total_force_wind_axes = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
             total_forces_geometry_axes[airplane_num],
             has_point=False,
         )
-        airplane.total_moment_wind_axes = transformations.apply_T_to_vectors(
+        airplane.total_moment_wind_axes = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_W_Cg,
             total_moments_geometry_axes[airplane_num],
             has_point=True,

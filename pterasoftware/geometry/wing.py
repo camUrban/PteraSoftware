@@ -14,10 +14,10 @@ import numpy as np
 import pyvista as pv
 
 from .wing_cross_section import WingCrossSection
+from . import _meshing
 
-from .. import meshing
-from .. import parameter_validation
-from .. import transformations
+from .. import _parameter_validation
+from .. import _transformations
 
 
 class Wing:
@@ -319,7 +319,7 @@ class Wing:
 
         """
         # Validate wing_cross_sections.
-        wing_cross_sections = parameter_validation.non_empty_list_return_list(
+        wing_cross_sections = _parameter_validation.non_empty_list_return_list(
             wing_cross_sections, "wing_cross_sections"
         )
         num_wing_cross_sections = len(wing_cross_sections)
@@ -341,16 +341,16 @@ class Wing:
         self.wing_cross_sections = wing_cross_sections
 
         # Validate name and prelimLer_G_Cg.
-        self.name = parameter_validation.string_return_string(name, "name")
+        self.name = _parameter_validation.string_return_string(name, "name")
         self.prelimLer_G_Cg = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 prelimLer_G_Cg, "prelimLer_G_Cg"
             )
         )
 
         # Validate angles_G_to_prelimWn_izyx.
         angles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 angles_G_to_prelimWn_izyx, "angles_G_to_prelimWn_izyx"
             )
         )
@@ -363,8 +363,8 @@ class Wing:
         self.angles_G_to_prelimWn_izyx = angles_G_to_prelimWn_izyx
 
         # Validate symmetric and mirror_only.
-        symmetric = parameter_validation.boolLike_return_bool(symmetric, "symmetric")
-        mirror_only = parameter_validation.boolLike_return_bool(
+        symmetric = _parameter_validation.boolLike_return_bool(symmetric, "symmetric")
+        mirror_only = _parameter_validation.boolLike_return_bool(
             mirror_only, "mirror_only"
         )
         if symmetric and mirror_only:
@@ -379,7 +379,7 @@ class Wing:
                     "symmetry_normal_Wn cannot be None when symmetric or mirror_only is True."
                 )
             symmetry_normal_Wn = (
-                parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+                _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
                     symmetry_normal_Wn, "symmetry_normal_Wn"
                 )
             )
@@ -388,7 +388,7 @@ class Wing:
                     "symmetry_point_Wn_Ler cannot be None when symmetric or mirror_only is True."
                 )
             symmetry_point_Wn_Ler = (
-                parameter_validation.threeD_number_vectorLike_return_float(
+                _parameter_validation.threeD_number_vectorLike_return_float(
                     symmetry_point_Wn_Ler, "symmetry_point_Wn_Ler"
                 )
             )
@@ -405,7 +405,7 @@ class Wing:
         self.symmetry_point_Wn_Ler = symmetry_point_Wn_Ler
 
         # Validate num_chordwise_panels and chordwise_spacing.
-        self.num_chordwise_panels = parameter_validation.positive_int_return_int(
+        self.num_chordwise_panels = _parameter_validation.positive_int_return_int(
             num_chordwise_panels, "num_chordwise_panels"
         )
         if chordwise_spacing not in ["cosine", "uniform"]:
@@ -433,7 +433,7 @@ class Wing:
         # the parent Airplane should have modified a Wing that initially had type 5
         # symmetry to have type 1 symmetry, and then made a new reflected Wing with
         # type 3 symmetry.
-        symmetry_type = parameter_validation.int_return_int(
+        symmetry_type = _parameter_validation.int_return_int(
             symmetry_type, "symmetry_type"
         )
         valid_symmetry_types = [1, 2, 3, 4]
@@ -466,7 +466,7 @@ class Wing:
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
         # Generate the wing's mesh, which populates the Panels attribute.
-        meshing.mesh_wing(self)
+        _meshing.mesh_wing(self)
 
     # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for PyVista.
@@ -477,7 +477,7 @@ class Wing:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolLike_return_bool(show, "show")
+        show = _parameter_validation.boolLike_return_bool(show, "show")
 
         # If this Wing hasn't had its symmetry type set, return None.
         if self.symmetry_type is None:
@@ -496,10 +496,10 @@ class Wing:
                 wing_cross_section_id
             ]
 
-            airfoilOutline_Wn_ler = transformations.apply_T_to_vectors(
+            airfoilOutline_Wn_ler = _transformations.apply_T_to_vectors(
                 T_pas_Wcs_Lp_to_Wn_Ler, airfoilOutline_Wcs_lp, has_point=True
             )
-            airfoilMcl_Wn_ler = transformations.apply_T_to_vectors(
+            airfoilMcl_Wn_ler = _transformations.apply_T_to_vectors(
                 T_pas_Wcs_Lp_to_Wn_Ler, airfoilMcl_Wcs_lp, has_point=True
             )
 
@@ -576,10 +576,10 @@ class Wing:
             airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[wing_cross_section_id]
             airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[wing_cross_section_id]
 
-            airfoilOutline_G_Cg = transformations.apply_T_to_vectors(
+            airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
                 self.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
             )
-            airfoilMcl_G_Cg = transformations.apply_T_to_vectors(
+            airfoilMcl_G_Cg = _transformations.apply_T_to_vectors(
                 self.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, has_point=True
             )
 
@@ -713,14 +713,14 @@ class Wing:
         # coordinates from geometry axes relative to the CG to geometry axes
         # relative to the preliminary leading edge root point. This is the
         # translation step.
-        T_trans_pas_G_Cg_to_G_prelimLer = transformations.generate_trans_T(
+        T_trans_pas_G_Cg_to_G_prelimLer = _transformations.generate_trans_T(
             self.prelimLer_G_Cg, passive=True
         )
 
         # Step 2: Create T_rot_pas_G_to_prelimWn, which maps in homogeneous
         # coordinates from geometry axes to preliminary wing axes. This is the
         # rotation step.
-        T_rot_pas_G_to_prelimWn = transformations.generate_rot_T(
+        T_rot_pas_G_to_prelimWn = _transformations.generate_rot_T(
             self.angles_G_to_prelimWn_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
@@ -733,7 +733,7 @@ class Wing:
             and self.symmetry_point_Wn_Ler is not None
         ):
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = (
-                transformations.generate_reflect_T(
+                _transformations.generate_reflect_T(
                     self.symmetry_point_Wn_Ler,
                     self.symmetry_normal_Wn,
                     passive=True,
@@ -742,7 +742,7 @@ class Wing:
         else:
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler = np.eye(4, dtype=float)
 
-        return transformations.compose_T_pas(
+        return _transformations.compose_T_pas(
             T_trans_pas_G_Cg_to_G_prelimLer,
             T_rot_pas_G_to_prelimWn,
             T_reflect_pas_prelimWn_prelimLer_to_Wn_Ler,
@@ -764,7 +764,7 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
+        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
 
     @property
     def WnX_G(self):
@@ -782,7 +782,7 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
-        return transformations.apply_T_to_vectors(
+        return _transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
         )
 
@@ -802,7 +802,7 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
-        return transformations.apply_T_to_vectors(
+        return _transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
         )
 
@@ -822,7 +822,7 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
-        return transformations.apply_T_to_vectors(
+        return _transformations.apply_T_to_vectors(
             self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
         )
 
@@ -838,7 +838,7 @@ class Wing:
         """
 
         return [
-            transformations.compose_T_pas(
+            _transformations.compose_T_pas(
                 *(
                     wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
                     for wing_cross_section in self.wing_cross_sections[: i + 1]
@@ -859,7 +859,7 @@ class Wing:
         """
 
         return [
-            transformations.invert_T_pas(self.children_T_pas_Wn_Ler_to_Wcs_Lp[i])
+            _transformations.invert_T_pas(self.children_T_pas_Wn_Ler_to_Wcs_Lp[i])
             for i in range(len(self.wing_cross_sections))
         ]
 
@@ -875,7 +875,7 @@ class Wing:
         """
 
         return [
-            transformations.compose_T_pas(
+            _transformations.compose_T_pas(
                 self.T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
             )
             for i in range(len(self.wing_cross_sections))
@@ -893,7 +893,7 @@ class Wing:
         """
 
         return [
-            transformations.invert_T_pas(self.children_T_pas_G_Cg_to_Wcs_Lp[i])
+            _transformations.invert_T_pas(self.children_T_pas_G_Cg_to_Wcs_Lp[i])
             for i in range(len(self.wing_cross_sections))
         ]
 
@@ -997,7 +997,7 @@ class Wing:
                 )
 
             # Transform displacement from parent axes to wing axes
-            displacement_wing = transformations.apply_T_to_vectors(
+            displacement_wing = _transformations.apply_T_to_vectors(
                 T_parent_to_wing, Lp_Wcsp_Lpp, has_point=True
             )
 
@@ -1091,7 +1091,7 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacement_wing = transformations.apply_T_to_vectors(
+                displacement_wing = _transformations.apply_T_to_vectors(
                     T_parent_to_wing, displacement_parent, has_point=True
                 )
 
@@ -1111,7 +1111,7 @@ class Wing:
                         @ T_parent_to_wing
                     )
 
-                displacement_wing = transformations.apply_T_to_vectors(
+                displacement_wing = _transformations.apply_T_to_vectors(
                     T_parent_to_wing, displacement_parent, has_point=True
                 )
 

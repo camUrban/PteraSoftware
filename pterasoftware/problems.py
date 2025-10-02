@@ -16,7 +16,7 @@ import math
 from . import geometry
 from . import movements as mov
 from . import operating_point as op
-from . import parameter_validation
+from . import _parameter_validation
 
 
 # TODO: Add unit tests for this class.
@@ -89,7 +89,7 @@ class UnsteadyProblem:
         if not isinstance(movement, mov.movement.Movement):
             raise TypeError("movement must be a Movement.")
         self.movement = movement
-        self.only_final_results = parameter_validation.boolLike_return_bool(
+        self.only_final_results = _parameter_validation.boolLike_return_bool(
             only_final_results, "only_final_results"
         )
 

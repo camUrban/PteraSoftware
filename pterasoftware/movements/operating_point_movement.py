@@ -11,10 +11,10 @@ This module contains the following functions:
     None
 """
 
-from . import functions
+from . import _functions
 
 from .. import operating_point
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 # TODO: Add unit tests for this class.
@@ -93,11 +93,11 @@ class OperatingPointMovement:
             raise TypeError("base_operating_point must be an OperatingPoint")
         self.base_operating_point = base_operating_point
 
-        self.ampVCg__E = parameter_validation.non_negative_number_return_float(
+        self.ampVCg__E = _parameter_validation.non_negative_number_return_float(
             ampVCg__E, "ampVCg__E"
         )
 
-        periodVCg__E = parameter_validation.non_negative_number_return_float(
+        periodVCg__E = _parameter_validation.non_negative_number_return_float(
             periodVCg__E, "periodVCg__E"
         )
         if self.ampVCg__E == 0 and periodVCg__E != 0:
@@ -115,7 +115,7 @@ class OperatingPointMovement:
             )
         self.spacingVCg__E = spacingVCg__E
 
-        phaseVCg__E = parameter_validation.number_in_range_return_float(
+        phaseVCg__E = _parameter_validation.number_in_range_return_float(
             phaseVCg__E, "phaseVCg__E", -180.0, False, 180.0, True
         )
         if self.ampVCg__E == 0 and phaseVCg__E != 0:
@@ -142,14 +142,16 @@ class OperatingPointMovement:
             This is the list of OperatingPoints associated with this
             OperatingPointMovement.
         """
-        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
-        delta_time = parameter_validation.positive_number_return_float(
+        num_steps = _parameter_validation.positive_int_return_int(
+            num_steps, "num_steps"
+        )
+        delta_time = _parameter_validation.positive_number_return_float(
             delta_time, "delta_time"
         )
 
         # Generate oscillating values for VCg__E.
         if self.spacingVCg__E == "sine":
-            listVCg__E = functions.oscillating_sinspaces(
+            listVCg__E = _functions.oscillating_sinspaces(
                 amps=self.ampVCg__E,
                 periods=self.periodVCg__E,
                 phases=self.phaseVCg__E,
@@ -158,7 +160,7 @@ class OperatingPointMovement:
                 delta_time=delta_time,
             )
         elif self.spacingVCg__E == "uniform":
-            listVCg__E = functions.oscillating_linspaces(
+            listVCg__E = _functions.oscillating_linspaces(
                 amps=self.ampVCg__E,
                 periods=self.periodVCg__E,
                 phases=self.phaseVCg__E,
@@ -167,7 +169,7 @@ class OperatingPointMovement:
                 delta_time=delta_time,
             )
         elif callable(self.spacingVCg__E):
-            listVCg__E = functions.oscillating_customspaces(
+            listVCg__E = _functions.oscillating_customspaces(
                 amps=self.ampVCg__E,
                 periods=self.periodVCg__E,
                 phases=self.phaseVCg__E,

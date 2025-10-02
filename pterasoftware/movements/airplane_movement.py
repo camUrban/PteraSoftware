@@ -12,11 +12,11 @@ This module contains the following functions:
 
 import numpy as np
 
-from . import functions
+from . import _functions
 from .wing_movement import WingMovement
 
 from .. import geometry
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 class AirplaneMovement:
@@ -164,14 +164,14 @@ class AirplaneMovement:
                 )
         self.wing_movements = wing_movements
 
-        ampCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+        ampCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
             ampCgi_E_I, "ampCgi_E_I"
         )
         if not np.all(ampCgi_E_I >= 0.0):
             raise ValueError("All elements in ampCgi_E_I must be non-negative.")
         self.ampCgi_E_I = ampCgi_E_I
 
-        periodCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+        periodCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
             periodCgi_E_I, "periodCgi_E_I"
         )
         if not np.all(periodCgi_E_I >= 0.0):
@@ -184,12 +184,12 @@ class AirplaneMovement:
                 )
         self.periodCgi_E_I = periodCgi_E_I
 
-        spacingCgi_E_I = parameter_validation.threeD_spacing_vectorLike_return_tuple(
+        spacingCgi_E_I = _parameter_validation.threeD_spacing_vectorLike_return_tuple(
             spacingCgi_E_I, "spacingCgi_E_I"
         )
         self.spacingCgi_E_I = spacingCgi_E_I
 
-        phaseCgi_E_I = parameter_validation.threeD_number_vectorLike_return_float(
+        phaseCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
             phaseCgi_E_I, "phaseCgi_E_I"
         )
         if not (np.all(phaseCgi_E_I > -180.0) and np.all(phaseCgi_E_I <= 180.0)):
@@ -205,7 +205,7 @@ class AirplaneMovement:
         self.phaseCgi_E_I = phaseCgi_E_I
 
         ampAngles_E_to_B_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 ampAngles_E_to_B_izyx, "ampAngles_E_to_B_izyx"
             )
         )
@@ -219,7 +219,7 @@ class AirplaneMovement:
         self.ampAngles_E_to_B_izyx = ampAngles_E_to_B_izyx
 
         periodAngles_E_to_B_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 periodAngles_E_to_B_izyx, "periodAngles_E_to_B_izyx"
             )
         )
@@ -236,7 +236,7 @@ class AirplaneMovement:
         self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
 
         spacingAngles_E_to_B_izyx = (
-            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_E_to_B_izyx,
                 "spacingAngles_E_to_B_izyx",
             )
@@ -244,7 +244,7 @@ class AirplaneMovement:
         self.spacingAngles_E_to_B_izyx = spacingAngles_E_to_B_izyx
 
         phaseAngles_E_to_B_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 phaseAngles_E_to_B_izyx, "phaseAngles_E_to_B_izyx"
             )
         )
@@ -281,8 +281,10 @@ class AirplaneMovement:
 
             This is the list of Airplanes associated with this AirplaneMovement.
         """
-        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
-        delta_time = parameter_validation.positive_number_return_float(
+        num_steps = _parameter_validation.positive_int_return_int(
+            num_steps, "num_steps"
+        )
+        delta_time = _parameter_validation.positive_number_return_float(
             delta_time, "delta_time"
         )
 
@@ -291,7 +293,7 @@ class AirplaneMovement:
         for dim in range(3):
             spacing = self.spacingCgi_E_I[dim]
             if spacing == "sine":
-                listCgi_E_I[dim, :] = functions.oscillating_sinspaces(
+                listCgi_E_I[dim, :] = _functions.oscillating_sinspaces(
                     amps=self.ampCgi_E_I[dim],
                     periods=self.periodCgi_E_I[dim],
                     phases=self.phaseCgi_E_I[dim],
@@ -300,7 +302,7 @@ class AirplaneMovement:
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listCgi_E_I[dim, :] = functions.oscillating_linspaces(
+                listCgi_E_I[dim, :] = _functions.oscillating_linspaces(
                     amps=self.ampCgi_E_I[dim],
                     periods=self.periodCgi_E_I[dim],
                     phases=self.phaseCgi_E_I[dim],
@@ -309,7 +311,7 @@ class AirplaneMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listCgi_E_I[dim, :] = functions.oscillating_customspaces(
+                listCgi_E_I[dim, :] = _functions.oscillating_customspaces(
                     amps=self.ampCgi_E_I[dim],
                     periods=self.periodCgi_E_I[dim],
                     phases=self.phaseCgi_E_I[dim],
@@ -326,7 +328,7 @@ class AirplaneMovement:
         for dim in range(3):
             spacing = self.spacingAngles_E_to_B_izyx[dim]
             if spacing == "sine":
-                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_sinspaces(
+                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_sinspaces(
                     amps=self.ampAngles_E_to_B_izyx[dim],
                     periods=self.periodAngles_E_to_B_izyx[dim],
                     phases=self.phaseAngles_E_to_B_izyx[dim],
@@ -335,7 +337,7 @@ class AirplaneMovement:
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_linspaces(
+                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_linspaces(
                     amps=self.ampAngles_E_to_B_izyx[dim],
                     periods=self.periodAngles_E_to_B_izyx[dim],
                     phases=self.phaseAngles_E_to_B_izyx[dim],
@@ -344,7 +346,7 @@ class AirplaneMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listAngles_E_to_B_izyx[dim, :] = functions.oscillating_customspaces(
+                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_customspaces(
                     amps=self.ampAngles_E_to_B_izyx[dim],
                     periods=self.periodAngles_E_to_B_izyx[dim],
                     phases=self.phaseAngles_E_to_B_izyx[dim],

@@ -12,11 +12,11 @@ This module contains the following functions:
 
 import numpy as np
 
-from . import functions
+from . import _functions
 from .wing_cross_section_movement import WingCrossSectionMovement
 
 from .. import geometry
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 class WingMovement:
@@ -167,7 +167,7 @@ class WingMovement:
                 )
         self.wing_cross_section_movements = wing_cross_section_movements
 
-        ampPrelimLer_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        ampPrelimLer_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             ampPrelimLer_G_Cg, "ampPrelimLer_G_Cg"
         )
         if not np.all(ampPrelimLer_G_Cg >= 0.0):
@@ -175,7 +175,7 @@ class WingMovement:
         self.ampPrelimLer_G_Cg = ampPrelimLer_G_Cg
 
         periodPrelimLer_G_Cg = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 periodPrelimLer_G_Cg, "periodPrelimLer_G_Cg"
             )
         )
@@ -192,7 +192,7 @@ class WingMovement:
         self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
 
         spacingPrelimLer_G_Cg = (
-            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingPrelimLer_G_Cg,
                 "spacingPrelimLer_G_Cg",
             )
@@ -200,7 +200,7 @@ class WingMovement:
         self.spacingPrelimLer_G_Cg = spacingPrelimLer_G_Cg
 
         phasePrelimLer_G_Cg = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 phasePrelimLer_G_Cg, "phasePrelimLer_G_Cg"
             )
         )
@@ -220,7 +220,7 @@ class WingMovement:
         self.phasePrelimLer_G_Cg = phasePrelimLer_G_Cg
 
         ampAngles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 ampAngles_G_to_prelimWn_izyx, "ampAngles_G_to_prelimWn_izyx"
             )
         )
@@ -234,7 +234,7 @@ class WingMovement:
         self.ampAngles_G_to_prelimWn_izyx = ampAngles_G_to_prelimWn_izyx
 
         periodAngles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 periodAngles_G_to_prelimWn_izyx, "periodAngles_G_to_prelimWn_izyx"
             )
         )
@@ -251,7 +251,7 @@ class WingMovement:
         self.periodAngles_G_to_prelimWn_izyx = periodAngles_G_to_prelimWn_izyx
 
         spacingAngles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_G_to_prelimWn_izyx,
                 "spacingAngles_G_to_prelimWn_izyx",
             )
@@ -259,7 +259,7 @@ class WingMovement:
         self.spacingAngles_G_to_prelimWn_izyx = spacingAngles_G_to_prelimWn_izyx
 
         phaseAngles_G_to_prelimWn_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 phaseAngles_G_to_prelimWn_izyx, "phaseAngles_G_to_prelimWn_izyx"
             )
         )
@@ -296,8 +296,10 @@ class WingMovement:
 
             This is the list of Wings associated with this WingMovement.
         """
-        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
-        delta_time = parameter_validation.positive_number_return_float(
+        num_steps = _parameter_validation.positive_int_return_int(
+            num_steps, "num_steps"
+        )
+        delta_time = _parameter_validation.positive_number_return_float(
             delta_time, "delta_time"
         )
 
@@ -306,7 +308,7 @@ class WingMovement:
         for dim in range(3):
             spacing = self.spacingPrelimLer_G_Cg[dim]
             if spacing == "sine":
-                listPrelimLer_G_Cg[dim, :] = functions.oscillating_sinspaces(
+                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_sinspaces(
                     amps=self.ampPrelimLer_G_Cg[dim],
                     periods=self.periodPrelimLer_G_Cg[dim],
                     phases=self.phasePrelimLer_G_Cg[dim],
@@ -315,7 +317,7 @@ class WingMovement:
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listPrelimLer_G_Cg[dim, :] = functions.oscillating_linspaces(
+                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_linspaces(
                     amps=self.ampPrelimLer_G_Cg[dim],
                     periods=self.periodPrelimLer_G_Cg[dim],
                     phases=self.phasePrelimLer_G_Cg[dim],
@@ -324,7 +326,7 @@ class WingMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listPrelimLer_G_Cg[dim, :] = functions.oscillating_customspaces(
+                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_customspaces(
                     amps=self.ampPrelimLer_G_Cg[dim],
                     periods=self.periodPrelimLer_G_Cg[dim],
                     phases=self.phasePrelimLer_G_Cg[dim],
@@ -341,26 +343,30 @@ class WingMovement:
         for dim in range(3):
             spacing = self.spacingAngles_G_to_prelimWn_izyx[dim]
             if spacing == "sine":
-                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_sinspaces(
-                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
-                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
-                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
-                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
+                listAngles_G_to_prelimWn_izyx[dim, :] = (
+                    _functions.oscillating_sinspaces(
+                        amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                        periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                        phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                        bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                        num_steps=num_steps,
+                        delta_time=delta_time,
+                    )
                 )
             elif spacing == "uniform":
-                listAngles_G_to_prelimWn_izyx[dim, :] = functions.oscillating_linspaces(
-                    amps=self.ampAngles_G_to_prelimWn_izyx[dim],
-                    periods=self.periodAngles_G_to_prelimWn_izyx[dim],
-                    phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
-                    bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
+                listAngles_G_to_prelimWn_izyx[dim, :] = (
+                    _functions.oscillating_linspaces(
+                        amps=self.ampAngles_G_to_prelimWn_izyx[dim],
+                        periods=self.periodAngles_G_to_prelimWn_izyx[dim],
+                        phases=self.phaseAngles_G_to_prelimWn_izyx[dim],
+                        bases=self.base_wing.angles_G_to_prelimWn_izyx[dim],
+                        num_steps=num_steps,
+                        delta_time=delta_time,
+                    )
                 )
             elif callable(spacing):
                 listAngles_G_to_prelimWn_izyx[dim, :] = (
-                    functions.oscillating_customspaces(
+                    _functions.oscillating_customspaces(
                         amps=self.ampAngles_G_to_prelimWn_izyx[dim],
                         periods=self.periodAngles_G_to_prelimWn_izyx[dim],
                         phases=self.phaseAngles_G_to_prelimWn_izyx[dim],

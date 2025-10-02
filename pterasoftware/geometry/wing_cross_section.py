@@ -15,9 +15,9 @@ import pyvista as pv
 
 from .airfoil import Airfoil
 
-from .. import parameter_validation
-from .. import transformations
-from ..transformations import apply_T_to_vectors
+from .. import _parameter_validation
+from .. import _transformations
+from .._transformations import apply_T_to_vectors
 
 
 class WingCrossSection:
@@ -168,21 +168,21 @@ class WingCrossSection:
         # will later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if num_spanwise_panels is not None:
-            num_spanwise_panels = parameter_validation.positive_int_return_int(
+            num_spanwise_panels = _parameter_validation.positive_int_return_int(
                 num_spanwise_panels, "Non-None num_spanwise"
             )
         self.num_spanwise_panels = num_spanwise_panels
 
         # Validate chord.
-        self.chord = parameter_validation.positive_number_return_float(chord, "chord")
+        self.chord = _parameter_validation.positive_number_return_float(chord, "chord")
 
         # Perform a preliminary validation for Lp_Wcsp_Lpp. The parent Wing will
         # later check that this is a zero vector if this WingCrossSection is a root
         # WingCrossSection.
-        Lp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
+        Lp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
         )
-        Lp_Wcsp_Lpp[1] = parameter_validation.non_negative_number_return_float(
+        Lp_Wcsp_Lpp[1] = _parameter_validation.non_negative_number_return_float(
             Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]"
         )
         self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
@@ -191,13 +191,13 @@ class WingCrossSection:
         # Wing will later check that this is a zero vector if this WingCrossSection
         # is a root WingCrossSection.
         angles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 angles_Wcsp_to_Wcs_izyx, "angles_Wcsp_to_Wcs_izyx"
             )
         )
         for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_izyx):
             angles_Wcsp_to_Wcs_izyx[angle_id] = (
-                parameter_validation.number_in_range_return_float(
+                _parameter_validation.number_in_range_return_float(
                     angle,
                     f"angles_Wcsp_to_Wcs_izyx[{angle_id}]",
                     -90.0,
@@ -210,7 +210,7 @@ class WingCrossSection:
 
         # Validate control surface symmetry type.
         if control_surface_symmetry_type is not None:
-            control_surface_symmetry_type = parameter_validation.string_return_string(
+            control_surface_symmetry_type = _parameter_validation.string_return_string(
                 control_surface_symmetry_type, "control_surface_symmetry_type"
             )
             valid_control_surface_symmetry_types = ["symmetric", "asymmetric"]
@@ -225,7 +225,7 @@ class WingCrossSection:
 
         # Validate control_surface_hinge_point and control_surface_deflection.
         self.control_surface_hinge_point = (
-            parameter_validation.number_in_range_return_float(
+            _parameter_validation.number_in_range_return_float(
                 control_surface_hinge_point,
                 "control_surface_hinge_point",
                 0.0,
@@ -235,7 +235,7 @@ class WingCrossSection:
             )
         )
         self.control_surface_deflection = (
-            parameter_validation.number_in_range_return_float(
+            _parameter_validation.number_in_range_return_float(
                 control_surface_deflection,
                 "control_surface_deflection",
                 -5.0,
@@ -249,7 +249,7 @@ class WingCrossSection:
         # later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if spanwise_spacing is not None:
-            spanwise_spacing = parameter_validation.string_return_string(
+            spanwise_spacing = _parameter_validation.string_return_string(
                 spanwise_spacing, "spanwise_spacing"
             )
             valid_non_none_spanwise_spacings = ["cosine", "uniform"]
@@ -317,7 +317,7 @@ class WingCrossSection:
         :return:
         """
         # Validate the input flag.
-        show = parameter_validation.boolLike_return_bool(show, "show")
+        show = _parameter_validation.boolLike_return_bool(show, "show")
 
         # If this WingCrossSection hasn't been fully validated, or its symmetry type
         # hasn't been set, return None.
@@ -362,22 +362,22 @@ class WingCrossSection:
 
         plotter = pv.Plotter()
 
-        airfoilOutline_Wcsp_lpp = transformations.apply_T_to_vectors(
+        airfoilOutline_Wcsp_lpp = _transformations.apply_T_to_vectors(
             self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_lp, has_point=True
         )
-        airfoilMcl_Wcsp_lpp = transformations.apply_T_to_vectors(
+        airfoilMcl_Wcsp_lpp = _transformations.apply_T_to_vectors(
             self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_lp, has_point=True
         )
 
         if self.symmetry_type in (2, 3):
-            UserMatrixAxesWcspLpp = transformations.generate_reflect_T(
+            UserMatrixAxesWcspLpp = _transformations.generate_reflect_T(
                 (0, 0, 0), (0, 1, 0), passive=False
             )
 
-            airfoilOutline_WcspReflectY_lpp = transformations.apply_T_to_vectors(
+            airfoilOutline_WcspReflectY_lpp = _transformations.apply_T_to_vectors(
                 UserMatrixAxesWcspLpp, airfoilOutline_Wcsp_lpp, has_point=True
             )
-            airfoilMcl_WcspReflectY_lpp = transformations.apply_T_to_vectors(
+            airfoilMcl_WcspReflectY_lpp = _transformations.apply_T_to_vectors(
                 UserMatrixAxesWcspLpp, airfoilMcl_Wcsp_lpp, has_point=True
             )
 
@@ -386,18 +386,18 @@ class WingCrossSection:
             airfoilOutline_WcspReflectY_lpp = airfoilOutline_Wcsp_lpp
             airfoilMcl_WcspReflectY_lpp = airfoilMcl_Wcsp_lpp
 
-        rot_T_act = transformations.generate_rot_T(
+        rot_T_act = _transformations.generate_rot_T(
             angles=self.angles_Wcsp_to_Wcs_izyx,
             passive=False,
             intrinsic=True,
             order="zyx",
         )
-        trans_T_act = transformations.generate_trans_T(
+        trans_T_act = _transformations.generate_trans_T(
             translations=self.Lp_Wcsp_Lpp,
             passive=False,
         )
 
-        UserMatrixAxesWcsLp_WcspLpp = transformations.compose_T_act(
+        UserMatrixAxesWcsLp_WcspLpp = _transformations.compose_T_act(
             rot_T_act,
             trans_T_act,
             UserMatrixAxesWcspLpp,
@@ -528,18 +528,18 @@ class WingCrossSection:
         # coordinates from parent wing cross section axes relative to the parent
         # leading point to parent wing cross section axes relative to the leading
         # point. This is the translation step.
-        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = transformations.generate_trans_T(
+        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = _transformations.generate_trans_T(
             self.Lp_Wcsp_Lpp, passive=True
         )
 
         # Step 2: Create T_rot_pas_Wcsp_to_Wcs, which maps in homogeneous coordinates
         # from parent wing cross section axes to wing cross section axes This is the
         # rotation step.
-        T_rot_pas_Wcsp_to_Wcs = transformations.generate_rot_T(
+        T_rot_pas_Wcsp_to_Wcs = _transformations.generate_rot_T(
             self.angles_Wcsp_to_Wcs_izyx, passive=True, intrinsic=True, order="zyx"
         )
 
-        # TODO: Switch to using transformations.compose_T_pas()
+        # TODO: Switch to using _transformations.compose_T_pas()
         return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
 
     @property
@@ -556,4 +556,4 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        return transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+        return _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)

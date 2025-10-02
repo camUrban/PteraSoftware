@@ -13,8 +13,8 @@ This module contains the following functions:
 
 import numpy as np
 
-from . import transformations
-from . import parameter_validation
+from . import _transformations
+from . import _parameter_validation
 
 
 class OperatingPoint:
@@ -111,23 +111,23 @@ class OperatingPoint:
             which corresponds to air's kinematic viscosity at 20 degrees Celsius
             [source: https://www.engineeringtoolbox.com].
         """
-        self.rho = parameter_validation.positive_number_return_float(rho, "rho")
+        self.rho = _parameter_validation.positive_number_return_float(rho, "rho")
         # TODO: In the future, test what happens with vCg__E = 0.
-        self.vCg__E = parameter_validation.positive_number_return_float(
+        self.vCg__E = _parameter_validation.positive_number_return_float(
             vCg__E, "vCg__E"
         )
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
-        self.alpha = parameter_validation.number_in_range_return_float(
+        self.alpha = _parameter_validation.number_in_range_return_float(
             alpha, "alpha", -180.0, False, 180.0, True
         )
-        self.beta = parameter_validation.number_in_range_return_float(
+        self.beta = _parameter_validation.number_in_range_return_float(
             beta, "beta", -180.0, False, 180.0, True
         )
-        self.externalFX_W = parameter_validation.number_return_float(
+        self.externalFX_W = _parameter_validation.number_return_float(
             externalFX_W, "externalFX_W"
         )
-        self.nu = parameter_validation.positive_number_return_float(nu, "nu")
+        self.nu = _parameter_validation.positive_number_return_float(nu, "nu")
 
     @property
     def qInf__E(self):
@@ -155,7 +155,7 @@ class OperatingPoint:
         """
         # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
         # to down). This is equivalent to a 180-degree rotation about y.
-        T_pas_G_Cg_to_B_Cg = transformations.generate_rot_T(
+        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
             angles=np.array([0.0, 180.0, 0.0]),
             passive=True,
             intrinsic=False,
@@ -164,11 +164,11 @@ class OperatingPoint:
 
         angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
 
-        T_pas_B_Cg_to_W_Cg = transformations.generate_rot_T(
+        T_pas_B_Cg_to_W_Cg = _transformations.generate_rot_T(
             angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
         )
 
-        return transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
+        return _transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
 
     @property
     def T_pas_W_Cg_to_G_Cg(self):
@@ -182,7 +182,7 @@ class OperatingPoint:
             coordinates from wind axes relative to the CG to geometry axes relative
             to the CG.
         """
-        return transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
+        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
 
     @property
     def vInfHat_G__E(self):
@@ -199,7 +199,7 @@ class OperatingPoint:
         """
         vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
 
-        return transformations.apply_T_to_vectors(
+        return _transformations.apply_T_to_vectors(
             self.T_pas_W_Cg_to_G_Cg, vInfHat_W__E, has_point=False
         )
 

@@ -16,10 +16,10 @@ import logging
 
 import numpy as np
 
-from . import aerodynamics
-from . import functions
+from . import _aerodynamics
+from . import _functions
 from . import geometry
-from . import parameter_validation
+from . import _parameter_validation
 from . import problems
 
 
@@ -111,7 +111,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         :return: None
         """
         # Configure the SteadyProblem's logger.
-        logging_level_value = functions.convert_logging_level_name_to_value(
+        logging_level_value = _functions.convert_logging_level_name_to_value(
             logging_level
         )
         logging.basicConfig(level=logging_level_value)
@@ -132,7 +132,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Find the normal velocity (in geometry axes, observed from the Earth frame)
         # at every collocation point due solely to the freestream.
         logging.info("Calculating the freestream-Wing influences.")
-        functions.calculate_steady_freestream_wing_influences(steady_solver=self)
+        _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each Panel's HorseshoeVortex's strength.
         logging.info("Calculating the HorseshoeVortex strengths.")
@@ -146,7 +146,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges.
         logging.info("Calculating streamlines.")
-        functions.calculate_streamlines(self)
+        _functions.calculate_streamlines(self)
 
     def _initialize_panel_vortices(self):
         """This method calculates the locations of the HorseshoeVortex vertices,
@@ -178,7 +178,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         panel = wing.panels[chordwise_position, spanwise_position]
 
                         # Initialize this Panel's HorseshoeVortex.
-                        panel.horseshoe_vortex = aerodynamics.HorseshoeVortex(
+                        panel.horseshoe_vortex = _aerodynamics.HorseshoeVortex(
                             Frhvp_G_Cg=panel.Frbvp_G_Cg,
                             Flhvp_G_Cg=panel.Flbvp_G_Cg,
                             leftLegVector_G=vInfHat_G__E,
@@ -257,15 +257,17 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Find the 2D ndarray of normalized velocities (in geometry axes, observed
         # from the Earth frame) induced at each Panel's collocation point by each
         # HorseshoeVortex.
-        gridNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self._stackCpp_G_Cg,
-            stackBrhvp_G_Cg=self._stackBrhvp_G_Cg,
-            stackFrhvp_G_Cg=self._stackFrhvp_G_Cg,
-            stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
-            stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
-            strengths=np.ones(self.num_panels),
-            ages=None,
-            nu=self.operating_point.nu,
+        gridNormVIndCpp_G__E = (
+            _aerodynamics.expanded_velocities_from_horseshoe_vortices(
+                stackP_G_Cg=self._stackCpp_G_Cg,
+                stackBrhvp_G_Cg=self._stackBrhvp_G_Cg,
+                stackFrhvp_G_Cg=self._stackFrhvp_G_Cg,
+                stackFlhvp_G_Cg=self._stackFlhvp_G_Cg,
+                stackBlhvp_G_Cg=self._stackBlhvp_G_Cg,
+                strengths=np.ones(self.num_panels),
+                ages=None,
+                nu=self.operating_point.nu,
+            )
         )
 
         # Take the batch dot product of the normalized induced velocities (in
@@ -320,12 +322,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             per second.
         """
         stackP_G_Cg = (
-            parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
                 stackP_G_Cg, "stackP_G_Cg"
             )
         )
 
-        stackVInd_G__E = aerodynamics.collapsed_velocities_from_horseshoe_vortices(
+        stackVInd_G__E = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrhvp_G_Cg=self._stackBrhvp_G_Cg,
             stackFrhvp_G_Cg=self._stackFrhvp_G_Cg,
@@ -375,4 +377,4 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             axis=-1,
         )
 
-        functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)
+        _functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)

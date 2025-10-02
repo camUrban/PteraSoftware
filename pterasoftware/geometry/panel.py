@@ -13,7 +13,7 @@ This module contains the following functions:
 
 import numpy as np
 
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 class Panel:
@@ -141,22 +141,22 @@ class Panel:
         """
 
         # Validate and initialize the attributes.
-        self.Frpp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Frpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Frpp_G_Cg, "Frpp_G_Cg"
         )
-        self.Flpp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Flpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Flpp_G_Cg, "Flpp_G_Cg"
         )
-        self.Blpp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Blpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Blpp_G_Cg, "Blpp_G_Cg"
         )
-        self.Brpp_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        self.Brpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             Brpp_G_Cg, "Brpp_G_Cg"
         )
-        self.is_leading_edge = parameter_validation.boolLike_return_bool(
+        self.is_leading_edge = _parameter_validation.boolLike_return_bool(
             is_leading_edge, "is_leading_edge"
         )
-        self.is_trailing_edge = parameter_validation.boolLike_return_bool(
+        self.is_trailing_edge = _parameter_validation.boolLike_return_bool(
             is_trailing_edge, "is_trailing_edge"
         )
 
@@ -411,7 +411,7 @@ class Panel:
             This is the normalized induced velocity (in geometry axes). The units are
             in meters per second.
         """
-        point_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        point_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             point_G_Cg, "point_G_Cg"
         )
 
@@ -444,7 +444,7 @@ class Panel:
             This is the induced velocity (in geometry axes). The units are in meters
             per second.
         """
-        point_G_Cg = parameter_validation.threeD_number_vectorLike_return_float(
+        point_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
             point_G_Cg, "point_G_Cg"
         )
 
@@ -473,7 +473,7 @@ class Panel:
         """
         # Validate and normalize the normal vector.
         unitNormal_G = (
-            parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+            _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
                 normal_G, "normal_G"
             )
         )
@@ -511,7 +511,7 @@ class Panel:
             converted to a float internally. The units are in Pascals.
         :return: None
         """
-        qInf__E = parameter_validation.positive_number_return_float(qInf__E, "qInf__E")
+        qInf__E = _parameter_validation.positive_number_return_float(qInf__E, "qInf__E")
 
         # TODO: Update and standardize these definitions for force coefficients.
         induced_drag = -self.forces_W[0]

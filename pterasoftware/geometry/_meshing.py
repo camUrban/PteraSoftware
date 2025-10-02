@@ -1,23 +1,13 @@
-# TODO: Consider making this module private (renaming it with a _ prefix).
-"""This module contains the function for meshing Wings.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    mesh_wing: This function takes in Wing and creates a quadrilateral mesh of its
-    geometry, and then populates its array of Panels with the mesh data."""
+"""This module contains the function for meshing Wings."""
 
 import numpy as np
 
-from . import geometry
-from . import functions
-from . import transformations
+from .. import geometry
+from .. import _functions
+from .. import _transformations
 
 
+# TODO: Add unit tests for this function.
 def mesh_wing(wing):
     """This function takes in Wing and creates a quadrilateral mesh of its geometry,
     and then populates its array of Panels with the mesh data.
@@ -48,7 +38,7 @@ def mesh_wing(wing):
     if chordwise_spacing == "uniform":
         chordwise_coordinates = np.linspace(0, 1, num_chordwise_coordinates)
     else:
-        chordwise_coordinates = functions.cosspace(0, 1, num_chordwise_coordinates)
+        chordwise_coordinates = _functions.cosspace(0, 1, num_chordwise_coordinates)
 
     # Get the number of WingCrossSections and wing sections.
     num_wing_cross_sections = len(wing_cross_sections)
@@ -106,7 +96,7 @@ def mesh_wing(wing):
         if inner_wing_cross_section.spanwise_spacing == "uniform":
             spanwise_coordinates = np.linspace(0, 1, num_spanwise_coordinates)
         else:
-            spanwise_coordinates = functions.cosspace(0, 1, num_spanwise_coordinates)
+            spanwise_coordinates = _functions.cosspace(0, 1, num_spanwise_coordinates)
 
         # Get this wing section's MCS points (in wing axes, relative to the leading
         # edge root point).
@@ -128,16 +118,16 @@ def mesh_wing(wing):
         )
 
         # Find the MCS points expressed in geometry axes, relative to the CG.
-        Fipp_G_Cg = transformations.apply_T_to_vectors(
+        Fipp_G_Cg = _transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Fipp_Wn_Ler, has_point=True
         )
-        Fopp_G_Cg = transformations.apply_T_to_vectors(
+        Fopp_G_Cg = _transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Fopp_Wn_Ler, has_point=True
         )
-        Bipp_G_Cg = transformations.apply_T_to_vectors(
+        Bipp_G_Cg = _transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Bipp_Wn_Ler, has_point=True
         )
-        Bopp_G_Cg = transformations.apply_T_to_vectors(
+        Bopp_G_Cg = _transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Bopp_Wn_Ler, has_point=True
         )
 
@@ -270,35 +260,35 @@ def mesh_wing(wing):
                 ]
             )
 
-            reflect_T_act = transformations.generate_reflect_T(
+            reflect_T_act = _transformations.generate_reflect_T(
                 symmetry_point_Wn_Ler,
                 symmetry_normal_Wn,
                 passive=False,
             )
 
-            reflected_Fipp_Wn_Ler = transformations.apply_T_to_vectors(
+            reflected_Fipp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Fipp_Wn_Ler, has_point=True
             )
-            reflected_Fopp_Wn_Ler = transformations.apply_T_to_vectors(
+            reflected_Fopp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Fopp_Wn_Ler, has_point=True
             )
-            reflected_Bipp_Wn_Ler = transformations.apply_T_to_vectors(
+            reflected_Bipp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Bipp_Wn_Ler, has_point=True
             )
-            reflected_Bopp_Wn_Ler = transformations.apply_T_to_vectors(
+            reflected_Bopp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Bopp_Wn_Ler, has_point=True
             )
 
-            reflected_Fipp_G_Cg = transformations.apply_T_to_vectors(
+            reflected_Fipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, has_point=True
             )
-            reflected_Fopp_G_Cg = transformations.apply_T_to_vectors(
+            reflected_Fopp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fopp_Wn_Ler, has_point=True
             )
-            reflected_Bipp_G_Cg = transformations.apply_T_to_vectors(
+            reflected_Bipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Bipp_Wn_Ler, has_point=True
             )
-            reflected_Bopp_G_Cg = transformations.apply_T_to_vectors(
+            reflected_Bopp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Bopp_Wn_Ler, has_point=True
             )
 
@@ -511,10 +501,10 @@ def _get_mcs_points(
         ]
     )
 
-    inner_mcl_points_Wn_Ler = transformations.apply_T_to_vectors(
+    inner_mcl_points_Wn_Ler = _transformations.apply_T_to_vectors(
         T_pas_Wcsi_Lpi_Wn_Ler, inner_mcl_points_Wcsi_Lpi, has_point=True
     )
-    outer_mcl_points_Wn_Ler = transformations.apply_T_to_vectors(
+    outer_mcl_points_Wn_Ler = _transformations.apply_T_to_vectors(
         T_pas_Wcso_Lpo_Wn_Ler, outer_mcl_points_Wcso_Lpo, has_point=True
     )
 
@@ -522,7 +512,7 @@ def _get_mcs_points(
     # relative to the leading edge root point) with interpolation. This returns an (
     # M,N,3) array, where M and N are the number of chordwise points and spanwise
     # points.
-    wing_section_mcl_vertices = functions.interp_between_points(
+    wing_section_mcl_vertices = _functions.interp_between_points(
         inner_mcl_points_Wn_Ler,
         outer_mcl_points_Wn_Ler,
         spanwise_coordinates,

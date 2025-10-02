@@ -15,7 +15,7 @@ import math
 from .airplane_movement import AirplaneMovement
 from .operating_point_movement import OperatingPointMovement
 
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 class Movement:
@@ -116,7 +116,7 @@ class Movement:
         self.operating_point_movement = operating_point_movement
 
         if delta_time is not None:
-            delta_time = parameter_validation.positive_number_return_float(
+            delta_time = _parameter_validation.positive_number_return_float(
                 delta_time, "delta_time"
             )
         else:
@@ -159,7 +159,7 @@ class Movement:
                         "If num_steps is None and the Movement isn't static, num_cycles must be set."
                     )
         if num_cycles is not None:
-            num_cycles = parameter_validation.positive_int_return_int(
+            num_cycles = _parameter_validation.positive_int_return_int(
                 num_cycles, "num_cycles"
             )
         self.num_cycles = num_cycles
@@ -176,7 +176,7 @@ class Movement:
                         "If num_steps is None and the Movement isn't static, num_chords must be left as None."
                     )
         if num_chords is not None:
-            num_chords = parameter_validation.positive_int_return_int(
+            num_chords = _parameter_validation.positive_int_return_int(
                 num_chords, "num_chords"
             )
         self.num_chords = num_chords
@@ -187,7 +187,7 @@ class Movement:
                     "If either num_cycles or num_chords is not None, num_steps must be None."
                 )
         if num_steps is not None:
-            num_steps = parameter_validation.positive_int_return_int(
+            num_steps = _parameter_validation.positive_int_return_int(
                 num_steps, "num_steps"
             )
         else:

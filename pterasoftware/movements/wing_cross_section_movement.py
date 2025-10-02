@@ -13,10 +13,10 @@ This module contains the following functions:
 
 import numpy as np
 
-from . import functions
+from . import _functions
 
 from .. import geometry
-from .. import parameter_validation
+from .. import _parameter_validation
 
 
 class WingCrossSectionMovement:
@@ -153,14 +153,14 @@ class WingCrossSectionMovement:
             raise TypeError("base_wing_cross_section must be a WingCrossSection.")
         self.base_wing_cross_section = base_wing_cross_section
 
-        ampLp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
+        ampLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             ampLp_Wcsp_Lpp, "ampLp_Wcsp_Lpp"
         )
         if not np.all(ampLp_Wcsp_Lpp >= 0.0):
             raise ValueError("All elements in ampLp_Wcsp_Lpp must be non-negative.")
         self.ampLp_Wcsp_Lpp = ampLp_Wcsp_Lpp
 
-        periodLp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
+        periodLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             periodLp_Wcsp_Lpp, "periodLp_Wcsp_Lpp"
         )
         if not np.all(periodLp_Wcsp_Lpp >= 0.0):
@@ -174,13 +174,13 @@ class WingCrossSectionMovement:
         self.periodLp_Wcsp_Lpp = periodLp_Wcsp_Lpp
 
         spacingLp_Wcsp_Lpp = (
-            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp"
             )
         )
         self.spacingLp_Wcsp_Lpp = spacingLp_Wcsp_Lpp
 
-        phaseLp_Wcsp_Lpp = parameter_validation.threeD_number_vectorLike_return_float(
+        phaseLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             phaseLp_Wcsp_Lpp, "phaseLp_Wcsp_Lpp"
         )
         if not (
@@ -198,7 +198,7 @@ class WingCrossSectionMovement:
         self.phaseLp_Wcsp_Lpp = phaseLp_Wcsp_Lpp
 
         ampAngles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 ampAngles_Wcsp_to_Wcs_izyx, "ampAngles_Wcsp_to_Wcs_izyx"
             )
         )
@@ -212,7 +212,7 @@ class WingCrossSectionMovement:
         self.ampAngles_Wcsp_to_Wcs_izyx = ampAngles_Wcsp_to_Wcs_izyx
 
         periodAngles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 periodAngles_Wcsp_to_Wcs_izyx, "periodAngles_Wcsp_to_Wcs_izyx"
             )
         )
@@ -229,7 +229,7 @@ class WingCrossSectionMovement:
         self.periodAngles_Wcsp_to_Wcs_izyx = periodAngles_Wcsp_to_Wcs_izyx
 
         spacingAngles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_Wcsp_to_Wcs_izyx,
                 "spacingAngles_Wcsp_to_Wcs_izyx",
             )
@@ -237,7 +237,7 @@ class WingCrossSectionMovement:
         self.spacingAngles_Wcsp_to_Wcs_izyx = spacingAngles_Wcsp_to_Wcs_izyx
 
         phaseAngles_Wcsp_to_Wcs_izyx = (
-            parameter_validation.threeD_number_vectorLike_return_float(
+            _parameter_validation.threeD_number_vectorLike_return_float(
                 phaseAngles_Wcsp_to_Wcs_izyx, "phaseAngles_Wcsp_to_Wcs_izyx"
             )
         )
@@ -279,8 +279,10 @@ class WingCrossSectionMovement:
             This is the list of WingCrossSections associated with this
             WingCrossSectionMovement.
         """
-        num_steps = parameter_validation.positive_int_return_int(num_steps, "num_steps")
-        delta_time = parameter_validation.positive_number_return_float(
+        num_steps = _parameter_validation.positive_int_return_int(
+            num_steps, "num_steps"
+        )
+        delta_time = _parameter_validation.positive_number_return_float(
             delta_time, "delta_time"
         )
 
@@ -289,7 +291,7 @@ class WingCrossSectionMovement:
         for dim in range(3):
             spacing = self.spacingLp_Wcsp_Lpp[dim]
             if spacing == "sine":
-                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_sinspaces(
+                listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_sinspaces(
                     amps=self.ampLp_Wcsp_Lpp[dim],
                     periods=self.periodLp_Wcsp_Lpp[dim],
                     phases=self.phaseLp_Wcsp_Lpp[dim],
@@ -298,7 +300,7 @@ class WingCrossSectionMovement:
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_linspaces(
+                listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_linspaces(
                     amps=self.ampLp_Wcsp_Lpp[dim],
                     periods=self.periodLp_Wcsp_Lpp[dim],
                     phases=self.phaseLp_Wcsp_Lpp[dim],
@@ -307,7 +309,7 @@ class WingCrossSectionMovement:
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listLp_Wcsp_Lpp[dim, :] = functions.oscillating_customspaces(
+                listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_customspaces(
                     amps=self.ampLp_Wcsp_Lpp[dim],
                     periods=self.periodLp_Wcsp_Lpp[dim],
                     phases=self.phaseLp_Wcsp_Lpp[dim],
@@ -324,7 +326,7 @@ class WingCrossSectionMovement:
         for dim in range(3):
             spacing = self.spacingAngles_Wcsp_to_Wcs_izyx[dim]
             if spacing == "sine":
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_sinspaces(
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = _functions.oscillating_sinspaces(
                     amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
                     periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
                     phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
@@ -333,7 +335,7 @@ class WingCrossSectionMovement:
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = functions.oscillating_linspaces(
+                listAngles_Wcsp_to_Wcs_izyx[dim, :] = _functions.oscillating_linspaces(
                     amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
                     periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
                     phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
@@ -343,7 +345,7 @@ class WingCrossSectionMovement:
                 )
             elif callable(spacing):
                 listAngles_Wcsp_to_Wcs_izyx[dim, :] = (
-                    functions.oscillating_customspaces(
+                    _functions.oscillating_customspaces(
                         amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
                         periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
                         phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],

@@ -18,10 +18,10 @@ import logging
 import numpy as np
 from tqdm import tqdm
 
-from . import aerodynamics
-from . import functions
+from . import _aerodynamics
+from . import _functions
 from . import geometry
-from . import parameter_validation
+from . import _parameter_validation
 from . import problems
 
 
@@ -189,18 +189,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        logging_level = parameter_validation.string_return_string(
+        logging_level = _parameter_validation.string_return_string(
             logging_level, "logging_level"
         )
-        logging_level_value = functions.convert_logging_level_name_to_value(
+        logging_level_value = _functions.convert_logging_level_name_to_value(
             logging_level
         )
         logging.basicConfig(level=logging_level_value)
 
-        prescribed_wake = parameter_validation.boolLike_return_bool(
+        prescribed_wake = _parameter_validation.boolLike_return_bool(
             prescribed_wake, "prescribed_wake"
         )
-        calculate_streamlines = parameter_validation.boolLike_return_bool(
+        calculate_streamlines = _parameter_validation.boolLike_return_bool(
             calculate_streamlines, "calculate_streamlines"
         )
 
@@ -472,7 +472,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # trailing edges, if requested.
         if calculate_streamlines:
             logging.info("Calculating streamlines.")
-            functions.calculate_streamlines(self)
+            _functions.calculate_streamlines(self)
 
     def _initialize_panel_vortices(self):
         """This method calculates the locations of the Airplanes' bound RingVortices'
@@ -546,7 +546,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
 
                             # Initialize the Panel's RingVortex.
-                            panel.ring_vortex = aerodynamics.RingVortex(
+                            panel.ring_vortex = _aerodynamics.RingVortex(
                                 Flrvp_G_Cg=Flrvp_G_Cg,
                                 Frrvp_G_Cg=Frrvp_G_Cg,
                                 Blrvp_G_Cg=Blrvp_G_Cg,
@@ -578,7 +578,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 for panel in panels:
                     # Update the solver's list of attributes with this Panel's
                     # attributes.
-                    functions.update_ring_vortex_solvers_panel_attributes(
+                    _functions.update_ring_vortex_solvers_panel_attributes(
                         ring_vortex_solver=self,
                         global_panel_position=global_panel_position,
                         panel=panel,
@@ -588,7 +588,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     global_panel_position += 1
 
                 # Iterate through the 1D ndarray of this Wing's wake RingVortices.
-                wake_ring_vortex: aerodynamics.RingVortex
+                wake_ring_vortex: _aerodynamics.RingVortex
                 for wake_ring_vortex in wake_ring_vortices:
                     # Update the solver's list of attributes with this wake RingVortex's
                     # attributes.
@@ -680,7 +680,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # RingVortex. The answer is normalized because the solver's list of bound
         # RingVortex strengths was initialized to all be 1.0. This will be updated once
         # the correct strengths are calculated.
-        gridNormVIndCpp_G__E = aerodynamics.expanded_velocities_from_ring_vortices(
+        gridNormVIndCpp_G__E = _aerodynamics.expanded_velocities_from_ring_vortices(
             stackP_G_Cg=self.stackCpp_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
@@ -758,7 +758,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Get the velocities (in geometry axes, observed from the Earth frame)
             # induced by the wake RingVortices at each Panel's collocation point.
             currentStackWakeV_G__E = (
-                aerodynamics.collapsed_velocities_from_ring_vortices(
+                _aerodynamics.collapsed_velocities_from_ring_vortices(
                     stackP_G_Cg=self.stackCpp_G_Cg,
                     stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
                     stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
@@ -830,12 +830,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             second.
         """
         stackP_G_Cg = (
-            parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
                 stackP_G_Cg, "stackP_G_Cg"
             )
         )
 
-        stackBoundRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
+        stackBoundRingVInd_G__E = _aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self.stackBrbrvp_G_Cg,
             stackFrrvp_G_Cg=self.stackFrbrvp_G_Cg,
@@ -845,7 +845,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             ages=None,
             nu=self.current_operating_point.nu,
         )
-        stackWakeRingVInd_G__E = aerodynamics.collapsed_velocities_from_ring_vortices(
+        stackWakeRingVInd_G__E = _aerodynamics.collapsed_velocities_from_ring_vortices(
             stackP_G_Cg=stackP_G_Cg,
             stackBrrvp_G_Cg=self._currentStackBrwrvp_G_Cg,
             stackFrrvp_G_Cg=self._currentStackFrwrvp_G_Cg,
@@ -988,7 +988,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         rightLegForces_G = (
             self.current_operating_point.rho
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
-            * functions.numba_1d_explicit_cross(
+            * _functions.numba_1d_explicit_cross(
                 stackVelocityRightLineVortexCenters_G__E,
                 self.stackRbrv_G,
             )
@@ -996,7 +996,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         frontLegForces_G = (
             self.current_operating_point.rho
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
-            * functions.numba_1d_explicit_cross(
+            * _functions.numba_1d_explicit_cross(
                 stackVelocityFrontLineVortexCenters_G__E,
                 self.stackFbrv_G,
             )
@@ -1004,7 +1004,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         leftLegForces_G = (
             self.current_operating_point.rho
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
-            * functions.numba_1d_explicit_cross(
+            * _functions.numba_1d_explicit_cross(
                 stackVelocityLeftLineVortexCenters_G__E,
                 self.stackLbrv_G,
             )
@@ -1039,15 +1039,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Find the moments (in geometry axes, relative to the CG) on the Panels'
         # RingVortex's right LineVortex, front LineVortex, and left LineVortex.
-        rightLegMoments_G_Cg = functions.numba_1d_explicit_cross(
+        rightLegMoments_G_Cg = _functions.numba_1d_explicit_cross(
             self.stackCblvpr_G_Cg,
             rightLegForces_G,
         )
-        frontLegMoments_G_Cg = functions.numba_1d_explicit_cross(
+        frontLegMoments_G_Cg = _functions.numba_1d_explicit_cross(
             self.stackCblvpf_G_Cg,
             frontLegForces_G,
         )
-        leftLegMoments_G_Cg = functions.numba_1d_explicit_cross(
+        leftLegMoments_G_Cg = _functions.numba_1d_explicit_cross(
             self.stackCblvpl_G_Cg,
             leftLegForces_G,
         )
@@ -1059,7 +1059,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Find the moments (in geometry axes, relative to the CG) due to the
         # unsteady component of the force on each Panel.
-        unsteady_moments_G_Cg = functions.numba_1d_explicit_cross(
+        unsteady_moments_G_Cg = _functions.numba_1d_explicit_cross(
             self.stackCpp_G_Cg,
             unsteady_forces_G,
         )
@@ -1071,7 +1071,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + unsteady_moments_G_Cg
         )
 
-        functions.process_unsteady_solver_loads(
+        _functions.process_unsteady_solver_loads(
             unsteady_solver=self, forces_G=forces_G, moments_G_Cg=moments_G_Cg
         )
 
@@ -1436,7 +1436,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                                     # If this isn't the front of the wake, update the
                                     # position of the ring vortex at this location.
-                                    this_wake_ring_vortex: aerodynamics.RingVortex = (
+                                    this_wake_ring_vortex: _aerodynamics.RingVortex = (
                                         next_wing.wake_ring_vortices[
                                             chordwise_vertex_position,
                                             spanwise_vertex_position,
@@ -1470,7 +1470,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     next_wing.wake_ring_vortices[
                                         chordwise_vertex_position,
                                         spanwise_vertex_position,
-                                    ] = aerodynamics.RingVortex(
+                                    ] = _aerodynamics.RingVortex(
                                         Flrvp_G_Cg=front_left_vertex,
                                         Frrvp_G_Cg=front_right_vertex,
                                         Blrvp_G_Cg=back_left_vertex,

@@ -1,7 +1,9 @@
 """This module contains functions to create HorseshoeVortices for use in tests."""
 
 import numpy as np
-import pterasoftware as ps
+
+# noinspection PyProtectedMember
+from pterasoftware import _aerodynamics
 
 
 def make_basic_horseshoe_vortex_fixture():
@@ -14,7 +16,7 @@ def make_basic_horseshoe_vortex_fixture():
         extend 20 meters in the positive x-direction (in geometry axes) with unit
         strength.
     """
-    basic_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    basic_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -33,7 +35,7 @@ def make_short_legs_horseshoe_vortex_fixture():
         This is the HorseshoeVortex with relatively short quasi-infinite legs
         (5 meters) for testing edge cases.
     """
-    short_legs_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    short_legs_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -52,7 +54,7 @@ def make_long_legs_horseshoe_vortex_fixture():
         This is the HorseshoeVortex with very long quasi-infinite legs (100 meters)
         to better approximate infinite legs.
     """
-    long_legs_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    long_legs_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -71,7 +73,7 @@ def make_tilted_legs_horseshoe_vortex_fixture():
         This is the HorseshoeVortex with quasi-infinite legs tilted at an angle
         and extending in a direction with x, y, and z components (in geometry axes).
     """
-    tilted_legs_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    tilted_legs_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([0.707, 0.0, 0.707], dtype=float),
@@ -89,7 +91,7 @@ def make_wide_finite_leg_horseshoe_vortex_fixture():
     :return wide_finite_leg_horseshoe_vortex_fixture: HorseshoeVortex
         This is the HorseshoeVortex with a 5-meter finite leg span.
     """
-    wide_finite_leg_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    wide_finite_leg_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 2.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -2.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -107,7 +109,7 @@ def make_narrow_finite_leg_horseshoe_vortex_fixture():
     :return narrow_finite_leg_horseshoe_vortex_fixture: HorseshoeVortex
         This is the HorseshoeVortex with a 0.1-meter finite leg span.
     """
-    narrow_finite_leg_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    narrow_finite_leg_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.05, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.05, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -125,7 +127,7 @@ def make_zero_strength_horseshoe_vortex_fixture():
     :return zero_strength_horseshoe_vortex_fixture: HorseshoeVortex
         This is the HorseshoeVortex with zero strength.
     """
-    zero_strength_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    zero_strength_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -143,7 +145,7 @@ def make_negative_strength_horseshoe_vortex_fixture():
     :return negative_strength_horseshoe_vortex_fixture: HorseshoeVortex
         This is the HorseshoeVortex with negative strength of -1.0.
     """
-    negative_strength_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    negative_strength_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -161,7 +163,7 @@ def make_high_strength_horseshoe_vortex_fixture():
     :return high_strength_horseshoe_vortex_fixture: HorseshoeVortex
         This is the HorseshoeVortex with high strength of 100.0.
     """
-    high_strength_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    high_strength_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
@@ -181,7 +183,7 @@ def make_offset_horseshoe_vortex_fixture():
         relative to the CG) with unit strength.
     """
     offset = np.array([10.0, 5.0, 3.0], dtype=float)
-    offset_horseshoe_vortex_fixture = ps.aerodynamics.HorseshoeVortex(
+    offset_horseshoe_vortex_fixture = _aerodynamics.HorseshoeVortex(
         Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float) + offset,
         Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float) + offset,
         leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),

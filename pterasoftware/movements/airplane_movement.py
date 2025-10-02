@@ -19,7 +19,6 @@ from .. import geometry
 from .. import parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class AirplaneMovement:
     """This is a class used to contain an Airplane's movement.
 
@@ -264,7 +263,6 @@ class AirplaneMovement:
                 )
         self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
 
-    # TODO: Add unit tests for this method.
     def generate_airplanes(self, num_steps, delta_time):
         """Creates the Airplane at each time step, and returns them in a list.
 
@@ -402,7 +400,6 @@ class AirplaneMovement:
 
         return airplanes
 
-    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
         """Defines a property for the longest period of AirplaneMovement's own motion

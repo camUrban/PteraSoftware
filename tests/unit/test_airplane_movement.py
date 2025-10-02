@@ -1,0 +1,1041 @@
+"""This module contains a class to test AirplaneMovements."""
+
+import unittest
+import numpy as np
+import numpy.testing as npt
+from scipy import signal
+
+import pterasoftware as ps
+from tests.unit.fixtures import movement_fixtures
+
+
+class TestAirplaneMovement(unittest.TestCase):
+    """This is a class with functions to test AirplaneMovements."""
+
+    def setUp(self):
+        """Set up test fixtures for AirplaneMovement tests."""
+        # Spacing test fixtures.
+        self.sine_spacing_Cgi_airplane_movement = (
+            movement_fixtures.make_sine_spacing_Cgi_airplane_movement_fixture()
+        )
+        self.uniform_spacing_Cgi_airplane_movement = (
+            movement_fixtures.make_uniform_spacing_Cgi_airplane_movement_fixture()
+        )
+        self.mixed_spacing_Cgi_airplane_movement = (
+            movement_fixtures.make_mixed_spacing_Cgi_airplane_movement_fixture()
+        )
+        self.sine_spacing_angles_airplane_movement = (
+            movement_fixtures.make_sine_spacing_angles_airplane_movement_fixture()
+        )
+        self.uniform_spacing_angles_airplane_movement = (
+            movement_fixtures.make_uniform_spacing_angles_airplane_movement_fixture()
+        )
+        self.mixed_spacing_angles_airplane_movement = (
+            movement_fixtures.make_mixed_spacing_angles_airplane_movement_fixture()
+        )
+
+        # Additional test fixtures.
+        self.static_airplane_movement = (
+            movement_fixtures.make_static_airplane_movement_fixture()
+        )
+        self.basic_airplane_movement = (
+            movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        self.Cgi_only_airplane_movement = (
+            movement_fixtures.make_Cgi_only_airplane_movement_fixture()
+        )
+        self.angles_only_airplane_movement = (
+            movement_fixtures.make_angles_only_airplane_movement_fixture()
+        )
+        self.phase_offset_Cgi_airplane_movement = (
+            movement_fixtures.make_phase_offset_Cgi_airplane_movement_fixture()
+        )
+        self.phase_offset_angles_airplane_movement = (
+            movement_fixtures.make_phase_offset_angles_airplane_movement_fixture()
+        )
+        self.multiple_periods_airplane_movement = (
+            movement_fixtures.make_multiple_periods_airplane_movement_fixture()
+        )
+        self.custom_spacing_Cgi_airplane_movement = (
+            movement_fixtures.make_custom_spacing_Cgi_airplane_movement_fixture()
+        )
+        self.custom_spacing_angles_airplane_movement = (
+            movement_fixtures.make_custom_spacing_angles_airplane_movement_fixture()
+        )
+        self.mixed_custom_and_standard_spacing_airplane_movement = (
+            movement_fixtures.make_mixed_custom_and_standard_spacing_airplane_movement_fixture()
+        )
+
+    def tearDown(self):
+        """Clean up test fixtures."""
+        del self.sine_spacing_Cgi_airplane_movement
+        del self.uniform_spacing_Cgi_airplane_movement
+        del self.mixed_spacing_Cgi_airplane_movement
+        del self.sine_spacing_angles_airplane_movement
+        del self.uniform_spacing_angles_airplane_movement
+        del self.mixed_spacing_angles_airplane_movement
+        del self.static_airplane_movement
+        del self.basic_airplane_movement
+        del self.Cgi_only_airplane_movement
+        del self.angles_only_airplane_movement
+        del self.phase_offset_Cgi_airplane_movement
+        del self.phase_offset_angles_airplane_movement
+        del self.multiple_periods_airplane_movement
+        del self.custom_spacing_Cgi_airplane_movement
+        del self.custom_spacing_angles_airplane_movement
+        del self.mixed_custom_and_standard_spacing_airplane_movement
+
+    def test_spacing_sine_for_Cgi_E_I(self):
+        """Test that sine spacing actually produces sinusoidal motion for Cgi_E_I."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.sine_spacing_Cgi_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract positions (in Earth axes, relative to the simulation starting
+        # point) from generated Airplanes.
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+
+        # Calculate expected sine wave values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_x = 0.1 * np.sin(2 * np.pi * times / 1.0)
+
+        # Assert that the generated positions match the expected sine wave.
+        npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
+
+    def test_spacing_uniform_for_Cgi_E_I(self):
+        """Test that uniform spacing actually produces triangular wave motion for
+        Cgi_E_I."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.uniform_spacing_Cgi_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract positions (in Earth axes, relative to the simulation starting
+        # point) from generated Airplanes.
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+
+        # Calculate expected triangular wave values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_x = 0.1 * signal.sawtooth(2 * np.pi * times / 1.0 + np.pi / 2, 0.5)
+
+        # Assert that the generated positions match the expected triangular wave.
+        npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
+
+    def test_spacing_mixed_for_Cgi_E_I(self):
+        """Test that mixed spacing types work correctly for Cgi_E_I."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.mixed_spacing_Cgi_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract positions (in Earth axes, relative to the simulation starting
+        # point) from generated Airplanes.
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+        y_positions = np.array([airplane.Cgi_E_I[1] for airplane in airplanes])
+        z_positions = np.array([airplane.Cgi_E_I[2] for airplane in airplanes])
+
+        # Calculate expected values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_x = 0.1 * np.sin(2 * np.pi * times / 1.0)
+        expected_y = 0.08 * signal.sawtooth(2 * np.pi * times / 1.0 + np.pi / 2, 0.5)
+        expected_z = 0.06 * np.sin(2 * np.pi * times / 1.0)
+
+        # Assert that the generated positions match the expected values.
+        npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
+
+    def test_spacing_sine_for_angles_E_to_B_izyx(self):
+        """Test that sine spacing actually produces sinusoidal motion for
+        angles_E_to_B_izyx."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.sine_spacing_angles_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract angles describing the orientation of body axes relative to Earth
+        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+
+        # Calculate expected sine wave values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_angles = 10.0 * np.sin(2 * np.pi * times / 1.0)
+
+        # Assert that the generated angles match the expected sine wave.
+        npt.assert_allclose(angles_z, expected_angles, rtol=1e-10, atol=1e-14)
+
+    def test_spacing_uniform_for_angles_E_to_B_izyx(self):
+        """Test that uniform spacing actually produces triangular wave motion for
+        angles_E_to_B_izyx."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.uniform_spacing_angles_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract angles describing the orientation of body axes relative to Earth
+        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+
+        # Calculate expected triangular wave values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_angles = 10.0 * signal.sawtooth(
+            2 * np.pi * times / 1.0 + np.pi / 2, 0.5
+        )
+
+        # Assert that the generated angles match the expected triangular wave.
+        npt.assert_allclose(angles_z, expected_angles, rtol=1e-10, atol=1e-14)
+
+    def test_spacing_mixed_for_angles_E_to_B_izyx(self):
+        """Test that mixed spacing types work correctly for angles_E_to_B_izyx."""
+        num_steps = 100
+        delta_time = 0.01
+        airplanes = self.mixed_spacing_angles_airplane_movement.generate_airplanes(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract angles describing the orientation of body axes relative to Earth
+        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+        angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
+        angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
+
+        # Calculate expected values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_angles_z = 10.0 * np.sin(2 * np.pi * times / 1.0)
+        expected_angles_y = 15.0 * signal.sawtooth(
+            2 * np.pi * times / 1.0 + np.pi / 2, 0.5
+        )
+        expected_angles_x = 8.0 * np.sin(2 * np.pi * times / 1.0)
+
+        # Assert that the generated angles match the expected values.
+        npt.assert_allclose(angles_z, expected_angles_z, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(angles_y, expected_angles_y, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(angles_x, expected_angles_x, rtol=1e-10, atol=1e-14)
+
+    def test_initialization_valid_parameters(self):
+        """Test AirplaneMovement initialization with valid parameters."""
+        # Test that basic AirplaneMovement initializes correctly.
+        airplane_movement = self.basic_airplane_movement
+        self.assertIsInstance(
+            airplane_movement, ps.movements.airplane_movement.AirplaneMovement
+        )
+        self.assertIsInstance(
+            airplane_movement.base_airplane, ps.geometry.airplane.Airplane
+        )
+        self.assertIsInstance(airplane_movement.wing_movements, list)
+        self.assertEqual(len(airplane_movement.wing_movements), 1)
+        self.assertIsInstance(
+            airplane_movement.wing_movements[0],
+            ps.movements.wing_movement.WingMovement,
+        )
+        npt.assert_array_equal(
+            airplane_movement.ampCgi_E_I, np.array([0.05, 0.03, 0.04])
+        )
+        npt.assert_array_equal(
+            airplane_movement.periodCgi_E_I, np.array([2.0, 2.0, 2.0])
+        )
+        self.assertEqual(airplane_movement.spacingCgi_E_I, ("sine", "sine", "sine"))
+        npt.assert_array_equal(
+            airplane_movement.phaseCgi_E_I, np.array([0.0, 0.0, 0.0])
+        )
+        npt.assert_array_equal(
+            airplane_movement.ampAngles_E_to_B_izyx, np.array([3.0, 2.0, 1.5])
+        )
+        npt.assert_array_equal(
+            airplane_movement.periodAngles_E_to_B_izyx, np.array([2.0, 2.0, 2.0])
+        )
+        self.assertEqual(
+            airplane_movement.spacingAngles_E_to_B_izyx, ("sine", "sine", "sine")
+        )
+        npt.assert_array_equal(
+            airplane_movement.phaseAngles_E_to_B_izyx, np.array([0.0, 0.0, 0.0])
+        )
+
+    def test_base_airplane_validation(self):
+        """Test that base_airplane parameter validation works correctly."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        # Test non-Airplane raises error.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane="not an airplane",
+                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+            )
+
+        # Test None raises error.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=None,
+                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+            )
+
+        # Test valid Airplane works.
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane, wing_movements=wing_movements
+        )
+        self.assertEqual(airplane_movement.base_airplane, base_airplane)
+
+    def test_wing_movements_validation(self):
+        """Test that wing_movements parameter validation works correctly."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+        # Test non-list raises error.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane, wing_movements="not a list"
+            )
+
+        # Test empty list raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane, wing_movements=[]
+            )
+
+        # Test wrong number of WingMovements raises error.
+        base_airplane_multi_wing = geometry_fixtures.make_multi_wing_airplane_fixture()
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane_multi_wing,
+                wing_movements=[movement_fixtures.make_static_wing_movement_fixture()],
+            )
+
+        # Test non-WingMovement element raises error.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane, wing_movements=["not a wing movement"]
+            )
+
+        # Test valid list works.
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane, wing_movements=wing_movements
+        )
+        self.assertEqual(airplane_movement.wing_movements, wing_movements)
+
+    def test_ampCgi_E_I_validation(self):
+        """Test ampCgi_E_I parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid values.
+        valid_amps = [
+            (0.0, 0.0, 0.0),
+            (1.0, 2.0, 3.0),
+            [0.5, 1.5, 2.5],
+            np.array([0.1, 0.2, 0.3]),
+        ]
+        for amp in valid_amps:
+            with self.subTest(amp=amp):
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampCgi_E_I=amp,
+                )
+                npt.assert_array_equal(airplane_movement.ampCgi_E_I, amp)
+
+        # Test negative values raise error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(-1.0, 0.0, 0.0),
+            )
+
+        # Test invalid types raise error.
+        with self.assertRaises((TypeError, ValueError)):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I="invalid",
+            )
+
+    def test_periodCgi_E_I_validation(self):
+        """Test periodCgi_E_I parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid values.
+        valid_periods = [(0.0, 0.0, 0.0), (1.0, 2.0, 3.0), [0.5, 1.5, 2.5]]
+        for period in valid_periods:
+            with self.subTest(period=period):
+                # Need matching amps for non-zero periods.
+                amp = tuple(1.0 if p > 0 else 0.0 for p in period)
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampCgi_E_I=amp,
+                    periodCgi_E_I=period,
+                )
+                npt.assert_array_equal(airplane_movement.periodCgi_E_I, period)
+
+        # Test negative values raise error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(1.0, 1.0, 1.0),
+                periodCgi_E_I=(-1.0, 1.0, 1.0),
+            )
+
+    def test_spacingCgi_E_I_validation(self):
+        """Test spacingCgi_E_I parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid string values.
+        valid_spacings = [
+            ("sine", "sine", "sine"),
+            ("uniform", "uniform", "uniform"),
+            ("sine", "uniform", "sine"),
+        ]
+        for spacing in valid_spacings:
+            with self.subTest(spacing=spacing):
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    spacingCgi_E_I=spacing,
+                )
+                self.assertEqual(airplane_movement.spacingCgi_E_I, spacing)
+
+        # Test invalid string raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                spacingCgi_E_I=("invalid", "sine", "sine"),
+            )
+
+    def test_phaseCgi_E_I_validation(self):
+        """Test phaseCgi_E_I parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid phase values within range (-180.0, 180.0].
+        valid_phases = [
+            (0.0, 0.0, 0.0),
+            (90.0, 180.0, -90.0),
+            (179.9, 0.0, -179.9),
+        ]
+        for phase in valid_phases:
+            with self.subTest(phase=phase):
+                # Need non-zero amps for non-zero phases.
+                amp = tuple(1.0 if p != 0 else 0.0 for p in phase)
+                period = tuple(1.0 if p != 0 else 0.0 for p in phase)
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampCgi_E_I=amp,
+                    periodCgi_E_I=period,
+                    phaseCgi_E_I=phase,
+                )
+                npt.assert_array_equal(airplane_movement.phaseCgi_E_I, phase)
+
+        # Test phase > 180.0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(1.0, 1.0, 1.0),
+                periodCgi_E_I=(1.0, 1.0, 1.0),
+                phaseCgi_E_I=(180.1, 0.0, 0.0),
+            )
+
+        # Test phase <= -180.0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(1.0, 1.0, 1.0),
+                periodCgi_E_I=(1.0, 1.0, 1.0),
+                phaseCgi_E_I=(-180.0, 0.0, 0.0),
+            )
+
+    def test_ampAngles_E_to_B_izyx_validation(self):
+        """Test ampAngles_E_to_B_izyx parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid amplitude values within range [0.0, 360.0).
+        valid_amps = [
+            (0.0, 0.0, 0.0),
+            (45.0, 90.0, 135.0),
+            (179.9, 0.0, 90.0),
+            (359.9, 180.0, 270.0),
+        ]
+        for amp in valid_amps:
+            with self.subTest(amp=amp):
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampAngles_E_to_B_izyx=amp,
+                )
+                npt.assert_array_equal(airplane_movement.ampAngles_E_to_B_izyx, amp)
+
+        # Test amplitude >= 360.0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(360.0, 0.0, 0.0),
+            )
+
+        # Test negative amplitude raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(-1.0, 0.0, 0.0),
+            )
+
+    def test_periodAngles_E_to_B_izyx_validation(self):
+        """Test periodAngles_E_to_B_izyx parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid periods.
+        valid_periods = [(0.0, 0.0, 0.0), (1.0, 2.0, 3.0)]
+        for period in valid_periods:
+            with self.subTest(period=period):
+                amp = tuple(10.0 if p > 0 else 0.0 for p in period)
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampAngles_E_to_B_izyx=amp,
+                    periodAngles_E_to_B_izyx=period,
+                )
+                npt.assert_array_equal(
+                    airplane_movement.periodAngles_E_to_B_izyx, period
+                )
+
+        # Test negative period raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(10.0, 10.0, 10.0),
+                periodAngles_E_to_B_izyx=(-1.0, 1.0, 1.0),
+            )
+
+    def test_spacingAngles_E_to_B_izyx_validation(self):
+        """Test spacingAngles_E_to_B_izyx parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid string values.
+        valid_spacings = [
+            ("sine", "sine", "sine"),
+            ("uniform", "uniform", "uniform"),
+            ("sine", "uniform", "sine"),
+        ]
+        for spacing in valid_spacings:
+            with self.subTest(spacing=spacing):
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    spacingAngles_E_to_B_izyx=spacing,
+                )
+                self.assertEqual(airplane_movement.spacingAngles_E_to_B_izyx, spacing)
+
+        # Test invalid string raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                spacingAngles_E_to_B_izyx=("invalid", "sine", "sine"),
+            )
+
+    def test_phaseAngles_E_to_B_izyx_validation(self):
+        """Test phaseAngles_E_to_B_izyx parameter validation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test valid phase values within range (-180.0, 180.0].
+        valid_phases = [(0.0, 0.0, 0.0), (90.0, 180.0, -90.0), (179.9, 0.0, -179.9)]
+        for phase in valid_phases:
+            with self.subTest(phase=phase):
+                amp = tuple(10.0 if p != 0 else 0.0 for p in phase)
+                period = tuple(1.0 if p != 0 else 0.0 for p in phase)
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=wing_movements,
+                    ampAngles_E_to_B_izyx=amp,
+                    periodAngles_E_to_B_izyx=period,
+                    phaseAngles_E_to_B_izyx=phase,
+                )
+                npt.assert_array_equal(airplane_movement.phaseAngles_E_to_B_izyx, phase)
+
+        # Test phase > 180.0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(10.0, 10.0, 10.0),
+                periodAngles_E_to_B_izyx=(1.0, 1.0, 1.0),
+                phaseAngles_E_to_B_izyx=(180.1, 0.0, 0.0),
+            )
+
+    def test_amp_period_relationship_Cgi(self):
+        """Test that if ampCgi_E_I element is 0, corresponding period must be 0."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test amp=0 with period=0 works.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCgi_E_I=(0.0, 1.0, 0.0),
+            periodCgi_E_I=(0.0, 1.0, 0.0),
+        )
+        self.assertIsNotNone(airplane_movement)
+
+        # Test amp=0 with period!=0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(0.0, 1.0, 0.0),
+                periodCgi_E_I=(1.0, 1.0, 0.0),
+            )
+
+    def test_amp_phase_relationship_Cgi(self):
+        """Test that if ampCgi_E_I element is 0, corresponding phase must be 0."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test amp=0 with phase=0 works.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCgi_E_I=(0.0, 1.0, 0.0),
+            periodCgi_E_I=(0.0, 1.0, 0.0),
+            phaseCgi_E_I=(0.0, -90.0, 0.0),
+        )
+        self.assertIsNotNone(airplane_movement)
+
+        # Test amp=0 with phase!=0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampCgi_E_I=(0.0, 1.0, 0.0),
+                periodCgi_E_I=(0.0, 1.0, 0.0),
+                phaseCgi_E_I=(45.0, -90.0, 0.0),
+            )
+
+    def test_amp_period_relationship_angles(self):
+        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding period must be 0."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test amp=0 with period=0 works.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampAngles_E_to_B_izyx=(0.0, 10.0, 0.0),
+            periodAngles_E_to_B_izyx=(0.0, 1.0, 0.0),
+        )
+        self.assertIsNotNone(airplane_movement)
+
+        # Test amp=0 with period!=0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(0.0, 10.0, 0.0),
+                periodAngles_E_to_B_izyx=(1.0, 1.0, 0.0),
+            )
+
+    def test_amp_phase_relationship_angles(self):
+        """Test that if ampAngles_E_to_B_izyx element is 0, corresponding phase must be 0."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test amp=0 with phase=0 works.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampAngles_E_to_B_izyx=(0.0, 10.0, 0.0),
+            periodAngles_E_to_B_izyx=(0.0, 1.0, 0.0),
+            phaseAngles_E_to_B_izyx=(0.0, -90.0, 0.0),
+        )
+        self.assertIsNotNone(airplane_movement)
+
+        # Test amp=0 with phase!=0 raises error.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+                ampAngles_E_to_B_izyx=(0.0, 10.0, 0.0),
+                periodAngles_E_to_B_izyx=(0.0, 1.0, 0.0),
+                phaseAngles_E_to_B_izyx=(45.0, -90.0, 0.0),
+            )
+
+    def test_max_period_static_movement(self):
+        """Test that max_period returns 0.0 for static movement."""
+        airplane_movement = self.static_airplane_movement
+        self.assertEqual(airplane_movement.max_period, 0.0)
+
+    def test_max_period_Cgi_only(self):
+        """Test that max_period returns correct period for Cgi-only movement."""
+        airplane_movement = self.Cgi_only_airplane_movement
+        # periodCgi_E_I is (1.5, 1.5, 1.5), so max should be 1.5.
+        self.assertEqual(airplane_movement.max_period, 1.5)
+
+    def test_max_period_angles_only(self):
+        """Test that max_period returns correct period for angles-only movement."""
+        airplane_movement = self.angles_only_airplane_movement
+        # periodAngles_E_to_B_izyx is (1.5, 1.5, 1.5), so max should be 1.5.
+        self.assertEqual(airplane_movement.max_period, 1.5)
+
+    def test_max_period_mixed(self):
+        """Test that max_period returns maximum of all periods for mixed movement."""
+        airplane_movement = self.multiple_periods_airplane_movement
+        # periodCgi_E_I is (1.0, 2.0, 3.0).
+        # periodAngles_E_to_B_izyx is (0.5, 1.5, 2.5).
+        # Wing movement periods are (1.0, 2.0, 3.0) and (0.5, 1.5, 2.5).
+        # Maximum across all should be 3.0.
+        self.assertEqual(airplane_movement.max_period, 3.0)
+
+    def test_max_period_multiple_dimensions(self):
+        """Test max_period with multiple dimensions having different periods."""
+        airplane_movement = self.basic_airplane_movement
+        # Both periodCgi_E_I and periodAngles_E_to_B_izyx are (2.0, 2.0, 2.0).
+        # Maximum should be 2.0.
+        self.assertEqual(airplane_movement.max_period, 2.0)
+
+    def test_generate_airplanes_parameter_validation(self):
+        """Test that generate_airplanes validates num_steps and delta_time."""
+        airplane_movement = self.basic_airplane_movement
+
+        # Test invalid num_steps.
+        with self.assertRaises((ValueError, TypeError)):
+            airplane_movement.generate_airplanes(num_steps=0, delta_time=0.01)
+
+        with self.assertRaises((ValueError, TypeError)):
+            airplane_movement.generate_airplanes(num_steps=-1, delta_time=0.01)
+
+        with self.assertRaises(TypeError):
+            airplane_movement.generate_airplanes(num_steps="invalid", delta_time=0.01)
+
+        # Test invalid delta_time.
+        with self.assertRaises((ValueError, TypeError)):
+            airplane_movement.generate_airplanes(num_steps=10, delta_time=0.0)
+
+        with self.assertRaises((ValueError, TypeError)):
+            airplane_movement.generate_airplanes(num_steps=10, delta_time=-0.01)
+
+        with self.assertRaises(TypeError):
+            airplane_movement.generate_airplanes(num_steps=10, delta_time="invalid")
+
+    def test_generate_airplanes_returns_correct_length(self):
+        """Test that generate_airplanes returns list of correct length."""
+        airplane_movement = self.basic_airplane_movement
+
+        test_num_steps = [1, 5, 10, 50, 100]
+        for num_steps in test_num_steps:
+            with self.subTest(num_steps=num_steps):
+                airplanes = airplane_movement.generate_airplanes(
+                    num_steps=num_steps, delta_time=0.01
+                )
+                self.assertEqual(len(airplanes), num_steps)
+
+    def test_generate_airplanes_returns_correct_types(self):
+        """Test that generate_airplanes returns Airplanes."""
+        airplane_movement = self.basic_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+
+        # Verify all elements are Airplanes.
+        for airplane in airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+    def test_generate_airplanes_preserves_non_changing_attributes(self):
+        """Test that generate_airplanes preserves non-changing attributes."""
+        airplane_movement = self.basic_airplane_movement
+        base_airplane = airplane_movement.base_airplane
+
+        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+
+        # Check that non-changing attributes are preserved. Note: s_ref, c_ref,
+        # and b_ref are NOT included because they are calculated from the Wings,
+        # which change due to WingMovement or WingCrossSectionMovement.
+        for airplane in airplanes:
+            self.assertEqual(airplane.name, base_airplane.name)
+            self.assertEqual(airplane.weight, base_airplane.weight)
+
+    def test_generate_airplanes_static_movement(self):
+        """Test that static movement produces constant positions and angles."""
+        airplane_movement = self.static_airplane_movement
+        base_airplane = airplane_movement.base_airplane
+
+        airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
+
+        # All Airplanes should have same Cgi_E_I and angles_E_to_B_izyx.
+        for airplane in airplanes:
+            npt.assert_array_equal(airplane.Cgi_E_I, base_airplane.Cgi_E_I)
+            npt.assert_array_equal(
+                airplane.angles_E_to_B_izyx, base_airplane.angles_E_to_B_izyx
+            )
+
+    def test_generate_airplanes_different_num_steps(self):
+        """Test generate_airplanes with various num_steps values."""
+        airplane_movement = self.basic_airplane_movement
+
+        num_steps_list = [1, 10, 25, 100, 200]
+        for num_steps in num_steps_list:
+            with self.subTest(num_steps=num_steps):
+                airplanes = airplane_movement.generate_airplanes(
+                    num_steps=num_steps, delta_time=0.01
+                )
+                self.assertEqual(len(airplanes), num_steps)
+
+    def test_generate_airplanes_different_delta_time(self):
+        """Test generate_airplanes with various delta_time values."""
+        airplane_movement = self.basic_airplane_movement
+
+        delta_time_list = [0.001, 0.01, 0.1, 1.0]
+        num_steps = 50
+        for delta_time in delta_time_list:
+            with self.subTest(delta_time=delta_time):
+                airplanes = airplane_movement.generate_airplanes(
+                    num_steps=num_steps, delta_time=delta_time
+                )
+                self.assertEqual(len(airplanes), num_steps)
+
+    def test_phase_offset_Cgi(self):
+        """Test that phase shifts initial position correctly for Cgi_E_I."""
+        airplane_movement = self.phase_offset_Cgi_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Extract positions (in Earth axes, relative to the simulation starting
+        # point).
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+        y_positions = np.array([airplane.Cgi_E_I[1] for airplane in airplanes])
+        z_positions = np.array([airplane.Cgi_E_I[2] for airplane in airplanes])
+
+        # Verify that phase offset causes non-zero initial values.
+        # With phase offsets, the first values should not all be at the base position.
+        self.assertFalse(np.allclose(x_positions[0], 0.0, atol=1e-10))
+        self.assertFalse(np.allclose(y_positions[0], 0.0, atol=1e-10))
+        self.assertFalse(np.allclose(z_positions[0], 0.0, atol=1e-10))
+
+    def test_phase_offset_angles(self):
+        """Test that phase shifts initial angles correctly for angles_E_to_B_izyx."""
+        airplane_movement = self.phase_offset_angles_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Extract angles describing the orientation of body axes relative to Earth
+        # axes using an intrinsic z-y'-x" sequence.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+        angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
+        angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
+
+        # Verify that phase offset causes non-zero initial values.
+        # With phase offsets, the first values should not all be at the base angles.
+        self.assertFalse(np.allclose(angles_z[0], 0.0, atol=1e-10))
+        self.assertFalse(np.allclose(angles_y[0], 0.0, atol=1e-10))
+        self.assertFalse(np.allclose(angles_x[0], 0.0, atol=1e-10))
+
+    def test_single_dimension_movement_Cgi(self):
+        """Test that only one dimension of Cgi_E_I moves."""
+        airplane_movement = self.sine_spacing_Cgi_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
+
+        # Extract positions (in Earth axes, relative to the simulation starting
+        # point).
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+        y_positions = np.array([airplane.Cgi_E_I[1] for airplane in airplanes])
+        z_positions = np.array([airplane.Cgi_E_I[2] for airplane in airplanes])
+
+        # Only x should vary, y and z should be constant.
+        self.assertFalse(np.allclose(x_positions, x_positions[0]))
+        npt.assert_array_equal(y_positions, y_positions[0])
+        npt.assert_array_equal(z_positions, z_positions[0])
+
+    def test_single_dimension_movement_angles(self):
+        """Test that only one dimension of angles_E_to_B_izyx moves."""
+        airplane_movement = self.sine_spacing_angles_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
+
+        # Extract angles describing the orientation of body axes relative to Earth
+        # axes using an intrinsic z-y'-x" sequence.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+        angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
+        angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
+
+        # Only z should vary, y and x should be constant.
+        self.assertFalse(np.allclose(angles_z, angles_z[0]))
+        npt.assert_array_equal(angles_y, angles_y[0])
+        npt.assert_array_equal(angles_x, angles_x[0])
+
+    def test_boundary_amplitude_angles(self):
+        """Test amplitude at boundary value (179.9 degrees)."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test amplitude just below 180.0 works.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampAngles_E_to_B_izyx=(179.9, 0.0, 0.0),
+            periodAngles_E_to_B_izyx=(1.0, 0.0, 0.0),
+        )
+        self.assertEqual(airplane_movement.ampAngles_E_to_B_izyx[0], 179.9)
+
+    def test_boundary_phase_values(self):
+        """Test phase at boundary values (-179.9, 0.0, and 180.0)."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Test phase = 0.0 works.
+        airplane_movement1 = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCgi_E_I=(1.0, 0.0, 0.0),
+            periodCgi_E_I=(1.0, 0.0, 0.0),
+            phaseCgi_E_I=(0.0, 0.0, 0.0),
+        )
+        self.assertEqual(airplane_movement1.phaseCgi_E_I[0], 0.0)
+
+        # Test phase = 180.0 works (upper boundary, inclusive).
+        airplane_movement2 = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCgi_E_I=(1.0, 0.0, 0.0),
+            periodCgi_E_I=(1.0, 0.0, 0.0),
+            phaseCgi_E_I=(180.0, 0.0, 0.0),
+        )
+        self.assertEqual(airplane_movement2.phaseCgi_E_I[0], 180.0)
+
+        # Test phase = -179.9 works (near lower boundary).
+        airplane_movement3 = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCgi_E_I=(1.0, 0.0, 0.0),
+            periodCgi_E_I=(1.0, 0.0, 0.0),
+            phaseCgi_E_I=(-179.9, 0.0, 0.0),
+        )
+        self.assertEqual(airplane_movement3.phaseCgi_E_I[0], -179.9)
+
+    def test_custom_spacing_function_Cgi(self):
+        """Test that custom spacing function works for Cgi_E_I."""
+        airplane_movement = self.custom_spacing_Cgi_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Extract x-positions (in Earth axes, relative to the simulation starting
+        # point).
+        x_positions = np.array([airplane.Cgi_E_I[0] for airplane in airplanes])
+
+        # Verify that values vary (not constant).
+        self.assertFalse(np.allclose(x_positions, x_positions[0]))
+
+        # Verify that values are within expected range.
+        # For custom_harmonic with amp=0.08, values should be in [-0.08, 0.08].
+        self.assertTrue(np.all(x_positions >= -0.09))
+        self.assertTrue(np.all(x_positions <= 0.09))
+
+    def test_custom_spacing_function_angles(self):
+        """Test that custom spacing function works for angles_E_to_B_izyx."""
+        airplane_movement = self.custom_spacing_angles_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Extract z-angles describing the orientation of body axes relative to
+        # Earth axes using an intrinsic z-y'-x" sequence.
+        angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
+
+        # Verify that values vary (not constant).
+        self.assertFalse(np.allclose(angles_z, angles_z[0]))
+
+        # Verify that values are within expected range.
+        # For custom_harmonic with amp=10.0, values should be in [-10.0, 10.0].
+        self.assertTrue(np.all(angles_z >= -11.0))
+        self.assertTrue(np.all(angles_z <= 11.0))
+
+    def test_custom_spacing_function_mixed_with_standard(self):
+        """Test that custom and standard spacing functions can be mixed."""
+        airplane_movement = self.mixed_custom_and_standard_spacing_airplane_movement
+        airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Verify that Airplanes are generated successfully.
+        self.assertEqual(len(airplanes), 100)
+        for airplane in airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+    def test_unsafe_amplitude_causes_error_angles(self):
+        """Test that amplitude too high for base angle value causes error during generation."""
+        from tests.unit.fixtures import geometry_fixtures, movement_fixtures
+
+        # Create base Airplane with non-zero base angles.
+        base_airplane = ps.geometry.airplane.Airplane(
+            name="Test Airplane",
+            wings=[geometry_fixtures.make_origin_wing_fixture()],
+            Cgi_E_I=(0.0, 0.0, 0.0),
+            angles_E_to_B_izyx=(1.0, 0.0, 0.0),
+        )
+        wing_movements = [movement_fixtures.make_static_wing_movement_fixture()]
+
+        # Create AirplaneMovement with amplitude that will drive angles out of valid
+        # range. Valid range for angles is (-180, 180], so with base angle 1.0 and
+        # amplitude 180.0, the sine wave will reach 1.0 + 180.0 = 181.0,
+        # which exceeds 180.0.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampAngles_E_to_B_izyx=(180.0, 0.0, 0.0),
+            periodAngles_E_to_B_izyx=(1.0, 0.0, 0.0),
+            spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
+        )
+
+        # Generating Airplanes should raise ValueError when angles exceed range.
+        with self.assertRaises(ValueError) as context:
+            airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
+
+        # Verify the error message is about angles_E_to_B_izyx validation.
+        self.assertIn("angles_E_to_B_izyx", str(context.exception))
+
+
+if __name__ == "__main__":
+    unittest.main()

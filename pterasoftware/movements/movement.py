@@ -121,6 +121,13 @@ class Movement:
                 delta_time, "delta_time"
             )
         else:
+
+            # FIXME: Automatic delta_time calculation gives very poor results if the
+            #  motion has a high Strouhal number (i.e. a large ratio of
+            #  flapping-motion to forward velocity). This is because the calculation
+            #  assumes that the forward velocity is dominant. A better approach is
+            #  needed.
+
             delta_times = []
             for airplane_movement in self.airplane_movements:
                 # TODO: Consider making this also average across each Airplane's Wings.

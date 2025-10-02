@@ -699,6 +699,11 @@ class Wing:
             4x4 transformation matrix or None in cases where the Wing's symmetry type
             hasn't been defined yet.
         """
+
+        # FIXME: There's a weird bug where Wing's with type 3 symmetry are rotated
+        #  around the non-reflected leading edge point, not the reflected leading
+        #  edge point. I think the issue is in this method.
+
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
         if self.symmetry_type is None:

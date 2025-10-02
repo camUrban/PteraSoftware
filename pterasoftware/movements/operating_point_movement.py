@@ -36,7 +36,6 @@ class OperatingPointMovement:
         This class is not meant to be subclassed.
     """
 
-    # TODO: Add support for customspace functions.
     def __init__(
         self,
         base_operating_point,
@@ -73,8 +72,14 @@ class OperatingPointMovement:
         :param spacingVCg__E: string, optional
 
             The value determines the spacing of the OperatingPointMovement's change
-            in its OperatingPoints' Cgi_E_I parameters. Must be either "sine" or
-            "uniform". The default value is "sine".
+            in its OperatingPoints' Cgi_E_I parameters. Must be either "sine",
+            "uniform", or a callable custom spacing function. Custom spacing
+            functions are for advanced users and must start at 0, return to 0 after
+            one period of 2*pi radians, have zero mean, have amplitude of 1,
+            be periodic, return finite values only, and accept a ndarray as input and
+            return a ndarray of the same shape. The custom function is scaled by
+            ampVCg__E, shifted by phaseVCg__E, and centered around the base value,
+            with the period controlled by periodVCg__E.The default value is "sine".
 
         :param phaseVCg__E: number optional
 
@@ -99,11 +104,15 @@ class OperatingPointMovement:
             raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
         self.periodVCg__E = periodVCg__E
 
-        spacingVCg__E = parameter_validation.string_return_string(
-            spacingVCg__E, "spacingVCg__E"
-        )
-        if spacingVCg__E not in ["sine", "uniform"]:
-            raise ValueError('spacingVCg__E must be "sine" or "uniform".')
+        if isinstance(spacingVCg__E, str):
+            if spacingVCg__E not in ["sine", "uniform"]:
+                raise ValueError(
+                    f"spacingVCg__E must be 'sine', 'uniform', or a callable, got string '{spacingVCg__E}'."
+                )
+        elif not callable(spacingVCg__E):
+            raise TypeError(
+                f"spacingVCg__E must be 'sine', 'uniform', or a callable, got {type(spacingVCg__E).__name__}."
+            )
         self.spacingVCg__E = spacingVCg__E
 
         phaseVCg__E = parameter_validation.number_in_range_return_float(
@@ -138,6 +147,7 @@ class OperatingPointMovement:
             delta_time, "delta_time"
         )
 
+        # Generate oscillating values for VCg__E.
         if self.spacingVCg__E == "sine":
             listVCg__E = functions.oscillating_sinspaces(
                 amps=self.ampVCg__E,
@@ -147,7 +157,7 @@ class OperatingPointMovement:
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        else:
+        elif self.spacingVCg__E == "uniform":
             listVCg__E = functions.oscillating_linspaces(
                 amps=self.ampVCg__E,
                 periods=self.periodVCg__E,
@@ -156,6 +166,18 @@ class OperatingPointMovement:
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
+        elif callable(self.spacingVCg__E):
+            listVCg__E = functions.oscillating_customspaces(
+                amps=self.ampVCg__E,
+                periods=self.periodVCg__E,
+                phases=self.phaseVCg__E,
+                bases=self.base_operating_point.vCg__E,
+                num_steps=num_steps,
+                delta_time=delta_time,
+                custom_function=self.spacingVCg__E,
+            )
+        else:
+            raise ValueError(f"Invalid spacing value: {self.spacingVCg__E}")
 
         # Create an empty list to hold each time step's OperatingPoint.
         operating_points = []

@@ -1,15 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains a class to test ring vortex objects.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    TestRingVortex: This is a class with functions to test ring vortex objects.
-"""
+"""This module contains a class to RingVortices."""
 
 import unittest
 
@@ -20,27 +10,7 @@ from tests.unit.fixtures import vortex_fixtures
 
 
 class TestRingVortex(unittest.TestCase):
-    """This is a class with functions to test ring vortex objects.
-
-    This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set
-        up the fixtures.
-
-        tearDown: This method is automatically called before each testing method to
-        tear down the fixtures.
-
-        test_class: This method tests the class's instantiation.
-
-        test_update_strength: This method tests the update_strength method.
-
-        test_update_position: This method tests the update_position method.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This is a class with functions to test RingVortices."""
 
     def setUp(self):
         """This method is automatically called before each testing method to set up
@@ -101,7 +71,7 @@ class TestRingVortex(unittest.TestCase):
             ps.aerodynamics._LineVortex,
         )
 
-        # Test that the vortex objects' coordinates were correctly set.
+        # Test that the coordinates were correctly set.
         self.assertTrue(
             np.allclose(
                 self.ring_vortex_fixture.front_leg.Slvp_G_Cg,
@@ -151,7 +121,7 @@ class TestRingVortex(unittest.TestCase):
             )
         )
 
-        # Test that the vortex objects' strengths were correctly set.
+        # Test that the strengths were correctly set.
         self.assertEqual(self.ring_vortex_fixture.strength, self.strength_fixture)
         self.assertEqual(
             self.ring_vortex_fixture.front_leg.strength, self.strength_fixture
@@ -176,7 +146,7 @@ class TestRingVortex(unittest.TestCase):
         old_strength_fixture = self.ring_vortex_fixture.strength
         new_strength_fixture = old_strength_fixture * 5 + 1
 
-        # Update the ring vortex fixture's strength.
+        # Update the fixture's strength.
         self.ring_vortex_fixture.update_strength(strength=new_strength_fixture)
 
         # Test that all the strength's have been updated correctly.
@@ -203,14 +173,13 @@ class TestRingVortex(unittest.TestCase):
         :return: None
         """
 
-        # Create fixtures to hold the old values of the ring vortex's position.
+        # Create fixtures to hold the old values of the fixture's position.
         old_front_right_vertex_fixture = self.ring_vortex_fixture.Frrvp_G_Cg
         old_front_left_vertex_fixture = self.ring_vortex_fixture.Flrvp_G_Cg
         old_back_left_vertex_fixture = self.ring_vortex_fixture.Blrvp_G_Cg
         old_back_right_vertex_fixture = self.ring_vortex_fixture.Brrvp_G_Cg
 
-        # Create fixtures to hold the soon-to-be new values of the ring vortex's
-        # position.
+        # Create fixtures to hold the soon-to-be new values of the RingVortex's.
         new_front_right_vertex_fixture = old_front_right_vertex_fixture + np.array(
             [1, 0, 0]
         )
@@ -224,7 +193,7 @@ class TestRingVortex(unittest.TestCase):
             [1, 0, 0]
         )
 
-        # Update the ring vortex fixture's position.
+        # Update the RingVortex's position.
         self.ring_vortex_fixture.update_position(
             Flrvp_G_Cg=new_front_left_vertex_fixture,
             Frrvp_G_Cg=new_front_right_vertex_fixture,
@@ -232,7 +201,7 @@ class TestRingVortex(unittest.TestCase):
             Brrvp_G_Cg=new_back_right_vertex_fixture,
         )
 
-        # Test that the position of the ring vortex was correctly updated.
+        # Test that the position was correctly updated.
         self.assertTrue(
             np.allclose(
                 self.ring_vortex_fixture.Frrvp_G_Cg,
@@ -257,7 +226,7 @@ class TestRingVortex(unittest.TestCase):
             )
         )
 
-        # Check that the positions of the child objects have been correctly updated.
+        # Check that the child LineVortices have been correctly updated.
         self.assertTrue(
             np.allclose(
                 self.ring_vortex_fixture.front_leg.Slvp_G_Cg,

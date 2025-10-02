@@ -1,29 +1,4 @@
-"""This module contains classes to test functions in the transformations module.
-
-This module contains the following classes:
-    TestGenerateRotT: This class contains methods for testing the generate_rot_T
-    function.
-    TestGenerateTransT: This class contains methods for testing the generate_trans_T
-    function.
-    TestGenerateReflectT: This class contains methods for testing the
-    generate_reflect_T function.
-    TestComposeTPas: This class contains methods for testing the compose_T_pas
-    function.
-    TestComposeTAct: This class contains methods for testing the compose_T_act
-    function.
-    TestInvertTPas: This class contains methods for testing the invert_T_pas
-    function.
-    TestInvertTAct: This class contains methods for testing the invert_T_act
-    function.
-    TestApplyTToVectors: This class contains methods for testing the apply_T_to_vectors
-    function.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains classes to test functions in the transformations module."""
 
 import unittest
 
@@ -34,36 +9,7 @@ import pterasoftware as ps
 
 
 class TestGenerateRotT(unittest.TestCase):
-    """This class contains methods for testing the generate_rot_T function.
-
-    This class contains the following public methods:
-        test_identity_transformations: Tests that zero angles produce identity matrices.
-        test_transformation_matrix_structure: Tests the structure of transformation matrices.
-        test_passive_vs_active_relationship: Tests the transpose relationship between
-        passive and active rotation components.
-        test_intrinsic_vs_extrinsic_relationship: Tests the relationship between
-        intrinsic and extrinsic rotations.
-        test_rotation_matrix_properties: Tests that rotation components are proper
-        rotation matrices.
-        test_specific_known_active_rotations: Tests specific active rotations with
-        known results.
-        test_specific_known_passive_rotations: Tests specific passive rotations with
-        known results.
-        test_composition_properties: Tests composition of multiple rotations.
-        test_large_angle_handling: Tests handling of large angles and angle wrapping.
-        test_different_orders: Tests all valid Tait-Bryan rotation orders.
-        test_edge_case_angles: Tests edge case angle values.
-        test_homogeneous_coordinate_transformations: Tests transformation of
-        homogeneous coordinates.
-        test_invalid_rotation_order_rejected: Tests that passing in invalid angle
-        orders raises a value error.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the generate_rot_T function."""
 
     def test_identity_transformations(self):
         """Tests that zero angles produce identity matrices for all configurations.
@@ -447,27 +393,7 @@ class TestGenerateRotT(unittest.TestCase):
 
 
 class TestGenerateTransT(unittest.TestCase):
-    """This class contains methods for testing the generate_trans_T function.
-
-    This class contains the following public methods:
-        test_passive_transformation_with_homog_coords: Tests passive translation
-        transformations on generated homogeneous coordinates.
-
-        test_active_transformation_with_homog_coords: Tests active translation
-        transformations on homogeneous coordinates.
-
-        test_zero_translation: Tests with zero translation vector.
-        test_transformation_properties: Tests properties of transformation matrices.
-
-        test_direction_vector_transformations: Tests that direction vectors are
-        unaffected by translation transformations.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the generate_trans_T function."""
 
     def test_passive_transformations_with_homog_coords(self):
         """Tests passive translation transformations on generated homogeneous
@@ -570,26 +496,7 @@ class TestGenerateTransT(unittest.TestCase):
 
 
 class TestGenerateReflectT(unittest.TestCase):
-    """This class contains methods for testing the generate_reflect_T function.
-
-    This class contains the following public methods:
-        test_reflection_about_origin_planes: Tests reflection about planes through
-        origin.
-        test_reflection_about_offset_planes: Tests reflection about offset planes.
-        test_zero_length_normal_error: Tests error handling for zero-length normals.
-        test_transformation_properties: Tests properties of transformation matrices.
-        test_symmetric_reflections: Tests that double reflections return original.
-        test_normal_vector_normalization: Tests that non-unit normal vectors are
-        correctly normalized.
-        test_active_passive_equivalence: Tests that passive and active modes produce
-        identical matrices.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the generate_reflect_T function."""
 
     def test_reflection_about_origin_planes(self):
         """Tests reflection about planes passing through the origin.
@@ -766,27 +673,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
 
 class TestComposeTPas(unittest.TestCase):
-    """This class contains methods for testing the compose_T_pas function.
-
-    This class contains the following public methods:
-        test_basic_passive_composition: Tests basic passive transformation composition.
-        test_composition_order: Tests that composition order matters.
-        test_identity_composition: Tests composition with identity matrices.
-        test_inverse_composition: Tests composition with inverse transformations.
-        test_multiple_transformations: Tests composition of multiple transformations.
-        test_rotation_translation_composition: Tests composition of rotation and translation.
-        test_matrix_properties: Tests properties of composed matrices.
-        test_empty_chain_raises: Tests that passing an empty transformation chain
-        results in a value error.
-        test_specific_known_passive_composition: Tests specific composition of
-        passive transformations with a known result.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the compose_T_pas function."""
 
     def test_basic_passive_composition(self):
         """Tests basic passive transformation composition.
@@ -994,26 +881,7 @@ class TestComposeTPas(unittest.TestCase):
 
 
 class TestComposeTAct(unittest.TestCase):
-    """This class contains methods for testing the compose_T_act function.
-
-    This class contains the following public methods:
-        test_basic_active_composition: Tests basic active transformation composition.
-        test_composition_vs_manual: Tests composition against manual matrix multiplication.
-        test_identity_composition: Tests composition with identity matrices.
-        test_inverse_composition: Tests composition with inverse transformations.
-        test_multiple_transformations: Tests composition of multiple transformations.
-        test_matrix_properties: Tests properties of composed matrices.
-        test_empty_chain_raises: Tests that passing an empty transformation chain
-        results in a value error.
-        test_specific_known_active_composition: Tests specific composition of active
-        transformations with a known result.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the compose_T_act function."""
 
     def test_basic_active_composition(self):
         """Tests basic active transformation composition.
@@ -1176,23 +1044,7 @@ class TestComposeTAct(unittest.TestCase):
 
 
 class TestInvertTPas(unittest.TestCase):
-    """This class contains methods for testing the invert_T_pas function.
-
-    This class contains the following public methods:
-        test_translation_inversion: Tests inversion of pure translation matrices.
-        test_rotation_inversion: Tests inversion of pure rotation matrices.
-        test_reflection_inversion: Tests inversion of pure reflection matrices.
-        test_combined_transformation_inversion: Tests inversion of combined transformations.
-        test_identity_inversion: Tests inversion of identity matrix.
-        test_double_inversion: Tests that double inversion returns original.
-        test_inversion_properties: Tests mathematical properties of inverted matrices.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the invert_T_pas function."""
 
     def test_translation_inversion(self):
         """Tests inversion of pure translation matrices.
@@ -1333,23 +1185,7 @@ class TestInvertTPas(unittest.TestCase):
 
 
 class TestInvertTAct(unittest.TestCase):
-    """This class contains methods for testing the invert_T_act function.
-
-    This class contains the following public methods:
-        test_translation_inversion: Tests inversion of pure translation matrices.
-        test_rotation_inversion: Tests inversion of pure rotation matrices.
-        test_reflection_inversion: Tests inversion of pure reflection matrices.
-        test_combined_transformation_inversion: Tests inversion of combined transformations.
-        test_identity_inversion: Tests inversion of identity matrix.
-        test_double_inversion: Tests that double inversion returns original.
-        test_inversion_properties: Tests mathematical properties of inverted matrices.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the invert_T_act function."""
 
     def test_translation_inversion(self):
         """Tests inversion of pure translation matrices.
@@ -1490,47 +1326,7 @@ class TestInvertTAct(unittest.TestCase):
 
 
 class TestApplyTToVectors(unittest.TestCase):
-    """This class contains methods for testing the apply_T_to_vectors function.
-
-    This class contains the following public methods:
-        test_position_vector_transformation: Tests transformation of position vectors.
-
-        test_direction_vector_transformation: Tests transformation of direction vectors.
-
-        test_input_validation: Tests various input types and edge cases.
-
-        test_transformation_consistency: Tests consistency with manual homogeneous
-        operations.
-
-        test_various_transformation_types: Tests with different types of
-        transformations.
-
-        test_vector_types: Tests with different vector input types.
-
-        test_single_vector_compatibility: Tests that single vector behavior is as
-        expected.
-
-        test_array_of_vectors_transformation: Tests transformation of arrays of vectors.
-
-        test_higher_dimensional_arrays: Tests transformation of higher dimensional
-        arrays.
-
-        test_position_vs_direction_arrays: Tests that has_point parameter works
-        correctly with arrays.
-
-        test_array_input_validation: Tests validation of array inputs.
-
-        test_array_consistency_with_single_applications: Tests that array
-        transformation gives same results as individual applications.
-
-        test_edge_cases_arrays: Tests edge cases with array inputs.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing the apply_T_to_vectors function."""
 
     def test_position_vector_transformation(self):
         """Tests transformation of position vectors (has_point=True).

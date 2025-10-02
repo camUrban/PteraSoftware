@@ -1,14 +1,4 @@
-"""This module contains a class to test Airplanes.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    TestAirplane: This is a class with functions to test Airplanes.
-"""
+"""This module contains a class to test Airplanes."""
 
 import unittest
 import numpy as np

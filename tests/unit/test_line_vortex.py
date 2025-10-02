@@ -1,15 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains a class to test line vortex objects.
-
-This module contains the following classes:
-    TestLineVortex: This class contains methods for testing line vortex objects.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains a class to test LineVortices."""
 
 import unittest
 
@@ -20,23 +10,7 @@ from tests.unit.fixtures import vortex_fixtures
 
 
 class TestLineVortex(unittest.TestCase):
-    """This class contains methods for testing line vortex objects.
-
-    This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set
-        up the fixtures.
-
-        tearDown: This method is automatically called before each testing method to
-        tear down the fixtures.
-
-        test_class: This method tests the class's instantiation.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing LineVortices."""
 
     def setUp(self):
         """This method is automatically called before each testing method to set up
@@ -73,7 +47,7 @@ class TestLineVortex(unittest.TestCase):
         # Test that the object is of the right type.
         self.assertIsInstance(self.line_vortex_fixture, ps.aerodynamics._LineVortex)
 
-        # Test that the vortex's coordinates were correctly set.
+        # Test that the coordinates were correctly set.
         self.assertTrue(
             np.allclose(self.line_vortex_fixture.Slvp_G_Cg, self.origin_fixture)
         )
@@ -81,10 +55,10 @@ class TestLineVortex(unittest.TestCase):
             np.allclose(self.line_vortex_fixture.Elvp_G_Cg, self.termination_fixture)
         )
 
-        # Test that the vortex's strength was correctly set.
+        # Test that the strength was correctly set.
         self.assertEqual(self.line_vortex_fixture.strength, self.strength_fixture)
 
-        # Test that the vortex's center and vector were correctly calculated.
+        # Test that the LineVortex's center and vector were correctly calculated.
         self.assertTrue(
             np.allclose(self.line_vortex_fixture.Clvp_G_Cg, np.array([0.5, 0.5, 0.5]))
         )

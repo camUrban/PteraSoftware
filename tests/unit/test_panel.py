@@ -1,14 +1,4 @@
-"""This module contains a class to test Panels.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    TestPanel: This is a class with functions to test Panels.
-"""
+"""This module contains a class to test Panels."""
 
 import unittest
 import numpy as np

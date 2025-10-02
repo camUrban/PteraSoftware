@@ -1,14 +1,4 @@
-"""This module contains a class to test WingCrossSections.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    TestWingCrossSection: This is a class with functions to test WingCrossSections.
-"""
+"""This module contains a class to test WingCrossSections."""
 
 import unittest
 import numpy as np

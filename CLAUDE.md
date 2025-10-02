@@ -422,3 +422,4 @@ There are four useful combinations of axes, points, and frames. Variables are de
 - Never use emojis in code, comments, or docstrings
 - Always use straight single and double quotes, not curly ones
 - In .md files, use "…" instead of "...". In all other files, use "...".
+- Always end *.py file with an empty line.

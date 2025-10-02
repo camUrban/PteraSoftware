@@ -1,78 +1,4 @@
-"""This module contains functions to create geometry objects for use in tests.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    make_test_airfoil_fixture: This method makes a fixture that is an Airfoil
-    for testing purposes.
-
-    make_basic_wing_cross_section_fixture: This method makes a fixture that is a
-    WingCrossSection with typical parameters for general testing.
-
-    make_root_wing_cross_section_fixture: This method makes a fixture that is a
-    root WingCrossSection (with zero vectors as required by constraints).
-
-    make_tip_wing_cross_section_fixture: This method makes a fixture that is a
-    tip WingCrossSection (with None values for spanwise parameters).
-
-    make_minimal_wing_cross_section_fixture: This method makes a fixture that is
-    a WingCrossSection with minimal valid parameters.
-
-    make_asymmetric_control_surface_wing_cross_section_fixture: This method makes
-    a fixture that is a WingCrossSection with asymmetric control surface
-    configuration.
-
-    make_type_1_wing_fixture: This method makes a fixture that is a Wing
-    with type 1 symmetry (symmetric=False, mirror_only=False).
-
-    make_type_2_wing_fixture: This method makes a fixture that is a Wing
-    with type 2 symmetry (symmetric=False, mirror_only=True, coincident_symmetry_plane=True).
-
-    make_type_3_wing_fixture: This method makes a fixture that is a Wing
-    with type 3 symmetry (symmetric=False, mirror_only=True, coincident_symmetry_plane=False).
-
-    make_type_4_wing_fixture: This method makes a fixture that is a Wing
-    with type 4 symmetry (symmetric=True, coincident_symmetry_plane=True).
-
-    make_type_5_wing_fixture: This method makes a fixture that is a Wing
-    with type 5 symmetry (symmetric=True, coincident_symmetry_plane=False).
-
-    make_basic_airplane_fixture: This method makes a fixture that is an Airplane
-    with basic configuration for general testing.
-
-    make_first_airplane_fixture: This method makes a fixture that is an Airplane
-    suitable for use as the first Airplane in a simulation.
-
-    make_multi_wing_airplane_fixture: This method makes a fixture that is an Airplane
-    with multiple Wings for testing multi-wing configurations.
-
-    make_type_5_wing_airplane_fixture: This method makes a fixture that is an
-    Airplane with a type 5 Wing to test wing symmetry processing.
-
-    make_custom_reference_airplane_fixture: This method makes a fixture that is an
-    Airplane with custom reference dimensions set explicitly.
-
-    make_naca0012_airfoil_fixture: This method makes a fixture that is a symmetric
-    NACA 0012 Airfoil for testing purposes.
-
-    make_naca2412_airfoil_fixture: This method makes a fixture that is a cambered
-    NACA 2412 Airfoil for testing purposes.
-
-    make_custom_outline_airfoil_fixture: This method makes a fixture that is an
-    Airfoil with custom outline coordinates for testing purposes.
-
-    make_resampled_airfoil_fixture: This method makes a fixture that is an Airfoil
-    with resampling enabled for testing purposes.
-
-    make_non_resampled_airfoil_fixture: This method makes a fixture that is an
-    Airfoil with resampling disabled for testing purposes.
-
-    make_basic_panel_fixture: This method makes a fixture that is a Panel for
-    testing purposes."""
+"""This module contains functions to create geometry objects for use in tests."""
 
 import numpy as np
 import pterasoftware as ps
@@ -235,6 +161,34 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
 
     # Return the asymmetric WingCrossSection fixture.
     return asymmetric_wing_cross_section_fixture
+
+
+def make_origin_wing_fixture():
+    """This method makes a fixture that is a Wing positioned at the origin,
+    suitable for movement testing.
+
+    :return origin_wing_fixture: Wing
+        This is the Wing positioned at the origin for movement testing.
+    """
+    # Create WingCrossSections for the wing.
+    root_wcs = make_root_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create wing at origin (for movement testing).
+    origin_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Origin Wing",
+        prelimLer_G_Cg=[0.0, 0.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetry_normal_Wn=None,
+        symmetry_point_Wn_Ler=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return origin_wing_fixture
 
 
 def make_type_1_wing_fixture():

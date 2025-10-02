@@ -1,16 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains a class to test horseshoe vortex objects.
-
-This module contains the following classes:
-    TestHorseshoeVortex: This class contains methods for testing horseshoe vortex
-    objects.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains a class to test HorseshoeVortices."""
 
 import unittest
 
@@ -21,25 +10,7 @@ from tests.unit.fixtures import vortex_fixtures
 
 
 class TestHorseshoeVortex(unittest.TestCase):
-    """This class contains methods for testing horseshoe vortex objects.
-
-    This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set
-        up the fixtures.
-
-        tearDown: This method is automatically called before each testing method to
-        tear down the fixtures.
-
-        test_class: This method tests the class's instantiation.
-
-        test_update_strength: This method tests the update_strength method.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This class contains methods for testing HorseshoeVortices."""
 
     def setUp(self):
         """This method is automatically called before each testing method to set up
@@ -99,7 +70,7 @@ class TestHorseshoeVortex(unittest.TestCase):
             ps.aerodynamics._LineVortex,
         )
 
-        # Test that the vortex objects' coordinates were correctly set.
+        # Test that the coordinates were correctly set.
         self.assertTrue(
             np.allclose(self.horseshoe_vortex_fixture.Frhvp_G_Cg, self.origin_fixture)
         )
@@ -110,7 +81,7 @@ class TestHorseshoeVortex(unittest.TestCase):
             )
         )
 
-        # Test that the horseshoe vortex object's strength was set correctly.
+        # Test that the strength was set correctly.
         self.assertEqual(self.horseshoe_vortex_fixture.strength, self.strength_fixture)
 
         # Test that other class attributes were correctly set.
@@ -153,7 +124,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         old_strength_fixture = self.horseshoe_vortex_fixture.strength
         new_strength_fixture = old_strength_fixture * 5 + 1
 
-        # Update the horseshoe vortex fixture's strength.
+        # Update the HorseshoeVortex fixture's strength.
         self.horseshoe_vortex_fixture.update_strength(strength=new_strength_fixture)
 
         # Test that all the strength's have been updated correctly.

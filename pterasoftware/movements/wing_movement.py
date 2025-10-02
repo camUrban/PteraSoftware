@@ -19,7 +19,6 @@ from .. import geometry
 from .. import parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class WingMovement:
     """This is a class used to contain the Wing movements.
 
@@ -279,7 +278,6 @@ class WingMovement:
                 )
         self.phaseAngles_G_to_prelimWn_izyx = phaseAngles_G_to_prelimWn_izyx
 
-    # TODO: Add unit tests for this method.
     def generate_wings(self, num_steps, delta_time):
         """Creates the Wing at each time step, and returns them in a list.
 
@@ -440,7 +438,6 @@ class WingMovement:
 
         return wings
 
-    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
         """Defines a property for the longest period of WingMovement's own motion and

@@ -1,14 +1,4 @@
-"""This module contains a class to test OperatingPoints.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    TestOperatingPoint: This is a class with functions to test OperatingPoints.
-"""
+"""This module contains a class to test OperatingPoints."""
 
 import unittest
 import numpy as np

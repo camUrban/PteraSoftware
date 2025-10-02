@@ -1,46 +1,4 @@
-"""This module contains functions to create OperatingPoints for use in tests.
-
-This module contains the following classes:
-    None
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    make_basic_operating_point_fixture: This method makes a fixture that is an
-    OperatingPoint with standard atmospheric conditions for general testing.
-
-    make_zero_alpha_beta_operating_point_fixture: This method makes a fixture
-    that is an OperatingPoint with zero alpha and beta for aligned flow testing.
-
-    make_high_alpha_operating_point_fixture: This method makes a fixture that is
-    an OperatingPoint with large positive alpha for large angle transformation
-    testing.
-
-    make_negative_alpha_operating_point_fixture: This method makes a fixture that
-    is an OperatingPoint with negative alpha for negative angle handling testing.
-
-    make_nonzero_beta_operating_point_fixture: This method makes a fixture that is
-    an OperatingPoint with non-zero sideslip angle for 3D wind axes testing.
-
-    make_high_speed_operating_point_fixture: This method makes a fixture that is
-    an OperatingPoint with high velocity for dynamic pressure scaling testing.
-
-    make_low_density_operating_point_fixture: This method makes a fixture that is
-    an OperatingPoint with low density for altitude effects testing.
-
-    make_with_external_force_operating_point_fixture: This method makes a fixture
-    that is an OperatingPoint with non-zero external force for trim analysis
-    testing.
-
-    make_custom_viscosity_operating_point_fixture: This method makes a fixture
-    that is an OperatingPoint with custom kinematic viscosity for vortex core
-    growth parameter testing.
-
-    make_boundary_alpha_operating_point_fixture: This method makes a fixture that
-    is an OperatingPoint with alpha at boundary values for angle wrapping edge
-    case testing.
-"""
+"""This module contains functions to create OperatingPoints for use in tests"""
 
 import pterasoftware as ps
 

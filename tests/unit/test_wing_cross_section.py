@@ -24,13 +24,6 @@ class TestWingCrossSection(unittest.TestCase):
             geometry_fixtures.make_tip_wing_cross_section_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.test_airfoil
-        del self.basic_wing_cross_section
-        del self.root_wing_cross_section
-        del self.tip_wing_cross_section
-
     def test_initialization_valid_parameters(self):
         """Test WingCrossSection initialization with valid parameters."""
         # Test that basic WingCrossSection initializes correctly

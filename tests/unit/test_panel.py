@@ -15,10 +15,6 @@ class TestPanel(unittest.TestCase):
         """Set up test fixtures for Panel tests."""
         self.basic_panel = geometry_fixtures.make_basic_panel_fixture()
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.basic_panel
-
     def test_initialization_valid_parameters(self):
         """Test Panel initialization with valid parameters."""
         panel = self.basic_panel

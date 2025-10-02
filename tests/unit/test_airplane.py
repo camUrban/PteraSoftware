@@ -28,16 +28,6 @@ class TestAirplane(unittest.TestCase):
         self.test_wing_type_1 = geometry_fixtures.make_type_1_wing_fixture()
         self.test_wing_type_4 = geometry_fixtures.make_type_4_wing_fixture()
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.basic_airplane
-        del self.first_airplane
-        del self.multi_wing_airplane
-        del self.type_5_wing_airplane
-        del self.custom_reference_airplane
-        del self.test_wing_type_1
-        del self.test_wing_type_4
-
     def test_initialization_valid_parameters(self):
         """Test Airplane initialization with valid parameters."""
         # Test that basic Airplane initializes correctly

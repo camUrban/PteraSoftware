@@ -20,6 +20,8 @@ This package contains the following modules:
 
     test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
 
+    test_movement.py: This module contains a class to test Movements.
+
     test_operating_point.py: This module contains a class to test OperatingPoints.
 
     test_panel.py: This module contains a class to test Panels.
@@ -44,6 +46,7 @@ import tests.unit.test_airfoil
 import tests.unit.test_airplane
 import tests.unit.test_airplane_movement
 import tests.unit.test_horseshoe_vortex
+import tests.unit.test_movement
 import tests.unit.test_operating_point
 import tests.unit.test_panel
 import tests.unit.test_ring_vortex

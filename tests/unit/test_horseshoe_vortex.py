@@ -45,19 +45,6 @@ class TestHorseshoeVortex(unittest.TestCase):
             horseshoe_vortex_fixtures.make_offset_horseshoe_vortex_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.basic_horseshoe_vortex
-        del self.short_legs_horseshoe_vortex
-        del self.long_legs_horseshoe_vortex
-        del self.tilted_legs_horseshoe_vortex
-        del self.wide_finite_leg_horseshoe_vortex
-        del self.narrow_finite_leg_horseshoe_vortex
-        del self.zero_strength_horseshoe_vortex
-        del self.negative_strength_horseshoe_vortex
-        del self.high_strength_horseshoe_vortex
-        del self.offset_horseshoe_vortex
-
     def test_initialization_valid_parameters(self):
         """Test HorseshoeVortex initialization with valid parameters."""
         # Test that basic HorseshoeVortex initializes correctly.

@@ -25,17 +25,6 @@ class TestWing(unittest.TestCase):
         self.root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
         self.tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.type_1_wing
-        del self.type_2_wing
-        del self.type_3_wing
-        del self.type_4_wing
-        del self.type_5_wing
-        del self.test_airfoil
-        del self.root_wcs
-        del self.tip_wcs
-
     def test_initialization_valid_parameters(self):
         """Test Wing initialization with valid parameters for all types."""
         # Test that all Wing types initialize correctly

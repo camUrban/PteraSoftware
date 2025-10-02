@@ -43,19 +43,6 @@ class TestOperatingPoint(unittest.TestCase):
             operating_point_fixtures.make_boundary_alpha_operating_point_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.basic_op
-        del self.zero_alpha_beta_op
-        del self.high_alpha_op
-        del self.negative_alpha_op
-        del self.nonzero_beta_op
-        del self.high_speed_op
-        del self.low_density_op
-        del self.with_external_force_op
-        del self.custom_viscosity_op
-        del self.boundary_alpha_op
-
     def test_initialization_valid_parameters(self):
         """Test OperatingPoint initialization with valid parameters."""
         # Test basic OperatingPoint initialization

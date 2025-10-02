@@ -70,36 +70,6 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             aerodynamics_functions_fixtures.make_kinematic_viscosity_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.single_point
-        del self.grid_of_points
-        del self.line_of_points
-        del self.random_points
-        del self.simple_ring_Brrvp
-        del self.simple_ring_Frrvp
-        del self.simple_ring_Flrvp
-        del self.simple_ring_Blrvp
-        del self.simple_ring_strengths
-        del self.multiple_ring_Brrvp
-        del self.multiple_ring_Frrvp
-        del self.multiple_ring_Flrvp
-        del self.multiple_ring_Blrvp
-        del self.multiple_ring_strengths
-        del self.simple_horseshoe_Brhvp
-        del self.simple_horseshoe_Frhvp
-        del self.simple_horseshoe_Flhvp
-        del self.simple_horseshoe_Blhvp
-        del self.simple_horseshoe_strengths
-        del self.multiple_horseshoe_Brhvp
-        del self.multiple_horseshoe_Frhvp
-        del self.multiple_horseshoe_Flhvp
-        del self.multiple_horseshoe_Blhvp
-        del self.multiple_horseshoe_strengths
-        del self.ages
-        del self.zero_ages
-        del self.kinematic_viscosity
-
     def test_collapsed_velocities_from_ring_vortices_single_point(self):
         """Test collapsed_velocities_from_ring_vortices with single evaluation point."""
         # Call the function.

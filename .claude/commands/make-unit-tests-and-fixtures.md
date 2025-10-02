@@ -15,7 +15,7 @@ Follow these steps carefully and track your progress:
 - [ ] Search the codebase for other relevant files
 - [ ] Read and understand any relevant files found
 - [ ] Read test pattern examples (tests/unit/test_wing_cross_section.py, tests/unit/test_wing_cross_section_movement.py)
-- [ ] Read fixture pattern examples (tests/unit/fixtures/geometry_fixtures.py, tests/unit/fixtures/movement_fixtures.py)
+- [ ] Read fixture pattern examples (tests/unit/fixtures/geometry_fixtures.py, tests/unit/fixtures/wing_cross_section_movement_fixtures.py)
 - [ ] Understand how geometry/wing_cross_section.py and movements/wing_cross_section_movement.py inform design of example tests and fixtures
 - [ ] Review **all** of CLAUDE.md for guidance
 - [ ] Search existing tests/fixtures to avoid redundancy
@@ -40,7 +40,7 @@ Follow these steps carefully and track your progress:
    - Read tests/unit/test_wing_cross_section.py
    - Read tests/unit/test_wing_cross_section_movement.py
    - Read tests/unit/fixtures/geometry_fixtures.py
-   - Read tests/unit/fixtures/movement_fixtures.py
+   - Read tests/unit/fixtures/wing_cross_section_movement_fixtures.py
    - Understand the patterns for creating fixtures and unit tests
 
 6. **Study the implementation**:

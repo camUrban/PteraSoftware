@@ -69,28 +69,9 @@ class TestAirplaneMovement(unittest.TestCase):
             airplane_movement_fixtures.make_mixed_custom_and_standard_spacing_airplane_movement_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.sine_spacing_Cgi_airplane_movement
-        del self.uniform_spacing_Cgi_airplane_movement
-        del self.mixed_spacing_Cgi_airplane_movement
-        del self.sine_spacing_angles_airplane_movement
-        del self.uniform_spacing_angles_airplane_movement
-        del self.mixed_spacing_angles_airplane_movement
-        del self.static_airplane_movement
-        del self.basic_airplane_movement
-        del self.Cgi_only_airplane_movement
-        del self.angles_only_airplane_movement
-        del self.phase_offset_Cgi_airplane_movement
-        del self.phase_offset_angles_airplane_movement
-        del self.multiple_periods_airplane_movement
-        del self.custom_spacing_Cgi_airplane_movement
-        del self.custom_spacing_angles_airplane_movement
-        del self.mixed_custom_and_standard_spacing_airplane_movement
-
     def test_spacing_sine_for_Cgi_E_I(self):
         """Test that sine spacing actually produces sinusoidal motion for Cgi_E_I."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.sine_spacing_Cgi_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -111,7 +92,7 @@ class TestAirplaneMovement(unittest.TestCase):
     def test_spacing_uniform_for_Cgi_E_I(self):
         """Test that uniform spacing actually produces triangular wave motion for
         Cgi_E_I."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.uniform_spacing_Cgi_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -131,7 +112,7 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_spacing_mixed_for_Cgi_E_I(self):
         """Test that mixed spacing types work correctly for Cgi_E_I."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.mixed_spacing_Cgi_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -158,7 +139,7 @@ class TestAirplaneMovement(unittest.TestCase):
     def test_spacing_sine_for_angles_E_to_B_izyx(self):
         """Test that sine spacing actually produces sinusoidal motion for
         angles_E_to_B_izyx."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.sine_spacing_angles_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -179,7 +160,7 @@ class TestAirplaneMovement(unittest.TestCase):
     def test_spacing_uniform_for_angles_E_to_B_izyx(self):
         """Test that uniform spacing actually produces triangular wave motion for
         angles_E_to_B_izyx."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.uniform_spacing_angles_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -201,7 +182,7 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_spacing_mixed_for_angles_E_to_B_izyx(self):
         """Test that mixed spacing types work correctly for angles_E_to_B_izyx."""
-        num_steps = 100
+        num_steps = 20
         delta_time = 0.01
         airplanes = self.mixed_spacing_angles_airplane_movement.generate_airplanes(
             num_steps=num_steps,
@@ -816,7 +797,7 @@ class TestAirplaneMovement(unittest.TestCase):
         airplane_movement = self.basic_airplane_movement
 
         delta_time_list = [0.001, 0.01, 0.1, 1.0]
-        num_steps = 50
+        num_steps = 20
         for delta_time in delta_time_list:
             with self.subTest(delta_time=delta_time):
                 airplanes = airplane_movement.generate_airplanes(

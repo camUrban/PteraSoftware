@@ -67,25 +67,6 @@ class TestWingCrossSectionMovement(unittest.TestCase):
             wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_cross_section_movement_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.sine_spacing_Lp_wcs_movement
-        del self.uniform_spacing_Lp_wcs_movement
-        del self.mixed_spacing_Lp_wcs_movement
-        del self.sine_spacing_angles_wcs_movement
-        del self.uniform_spacing_angles_wcs_movement
-        del self.mixed_spacing_angles_wcs_movement
-        del self.static_wcs_movement
-        del self.basic_wcs_movement
-        del self.Lp_only_wcs_movement
-        del self.angles_only_wcs_movement
-        del self.phase_offset_Lp_wcs_movement
-        del self.phase_offset_angles_wcs_movement
-        del self.multiple_periods_wcs_movement
-        del self.custom_spacing_Lp_wcs_movement
-        del self.custom_spacing_angles_wcs_movement
-        del self.mixed_custom_and_standard_spacing_wcs_movement
-
     def test_spacing_sine_for_Lp_Wcsp_Lpp(self):
         """Test that sine spacing actually produces sinusoidal motion for
         Lp_Wcsp_Lpp."""

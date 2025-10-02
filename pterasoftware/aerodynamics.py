@@ -61,7 +61,6 @@ _lamb = 1.25643
 _eps = np.finfo(float).eps
 
 
-# TODO: Write unit tests for this class.
 class RingVortex:
     """This class is used to contain ring vortices.
 
@@ -280,7 +279,6 @@ class RingVortex:
         )
 
 
-# TODO: Write unit tests for this class.
 class HorseshoeVortex:
     """This class is used to contain horseshoe vortices.
 
@@ -395,7 +393,6 @@ class HorseshoeVortex:
         self.left_leg.strength = strength
 
 
-# TODO: Write unit tests for this class.
 class _LineVortex:
     """This class is used to contain line vortices.
 
@@ -446,7 +443,6 @@ class _LineVortex:
         self.Clvp_G_Cg = self.Slvp_G_Cg + 0.5 * self.vector_G
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices(
     stackP_G_Cg,
@@ -538,7 +534,6 @@ def collapsed_velocities_from_ring_vortices(
     return stackVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackP_G_Cg,
@@ -626,7 +621,6 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     return stackVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
     stackP_G_Cg,
@@ -717,7 +711,6 @@ def expanded_velocities_from_ring_vortices(
     return gridVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     stackP_G_Cg,
@@ -807,7 +800,6 @@ def collapsed_velocities_from_horseshoe_vortices(
     return stackVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     stackP_G_Cg,
@@ -897,7 +889,6 @@ def expanded_velocities_from_horseshoe_vortices(
     return gridVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def _collapsed_velocities_from_line_vortices(
     stackP_G_Cg,
@@ -1116,7 +1107,6 @@ def _collapsed_velocities_from_line_vortices(
     return stackVInd_G__E
 
 
-# TODO: Write unit tests for this function.
 @njit(cache=True, fastmath=False)
 def _expanded_velocities_from_line_vortices(
     stackP_G_Cg,

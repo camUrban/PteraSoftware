@@ -24,14 +24,6 @@ class TestAirfoil(unittest.TestCase):
             geometry_fixtures.make_non_resampled_airfoil_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.naca0012_airfoil
-        del self.naca2412_airfoil
-        del self.custom_outline_airfoil
-        del self.resampled_airfoil
-        del self.non_resampled_airfoil
-
     def test_initialization_naca_airfoils(self):
         """Test Airfoil initialization with NACA airfoil names."""
         # Test NACA 0012 initialization

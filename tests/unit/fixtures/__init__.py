@@ -21,6 +21,9 @@ This package contains the following modules:
     horseshoe_vortex_fixtures.py: This module contains functions to create
     HorseshoeVortices for uses in tests.
 
+    movement_fixtures.py: This module contains functions to create Movements for use
+    in tests.
+
     operating_point_fixtures.py: This module contains functions to create
     OperatingPoints.
 
@@ -30,14 +33,15 @@ This package contains the following modules:
     wing_cross_section_movement_fixtures.py: This module contains functions to create
     WingCrossSectionMovements for use in tests.
 
-    wing_movement_fixtures.py: This module contains functions to create
-    WingMovements for use in tests.
+    wing_movement_fixtures.py: This module contains functions to create WingMovements
+    for use in tests.
 """
 
 import tests.unit.fixtures.aerodynamics_functions_fixtures
 import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
+import tests.unit.fixtures.movement_fixtures
 import tests.unit.fixtures.operating_point_fixtures
 import tests.unit.fixtures.ring_vortex_fixtures
 import tests.unit.fixtures.wing_cross_section_movement_fixtures

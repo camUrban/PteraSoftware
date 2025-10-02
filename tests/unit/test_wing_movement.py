@@ -71,25 +71,6 @@ class TestWingMovement(unittest.TestCase):
             wing_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_movement_fixture()
         )
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.sine_spacing_prelimLer_wing_movement
-        del self.uniform_spacing_prelimLer_wing_movement
-        del self.mixed_spacing_prelimLer_wing_movement
-        del self.sine_spacing_angles_wing_movement
-        del self.uniform_spacing_angles_wing_movement
-        del self.mixed_spacing_angles_wing_movement
-        del self.static_wing_movement
-        del self.basic_wing_movement
-        del self.prelimLer_only_wing_movement
-        del self.angles_only_wing_movement
-        del self.phase_offset_prelimLer_wing_movement
-        del self.phase_offset_angles_wing_movement
-        del self.multiple_periods_wing_movement
-        del self.custom_spacing_prelimLer_wing_movement
-        del self.custom_spacing_angles_wing_movement
-        del self.mixed_custom_and_standard_spacing_wing_movement
-
     def test_spacing_sine_for_prelimLer_G_Cg(self):
         """Test that sine spacing actually produces sinusoidal motion for
         prelimLer_G_Cg."""

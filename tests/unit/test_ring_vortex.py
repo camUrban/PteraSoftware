@@ -31,17 +31,6 @@ class TestRingVortex(unittest.TestCase):
         self.offset_ring_vortex = ring_vortex_fixtures.make_offset_ring_vortex_fixture()
         self.small_ring_vortex = ring_vortex_fixtures.make_small_ring_vortex_fixture()
 
-    def tearDown(self):
-        """Clean up test fixtures."""
-        del self.basic_ring_vortex
-        del self.unit_square_ring_vortex
-        del self.rectangular_ring_vortex
-        del self.tilted_ring_vortex
-        del self.zero_strength_ring_vortex
-        del self.negative_strength_ring_vortex
-        del self.offset_ring_vortex
-        del self.small_ring_vortex
-
     def test_initialization_valid_parameters(self):
         """Test RingVortex initialization with valid parameters."""
         # Test that basic RingVortex initializes correctly.

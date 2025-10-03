@@ -1,16 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains a testing case for the unsteady convergence function.
-
-This module contains the following classes:
-    TestUnsteadyConvergence: This is a class for testing the unsteady convergence
-    function.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains a testing case for the unsteady convergence function."""
 
 import unittest
 
@@ -19,22 +8,7 @@ from tests.integration.fixtures import problem_fixtures
 
 
 class TestUnsteadyConvergence(unittest.TestCase):
-    """This is a class for testing the unsteady convergence function.
-
-    This class contains the following public methods:
-        setUp: This method sets up the test.
-
-        tearDown: This method tears down the test.
-
-        test_unsteady_convergence: This method tests that the function finds
-        pre-known convergence parameters for an unsteady problem.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This is a class for testing the unsteady convergence function."""
 
     def setUp(self):
         """This method sets up the test.
@@ -46,14 +20,6 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.unsteady_validation_problem = (
             problem_fixtures.make_unsteady_validation_problem_with_static_geometry()
         )
-
-    def tearDown(self):
-        """This method tears down the test.
-
-        :return: None
-        """
-
-        del self.unsteady_validation_problem
 
     def test_unsteady_convergence(self):
         """This method tests that the function finds pre-known convergence parameters

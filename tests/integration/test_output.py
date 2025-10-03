@@ -4,15 +4,6 @@
 Note: Most of the tests in this case do not currently test the output against an
 expected output. Instead, they test that the methods to create the output don't throw
 any errors.
-
-This module contains the following classes:
-    TestOutput: This is a class with functions to test the output module.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
 """
 
 import unittest
@@ -22,30 +13,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestOutput(unittest.TestCase):
-    """This is a class with functions to test the output module.
-
-    This class contains the following public methods:
-        setUp: This method is automatically called before each testing method to set
-        up the fixtures.
-
-        tearDown: This method is automatically called before each testing method to
-        tear down the fixtures.
-
-        test_plot_results_versus_time: This method tests the plot_results_versus_time
-        method.
-
-        test_animate_does_not_throw: This method tests that the animate method does
-        not throw any errors.
-
-        test_draw_does_not_throw: This method tests that the draw method does not
-        throw any errors.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This is a class with functions to test the output module."""
 
     def setUp(self):
         """This method is automatically called before each testing method to set up
@@ -58,16 +26,6 @@ class TestOutput(unittest.TestCase):
         self.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
-
-    def tearDown(self):
-        """This method is automatically called before each testing method to tear
-        down the fixtures.
-
-        :return: None
-        """
-
-        # Delete the constructing fixtures.
-        del self.unsteady_solver
 
     def test_plot_results_versus_time_does_not_throw(self):
         """This method tests that the plot_results_versus_time method doesn't throw

@@ -9,11 +9,11 @@ This package contains the following directories:
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
-    airplane_fixtures.py: This module creates airplane objects to be used as fixtures.
+    airplane_fixtures.py: This module creates Airplanes to be used as fixtures.
 
     movement_fixtures.py: This module creates movement objects to be used as fixtures.
 
-    operating_point_fixtures.py: This module creates operating point objects to be
+    operating_point_fixtures.py: This module creates OperatingPoints to be
     used as fixtures.
 
     problem_fixtures.py: This module creates problem objects to be used as fixtures.

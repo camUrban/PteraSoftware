@@ -1,15 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains testing cases for the steady convergence function.
-
-This module contains the following classes:
-    TestSteadyConvergence: This is a class for testing the steady convergence function.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains testing cases for the steady convergence function."""
 
 import unittest
 
@@ -18,25 +8,7 @@ from tests.integration.fixtures import problem_fixtures
 
 
 class TestSteadyConvergence(unittest.TestCase):
-    """This is a class for testing the steady convergence function.
-
-    This class contains the following public methods:
-        setUp: This method sets up the test.
-
-        tearDown: This method tears down the test.
-
-        test_steady_horseshoe_convergence: This method tests that the function finds
-        pre-known convergence parameters for a horseshoe vortex lattice method solver.
-
-        test_steady_ring_convergence: This method tests that the function finds
-        pre-known convergence parameters for a ring vortex lattice method solver.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This is a class for testing the steady convergence function."""
 
     def setUp(self):
         """This method sets up the test.
@@ -48,14 +20,6 @@ class TestSteadyConvergence(unittest.TestCase):
         self.steady_validation_problem = (
             problem_fixtures.make_steady_validation_problem()
         )
-
-    def tearDown(self):
-        """This method tears down the test.
-
-        :return: None
-        """
-
-        del self.steady_validation_problem
 
     def test_steady_horseshoe_convergence(self):
         """This method tests that the function finds pre-known convergence parameters

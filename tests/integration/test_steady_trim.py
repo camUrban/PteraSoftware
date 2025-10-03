@@ -1,16 +1,5 @@
 # NOTE: I haven't yet started refactoring this module.
-"""This module contains a testing case for the steady trim function.
-
-This module contains the following classes:
-    TestSteadyTrimHorseshoeVortexLatticeMethod: This is a class for testing the
-    steady trim function on with the horseshoe vortex lattice method solver.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains a testing case for the steady trim function."""
 
 import unittest
 
@@ -20,22 +9,7 @@ from tests.integration.fixtures import airplane_fixtures
 
 class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the steady trim function on with the horseshoe
-    vortex lattice method solver.
-
-    This class contains the following public methods:
-        setUp: This method sets up the test.
-
-        tearDown: This method tears down the test.
-
-        test_function: This method tests that the function finds a pre-known trim
-        condition.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    vortex lattice method solver."""
 
     def setUp(self):
         """This method sets up the test.
@@ -58,10 +32,12 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         this_airplane = (
             airplane_fixtures.make_multiple_wing_steady_validation_airplane()
         )
-        this_operating_point = ps.operating_point.OperatingPoint(vCg__E=corrupted_v_x,
-                                                                 alpha=corrupted_alpha,
-                                                                 beta=corrupted_beta,
-                                                                 externalFX_W=corrupted_thrust)
+        this_operating_point = ps.operating_point.OperatingPoint(
+            vCg__E=corrupted_v_x,
+            alpha=corrupted_alpha,
+            beta=corrupted_beta,
+            externalFX_W=corrupted_thrust,
+        )
 
         # Create the steady problem.
         self.steady_validation_problem = ps.problems.SteadyProblem(
@@ -71,19 +47,6 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         del this_airplane
         del this_operating_point
-
-    def tearDown(self):
-        """This method tears down the test.
-
-        :return: None
-        """
-
-        del self.steady_validation_problem
-        del self.v_x_ans
-        del self.alpha_ans
-        del self.beta_ans
-        del self.thrust_ans
-        del self.ans_corruption
 
     def test_function(self):
         """This method tests that the function finds a pre-known trim condition.

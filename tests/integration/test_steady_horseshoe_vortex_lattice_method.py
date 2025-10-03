@@ -15,16 +15,6 @@ is:
 
 Note: The expected output was created using XFLR5's inviscid VLM1 analysis type,
 which is a horseshoe vortex lattice method solver.
-
-This module contains the following classes:
-    TestSteadyHorseshoeVortexLatticeMethod: This is a class for testing the steady
-    horseshoe vortex lattice method solver.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
 """
 
 import unittest
@@ -34,24 +24,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
-    """This is a class for testing the steady horseshoe vortex lattice method solver.
-
-    This class contains the following public methods:
-        setUp: This method sets up the test.
-
-        tearDown: This method tears down the test.
-
-        test_method: This method tests the solver's output.
-
-        test_method_multiple_wings: This method tests the solver's output with
-        multi-wing geometry.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
-    """
+    """This is a class for testing the steady horseshoe vortex lattice method solver."""
 
     def setUp(self):
         """This method sets up the test.
@@ -67,15 +40,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             solver_fixtures.make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver()
         )
 
-    def tearDown(self):
-        """This method tears down the test.
-
-        :return: None
-        """
-
-        del self.steady_horseshoe_vortex_lattice_method_validation_solver
-        del self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver
-
     def test_method(self):
         """This method tests the solver's output.
 
@@ -89,7 +53,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_di_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
-            ].total_near_field_force_coefficients_wind_axes[0]
+            ].forceCoefficients_W[0]
         )
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
@@ -97,7 +61,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_l_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
-            ].total_near_field_force_coefficients_wind_axes[2]
+            ].forceCoefficients_W[2]
         )
         c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
@@ -105,7 +69,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_m_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
-            ].total_near_field_moment_coefficients_wind_axes[1]
+            ].momentCoefficients_W_Cg[1]
         )
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
@@ -140,7 +104,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_di_expected = 0.008
         c_di_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
-        ].total_near_field_force_coefficients_wind_axes[
+        ].forceCoefficients_W[
             0
         ]
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
@@ -148,7 +112,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_l_expected = 0.513
         c_l_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
-        ].total_near_field_force_coefficients_wind_axes[
+        ].forceCoefficients_W[
             2
         ]
         c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
@@ -156,7 +120,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_m_expected = -0.336
         c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
-        ].total_near_field_moment_coefficients_wind_axes[
+        ].momentCoefficients_W_Cg[
             1
         ]
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)

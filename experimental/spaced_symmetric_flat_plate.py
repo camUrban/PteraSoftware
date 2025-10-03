@@ -262,7 +262,7 @@ if solver_type in ("steady_horseshoe", "steady_ring"):
         save=False,
     )
 
-    ps.output.print_steady_results(steady_solver=flat_plate_solver)
+    ps.output.print_results()
 else:
     ps.output.draw(
         solver=flat_plate_solver,

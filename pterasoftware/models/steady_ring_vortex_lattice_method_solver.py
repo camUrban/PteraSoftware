@@ -214,7 +214,7 @@ example_solver.run(
 )
 
 # Call this function from the output module to print the results.
-ps.output.print_steady_results(steady_solver=example_solver)
+ps.output.print_results()
 
 # Call the software's draw function on the solver.
 ps.output.draw(

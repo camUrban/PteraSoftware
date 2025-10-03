@@ -618,4 +618,4 @@ class SteadyRingVortexLatticeMethodSolver:
 
         moments_G_Cg = rightLegMoments_G_Cg + frontLegMoments_G_Cg + leftLegMoments_G_Cg
 
-        _functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)
+        _functions.process_solver_loads(self, forces_G, moments_G_Cg)

@@ -1,6 +1,5 @@
 # Import Python’s math and copy packages.
 import copy
-import math
 
 # Import Numpy.
 import numpy as np
@@ -14,6 +13,9 @@ gammabot_flapping_frequency = 165.0
 wing_spacing = 0.02172011
 gammabot_flapping_amplitude_angleX = 34.0
 gammabot_flapping_amplitude_angleY = 43.0
+# TODO: Get actual value for the phase
+delta = -30
+gammabot_flapping_phase_angleY = 0 - delta
 
 gammabot_flapping_period = 1.0 / gammabot_flapping_frequency
 
@@ -80,46 +82,16 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
 del gammabot_airplane_wing_cross_sections
 
 
-def gammabot_geometry_sweep_function(time):
-    """
-    :param time: float or 1D array of floats
-
-        This is a single time or an array of time values at which to calculate the
-        flap angle. The units are seconds.
-
-    :return flap_angle: float or 1D array of floats
-
-        This is a single flap angle or an array of flap angle values at the inputted
-        time value or values. The units are degrees.
-    """
-
-    # Set the Fourier series coefficients and the flapping frequency.
-    f = gammabot_flapping_frequency
-
-    # Calculate and return the flap angle(s).
-    flap_angle = 35 * np.cos(2 * math.pi * (f * math.pi / 180) * time - math.pi / 2)
-    return flap_angle
+# TODO: Update this with the actual custom function.
+def gammabot_angleX_function(thetaRad):
+    """GammaBot's custom angleX function."""
+    return np.sin(thetaRad)
 
 
-def gammabot_geometry_pitch_function(time):
-    """
-    :param time: float or 1D array of floats
-
-        This is a single time or an array of time values at which to calculate the
-        flap angle. The units are seconds.
-
-    :return flap_angle: float or 1D array of floats
-
-        This is a single flap angle or an array of flap angle values at the inputted
-        time value or values. The units are degrees.
-    """
-
-    # Set the Fourier series coefficients and the flapping frequency.
-    f = gammabot_flapping_frequency
-
-    # Calculate and return the flap angle(s).
-    flap_angle = 35 * np.sin(2 * math.pi * (f * math.pi / 180) * time - math.pi / 2 + 0)
-    return flap_angle
+# TODO: Update this with the actual custom function.
+def gammabot_angleY_function(thetaRad):
+    """GammaBot's custom angleY function."""
+    return np.sin(thetaRad)
 
 
 # Initialize an empty list to hold each WingCrossSectionMovement.
@@ -153,8 +125,12 @@ gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+    spacingAngles_G_to_prelimWn_izyx=(
+        gammabot_angleX_function,
+        gammabot_angleY_function,
+        "sine",
+    ),
+    phaseAngles_G_to_prelimWn_izyx=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Define the WingMovement for the mirrored Wing.
@@ -171,8 +147,12 @@ gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+    spacingAngles_G_to_prelimWn_izyx=(
+        gammabot_angleX_function,
+        gammabot_angleY_function,
+        "sine",
+    ),
+    phaseAngles_G_to_prelimWn_izyx=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Delete the extraneous pointer.
@@ -212,7 +192,7 @@ gammabot_movement = ps.movements.movement.Movement(
     airplane_movements=[gammabot_airplane_movement],
     operating_point_movement=gammabot_operating_point_movement,
     num_cycles=num_flaps,
-    delta_time=gammabot_flapping_period / 20.0,
+    delta_time=gammabot_flapping_period / 40.0,
 )
 
 # Delete the extraneous pointers.
@@ -257,4 +237,4 @@ ps.output.animate(
     save=True,
 )
 
-# ps.output.print_unsteady_results(unsteady_solver=gammabot_solver)
+ps.output.print_results(solver=gammabot_solver)

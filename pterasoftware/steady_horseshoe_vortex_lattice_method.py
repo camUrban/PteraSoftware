@@ -377,4 +377,4 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             axis=-1,
         )
 
-        _functions.process_steady_solver_loads(self, forces_G, moments_G_Cg)
+        _functions.process_solver_loads(self, forces_G, moments_G_Cg)

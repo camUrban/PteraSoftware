@@ -100,7 +100,7 @@ class steadyHorseshoeVortexLatticeMethodSolver:
             logging_level="Warning",
         )
 
-        ps.output.print_steady_results(steady_solver=example_solver)
+        ps.output.print_results()
 
         ps.output.draw(
             solver=example_solver,

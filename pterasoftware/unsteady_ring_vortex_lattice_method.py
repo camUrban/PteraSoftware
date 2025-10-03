@@ -67,10 +67,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.current_airplanes = None
         self.current_operating_point = None
         self.num_airplanes = len(self.steady_problems[0].airplanes)
-        _num_panels = 0
+        num_panels = 0
         for airplane in self.steady_problems[0].airplanes:
-            _num_panels += airplane.num_panels
-        self._num_panels = _num_panels
+            num_panels += airplane.num_panels
+        self.num_panels = num_panels
 
         # Initialize attributes to hold aerodynamic data that pertain to the
         # simulation.
@@ -343,75 +343,59 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # to the simulation at this time step.
                 self._currentVInf_G__E = self.current_operating_point.vInf_G__E
                 self._currentStackFreestreamWingInfluences__E = np.zeros(
-                    self._num_panels, dtype=float
+                    self.num_panels, dtype=float
                 )
                 self._currentGridWingWingInfluences__E = np.zeros(
-                    (self._num_panels, self._num_panels), dtype=float
+                    (self.num_panels, self.num_panels), dtype=float
                 )
                 self._currentStackWakeWingInfluences__E = np.zeros(
-                    self._num_panels, dtype=float
+                    self.num_panels, dtype=float
                 )
                 self._current_bound_vortex_strengths = np.ones(
-                    self._num_panels, dtype=float
+                    self.num_panels, dtype=float
                 )
                 self._last_bound_vortex_strengths = np.zeros(
-                    self._num_panels, dtype=float
+                    self.num_panels, dtype=float
                 )
 
                 # Initialize attributes to hold geometric data that pertain to this
                 # UnsteadyProblem.
-                self.panels = np.empty(self._num_panels, dtype=object)
-                self.stackUnitNormals_G = np.zeros((self._num_panels, 3), dtype=float)
-                self.panel_areas = np.zeros(self._num_panels, dtype=float)
+                self.panels = np.empty(self.num_panels, dtype=object)
+                self.stackUnitNormals_G = np.zeros((self.num_panels, 3), dtype=float)
+                self.panel_areas = np.zeros(self.num_panels, dtype=float)
 
-                self.stackCpp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self._stackLastCpp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
+                self.stackCpp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._stackLastCpp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-                self.stackBrbrvp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackFrbrvp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackFlbrvp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackBlbrvp_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self._lastStackBrbrvp_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackFrbrvp_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackFlbrvp_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackBlbrvp_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
+                self.stackBrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackFrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackFlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackBlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackBrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackFrbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackFlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackBlbrvp_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-                self.stackCblvpr_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackCblvpf_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackCblvpl_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackCblvpb_G_Cg = np.zeros((self._num_panels, 3), dtype=float)
-                self._lastStackCblvpr_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpf_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpl_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpb_G_Cg = np.zeros(
-                    (self._num_panels, 3), dtype=float
-                )
+                self.stackCblvpr_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpf_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpl_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpb_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackCblvpr_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackCblvpf_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackCblvpl_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
+                self._lastStackCblvpb_G_Cg = np.zeros((self.num_panels, 3), dtype=float)
 
-                self.stackRbrv_G = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackFbrv_G = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackLbrv_G = np.zeros((self._num_panels, 3), dtype=float)
-                self.stackBbrv_G = np.zeros((self._num_panels, 3), dtype=float)
+                self.stackRbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackFbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackLbrv_G = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackBbrv_G = np.zeros((self.num_panels, 3), dtype=float)
 
                 # Initialize variables to hold details about each Panel's location on
                 # its Wing.
-                self.panel_is_trailing_edge = np.zeros(self._num_panels, dtype=bool)
-                self.panel_is_leading_edge = np.zeros(self._num_panels, dtype=bool)
-                self.panel_is_left_edge = np.zeros(self._num_panels, dtype=bool)
-                self.panel_is_right_edge = np.zeros(self._num_panels, dtype=bool)
+                self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
+                self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
+                self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
+                self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
                 # Get the pre-allocated (but still all zero) arrays of wake
                 # information that are associated with this time step.
@@ -782,7 +766,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # influence coefficients to 0.0 (observed from the Earth frame)
             # because no wake RingVortices have been shed.
             self._currentStackWakeWingInfluences__E = np.zeros(
-                self._num_panels, dtype=float
+                self.num_panels, dtype=float
             )
 
     def _calculate_vortex_strengths(self):
@@ -877,9 +861,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize three 1D ndarrays to hold the effective strength of the Panels'
         # RingVortices' LineVortices.
-        effective_right_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
-        effective_front_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
-        effective_left_vortex_line_strengths = np.zeros(self._num_panels, dtype=float)
+        effective_right_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
+        effective_front_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
+        effective_left_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
 
         # Iterate through the Airplanes' Wings.
         for airplane in self.current_airplanes:
@@ -1071,9 +1055,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + unsteady_moments_G_Cg
         )
 
-        _functions.process_unsteady_solver_loads(
-            unsteady_solver=self, forces_G=forces_G, moments_G_Cg=moments_G_Cg
-        )
+        _functions.process_solver_loads(self, forces_G, moments_G_Cg)
 
     # NOTE: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake(self, prescribed_wake=True):
@@ -1497,7 +1479,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            return np.zeros((self._num_panels, 3))
+            return np.zeros((self.num_panels, 3))
 
         # Get the current airplane's collocation points, and the last airplane's
         # collocation points.
@@ -1526,7 +1508,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            return np.zeros((self._num_panels, 3))
+            return np.zeros((self.num_panels, 3))
 
         # Get the current airplanes' bound vortices' right legs' centers, and the
         # last airplanes' bound vortices' right legs' centers.
@@ -1555,7 +1537,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            return np.zeros((self._num_panels, 3))
+            return np.zeros((self.num_panels, 3))
 
         # Get the current airplanes' bound vortices' front legs' centers, and the
         # last airplanes' bound vortices' front legs' centers.
@@ -1584,7 +1566,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             # Set the flapping velocities to be zero for all points. Then, return the
             # flapping velocities.
-            return np.zeros((self._num_panels, 3))
+            return np.zeros((self.num_panels, 3))
 
         # Get the current airplanes' bound vortices' left legs' centers, and the last
         # airplanes' bound vortices' left legs' centers.

@@ -17,7 +17,6 @@ default_airplane = ps.geometry.airplane.Airplane(
     weight=250,
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -34,11 +33,9 @@ default_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
         ),
         ps.geometry.wing.Wing(
-            x_le=7.50,
-            z_le=0.25,
-            symmetric=True,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
@@ -59,6 +56,7 @@ default_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
         ),
     ],
 )

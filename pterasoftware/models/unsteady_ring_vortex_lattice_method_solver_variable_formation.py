@@ -29,26 +29,6 @@ class unsteadyRingVortexLatticeSolver:
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
-                    name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to
-                    # the global coordinate system fixed front left corner of the
-                    # first airplane's first wing's root wing cross section.
-                    x_le=0.0,
-                    y_le=0.0,
-                    # Declare that this wing is symmetric. This means that the
-                    # geometry will be reflected across plane of this wing's root
-                    # wing cross section. Note that the geometry coordinates are
-                    # defined as such: If you were riding in the airplane,
-                    # the positive x direction would point behind you, the positive y
-                    # direction would point out of your right wing, and the positive
-                    # z direction would point upwards, out of your chair. These
-                    # directions form a right-handed coordinate system. The default
-                    # value of "symmetric" is false.
-                    symmetric=True,
-                    # Define the chordwise spacing of the wing panels to be "uniform"
-                    # as this increase the accuracy of unsteady solvers.
-                    chordwise_spacing="uniform",
-                    num_chordwise_panels=4,
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
                             # Define the location of the leading edge of the wing
@@ -78,6 +58,10 @@ class unsteadyRingVortexLatticeSolver:
                             ),
                         ),
                     ],
+                    name="Main Wing",
+                    symmetric=True,
+                    num_chordwise_panels=4,
+                    chordwise_spacing="uniform",
                 ),
             ],
         )
@@ -122,15 +106,6 @@ class unsteadyRingVortexLatticeSolver:
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
-                    name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to
-                    # the global coordinate system fixed front left corner of the
-                    # first airplane's first wing's root wing cross section.
-                    x_le=x_spacing,
-                    y_le=y_spacing,
-                    symmetric=True,
-                    chordwise_spacing="uniform",
-                    num_chordwise_panels=4,
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
                             twist=5.0,
@@ -149,6 +124,10 @@ class unsteadyRingVortexLatticeSolver:
                             ),
                         ),
                     ],
+                    name="Main Wing",
+                    symmetric=True,
+                    num_chordwise_panels=4,
+                    chordwise_spacing="uniform",
                 ),
             ],
         )
@@ -191,15 +170,6 @@ class unsteadyRingVortexLatticeSolver:
             z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
-                    name="Main Wing",
-                    # Define the location of the leading edge of the wing relative to
-                    # the global coordinate system fixed front left corner of the
-                    # first airplane's first wing's root wing cross section.
-                    x_le=x_spacing,
-                    y_le=-y_spacing,
-                    symmetric=True,
-                    chordwise_spacing="uniform",
-                    num_chordwise_panels=4,
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
                             twist=5.0,
@@ -218,6 +188,10 @@ class unsteadyRingVortexLatticeSolver:
                             ),
                         ),
                     ],
+                    name="Main Wing",
+                    symmetric=True,
+                    num_chordwise_panels=4,
+                    chordwise_spacing="uniform",
                 ),
             ],
         )

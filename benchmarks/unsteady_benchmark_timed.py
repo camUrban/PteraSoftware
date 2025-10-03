@@ -24,8 +24,8 @@ example_airplane = ps.geometry.airplane.Airplane(
         ps.geometry.wing.Wing(
             name="Main Wing",
             symmetric=True,
-            symmetry_normal_Wn=(0.0, 1.0, 0.0),
-            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
+            symmetry_normal_G=(0.0, 1.0, 0.0),
+            symmetry_point_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[

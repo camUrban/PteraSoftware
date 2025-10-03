@@ -12,15 +12,6 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
     wings=[
         ps.geometry.wing.Wing(
-            name="Right Wing",
-            prelimLer_G_Cg=(-0.5, -0.5, 0.0),
-            angles_G_to_prelimWn_izyx=(0, 0, 0),
-            symmetric=False,
-            mirror_only=False,
-            num_chordwise_panels=5,
-            chordwise_spacing="uniform",
-            symmetry_normal_Wn=None,
-            symmetry_point_Wn_Ler=None,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=5,
@@ -55,6 +46,15 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="Right Wing",
+            prelimLer_G_Cg=(-0.5, -0.5, 0.0),
+            angles_G_to_prelimWn_izyx=(0, 0, 0),
+            symmetric=False,
+            mirror_only=False,
+            symmetry_normal_G=None,
+            symmetry_point_G_Cg=None,
+            num_chordwise_panels=5,
+            chordwise_spacing="uniform",
         ),
     ],
 )

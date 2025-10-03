@@ -10,8 +10,6 @@ import pterasoftware as ps
 airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
-            chordwise_spacing="uniform",
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.0,
@@ -33,6 +31,8 @@ airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
+            chordwise_spacing="uniform",
         ),
     ],
 )

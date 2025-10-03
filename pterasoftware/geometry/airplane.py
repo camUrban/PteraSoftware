@@ -581,20 +581,38 @@ class Airplane:
         :return: list of Wings
         """
         # Determine if the symmetry plane is coincident with the preliminary wing
-        # axes' xz-plane. This is relatively easy their values are either None ( if
-        # there isn't any symmetry) or relative to the preliminary wing axes.
-        # Therefore, if it exists, the symmetry plane is coincident to the
-        # preliminary wing axes' xz-plane if symmetry_point_Wn_Ler is all zeros (no
-        # translational offset), and symmetry_normal_Wn is np.array([ 0.0, 1.0,
-        # 0.0]). We don't need to check types, values, or normalize because this is
-        # done in Wing's init method.
+        # axes' xz-plane. If symmetry_normal_G or symmetry_point_G_Cg is None,
+        # then there is no symmetry and the symmetry plane doesn't exist. Otherwise,
+        # the symmetry plane is coincident to the preliminary wing axes' xz-plane if
+        # symmetry_point_G_Cg equals prelimLer_G_Cg, and symmetry_normal_G if
+        # symmetry_normal_G is parallel with PrelimWnY_G. We don't need to check types,
+        # values, or normalize because this is done in Wing's init method.
         coincident_symmetry_plane = True
-        if wing.symmetry_point_Wn_Ler is None or wing.symmetry_normal_Wn is None:
+        if wing.symmetry_point_G_Cg is None or wing.symmetry_normal_G is None:
             coincident_symmetry_plane = False
         else:
-            if not np.allclose(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0])):
+            # Find the preliminary wing axes' second basis vector (in geometry axes).
+            PrelimWnY_G = _transformations.apply_T_to_vectors(
+                _transformations.generate_rot_T(
+                    wing.angles_G_to_prelimWn_izyx,
+                    passive=False,
+                    intrinsic=True,
+                    order="zyx",
+                ),
+                np.array([0.0, 1.0, 0.0], dtype=float),
+                has_point=False,
+            )
+
+            # If symmetry_normal_G is parallel with PrelimWnY_G, their cross product will
+            # be the zero vector.
+            is_parallel = np.allclose(
+                np.cross(wing.symmetry_normal_G, PrelimWnY_G),
+                np.array([0.0, 0.0, 0.0], dtype=float),
+            )
+
+            if not np.allclose(wing.symmetry_point_G_Cg, wing.prelimLer_G_Cg):
                 coincident_symmetry_plane = False
-            elif not np.allclose(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0])):
+            elif not is_parallel:
                 coincident_symmetry_plane = False
 
         # See the Wing class docstring for the interpretation of the different
@@ -692,16 +710,16 @@ class Airplane:
                 angles_G_to_prelimWn_izyx=np.copy(wing.angles_G_to_prelimWn_izyx),
                 symmetric=False,
                 mirror_only=True,
-                symmetry_normal_Wn=np.copy(wing.symmetry_normal_Wn),
-                symmetry_point_Wn_Ler=np.copy(wing.symmetry_point_Wn_Ler),
+                symmetry_normal_G=np.copy(wing.symmetry_normal_G),
+                symmetry_point_G_Cg=np.copy(wing.symmetry_point_G_Cg),
                 num_chordwise_panels=wing.num_chordwise_panels,
                 chordwise_spacing=wing.chordwise_spacing,
             )
 
             wing.symmetric = False
             wing.mirror_only = False
-            wing.symmetry_normal_Wn = None
-            wing.symmetry_point_Wn_Ler = None
+            wing.symmetry_normal_G = None
+            wing.symmetry_point_G_Cg = None
 
             # Reset control_surface_symmetry_type to None for Type 1 symmetry.
             for wing_cross_section in wing.wing_cross_sections:

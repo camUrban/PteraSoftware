@@ -238,16 +238,11 @@ def analyze_steady_convergence(
 
                     these_wings.append(
                         geometry.wing.Wing(
-                            # These values are copied from this reference wing.
-                            name=ref_wing.name,
-                            x_le=ref_wing.x_le,
-                            y_le=ref_wing.y_le,
-                            z_le=ref_wing.z_le,
-                            symmetric=ref_wing.symmetric,
-                            chordwise_spacing=ref_wing.chordwise_spacing,
-                            # These values change.
-                            num_chordwise_panels=num_chordwise_panels,
                             wing_cross_sections=these_wing_cross_sections,
+                            name=ref_wing.name,
+                            symmetric=ref_wing.symmetric,
+                            num_chordwise_panels=num_chordwise_panels,
+                            chordwise_spacing=ref_wing.chordwise_spacing,
                         )
                     )
 
@@ -858,17 +853,11 @@ def analyze_unsteady_convergence(
 
                             # 6: Create a copy of the base object.
                             this_base_wing = geometry.wing.Wing(
-                                # These values are copied from this reference base
-                                # wing.
-                                name=ref_base_wing.name,
-                                x_le=ref_base_wing.x_le,
-                                y_le=ref_base_wing.y_le,
-                                z_le=ref_base_wing.z_le,
-                                symmetric=ref_base_wing.symmetric,
-                                chordwise_spacing=ref_base_wing.chordwise_spacing,
-                                # These values change.
-                                num_chordwise_panels=num_chordwise_panels,
                                 wing_cross_sections=these_base_wing_cross_sections,
+                                name=ref_base_wing.name,
+                                symmetric=ref_base_wing.symmetric,
+                                num_chordwise_panels=num_chordwise_panels,
+                                chordwise_spacing=ref_base_wing.chordwise_spacing,
                             )
 
                             # 7. Create a copy of the new (sub-)movement.

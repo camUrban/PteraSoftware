@@ -123,12 +123,6 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                     y_ref=offset_sign * offset * y_spacing,
                     wings=[
                         ps.geometry.wing.Wing(
-                            name="Main Wing",
-                            symmetric=True,
-                            chordwise_spacing="uniform",
-                            x_le=offset * x_spacing,
-                            y_le=offset_sign * offset * y_spacing,
-                            num_chordwise_panels=num_chord,
                             wing_cross_sections=[
                                 ps.geometry.wing_cross_section.WingCrossSection(
                                     twist=alpha,
@@ -158,6 +152,10 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                                     ),
                                 ),
                             ],
+                            name="Main Wing",
+                            symmetric=True,
+                            num_chordwise_panels=num_chord,
+                            chordwise_spacing="uniform",
                         ),
                     ],
                 )

@@ -32,35 +32,7 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
     c_ref=None,  # All airplane objects have a list of wings.
     wings=[  # Create the first wing object in this airplane.
-        ps.geometry.wing.Wing(  # Give the wing a name, this defaults to "Untitled Wing".
-            name="Main Wing",
-            # Define the location of the leading edge of the wing relative to the
-            # global coordinate system fixed front left corner of the first
-            # airplane's first wing's root wing cross section. These values all
-            # default to 0.0 meters.
-            x_le=0.0,
-            y_le=0.0,
-            z_le=0.0,
-            # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across plane of this wing's root wing cross section. Note
-            # that the geometry coordinates are defined as such: If you were riding
-            # in the airplane, the positive x direction would point behind you,
-            # the positive y direction would point out of your right wing, and the
-            # positive z direction would point upwards, out of your chair. These
-            # directions form a right-handed coordinate system. The default value of
-            # "symmetric" is false.
-            symmetric=True,
-            # Define the number of chordwise panels on the wing, and the spacing
-            # between them. The number of chordwise panels defaults to 8 panels. The
-            # spacing defaults to "cosine", which makes the panels relatively finer,
-            # in the chordwise direction, near the leading and trailing edges. The
-            # other option is "uniform". I set this value to "uniform" here as it
-            # increase the accuracy of unsteady solvers.
-            num_chordwise_panels=6,
-            chordwise_spacing="uniform",
-            # Every wing has a list of wing cross sections. In order for the geometry
-            # output to be sensible, each wing must have at least two wing cross
-            # sections.
+        ps.geometry.wing.Wing(
             wing_cross_sections=[  # Create a new wing cross section object.
                 ps.geometry.wing_cross_section.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
@@ -135,22 +107,20 @@ example_airplane = ps.geometry.airplane.Airplane(
                     y_le=6.0,
                     z_le=1.0,
                     chord=1.5,
-                    twist=5.0,  # Give this wing cross section an airfoil.
+                    twist=5.0,
+                    # Give this wing cross section an airfoil.
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
                 ),
             ],
+            name="Main Wing",
+            symmetric=True,
+            num_chordwise_panels=6,
+            chordwise_spacing="uniform",
         ),
         # Define the next wing.
         ps.geometry.wing.Wing(
-            name="V-Tail",
-            x_le=6.75,
-            z_le=0.25,
-            num_chordwise_panels=6,
-            chordwise_spacing="uniform",
-            symmetric=True,
-            # Define this wing's root wing cross section.
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     chord=1.5,
@@ -166,12 +136,17 @@ example_airplane = ps.geometry.airplane.Airplane(
                     y_le=2.0,
                     z_le=1.0,
                     chord=1.0,
-                    twist=-5.0,  # Give the tip wing cross section an airfoil.
+                    twist=-5.0,
+                    # Give the tip wing cross section an airfoil.
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
                 ),
             ],
+            name="V-Tail",
+            symmetric=True,
+            num_chordwise_panels=6,
+            chordwise_spacing="uniform",
         ),
     ],
 )
@@ -325,9 +300,9 @@ del v_tail_movement
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
-                                                            alpha=1.0, beta=0.0,
-                                                            nu=15.06e-6)
+example_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, nu=15.06e-6
+)
 
 # Define the operating point's movement. The operating point's velocity can change
 # with respect to time.

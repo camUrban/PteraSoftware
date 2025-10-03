@@ -258,11 +258,9 @@ class TestWingMovement(unittest.TestCase):
             self.assertEqual(wing.name, base_wing.name)
             self.assertEqual(wing.symmetric, base_wing.symmetric)
             self.assertEqual(wing.mirror_only, base_wing.mirror_only)
+            npt.assert_array_equal(wing.symmetry_normal_G, base_wing.symmetry_normal_G)
             npt.assert_array_equal(
-                wing.symmetry_normal_Wn, base_wing.symmetry_normal_Wn
-            )
-            npt.assert_array_equal(
-                wing.symmetry_point_Wn_Ler, base_wing.symmetry_point_Wn_Ler
+                wing.symmetry_point_G_Cg, base_wing.symmetry_point_G_Cg
             )
             self.assertEqual(wing.num_chordwise_panels, base_wing.num_chordwise_panels)
             self.assertEqual(wing.chordwise_spacing, base_wing.chordwise_spacing)

@@ -24,8 +24,8 @@ def mesh_wing(wing):
     # Gather this Wing's attributes
     wing_cross_sections = wing.wing_cross_sections
     symmetry_type = wing.symmetry_type
-    symmetry_normal_Wn = wing.symmetry_normal_Wn
-    symmetry_point_Wn_Ler = wing.symmetry_point_Wn_Ler
+    symmetry_normal_G = wing.symmetry_normal_G
+    symmetry_point_G_Cg = wing.symmetry_point_G_Cg
     num_chordwise_panels = wing.num_chordwise_panels
     chordwise_spacing = wing.chordwise_spacing
     T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
@@ -260,12 +260,22 @@ def mesh_wing(wing):
                 ]
             )
 
+            # TODO: Test that this block of code works under all situations and
+            #  document and understand it. We're reflecting about a plane defined by
+            #  a normal vector in geometry axes and a point in geometry axes relative
+            #  to the CG. But that's okay I guess and we end up with reflected points
+            #  in wing axes relative to the leading edge root point? Also then we
+            #  perform an passive transformation to find them in geometry axes
+            #  relative to the CG? Why do we even need to reflect them if we are
+            #  staying in wing axes? If we take a reflected a non-reflected Wing that
+            #  are otherwise identical, they should have the same coordinates in
+            #  their respective wing axes relative to their respective leading edge
+            #  root points. So why is the active transformation necessary?
             reflect_T_act = _transformations.generate_reflect_T(
-                symmetry_point_Wn_Ler,
-                symmetry_normal_Wn,
+                plane_point_A_a=symmetry_point_G_Cg,
+                plane_normal_A=symmetry_normal_G,
                 passive=False,
             )
-
             reflected_Fipp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Fipp_Wn_Ler, has_point=True
             )
@@ -278,7 +288,6 @@ def mesh_wing(wing):
             reflected_Bopp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Bopp_Wn_Ler, has_point=True
             )
-
             reflected_Fipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, has_point=True
             )

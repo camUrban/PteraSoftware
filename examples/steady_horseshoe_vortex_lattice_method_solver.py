@@ -22,15 +22,6 @@ example_airplane = ps.geometry.airplane.Airplane(
     c_ref=None,
     wings=[
         ps.geometry.wing.Wing(
-            name="Main Wing",
-            prelimLer_G_Cg=(0.0, 0.0, 0.0),
-            angles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
-            symmetric=True,
-            mirror_only=False,
-            symmetry_normal_Wn=(0.0, 1.0, 0.0),
-            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
-            num_chordwise_panels=6,
-            chordwise_spacing="cosine",
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=8,
@@ -65,17 +56,17 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
-        ),
-        ps.geometry.wing.Wing(
-            name="V-Tail",
-            prelimLer_G_Cg=(6.75, 0.0, 0.25),
-            angles_G_to_prelimWn_izyx=(0.0, 5.0, 0.0),
+            name="Main Wing",
+            prelimLer_G_Cg=(0.0, 0.0, 0.0),
+            angles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
             symmetric=True,
             mirror_only=False,
-            symmetry_normal_Wn=(0.0, 1.0, 0.0),
-            symmetry_point_Wn_Ler=(0.0, 0.0, 0.0),
-            num_chordwise_panels=8,
+            symmetry_normal_G=(0.0, 1.0, 0.0),
+            symmetry_point_G_Cg=(0.0, 0.0, 0.0),
+            num_chordwise_panels=6,
             chordwise_spacing="cosine",
+        ),
+        ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=8,
@@ -110,6 +101,15 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="V-Tail",
+            prelimLer_G_Cg=(6.75, 0.0, 0.25),
+            angles_G_to_prelimWn_izyx=(0.0, 5.0, 0.0),
+            symmetric=True,
+            mirror_only=False,
+            symmetry_normal_G=(0.0, 1.0, 0.0),
+            symmetry_point_G_Cg=(0.0, 0.0, 0.0),
+            num_chordwise_panels=8,
+            chordwise_spacing="cosine",
         ),
     ],
 )

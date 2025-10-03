@@ -9,10 +9,6 @@ example_airplane = ps.geometry.airplane.Airplane(
     name="Example Airplane",
     wings=[
         ps.geometry.wing.Wing(
-            name="Main Wing",
-            symmetric=True,
-            num_chordwise_panels=num_chordwise_panels,
-            chordwise_spacing="uniform",
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=num_spanwise_panels,
@@ -33,6 +29,10 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="Main Wing",
+            symmetric=True,
+            num_chordwise_panels=num_chordwise_panels,
+            chordwise_spacing="uniform",
         ),
     ],
 )

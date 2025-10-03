@@ -414,8 +414,8 @@ class WingMovement:
         this_name = self.base_wing.name
         this_symmetric = self.base_wing.symmetric
         this_mirror_only = self.base_wing.mirror_only
-        this_symmetry_normal_Wn = self.base_wing.symmetry_normal_Wn
-        this_symmetry_point_Wn_Ler = self.base_wing.symmetry_point_Wn_Ler
+        this_symmetry_normal_G = self.base_wing.symmetry_normal_G
+        this_symmetry_point_G_Cg = self.base_wing.symmetry_point_G_Cg
         this_num_chordwise_panels = self.base_wing.num_chordwise_panels
         this_chordwise_spacing = self.base_wing.chordwise_spacing
 
@@ -427,14 +427,14 @@ class WingMovement:
 
             # Make a new Wing for this time step.
             this_wing = geometry.wing.Wing(
-                name=this_name,
                 wing_cross_sections=these_wing_cross_sections,
+                name=this_name,
                 prelimLer_G_Cg=thisPrelimLer_G_Cg,
                 angles_G_to_prelimWn_izyx=theseAngles_G_to_prelimWn_izyx,
                 symmetric=this_symmetric,
                 mirror_only=this_mirror_only,
-                symmetry_normal_Wn=this_symmetry_normal_Wn,
-                symmetry_point_Wn_Ler=this_symmetry_point_Wn_Ler,
+                symmetry_normal_G=this_symmetry_normal_G,
+                symmetry_point_G_Cg=this_symmetry_point_G_Cg,
                 num_chordwise_panels=this_num_chordwise_panels,
                 chordwise_spacing=this_chordwise_spacing,
             )

@@ -166,8 +166,8 @@ def make_origin_wing_fixture():
         angles_G_to_prelimWn_izyx=[0.0, 0.0, 0.0],
         symmetric=False,
         mirror_only=False,
-        symmetry_normal_Wn=None,
-        symmetry_point_Wn_Ler=None,
+        symmetry_normal_G=None,
+        symmetry_point_G_Cg=None,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )
@@ -194,8 +194,8 @@ def make_type_1_wing_fixture():
         angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=False,
-        symmetry_normal_Wn=None,
-        symmetry_point_Wn_Ler=None,
+        symmetry_normal_G=None,
+        symmetry_point_G_Cg=None,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )
@@ -219,11 +219,11 @@ def make_type_2_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 2 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 0.0, 0.0],
         symmetric=False,
         mirror_only=True,
-        symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
-        symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],  # At origin
+        symmetry_normal_G=[0.0, 1.0, 0.0],
+        symmetry_point_G_Cg=[1.0, 0.0, 0.5],
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )
@@ -250,8 +250,8 @@ def make_type_3_wing_fixture():
         angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=True,
-        symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
-        symmetry_point_Wn_Ler=[0.5, 0.0, 0.0],  # Offset from origin
+        symmetry_normal_G=[0.0, 0.707, 0.707],
+        symmetry_point_G_Cg=[0.5, 0.0, 0.0],
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )
@@ -282,11 +282,11 @@ def make_type_4_wing_fixture():
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 4 Test Wing",
         prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
+        angles_G_to_prelimWn_izyx=[0.0, 0.0, 0.0],
         symmetric=True,
         mirror_only=False,
-        symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Coincident with xz-plane
-        symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],  # At origin
+        symmetry_normal_G=[0.0, 1.0, 0.0],
+        symmetry_point_G_Cg=[1.0, 0.0, 0.5],
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )
@@ -324,8 +324,8 @@ def make_type_5_wing_fixture():
         angles_G_to_prelimWn_izyx=[0.0, 5.0, 0.0],
         symmetric=True,
         mirror_only=False,
-        symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
-        symmetry_point_Wn_Ler=[0.5, 0.0, 0.0],  # Offset from origin
+        symmetry_normal_G=[0.0, 0.707, 0.707],
+        symmetry_point_G_Cg=[0.5, 0.0, 0.0],
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )

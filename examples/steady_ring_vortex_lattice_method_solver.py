@@ -33,33 +33,6 @@ example_airplane = ps.geometry.airplane.Airplane(
     c_ref=None,
     wings=[
         ps.geometry.wing.Wing(
-            name="Main Wing",
-            # Define the location of the leading edge of the wing relative to the
-            # global coordinate system fixed front left corner of the first
-            # airplane's first wing's root wing cross section. These values all
-            # default to 0.0 meters.
-            x_le=0.0,
-            y_le=0.0,
-            z_le=0.0,
-            # Declare that this wing is symmetric. This means that the geometry will
-            # be reflected across plane of this wing's root wing cross section. Note
-            # that the geometry coordinates are defined as such: If you were riding
-            # in the airplane, the positive x direction would point behind you,
-            # the positive y direction would point out of your right wing, and the
-            # positive z direction would point upwards, out of your chair. These
-            # directions form a right-handed coordinate system. The default value of
-            # "symmetric" is false.
-            symmetric=True,
-            # Define the number of chordwise panels on the wing, and the spacing
-            # between them. The number of chordwise panels defaults to 8 panels. The
-            # spacing defaults to "cosine", which makes the panels relatively finer,
-            # in the chordwise direction, near the leading and trailing edges. The
-            # other option is "uniform".
-            num_chordwise_panels=8,
-            chordwise_spacing="cosine",
-            # Every wing has a list of wing cross sections. In order for the geometry
-            # output to be sensible, each wing must have at least two wing cross
-            # sections.
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     # Define the location of the leading edge of the wing cross
@@ -142,13 +115,13 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="Main Wing",
+            symmetric=True,
+            num_chordwise_panels=8,
+            chordwise_spacing="cosine",
         ),
         # Define the next wing.
         ps.geometry.wing.Wing(
-            name="Horizontal Stabilizer",
-            x_le=6.75,
-            z_le=0.25,
-            symmetric=True,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     chord=1.5,
@@ -170,13 +143,11 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="Horizontal Stabilizer",
+            symmetric=True,
         ),
         # Define the next wing.
         ps.geometry.wing.Wing(
-            name="Vertical Stabilizer",
-            x_le=6.75,
-            z_le=0.5,
-            symmetric=False,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     chord=1.5,
@@ -196,14 +167,17 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            name="Vertical Stabilizer",
+            symmetric=False,
         ),
     ],
 )
 
 # Define a new operating point object. This defines the state at which the airplane
 # object is operating.
-example_operating_point = ps.operating_point.OperatingPoint(rho=1.225, vCg__E=10.0,
-                                                            alpha=1.0, beta=0.0)
+example_operating_point = ps.operating_point.OperatingPoint(
+    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0
+)
 
 # Define a new steady problem. A steady problem contains an airplane object and an
 # operating point object.

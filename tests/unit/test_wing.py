@@ -75,8 +75,8 @@ class TestWing(unittest.TestCase):
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
                 symmetric=True,
                 mirror_only=True,
-                symmetry_normal_Wn=[0.0, 1.0, 0.0],
-                symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],
+                symmetry_normal_G=[0.0, 1.0, 0.0],
+                symmetry_point_G_Cg=[0.0, 0.0, 0.0],
             )
 
         # Test that symmetry parameters must be None when no symmetry
@@ -85,7 +85,7 @@ class TestWing(unittest.TestCase):
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
                 symmetric=False,
                 mirror_only=False,
-                symmetry_normal_Wn=[0.0, 1.0, 0.0],  # Should be None
+                symmetry_normal_G=[0.0, 1.0, 0.0],
             )
 
         # Test that symmetry parameters must be provided when symmetric=True
@@ -94,7 +94,7 @@ class TestWing(unittest.TestCase):
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
                 symmetric=True,
                 mirror_only=False,
-                symmetry_normal_Wn=None,  # Should be provided
+                symmetry_normal_G=None,
             )
 
     def test_wing_type_1_properties(self):
@@ -104,8 +104,8 @@ class TestWing(unittest.TestCase):
         # Test basic properties
         self.assertFalse(wing.symmetric)
         self.assertFalse(wing.mirror_only)
-        self.assertIsNone(wing.symmetry_normal_Wn)
-        self.assertIsNone(wing.symmetry_point_Wn_Ler)
+        self.assertIsNone(wing.symmetry_normal_G)
+        self.assertIsNone(wing.symmetry_point_G_Cg)
 
         # Test that symmetry_type is None before meshing
         self.assertIsNone(wing.symmetry_type)
@@ -117,8 +117,8 @@ class TestWing(unittest.TestCase):
         # Test basic properties
         self.assertFalse(wing.symmetric)
         self.assertTrue(wing.mirror_only)
-        npt.assert_array_equal(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]))
-        npt.assert_array_equal(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0]))
+        npt.assert_array_equal(wing.symmetry_normal_G, np.array([0.0, 1.0, 0.0]))
+        npt.assert_array_equal(wing.symmetry_point_G_Cg, np.array([1.0, 0.0, 0.5]))
 
     def test_wing_type_3_properties(self):
         """Test type 3 wing (mirror_only=True, non-coincident symmetry plane) properties."""
@@ -128,11 +128,9 @@ class TestWing(unittest.TestCase):
         self.assertFalse(wing.symmetric)
         self.assertTrue(wing.mirror_only)
         # Check that symmetry plane is non-coincident
+        self.assertFalse(np.allclose(wing.symmetry_normal_G, np.array([0.0, 1.0, 0.0])))
         self.assertFalse(
-            np.allclose(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]))
-        )
-        self.assertFalse(
-            np.allclose(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0]))
+            np.allclose(wing.symmetry_point_G_Cg, np.array([0.0, 0.0, 0.0]))
         )
 
     def test_wing_type_4_properties(self):
@@ -142,8 +140,8 @@ class TestWing(unittest.TestCase):
         # Test basic properties
         self.assertTrue(wing.symmetric)
         self.assertFalse(wing.mirror_only)
-        npt.assert_array_equal(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]))
-        npt.assert_array_equal(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0]))
+        npt.assert_array_equal(wing.symmetry_normal_G, np.array([0.0, 1.0, 0.0]))
+        npt.assert_array_equal(wing.symmetry_point_G_Cg, np.array([1.0, 0.0, 0.5]))
 
         # Test that WingCrossSections have control surface symmetry types
         for wcs in wing.wing_cross_sections:
@@ -157,11 +155,9 @@ class TestWing(unittest.TestCase):
         self.assertTrue(wing.symmetric)
         self.assertFalse(wing.mirror_only)
         # Check that symmetry plane is non-coincident
+        self.assertFalse(np.allclose(wing.symmetry_normal_G, np.array([0.0, 1.0, 0.0])))
         self.assertFalse(
-            np.allclose(wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]))
-        )
-        self.assertFalse(
-            np.allclose(wing.symmetry_point_Wn_Ler, np.array([0.0, 0.0, 0.0]))
+            np.allclose(wing.symmetry_point_G_Cg, np.array([0.0, 0.0, 0.0]))
         )
 
     def test_generate_mesh_symmetry_type_1(self):
@@ -355,7 +351,7 @@ class TestWing(unittest.TestCase):
         with self.assertRaises((ValueError, TypeError)):
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
-                num_chordwise_panels=0,  # Must be positive
+                num_chordwise_panels=0,
             )
 
         # Test invalid chordwise_spacing
@@ -376,8 +372,7 @@ class TestWing(unittest.TestCase):
         # Test invalid name type
         with self.assertRaises(TypeError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
-                name=123,  # Should be string
+                wing_cross_sections=[self.root_wcs, self.tip_wcs], name=123
             )
 
     def test_symmetry_normal_normalization(self):
@@ -387,14 +382,14 @@ class TestWing(unittest.TestCase):
             wing_cross_sections=[self.root_wcs, self.tip_wcs],
             symmetric=False,
             mirror_only=True,
-            symmetry_normal_Wn=[0.0, 5.0, 0.0],  # Non-unit vector
-            symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],
+            symmetry_normal_G=[0.0, 5.0, 0.0],
+            symmetry_point_G_Cg=[0.0, 0.0, 0.0],
         )
 
         # Should be normalized to unit vector
-        npt.assert_allclose(np.linalg.norm(wing.symmetry_normal_Wn), 1.0, atol=1e-14)
+        npt.assert_allclose(np.linalg.norm(wing.symmetry_normal_G), 1.0, atol=1e-14)
         npt.assert_allclose(
-            wing.symmetry_normal_Wn, np.array([0.0, 1.0, 0.0]), atol=1e-14
+            wing.symmetry_normal_G, np.array([0.0, 1.0, 0.0]), atol=1e-14
         )
 
     # TODO: Finalize Wing's get_plottable_data testing.

@@ -10,8 +10,6 @@ import pterasoftware as ps
 leading_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
-            chordwise_spacing="uniform",
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -38,11 +36,10 @@ leading_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
-        ),
-        ps.geometry.wing.Wing(
-            x_le=5.0,
             symmetric=True,
             chordwise_spacing="uniform",
+        ),
+        ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -60,6 +57,8 @@ leading_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
+            chordwise_spacing="uniform",
         ),
     ],
 )
@@ -68,10 +67,6 @@ trailing_airplane = ps.geometry.airplane.Airplane(
     y_ref=-5,
     wings=[
         ps.geometry.wing.Wing(
-            x_le=10,
-            y_le=-5,
-            symmetric=True,
-            chordwise_spacing="uniform",
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -98,12 +93,10 @@ trailing_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
-        ),
-        ps.geometry.wing.Wing(
-            x_le=15.0,
-            y_le=-5,
             symmetric=True,
             chordwise_spacing="uniform",
+        ),
+        ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -121,6 +114,8 @@ trailing_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
+            chordwise_spacing="uniform",
         ),
     ],
 )

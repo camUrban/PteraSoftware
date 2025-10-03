@@ -1002,14 +1002,14 @@
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
             True, symmetric must be False. If symmetric is true, then neither
-            symmetry_normal_Wn nor symmetry_point_Wn_Ler can be None. If the symmetry
+            symmetry_normal_G nor symmetry_point_G_Cg can be None. If the symmetry
             plane is coincident with this Wing's wing axes' xz-plane, the mirrored
             and non-mirrored geometry will be meshed as a single wing. If not,
             this Wing's Airplane will automatically create another Wing with the
             mirrored geometry, modify both Wings' parameters, and add the reflected
             Wing to its list of wings immediately following this one. For more
             details on how that process, and how this parameter interacts with
-            symmetry_normal_Wn, symmetry_point_Wn_Ler, and mirror_only, see the class
+            symmetry_normal_G, symmetry_point_G_Cg, and mirror_only, see the class
             docstring. It can be a boolean or a NumPy boolean and will be converted
             internally to a boolean. The default is False.
 
@@ -1018,38 +1018,38 @@
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
             is True, mirror_only must be False. If mirror_only is true, then neither
-            symmetry_normal_Wn nor symmetry_point_Wn_Ler can be None. For more
-            details on how this parameter interacts with symmetry_normal_Wn,
-            symmetry_point_Wn_Ler, and symmetric, see the class docstring. It can be
+            symmetry_normal_G nor symmetry_point_G_Cg can be None. For more
+            details on how this parameter interacts with symmetry_normal_G,
+            symmetry_point_G_Cg, and symmetric, see the class docstring. It can be
             a boolean or a NumPy boolean and will be converted internally to a
             boolean. The default is False.
 
-        :param symmetry_normal_Wn: array-like of 3 numbers or None, optional
+        :param symmetry_normal_G: array-like of 3 numbers or None, optional
 
             The unit normal vector (in preliminary wing axes) that, together with
-            symmetry_point_Wn_Ler, defines the plane used for symmetry or mirroring.
+            symmetry_point_G_Cg, defines the plane used for symmetry or mirroring.
             Can be a tuple, list, or numpy array of numbers (int or float), or None.
             Values are converted to floats and normalized internally. Note that
             reversing the normal direction (using the antiparallel vector) defines
             the same plane and produces the same result. This value must be None if
             both symmetric and mirror_only are False, and cannot be None if either
             are True. For more details on how this parameter interacts with
-            symmetry_point_Wn_Ler, symmetric, and mirror_only, see the class
+            symmetry_point_G_Cg, symmetric, and mirror_only, see the class
             docstring. The default is None. In mirror_only cases, the wing axes
             themselves are reflected, so this vector is identical in preliminary wing
             axes and wing axes.
 
-        :param symmetry_point_Wn_Ler: array-like of 3 numbers or None,
+        :param symmetry_point_G_Cg: array-like of 3 numbers or None,
         optional
 
             A point [x, y, z] (in preliminary wing axes, relative to the preliminary
-            leading edge root point) that, along with symmetry_normal_Wn, defines the
+            leading edge root point) that, along with symmetry_normal_G, defines the
             location of the plane about which symmetry or mirroring is applied. Can
             be a list, tuple, or numpy array of numbers (int or float), or None.
             Values are converted to floats internally. This value must be None if
             both symmetric and mirror_only are False, and cannot be None if either
             are True. For more details on how this parameter interacts with
-            symmetry_normal_Wn, symmetric, and mirror_only, see the class docstring.
+            symmetry_normal_G, symmetric, and mirror_only, see the class docstring.
             The units are meters. The default is None. In mirror_only cases, the wing
             axes themselves are reflected, so this vector is identical in preliminary
             wing axes relative to the preliminary leading edge root point and in wing

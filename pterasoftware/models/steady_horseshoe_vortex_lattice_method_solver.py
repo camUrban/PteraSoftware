@@ -17,13 +17,6 @@ class steadyHorseshoeVortexLatticeMethodSolver:
             c_ref=None,
             wings=[
                 ps.geometry.wing.Wing(
-                    name="Main Wing",
-                    x_le=0.0,
-                    y_le=0.0,
-                    z_le=0.0,
-                    symmetric=True,
-                    num_chordwise_panels=8,
-                    chordwise_spacing="cosine",
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
                             x_le=0.0,
@@ -54,12 +47,12 @@ class steadyHorseshoeVortexLatticeMethodSolver:
                             ),
                         ),
                     ],
+                    name="Main Wing",
+                    symmetric=True,
+                    num_chordwise_panels=8,
+                    chordwise_spacing="cosine",
                 ),
                 ps.geometry.wing.Wing(
-                    name="V-Tail",
-                    x_le=6.75,
-                    z_le=0.25,
-                    symmetric=True,
                     wing_cross_sections=[
                         ps.geometry.wing_cross_section.WingCrossSection(
                             chord=1.5,
@@ -79,13 +72,15 @@ class steadyHorseshoeVortexLatticeMethodSolver:
                             ),
                         ),
                     ],
+                    name="V-Tail",
+                    symmetric=True,
                 ),
             ],
         )
 
-        example_operating_point = ps.operating_point.OperatingPoint(rho=1.225,
-                                                                    vCg__E=10.0,
-                                                                    alpha=1.0, beta=0.0)
+        example_operating_point = ps.operating_point.OperatingPoint(
+            rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0
+        )
 
         example_problem = ps.problems.SteadyProblem(
             airplanes=[example_airplane],

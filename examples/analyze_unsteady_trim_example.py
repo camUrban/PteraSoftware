@@ -18,8 +18,6 @@ example_airplane = ps.geometry.airplane.Airplane(
     weight=420,
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
-            num_chordwise_panels=5,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=5,
@@ -37,11 +35,10 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
-        ),
-        ps.geometry.wing.Wing(
-            x_le=5,
             symmetric=True,
             num_chordwise_panels=5,
+        ),
+        ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=5,
@@ -60,6 +57,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                     ),
                 ),
             ],
+            symmetric=True,
+            num_chordwise_panels=5,
         ),
     ],
 )

@@ -205,10 +205,10 @@ validation_airplane = ps.geometry.airplane.Airplane(
     name="Validation Airplane",
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
             wing_cross_sections=validation_airplane_wing_cross_sections,
-            chordwise_spacing=chordwise_spacing,
+            symmetric=True,
             num_chordwise_panels=num_chordwise_panels,
+            chordwise_spacing=chordwise_spacing,
         ),
     ],
 )

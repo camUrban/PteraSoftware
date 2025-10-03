@@ -323,8 +323,8 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(first_wing.symmetry_type, 1)
         self.assertFalse(first_wing.symmetric)
         self.assertFalse(first_wing.mirror_only)
-        self.assertIsNone(first_wing.symmetry_normal_Wn)
-        self.assertIsNone(first_wing.symmetry_point_Wn_Ler)
+        self.assertIsNone(first_wing.symmetry_normal_G)
+        self.assertIsNone(first_wing.symmetry_point_G_Cg)
 
         # Second Wing should be reflected type 3
         second_wing = result[1]
@@ -356,8 +356,8 @@ class TestAirplane(unittest.TestCase):
                 wing_cross_sections=wing_cross_sections,
                 symmetric=False,
                 mirror_only=True,
-                symmetry_normal_Wn=[0.0, 1.0, 0.0],
-                symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],
+                symmetry_normal_G=[0.0, 1.0, 0.0],
+                symmetry_point_G_Cg=[0.0, 0.0, 0.0],
             )
             ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_2)
 
@@ -375,8 +375,8 @@ class TestAirplane(unittest.TestCase):
                 wing_cross_sections=wing_cross_sections,
                 symmetric=True,
                 mirror_only=False,
-                symmetry_normal_Wn=[0.0, 1.0, 0.0],
-                symmetry_point_Wn_Ler=[0.0, 0.0, 0.0],
+                symmetry_normal_G=[0.0, 1.0, 0.0],
+                symmetry_point_G_Cg=[0.0, 0.0, 0.0],
             )
             ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_4)
 
@@ -399,8 +399,8 @@ class TestAirplane(unittest.TestCase):
             wing_cross_sections=wing_cross_sections,
             symmetric=True,
             mirror_only=False,
-            symmetry_normal_Wn=[0.0, 0.707, 0.707],  # Non-coincident plane
-            symmetry_point_Wn_Ler=[0.5, 0.0, 0.0],
+            symmetry_normal_G=[0.0, 0.707, 0.707],
+            symmetry_point_G_Cg=[0.5, 0.0, 0.0],
         )
 
         result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)

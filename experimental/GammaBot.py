@@ -65,13 +65,13 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
     name="GammaBot Airplane",
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
-            prelimLer_G_Cg=(0.0, wing_spacing / 2, 0.0),
             wing_cross_sections=gammabot_airplane_wing_cross_sections,
-            chordwise_spacing=chordwise_spacing,
+            prelimLer_G_Cg=(0.0, wing_spacing / 2, 0.0),
+            symmetric=True,
+            symmetry_normal_G=(0, 1, 0),
+            symmetry_point_G_Cg=(0, -wing_spacing / 2, 0),
             num_chordwise_panels=num_chordwise_panels,
-            symmetry_normal_Wn=(0, 1, 0),
-            symmetry_point_Wn_Ler=(0, -wing_spacing / 2, 0),
+            chordwise_spacing=chordwise_spacing,
         ),
     ],
 )
@@ -145,12 +145,12 @@ gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
     wing_cross_section_movements=gammabot_wing_cross_section_movements,
     ampAngles_G_to_prelimWn_izyx=(
         gammabot_flapping_amplitude_angleX,
-        0.0,
+        gammabot_flapping_amplitude_angleY,
         0.0,
     ),
     periodAngles_G_to_prelimWn_izyx=(
         gammabot_flapping_period,
-        0.0,
+        gammabot_flapping_period,
         0.0,
     ),
     spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
@@ -163,16 +163,16 @@ gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
     wing_cross_section_movements=copy.deepcopy(gammabot_wing_cross_section_movements),
     ampAngles_G_to_prelimWn_izyx=(
         gammabot_flapping_amplitude_angleX,
-        0.0,
+        gammabot_flapping_amplitude_angleY,
         0.0,
     ),
     periodAngles_G_to_prelimWn_izyx=(
         gammabot_flapping_period,
-        0.0,
+        gammabot_flapping_period,
         0.0,
     ),
     spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(180.0, 0.0, 0.0),
+    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
 )
 
 # Delete the extraneous pointer.

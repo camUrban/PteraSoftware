@@ -13,8 +13,6 @@ This package contains the following modules:
 
     airplane.py: This module contains the Airplane class.
 
-    panel.py: This module contains the Panel class.
-
     wing.py: This module contains the Wing class.
 
     wing_cross_section.py: This module contains the WingCrossSection class.
@@ -22,6 +20,5 @@ This package contains the following modules:
 
 import pterasoftware.geometry.airfoil
 import pterasoftware.geometry.airplane
-import pterasoftware.geometry.panel
 import pterasoftware.geometry.wing
 import pterasoftware.geometry.wing_cross_section

@@ -3,6 +3,9 @@
 import numpy as np
 import pterasoftware as ps
 
+# noinspection PyProtectedMember
+from pterasoftware import _panel
+
 
 def make_test_airfoil_fixture():
     """This method makes a fixture that is an Airfoil for testing purposes.
@@ -560,7 +563,7 @@ def make_basic_panel_fixture():
     """
     # Define panel corner points (in geometry axes, relative to the CG) for a
     # simple rectangular panel with 1.0 m chord and 0.5 m span.
-    basic_panel_fixture = ps.geometry.panel.Panel(
+    basic_panel_fixture = _panel.Panel(
         Frpp_G_Cg=np.array([0.0, 0.5, 0.0]),
         Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
         Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),

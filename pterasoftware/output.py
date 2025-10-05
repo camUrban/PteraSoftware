@@ -30,13 +30,9 @@ import numpy as np
 import pyvista as pv
 import webp
 
+from . import steady_horseshoe_vortex_lattice_method
+from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
-
-from .steady_horseshoe_vortex_lattice_method import (
-    SteadyHorseshoeVortexLatticeMethodSolver,
-)
-from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
-from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -99,9 +95,9 @@ _marker_spacing = 1.0 / _num_markers
 # NOTE: I haven't yet started refactoring this function.
 def draw(
     solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver
-        | SteadyRingVortexLatticeMethodSolver
-        | UnsteadyRingVortexLatticeMethodSolver
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type=None,
     show_streamlines=False,
@@ -299,7 +295,7 @@ def draw(
 
 # NOTE: I haven't yet started refactoring this function.
 def animate(
-    unsteady_solver: UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type=None,
     show_wake_vortices=False,
     save=False,
@@ -561,7 +557,9 @@ def animate(
 
 # NOTE: I haven't yet started refactoring this function.
 def plot_results_versus_time(
-    unsteady_solver: UnsteadyRingVortexLatticeMethodSolver, show=True, save=False
+    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    show=True,
+    save=False,
 ):
     """This method takes in an unsteady solver object, and plots the geometries'
     forces, moments, force coefficients, and moment coefficients as a function of time.
@@ -870,9 +868,9 @@ def plot_results_versus_time(
 # TODO: Add a unit test for this function.
 def print_results(
     solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver
-        | SteadyRingVortexLatticeMethodSolver
-        | UnsteadyRingVortexLatticeMethodSolver
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
 ):
     """This function prints the forces, and force coefficients (in wind axes) and the
@@ -888,11 +886,17 @@ def print_results(
     """
     if isinstance(
         solver,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
+        (
+            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+            steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+        ),
     ):
         these_airplanes = solver.airplanes
         solver_type = "steady"
-    elif isinstance(solver, UnsteadyRingVortexLatticeMethodSolver):
+    elif isinstance(
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
         these_airplanes = solver.current_airplanes
         if solver.unsteady_problem.movement.static:
             solver_type = "static geometry unsteady"

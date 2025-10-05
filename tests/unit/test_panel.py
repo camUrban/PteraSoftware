@@ -4,7 +4,9 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-import pterasoftware as ps
+# noinspection PyProtectedMember
+from pterasoftware import _panel
+
 from tests.unit.fixtures import geometry_fixtures
 
 
@@ -20,7 +22,7 @@ class TestPanel(unittest.TestCase):
         panel = self.basic_panel
 
         # Test that Panel initializes correctly
-        self.assertIsInstance(panel, ps.geometry.panel.Panel)
+        self.assertIsInstance(panel, _panel.Panel)
 
         # Test that corner points are correctly stored
         npt.assert_array_equal(panel.Frpp_G_Cg, np.array([0.0, 0.5, 0.0]))
@@ -61,7 +63,7 @@ class TestPanel(unittest.TestCase):
         """Test parameter validation for corner point inputs."""
         # Test invalid Frpp_G_Cg type
         with self.assertRaises(TypeError):
-            ps.geometry.panel.Panel(
+            _panel.Panel(
                 Frpp_G_Cg="invalid",
                 Flpp_G_Cg=[0.0, 0.0, 0.0],
                 Blpp_G_Cg=[1.0, 0.0, 0.0],
@@ -72,7 +74,7 @@ class TestPanel(unittest.TestCase):
 
         # Test invalid Frpp_G_Cg size
         with self.assertRaises((ValueError, TypeError)):
-            ps.geometry.panel.Panel(
+            _panel.Panel(
                 Frpp_G_Cg=[0.0, 0.5],  # Only 2 elements
                 Flpp_G_Cg=[0.0, 0.0, 0.0],
                 Blpp_G_Cg=[1.0, 0.0, 0.0],
@@ -85,7 +87,7 @@ class TestPanel(unittest.TestCase):
         """Test parameter validation for edge boolean inputs."""
         # Test invalid is_leading_edge type
         with self.assertRaises(TypeError):
-            ps.geometry.panel.Panel(
+            _panel.Panel(
                 Frpp_G_Cg=[0.0, 0.5, 0.0],
                 Flpp_G_Cg=[0.0, 0.0, 0.0],
                 Blpp_G_Cg=[1.0, 0.0, 0.0],
@@ -96,7 +98,7 @@ class TestPanel(unittest.TestCase):
 
         # Test invalid is_trailing_edge type
         with self.assertRaises(TypeError):
-            ps.geometry.panel.Panel(
+            _panel.Panel(
                 Frpp_G_Cg=[0.0, 0.5, 0.0],
                 Flpp_G_Cg=[0.0, 0.0, 0.0],
                 Blpp_G_Cg=[1.0, 0.0, 0.0],
@@ -357,7 +359,7 @@ class TestPanel(unittest.TestCase):
     def test_nearly_planar_panel(self):
         """Test with a nearly planar panel."""
         # Create a panel with very slight twist
-        panel = ps.geometry.panel.Panel(
+        panel = _panel.Panel(
             Frpp_G_Cg=[0.0, 1.0, 0.001],
             Flpp_G_Cg=[0.0, 0.0, 0.0],
             Blpp_G_Cg=[2.0, 0.0, 0.0],
@@ -376,7 +378,7 @@ class TestPanel(unittest.TestCase):
     def test_twisted_panel(self):
         """Test with a non-planar (twisted) panel."""
         # Create a twisted panel
-        panel = ps.geometry.panel.Panel(
+        panel = _panel.Panel(
             Frpp_G_Cg=[0.0, 1.0, 0.5],
             Flpp_G_Cg=[0.0, 0.0, 0.0],
             Blpp_G_Cg=[2.0, 0.0, -0.5],
@@ -395,7 +397,7 @@ class TestPanel(unittest.TestCase):
     def test_small_panel(self):
         """Test with very small panel dimensions."""
         # Create a very small panel (0.01 m x 0.01 m)
-        panel = ps.geometry.panel.Panel(
+        panel = _panel.Panel(
             Frpp_G_Cg=[0.00, 0.01, 0.0],
             Flpp_G_Cg=[0.00, 0.00, 0.0],
             Blpp_G_Cg=[0.01, 0.00, 0.0],
@@ -415,7 +417,7 @@ class TestPanel(unittest.TestCase):
     def test_tapered_panel(self):
         """Test with a tapered (trapezoidal) panel."""
         # Create a trapezoidal panel with different front and back spans
-        panel = ps.geometry.panel.Panel(
+        panel = _panel.Panel(
             Frpp_G_Cg=[0.0, 1.0, 0.0],  # Front span: 1.0 m
             Flpp_G_Cg=[0.0, 0.0, 0.0],
             Blpp_G_Cg=[2.0, 0.0, 0.0],

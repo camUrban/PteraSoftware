@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from .. import geometry
 from .. import _functions
+from .. import _panel
 from .. import _transformations
 
 
@@ -603,7 +603,7 @@ def _get_panels(
     # Loop through the empty Panels array and create a new Panel in each position.
     for chordwise_position in range(num_chordwise_panels):
         for spanwise_position in range(num_spanwise_panels):
-            panels[chordwise_position, spanwise_position] = geometry.panel.Panel(
+            panels[chordwise_position, spanwise_position] = _panel.Panel(
                 Frpp_G_Cg=Frpp_G_Cg[chordwise_position, spanwise_position],
                 Flpp_G_Cg=Flpp_G_Cg[chordwise_position, spanwise_position],
                 Blpp_G_Cg=Blpp_G_Cg[chordwise_position, spanwise_position],

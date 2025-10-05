@@ -20,8 +20,8 @@ from tqdm import tqdm
 
 from . import _aerodynamics
 from . import _functions
-from . import geometry
 from . import _parameter_validation
+from . import _panel
 from . import problems
 
 
@@ -558,7 +558,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 wake_ring_vortices = np.ravel(wing.wake_ring_vortices)
 
                 # Iterate through the 1D ndarray of this Wing's Panels.
-                panel: geometry.panel.Panel
+                panel: _panel.Panel
                 for panel in panels:
                     # Update the solver's list of attributes with this Panel's
                     # attributes.
@@ -613,7 +613,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     panels = np.ravel(wing.panels)
 
                     # Iterate through the 1D ndarray of this Wing's Panels.
-                    panel: geometry.panel.Panel
+                    panel: _panel.Panel
                     for panel in panels:
                         # Update the solver's list of attributes with this Panel's
                         # attributes.

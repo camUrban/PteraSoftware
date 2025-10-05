@@ -13,8 +13,8 @@ This module contains the following functions:
 
 import numpy as np
 
-from . import _transformations
 from . import _parameter_validation
+from . import _transformations
 
 
 class OperatingPoint:

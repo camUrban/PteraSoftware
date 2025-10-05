@@ -18,7 +18,7 @@ import numpy as np
 
 from . import _aerodynamics
 from . import _functions
-from . import geometry
+from . import _panel
 from . import _parameter_validation
 from . import problems
 
@@ -374,7 +374,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Update the RingVortices' and HorseshoeVortices' strengths.
         for panel_num in range(self.panels.size):
-            panel: geometry.panel.Panel = self.panels[panel_num]
+            panel: _panel.Panel = self.panels[panel_num]
 
             panel.ring_vortex.update_strength(self._vortex_strengths[panel_num])
 

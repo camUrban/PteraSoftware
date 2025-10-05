@@ -27,10 +27,10 @@ import logging
 import numpy as np
 import scipy.optimize
 
-from . import steady_horseshoe_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
 from . import movements
 from . import problems
+from . import steady_horseshoe_vortex_lattice_method
+from . import unsteady_ring_vortex_lattice_method
 
 trim_logger = logging.getLogger("trim")
 trim_logger.setLevel(logging.DEBUG)

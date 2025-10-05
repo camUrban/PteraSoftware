@@ -7,13 +7,13 @@ import logging
 import numpy as np
 from numba import njit
 
-from .geometry.panel import Panel
-from .steady_horseshoe_vortex_lattice_method import (
-    SteadyHorseshoeVortexLatticeMethodSolver,
-)
-from .steady_ring_vortex_lattice_method import SteadyRingVortexLatticeMethodSolver
-from . import _transformations, geometry, _parameter_validation
-from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
+from . import _panel
+from . import _parameter_validation
+from . import _transformations
+from . import geometry
+from . import steady_horseshoe_vortex_lattice_method
+from . import steady_ring_vortex_lattice_method
+from . import unsteady_ring_vortex_lattice_method
 
 
 # NOTE: I haven't yet started refactoring this function.
@@ -103,9 +103,9 @@ def numba_centroid_of_quadrilateral(
 # NOTE: I haven't yet started refactoring this function.
 def calculate_streamlines(
     solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver
-        | SteadyRingVortexLatticeMethodSolver
-        | UnsteadyRingVortexLatticeMethodSolver
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     num_steps=25,
     delta_time=0.02,
@@ -185,9 +185,9 @@ def convert_logging_level_name_to_value(name):
 # TODO: Add unit tests for this function.
 def process_solver_loads(
     solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver
-        | SteadyRingVortexLatticeMethodSolver
-        | UnsteadyRingVortexLatticeMethodSolver
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_G,
     stackPanelMoments_G_Cg,
@@ -221,11 +221,17 @@ def process_solver_loads(
     """
     if isinstance(
         solver,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
+        (
+            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+            steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+        ),
     ):
         these_airplanes = solver.airplanes
         this_operating_point = solver.operating_point
-    elif isinstance(solver, UnsteadyRingVortexLatticeMethodSolver):
+    elif isinstance(
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
         these_airplanes = solver.current_airplanes
         this_operating_point = solver.current_operating_point
     else:
@@ -257,7 +263,7 @@ def process_solver_loads(
     T_pas_G_Cg_to_W_Cg = this_operating_point.T_pas_G_Cg_to_W_Cg
 
     # Iterate through this solver's Panels.
-    panel: geometry.panel.Panel
+    panel: _panel.Panel
     for panel_num, panel in enumerate(solver.panels):
         theseForces_G = stackPanelForces_G[panel_num, :]
         theseMoments_G_Cg = stackPanelMoments_G_Cg[panel_num, :]
@@ -288,7 +294,7 @@ def process_solver_loads(
     for airplane_num, airplane in enumerate(these_airplanes):
         wing: geometry.wing.Wing
         for wing in airplane.wings:
-            panel: geometry.panel.Panel
+            panel: _panel.Panel
             for panel in np.ravel(wing.panels):
                 stackAirplaneForces_G[airplane_num, :] += panel.forces_G
                 stackAirplaneMoments_G_Cg[airplane_num, :] += panel.moments_G_Cg
@@ -325,10 +331,11 @@ def process_solver_loads(
 # NOTE: I haven't yet started refactoring this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
-        SteadyRingVortexLatticeMethodSolver | UnsteadyRingVortexLatticeMethodSolver
+        steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
-    panel: Panel,
+    panel: _panel.Panel,
 ):
     """This function populates a ring vortex solver's attributes with the attributes
     of a given panel.
@@ -409,7 +416,8 @@ def update_ring_vortex_solvers_panel_attributes(
 # NOTE: I haven't yet started refactoring this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
-        SteadyHorseshoeVortexLatticeMethodSolver | SteadyRingVortexLatticeMethodSolver
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
     ),
 ):
     """This function finds the vector of freestream-wing influence coefficients

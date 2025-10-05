@@ -22,12 +22,11 @@ import time
 import numpy as np
 
 from . import geometry
-from . import problems
 from . import movements
-
-from . import unsteady_ring_vortex_lattice_method
+from . import problems
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
+from . import unsteady_ring_vortex_lattice_method
 
 convergence_logger = logging.getLogger("convergence")
 convergence_logger.setLevel(logging.INFO)

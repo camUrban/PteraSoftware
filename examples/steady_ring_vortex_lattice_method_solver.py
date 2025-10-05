@@ -48,7 +48,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                     # This will be fixed in a future release. The default value is
                     # 0.0 degrees. Positive twist corresponds to positive rotation
                     # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,  # Define the type of control surface. The options are "symmetric"
+                    twist=0.0,
+                    # Define the type of control surface. The options are "symmetric"
                     # and "asymmetric". This is only applicable if your wing is also
                     # symmetric. If so, symmetric control surfaces will deflect in
                     # the same direction, like flaps, while asymmetric control

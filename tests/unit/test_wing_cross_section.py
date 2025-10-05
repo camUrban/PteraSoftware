@@ -38,7 +38,7 @@ class TestWingCrossSection(unittest.TestCase):
             self.basic_wing_cross_section.Lp_Wcsp_Lpp, np.array([0.2, 0.5, 0.1])
         )
         np.testing.assert_array_equal(
-            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_izyx,
+            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
             np.array([5.0, -2.0, 3.0]),
         )
         self.assertEqual(
@@ -63,7 +63,7 @@ class TestWingCrossSection(unittest.TestCase):
             wing_cross_section.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])
         )
         np.testing.assert_array_equal(
-            wing_cross_section.angles_Wcsp_to_Wcs_izyx, np.array([0.0, 0.0, 0.0])
+            wing_cross_section.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])
         )
         self.assertEqual(wing_cross_section.control_surface_symmetry_type, None)
         self.assertEqual(wing_cross_section.control_surface_hinge_point, 0.75)
@@ -171,8 +171,8 @@ class TestWingCrossSection(unittest.TestCase):
                         Lp_Wcsp_Lpp=invalid_vector,
                     )
 
-    def test_angles_Wcsp_to_Wcs_izyx_validation(self):
-        """Test angles_Wcsp_to_Wcs_izyx parameter validation."""
+    def test_angles_Wcsp_to_Wcs_ixyz_validation(self):
+        """Test angles_Wcsp_to_Wcs_ixyz parameter validation."""
         # Test with valid array-like angles (within -90, 90 range)
         valid_angles = [
             np.array([0.0, 0.0, 0.0]),  # numpy array of floats
@@ -186,10 +186,10 @@ class TestWingCrossSection(unittest.TestCase):
                 wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=self.test_airfoil,
                     num_spanwise_panels=8,
-                    angles_Wcsp_to_Wcs_izyx=angles,
+                    angles_Wcsp_to_Wcs_ixyz=angles,
                 )
                 np.testing.assert_array_equal(
-                    wing_cross_section.angles_Wcsp_to_Wcs_izyx, angles
+                    wing_cross_section.angles_Wcsp_to_Wcs_ixyz, angles
                 )
 
         # Test with angles outside valid range (using various array-like formats)
@@ -205,7 +205,7 @@ class TestWingCrossSection(unittest.TestCase):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
                         num_spanwise_panels=8,
-                        angles_Wcsp_to_Wcs_izyx=invalid_angle,
+                        angles_Wcsp_to_Wcs_ixyz=invalid_angle,
                     )
 
     def test_control_surface_symmetry_type_validation(self):
@@ -387,7 +387,7 @@ class TestWingCrossSection(unittest.TestCase):
             num_spanwise_panels=100,
             chord=50.0,
             Lp_Wcsp_Lpp=np.array([10.0, 20.0, 5.0]),
-            angles_Wcsp_to_Wcs_izyx=np.array([89.9, -89.9, 89.9]),
+            angles_Wcsp_to_Wcs_ixyz=np.array([89.9, -89.9, 89.9]),
             control_surface_hinge_point=0.001,  # Very small but valid
             control_surface_deflection=5.0,  # Maximum valid deflection
         )

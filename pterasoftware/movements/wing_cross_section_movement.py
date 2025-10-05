@@ -44,10 +44,10 @@ class WingCrossSectionMovement:
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
         phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     ):
         """This is the initialization method.
 
@@ -100,51 +100,51 @@ class WingCrossSectionMovement:
             0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding element in
             ampLp_Wcsp_Lpp is 0.0 and non-zero if not. The units are in degrees.
 
-        :param ampAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param ampAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The amplitudes of the WingCrossSectionMovement's changes in its
-            WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a tuple,
+            WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range [0.0,
             180.0). Also, each amplitude must be low enough that it doesn't drive its
             base value out of the range of valid values. Otherwise,
             this WingCrossSectionMovement will try to create WingCrossSections with
             invalid parameters values. Values are converted to floats internally. The
-            default value is ( 0.0, 0.0, 0.0). The units are in degrees.
+            default value is (0.0, 0.0, 0.0). The units are in degrees.
 
-        :param periodAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param periodAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The periods of the WingCrossSectionMovement's changes in its
-            WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a tuple,
+            WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple,
             list, or numpy array of non-negative numbers (int or float). Values are
             converted to floats internally. The default value is (0.0, 0.0,
             0.0). Each element must be 0.0 if the corresponding element in
-            ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
+            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if not. The units are in
             seconds.
 
-        :param spacingAngles_Wcsp_to_Wcs_izyx: array-like of 3 strs or callables, optional
+        :param spacingAngles_Wcsp_to_Wcs_ixyz: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingCrossSectionMovement's change
-            in its WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a
+            in its WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a
             tuple, list, or numpy array. Each element can be the string "sine", the
             string "uniform", or a callable custom spacing function. Custom spacing
             functions are for advanced users and must start at 0, return to 0 after
             one period of 2*pi radians, have zero mean, have amplitude of 1, be
             periodic, return finite values only, and accept a ndarray as input and
             return a ndarray of the same shape. The custom function is scaled by
-            ampAngles_Wcsp_to_Wcs_izyx, shifted by phaseAngles_Wcsp_to_Wcs_izyx, and
+            ampAngles_Wcsp_to_Wcs_ixyz, shifted by phaseAngles_Wcsp_to_Wcs_ixyz, and
             centered around the base value, with the period controlled by
-            periodAngles_Wcsp_to_Wcs_izyx. The default value is ("sine", "sine",
+            periodAngles_Wcsp_to_Wcs_ixyz. The default value is ("sine", "sine",
             "sine").
 
-        :param phaseAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param phaseAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's
-            WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter relative to the base
-            WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter. Can be a tuple,
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter relative to the base
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range (-180.0,
             180.0]. Values are converted to floats internally. The default value is (
             0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding element in
-            ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
+            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if not. The units are in
             degrees.
         """
         if not isinstance(
@@ -197,64 +197,64 @@ class WingCrossSectionMovement:
                 )
         self.phaseLp_Wcsp_Lpp = phaseLp_Wcsp_Lpp
 
-        ampAngles_Wcsp_to_Wcs_izyx = (
+        ampAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                ampAngles_Wcsp_to_Wcs_izyx, "ampAngles_Wcsp_to_Wcs_izyx"
+                ampAngles_Wcsp_to_Wcs_ixyz, "ampAngles_Wcsp_to_Wcs_ixyz"
             )
         )
         if not (
-            np.all(ampAngles_Wcsp_to_Wcs_izyx >= 0.0)
-            and np.all(ampAngles_Wcsp_to_Wcs_izyx < 180.0)
+            np.all(ampAngles_Wcsp_to_Wcs_ixyz >= 0.0)
+            and np.all(ampAngles_Wcsp_to_Wcs_ixyz < 180.0)
         ):
             raise ValueError(
-                "All elements in ampAngles_Wcsp_to_Wcs_izyx must be in the range [0.0, 180.0)."
+                "All elements in ampAngles_Wcsp_to_Wcs_ixyz must be in the range [0.0, 180.0)."
             )
-        self.ampAngles_Wcsp_to_Wcs_izyx = ampAngles_Wcsp_to_Wcs_izyx
+        self.ampAngles_Wcsp_to_Wcs_ixyz = ampAngles_Wcsp_to_Wcs_ixyz
 
-        periodAngles_Wcsp_to_Wcs_izyx = (
+        periodAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                periodAngles_Wcsp_to_Wcs_izyx, "periodAngles_Wcsp_to_Wcs_izyx"
+                periodAngles_Wcsp_to_Wcs_ixyz, "periodAngles_Wcsp_to_Wcs_ixyz"
             )
         )
-        if not np.all(periodAngles_Wcsp_to_Wcs_izyx >= 0.0):
+        if not np.all(periodAngles_Wcsp_to_Wcs_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_Wcsp_to_Wcs_izyx must be non-negative."
+                "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be non-negative."
             )
-        for period_index, period in enumerate(periodAngles_Wcsp_to_Wcs_izyx):
-            amp = self.ampAngles_Wcsp_to_Wcs_izyx[period_index]
+        for period_index, period in enumerate(periodAngles_Wcsp_to_Wcs_ixyz):
+            amp = self.ampAngles_Wcsp_to_Wcs_ixyz[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampAngles_Wcsp_to_Wcs_izyx is 0.0, the corresponding element in periodAngles_Wcsp_to_Wcs_izyx must be also be 0.0."
+                    "If an element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0, the corresponding element in periodAngles_Wcsp_to_Wcs_ixyz must be also be 0.0."
                 )
-        self.periodAngles_Wcsp_to_Wcs_izyx = periodAngles_Wcsp_to_Wcs_izyx
+        self.periodAngles_Wcsp_to_Wcs_ixyz = periodAngles_Wcsp_to_Wcs_ixyz
 
-        spacingAngles_Wcsp_to_Wcs_izyx = (
+        spacingAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingAngles_Wcsp_to_Wcs_izyx,
-                "spacingAngles_Wcsp_to_Wcs_izyx",
+                spacingAngles_Wcsp_to_Wcs_ixyz,
+                "spacingAngles_Wcsp_to_Wcs_ixyz",
             )
         )
-        self.spacingAngles_Wcsp_to_Wcs_izyx = spacingAngles_Wcsp_to_Wcs_izyx
+        self.spacingAngles_Wcsp_to_Wcs_ixyz = spacingAngles_Wcsp_to_Wcs_ixyz
 
-        phaseAngles_Wcsp_to_Wcs_izyx = (
+        phaseAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                phaseAngles_Wcsp_to_Wcs_izyx, "phaseAngles_Wcsp_to_Wcs_izyx"
+                phaseAngles_Wcsp_to_Wcs_ixyz, "phaseAngles_Wcsp_to_Wcs_ixyz"
             )
         )
         if not (
-            np.all(phaseAngles_Wcsp_to_Wcs_izyx > -180.0)
-            and np.all(phaseAngles_Wcsp_to_Wcs_izyx <= 180.0)
+            np.all(phaseAngles_Wcsp_to_Wcs_ixyz > -180.0)
+            and np.all(phaseAngles_Wcsp_to_Wcs_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_Wcsp_to_Wcs_izyx must be in the range (-180.0, 180.0]."
+                "All elements in phaseAngles_Wcsp_to_Wcs_ixyz must be in the range (-180.0, 180.0]."
             )
-        for phase_index, phase in enumerate(phaseAngles_Wcsp_to_Wcs_izyx):
-            amp = self.ampAngles_Wcsp_to_Wcs_izyx[phase_index]
+        for phase_index, phase in enumerate(phaseAngles_Wcsp_to_Wcs_ixyz):
+            amp = self.ampAngles_Wcsp_to_Wcs_ixyz[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampAngles_Wcsp_to_Wcs_izyx is 0.0, the corresponding element in phaseAngles_Wcsp_to_Wcs_izyx must be also be 0.0."
+                    "If an element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0, the corresponding element in phaseAngles_Wcsp_to_Wcs_ixyz must be also be 0.0."
                 )
-        self.phaseAngles_Wcsp_to_Wcs_izyx = phaseAngles_Wcsp_to_Wcs_izyx
+        self.phaseAngles_Wcsp_to_Wcs_ixyz = phaseAngles_Wcsp_to_Wcs_ixyz
 
     def generate_wing_cross_sections(
         self,
@@ -321,35 +321,35 @@ class WingCrossSectionMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
 
-        # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_izyx.
-        listAngles_Wcsp_to_Wcs_izyx = np.zeros((3, num_steps), dtype=float)
+        # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_ixyz.
+        listAngles_Wcsp_to_Wcs_ixyz = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingAngles_Wcsp_to_Wcs_izyx[dim]
+            spacing = self.spacingAngles_Wcsp_to_Wcs_ixyz[dim]
             if spacing == "sine":
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = _functions.oscillating_sinspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = _functions.oscillating_linspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listAngles_Wcsp_to_Wcs_izyx[dim, :] = (
+                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = (
                     _functions.oscillating_customspaces(
-                        amps=self.ampAngles_Wcsp_to_Wcs_izyx[dim],
-                        periods=self.periodAngles_Wcsp_to_Wcs_izyx[dim],
-                        phases=self.phaseAngles_Wcsp_to_Wcs_izyx[dim],
-                        bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_izyx[dim],
+                        amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                        periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                        phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                        bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
                         num_steps=num_steps,
                         delta_time=delta_time,
                         custom_function=spacing,
@@ -379,7 +379,7 @@ class WingCrossSectionMovement:
         # Iterate through the time steps.
         for step in range(num_steps):
             thisLp_Wcsp_Lpp = listLp_Wcsp_Lpp[:, step]
-            theseAngles_Wcsp_to_Wcs_izyx = listAngles_Wcsp_to_Wcs_izyx[:, step]
+            theseAngles_Wcsp_to_Wcs_ixyz = listAngles_Wcsp_to_Wcs_ixyz[:, step]
 
             # Make a new WingCrossSection for this time step.
             this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
@@ -387,7 +387,7 @@ class WingCrossSectionMovement:
                 num_spanwise_panels=this_num_spanwise_panels,
                 chord=this_chord,
                 Lp_Wcsp_Lpp=thisLp_Wcsp_Lpp,
-                angles_Wcsp_to_Wcs_izyx=theseAngles_Wcsp_to_Wcs_izyx,
+                angles_Wcsp_to_Wcs_ixyz=theseAngles_Wcsp_to_Wcs_ixyz,
                 control_surface_symmetry_type=this_control_surface_symmetry_type,
                 control_surface_hinge_point=this_control_surface_hinge_point,
                 control_surface_deflection=this_control_surface_deflection,
@@ -412,6 +412,6 @@ class WingCrossSectionMovement:
         return float(
             max(
                 np.max(self.periodLp_Wcsp_Lpp),
-                np.max(self.periodAngles_Wcsp_to_Wcs_izyx),
+                np.max(self.periodAngles_Wcsp_to_Wcs_ixyz),
             )
         )

@@ -78,7 +78,7 @@ class WingCrossSection:
         num_spanwise_panels,
         chord=1.0,
         Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         control_surface_symmetry_type=None,
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
@@ -115,20 +115,18 @@ class WingCrossSection:
             vector. The second component must be non-negative. The default is (0.0,
             0.0, 0.0).
 
-        :param angles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param angles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
-            This is the angle vector of rotation angles [roll, pitch, yaw] in degrees
-            that define the orientation of this WingCrossSection's axes relative to
-            the parent wing cross section axes. Can be a tuple, list, or numpy array
-            of numbers (int or float). Values are converted to floats internally. If
-            this is a root WingCrossSection, these are the wing axes. If not,
-            the parent axes are the previous WingCrossSection's axes. For the root
-            WingCrossSection, this must be a zero vector. For other
+            This is the angle vector of rotation angles [angleX, angleY, angleZ] in
+            degrees that define the orientation of this WingCrossSection's axes
+            relative to the parent wing cross section axes. Can be a tuple, list,
+            or numpy array of numbers (int or float). Values are converted to floats
+            internally. If this is a root WingCrossSection, these are the wing axes.
+            If not, the parent axes are the previous WingCrossSection's axes. For the
+            root WingCrossSection, this must be a zero vector. For other
             WingCrossSections, all angles must be in the range (-90, 90) degrees.
-            Roll is rotation about the x-axis, pitch is rotation about the y-axis,
-            and yaw is rotation about the z-axis. Rotations are intrinsic,
-            and proceed in the z-y'-x'' order conventional for Euler angles. The
-            units are degrees. The default is (0.0, 0.0, 0.0).
+            Rotations are intrinsic, and proceed in the x-y'-z" order. The units are
+            degrees. The default is (0.0, 0.0, 0.0).
 
         :param control_surface_symmetry_type: str or None, optional
 
@@ -187,26 +185,26 @@ class WingCrossSection:
         )
         self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
 
-        # Perform a preliminary validation for angles_Wcsp_to_Wcs_izyx. The parent
+        # Perform a preliminary validation for angles_Wcsp_to_Wcs_ixyz. The parent
         # Wing will later check that this is a zero vector if this WingCrossSection
         # is a root WingCrossSection.
-        angles_Wcsp_to_Wcs_izyx = (
+        angles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                angles_Wcsp_to_Wcs_izyx, "angles_Wcsp_to_Wcs_izyx"
+                angles_Wcsp_to_Wcs_ixyz, "angles_Wcsp_to_Wcs_ixyz"
             )
         )
-        for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_izyx):
-            angles_Wcsp_to_Wcs_izyx[angle_id] = (
+        for angle_id, angle in enumerate(angles_Wcsp_to_Wcs_ixyz):
+            angles_Wcsp_to_Wcs_ixyz[angle_id] = (
                 _parameter_validation.number_in_range_return_float(
                     angle,
-                    f"angles_Wcsp_to_Wcs_izyx[{angle_id}]",
+                    f"angles_Wcsp_to_Wcs_ixyz[{angle_id}]",
                     -90.0,
                     False,
                     90.0,
                     False,
                 )
             )
-        self.angles_Wcsp_to_Wcs_izyx = angles_Wcsp_to_Wcs_izyx
+        self.angles_Wcsp_to_Wcs_ixyz = angles_Wcsp_to_Wcs_ixyz
 
         # Validate control surface symmetry type.
         if control_surface_symmetry_type is not None:
@@ -274,7 +272,7 @@ class WingCrossSection:
         """This method is called by the parent Wing to validate constraints specific
         to root WingCrossSections.
 
-        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_izyx
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz
         set to zero vectors.
 
         :raises ValueError: If root constraints are violated.
@@ -285,9 +283,9 @@ class WingCrossSection:
             raise ValueError(
                 "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, 0.0])."
             )
-        if not np.allclose(self.angles_Wcsp_to_Wcs_izyx, np.array([0.0, 0.0, 0.0])):
+        if not np.allclose(self.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
-                "The root WingCrossSection's angles_Wcsp_to_Wcs_izyx must be np.array([0.0, 0.0, 0.0])."
+                "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be np.array([0.0, 0.0, 0.0])."
             )
 
     def validate_tip_constraints(self):
@@ -387,10 +385,10 @@ class WingCrossSection:
             airfoilMcl_WcspReflectY_lpp = airfoilMcl_Wcsp_lpp
 
         rot_T_act = _transformations.generate_rot_T(
-            angles=self.angles_Wcsp_to_Wcs_izyx,
+            angles=self.angles_Wcsp_to_Wcs_ixyz,
             passive=False,
             intrinsic=True,
-            order="zyx",
+            order="xyz",
         )
         trans_T_act = _transformations.generate_trans_T(
             translations=self.Lp_Wcsp_Lpp,
@@ -536,11 +534,12 @@ class WingCrossSection:
         # from parent wing cross section axes to wing cross section axes This is the
         # rotation step.
         T_rot_pas_Wcsp_to_Wcs = _transformations.generate_rot_T(
-            self.angles_Wcsp_to_Wcs_izyx, passive=True, intrinsic=True, order="zyx"
+            self.angles_Wcsp_to_Wcs_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
-        # TODO: Switch to using _transformations.compose_T_pas()
-        return T_rot_pas_Wcsp_to_Wcs @ T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp
+        return _transformations.compose_T_pas(
+            T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
+        )
 
     @property
     def T_pas_Wcs_Lp_to_Wcsp_Lpp(self):

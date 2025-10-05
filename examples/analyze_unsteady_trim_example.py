@@ -79,11 +79,7 @@ example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=example_airplane.wings[
                         0
-                    ].wing_cross_sections[1],
-                    sweeping_period=1.0,
-                    sweeping_amplitude=5.0,
-                    heaving_period=1.0,
-                    heaving_amplitude=10.0,
+                    ].wing_cross_sections[1]
                 ),
             ],
         ),

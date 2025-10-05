@@ -7,7 +7,6 @@ from .. import _functions
 from .. import _transformations
 
 
-# TODO: Add unit tests for this function.
 def mesh_wing(wing):
     """This function takes in Wing and creates a quadrilateral mesh of its geometry,
     and then populates its array of Panels with the mesh data.
@@ -24,8 +23,8 @@ def mesh_wing(wing):
     # Gather this Wing's attributes
     wing_cross_sections = wing.wing_cross_sections
     symmetry_type = wing.symmetry_type
-    symmetry_normal_G = wing.symmetry_normal_G
-    symmetry_point_G_Cg = wing.symmetry_point_G_Cg
+    symmetryNormal_G = wing.symmetryNormal_G
+    symmetryPoint_G_Cg = wing.symmetryPoint_G_Cg
     num_chordwise_panels = wing.num_chordwise_panels
     chordwise_spacing = wing.chordwise_spacing
     T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
@@ -272,8 +271,8 @@ def mesh_wing(wing):
             #  their respective wing axes relative to their respective leading edge
             #  root points. So why is the active transformation necessary?
             reflect_T_act = _transformations.generate_reflect_T(
-                plane_point_A_a=symmetry_point_G_Cg,
-                plane_normal_A=symmetry_normal_G,
+                plane_point_A_a=symmetryPoint_G_Cg,
+                plane_normal_A=symmetryNormal_G,
                 passive=False,
             )
             reflected_Fipp_Wn_Ler = _transformations.apply_T_to_vectors(

@@ -986,7 +986,7 @@
             from the actual position as explained in the class docstring. The units
             are meters. The default is (0.0, 0.0, 0.0).
 
-        :param angles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+        :param angles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
 
             This is the rotation angles [angleX, angleY, angleZ] in degrees that
             define the orientation of this Wing's axes relative to the geometry axes
@@ -1002,14 +1002,14 @@
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
             True, symmetric must be False. If symmetric is true, then neither
-            symmetry_normal_G nor symmetry_point_G_Cg can be None. If the symmetry
+            symmetryNormal_G nor symmetryPoint_G_Cg can be None. If the symmetry
             plane is coincident with this Wing's wing axes' xz-plane, the mirrored
             and non-mirrored geometry will be meshed as a single wing. If not,
             this Wing's Airplane will automatically create another Wing with the
             mirrored geometry, modify both Wings' parameters, and add the reflected
             Wing to its list of wings immediately following this one. For more
             details on how that process, and how this parameter interacts with
-            symmetry_normal_G, symmetry_point_G_Cg, and mirror_only, see the class
+            symmetryNormal_G, symmetryPoint_G_Cg, and mirror_only, see the class
             docstring. It can be a boolean or a NumPy boolean and will be converted
             internally to a boolean. The default is False.
 
@@ -1018,38 +1018,38 @@
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
             is True, mirror_only must be False. If mirror_only is true, then neither
-            symmetry_normal_G nor symmetry_point_G_Cg can be None. For more
-            details on how this parameter interacts with symmetry_normal_G,
-            symmetry_point_G_Cg, and symmetric, see the class docstring. It can be
+            symmetryNormal_G nor symmetryPoint_G_Cg can be None. For more
+            details on how this parameter interacts with symmetryNormal_G,
+            symmetryPoint_G_Cg, and symmetric, see the class docstring. It can be
             a boolean or a NumPy boolean and will be converted internally to a
             boolean. The default is False.
 
-        :param symmetry_normal_G: array-like of 3 numbers or None, optional
+        :param symmetryNormal_G: array-like of 3 numbers or None, optional
 
             The unit normal vector (in preliminary wing axes) that, together with
-            symmetry_point_G_Cg, defines the plane used for symmetry or mirroring.
+            symmetryPoint_G_Cg, defines the plane used for symmetry or mirroring.
             Can be a tuple, list, or numpy array of numbers (int or float), or None.
             Values are converted to floats and normalized internally. Note that
             reversing the normal direction (using the antiparallel vector) defines
             the same plane and produces the same result. This value must be None if
             both symmetric and mirror_only are False, and cannot be None if either
             are True. For more details on how this parameter interacts with
-            symmetry_point_G_Cg, symmetric, and mirror_only, see the class
+            symmetryPoint_G_Cg, symmetric, and mirror_only, see the class
             docstring. The default is None. In mirror_only cases, the wing axes
             themselves are reflected, so this vector is identical in preliminary wing
             axes and wing axes.
 
-        :param symmetry_point_G_Cg: array-like of 3 numbers or None,
+        :param symmetryPoint_G_Cg: array-like of 3 numbers or None,
         optional
 
             A point [x, y, z] (in preliminary wing axes, relative to the preliminary
-            leading edge root point) that, along with symmetry_normal_G, defines the
+            leading edge root point) that, along with symmetryNormal_G, defines the
             location of the plane about which symmetry or mirroring is applied. Can
             be a list, tuple, or numpy array of numbers (int or float), or None.
             Values are converted to floats internally. This value must be None if
             both symmetric and mirror_only are False, and cannot be None if either
             are True. For more details on how this parameter interacts with
-            symmetry_normal_G, symmetric, and mirror_only, see the class docstring.
+            symmetryNormal_G, symmetric, and mirror_only, see the class docstring.
             The units are meters. The default is None. In mirror_only cases, the wing
             axes themselves are reflected, so this vector is identical in preliminary
             wing axes relative to the preliminary leading edge root point and in wing
@@ -1152,7 +1152,7 @@
             vector. The second component must be non-negative. The default is (0.0,
             0.0, 0.0).
 
-        :param angles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param angles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             This is the angle vector of rotation angles [roll, pitch, yaw] in degrees
             that define the orientation of this WingCrossSection's axes relative to
@@ -1318,48 +1318,48 @@
             0.0, 0.0). Each element must be 0.0 if the corresponding element in
             ampLp_Wcsp_Lpp is 0.0 and non-zero if not. The units are in degrees.
 
-        :param ampAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param ampAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The amplitudes of the WingCrossSectionMovement's changes in its
-            WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a tuple,
+            WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range [0.0,
             180.0). Values are converted to floats internally. The default value is (
             0.0, 0.0, 0.0). The units are in degrees.
 
-        :param periodAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param periodAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The periods of the WingCrossSectionMovement's changes in its
-            WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a tuple,
+            WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple,
             list, or numpy array of non-negative numbers (int or float). Values are
             converted to floats internally. The default value is (0.0, 0.0,
             0.0). Each element must be 0.0 if the corresponding element in
-            ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
+            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if not. The units are in
             seconds.
 
-        :param spacingAngles_Wcsp_to_Wcs_izyx: array-like of 3 strs or callables, optional
+        :param spacingAngles_Wcsp_to_Wcs_ixyz: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingCrossSectionMovement's change
-            in its WingCrossSections' angles_Wcsp_to_Wcs_izyx parameters. Can be a
+            in its WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a
             tuple, list, or numpy array. Each element can be the string "sine", the
             string "uniform", or a callable custom spacing function. Custom spacing
             functions are for advanced users and must start at 0, return to 0 after
             one period of 2*pi radians, have zero mean, have amplitude of 1, be
             periodic, return finite values only, and accept a ndarray as input and
             return a ndarray of the same shape. The custom function is scaled by
-            ampAngles_Wcsp_to_Wcs_izyx, shifted by phaseAngles_Wcsp_to_Wcs_izyx, and
+            ampAngles_Wcsp_to_Wcs_ixyz, shifted by phaseAngles_Wcsp_to_Wcs_ixyz, and
             centered around the base value, with the period controlled by
-            periodAngles_Wcsp_to_Wcs_izyx. The default value is ("sine", "sine",
+            periodAngles_Wcsp_to_Wcs_ixyz. The default value is ("sine", "sine",
             "sine").
 
-        :param phaseAngles_Wcsp_to_Wcs_izyx: array-like of 3 numbers, optional
+        :param phaseAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's
-            WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter relative to the base
-            WingCrossSection's angles_Wcsp_to_Wcs_izyx parameter. Can be a tuple,
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter relative to the base
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range [0.0,
             360.0). Values are converted to floats internally. The default value is (
             0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding element in
-            ampAngles_Wcsp_to_Wcs_izyx is 0.0 and non-zero if not. The units are in
+            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if not. The units are in
             degrees.
         """
 ```
@@ -1458,46 +1458,46 @@
             0.0 if the corresponding element in ampPrelimLer_G_Cg is 0.0 and non-zero
             if not. The units are in degrees.
 
-        :param ampAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+        :param ampAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
 
             The amplitudes of the WingMovement's changes in its Wings'
-            angles_G_to_prelimWn_izyx parameters. Can be a tuple, list, or numpy
+            angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list, or numpy
             array of numbers (int or float) in the range [0.0, 180.0). Values are
             converted to floats internally. The default value is (0.0, 0.0, 0.0). The
             units are in degrees.
 
-        :param periodAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+        :param periodAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
 
             The periods of the WingMovement's changes in its Wings'
-            angles_G_to_prelimWn_izyx parameters. Can be a tuple, list, or numpy
+            angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list, or numpy
             array of non-negative numbers (int or float). Values are converted to
             floats internally. The default value is (0.0, 0.0, 0.0). Each element
-            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
+            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_ixyz
             is 0.0 and non-zero if not. The units are in seconds.
 
-        :param spacingAngles_G_to_prelimWn_izyx: array-like of 3 strs or callables, optional
+        :param spacingAngles_G_to_prelimWn_ixyz: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingMovement's change in its
-            Wings' angles_G_to_prelimWn_izyx parameters. Can be a tuple, list,
+            Wings' angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list,
             or numpy array. Each element can be the string "sine", the string
             "uniform", or a callable custom spacing function. Custom spacing functions
             are for advanced users and must start at 0, return to 0 after one period
             of 2*pi radians, have zero mean, have amplitude of 1, be periodic, return
             finite values only, and accept a ndarray as input and return a ndarray of
             the same shape. The custom function is scaled by
-            ampAngles_G_to_prelimWn_izyx, shifted by phaseAngles_G_to_prelimWn_izyx,
+            ampAngles_G_to_prelimWn_ixyz, shifted by phaseAngles_G_to_prelimWn_ixyz,
             and centered around the base value, with the period controlled by
-            periodAngles_G_to_prelimWn_izyx. The default value is ("sine", "sine",
+            periodAngles_G_to_prelimWn_ixyz. The default value is ("sine", "sine",
             "sine").
 
-        :param phaseAngles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+        :param phaseAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Wing's
-            angles_G_to_prelimWn_izyx parameter relative to the base Wing's
-            angles_G_to_prelimWn_izyx parameter. Can be a tuple, list, or numpy array
+            angles_G_to_prelimWn_ixyz parameter relative to the base Wing's
+            angles_G_to_prelimWn_ixyz parameter. Can be a tuple, list, or numpy array
             of numbers (int or float) in the range [0.0, 360.0). Values are converted
             to floats internally. The default value is (0.0, 0.0, 0.0). Each element
-            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_izyx
+            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_ixyz
             is 0.0 and non-zero if not. The units are in degrees.
         """
 ```

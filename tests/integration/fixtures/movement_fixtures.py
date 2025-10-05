@@ -30,7 +30,7 @@ def make_static_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 
@@ -81,7 +81,7 @@ def make_variable_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
-            ].wing_cross_sections[0],
+            ].wing_cross_sections[0]
         )
     )
 
@@ -94,10 +94,10 @@ def make_variable_validation_movement():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(30.0, 30.0, 30.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 0.5, 0.5),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(30.0, 30.0, 30.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.5, 0.5),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -158,7 +158,7 @@ def make_multiple_wing_static_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 
@@ -174,7 +174,7 @@ def make_multiple_wing_static_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 
@@ -190,7 +190,7 @@ def make_multiple_wing_static_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 
@@ -263,7 +263,7 @@ def make_multiple_wing_variable_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 0
-            ].wing_cross_sections[0],
+            ].wing_cross_sections[0]
         )
     )
 
@@ -276,10 +276,10 @@ def make_multiple_wing_variable_validation_movement():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(30.0, 15.0, 15.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 1.0, 0.5),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(30.0, 15.0, 15.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 0.5),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -295,7 +295,7 @@ def make_multiple_wing_variable_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 1
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 
@@ -311,7 +311,7 @@ def make_multiple_wing_variable_validation_movement():
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=unsteady_validation_airplane.wings[
                 2
-            ].wing_cross_sections[1],
+            ].wing_cross_sections[1]
         )
     )
 

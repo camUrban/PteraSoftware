@@ -837,42 +837,38 @@ class TestComposeTPas(unittest.TestCase):
 
         :return: None
         """
-        # Goal: c_Wn_Ler, "the position of point c (in wing axes, relative to the
-        # leading edge root point)"
+        # Goal: c_B_b, "the position of point c (in B axes, relative to point b)"
 
         # Given:
-        # The position of point c (in geometry axes, relative to the CG point)
-        c_G_Cg = [0.5, -1.0, 2.0]
+        # The position of point c (in A axes, relative to point a)
+        c_A_a = [0.5, -1.0, 2.0]
 
         # Given:
-        # The position of the leading edge root point (in geometry axes, relative to
-        # the CG point)
-        Ler_G_CG = [1.0, 2.0, 0.5]
+        # The position of point b (in A axes, relative to point a)
+        b_A_a = [1.0, 2.0, 0.5]
 
         # Given:
-        # The orientation of wing axes relative to geometry axes using an intrinsic
-        # z-y'-x" rotation
-        angles_G_to_Wn_izyx = [0.0, 0.0, 90.0]
+        # The orientation of B axes relative to A axes using an intrinsic z-y'-x"
+        # rotation
+        angles_A_to_B_izyx = [0.0, 0.0, 90.0]
 
-        T_rot_pas_G_to_Wn = _transformations.generate_rot_T(
-            angles_G_to_Wn_izyx, passive=True, intrinsic=True, order="zyx"
+        T_rot_pas_A_to_B = _transformations.generate_rot_T(
+            angles_A_to_B_izyx, passive=True, intrinsic=True, order="zyx"
         )
-        T_trans_pas_G_Cg_to_G_Ler = _transformations.generate_trans_T(
-            Ler_G_CG, passive=True
-        )
+        T_trans_pas_A_a_to_A_b = _transformations.generate_trans_T(b_A_a, passive=True)
 
-        T_pas_G_Cg_to_Wn_Ler = _transformations.compose_T_pas(
-            T_trans_pas_G_Cg_to_G_Ler, T_rot_pas_G_to_Wn
+        T_pas_A_a_to_B_b = _transformations.compose_T_pas(
+            T_trans_pas_A_a_to_A_b, T_rot_pas_A_to_B
         )
 
-        c_Wn_Ler = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_Wn_Ler, c_G_Cg, has_point=True
+        c_B_b = _transformations.apply_T_to_vectors(
+            T_pas_A_a_to_B_b, c_A_a, has_point=True
         )
 
         # Expected value calculated using CAD model
-        c_Wn_Ler_expected = np.array([-3.0, 0.5, 1.5])
+        c_B_b_expected = np.array([-3.0, 0.5, 1.5])
 
-        npt.assert_allclose(c_Wn_Ler, c_Wn_Ler_expected)
+        npt.assert_allclose(c_B_b, c_B_b_expected)
 
 
 class TestComposeTAct(unittest.TestCase):

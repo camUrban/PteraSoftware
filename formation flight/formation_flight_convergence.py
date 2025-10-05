@@ -169,23 +169,17 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
-                                    ].wing_cross_sections[0],
+                                    ].wing_cross_sections[0]
                                 ),
                                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
-                                    ].wing_cross_sections[1],
-                                    sweeping_amplitude=flapping_amplitude,
-                                    sweeping_period=period,
-                                    sweeping_spacing="sine",
+                                    ].wing_cross_sections[1]
                                 ),
                                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                                     base_wing_cross_section=this_airplane.wings[
                                         0
-                                    ].wing_cross_sections[2],
-                                    sweeping_amplitude=flapping_amplitude,
-                                    sweeping_period=period,
-                                    sweeping_spacing="sine",
+                                    ].wing_cross_sections[2]
                                 ),
                             ],
                         )

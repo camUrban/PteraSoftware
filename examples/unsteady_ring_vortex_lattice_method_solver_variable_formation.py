@@ -70,16 +70,13 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         0
-                    ],
+                    ]
                 ),
                 # Define the tip wing cross section's movement object.
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=lead_airplane.wings[0].wing_cross_sections[
                         1
-                    ],
-                    sweeping_amplitude=15.0,
-                    sweeping_period=1.5,
-                    sweeping_spacing="sine",
+                    ]
                 ),
             ],
         ),
@@ -135,15 +132,12 @@ right_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
                         0
-                    ],
+                    ]
                 ),
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=right_airplane.wings[0].wing_cross_sections[
                         1
-                    ],
-                    sweeping_amplitude=15.0,
-                    sweeping_period=1.5,
-                    sweeping_spacing="sine",
+                    ]
                 ),
             ],
         ),
@@ -199,15 +193,12 @@ left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
                         0
-                    ],
+                    ]
                 ),
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=left_airplane.wings[0].wing_cross_sections[
                         1
-                    ],
-                    sweeping_amplitude=15.0,
-                    sweeping_period=1.5,
-                    sweeping_spacing="sine",
+                    ]
                 ),
             ],
         ),

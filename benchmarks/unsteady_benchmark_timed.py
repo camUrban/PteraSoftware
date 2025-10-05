@@ -24,8 +24,8 @@ example_airplane = ps.geometry.airplane.Airplane(
         ps.geometry.wing.Wing(
             name="Main Wing",
             symmetric=True,
-            symmetry_normal_G=(0.0, 1.0, 0.0),
-            symmetry_point_G_Cg=(0.0, 0.0, 0.0),
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing="uniform",
             wing_cross_sections=[
@@ -62,13 +62,13 @@ upper_wing_root_wing_cross_section_movement = (
 upper_wing_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
-        ampAngles_Wcsp_to_Wcs_izyx=(15.0, 5.0, 5.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(
+        ampAngles_Wcsp_to_Wcs_ixyz=(15.0, 5.0, 5.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(
             1 / flapping_frequency,
             1 / flapping_frequency,
             1 / flapping_frequency,
         ),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
     )
 )
 

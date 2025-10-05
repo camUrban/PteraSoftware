@@ -821,22 +821,7 @@ def analyze_unsteady_convergence(
 
                                 # 7. Create a copy of the new (sub-)movement.
                                 this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
-                                    # These values are copied from the reference
-                                    # object.
-                                    sweeping_amplitude=ref_wing_cross_section_movement.sweeping_amplitude,
-                                    sweeping_period=ref_wing_cross_section_movement.sweeping_period,
-                                    sweeping_spacing=ref_wing_cross_section_movement.sweeping_spacing,
-                                    custom_sweep_function=ref_wing_cross_section_movement.custom_sweep_function,
-                                    pitching_amplitude=ref_wing_cross_section_movement.pitching_amplitude,
-                                    pitching_period=ref_wing_cross_section_movement.pitching_period,
-                                    pitching_spacing=ref_wing_cross_section_movement.pitching_spacing,
-                                    custom_pitch_function=ref_wing_cross_section_movement.custom_pitch_function,
-                                    heaving_amplitude=ref_wing_cross_section_movement.heaving_amplitude,
-                                    heaving_period=ref_wing_cross_section_movement.heaving_period,
-                                    heaving_spacing=ref_wing_cross_section_movement.heaving_spacing,
-                                    custom_heave_function=ref_wing_cross_section_movement.custom_heave_function,
-                                    # This value is new.
-                                    base_wing_cross_section=this_base_wing_cross_section,
+                                    base_wing_cross_section=this_base_wing_cross_section
                                 )
 
                                 # 8. Append the new base object to the list of new

@@ -94,17 +94,17 @@ class Wing:
 
     Every Wing has its axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the prelimLer_G_Cg and
-    angles_G_to_prelimWn_izyx parameters. However, the steps for transforming a vector
+    angles_G_to_prelimWn_ixyz parameters. However, the steps for transforming a vector
     from geometry axes to wing axes, and the interpretation of the wing axes
     orientation and position relative to a Wing's geometry, also depend on the
-    parameters symmetric, mirror_only, symmetry_normal_G, and symmetry_point_G_Cg:
+    parameters symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg:
 
         1. symmetric is False
 
             A. mirror_only is False
 
-                I. The symmetry plane must be undefined (symmetry_normal_G and
-                symmetry_point_G_Cg must be None)
+                I. The symmetry plane must be undefined (symmetryNormal_G and
+                symmetryPoint_G_Cg must be None)
 
                     Type 1 Symmetry:
 
@@ -115,7 +115,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn_izyx fully define this Wing's axes with
+                    angles_G_to_prelimWn_ixyz fully define this Wing's axes with
                     respect to the geometry axes. The wing axes will also retain the
                     handedness of the geometry axes.
 
@@ -132,7 +132,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn_izyx does not fully define the orientation
+                    angles_G_to_prelimWn_ixyz does not fully define the orientation
                     of this Wing's axes with respect to the geometry axes. After
                     translation and rotation, the coordinate system also needs to be
                     reflected across the symmetry plane, which will flip the wing
@@ -150,7 +150,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn_izyx does not fully define orientation of
+                    angles_G_to_prelimWn_ixyz does not fully define orientation of
                     this Wing's axes with respect to the geometry axes. After
                     translation and rotation, the coordinate system also needs to be
                     reflected across the symmetry plane, which will flip the wing
@@ -175,7 +175,7 @@ class Wing:
                     Wing's axes, as defined in geometry axes.
 
                     - Translation by prelimLer_G_Cg followed by rotations by
-                    angles_G_to_prelimWn_izyx fully define this Wing's axes with
+                    angles_G_to_prelimWn_ixyz fully define this Wing's axes with
                     respect to the geometry axes. The wing axes will also retain the
                     handedness of the geometry axes.
 
@@ -185,8 +185,8 @@ class Wing:
 
                     - This Wing's Airplane will set this Wing's symmetric parameter
                     to False, its mirror_only parameter to False,
-                    its symmetry_normal_G parameter to None and its
-                    symmetry_point_G_Cg parameter to None. These changes turn this
+                    its symmetryNormal_G parameter to None and its
+                    symmetryPoint_G_Cg parameter to None. These changes turn this
                     Wing into a type 1 symmetry wing.
 
                     - The Airplane will also create a new Wing, and add it to its
@@ -207,11 +207,11 @@ class Wing:
         wing_cross_sections,
         name="Untitled Wing",
         prelimLer_G_Cg=(0.0, 0.0, 0.0),
-        angles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+        angles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
-        symmetry_normal_G=None,
-        symmetry_point_G_Cg=None,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     ):
@@ -236,30 +236,30 @@ class Wing:
             from the actual position as explained in the class docstring. The units
             are meters. The default is (0.0, 0.0, 0.0).
 
-        :param angles_G_to_prelimWn_izyx: array-like of 3 numbers, optional
+        :param angles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
 
             This is the rotation angles [angleX, angleY, angleZ] in degrees that
             define the orientation of this Wing's axes relative to the geometry axes
             before any symmetry or mirroring has been applied. Can be a tuple, list,
             or numpy array of numbers (int or float). Values are converted to floats
             internally. All angles must be in the range (-90, 90) degrees. Rotations
-            are intrinsic, and proceed in the z-y'-x'' order conventional for Euler
-            angles. It may differ from the actual position as explained in the class
-            docstring. The units are degrees. The default is (0.0, 0.0, 0.0).
+            are intrinsic, and proceed in the x-y'-z" order. It may differ from the
+            actual position as explained in the class docstring. The units are
+            degrees. The default is (0.0, 0.0, 0.0).
 
         :param symmetric: boolLike, optional
 
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
             True, symmetric must be False. If symmetric is true, then neither
-            symmetry_normal_G nor symmetry_point_G_Cg can be None. If the symmetry
-            plane is coincident with this Wing's wing axes' xz-plane, the mirrored
-            and non-mirrored geometry will be meshed as a single wing. If not,
+            symmetryNormal_G nor symmetryPoint_G_Cg can be None. If the symmetry
+            plane is coincident with this Wing's axes' xz-plane, the mirrored and
+            non-mirrored geometry will be meshed as a single wing. If not,
             this Wing's Airplane will automatically create another Wing with the
             mirrored geometry, modify both Wings' parameters, and add the reflected
             Wing to its list of wings immediately following this one. For more
             details on how that process, and how this parameter interacts with
-            symmetry_normal_G, symmetry_point_G_Cg, and mirror_only, see the class
+            symmetryNormal_G, symmetryPoint_G_Cg, and mirror_only, see the class
             docstring. It can be a boolean or a NumPy boolean and will be converted
             internally to a boolean. The default is False.
 
@@ -268,35 +268,35 @@ class Wing:
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
             is True, mirror_only must be False. If mirror_only is true, then neither
-            symmetry_normal_G nor symmetry_point_G_Cg can be None. For more
-            details on how this parameter interacts with symmetry_normal_G,
-            symmetry_point_G_Cg, and symmetric, see the class docstring. It can be
+            symmetryNormal_G nor symmetryPoint_G_Cg can be None. For more
+            details on how this parameter interacts with symmetryNormal_G,
+            symmetryPoint_G_Cg, and symmetric, see the class docstring. It can be
             a boolean or a NumPy boolean and will be converted internally to a
             boolean. The default is False.
 
-        :param symmetry_normal_G: array-like of 3 numbers or None, optional
+        :param symmetryNormal_G: array-like of 3 numbers or None, optional
 
             The unit normal vector (in geometry axes) that, together with
-            symmetry_point_G_Cg, defines the plane used for symmetry or mirroring.
+            symmetryPoint_G_Cg, defines the plane used for symmetry or mirroring.
             Can be a tuple, list, or numpy array of numbers (int or float), or None.
             Values are converted to floats and normalized internally. Note that
             reversing the normal direction (using the antiparallel vector) defines
             the same plane and produces the same result. This value must be None if
             both symmetric and mirror_only are False, and cannot be None if either
             are True. For more details on how this parameter interacts with
-            symmetry_point_G_Cg, symmetric, and mirror_only, see the class
+            symmetryPoint_G_Cg, symmetric, and mirror_only, see the class
             docstring. The default is None.
 
-        :param symmetry_point_G_Cg: array-like of 3 numbers or None,
+        :param symmetryPoint_G_Cg: array-like of 3 numbers or None,
         optional
 
             A point [x, y, z] (in geometry axes, relative to the CG) that, along with
-            symmetry_normal_G, defines the location of the plane about which symmetry
+            symmetryNormal_G, defines the location of the plane about which symmetry
             or mirroring is applied. Can be a list, tuple, or numpy array of numbers
             (int or float), or None. Values are converted to floats internally. This
             value must be None if both symmetric and mirror_only are False,
             and cannot be None if either are True. For more details on how this
-            parameter interacts with symmetry_normal_G, symmetric, and mirror_only,
+            parameter interacts with symmetryNormal_G, symmetric, and mirror_only,
             see the class docstring. The units are meters. The default is None.
 
         :param num_chordwise_panels: int, optional
@@ -342,19 +342,19 @@ class Wing:
             )
         )
 
-        # Validate angles_G_to_prelimWn_izyx.
-        angles_G_to_prelimWn_izyx = (
+        # Validate angles_G_to_prelimWn_ixyz.
+        angles_G_to_prelimWn_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                angles_G_to_prelimWn_izyx, "angles_G_to_prelimWn_izyx"
+                angles_G_to_prelimWn_ixyz, "angles_G_to_prelimWn_ixyz"
             )
         )
         if not np.all(
-            (-90.0 < angles_G_to_prelimWn_izyx) & (angles_G_to_prelimWn_izyx < 90.0)
+            (-90.0 < angles_G_to_prelimWn_ixyz) & (angles_G_to_prelimWn_ixyz < 90.0)
         ):
             raise ValueError(
-                "All elements of angles_G_to_prelimWn_izyx must lie in the range (-90, 90) degrees."
+                "All elements of angles_G_to_prelimWn_ixyz must lie in the range (-90, 90) degrees."
             )
-        self.angles_G_to_prelimWn_izyx = angles_G_to_prelimWn_izyx
+        self.angles_G_to_prelimWn_ixyz = angles_G_to_prelimWn_ixyz
 
         # Validate symmetric and mirror_only.
         symmetric = _parameter_validation.boolLike_return_bool(symmetric, "symmetric")
@@ -366,37 +366,37 @@ class Wing:
         self.symmetric = symmetric
         self.mirror_only = mirror_only
 
-        # Validate symmetry_normal_G and symmetry_point_G_Cg.
+        # Validate symmetryNormal_G and symmetryPoint_G_Cg.
         if self.symmetric or self.mirror_only:
-            if symmetry_normal_G is None:
+            if symmetryNormal_G is None:
                 raise ValueError(
-                    "symmetry_normal_G cannot be None when symmetric or mirror_only is True."
+                    "symmetryNormal_G cannot be None when symmetric or mirror_only is True."
                 )
-            symmetry_normal_G = (
+            symmetryNormal_G = (
                 _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
-                    symmetry_normal_G, "symmetry_normal_G"
+                    symmetryNormal_G, "symmetryNormal_G"
                 )
             )
-            if symmetry_point_G_Cg is None:
+            if symmetryPoint_G_Cg is None:
                 raise ValueError(
-                    "symmetry_point_G_Cg cannot be None when symmetric or mirror_only is True."
+                    "symmetryPoint_G_Cg cannot be None when symmetric or mirror_only is True."
                 )
-            symmetry_point_G_Cg = (
+            symmetryPoint_G_Cg = (
                 _parameter_validation.threeD_number_vectorLike_return_float(
-                    symmetry_point_G_Cg, "symmetry_point_G_Cg"
+                    symmetryPoint_G_Cg, "symmetryPoint_G_Cg"
                 )
             )
         else:
-            if symmetry_normal_G is not None:
+            if symmetryNormal_G is not None:
                 raise ValueError(
-                    "symmetry_normal_G must be None when both symmetric and mirror_only are False."
+                    "symmetryNormal_G must be None when both symmetric and mirror_only are False."
                 )
-            if symmetry_point_G_Cg is not None:
+            if symmetryPoint_G_Cg is not None:
                 raise ValueError(
-                    "symmetry_point_G_Cg must be None when both symmetric and mirror_only are False."
+                    "symmetryPoint_G_Cg must be None when both symmetric and mirror_only are False."
                 )
-        self.symmetry_normal_G = symmetry_normal_G
-        self.symmetry_point_G_Cg = symmetry_point_G_Cg
+        self.symmetryNormal_G = symmetryNormal_G
+        self.symmetryPoint_G_Cg = symmetryPoint_G_Cg
 
         # Validate num_chordwise_panels and chordwise_spacing.
         self.num_chordwise_panels = _parameter_validation.positive_int_return_int(
@@ -702,11 +702,11 @@ class Wing:
         # which maps in homogeneous coordinates from geometry axes relative to the CG
         # to reflected geometry axes relative to the reflected CG. This is the
         # reflection step.
-        if self.symmetry_normal_G is not None and self.symmetry_point_G_Cg is not None:
+        if self.symmetryNormal_G is not None and self.symmetryPoint_G_Cg is not None:
             T_reflect_pas_G_Cg_to_GReflect_CgReflect = (
                 _transformations.generate_reflect_T(
-                    plane_point_A_a=self.symmetry_point_G_Cg,
-                    plane_normal_A=self.symmetry_normal_G,
+                    plane_point_A_a=self.symmetryPoint_G_Cg,
+                    plane_normal_A=self.symmetryNormal_G,
                     passive=True,
                 )
             )
@@ -725,7 +725,7 @@ class Wing:
         # coordinates from reflected geometry axes to wing axes. This is the rotation
         # step.
         T_rot_pas_GReflect_to_Wn = _transformations.generate_rot_T(
-            self.angles_G_to_prelimWn_izyx, passive=True, intrinsic=True, order="zyx"
+            self.angles_G_to_prelimWn_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
         return _transformations.compose_T_pas(

@@ -222,7 +222,7 @@ validation_wing_cross_section_movements = []
 # Define the first wing cross section movement, which is stationary.
 first_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[0],
+        base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[0]
     )
 )
 
@@ -321,11 +321,7 @@ for j in range(1, num_spanwise_sections + 1):
     # are already accounted for in the custom sweep function.
     this_wing_cross_section_movement = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j],
-            sweeping_amplitude=1,
-            sweeping_period=1,
-            sweeping_spacing="custom",
-            custom_sweep_function=validation_geometry_sweep_function,
+            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[j]
         )
     )
 

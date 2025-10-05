@@ -39,22 +39,13 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 upper_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0]
     )
 )
 
 upper_wing_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
-        sweeping_amplitude=15.0,
-        sweeping_period=1 / flapping_frequency,
-        sweeping_spacing="sine",
-        pitching_amplitude=5.0,
-        pitching_period=1 / flapping_frequency,
-        pitching_spacing="sine",
-        heaving_amplitude=5.0,
-        heaving_period=1 / flapping_frequency,
-        heaving_spacing="sine",
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1]
     )
 )
 

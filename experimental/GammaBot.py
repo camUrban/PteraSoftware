@@ -25,7 +25,7 @@ gammabot_flapping_period = 1.0 / gammabot_flapping_frequency
 # WingCrossSections per Wing. The converged result is X spanwise sections. Set the
 # chordwise spacing scheme for the panels. This is set to uniform, as is standard for
 # UVLM simulations.
-num_flaps = 5
+num_flaps = 1
 num_chordwise_panels = 5
 num_spanwise_sections = 20
 chordwise_spacing = "uniform"
@@ -48,7 +48,7 @@ for i in range(num_wing_cross_sections):
 
     this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         Lp_Wcsp_Lpp=wing_section_data[i, :3],
-        angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         chord=wing_section_data[i, 3],
         airfoil=ps.geometry.airfoil.Airfoil(
             name="naca0012",
@@ -70,8 +70,8 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
             wing_cross_sections=gammabot_airplane_wing_cross_sections,
             prelimLer_G_Cg=(0.0, wing_spacing / 2, 0.0),
             symmetric=True,
-            symmetry_normal_G=(0, 1, 0),
-            symmetry_point_G_Cg=(0, -wing_spacing / 2, 0),
+            symmetryNormal_G=(0, 1, 0),
+            symmetryPoint_G_Cg=(0, -wing_spacing / 2, 0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
         ),
@@ -104,7 +104,7 @@ for j in range(num_wing_cross_sections):
     # are already accounted for in the custom sweep function.
     this_wing_cross_section_movement = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=gammabot_airplane.wings[0].wing_cross_sections[j],
+            base_wing_cross_section=gammabot_airplane.wings[0].wing_cross_sections[j]
         )
     )
 
@@ -115,44 +115,44 @@ for j in range(num_wing_cross_sections):
 gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=gammabot_airplane.wings[0],
     wing_cross_section_movements=gammabot_wing_cross_section_movements,
-    ampAngles_G_to_prelimWn_izyx=(
+    ampAngles_G_to_prelimWn_ixyz=(
         gammabot_flapping_amplitude_angleX,
         gammabot_flapping_amplitude_angleY,
         0.0,
     ),
-    periodAngles_G_to_prelimWn_izyx=(
+    periodAngles_G_to_prelimWn_ixyz=(
         gammabot_flapping_period,
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_izyx=(
+    spacingAngles_G_to_prelimWn_ixyz=(
         gammabot_angleX_function,
         gammabot_angleY_function,
         "sine",
     ),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, gammabot_flapping_phase_angleY, 0.0),
+    phaseAngles_G_to_prelimWn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Define the WingMovement for the mirrored Wing.
 gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=gammabot_airplane.wings[1],
     wing_cross_section_movements=copy.deepcopy(gammabot_wing_cross_section_movements),
-    ampAngles_G_to_prelimWn_izyx=(
+    ampAngles_G_to_prelimWn_ixyz=(
         gammabot_flapping_amplitude_angleX,
         gammabot_flapping_amplitude_angleY,
         0.0,
     ),
-    periodAngles_G_to_prelimWn_izyx=(
+    periodAngles_G_to_prelimWn_ixyz=(
         gammabot_flapping_period,
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_izyx=(
+    spacingAngles_G_to_prelimWn_ixyz=(
         gammabot_angleX_function,
         gammabot_angleY_function,
         "sine",
     ),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, gammabot_flapping_phase_angleY, 0.0),
+    phaseAngles_G_to_prelimWn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Delete the extraneous pointer.

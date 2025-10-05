@@ -160,36 +160,10 @@ example_airplane = ps.geometry.airplane.Airplane(
 # relative rotation of this wing cross section's leading edge to the preceding wing
 # cross section's leading edge about the body z axis. The sign of all rotations is
 # determined via the right-hand-rule.
-main_wing_root_wing_cross_section_movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-    # Provide the base cross section.
-    base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
-    # Define the sweeping amplitude. This value is in degrees. As this is the first
-    # wing cross section, this must be 0.0 degrees, which is the default value.
-    sweeping_amplitude=0.0,
-    # Define the sweeping period. This value is in seconds. As this is the first wing
-    # cross section, this must be 0.0 seconds, which is the default value.
-    sweeping_period=0.0,
-    # Define the time step spacing of the sweeping. This is "sine" by default. The
-    # options are "sine" and "uniform".
-    sweeping_spacing="sine",
-    # Define the pitching amplitude. This value is in degrees. As this is the first
-    # wing cross section, this must be 0.0 degrees, which is the default value.
-    pitching_amplitude=0.0,
-    # Define the pitching period. This value is in seconds. As this is the first wing
-    # cross section, this must be 0.0 seconds, which is the default value.
-    pitching_period=0.0,
-    # Define the time step spacing of the pitching. This is "sine" by default. The
-    # options are "sine" and "uniform".
-    pitching_spacing="sine",
-    # Define the heaving amplitude. This value is in degrees. As this is the first
-    # wing cross section, this must be 0.0 degrees, which is the default value.
-    heaving_amplitude=0.0,
-    # Define the heaving period. This value is in seconds. As this is the first wing
-    # cross section, this must be 0.0 seconds, which is the default value.
-    heaving_period=0.0,
-    # Define the time step spacing of the heaving. This is "sine" by default. The
-    # options are "sine" and "uniform".
-    heaving_spacing="sine",
+main_wing_root_wing_cross_section_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0]
+    )
 )
 
 # Define the main wing's tip wing cross section's movement. As the example has static
@@ -197,7 +171,7 @@ main_wing_root_wing_cross_section_movement = ps.movements.wing_cross_section_mov
 # suffice.
 main_wing_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1]
     )
 )
 
@@ -206,7 +180,7 @@ main_wing_tip_wing_cross_section_movement = (
 # suffice.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0]
     )
 )
 
@@ -215,7 +189,7 @@ v_tail_root_wing_cross_section_movement = (
 # suffice.
 v_tail_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1]
     )
 )
 

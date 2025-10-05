@@ -86,11 +86,11 @@ def make_mixed_spacing_Lp_wing_cross_section_movement_fixture():
 
 def make_sine_spacing_angles_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement with sine
-    spacing for angles_Wcsp_to_Wcs_izyx.
+    spacing for angles_Wcsp_to_Wcs_ixyz.
 
     :return sine_spacing_angles_wing_cross_section_movement_fixture: WingCrossSectionMovement
         This is the WingCrossSectionMovement with sine spacing for
-        angles_Wcsp_to_Wcs_izyx.
+        angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -99,10 +99,10 @@ def make_sine_spacing_angles_wing_cross_section_movement_fixture():
     sine_spacing_angles_wing_cross_section_movement_fixture = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -112,11 +112,11 @@ def make_sine_spacing_angles_wing_cross_section_movement_fixture():
 
 def make_uniform_spacing_angles_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement with uniform
-    spacing for angles_Wcsp_to_Wcs_izyx.
+    spacing for angles_Wcsp_to_Wcs_ixyz.
 
     :return uniform_spacing_angles_wing_cross_section_movement_fixture: WingCrossSectionMovement
         This is the WingCrossSectionMovement with uniform spacing for
-        angles_Wcsp_to_Wcs_izyx.
+        angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -125,10 +125,10 @@ def make_uniform_spacing_angles_wing_cross_section_movement_fixture():
     uniform_spacing_angles_wing_cross_section_movement_fixture = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("uniform", "uniform", "uniform"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("uniform", "uniform", "uniform"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -138,11 +138,11 @@ def make_uniform_spacing_angles_wing_cross_section_movement_fixture():
 
 def make_mixed_spacing_angles_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement with mixed
-    spacing for angles_Wcsp_to_Wcs_izyx.
+    spacing for angles_Wcsp_to_Wcs_ixyz.
 
     :return mixed_spacing_angles_wing_cross_section_movement_fixture: WingCrossSectionMovement
         This is the WingCrossSectionMovement with mixed spacing for
-        angles_Wcsp_to_Wcs_izyx.
+        angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -151,10 +151,10 @@ def make_mixed_spacing_angles_wing_cross_section_movement_fixture():
     mixed_spacing_angles_wing_cross_section_movement_fixture = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 20.0, 5.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 1.0, 1.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "uniform", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 20.0, 5.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 1.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "uniform", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -180,10 +180,10 @@ def make_static_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -210,10 +210,10 @@ def make_static_tip_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -240,10 +240,10 @@ def make_basic_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(2.0, 2.0, 2.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(15.0, 10.0, 5.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(2.0, 2.0, 2.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(15.0, 10.0, 5.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(2.0, 2.0, 2.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -270,10 +270,10 @@ def make_Lp_only_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(1.5, 1.5, 1.5),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -283,10 +283,10 @@ def make_Lp_only_wing_cross_section_movement_fixture():
 
 def make_angles_only_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement where only
-    angles_Wcsp_to_Wcs_izyx moves.
+    angles_Wcsp_to_Wcs_ixyz moves.
 
     :return angles_only_wing_cross_section_movement_fixture: WingCrossSectionMovement
-        This is the WingCrossSectionMovement with only angles_Wcsp_to_Wcs_izyx
+        This is the WingCrossSectionMovement with only angles_Wcsp_to_Wcs_ixyz
         movement.
     """
     # Initialize the constructing fixture.
@@ -300,10 +300,10 @@ def make_angles_only_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(20.0, 15.0, 10.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.5, 1.5, 1.5),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(20.0, 15.0, 10.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.5, 1.5, 1.5),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -330,10 +330,10 @@ def make_phase_offset_Lp_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(90.0, -90.0, 45.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -343,11 +343,11 @@ def make_phase_offset_Lp_wing_cross_section_movement_fixture():
 
 def make_phase_offset_angles_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement with
-    non-zero phase offset for angles_Wcsp_to_Wcs_izyx.
+    non-zero phase offset for angles_Wcsp_to_Wcs_ixyz.
 
     :return phase_offset_angles_wing_cross_section_movement_fixture: WingCrossSectionMovement
         This is the WingCrossSectionMovement with phase offset for
-        angles_Wcsp_to_Wcs_izyx.
+        angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -360,10 +360,10 @@ def make_phase_offset_angles_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 15.0, 20.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 1.0, 1.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(45.0, 90.0, -45.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 15.0, 20.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 1.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(45.0, 90.0, -45.0),
         )
     )
 
@@ -390,10 +390,10 @@ def make_multiple_periods_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(1.0, 2.0, 3.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 15.0, 20.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.5, 1.5, 2.5),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 15.0, 20.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.5, 1.5, 2.5),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -437,10 +437,10 @@ def make_custom_spacing_Lp_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(1.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=(custom_harmonic, "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -450,11 +450,11 @@ def make_custom_spacing_Lp_wing_cross_section_movement_fixture():
 
 def make_custom_spacing_angles_wing_cross_section_movement_fixture():
     """This method makes a fixture that is a WingCrossSectionMovement with a
-    custom spacing function for angles_Wcsp_to_Wcs_izyx.
+    custom spacing function for angles_Wcsp_to_Wcs_ixyz.
 
     :return custom_spacing_angles_wing_cross_section_movement_fixture: WingCrossSectionMovement
         This is the WingCrossSectionMovement with custom spacing for
-        angles_Wcsp_to_Wcs_izyx.
+        angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -484,10 +484,10 @@ def make_custom_spacing_angles_wing_cross_section_movement_fixture():
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(10.0, 0.0, 0.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 0.0, 0.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=(custom_harmonic, "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=(custom_harmonic, "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 
@@ -529,10 +529,10 @@ def make_mixed_custom_and_standard_spacing_wing_cross_section_movement_fixture()
             periodLp_Wcsp_Lpp=(1.0, 1.0, 1.0),
             spacingLp_Wcsp_Lpp=(custom_harmonic, "uniform", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_izyx=(15.0, 10.0, 5.0),
-            periodAngles_Wcsp_to_Wcs_izyx=(1.0, 1.0, 1.0),
-            spacingAngles_Wcsp_to_Wcs_izyx=("sine", custom_harmonic, "uniform"),
-            phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(15.0, 10.0, 5.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 1.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", custom_harmonic, "uniform"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
 

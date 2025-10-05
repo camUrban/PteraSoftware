@@ -15,7 +15,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     num_spanwise_panels=5,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                    angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                     control_surface_symmetry_type="symmetric",
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
@@ -31,7 +31,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
-                    angles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                     control_surface_symmetry_type="symmetric",
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
@@ -46,11 +46,11 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
             ],
             name="Right Wing",
             prelimLer_G_Cg=(-0.5, 1.0, 0.0),
-            angles_G_to_prelimWn_izyx=(0, 0, 0),
+            angles_G_to_prelimWn_ixyz=(0, 0, 0),
             symmetric=True,
             mirror_only=False,
-            symmetry_normal_G=(0, 1, 0),
-            symmetry_point_G_Cg=(0, -1, 0),
+            symmetryNormal_G=(0, 1, 0),
+            symmetryPoint_G_Cg=(0, -1, 0),
             num_chordwise_panels=5,
             chordwise_spacing="uniform",
         ),
@@ -69,10 +69,10 @@ flat_plate_wing_root_wing_cross_section_movement = (
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
         phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -83,10 +83,10 @@ flat_plate_wing_tip_wing_cross_section_movement = (
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
         phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -100,10 +100,10 @@ flat_plate_wing_movement = ps.movements.wing_movement.WingMovement(
     periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
     spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
     phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
-    ampAngles_G_to_prelimWn_izyx=(15.0, 0.0, 0.0),
-    periodAngles_G_to_prelimWn_izyx=(5.0, 0.0, 0.0),
-    spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+    ampAngles_G_to_prelimWn_ixyz=(15.0, 0.0, 0.0),
+    periodAngles_G_to_prelimWn_ixyz=(5.0, 0.0, 0.0),
+    spacingAngles_G_to_prelimWn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
 )
 
 reflected_wing_root_wing_cross_section_movement = (
@@ -113,10 +113,10 @@ reflected_wing_root_wing_cross_section_movement = (
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
         phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -127,10 +127,10 @@ reflected_wing_tip_wing_cross_section_movement = (
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
         phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_izyx=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_izyx=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -144,10 +144,10 @@ reflected_wing_movement = ps.movements.wing_movement.WingMovement(
     periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
     spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
     phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
-    ampAngles_G_to_prelimWn_izyx=(15.0, 0.0, 0.0),
-    periodAngles_G_to_prelimWn_izyx=(5.0, 0.0, 0.0),
-    spacingAngles_G_to_prelimWn_izyx=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_izyx=(0.0, 0.0, 0.0),
+    ampAngles_G_to_prelimWn_ixyz=(15.0, 0.0, 0.0),
+    periodAngles_G_to_prelimWn_ixyz=(5.0, 0.0, 0.0),
+    spacingAngles_G_to_prelimWn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
 )
 
 del flat_plate_wing_root_wing_cross_section_movement

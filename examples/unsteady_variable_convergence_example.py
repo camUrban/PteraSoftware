@@ -43,12 +43,10 @@ airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             base_wing=airplane.wings[0],
             wing_cross_section_movements=[
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
+                    base_wing_cross_section=airplane.wings[0].wing_cross_sections[0]
                 ),
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
-                    sweeping_amplitude=15.0,
-                    sweeping_period=1.0,
+                    base_wing_cross_section=airplane.wings[0].wing_cross_sections[1]
                 ),
             ],
         )

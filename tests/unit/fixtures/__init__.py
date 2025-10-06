@@ -27,6 +27,9 @@ This package contains the following modules:
     operating_point_fixtures.py: This module contains functions to create
     OperatingPoints.
 
+    operating_point_movement_fixtures.py: This module contains functions to create
+    OperatingPointMovements for use in tests.
+
     ring_vortex_fixtures.py: This module contains functions to create RingVortices
     for uses in tests.
 
@@ -43,6 +46,7 @@ import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
 import tests.unit.fixtures.movement_fixtures
 import tests.unit.fixtures.operating_point_fixtures
+import tests.unit.fixtures.operating_point_movement_fixtures
 import tests.unit.fixtures.ring_vortex_fixtures
 import tests.unit.fixtures.wing_cross_section_movement_fixtures
 import tests.unit.fixtures.wing_movement_fixtures

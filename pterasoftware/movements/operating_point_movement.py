@@ -17,7 +17,6 @@ from .. import operating_point
 from .. import _parameter_validation
 
 
-# TODO: Add unit tests for this class.
 class OperatingPointMovement:
     """This is a class used to contain the OperatingPoint movements.
 
@@ -122,7 +121,6 @@ class OperatingPointMovement:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
         self.phaseVCg__E = phaseVCg__E
 
-    # TODO: Add unit tests for this method.
     def generate_operating_points(self, num_steps, delta_time):
         """Creates the OperatingPoint at each time step, and returns them in a list.
 
@@ -210,7 +208,6 @@ class OperatingPointMovement:
 
         return operating_points
 
-    # TODO: Add unit tests for this method.
     @property
     def max_period(self):
         """Defines a property for the longest period of OperatingPointMovement's own

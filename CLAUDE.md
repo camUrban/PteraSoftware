@@ -190,10 +190,10 @@ Variables must follow one of these four patterns based on their requirements:
 #### Standardized IDs
 
 **Axis Systems:**
-- E: Earth, B: body, W: wind, G: geometry, Wn: wing, Wcs: wing cross section, Wcsp: wing cross section parent, A: airfoil
+- E: Earth, B: body, W: wind, G: geometry, Gs: geometry axes (after accounting for symmetry), Wn: wing, Wcs: wing cross section, Wcsp: wing cross section parent, A: airfoil
 
-**Reference Points:**  
-- Cg: CG point, Ler: leading edge root point, Lp: leading point, Lpp: leading point parent
+**Reference Points:**
+- Cg: CG point, Cgs: CG (after accounting for symmetry), Ler: leading edge root point, Lp: leading point, Lpp: leading point parent
 
 **Reference Frames:**
 - E: Earth frame, B: body frame, Wn: wing frame, Wcs: wing cross section frame, Wcsp: wing cross section parent frame
@@ -307,20 +307,21 @@ There are four useful combinations of axes, points, and frames. Variables are de
 
 ### ID Abbreviations and Names
 
-- E: Earth  
+- E: Earth
 - B: body
-- P: airplane  
+- P: airplane
 - W: wind
 - Pr: problem
-- G: geometry  
-- Wn: wing  
-- Wcs: wing cross section  
-- Wcsp: wing cross section parent  
+- G: geometry
+- Gs: geometry axes (after accounting for symmetry)
+- Wn: wing
+- Wcs: wing cross section
+- Wcsp: wing cross section parent
 - A: airfoil
-- I: simulation starting point  
-- Cg: CG  
-- Ler: leading edge root point  
-- Lp: leading point  
+- Cg: CG
+- Cgs: CG (after accounting for symmetry)
+- Ler: leading edge root point
+- Lp: leading point
 - Lpp: leading point parent  
 - ...pp...: panel point (Fr=front right, Fl=front left, Bl=back left, Br=back right, C=collocation)
 - ...bhvp...: bound horseshoe vortex point  
@@ -358,24 +359,30 @@ There are four useful combinations of axes, points, and frames. Variables are de
 - Variables: `..._G...` (local) or `..._GP1...` (non-local)
 - Text: "...in geometry axes..." or "...in the first Airplane's geometry axes..."
 
-**5. Wing Axes**
+**5. Geometry Axes (After Accounting for Symmetry)**
+- Basis: For a given Wing, the basis directions are identical to that Wing's Airplane's geometry axes if the Wing is non-symmetric or symmetric-continuous. For mirror-only Wings, the basis directions are that Wing's Airplane's geometry axes reflected about that Wing's symmetry plane.
+- Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.
+- Variables: `..._Gs...` (local), `..._Gs1...` (Airplane-local), `..._Gs2P1...` (non-local)
+- Text: "...in geometry axes (after accounting for symmetry)...", "...in geometry axes (after accounting for the first Wing's symmetry)...", "...in the first Airplane's geometry axes (after accounting for its second Wing's symmetry)..."
+
+**6. Wing Axes**
 - Basis: Back of Wing in first cross section plane, normal to plane, top surface
 - Right-handed for non-symmetric/symmetric-continuous Wings, left-handed for mirror-only Wings
 - Variables: `..._Wn...` (local), `..._Wn1...` (Airplane-local), `..._Wn2P1...` (non-local)
 - Text: "...in wing axes...", "...in the first Wing's axes...", "...in the first Airplane's second Wing's axes..."
 
-**6. Wing Cross Section Axes**
+**7. Wing Cross Section Axes**
 - Basis: Trailing edge in plane, normal to plane, top surface
 - Handedness same as wing axes
 - Variables: `..._Wcs...` (local), `..._Wcs1...` (Wing-local), `..._Wcs3Wn2...` (Airplane-local), `..._Wcs1Wn2P1...` (non-local)
 - Text: "...in wing cross section axes...", "...in the first WingCrossSection's axes...", etc.
 
-**7. Wing Cross Section Parent Axes**
+**8. Wing Cross Section Parent Axes**
 - Basis: Identical to wing axes for first cross section, identical to previous cross section axes for subsequent ones
 - Variables: `..._Wcsp...` with similar local/non-local patterns
 - Text: "...in wing cross section parent axes..."
 
-**8. Airfoil Axes**
+**9. Airfoil Axes**
 - Basis: Chordwise to trailing point, Normal to chord toward upper line (2D)
 - Variables: `..._A...` (local), `..._AWcs2...` (Wing-local), etc.
 - Text: "...in airfoil axes...", "...in the second WingCrossSection's Airfoil's axes...", etc.

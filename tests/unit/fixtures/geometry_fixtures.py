@@ -555,6 +555,18 @@ def make_non_resampled_airfoil_fixture():
     return non_resampled_airfoil_fixture
 
 
+def make_named_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil loaded from the _airfoils
+    data directory for testing purposes.
+
+    :return named_airfoil_fixture: Airfoil
+        This is the Airfoil loaded from the _airfoils data directory.
+    """
+    named_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="a18")
+
+    return named_airfoil_fixture
+
+
 def make_basic_panel_fixture():
     """This method makes a fixture that is a Panel for testing purposes.
 

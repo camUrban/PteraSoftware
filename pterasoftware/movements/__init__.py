@@ -1,4 +1,4 @@
-"""This package contains the movement classes and their helper functions.
+"""This package contains the movement classes.
 
 This package contains the following subpackages:
     None

@@ -1,14 +1,9 @@
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
-    airfoils: This package contains a collection of airfoils whose coordinates are
-    stored in DAT files.
-
-    models: This package contains example models for the GUI.
-
     geometry: This package contains the geometry classes.
 
-    movements: This package contains the movement classes and their helper functions.
+    movements: This package contains the movement classes.
 
 This package contains the following directories:
     ui_resources: This directory contains assets used by the GUI.
@@ -41,7 +36,6 @@ This package contains the following modules:
     of this package's unsteady ring vortex lattice solver.
 """
 
-import pterasoftware.airfoils
 import pterasoftware.geometry
 import pterasoftware.models
 import pterasoftware.movements

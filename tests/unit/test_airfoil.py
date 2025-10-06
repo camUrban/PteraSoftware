@@ -23,6 +23,7 @@ class TestAirfoil(unittest.TestCase):
         self.non_resampled_airfoil = (
             geometry_fixtures.make_non_resampled_airfoil_fixture()
         )
+        self.named_airfoil = geometry_fixtures.make_named_airfoil_fixture()
 
     def test_initialization_naca_airfoils(self):
         """Test Airfoil initialization with NACA airfoil names."""
@@ -200,6 +201,32 @@ class TestAirfoil(unittest.TestCase):
             # For properly ordered airfoils, we expect some variation in y
             max_thickness = np.max(outlineY_A_lp) - np.min(outlineY_A_lp)
             self.assertAlmostEqual(max_thickness, 0.12, places=2)
+
+    def test_initialization_named_airfoil(self):
+        """Test Airfoil initialization with a named airfoil from the _airfoils data
+        directory."""
+        # Test that the named airfoil loads correctly from the _airfoils directory
+        self.assertEqual(self.named_airfoil.name, "a18")
+        self.assertTrue(self.named_airfoil.resample)
+        self.assertEqual(self.named_airfoil.n_points_per_side, 400)
+        self.assertIsNotNone(self.named_airfoil.outline_A_lp)
+
+        # Test that the outline has the correct shape and bounds
+        self.assertEqual(len(self.named_airfoil.outline_A_lp.shape), 2)
+        self.assertEqual(self.named_airfoil.outline_A_lp.shape[1], 2)
+
+        # Check x-coordinates are roughly within the [0, 1] range
+        x_coords = self.named_airfoil.outline_A_lp[:, 0]
+        self.assertTrue(np.all(x_coords >= 0.0 - 0.01))
+        self.assertTrue(np.all(x_coords <= 1.0 + 0.01))
+
+        # Check that outline contains multiple points
+        self.assertGreater(self.named_airfoil.outline_A_lp.shape[0], 3)
+
+        # Test that the MCL is populated
+        self.assertIsNotNone(self.named_airfoil.mcl_A_lp)
+        self.assertEqual(len(self.named_airfoil.mcl_A_lp.shape), 2)
+        self.assertEqual(self.named_airfoil.mcl_A_lp.shape[1], 2)
 
     # TODO: Finalize Airfoil's get_plottable_data testing.
     # def test_airfoil_get_plottable_data(self):

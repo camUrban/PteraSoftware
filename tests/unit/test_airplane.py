@@ -35,7 +35,9 @@ class TestAirplane(unittest.TestCase):
         self.assertIsInstance(self.basic_airplane.wings, list)
         self.assertEqual(len(self.basic_airplane.wings), 1)
         self.assertEqual(self.basic_airplane.name, "Basic Test Airplane")
-        npt.assert_array_equal(self.basic_airplane.Cgi_E_I, np.array([1.0, 0.5, -0.2]))
+        npt.assert_array_equal(
+            self.basic_airplane.Cg_E_CgP1, np.array([1.0, 0.5, -0.2])
+        )
         npt.assert_array_equal(
             self.basic_airplane.angles_E_to_B_izyx, np.array([10.0, -5.0, 15.0])
         )
@@ -74,8 +76,8 @@ class TestAirplane(unittest.TestCase):
         with self.assertRaises(TypeError):
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=None)
 
-    def test_Cgi_E_I_parameter_validation(self):
-        """Test Cgi_E_I parameter validation."""
+    def test_Cg_E_CgP1_parameter_validation(self):
+        """Test Cg_E_CgP1 parameter validation."""
         # Test valid 3D vectors
         valid_positions = [
             [0.0, 0.0, 0.0],
@@ -87,9 +89,9 @@ class TestAirplane(unittest.TestCase):
         for position in valid_positions:
             with self.subTest(position=position):
                 airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], Cgi_E_I=position
+                    wings=[self.test_wing_type_1], Cg_E_CgP1=position
                 )
-                npt.assert_array_equal(airplane.Cgi_E_I, position)
+                npt.assert_array_equal(airplane.Cg_E_CgP1, position)
 
         # Test invalid positions
         invalid_positions = [
@@ -103,7 +105,7 @@ class TestAirplane(unittest.TestCase):
             with self.subTest(invalid_position=invalid_position):
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.airplane.Airplane(
-                        wings=[self.test_wing_type_1], Cgi_E_I=invalid_position
+                        wings=[self.test_wing_type_1], Cg_E_CgP1=invalid_position
                     )
 
     def test_angles_E_to_B_izyx_parameter_validation(self):
@@ -185,19 +187,13 @@ class TestAirplane(unittest.TestCase):
 
         # Test validation of reference dimensions
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(
-                wings=[self.test_wing_type_1], s_ref=-1.0  # Negative value
-            )
+            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], s_ref=-1.0)
 
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(
-                wings=[self.test_wing_type_1], c_ref=0.0  # Zero value
-            )
+            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], c_ref=0.0)
 
         with self.assertRaises(TypeError):
-            ps.geometry.airplane.Airplane(
-                wings=[self.test_wing_type_1], b_ref="large"  # String
-            )
+            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], b_ref="large")
 
     def test_num_panels_calculation(self):
         """Test that num_panels is calculated correctly from all Wings."""
@@ -223,7 +219,7 @@ class TestAirplane(unittest.TestCase):
 
     def test_validate_first_airplane_constraints_valid(self):
         """Test validate_first_airplane_constraints with valid first Airplane."""
-        # First Airplane should pass validation (Cgi_E_I is all zeros)
+        # First Airplane should pass validation (Cg_E_CgP1 is all zeros)
         try:
             self.first_airplane.validate_first_airplane_constraints()
         except Exception as e:
@@ -231,7 +227,7 @@ class TestAirplane(unittest.TestCase):
 
     def test_validate_first_airplane_constraints_invalid(self):
         """Test validate_first_airplane_constraints with invalid Airplane."""
-        # Basic Airplane should fail validation (Cgi_E_I is not all zeros)
+        # Basic Airplane should fail validation (Cg_E_CgP1 is not all zeros)
         with self.assertRaises(ValueError):
             self.basic_airplane.validate_first_airplane_constraints()
 
@@ -433,7 +429,7 @@ class TestAirplane(unittest.TestCase):
                 self.assertIsInstance(airplane.wings, list)
                 self.assertGreater(len(airplane.wings), 0)
                 self.assertIsInstance(airplane.name, str)
-                self.assertEqual(len(airplane.Cgi_E_I), 3)
+                self.assertEqual(len(airplane.Cg_E_CgP1), 3)
                 self.assertEqual(len(airplane.angles_E_to_B_izyx), 3)
                 self.assertGreaterEqual(airplane.weight, 0.0)
 

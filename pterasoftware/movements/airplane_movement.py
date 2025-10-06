@@ -41,10 +41,10 @@ class AirplaneMovement:
         self,
         base_airplane,
         wing_movements,
-        ampCgi_E_I=(0.0, 0.0, 0.0),
-        periodCgi_E_I=(0.0, 0.0, 0.0),
-        spacingCgi_E_I=("sine", "sine", "sine"),
-        phaseCgi_E_I=(0.0, 0.0, 0.0),
+        ampCg_E_CgP1=(0.0, 0.0, 0.0),
+        periodCg_E_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_E_CgP1=("sine", "sine", "sine"),
+        phaseCg_E_CgP1=(0.0, 0.0, 0.0),
         ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -63,46 +63,51 @@ class AirplaneMovement:
             Airplane's Wings. It must have the same length as the base Airplane's
             list of Wings.
 
-        :param ampCgi_E_I: array-like of 3 numbers, optional
+        :param ampCg_E_CgP1: array-like of 3 numbers, optional
 
             The amplitudes of the AirplaneMovement's changes in its Airplanes'
-            Cgi_E_I parameters. Can be a tuple, list, or numpy array of non-negative
-            numbers (int or float). Also, each amplitude must be low enough that it
-            doesn't drive its base value out of the range of valid values. Otherwise,
-            this AirplaneMovement will try to create Airplanes with invalid
-            parameters values. Values are converted to floats internally. The default
-            value is (0.0, 0.0, 0.0). The units are in meters.
+            Cg_E_CgP1 parameters. Can be a tuple, list, or numpy array of
+            non-negative numbers (int or float). Also, each amplitude must be low
+            enough that it doesn't drive its base value out of the range of valid
+            values. Otherwise, this AirplaneMovement will try to create Airplanes
+            with invalid parameters values. Because the first Airplane's Cg_E_CgP1
+            parameter must be all zeros, this means that the first Airplane's
+            ampCg_E_CgP1 parameter must also be all zeros. Values are converted to
+            floats internally. The default value is (0.0, 0.0, 0.0). The units are in
+            meters.
 
-        :param periodCgi_E_I: array-like of 3 numbers, optional
+        :param periodCg_E_CgP1: array-like of 3 numbers, optional
 
-            The periods of the AirplaneMovement's changes in its Airplanes' Cgi_E_I
+            The periods of the AirplaneMovement's changes in its Airplanes' Cg_E_CgP1
             parameters. Can be a tuple, list, or numpy array of non-negative numbers
             (int or float). Values are converted to floats internally. The default
             value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
-            element in ampCgi_E_I is 0.0 and non-zero if not. The units are in seconds.
+            element in ampCg_E_CgP1 is 0.0 and non-zero if not. The units are in
+            seconds.
 
-        :param spacingCgi_E_I: array-like of 3 strs or callables, optional
+        :param spacingCg_E_CgP1: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the AirplaneMovement's change in its
-            Airplanes' Cgi_E_I parameters. Can be a tuple, list, or numpy array. Each
-            element can be the string "sine", the string "uniform", or a callable
-            custom spacing function. Custom spacing functions are for advanced users
-            and must start at 0, return to 0 after one period of 2*pi radians, have
-            zero mean, have amplitude of 1, be periodic, return finite values only,
-            and accept a ndarray as input and return a ndarray of the same shape. The
-            custom function is scaled by ampCgi_E_I, shifted by phaseCgi_E_I, and
-            centered around the base value, with the period controlled by
-            periodCgi_E_I. The default value is ("sine", "sine", "sine").
+            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or numpy array.
+            Each element can be the string "sine", the string "uniform",
+            or a callable custom spacing function. Custom spacing functions are for
+            advanced users and must start at 0, return to 0 after one period of 2*pi
+            radians, have zero mean, have amplitude of 1, be periodic, return finite
+            values only, and accept a ndarray as input and return a ndarray of the
+            same shape. The custom function is scaled by ampCg_E_CgP1, shifted by
+            phaseCg_E_CgP1, and centered around the base value, with the period
+            controlled by periodCg_E_CgP1. The default value is ("sine", "sine",
+            "sine").
 
-        :param phaseCgi_E_I: array-like of 3 numbers, optional
+        :param phaseCg_E_CgP1: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Airplane's
-            Cgi_E_I parameter relative to the base Airplane's Cgi_E_I parameter. Can
-            be a tuple, list, or numpy array of non-negative numbers (int or float)
-            in the range (-180.0, 180.0]. Values are converted to floats internally. The
-            default value is (0.0, 0.0, 0.0). Each element must be 0.0 if the
-            corresponding element in ampCgi_E_I is 0.0 and non-zero if not. The units
-            are in degrees.
+            Cg_E_CgP1 parameter relative to the base Airplane's Cg_E_CgP1 parameter.
+            Can be a tuple, list, or numpy array of non-negative numbers (int or
+            float) in the range (-180.0, 180.0]. Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampCg_E_CgP1 is 0.0 and non-zero if
+            not. The units are in degrees.
 
         :param ampAngles_E_to_B_izyx: array-like of 3 numbers, optional
 
@@ -164,45 +169,45 @@ class AirplaneMovement:
                 )
         self.wing_movements = wing_movements
 
-        ampCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
-            ampCgi_E_I, "ampCgi_E_I"
+        ampCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            ampCg_E_CgP1, "ampCg_E_CgP1"
         )
-        if not np.all(ampCgi_E_I >= 0.0):
-            raise ValueError("All elements in ampCgi_E_I must be non-negative.")
-        self.ampCgi_E_I = ampCgi_E_I
+        if not np.all(ampCg_E_CgP1 >= 0.0):
+            raise ValueError("All elements in ampCg_E_CgP1 must be non-negative.")
+        self.ampCg_E_CgP1 = ampCg_E_CgP1
 
-        periodCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
-            periodCgi_E_I, "periodCgi_E_I"
+        periodCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            periodCg_E_CgP1, "periodCg_E_CgP1"
         )
-        if not np.all(periodCgi_E_I >= 0.0):
-            raise ValueError("All elements in periodCgi_E_I must be non-negative.")
-        for period_index, period in enumerate(periodCgi_E_I):
-            amp = self.ampCgi_E_I[period_index]
+        if not np.all(periodCg_E_CgP1 >= 0.0):
+            raise ValueError("All elements in periodCg_E_CgP1 must be non-negative.")
+        for period_index, period in enumerate(periodCg_E_CgP1):
+            amp = self.ampCg_E_CgP1[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampCgi_E_I is 0.0, the corresponding element in periodCgi_E_I must be also be 0.0."
+                    "If an element in ampCg_E_CgP1 is 0.0, the corresponding element in periodCg_E_CgP1 must be also be 0.0."
                 )
-        self.periodCgi_E_I = periodCgi_E_I
+        self.periodCg_E_CgP1 = periodCg_E_CgP1
 
-        spacingCgi_E_I = _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-            spacingCgi_E_I, "spacingCgi_E_I"
+        spacingCg_E_CgP1 = _parameter_validation.threeD_spacing_vectorLike_return_tuple(
+            spacingCg_E_CgP1, "spacingCg_E_CgP1"
         )
-        self.spacingCgi_E_I = spacingCgi_E_I
+        self.spacingCg_E_CgP1 = spacingCg_E_CgP1
 
-        phaseCgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
-            phaseCgi_E_I, "phaseCgi_E_I"
+        phaseCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            phaseCg_E_CgP1, "phaseCg_E_CgP1"
         )
-        if not (np.all(phaseCgi_E_I > -180.0) and np.all(phaseCgi_E_I <= 180.0)):
+        if not (np.all(phaseCg_E_CgP1 > -180.0) and np.all(phaseCg_E_CgP1 <= 180.0)):
             raise ValueError(
-                "All elements in phaseCgi_E_I must be in the range (-180.0, 180.0]."
+                "All elements in phaseCg_E_CgP1 must be in the range (-180.0, 180.0]."
             )
-        for phase_index, phase in enumerate(phaseCgi_E_I):
-            amp = self.ampCgi_E_I[phase_index]
+        for phase_index, phase in enumerate(phaseCg_E_CgP1):
+            amp = self.ampCg_E_CgP1[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampCgi_E_I is 0.0, the corresponding element in phaseCgi_E_I must be also be 0.0."
+                    "If an element in ampCg_E_CgP1 is 0.0, the corresponding element in phaseCg_E_CgP1 must be also be 0.0."
                 )
-        self.phaseCgi_E_I = phaseCgi_E_I
+        self.phaseCg_E_CgP1 = phaseCg_E_CgP1
 
         ampAngles_E_to_B_izyx = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -288,34 +293,34 @@ class AirplaneMovement:
             delta_time, "delta_time"
         )
 
-        # Generate oscillating values for each dimension of Cgi_E_I.
-        listCgi_E_I = np.zeros((3, num_steps), dtype=float)
+        # Generate oscillating values for each dimension of Cg_E_CgP1.
+        listCg_E_CgP1 = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingCgi_E_I[dim]
+            spacing = self.spacingCg_E_CgP1[dim]
             if spacing == "sine":
-                listCgi_E_I[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampCgi_E_I[dim],
-                    periods=self.periodCgi_E_I[dim],
-                    phases=self.phaseCgi_E_I[dim],
-                    bases=self.base_airplane.Cgi_E_I[dim],
+                listCg_E_CgP1[dim, :] = _functions.oscillating_sinspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=self.base_airplane.Cg_E_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listCgi_E_I[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampCgi_E_I[dim],
-                    periods=self.periodCgi_E_I[dim],
-                    phases=self.phaseCgi_E_I[dim],
-                    bases=self.base_airplane.Cgi_E_I[dim],
+                listCg_E_CgP1[dim, :] = _functions.oscillating_linspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=self.base_airplane.Cg_E_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listCgi_E_I[dim, :] = _functions.oscillating_customspaces(
-                    amps=self.ampCgi_E_I[dim],
-                    periods=self.periodCgi_E_I[dim],
-                    phases=self.phaseCgi_E_I[dim],
-                    bases=self.base_airplane.Cgi_E_I[dim],
+                listCg_E_CgP1[dim, :] = _functions.oscillating_customspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=self.base_airplane.Cg_E_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                     custom_function=spacing,
@@ -384,15 +389,15 @@ class AirplaneMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            thisCgi_E_I = listCgi_E_I[:, step]
+            thisCg_E_CgP1 = listCg_E_CgP1[:, step]
             theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[:, step]
             these_wings = list(wings[:, step])
 
             # Make a new Airplane for this time step.
             this_airplane = geometry.airplane.Airplane(
-                name=this_name,
                 wings=these_wings,
-                Cgi_E_I=thisCgi_E_I,
+                name=this_name,
+                Cg_E_CgP1=thisCg_E_CgP1,
                 angles_E_to_B_izyx=theseAngles_E_to_B_izyx,
                 weight=this_weight,
             )
@@ -420,7 +425,7 @@ class AirplaneMovement:
         return float(
             max(
                 max_wing_movement_period,
-                np.max(self.periodCgi_E_I),
+                np.max(self.periodCg_E_CgP1),
                 np.max(self.periodAngles_E_to_B_izyx),
             )
         )

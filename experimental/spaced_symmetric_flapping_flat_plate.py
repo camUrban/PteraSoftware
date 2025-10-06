@@ -1,13 +1,6 @@
 import pterasoftware as ps
 
 flat_plate_airplane = ps.geometry.airplane.Airplane(
-    name="Flat Plate Airplane",
-    Cgi_E_I=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    weight=0.0,
-    s_ref=None,
-    c_ref=None,
-    b_ref=None,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -55,6 +48,13 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Flat Plate Airplane",
+    Cg_E_CgP1=(0.0, 0.0, 0.0),
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    weight=0.0,
+    s_ref=None,
+    c_ref=None,
+    b_ref=None,
 )
 
 flat_plate_operating_point = ps.operating_point.OperatingPoint(
@@ -156,10 +156,10 @@ del flat_plate_wing_tip_wing_cross_section_movement
 flat_plate_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=flat_plate_airplane,
     wing_movements=[flat_plate_wing_movement, reflected_wing_movement],
-    ampCgi_E_I=(0.0, 0.0, 0.0),
-    periodCgi_E_I=(0.0, 0.0, 0.0),
-    spacingCgi_E_I=("sine", "sine", "sine"),
-    phaseCgi_E_I=(0.0, 0.0, 0.0),
+    ampCg_E_CgP1=(0.0, 0.0, 0.0),
+    periodCg_E_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_E_CgP1=("sine", "sine", "sine"),
+    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
     ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),

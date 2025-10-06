@@ -14,8 +14,6 @@ example_logger.setLevel(logging.DEBUG)
 # Create an airplane object. Read through the solver examples for more details on
 # creating this object.
 example_airplane = ps.geometry.airplane.Airplane(
-    x_ref=0.14,
-    weight=420,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -61,6 +59,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_chordwise_panels=5,
         ),
     ],
+    weight=420,
 )
 
 # Create a movement for this example's airplane. Read through the unsteady solver

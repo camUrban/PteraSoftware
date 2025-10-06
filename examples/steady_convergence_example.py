@@ -60,11 +60,9 @@ leading_airplane = ps.geometry.airplane.Airplane(
             symmetric=True,
             chordwise_spacing="uniform",
         ),
-    ],
+    ]
 )
 trailing_airplane = ps.geometry.airplane.Airplane(
-    x_ref=10,
-    y_ref=-5,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -117,7 +115,7 @@ trailing_airplane = ps.geometry.airplane.Airplane(
             symmetric=True,
             chordwise_spacing="uniform",
         ),
-    ],
+    ]
 )
 
 # Create an operating point object.

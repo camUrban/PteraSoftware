@@ -202,7 +202,6 @@ for i in range(num_spanwise_sections):
 
 # Define the validation airplane object.
 validation_airplane = ps.geometry.airplane.Airplane(
-    name="Validation Airplane",
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=validation_airplane_wing_cross_sections,
@@ -211,6 +210,7 @@ validation_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing=chordwise_spacing,
         ),
     ],
+    name="Validation Airplane",
 )
 
 # Delete the extraneous pointer.

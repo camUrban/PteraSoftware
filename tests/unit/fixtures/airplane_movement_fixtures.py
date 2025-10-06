@@ -22,10 +22,10 @@ def make_static_airplane_movement_fixture():
     static_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=wing_movements,
-        ampCgi_E_I=(0.0, 0.0, 0.0),
-        periodCgi_E_I=(0.0, 0.0, 0.0),
-        spacingCgi_E_I=("sine", "sine", "sine"),
-        phaseCgi_E_I=(0.0, 0.0, 0.0),
+        ampCg_E_CgP1=(0.0, 0.0, 0.0),
+        periodCg_E_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_E_CgP1=("sine", "sine", "sine"),
+        phaseCg_E_CgP1=(0.0, 0.0, 0.0),
         ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
         spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -51,10 +51,10 @@ def make_basic_airplane_movement_fixture():
     basic_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=wing_movements,
-        ampCgi_E_I=(0.05, 0.03, 0.04),
-        periodCgi_E_I=(2.0, 2.0, 2.0),
-        spacingCgi_E_I=("sine", "sine", "sine"),
-        phaseCgi_E_I=(0.0, 0.0, 0.0),
+        ampCg_E_CgP1=(0.05, 0.03, 0.04),
+        periodCg_E_CgP1=(2.0, 2.0, 2.0),
+        spacingCg_E_CgP1=("sine", "sine", "sine"),
+        phaseCg_E_CgP1=(0.0, 0.0, 0.0),
         ampAngles_E_to_B_izyx=(3.0, 2.0, 1.5),
         periodAngles_E_to_B_izyx=(2.0, 2.0, 2.0),
         spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -65,26 +65,26 @@ def make_basic_airplane_movement_fixture():
     return basic_airplane_movement_fixture
 
 
-def make_sine_spacing_Cgi_airplane_movement_fixture():
+def make_sine_spacing_Cg_airplane_movement_fixture():
     """This method makes a fixture that is an AirplaneMovement with sine spacing
-    for Cgi_E_I.
+    for Cg_E_CgP1.
 
-    :return sine_spacing_Cgi_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with sine spacing for Cgi_E_I.
+    :return sine_spacing_Cg_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with sine spacing for Cg_E_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
-    # Create the AirplaneMovement with sine spacing for Cgi_E_I.
-    sine_spacing_Cgi_airplane_movement_fixture = (
+    # Create the AirplaneMovement with sine spacing for Cg_E_CgP1.
+    sine_spacing_Cg_airplane_movement_fixture = (
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.1, 0.0, 0.0),
-            periodCgi_E_I=(1.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.1, 0.0, 0.0),
+            periodCg_E_CgP1=(1.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -93,29 +93,29 @@ def make_sine_spacing_Cgi_airplane_movement_fixture():
     )
 
     # Return the AirplaneMovement fixture.
-    return sine_spacing_Cgi_airplane_movement_fixture
+    return sine_spacing_Cg_airplane_movement_fixture
 
 
-def make_uniform_spacing_Cgi_airplane_movement_fixture():
+def make_uniform_spacing_Cg_airplane_movement_fixture():
     """This method makes a fixture that is an AirplaneMovement with uniform spacing
-    for Cgi_E_I.
+    for Cg_E_CgP1.
 
-    :return uniform_spacing_Cgi_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with uniform spacing for Cgi_E_I.
+    :return uniform_spacing_Cg_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with uniform spacing for Cg_E_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
-    # Create the AirplaneMovement with uniform spacing for Cgi_E_I.
-    uniform_spacing_Cgi_airplane_movement_fixture = (
+    # Create the AirplaneMovement with uniform spacing for Cg_E_CgP1.
+    uniform_spacing_Cg_airplane_movement_fixture = (
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.1, 0.0, 0.0),
-            periodCgi_E_I=(1.0, 0.0, 0.0),
-            spacingCgi_E_I=("uniform", "uniform", "uniform"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.1, 0.0, 0.0),
+            periodCg_E_CgP1=(1.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("uniform", "uniform", "uniform"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -124,29 +124,29 @@ def make_uniform_spacing_Cgi_airplane_movement_fixture():
     )
 
     # Return the AirplaneMovement fixture.
-    return uniform_spacing_Cgi_airplane_movement_fixture
+    return uniform_spacing_Cg_airplane_movement_fixture
 
 
-def make_mixed_spacing_Cgi_airplane_movement_fixture():
+def make_mixed_spacing_Cg_airplane_movement_fixture():
     """This method makes a fixture that is an AirplaneMovement with mixed spacing
-    for Cgi_E_I.
+    for Cg_E_CgP1.
 
-    :return mixed_spacing_Cgi_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with mixed spacing for Cgi_E_I.
+    :return mixed_spacing_Cg_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with mixed spacing for Cg_E_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
-    # Create the AirplaneMovement with mixed spacing for Cgi_E_I.
-    mixed_spacing_Cgi_airplane_movement_fixture = (
+    # Create the AirplaneMovement with mixed spacing for Cg_E_CgP1.
+    mixed_spacing_Cg_airplane_movement_fixture = (
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.1, 0.08, 0.06),
-            periodCgi_E_I=(1.0, 1.0, 1.0),
-            spacingCgi_E_I=("sine", "uniform", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.1, 0.08, 0.06),
+            periodCg_E_CgP1=(1.0, 1.0, 1.0),
+            spacingCg_E_CgP1=("sine", "uniform", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -155,7 +155,7 @@ def make_mixed_spacing_Cgi_airplane_movement_fixture():
     )
 
     # Return the AirplaneMovement fixture.
-    return mixed_spacing_Cgi_airplane_movement_fixture
+    return mixed_spacing_Cg_airplane_movement_fixture
 
 
 def make_sine_spacing_angles_airplane_movement_fixture():
@@ -174,10 +174,10 @@ def make_sine_spacing_angles_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(10.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(1.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -205,10 +205,10 @@ def make_uniform_spacing_angles_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(10.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(1.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("uniform", "uniform", "uniform"),
@@ -236,10 +236,10 @@ def make_mixed_spacing_angles_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(10.0, 15.0, 8.0),
             periodAngles_E_to_B_izyx=(1.0, 1.0, 1.0),
             spacingAngles_E_to_B_izyx=("sine", "uniform", "sine"),
@@ -251,35 +251,33 @@ def make_mixed_spacing_angles_airplane_movement_fixture():
     return mixed_spacing_angles_airplane_movement_fixture
 
 
-def make_Cgi_only_airplane_movement_fixture():
-    """This method makes a fixture that is an AirplaneMovement where only Cgi_E_I
+def make_Cg_only_airplane_movement_fixture():
+    """This method makes a fixture that is an AirplaneMovement where only Cg_E_CgP1
     moves.
 
-    :return Cgi_only_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with only Cgi_E_I movement.
+    :return Cg_only_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with only Cg_E_CgP1 movement.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
-    # Create the Cgi-only AirplaneMovement.
-    Cgi_only_airplane_movement_fixture = (
-        ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements,
-            ampCgi_E_I=(0.08, 0.06, 0.05),
-            periodCgi_E_I=(1.5, 1.5, 1.5),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
-            ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-            periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-            spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-            phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-        )
+    # Create the Cg-only AirplaneMovement.
+    Cg_only_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=wing_movements,
+        ampCg_E_CgP1=(0.08, 0.06, 0.05),
+        periodCg_E_CgP1=(1.5, 1.5, 1.5),
+        spacingCg_E_CgP1=("sine", "sine", "sine"),
+        phaseCg_E_CgP1=(0.0, 0.0, 0.0),
+        ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
+        phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
     )
 
     # Return the AirplaneMovement fixture.
-    return Cgi_only_airplane_movement_fixture
+    return Cg_only_airplane_movement_fixture
 
 
 def make_angles_only_airplane_movement_fixture():
@@ -298,10 +296,10 @@ def make_angles_only_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(12.0, 8.0, 6.0),
             periodAngles_E_to_B_izyx=(1.5, 1.5, 1.5),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -313,26 +311,26 @@ def make_angles_only_airplane_movement_fixture():
     return angles_only_airplane_movement_fixture
 
 
-def make_phase_offset_Cgi_airplane_movement_fixture():
+def make_phase_offset_Cg_airplane_movement_fixture():
     """This method makes a fixture that is an AirplaneMovement with non-zero phase
-    offset for Cgi_E_I.
+    offset for Cg_E_CgP1.
 
-    :return phase_offset_Cgi_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with phase offset for Cgi_E_I.
+    :return phase_offset_Cg_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with phase offset for Cg_E_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
 
     # Create the phase-offset AirplaneMovement.
-    phase_offset_Cgi_airplane_movement_fixture = (
+    phase_offset_Cg_airplane_movement_fixture = (
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.08, 0.06, 0.05),
-            periodCgi_E_I=(1.0, 1.0, 1.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(90.0, -45.0, 60.0),
+            ampCg_E_CgP1=(0.08, 0.06, 0.05),
+            periodCg_E_CgP1=(1.0, 1.0, 1.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(90.0, -45.0, 60.0),
             ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -341,7 +339,7 @@ def make_phase_offset_Cgi_airplane_movement_fixture():
     )
 
     # Return the AirplaneMovement fixture.
-    return phase_offset_Cgi_airplane_movement_fixture
+    return phase_offset_Cg_airplane_movement_fixture
 
 
 def make_phase_offset_angles_airplane_movement_fixture():
@@ -360,10 +358,10 @@ def make_phase_offset_angles_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(10.0, 12.0, 8.0),
             periodAngles_E_to_B_izyx=(1.0, 1.0, 1.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -393,10 +391,10 @@ def make_multiple_periods_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.06, 0.05, 0.04),
-            periodCgi_E_I=(1.0, 2.0, 3.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.06, 0.05, 0.04),
+            periodCg_E_CgP1=(1.0, 2.0, 3.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(8.0, 10.0, 12.0),
             periodAngles_E_to_B_izyx=(0.5, 1.5, 2.5),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -408,12 +406,12 @@ def make_multiple_periods_airplane_movement_fixture():
     return multiple_periods_airplane_movement_fixture
 
 
-def make_custom_spacing_Cgi_airplane_movement_fixture():
+def make_custom_spacing_Cg_airplane_movement_fixture():
     """This method makes a fixture that is an AirplaneMovement with a custom
-    spacing function for Cgi_E_I.
+    spacing function for Cg_E_CgP1.
 
-    :return custom_spacing_Cgi_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with custom spacing for Cgi_E_I.
+    :return custom_spacing_Cg_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with custom spacing for Cg_E_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -437,14 +435,14 @@ def make_custom_spacing_Cgi_airplane_movement_fixture():
         )
 
     # Create the custom-spacing AirplaneMovement.
-    custom_spacing_Cgi_airplane_movement_fixture = (
+    custom_spacing_Cg_airplane_movement_fixture = (
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.08, 0.0, 0.0),
-            periodCgi_E_I=(1.0, 0.0, 0.0),
-            spacingCgi_E_I=(custom_harmonic, "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.08, 0.0, 0.0),
+            periodCg_E_CgP1=(1.0, 0.0, 0.0),
+            spacingCg_E_CgP1=(custom_harmonic, "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
@@ -453,7 +451,7 @@ def make_custom_spacing_Cgi_airplane_movement_fixture():
     )
 
     # Return the AirplaneMovement fixture.
-    return custom_spacing_Cgi_airplane_movement_fixture
+    return custom_spacing_Cg_airplane_movement_fixture
 
 
 def make_custom_spacing_angles_airplane_movement_fixture():
@@ -489,10 +487,10 @@ def make_custom_spacing_angles_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.0, 0.0, 0.0),
-            periodCgi_E_I=(0.0, 0.0, 0.0),
-            spacingCgi_E_I=("sine", "sine", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.0, 0.0, 0.0),
+            periodCg_E_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_E_CgP1=("sine", "sine", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(10.0, 0.0, 0.0),
             periodAngles_E_to_B_izyx=(1.0, 0.0, 0.0),
             spacingAngles_E_to_B_izyx=(custom_harmonic, "sine", "sine"),
@@ -536,10 +534,10 @@ def make_mixed_custom_and_standard_spacing_airplane_movement_fixture():
         ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCgi_E_I=(0.06, 0.05, 0.04),
-            periodCgi_E_I=(1.0, 1.0, 1.0),
-            spacingCgi_E_I=(custom_harmonic, "uniform", "sine"),
-            phaseCgi_E_I=(0.0, 0.0, 0.0),
+            ampCg_E_CgP1=(0.06, 0.05, 0.04),
+            periodCg_E_CgP1=(1.0, 1.0, 1.0),
+            spacingCg_E_CgP1=(custom_harmonic, "uniform", "sine"),
+            phaseCg_E_CgP1=(0.0, 0.0, 0.0),
             ampAngles_E_to_B_izyx=(8.0, 10.0, 6.0),
             periodAngles_E_to_B_izyx=(1.0, 1.0, 1.0),
             spacingAngles_E_to_B_izyx=("sine", custom_harmonic, "uniform"),

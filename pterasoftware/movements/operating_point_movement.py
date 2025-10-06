@@ -72,7 +72,7 @@ class OperatingPointMovement:
         :param spacingVCg__E: string, optional
 
             The value determines the spacing of the OperatingPointMovement's change
-            in its OperatingPoints' Cgi_E_I parameters. Must be either "sine",
+            in its OperatingPoints' Cg_E_CgP1 parameters. Must be either "sine",
             "uniform", or a callable custom spacing function. Custom spacing
             functions are for advanced users and must start at 0, return to 0 after
             one period of 2*pi radians, have zero mean, have amplitude of 1,

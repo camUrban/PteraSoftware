@@ -34,7 +34,7 @@ airplane = ps.geometry.airplane.Airplane(
             symmetric=True,
             chordwise_spacing="uniform",
         ),
-    ],
+    ]
 )
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=airplane,

@@ -53,6 +53,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * W: wind
 * Pr: problem
 * G: geometry
+* Gs: geometry axes (after accounting for symmetry)
 * Wn: wing
 * Wcs…: wing cross section
   * …i: inner
@@ -61,9 +62,8 @@ The standard abbreviations and names are given below for reference. See the sect
 * A…: airfoil
   * …i: inner
   * …o: outer
-* I: simulation starting point
-* Cgi: starting point
-* Cg: CG point
+* Cg: center of gravity (CG)
+* Cgs: CG (after accounting for symmetry)
 * Ler: leading edge root point
 * Lp: leading point
 * Lpp: leading point parent
@@ -171,7 +171,22 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's geometry axes…  
   * Variables: …\_GP1…
 
-## 5. Wing axes
+## 5. Geometry axes (after accounting for symmetry)
+
+* Basis directions: For a given Wing, the basis directions are identical to that Wing's Airplane's geometry axes if the Wing is non-symmetric or symmetric-continuous. For mirror-only Wings, the basis directions are that Wing's Airplane's geometry axes reflected about that Wing's symmetry plane.  
+* Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.  
+* Ownership: Wing 
+* Local reference examples  
+  * Text: …in geometry axes (after accounting for symmetry)…  
+  * Variables: …\_Gs…  
+* Airplane-local reference examples  
+  * Text: …in geometry axes (after accounting for the first Wing's symmetry)…  
+  * Variables: …\_Gs1…  
+* Non-local reference examples  
+  * Text: …in the first Airplane's geometry axes (after accounting for its second Wing's symmetry)…  
+  * Variables: …\_Gs2P1…
+
+## 6. Wing axes
 
 * Basis directions  
   1. +x: Towards the back of the Wing at its root  
@@ -189,7 +204,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's axes…  
   * Variables: …\_Wn2P1…
 
-## 6. Wing cross section axes
+## 7. Wing cross section axes
 
 * Basis directions  
   1. +x: Towards the trailing edge in the WingCrossSection's plane  
@@ -210,9 +225,9 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's first WingCrossSection's axes…  
   * Variables: …\_Wcs1Wn2P1…
 
-## 7. Wing cross section parent axes
+## 8. Wing cross section parent axes
 
-* Basis directions identical to Wing axes for a Wing's first WingCrossSection, and identical to the previous WingCrossSection's axes for subsequent ones.  
+* Basis directions: Identical to Wing axes for a Wing's first WingCrossSection, and identical to the previous WingCrossSection's axes for subsequent ones.  
 * Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.  
 * Ownership: WingCrossSection  
 * Local reference examples  
@@ -228,7 +243,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's first WingCrossSection's parent axes…  
   * Variables: …\_Wcsp1Wn2P1…
 
-## 8. Airfoil axes
+## 9. Airfoil axes
 
 * Basis directions  
   1. +x: Chordwise towards the Airfoil's trailing point  
@@ -250,37 +265,32 @@ The two angles α and β are known as the angle of attack and the angle of sides
 
 # Reference Points
 
-## 1. Simulation starting point
-
-* Position of the first Airplane's CG at the start of the simulation  
-* Ownership: None  
-* Reference examples  
-  * Text: …relative to the simulation starting point…  
-  * Variables: …\_I
-
-## 2. Starting point
-
-* Position of the Airplane's CG at the start of the simulation  
-* Ownership: None  
-* Local reference examples  
-  * Text: …relative to the starting point…  
-  * Variables: …\_Cgi  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's starting point…  
-  * Variables: …\_CgiP1
-
-## 3. CG point
+## 1. CG
 
 * Position of the Airplane's CG  
 * Ownership: Airplane  
 * Local reference examples  
-  * Text: …relative to the CG point…  
+  * Text: …relative to the CG…  
   * Variables: …\_Cg  
 * Non-local reference examples  
-  * Text: …relative to the second Airplane's CG point…  
-  * Variables: …\_CgP2
+  * Text: …relative to the first Airplane's CG…  
+  * Variables: …\_CgP1
 
-## 4. Leading edge root point
+## 2. CG (after accounting for symmetry)
+
+* For a non-symmetric or symmetric-continuous Wing, this identical to its Airplane's CG. For mirror-only Wings, it is their Airplane's CG reflected across that Wing's symmetry plane.  
+* Ownership: Wing  
+* Local reference examples  
+  * Text: …relative to the CG (after accounting for symmetry)…  
+  * Variables: …\_Cgs  
+* Airplane-local reference examples  
+  * Text: …relative to the CG (after accounting for the first Wing's symmetry)…  
+  * Variables: …\_Cgs1  
+* Non-local reference examples  
+  * Text: …relative to the first Airplane's CG (after accounting for its second Wing's symmetry)…  
+  * Variables: …\_Cgs2P1
+
+## 3. Leading edge root point
 
 * Root point of the Wing's leading edge  
 * Ownership: Wing  
@@ -294,7 +304,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's leading edge root point…  
   * Variables: …\_Ler2P1
 
-## 5. Leading point
+## 4. Leading point
 
 * The leading point of the WingCrossSection  
 * Ownership: WingCrossSection  
@@ -311,7 +321,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading point…  
   * Variables: …\_Lp1Wn2P1
 
-## 6. Leading point parent
+## 5. Leading point parent
 
 * For a Wing's first WingCrossSection, this is the Wing's leading edge root point. For subsequent WingCrossSections, this is the previous WingCrossSection's leading point.  
 * Ownership: WingCrossSection  
@@ -328,7 +338,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading parent point…  
   * Variables: …\_Lpp1Wn2P1
 
-## 7. Panel points
+## 6. Panel points
 
 * The front right, front left, back left, back right, and collocation points of a Panel  
 * Ownership: Panel  
@@ -345,7 +355,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's front right point…  
   * Variables: …\_Frppr3c2Wn2P1
 
-## 8. Bound horseshoe vortex points
+## 7. Bound horseshoe vortex points
 
 * Only relevant in steady horseshoe vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a bound HorseshoeVortex  
@@ -363,7 +373,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…  
   * Variables: …\_Frbhvpr3c2Wn2P1
 
-## 9. Bound ring vortex points
+## 8. Bound ring vortex points
 
 * The front right, front left, back left, and back right points of a bound RingVortex  
 * Ownership: RingVortex  
@@ -380,7 +390,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound RingVortex's front right point…  
   * Variables: …\_Frbrvpr3c2Wn2P1
 
-## 10. Wake horseshoe vortex points
+## 9. Wake horseshoe vortex points
 
 * Only relevant in steady horseshoe and steady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake HorseshoeVortex  
@@ -398,7 +408,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's third wake HorseshoeVortex's front right point…  
   * Variables: …\_Frwhvp3Wn2P1
 
-## 11. Wake ring vortex points
+## 10. Wake ring vortex points
 
 * Only relevant in unsteady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake RingVortex  
@@ -416,7 +426,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) wake RingVortex's front right point…  
   * Variables: …\_Frwrvpr3c2Wn2P1
 
-## 12. Line vortex points
+## 11. Line vortex points
 
 * The start, end, and center points of a LineVortex  
 * Ownership: LineVortex  

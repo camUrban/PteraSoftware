@@ -118,9 +118,6 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                 offset = row - 1
 
                 this_airplane = ps.geometry.airplane.Airplane(
-                    name=this_name,
-                    x_ref=offset * x_spacing,
-                    y_ref=offset_sign * offset * y_spacing,
                     wings=[
                         ps.geometry.wing.Wing(
                             wing_cross_sections=[
@@ -158,6 +155,7 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                             chordwise_spacing="uniform",
                         ),
                     ],
+                    name=this_name,
                 )
 
                 this_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(

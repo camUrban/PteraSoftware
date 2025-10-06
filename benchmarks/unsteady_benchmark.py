@@ -10,7 +10,6 @@ num_chordwise_panels = 5
 num_spanwise_panels = 20
 
 example_airplane = ps.geometry.airplane.Airplane(
-    name="Example Airplane",
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -42,6 +41,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Example Airplane",
 )
 
 upper_wing_root_wing_cross_section_movement = (
@@ -75,8 +75,7 @@ del upper_wing_root_wing_cross_section_movement
 del upper_wing_tip_wing_cross_section_movement
 
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=example_airplane,
-    wing_movements=[upper_wing_movement],
+    base_airplane=example_airplane, wing_movements=[upper_wing_movement]
 )
 
 del upper_wing_movement

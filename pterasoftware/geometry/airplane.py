@@ -39,8 +39,7 @@ class Airplane:
         across all Wings.
 
         validate_first_airplane_constraints: This method validates that the first
-        Airplane in a simulation has Cgi_E_I set to zeros, as required by the
-        definition of the simulation's starting point.
+        Airplane in a simulation has Cg_E_CgP1 set to zeros.
 
         process_wing_symmetry: This method processes a Wing to determine what type of
         symmetry it has. If necessary, it then modifies the Wing. If type 5 symmetry
@@ -79,7 +78,7 @@ class Airplane:
         self,
         wings,
         name="Untitled Airplane",
-        Cgi_E_I=(0.0, 0.0, 0.0),
+        Cg_E_CgP1=(0.0, 0.0, 0.0),
         angles_E_to_B_izyx=(0.0, 0.0, 0.0),
         weight=0.0,
         s_ref=None,
@@ -99,19 +98,17 @@ class Airplane:
 
             A sensible name for your airplane. The default is "Untitled Airplane".
 
-        :param Cgi_E_I: array-like of 3 numbers, optional
+        :param Cg_E_CgP1: array-like of 3 numbers, optional
 
-            Position [x, y, z] of this Airplane's starting point (in Earth axes,
-            relative to the simulation's starting point). Can be a list, tuple,
-            or numpy array of numbers (int or float). Values are converted to floats
-            internally. For the first Airplane in a simulation, this must be [0.0,
-            0.0, 0.0] since the simulation's starting point is defined as the first
-            Airplane's starting point (the location of its CG at t=0). The default is
-            (0.0, 0.0, 0.0).
+            Position (x, y, z) of this Airplane's CG (in Earth axes, relative to the
+            first Airplane's CG). Can be a list, tuple, or numpy array of numbers (
+            int or float). Values are converted to floats internally. For the first
+            Airplane in a simulation, this must be (0.0, 0.0, 0.0) by definition. The
+            units are in meters. The default is (0.0, 0.0, 0.0).
 
         :param angles_E_to_B_izyx: array-like of 3 numbers, optional
 
-            Angles [angleX, angleY, angleZ] from Earth axes to body axes using an
+            Angles (angleX, angleY, angleZ) from Earth axes to body axes using an
             intrinsic z-y'-x" sequence. Can be a tuple, list, or numpy array of
             numbers (int or float). Values are converted to floats internally. This
             defines the orientation of the airplane's body axes relative to Earth
@@ -154,8 +151,8 @@ class Airplane:
         self.wings = processed_wings
 
         self.name = _parameter_validation.string_return_string(name, "name")
-        self.Cgi_E_I = _parameter_validation.threeD_number_vectorLike_return_float(
-            Cgi_E_I, "Cgi_E_I"
+        self.Cg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            Cg_E_CgP1, "Cg_E_CgP1"
         )
 
         angles_E_to_B_izyx = (
@@ -551,21 +548,17 @@ class Airplane:
         return sum(wing.num_panels for wing in self.wings)
 
     def validate_first_airplane_constraints(self):
-        """This method validates constraints specific to the first Airplane in a
-        simulation.
-
-        The first Airplane in a simulation must have Cgi_E_I set to zeros since the
-        simulation starting point is defined as the first Airplane's starting point.
+        """This method validates that the first Airplane in a simulation has
+        Cg_E_CgP1 set to zeros.
 
         This method should be called by SteadyProblem or UnsteadyProblem classes.
 
         :raises Exception: If first Airplane constraints are violated.
         """
-        if not np.allclose(self.Cgi_E_I, np.array([0.0, 0.0, 0.0])):
+        if not np.allclose(self.Cg_E_CgP1, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
-                "The first Airplane in a simulation must have Cgi_E_I set to"
-                "np.array([0.0, 0.0, 0.0]) since the simulation starting point "
-                "is defined as the first Airplane's CG at t=0."
+                "The first Airplane in a simulation must have Cg_E_CgP1 set to"
+                "(0.0, 0.0, 0.0) by definition."
             )
 
     @staticmethod

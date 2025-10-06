@@ -18,15 +18,6 @@ class unsteadyRingVortexLatticeSolver:
 
         # Create the lead airplane object.
         lead_airplane = ps.geometry.airplane.Airplane(
-            name="Lead Airplane",
-            # Specify the location of the lead airplane's center of gravity. This is
-            # the point around about which the solver will calculate the moments on
-            # the airplane. These three values default to 0.0 meters. Note: these
-            # values are relative to the global coordinate system fixed front left
-            # corner of the first airplane's first wing's root wing cross section.
-            x_ref=0.0,
-            y_ref=0.0,
-            z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     wing_cross_sections=[
@@ -64,6 +55,7 @@ class unsteadyRingVortexLatticeSolver:
                     chordwise_spacing="uniform",
                 ),
             ],
+            name="Lead Airplane",
         )
 
         # Now define the lead airplane's movement object.
@@ -92,15 +84,6 @@ class unsteadyRingVortexLatticeSolver:
 
         # Create the trailing right airplane object.
         right_airplane = ps.geometry.airplane.Airplane(
-            name="Right Airplane",
-            # Specify the location of the right airplane's center of gravity. This is
-            # the point around about which the solver will calculate the moments on
-            # the airplane. These three values default to 0.0 meters. Note: these
-            # values are relative to the global coordinate system fixed front left
-            # corner of the first airplane's first wing's root wing cross section.
-            x_ref=x_spacing,
-            y_ref=y_spacing,
-            z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     wing_cross_sections=[
@@ -127,6 +110,7 @@ class unsteadyRingVortexLatticeSolver:
                     chordwise_spacing="uniform",
                 ),
             ],
+            name="Right Airplane",
         )
 
         # Now define the trailing right airplane's movement object.
@@ -153,15 +137,6 @@ class unsteadyRingVortexLatticeSolver:
 
         # Create the trailing left airplane object.
         left_airplane = ps.geometry.airplane.Airplane(
-            name="Left Airplane",
-            # Specify the location of the left airplane's center of gravity. This is
-            # the point around about which the solver will calculate the moments on
-            # the airplane. These three values default to 0.0 meters. Note: these
-            # values are relative to the global coordinate system fixed front left
-            # corner of the first airplane's first wing's root wing cross section.
-            x_ref=x_spacing,
-            y_ref=-y_spacing,
-            z_ref=0.0,
             wings=[
                 ps.geometry.wing.Wing(
                     wing_cross_sections=[
@@ -188,6 +163,7 @@ class unsteadyRingVortexLatticeSolver:
                     chordwise_spacing="uniform",
                 ),
             ],
+            name="Left Airplane",
         )
 
         # Now define the trailing left airplane's movement object.

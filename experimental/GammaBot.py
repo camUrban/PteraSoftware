@@ -64,7 +64,6 @@ for i in range(num_wing_cross_sections):
 
 # Define the GammaBot Airplane.
 gammabot_airplane = ps.geometry.airplane.Airplane(
-    name="GammaBot Airplane",
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=gammabot_airplane_wing_cross_sections,
@@ -76,6 +75,7 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing=chordwise_spacing,
         ),
     ],
+    name="GammaBot Airplane",
 )
 
 # Delete the extraneous pointer.

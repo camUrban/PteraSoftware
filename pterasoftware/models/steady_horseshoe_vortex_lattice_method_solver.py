@@ -8,13 +8,6 @@ class steadyHorseshoeVortexLatticeMethodSolver:
 
     def runSolver(self):
         example_airplane = ps.geometry.airplane.Airplane(
-            name="Example Airplane",
-            x_ref=0.0,
-            y_ref=0.0,
-            z_ref=0.0,
-            s_ref=None,
-            b_ref=None,
-            c_ref=None,
             wings=[
                 ps.geometry.wing.Wing(
                     wing_cross_sections=[
@@ -76,6 +69,10 @@ class steadyHorseshoeVortexLatticeMethodSolver:
                     symmetric=True,
                 ),
             ],
+            name="Example Airplane",
+            s_ref=None,
+            c_ref=None,
+            b_ref=None,
         )
 
         example_operating_point = ps.operating_point.OperatingPoint(

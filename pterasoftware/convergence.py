@@ -247,18 +247,12 @@ def analyze_steady_convergence(
 
                 these_airplanes.append(
                     geometry.airplane.Airplane(
-                        # These values are copied from the reference airplane.
+                        wings=these_wings,
                         name=ref_airplane.name,
-                        x_ref=ref_airplane.x_ref,
-                        y_ref=ref_airplane.y_ref,
-                        z_ref=ref_airplane.z_ref,
                         weight=ref_airplane.weight,
-                        # These are kept as None so that they are recalculated with
-                        # this airplane's mesh.
                         s_ref=None,
                         c_ref=None,
-                        b_ref=None,  # This value changes.
-                        wings=these_wings,
+                        b_ref=None,
                     )
                 )
 
@@ -869,36 +863,20 @@ def analyze_unsteady_convergence(
 
                         # 6: Create a copy of the base object.
                         this_base_airplane = geometry.airplane.Airplane(
-                            # These values are copied from the reference base airplane.
+                            wings=these_base_wings,
                             name=ref_base_airplane.name,
-                            x_ref=ref_base_airplane.x_ref,
-                            y_ref=ref_base_airplane.y_ref,
-                            z_ref=ref_base_airplane.z_ref,
                             weight=ref_base_airplane.weight,
-                            # These are kept as None so that they are recalculated
-                            # with this airplane's mesh.
                             s_ref=None,
                             c_ref=None,
-                            b_ref=None,  # This value changes.
-                            wings=these_base_wings,
+                            b_ref=None,
                         )
 
                         # 7. Create a copy of the new (sub-)movement.
-                        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
-                            # These values are copied from this reference airplane
-                            # movement.
-                            x_ref_amplitude=ref_airplane_movement.x_ref_amplitude,
-                            x_ref_period=ref_airplane_movement.x_ref_period,
-                            x_ref_spacing=ref_airplane_movement.x_ref_spacing,
-                            y_ref_amplitude=ref_airplane_movement.y_ref_amplitude,
-                            y_ref_period=ref_airplane_movement.y_ref_period,
-                            y_ref_spacing=ref_airplane_movement.y_ref_spacing,
-                            z_ref_amplitude=ref_airplane_movement.z_ref_amplitude,
-                            z_ref_period=ref_airplane_movement.z_ref_period,
-                            z_ref_spacing=ref_airplane_movement.z_ref_spacing,
-                            # These values change.
-                            base_airplane=this_base_airplane,
-                            wing_movements=these_wing_movements,
+                        this_airplane_movement = (
+                            movements.airplane_movement.AirplaneMovement(
+                                base_airplane=this_base_airplane,
+                                wing_movements=these_wing_movements,
+                            )
                         )
 
                         # 8. Append the new base object to the list of new base

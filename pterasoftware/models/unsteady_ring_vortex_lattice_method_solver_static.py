@@ -11,26 +11,6 @@ import pterasoftware as ps
 # class, even most of them have usable default values. This is simply for educational
 # purposes, even though it makes the code much longer than what it needs to be.
 example_airplane = ps.geometry.airplane.Airplane(
-    # Give the airplane object a name. This value defaults to "Untitled".
-    name="Example Airplane",
-    # Specify the location of the airplane's center of gravity. This is the point
-    # around about which the solver will calculate the moments on the airplane. These
-    # three values default to 0.0 meters. This and every input and output of this
-    # program is in SI units. Note: these values are relative to the global
-    # coordinate system fixed front left corner of the first airplane's first wing's
-    # root wing cross section.
-    x_ref=0.0,
-    y_ref=0.0,
-    z_ref=0.0,
-    # Give the reference dimensions of this aircraft. "s_ref" is the reference area
-    # in meters squared, "b_ref" is the reference span in meters, and "c_ref" is the
-    # reference chord in meters. I set these values to None, which is their default,
-    # so that they will be populated by the first wing object's calculated
-    # characteristics. Note that the reference area used in this program is the
-    # wetted area of the wing's mean-camberline surface.
-    s_ref=None,
-    b_ref=None,
-    c_ref=None,  # All airplane objects have a list of wings.
     wings=[  # Create the first wing object in this airplane.
         ps.geometry.wing.Wing(
             wing_cross_sections=[  # Create a new wing cross section object.
@@ -118,8 +98,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             symmetric=True,
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
-        ),
-        # Define the next wing.
+        ),  # Define the next wing.
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
@@ -149,6 +128,10 @@ example_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Example Airplane",
+    s_ref=None,
+    c_ref=None,
+    b_ref=None,
 )
 
 # Now define the main wing's root wing cross section's movement. Cross sections can
@@ -235,36 +218,8 @@ del v_tail_tip_wing_cross_section_movement
 
 # Now define the airplane's movement object. In addition to their wing's and wing
 # cross sections' relative movements, airplane's reference positions can move as well.
-airplane_movement = ps.movements.airplane_movement.AirplaneMovement(  # Define the base airplane object.
-    base_airplane=example_airplane,  # Add the list of wing movement objects.
-    wing_movements=[main_wing_movement, v_tail_movement],
-    # Define the amplitude of the reference position's change in x position. This
-    # value is in meters. This is set to 0.0 meters, which is the default value.
-    x_ref_amplitude=0.0,
-    # Define the period of the reference position's change in x position. This value
-    # is in seconds. This is set to 0.0 seconds, which is the default value.
-    x_ref_period=0.0,
-    # Define the time step spacing of the reference position's change in x position.
-    # This is "sine" by default. The options are "sine" and "uniform".
-    x_ref_spacing="sine",
-    # Define the amplitude of the reference position's change in y position. This
-    # value is in meters. This is set to 0.0 meters, which is the default value.
-    y_ref_amplitude=0.0,
-    # Define the period of the reference position's change in y position. This value
-    # is in seconds. This is set to 0.0 seconds, which is the default value.
-    y_ref_period=0.0,
-    # Define the time step spacing of the reference position's change in y position.
-    # This is "sine" by default. The options are "sine" and "uniform".
-    y_ref_spacing="sine",
-    # Define the amplitude of the reference position's change in z position. This
-    # value is in meters. This is set to 0.0 meters, which is the default value.
-    z_ref_amplitude=0.0,
-    # Define the period of the reference position's change in z position. This value
-    # is in seconds. This is set to 0.0 seconds, which is the default value.
-    z_ref_period=0.0,
-    # Define the time step spacing of the reference position's change in z position.
-    # This is "sine" by default. The options are "sine" and "uniform".
-    z_ref_spacing="sine",
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    base_airplane=example_airplane, wing_movements=[main_wing_movement, v_tail_movement]
 )
 
 # Delete the extraneous wing movement objects, as these are now contained within the

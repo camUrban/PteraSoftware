@@ -71,9 +71,6 @@ for airplane_id in range(num_airplanes):
     offset = row - 1
 
     this_airplane = ps.geometry.airplane.Airplane(
-        name=this_name,
-        x_ref=offset * x_spacing,
-        y_ref=offset_sign * offset * y_spacing,
         wings=[
             ps.geometry.wing.Wing(
                 wing_cross_sections=[
@@ -105,6 +102,7 @@ for airplane_id in range(num_airplanes):
                 chordwise_spacing="uniform",
             ),
         ],
+        name=this_name,
     )
 
     this_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(

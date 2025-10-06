@@ -14,7 +14,6 @@ example_logger.setLevel(logging.DEBUG)
 # Create an airplane object. Read through the solver examples for more details on
 # creating this object.
 default_airplane = ps.geometry.airplane.Airplane(
-    weight=250,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -59,6 +58,7 @@ default_airplane = ps.geometry.airplane.Airplane(
             symmetric=True,
         ),
     ],
+    weight=250,
 )
 
 # Create an operating point object for this example's problem. Be sure to specify an

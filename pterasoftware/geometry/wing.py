@@ -92,7 +92,7 @@ class Wing:
     Subclassing:
         This class is not meant to be subclassed.
 
-    Every Wing has its axis system, known as wing axes. The user sets the
+    Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the prelimLer_G_Cg and
     angles_G_to_prelimWn_ixyz parameters. However, the steps for transforming a vector
     from geometry axes to wing axes, and the interpretation of the wing axes

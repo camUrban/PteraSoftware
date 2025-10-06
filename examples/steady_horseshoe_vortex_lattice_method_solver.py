@@ -13,13 +13,6 @@ import pterasoftware as ps
 # The same caveats apply to the other classes, methods, and functions I call in this
 # script.
 example_airplane = ps.geometry.airplane.Airplane(
-    name="Example Airplane",
-    Cgi_E_I=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    weight=0.0,
-    s_ref=None,
-    b_ref=None,
-    c_ref=None,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -112,6 +105,13 @@ example_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="cosine",
         ),
     ],
+    name="Example Airplane",
+    Cg_E_CgP1=(0.0, 0.0, 0.0),
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    weight=0.0,
+    s_ref=None,
+    c_ref=None,
+    b_ref=None,
 )
 
 # Define a new OperatingPoint, which we'll pass into the SteadyProblem.

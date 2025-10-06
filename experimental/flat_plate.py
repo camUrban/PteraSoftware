@@ -3,13 +3,6 @@ import pterasoftware as ps
 solver_type = "steady_horseshoe"
 
 flat_plate_airplane = ps.geometry.airplane.Airplane(
-    name="Flat Plate Airplane",
-    Cgi_E_I=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    weight=0.0,
-    s_ref=None,
-    c_ref=None,
-    b_ref=None,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -57,6 +50,13 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Flat Plate Airplane",
+    Cg_E_CgP1=(0.0, 0.0, 0.0),
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    weight=0.0,
+    s_ref=None,
+    c_ref=None,
+    b_ref=None,
 )
 
 flat_plate_operating_point = ps.operating_point.OperatingPoint(
@@ -145,10 +145,10 @@ def get_solver(this_solver_type, this_airplane, this_operating_point):
             this_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                 base_airplane=this_airplane,
                 wing_movements=[this_wing_movement],
-                ampCgi_E_I=(0.0, 0.0, 0.0),
-                periodCgi_E_I=(0.0, 0.0, 0.0),
-                spacingCgi_E_I=("sine", "sine", "sine"),
-                phaseCgi_E_I=(0.0, 0.0, 0.0),
+                ampCg_E_CgP1=(0.0, 0.0, 0.0),
+                periodCg_E_CgP1=(0.0, 0.0, 0.0),
+                spacingCg_E_CgP1=("sine", "sine", "sine"),
+                phaseCg_E_CgP1=(0.0, 0.0, 0.0),
                 ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
                 periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
                 spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),

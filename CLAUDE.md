@@ -193,7 +193,7 @@ Variables must follow one of these four patterns based on their requirements:
 - E: Earth, B: body, W: wind, G: geometry, Wn: wing, Wcs: wing cross section, Wcsp: wing cross section parent, A: airfoil
 
 **Reference Points:**  
-- I: simulation starting point, Cgi: starting point, Cg: CG point, Ler: leading edge root point, Lp: leading point, Lpp: leading point parent
+- Cg: CG point, Ler: leading edge root point, Lp: leading point, Lpp: leading point parent
 
 **Reference Frames:**
 - E: Earth frame, B: body frame, Wn: wing frame, Wcs: wing cross section frame, Wcsp: wing cross section parent frame
@@ -318,8 +318,7 @@ There are four useful combinations of axes, points, and frames. Variables are de
 - Wcsp: wing cross section parent  
 - A: airfoil
 - I: simulation starting point  
-- Cgi: starting point  
-- Cg: CG point  
+- Cg: CG  
 - Ler: leading edge root point  
 - Lp: leading point  
 - Lpp: leading point parent  

@@ -12,15 +12,6 @@ y_spacing = 13
 
 # Create the lead airplane object.
 lead_airplane = ps.geometry.airplane.Airplane(
-    name="Lead Airplane",
-    # Specify the location of the lead airplane's center of gravity. This is the
-    # point around about which the solver will calculate the moments on the airplane.
-    # These three values default to 0.0 meters. Note: these values are relative to
-    # the global coordinate system fixed front left corner of the first airplane's
-    # first wing's root wing cross section.
-    x_ref=0.0,
-    y_ref=0.0,
-    z_ref=0.0,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -29,8 +20,7 @@ lead_airplane = ps.geometry.airplane.Airplane(
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
                     x_le=0.0,
-                    y_le=0.0,
-                    # Assign the twist of this wing cross section. Note: when
+                    y_le=0.0,  # Assign the twist of this wing cross section. Note: when
                     # assigning angles of attack to multiple airplanes, it is better
                     # to set the operating point's angle of attack to zero, and then
                     # use offset the twist values of all the wing cross sections to
@@ -57,6 +47,7 @@ lead_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Lead Airplane",
 )
 
 # Now define the lead airplane's movement object.
@@ -85,15 +76,6 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 # Create the trailing right airplane object.
 right_airplane = ps.geometry.airplane.Airplane(
-    name="Right Airplane",
-    # Specify the location of the right airplane's center of gravity. This is the
-    # point around about which the solver will calculate the moments on the airplane.
-    # These three values default to 0.0 meters. Note: these values are relative to
-    # the global coordinate system fixed front left corner of the first airplane's
-    # first wing's root wing cross section.
-    x_ref=x_spacing,
-    y_ref=y_spacing,
-    z_ref=0.0,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -120,6 +102,7 @@ right_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Right Airplane",
 )
 
 # Now define the trailing right airplane's movement object.
@@ -146,15 +129,6 @@ right_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 # Create the trailing left airplane object.
 left_airplane = ps.geometry.airplane.Airplane(
-    name="Left Airplane",
-    # Specify the location of the left airplane's center of gravity. This is the
-    # point around about which the solver will calculate the moments on the airplane.
-    # These three values default to 0.0 meters. Note: these values are relative to
-    # the global coordinate system fixed front left corner of the first airplane's
-    # first wing's root wing cross section.
-    x_ref=x_spacing,
-    y_ref=-y_spacing,
-    z_ref=0.0,
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
@@ -181,6 +155,7 @@ left_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
+    name="Left Airplane",
 )
 
 # Now define the trailing left airplane's movement object.

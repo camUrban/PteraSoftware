@@ -28,7 +28,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                     # This will be fixed in a future release. The default value is
                     # 0.0 degrees. Positive twist corresponds to positive rotation
                     # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,  # Define the type of control surface. The options are "symmetric"
+                    twist=0.0,
+                    # Define the type of control surface. The options are "symmetric"
                     # and "asymmetric". This is only applicable if your wing is also
                     # symmetric. If so, symmetric control surfaces will deflect in
                     # the same direction, like flaps, while asymmetric control
@@ -59,7 +60,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                         # Airfoil". This name should correspond to a name in the
                         # airfoil directory or a NACA four series airfoil, unless you
                         # are passing in your own coordinates.
-                        name="naca2412",  # If you wish to pass in coordinates, set this to a N x 2
+                        name="naca2412",
+                        # If you wish to pass in coordinates, set this to a N x 2
                         # array of the airfoil's coordinates, where N is the number
                         # of coordinates. Treat this as an immutable, don't edit
                         # directly after initialization. If you wish to load
@@ -72,7 +74,8 @@ example_airplane = ps.geometry.airplane.Airplane(
                         # coordinates passed in by the user or to the directory
                         # coordinates. It is highly recommended to set this to True.
                         # The default is True.
-                        repanel=True,  # This is number of points to use if repaneling the airfoil.
+                        repanel=True,
+                        # This is number of points to use if repaneling the airfoil.
                         # It is ignored if the repanel is False. The default is 400.
                         n_points_per_side=400,
                     ),
@@ -135,8 +138,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                 ps.geometry.wing_cross_section.WingCrossSection(
                     x_le=0.5,
                     z_le=2.0,
-                    chord=1.0,
-                    # Give the tip wing cross section an airfoil.
+                    chord=1.0,  # Give the tip wing cross section an airfoil.
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),

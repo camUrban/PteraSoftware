@@ -40,14 +40,14 @@ class WingMovement:
         self,
         base_wing,
         wing_cross_section_movements,
-        ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),
-        periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),
-        spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
-        phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
-        ampAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_G_to_prelimWn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
+        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     ):
         """This is the initialization method.
 
@@ -62,9 +62,9 @@ class WingMovement:
             the base Wing's WingCrossSections. It must have the same length as the
             base Wing's list of WingCrossSections.
 
-        :param ampPrelimLer_G_Cg: array-like of 3 numbers, optional
+        :param ampLer_Gs_Cgs: array-like of 3 numbers, optional
 
-            The amplitudes of the WingMovement's changes in its Wings' prelimLer_G_Cg
+            The amplitudes of the WingMovement's changes in its Wings' Ler_Gs_Cgs
             parameters. Can be a tuple, list, or numpy array of non-negative numbers
             (int or float). Also, each amplitude must be low enough that it doesn't
             drive its base value out of the range of valid values. Otherwise,
@@ -72,83 +72,81 @@ class WingMovement:
             values. Values are converted to floats internally. The default value is (
             0.0, 0.0, 0.0). The units are in meters.
 
-        :param periodPrelimLer_G_Cg: array-like of 3 numbers, optional
+        :param periodLer_Gs_Cgs: array-like of 3 numbers, optional
 
-            The periods of the WingMovement's changes in its Wings' prelimLer_G_Cg
+            The periods of the WingMovement's changes in its Wings' Ler_Gs_Cgs
             parameters. Can be a tuple, list, or numpy array of non-negative numbers
             (int or float). Values are converted to floats internally. The default
             value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
-            element in ampPrelimLer_G_Cg is 0.0 and non-zero if not. The units are in
+            element in ampLer_Gs_Cgs is 0.0 and non-zero if not. The units are in
             seconds.
 
-        :param spacingPrelimLer_G_Cg: array-like of 3 strs or callables, optional
+        :param spacingLer_Gs_Cgs: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingMovement's change in its
-            Wings' prelimLer_G_Cg parameters. Can be a tuple, list, or numpy array.
-            Each element can be the string "sine", the string "uniform", or a callable
+            Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or numpy array. Each
+            element can be the string "sine", the string "uniform", or a callable
             custom spacing function. Custom spacing functions are for advanced users
-            and must start at 0, return to 0 after one period of 2*pi radians, have
-            zero mean, have amplitude of 1, be periodic, return finite values only,
-            and accept a ndarray as input and return a ndarray of the same shape. The
-            custom function is scaled by ampPrelimLer_G_Cg, shifted by
-            phasePrelimLer_G_Cg, and centered around the base value, with the period
-            controlled by periodPrelimLer_G_Cg. The default value is ("sine", "sine",
+            and must start at 0, return to 0 after one period of 2*pi radians,
+            have zero mean, have amplitude of 1, be periodic, return finite values
+            only, and accept a ndarray as input and return a ndarray of the same
+            shape. The custom function is scaled by ampLer_Gs_Cgs, shifted by
+            phaseLer_Gs_Cgs, and centered around the base value, with the period
+            controlled by periodLer_Gs_Cgs. The default value is ("sine", "sine",
             "sine").
 
-        :param phasePrelimLer_G_Cg: array-like of 3 numbers, optional
+        :param phaseLer_Gs_Cgs: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Wing's
-            prelimLer_G_Cg parameter relative to the base Wing's prelimLer_G_Cg
-            parameter. Can be a tuple, list, or numpy array of non-negative numbers (
-            int or float) in the range (-180.0, 180.0]. Values are converted to floats
+            Ler_Gs_Cgs parameter relative to the base Wing's Ler_Gs_Cgs parameter.
+            Can be a tuple, list, or numpy array of non-negative numbers (int or
+            float) in the range (-180.0, 180.0]. Values are converted to floats
             internally. The default value is (0.0, 0.0, 0.0). Each element must be
-            0.0 if the corresponding element in ampPrelimLer_G_Cg is 0.0 and non-zero
-            if not. The units are in degrees.
+            0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-zero if
+            not. The units are in degrees.
 
-        :param ampAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
+        :param ampAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
 
             The amplitudes of the WingMovement's changes in its Wings'
-            angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list, or numpy
-            array of numbers (int or float) in the range [0.0, 180.0). Also,
-            each amplitude must be low enough that it doesn't drive its base value
-            out of the range of valid values. Otherwise, this WingMovement will try
-            to create Wings with invalid parameters values. Values are converted to
-            floats internally. The default value is (0.0, 0.0, 0.0). The units are in
-            degrees.
+            angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range [0.0, 180.0). Also, each amplitude
+            must be low enough that it doesn't drive its base value out of the range
+            of valid values. Otherwise, this WingMovement will try to create Wings
+            with invalid parameters values. Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). The units are in degrees.
 
-        :param periodAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
+        :param periodAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
 
             The periods of the WingMovement's changes in its Wings'
-            angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list, or numpy
-            array of non-negative numbers (int or float). Values are converted to
-            floats internally. The default value is (0.0, 0.0, 0.0). Each element
-            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_ixyz
-            is 0.0 and non-zero if not. The units are in seconds.
+            angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy array of
+            non-negative numbers (int or float). Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is 0.0 and
+            non-zero if not. The units are in seconds.
 
-        :param spacingAngles_G_to_prelimWn_ixyz: array-like of 3 strs or callables, optional
+        :param spacingAngles_Gs_to_Wn_ixyz: array-like of 3 strs or callables, optional
 
             The value determines the spacing of the WingMovement's change in its
-            Wings' angles_G_to_prelimWn_ixyz parameters. Can be a tuple, list,
-            or numpy array. Each element can be the string "sine", the string
-            "uniform", or a callable custom spacing function. Custom spacing functions
-            are for advanced users and must start at 0, return to 0 after one period
-            of 2*pi radians, have zero mean, have amplitude of 1, be periodic, return
-            finite values only, and accept a ndarray as input and return a ndarray of
-            the same shape. The custom function is scaled by
-            ampAngles_G_to_prelimWn_ixyz, shifted by phaseAngles_G_to_prelimWn_ixyz,
-            and centered around the base value, with the period controlled by
-            periodAngles_G_to_prelimWn_ixyz. The default value is ("sine", "sine",
-            "sine").
+            Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy
+            array. Each element can be the string "sine", the string "uniform",
+            or a callable custom spacing function. Custom spacing functions are for
+            advanced users and must start at 0, return to 0 after one period of 2*pi
+            radians, have zero mean, have amplitude of 1, be periodic, return finite
+            values only, and accept a ndarray as input and return a ndarray of the
+            same shape. The custom function is scaled by ampAngles_Gs_to_Wn_ixyz,
+            shifted by phaseAngles_Gs_to_Wn_ixyz, and centered around the base value,
+            with the period controlled by periodAngles_Gs_to_Wn_ixyz. The default
+            value is ("sine", "sine", "sine").
 
-        :param phaseAngles_G_to_prelimWn_ixyz: array-like of 3 numbers, optional
+        :param phaseAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
 
             The phase offsets of the elements in the first time step's Wing's
-            angles_G_to_prelimWn_ixyz parameter relative to the base Wing's
-            angles_G_to_prelimWn_ixyz parameter. Can be a tuple, list, or numpy array
-            of numbers (int or float) in the range (-180.0, 180.0]. Values are converted
+            angles_Gs_to_Wn_ixyz parameter relative to the base Wing's
+            angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range (-180.0, 180.0]. Values are converted
             to floats internally. The default value is (0.0, 0.0, 0.0). Each element
-            must be 0.0 if the corresponding element in ampAngles_G_to_prelimWn_ixyz
-            is 0.0 and non-zero if not. The units are in degrees.
+            must be 0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is
+            0.0 and non-zero if not. The units are in degrees.
         """
         if not isinstance(base_wing, geometry.wing.Wing):
             raise TypeError("base_wing must be a Wing.")
@@ -167,116 +165,107 @@ class WingMovement:
                 )
         self.wing_cross_section_movements = wing_cross_section_movements
 
-        ampPrelimLer_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            ampPrelimLer_G_Cg, "ampPrelimLer_G_Cg"
+        ampLer_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
+            ampLer_Gs_Cgs, "ampLer_Gs_Cgs"
         )
-        if not np.all(ampPrelimLer_G_Cg >= 0.0):
-            raise ValueError("All elements in ampPrelimLer_G_Cg must be non-negative.")
-        self.ampPrelimLer_G_Cg = ampPrelimLer_G_Cg
+        if not np.all(ampLer_Gs_Cgs >= 0.0):
+            raise ValueError("All elements in ampLer_Gs_Cgs must be non-negative.")
+        self.ampLer_Gs_Cgs = ampLer_Gs_Cgs
 
-        periodPrelimLer_G_Cg = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                periodPrelimLer_G_Cg, "periodPrelimLer_G_Cg"
-            )
+        periodLer_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
+            periodLer_Gs_Cgs, "periodLer_Gs_Cgs"
         )
-        if not np.all(periodPrelimLer_G_Cg >= 0.0):
-            raise ValueError(
-                "All elements in periodPrelimLer_G_Cg must be non-negative."
-            )
-        for period_index, period in enumerate(periodPrelimLer_G_Cg):
-            amp = self.ampPrelimLer_G_Cg[period_index]
+        if not np.all(periodLer_Gs_Cgs >= 0.0):
+            raise ValueError("All elements in periodLer_Gs_Cgs must be non-negative.")
+        for period_index, period in enumerate(periodLer_Gs_Cgs):
+            amp = self.ampLer_Gs_Cgs[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampPrelimLer_G_Cg is 0.0, the corresponding element in periodPrelimLer_G_Cg must be also be 0.0."
+                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element in periodLer_Gs_Cgs must be also be 0.0."
                 )
-        self.periodPrelimLer_G_Cg = periodPrelimLer_G_Cg
+        self.periodLer_Gs_Cgs = periodLer_Gs_Cgs
 
-        spacingPrelimLer_G_Cg = (
+        spacingLer_Gs_Cgs = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingPrelimLer_G_Cg,
-                "spacingPrelimLer_G_Cg",
+                spacingLer_Gs_Cgs,
+                "spacingLer_Gs_Cgs",
             )
         )
-        self.spacingPrelimLer_G_Cg = spacingPrelimLer_G_Cg
+        self.spacingLer_Gs_Cgs = spacingLer_Gs_Cgs
 
-        phasePrelimLer_G_Cg = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                phasePrelimLer_G_Cg, "phasePrelimLer_G_Cg"
-            )
+        phaseLer_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
+            phaseLer_Gs_Cgs, "phaseLer_Gs_Cgs"
         )
-        if not (
-            np.all(phasePrelimLer_G_Cg > -180.0)
-            and np.all(phasePrelimLer_G_Cg <= 180.0)
-        ):
+        if not (np.all(phaseLer_Gs_Cgs > -180.0) and np.all(phaseLer_Gs_Cgs <= 180.0)):
             raise ValueError(
-                "All elements in phasePrelimLer_G_Cg must be in the range (-180.0, 180.0]."
+                "All elements in phaseLer_Gs_Cgs must be in the range (-180.0, 180.0]."
             )
-        for phase_index, phase in enumerate(phasePrelimLer_G_Cg):
-            amp = self.ampPrelimLer_G_Cg[phase_index]
+        for phase_index, phase in enumerate(phaseLer_Gs_Cgs):
+            amp = self.ampLer_Gs_Cgs[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampPrelimLer_G_Cg is 0.0, the corresponding element in phasePrelimLer_G_Cg must be also be 0.0."
+                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element in phaseLer_Gs_Cgs must be also be 0.0."
                 )
-        self.phasePrelimLer_G_Cg = phasePrelimLer_G_Cg
+        self.phaseLer_Gs_Cgs = phaseLer_Gs_Cgs
 
-        ampAngles_G_to_prelimWn_ixyz = (
+        ampAngles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                ampAngles_G_to_prelimWn_ixyz, "ampAngles_G_to_prelimWn_ixyz"
+                ampAngles_Gs_to_Wn_ixyz, "ampAngles_Gs_to_Wn_ixyz"
             )
         )
         if not (
-            np.all(ampAngles_G_to_prelimWn_ixyz >= 0.0)
-            and np.all(ampAngles_G_to_prelimWn_ixyz < 180.0)
+            np.all(ampAngles_Gs_to_Wn_ixyz >= 0.0)
+            and np.all(ampAngles_Gs_to_Wn_ixyz < 180.0)
         ):
             raise ValueError(
-                "All elements in ampAngles_G_to_prelimWn_ixyz must be in the range [0.0, 180.0)."
+                "All elements in ampAngles_Gs_to_Wn_ixyz must be in the range [0.0, 180.0)."
             )
-        self.ampAngles_G_to_prelimWn_ixyz = ampAngles_G_to_prelimWn_ixyz
+        self.ampAngles_Gs_to_Wn_ixyz = ampAngles_Gs_to_Wn_ixyz
 
-        periodAngles_G_to_prelimWn_ixyz = (
+        periodAngles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                periodAngles_G_to_prelimWn_ixyz, "periodAngles_G_to_prelimWn_ixyz"
+                periodAngles_Gs_to_Wn_ixyz, "periodAngles_Gs_to_Wn_ixyz"
             )
         )
-        if not np.all(periodAngles_G_to_prelimWn_ixyz >= 0.0):
+        if not np.all(periodAngles_Gs_to_Wn_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_G_to_prelimWn_ixyz must be non-negative."
+                "All elements in periodAngles_Gs_to_Wn_ixyz must be non-negative."
             )
-        for period_index, period in enumerate(periodAngles_G_to_prelimWn_ixyz):
-            amp = self.ampAngles_G_to_prelimWn_ixyz[period_index]
+        for period_index, period in enumerate(periodAngles_Gs_to_Wn_ixyz):
+            amp = self.ampAngles_Gs_to_Wn_ixyz[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampAngles_G_to_prelimWn_ixyz is 0.0, the corresponding element in periodAngles_G_to_prelimWn_ixyz must be also be 0.0."
+                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, the corresponding element in periodAngles_Gs_to_Wn_ixyz must be also be 0.0."
                 )
-        self.periodAngles_G_to_prelimWn_ixyz = periodAngles_G_to_prelimWn_ixyz
+        self.periodAngles_Gs_to_Wn_ixyz = periodAngles_Gs_to_Wn_ixyz
 
-        spacingAngles_G_to_prelimWn_ixyz = (
+        spacingAngles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingAngles_G_to_prelimWn_ixyz,
-                "spacingAngles_G_to_prelimWn_ixyz",
+                spacingAngles_Gs_to_Wn_ixyz,
+                "spacingAngles_Gs_to_Wn_ixyz",
             )
         )
-        self.spacingAngles_G_to_prelimWn_ixyz = spacingAngles_G_to_prelimWn_ixyz
+        self.spacingAngles_Gs_to_Wn_ixyz = spacingAngles_Gs_to_Wn_ixyz
 
-        phaseAngles_G_to_prelimWn_ixyz = (
+        phaseAngles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                phaseAngles_G_to_prelimWn_ixyz, "phaseAngles_G_to_prelimWn_ixyz"
+                phaseAngles_Gs_to_Wn_ixyz, "phaseAngles_Gs_to_Wn_ixyz"
             )
         )
         if not (
-            np.all(phaseAngles_G_to_prelimWn_ixyz > -180.0)
-            and np.all(phaseAngles_G_to_prelimWn_ixyz <= 180.0)
+            np.all(phaseAngles_Gs_to_Wn_ixyz > -180.0)
+            and np.all(phaseAngles_Gs_to_Wn_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_G_to_prelimWn_ixyz must be in the range (-180.0, 180.0]."
+                "All elements in phaseAngles_Gs_to_Wn_ixyz must be in the range (-180.0, 180.0]."
             )
-        for phase_index, phase in enumerate(phaseAngles_G_to_prelimWn_ixyz):
-            amp = self.ampAngles_G_to_prelimWn_ixyz[phase_index]
+        for phase_index, phase in enumerate(phaseAngles_Gs_to_Wn_ixyz):
+            amp = self.ampAngles_Gs_to_Wn_ixyz[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampAngles_G_to_prelimWn_ixyz is 0.0, the corresponding element in phaseAngles_G_to_prelimWn_ixyz must be also be 0.0."
+                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, the corresponding element in phaseAngles_Gs_to_Wn_ixyz must be also be 0.0."
                 )
-        self.phaseAngles_G_to_prelimWn_ixyz = phaseAngles_G_to_prelimWn_ixyz
+        self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
     def generate_wings(self, num_steps, delta_time):
         """Creates the Wing at each time step, and returns them in a list.
@@ -303,34 +292,34 @@ class WingMovement:
             delta_time, "delta_time"
         )
 
-        # Generate oscillating values for each dimension of prelimLer_G_Cg.
-        listPrelimLer_G_Cg = np.zeros((3, num_steps), dtype=float)
+        # Generate oscillating values for each dimension of Ler_Gs_Cgs.
+        listLer_Gs_Cgs = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingPrelimLer_G_Cg[dim]
+            spacing = self.spacingLer_Gs_Cgs[dim]
             if spacing == "sine":
-                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampPrelimLer_G_Cg[dim],
-                    periods=self.periodPrelimLer_G_Cg[dim],
-                    phases=self.phasePrelimLer_G_Cg[dim],
-                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                listLer_Gs_Cgs[dim, :] = _functions.oscillating_sinspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=self.base_wing.Ler_Gs_Cgs[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampPrelimLer_G_Cg[dim],
-                    periods=self.periodPrelimLer_G_Cg[dim],
-                    phases=self.phasePrelimLer_G_Cg[dim],
-                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                listLer_Gs_Cgs[dim, :] = _functions.oscillating_linspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=self.base_wing.Ler_Gs_Cgs[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listPrelimLer_G_Cg[dim, :] = _functions.oscillating_customspaces(
-                    amps=self.ampPrelimLer_G_Cg[dim],
-                    periods=self.periodPrelimLer_G_Cg[dim],
-                    phases=self.phasePrelimLer_G_Cg[dim],
-                    bases=self.base_wing.prelimLer_G_Cg[dim],
+                listLer_Gs_Cgs[dim, :] = _functions.oscillating_customspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=self.base_wing.Ler_Gs_Cgs[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                     custom_function=spacing,
@@ -338,43 +327,37 @@ class WingMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
 
-        # Generate oscillating values for each dimension of angles_G_to_prelimWn_ixyz.
-        listAngles_G_to_prelimWn_ixyz = np.zeros((3, num_steps), dtype=float)
+        # Generate oscillating values for each dimension of angles_Gs_to_Wn_ixyz.
+        listAngles_Gs_to_Wn_ixyz = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingAngles_G_to_prelimWn_ixyz[dim]
+            spacing = self.spacingAngles_Gs_to_Wn_ixyz[dim]
             if spacing == "sine":
-                listAngles_G_to_prelimWn_ixyz[dim, :] = (
-                    _functions.oscillating_sinspaces(
-                        amps=self.ampAngles_G_to_prelimWn_ixyz[dim],
-                        periods=self.periodAngles_G_to_prelimWn_ixyz[dim],
-                        phases=self.phaseAngles_G_to_prelimWn_ixyz[dim],
-                        bases=self.base_wing.angles_G_to_prelimWn_ixyz[dim],
-                        num_steps=num_steps,
-                        delta_time=delta_time,
-                    )
+                listAngles_Gs_to_Wn_ixyz[dim, :] = _functions.oscillating_sinspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=self.base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listAngles_G_to_prelimWn_ixyz[dim, :] = (
-                    _functions.oscillating_linspaces(
-                        amps=self.ampAngles_G_to_prelimWn_ixyz[dim],
-                        periods=self.periodAngles_G_to_prelimWn_ixyz[dim],
-                        phases=self.phaseAngles_G_to_prelimWn_ixyz[dim],
-                        bases=self.base_wing.angles_G_to_prelimWn_ixyz[dim],
-                        num_steps=num_steps,
-                        delta_time=delta_time,
-                    )
+                listAngles_Gs_to_Wn_ixyz[dim, :] = _functions.oscillating_linspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=self.base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
                 )
             elif callable(spacing):
-                listAngles_G_to_prelimWn_ixyz[dim, :] = (
-                    _functions.oscillating_customspaces(
-                        amps=self.ampAngles_G_to_prelimWn_ixyz[dim],
-                        periods=self.periodAngles_G_to_prelimWn_ixyz[dim],
-                        phases=self.phaseAngles_G_to_prelimWn_ixyz[dim],
-                        bases=self.base_wing.angles_G_to_prelimWn_ixyz[dim],
-                        num_steps=num_steps,
-                        delta_time=delta_time,
-                        custom_function=spacing,
-                    )
+                listAngles_Gs_to_Wn_ixyz[dim, :] = _functions.oscillating_customspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=self.base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
                 )
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
@@ -421,16 +404,16 @@ class WingMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            thisPrelimLer_G_Cg = listPrelimLer_G_Cg[:, step]
-            theseAngles_G_to_prelimWn_ixyz = listAngles_G_to_prelimWn_ixyz[:, step]
+            thisLer_Gs_Cgs = listLer_Gs_Cgs[:, step]
+            theseAngles_Gs_to_Wn_ixyz = listAngles_Gs_to_Wn_ixyz[:, step]
             these_wing_cross_sections = list(wing_cross_sections[:, step])
 
             # Make a new Wing for this time step.
             this_wing = geometry.wing.Wing(
                 wing_cross_sections=these_wing_cross_sections,
                 name=this_name,
-                prelimLer_G_Cg=thisPrelimLer_G_Cg,
-                angles_G_to_prelimWn_ixyz=theseAngles_G_to_prelimWn_ixyz,
+                Ler_Gs_Cgs=thisLer_Gs_Cgs,
+                angles_Gs_to_Wn_ixyz=theseAngles_Gs_to_Wn_ixyz,
                 symmetric=this_symmetric,
                 mirror_only=this_mirror_only,
                 symmetryNormal_G=this_symmetryNormal_G,
@@ -466,7 +449,7 @@ class WingMovement:
         return float(
             max(
                 max_wing_cross_section_movement_period,
-                np.max(self.periodPrelimLer_G_Cg),
-                np.max(self.periodAngles_G_to_prelimWn_ixyz),
+                np.max(self.periodLer_Gs_Cgs),
+                np.max(self.periodAngles_Gs_to_Wn_ixyz),
             )
         )

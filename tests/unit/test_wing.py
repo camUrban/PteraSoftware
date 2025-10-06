@@ -42,8 +42,8 @@ class TestWing(unittest.TestCase):
                 self.assertIsInstance(wing.wing_cross_sections, list)
                 self.assertEqual(len(wing.wing_cross_sections), 2)
                 self.assertIsInstance(wing.name, str)
-                self.assertEqual(len(wing.prelimLer_G_Cg), 3)
-                self.assertEqual(len(wing.angles_G_to_prelimWn_ixyz), 3)
+                self.assertEqual(len(wing.Ler_Gs_Cgs), 3)
+                self.assertEqual(len(wing.angles_Gs_to_Wn_ixyz), 3)
                 self.assertIsInstance(wing.symmetric, bool)
                 self.assertIsInstance(wing.mirror_only, bool)
                 self.assertEqual(wing.num_chordwise_panels, 8)
@@ -333,18 +333,17 @@ class TestWing(unittest.TestCase):
 
     def test_wing_parameter_validation(self):
         """Test parameter validation for Wing initialization."""
-        # Test invalid preliminary position
+        # Test invalid Ler position
         with self.assertRaises(TypeError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
-                prelimLer_G_Cg="invalid",
+                wing_cross_sections=[self.root_wcs, self.tip_wcs], Ler_Gs_Cgs="invalid"
             )
 
         # Test invalid angles
         with self.assertRaises(TypeError):
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
-                angles_G_to_prelimWn_ixyz="invalid",
+                angles_Gs_to_Wn_ixyz="invalid",
             )
 
         # Test invalid num_chordwise_panels

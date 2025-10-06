@@ -18,18 +18,18 @@ class TestWingMovement(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test fixtures once for all WingMovement tests."""
-        # Spacing test fixtures for prelimLer_G_Cg.
-        cls.sine_spacing_prelimLer_wing_movement = (
-            wing_movement_fixtures.make_sine_spacing_prelimLer_wing_movement_fixture()
+        # Spacing test fixtures for Ler_Gs_Cgs.
+        cls.sine_spacing_Ler_wing_movement = (
+            wing_movement_fixtures.make_sine_spacing_Ler_wing_movement_fixture()
         )
-        cls.uniform_spacing_prelimLer_wing_movement = (
-            wing_movement_fixtures.make_uniform_spacing_prelimLer_wing_movement_fixture()
+        cls.uniform_spacing_Ler_wing_movement = (
+            wing_movement_fixtures.make_uniform_spacing_Ler_wing_movement_fixture()
         )
-        cls.mixed_spacing_prelimLer_wing_movement = (
-            wing_movement_fixtures.make_mixed_spacing_prelimLer_wing_movement_fixture()
+        cls.mixed_spacing_Ler_wing_movement = (
+            wing_movement_fixtures.make_mixed_spacing_Ler_wing_movement_fixture()
         )
 
-        # Spacing test fixtures for angles_G_to_prelimWn_ixyz.
+        # Spacing test fixtures for angles_Gs_to_Wn_ixyz.
         cls.sine_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_sine_spacing_angles_wing_movement_fixture()
         )
@@ -47,14 +47,14 @@ class TestWingMovement(unittest.TestCase):
         cls.basic_wing_movement = (
             wing_movement_fixtures.make_basic_wing_movement_fixture()
         )
-        cls.prelimLer_only_wing_movement = (
-            wing_movement_fixtures.make_prelimLer_only_wing_movement_fixture()
+        cls.Ler_only_wing_movement = (
+            wing_movement_fixtures.make_Ler_only_wing_movement_fixture()
         )
         cls.angles_only_wing_movement = (
             wing_movement_fixtures.make_angles_only_wing_movement_fixture()
         )
-        cls.phase_offset_prelimLer_wing_movement = (
-            wing_movement_fixtures.make_phase_offset_prelimLer_wing_movement_fixture()
+        cls.phase_offset_Ler_wing_movement = (
+            wing_movement_fixtures.make_phase_offset_Ler_wing_movement_fixture()
         )
         cls.phase_offset_angles_wing_movement = (
             wing_movement_fixtures.make_phase_offset_angles_wing_movement_fixture()
@@ -62,8 +62,8 @@ class TestWingMovement(unittest.TestCase):
         cls.multiple_periods_wing_movement = (
             wing_movement_fixtures.make_multiple_periods_wing_movement_fixture()
         )
-        cls.custom_spacing_prelimLer_wing_movement = (
-            wing_movement_fixtures.make_custom_spacing_prelimLer_wing_movement_fixture()
+        cls.custom_spacing_Ler_wing_movement = (
+            wing_movement_fixtures.make_custom_spacing_Ler_wing_movement_fixture()
         )
         cls.custom_spacing_angles_wing_movement = (
             wing_movement_fixtures.make_custom_spacing_angles_wing_movement_fixture()
@@ -72,18 +72,18 @@ class TestWingMovement(unittest.TestCase):
             wing_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_movement_fixture()
         )
 
-    def test_spacing_sine_for_prelimLer_G_Cg(self):
+    def test_spacing_sine_for_Ler_Gs_Cgs(self):
         """Test that sine spacing actually produces sinusoidal motion for
-        prelimLer_G_Cg."""
+        Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.sine_spacing_prelimLer_wing_movement.generate_wings(
+        wings = self.sine_spacing_Ler_wing_movement.generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
 
         # Extract x-positions from generated Wings.
-        x_positions = np.array([wing.prelimLer_G_Cg[0] for wing in wings])
+        x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected sine wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -92,18 +92,18 @@ class TestWingMovement(unittest.TestCase):
         # Assert that the generated positions match the expected sine wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_prelimLer_G_Cg(self):
+    def test_spacing_uniform_for_Ler_Gs_Cgs(self):
         """Test that uniform spacing actually produces triangular wave motion for
-        prelimLer_G_Cg."""
+        Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.uniform_spacing_prelimLer_wing_movement.generate_wings(
+        wings = self.uniform_spacing_Ler_wing_movement.generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
 
         # Extract x-positions from generated Wings.
-        x_positions = np.array([wing.prelimLer_G_Cg[0] for wing in wings])
+        x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected triangular wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -112,19 +112,19 @@ class TestWingMovement(unittest.TestCase):
         # Assert that the generated positions match the expected triangular wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_prelimLer_G_Cg(self):
-        """Test that mixed spacing types work correctly for prelimLer_G_Cg."""
+    def test_spacing_mixed_for_Ler_Gs_Cgs(self):
+        """Test that mixed spacing types work correctly for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.mixed_spacing_prelimLer_wing_movement.generate_wings(
+        wings = self.mixed_spacing_Ler_wing_movement.generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
 
         # Extract positions from generated Wings.
-        x_positions = np.array([wing.prelimLer_G_Cg[0] for wing in wings])
-        y_positions = np.array([wing.prelimLer_G_Cg[1] for wing in wings])
-        z_positions = np.array([wing.prelimLer_G_Cg[2] for wing in wings])
+        x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
+        y_positions = np.array([wing.Ler_Gs_Cgs[1] for wing in wings])
+        z_positions = np.array([wing.Ler_Gs_Cgs[2] for wing in wings])
 
         # Calculate expected values for each dimension.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -137,9 +137,9 @@ class TestWingMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_sine_for_angles_G_to_prelimWn_ixyz(self):
+    def test_spacing_sine_for_angles_Gs_to_Wn_ixyz(self):
         """Test that sine spacing actually produces sinusoidal motion for
-        angles_G_to_prelimWn_ixyz."""
+        angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
         wings = self.sine_spacing_angles_wing_movement.generate_wings(
@@ -148,7 +148,7 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract x-angles from generated Wings.
-        x_angles = np.array([wing.angles_G_to_prelimWn_ixyz[0] for wing in wings])
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected sine wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -157,9 +157,9 @@ class TestWingMovement(unittest.TestCase):
         # Assert that the generated angles match the expected sine wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_angles_G_to_prelimWn_ixyz(self):
+    def test_spacing_uniform_for_angles_Gs_to_Wn_ixyz(self):
         """Test that uniform spacing actually produces triangular wave motion for
-        angles_G_to_prelimWn_ixyz."""
+        angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
         wings = self.uniform_spacing_angles_wing_movement.generate_wings(
@@ -168,7 +168,7 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract x-angles from generated Wings.
-        x_angles = np.array([wing.angles_G_to_prelimWn_ixyz[0] for wing in wings])
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected triangular wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -177,9 +177,9 @@ class TestWingMovement(unittest.TestCase):
         # Assert that the generated angles match the expected triangular wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_angles_G_to_prelimWn_ixyz(self):
+    def test_spacing_mixed_for_angles_Gs_to_Wn_ixyz(self):
         """Test that mixed spacing types work correctly for
-        angles_G_to_prelimWn_ixyz."""
+        angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
         wings = self.mixed_spacing_angles_wing_movement.generate_wings(
@@ -188,9 +188,9 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract angles from generated Wings.
-        x_angles = np.array([wing.angles_G_to_prelimWn_ixyz[0] for wing in wings])
-        y_angles = np.array([wing.angles_G_to_prelimWn_ixyz[1] for wing in wings])
-        z_angles = np.array([wing.angles_G_to_prelimWn_ixyz[2] for wing in wings])
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
+        y_angles = np.array([wing.angles_Gs_to_Wn_ixyz[1] for wing in wings])
+        z_angles = np.array([wing.angles_Gs_to_Wn_ixyz[2] for wing in wings])
 
         # Calculate expected values for each dimension.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -213,21 +213,19 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract parameters from all Wings.
-        prelimLers_G_Cg = np.array([wing.prelimLer_G_Cg for wing in wings])
-        angles_G_to_prelimWn_ixyzs = np.array(
-            [wing.angles_G_to_prelimWn_ixyz for wing in wings]
-        )
+        Lers_G_Cg = np.array([wing.Ler_Gs_Cgs for wing in wings])
+        angles_Gs_to_Wn_ixyzs = np.array([wing.angles_Gs_to_Wn_ixyz for wing in wings])
 
         # Assert that all Wings have the same parameters.
         npt.assert_allclose(
-            prelimLers_G_Cg,
-            np.tile(wings[0].prelimLer_G_Cg, (num_steps, 1)),
+            Lers_G_Cg,
+            np.tile(wings[0].Ler_Gs_Cgs, (num_steps, 1)),
             rtol=1e-10,
             atol=1e-14,
         )
         npt.assert_allclose(
-            angles_G_to_prelimWn_ixyzs,
-            np.tile(wings[0].angles_G_to_prelimWn_ixyz, (num_steps, 1)),
+            angles_Gs_to_Wn_ixyzs,
+            np.tile(wings[0].angles_Gs_to_Wn_ixyz, (num_steps, 1)),
             rtol=1e-10,
             atol=1e-14,
         )
@@ -268,20 +266,20 @@ class TestWingMovement(unittest.TestCase):
                 len(wing.wing_cross_sections), len(base_wing.wing_cross_sections)
             )
 
-    def test_phase_offset_prelimLer_produces_shifted_motion(self):
-        """Test that phase offset for prelimLer_G_Cg produces phase-shifted
+    def test_phase_offset_Ler_produces_shifted_motion(self):
+        """Test that phase offset for Ler_Gs_Cgs produces phase-shifted
         motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.phase_offset_prelimLer_wing_movement.generate_wings(
+        wings = self.phase_offset_Ler_wing_movement.generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
 
         # Extract positions from generated Wings.
-        x_positions = np.array([wing.prelimLer_G_Cg[0] for wing in wings])
-        y_positions = np.array([wing.prelimLer_G_Cg[1] for wing in wings])
-        z_positions = np.array([wing.prelimLer_G_Cg[2] for wing in wings])
+        x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
+        y_positions = np.array([wing.Ler_Gs_Cgs[1] for wing in wings])
+        z_positions = np.array([wing.Ler_Gs_Cgs[2] for wing in wings])
 
         # Calculate expected phase-shifted sine waves.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -295,7 +293,7 @@ class TestWingMovement(unittest.TestCase):
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
     def test_phase_offset_angles_produces_shifted_motion(self):
-        """Test that phase offset for angles_G_to_prelimWn_ixyz produces
+        """Test that phase offset for angles_Gs_to_Wn_ixyz produces
         phase-shifted motion."""
         num_steps = 100
         delta_time = 0.01
@@ -305,9 +303,9 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract angles from generated Wings.
-        x_angles = np.array([wing.angles_G_to_prelimWn_ixyz[0] for wing in wings])
-        y_angles = np.array([wing.angles_G_to_prelimWn_ixyz[1] for wing in wings])
-        z_angles = np.array([wing.angles_G_to_prelimWn_ixyz[2] for wing in wings])
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
+        y_angles = np.array([wing.angles_Gs_to_Wn_ixyz[1] for wing in wings])
+        z_angles = np.array([wing.angles_Gs_to_Wn_ixyz[2] for wing in wings])
 
         # Calculate expected phase-shifted sine waves.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -325,10 +323,10 @@ class TestWingMovement(unittest.TestCase):
         max_period = self.static_wing_movement.max_period
         self.assertEqual(max_period, 0.0)
 
-    def test_max_period_prelimLer_only_movement(self):
+    def test_max_period_Ler_only_movement(self):
         """Test that max_period correctly identifies the maximum period for
-        prelimLer-only WingMovement."""
-        max_period = self.prelimLer_only_wing_movement.max_period
+        Ler-only WingMovement."""
+        max_period = self.Ler_only_wing_movement.max_period
         self.assertEqual(max_period, 1.5)
 
     def test_max_period_angles_only_movement(self):
@@ -358,14 +356,14 @@ class TestWingMovement(unittest.TestCase):
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=base_wing,
             wing_cross_section_movements=wcs_movements,
-            ampPrelimLer_G_Cg=(0.1, 0.05, 0.02),
-            periodPrelimLer_G_Cg=(1.0, 1.0, 1.0),
-            spacingPrelimLer_G_Cg=("sine", "uniform", "sine"),
-            phasePrelimLer_G_Cg=(0.0, 45.0, -30.0),
-            ampAngles_G_to_prelimWn_ixyz=(5.0, 3.0, 2.0),
-            periodAngles_G_to_prelimWn_ixyz=(1.0, 1.0, 1.0),
-            spacingAngles_G_to_prelimWn_ixyz=("uniform", "sine", "uniform"),
-            phaseAngles_G_to_prelimWn_ixyz=(30.0, 0.0, -45.0),
+            ampLer_Gs_Cgs=(0.1, 0.05, 0.02),
+            periodLer_Gs_Cgs=(1.0, 1.0, 1.0),
+            spacingLer_Gs_Cgs=("sine", "uniform", "sine"),
+            phaseLer_Gs_Cgs=(0.0, 45.0, -30.0),
+            ampAngles_Gs_to_Wn_ixyz=(5.0, 3.0, 2.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 1.0, 1.0),
+            spacingAngles_Gs_to_Wn_ixyz=("uniform", "sine", "uniform"),
+            phaseAngles_Gs_to_Wn_ixyz=(30.0, 0.0, -45.0),
         )
 
         self.assertIsInstance(wing_movement, ps.movements.wing_movement.WingMovement)
@@ -374,30 +372,26 @@ class TestWingMovement(unittest.TestCase):
             len(wing_movement.wing_cross_section_movements),
             len(base_wing.wing_cross_sections),
         )
+        npt.assert_array_equal(wing_movement.ampLer_Gs_Cgs, np.array([0.1, 0.05, 0.02]))
         npt.assert_array_equal(
-            wing_movement.ampPrelimLer_G_Cg, np.array([0.1, 0.05, 0.02])
+            wing_movement.periodLer_Gs_Cgs, np.array([1.0, 1.0, 1.0])
+        )
+        self.assertEqual(wing_movement.spacingLer_Gs_Cgs, ("sine", "uniform", "sine"))
+        npt.assert_array_equal(
+            wing_movement.phaseLer_Gs_Cgs, np.array([0.0, 45.0, -30.0])
         )
         npt.assert_array_equal(
-            wing_movement.periodPrelimLer_G_Cg, np.array([1.0, 1.0, 1.0])
+            wing_movement.ampAngles_Gs_to_Wn_ixyz, np.array([5.0, 3.0, 2.0])
+        )
+        npt.assert_array_equal(
+            wing_movement.periodAngles_Gs_to_Wn_ixyz, np.array([1.0, 1.0, 1.0])
         )
         self.assertEqual(
-            wing_movement.spacingPrelimLer_G_Cg, ("sine", "uniform", "sine")
-        )
-        npt.assert_array_equal(
-            wing_movement.phasePrelimLer_G_Cg, np.array([0.0, 45.0, -30.0])
-        )
-        npt.assert_array_equal(
-            wing_movement.ampAngles_G_to_prelimWn_ixyz, np.array([5.0, 3.0, 2.0])
-        )
-        npt.assert_array_equal(
-            wing_movement.periodAngles_G_to_prelimWn_ixyz, np.array([1.0, 1.0, 1.0])
-        )
-        self.assertEqual(
-            wing_movement.spacingAngles_G_to_prelimWn_ixyz,
+            wing_movement.spacingAngles_Gs_to_Wn_ixyz,
             ("uniform", "sine", "uniform"),
         )
         npt.assert_array_equal(
-            wing_movement.phaseAngles_G_to_prelimWn_ixyz, np.array([30.0, 0.0, -45.0])
+            wing_movement.phaseAngles_Gs_to_Wn_ixyz, np.array([30.0, 0.0, -45.0])
         )
 
     def test_initialization_invalid_base_wing(self):
@@ -437,8 +431,8 @@ class TestWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wcs_movements,
             )
 
-    def test_initialization_ampPrelimLer_G_Cg_validation(self):
-        """Test ampPrelimLer_G_Cg parameter validation."""
+    def test_initialization_ampLer_Gs_Cgs_validation(self):
+        """Test ampLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -450,12 +444,12 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampPrelimLer_G_Cg=(-0.1, 0.0, 0.0),
-                periodPrelimLer_G_Cg=(1.0, 0.0, 0.0),
+                ampLer_Gs_Cgs=(-0.1, 0.0, 0.0),
+                periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_periodPrelimLer_G_Cg_validation(self):
-        """Test periodPrelimLer_G_Cg parameter validation."""
+    def test_initialization_periodLer_Gs_Cgs_validation(self):
+        """Test periodLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -467,12 +461,12 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),
-                periodPrelimLer_G_Cg=(1.0, 0.0, 0.0),
+                ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+                periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_phasePrelimLer_G_Cg_validation(self):
-        """Test phasePrelimLer_G_Cg parameter validation."""
+    def test_initialization_phaseLer_Gs_Cgs_validation(self):
+        """Test phaseLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -484,9 +478,9 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampPrelimLer_G_Cg=(0.1, 0.0, 0.0),
-                periodPrelimLer_G_Cg=(1.0, 0.0, 0.0),
-                phasePrelimLer_G_Cg=(181.0, 0.0, 0.0),
+                ampLer_Gs_Cgs=(0.1, 0.0, 0.0),
+                periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
+                phaseLer_Gs_Cgs=(181.0, 0.0, 0.0),
             )
 
         # Test with zero amplitude but non-zero phase.
@@ -494,13 +488,13 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),
-                periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),
-                phasePrelimLer_G_Cg=(45.0, 0.0, 0.0),
+                ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+                periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+                phaseLer_Gs_Cgs=(45.0, 0.0, 0.0),
             )
 
-    def test_initialization_ampAngles_G_to_prelimWn_ixyz_validation(self):
-        """Test ampAngles_G_to_prelimWn_ixyz parameter validation."""
+    def test_initialization_ampAngles_Gs_to_Wn_ixyz_validation(self):
+        """Test ampAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -512,8 +506,8 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_G_to_prelimWn_ixyz=(180.0, 0.0, 0.0),
-                periodAngles_G_to_prelimWn_ixyz=(1.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(180.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 
         # Test with negative amplitude.
@@ -521,12 +515,12 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_G_to_prelimWn_ixyz=(-10.0, 0.0, 0.0),
-                periodAngles_G_to_prelimWn_ixyz=(1.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(-10.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_periodAngles_G_to_prelimWn_ixyz_validation(self):
-        """Test periodAngles_G_to_prelimWn_ixyz parameter validation."""
+    def test_initialization_periodAngles_Gs_to_Wn_ixyz_validation(self):
+        """Test periodAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -538,12 +532,12 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
-                periodAngles_G_to_prelimWn_ixyz=(1.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_phaseAngles_G_to_prelimWn_ixyz_validation(self):
-        """Test phaseAngles_G_to_prelimWn_ixyz parameter validation."""
+    def test_initialization_phaseAngles_Gs_to_Wn_ixyz_validation(self):
+        """Test phaseAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wcs_movements = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
@@ -555,9 +549,9 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_G_to_prelimWn_ixyz=(10.0, 0.0, 0.0),
-                periodAngles_G_to_prelimWn_ixyz=(1.0, 0.0, 0.0),
-                phaseAngles_G_to_prelimWn_ixyz=(181.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+                phaseAngles_Gs_to_Wn_ixyz=(181.0, 0.0, 0.0),
             )
 
         # Test with zero amplitude but non-zero phase.
@@ -565,23 +559,23 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
-                periodAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
-                phaseAngles_G_to_prelimWn_ixyz=(45.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                phaseAngles_Gs_to_Wn_ixyz=(45.0, 0.0, 0.0),
             )
 
-    def test_custom_spacing_prelimLer_produces_expected_motion(self):
-        """Test that custom spacing function for prelimLer_G_Cg produces
+    def test_custom_spacing_Ler_produces_expected_motion(self):
+        """Test that custom spacing function for Ler_Gs_Cgs produces
         expected motion."""
         num_steps = 100
         delta_time = 0.01
-        wings = self.custom_spacing_prelimLer_wing_movement.generate_wings(
+        wings = self.custom_spacing_Ler_wing_movement.generate_wings(
             num_steps=num_steps,
             delta_time=delta_time,
         )
 
         # Extract x-positions from generated Wings.
-        x_positions = np.array([wing.prelimLer_G_Cg[0] for wing in wings])
+        x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected custom harmonic wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
@@ -596,7 +590,7 @@ class TestWingMovement(unittest.TestCase):
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
     def test_custom_spacing_angles_produces_expected_motion(self):
-        """Test that custom spacing function for angles_G_to_prelimWn_ixyz
+        """Test that custom spacing function for angles_Gs_to_Wn_ixyz
         produces expected motion."""
         num_steps = 100
         delta_time = 0.01
@@ -606,7 +600,7 @@ class TestWingMovement(unittest.TestCase):
         )
 
         # Extract x-angles from generated Wings.
-        x_angles = np.array([wing.angles_G_to_prelimWn_ixyz[0] for wing in wings])
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected custom harmonic wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)

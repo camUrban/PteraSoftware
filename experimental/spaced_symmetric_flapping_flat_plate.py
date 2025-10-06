@@ -38,8 +38,8 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                 ),
             ],
             name="Right Wing",
-            prelimLer_G_Cg=(-0.5, 1.0, 0.0),
-            angles_G_to_prelimWn_ixyz=(0, 0, 0),
+            Ler_Gs_Cgs=(-0.5, 1.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(0, 0, 0),
             symmetric=True,
             mirror_only=False,
             symmetryNormal_G=(0, 1, 0),
@@ -96,14 +96,14 @@ flat_plate_wing_movement = ps.movements.wing_movement.WingMovement(
         flat_plate_wing_root_wing_cross_section_movement,
         flat_plate_wing_tip_wing_cross_section_movement,
     ],
-    ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (0.5, 0.0, 0.0)
-    periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
-    spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
-    phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
-    ampAngles_G_to_prelimWn_ixyz=(15.0, 0.0, 0.0),
-    periodAngles_G_to_prelimWn_ixyz=(5.0, 0.0, 0.0),
-    spacingAngles_G_to_prelimWn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
+    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),  # (0.5, 0.0, 0.0)
+    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
+    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(5.0, 0.0, 0.0),
+    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
 
 reflected_wing_root_wing_cross_section_movement = (
@@ -140,14 +140,14 @@ reflected_wing_movement = ps.movements.wing_movement.WingMovement(
         reflected_wing_root_wing_cross_section_movement,
         reflected_wing_tip_wing_cross_section_movement,
     ],
-    ampPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (0.5, 0.0, 0.0)
-    periodPrelimLer_G_Cg=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
-    spacingPrelimLer_G_Cg=("sine", "sine", "sine"),
-    phasePrelimLer_G_Cg=(0.0, 0.0, 0.0),
-    ampAngles_G_to_prelimWn_ixyz=(15.0, 0.0, 0.0),
-    periodAngles_G_to_prelimWn_ixyz=(5.0, 0.0, 0.0),
-    spacingAngles_G_to_prelimWn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_G_to_prelimWn_ixyz=(0.0, 0.0, 0.0),
+    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),  # (0.5, 0.0, 0.0)
+    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),  # (2.0, 0.0, 0.0)
+    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(5.0, 0.0, 0.0),
+    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
 
 del flat_plate_wing_root_wing_cross_section_movement

@@ -67,7 +67,7 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=gammabot_airplane_wing_cross_sections,
-            prelimLer_G_Cg=(0.0, wing_spacing / 2, 0.0),
+            Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
             symmetric=True,
             symmetryNormal_G=(0, 1, 0),
             symmetryPoint_G_Cg=(0, -wing_spacing / 2, 0),
@@ -115,44 +115,44 @@ for j in range(num_wing_cross_sections):
 gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=gammabot_airplane.wings[0],
     wing_cross_section_movements=gammabot_wing_cross_section_movements,
-    ampAngles_G_to_prelimWn_ixyz=(
+    ampAngles_Gs_to_Wn_ixyz=(
         gammabot_flapping_amplitude_angleX,
         gammabot_flapping_amplitude_angleY,
         0.0,
     ),
-    periodAngles_G_to_prelimWn_ixyz=(
+    periodAngles_Gs_to_Wn_ixyz=(
         gammabot_flapping_period,
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_ixyz=(
+    spacingAngles_Gs_to_Wn_ixyz=(
         gammabot_angleX_function,
         gammabot_angleY_function,
         "sine",
     ),
-    phaseAngles_G_to_prelimWn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Define the WingMovement for the mirrored Wing.
 gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=gammabot_airplane.wings[1],
     wing_cross_section_movements=copy.deepcopy(gammabot_wing_cross_section_movements),
-    ampAngles_G_to_prelimWn_ixyz=(
+    ampAngles_Gs_to_Wn_ixyz=(
         gammabot_flapping_amplitude_angleX,
         gammabot_flapping_amplitude_angleY,
         0.0,
     ),
-    periodAngles_G_to_prelimWn_ixyz=(
+    periodAngles_Gs_to_Wn_ixyz=(
         gammabot_flapping_period,
         gammabot_flapping_period,
         0.0,
     ),
-    spacingAngles_G_to_prelimWn_ixyz=(
+    spacingAngles_Gs_to_Wn_ixyz=(
         gammabot_angleX_function,
         gammabot_angleY_function,
         "sine",
     ),
-    phaseAngles_G_to_prelimWn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, gammabot_flapping_phase_angleY, 0.0),
 )
 
 # Delete the extraneous pointer.

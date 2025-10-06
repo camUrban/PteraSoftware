@@ -20,7 +20,8 @@ lead_airplane = ps.geometry.airplane.Airplane(
                     # section relative to the wing's leading edge. These values all
                     # default to 0.0 meters.
                     x_le=0.0,
-                    y_le=0.0,  # Assign the twist of this wing cross section. Note: when
+                    y_le=0.0,
+                    # Assign the twist of this wing cross section. Note: when
                     # assigning angles of attack to multiple airplanes, it is better
                     # to set the operating point's angle of attack to zero, and then
                     # use offset the twist values of all the wing cross sections to

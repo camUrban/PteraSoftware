@@ -165,8 +165,8 @@ def make_origin_wing_fixture():
     origin_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Origin Wing",
-        prelimLer_G_Cg=[0.0, 0.0, 0.0],
-        angles_G_to_prelimWn_ixyz=[0.0, 0.0, 0.0],
+        Ler_Gs_Cgs=[0.0, 0.0, 0.0],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
         symmetric=False,
         mirror_only=False,
         symmetryNormal_G=None,
@@ -193,8 +193,8 @@ def make_type_1_wing_fixture():
     type_1_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 1 Test Wing",
-        prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_ixyz=[0.0, 5.0, 0.0],
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=False,
         symmetryNormal_G=None,
@@ -221,8 +221,8 @@ def make_type_2_wing_fixture():
     type_2_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 2 Test Wing",
-        prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_ixyz=[0.0, 0.0, 0.0],
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
         symmetric=False,
         mirror_only=True,
         symmetryNormal_G=[0.0, 1.0, 0.0],
@@ -249,8 +249,8 @@ def make_type_3_wing_fixture():
     type_3_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 3 Test Wing",
-        prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_ixyz=[0.0, 5.0, 0.0],
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
         symmetric=False,
         mirror_only=True,
         symmetryNormal_G=[0.0, 0.707, 0.707],
@@ -284,8 +284,8 @@ def make_type_4_wing_fixture():
     type_4_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 4 Test Wing",
-        prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_ixyz=[0.0, 0.0, 0.0],
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
         symmetric=True,
         mirror_only=False,
         symmetryNormal_G=[0.0, 1.0, 0.0],
@@ -323,8 +323,8 @@ def make_type_5_wing_fixture():
     type_5_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 5 Test Wing",
-        prelimLer_G_Cg=[1.0, 0.0, 0.5],
-        angles_G_to_prelimWn_ixyz=[0.0, 5.0, 0.0],
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
         symmetric=True,
         mirror_only=False,
         symmetryNormal_G=[0.0, 0.707, 0.707],
@@ -393,7 +393,7 @@ def make_multi_wing_airplane_fixture():
 
     tail_wing = make_type_2_wing_fixture()
     tail_wing.name = "Tail Wing"
-    tail_wing.prelimLer_G_Cg = [0.0, 0.0, 5.0]  # Move tail wing back
+    tail_wing.Ler_Gs_Cgs = [0.0, 0.0, 5.0]  # Move tail wing back
 
     # Create the multi-wing Airplane
     multi_wing_airplane_fixture = ps.geometry.airplane.Airplane(

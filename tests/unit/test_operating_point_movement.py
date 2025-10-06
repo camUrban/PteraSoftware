@@ -61,7 +61,9 @@ class TestOperatingPointMovement(unittest.TestCase):
 
     def test_initialization_default_parameters(self):
         """Test OperatingPointMovement initialization with default parameters."""
-        base_operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
+        base_operating_point = (
+            operating_point_fixtures.make_basic_operating_point_fixture()
+        )
         op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
             base_operating_point=base_operating_point
         )
@@ -100,8 +102,10 @@ class TestOperatingPointMovement(unittest.TestCase):
         valid_amps = [0.0, 1.0, 5.0, 100.0]
         for amp in valid_amps:
             with self.subTest(amp=amp):
-                op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-                    base_operating_point=base_op, ampVCg__E=amp
+                op_movement = (
+                    ps.movements.operating_point_movement.OperatingPointMovement(
+                        base_operating_point=base_op, ampVCg__E=amp
+                    )
                 )
                 self.assertEqual(op_movement.ampVCg__E, amp)
 
@@ -126,10 +130,12 @@ class TestOperatingPointMovement(unittest.TestCase):
         for period in valid_periods:
             with self.subTest(period=period):
                 amp = 1.0 if period > 0 else 0.0
-                op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-                    base_operating_point=base_op,
-                    ampVCg__E=amp,
-                    periodVCg__E=period,
+                op_movement = (
+                    ps.movements.operating_point_movement.OperatingPointMovement(
+                        base_operating_point=base_op,
+                        ampVCg__E=amp,
+                        periodVCg__E=period,
+                    )
                 )
                 self.assertEqual(op_movement.periodVCg__E, period)
 
@@ -149,8 +155,10 @@ class TestOperatingPointMovement(unittest.TestCase):
         valid_spacings = ["sine", "uniform"]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
-                op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-                    base_operating_point=base_op, spacingVCg__E=spacing
+                op_movement = (
+                    ps.movements.operating_point_movement.OperatingPointMovement(
+                        base_operating_point=base_op, spacingVCg__E=spacing
+                    )
                 )
                 self.assertEqual(op_movement.spacingVCg__E, spacing)
 
@@ -185,11 +193,13 @@ class TestOperatingPointMovement(unittest.TestCase):
             with self.subTest(phase=phase):
                 amp = 1.0 if phase != 0 else 0.0
                 period = 1.0 if phase != 0 else 0.0
-                op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-                    base_operating_point=base_op,
-                    ampVCg__E=amp,
-                    periodVCg__E=period,
-                    phaseVCg__E=phase,
+                op_movement = (
+                    ps.movements.operating_point_movement.OperatingPointMovement(
+                        base_operating_point=base_op,
+                        ampVCg__E=amp,
+                        periodVCg__E=period,
+                        phaseVCg__E=phase,
+                    )
                 )
                 self.assertEqual(op_movement.phaseVCg__E, phase)
 
@@ -322,9 +332,7 @@ class TestOperatingPointMovement(unittest.TestCase):
             op_movement.generate_operating_points(num_steps=-1, delta_time=0.01)
 
         with self.assertRaises(TypeError):
-            op_movement.generate_operating_points(
-                num_steps="invalid", delta_time=0.01
-            )
+            op_movement.generate_operating_points(num_steps="invalid", delta_time=0.01)
 
         # Test invalid delta_time.
         with self.assertRaises((ValueError, TypeError)):
@@ -427,7 +435,9 @@ class TestOperatingPointMovement(unittest.TestCase):
         # Verify that phase offset causes non-zero initial value different from base.
         # With 90 degree phase offset, the first value should not be at the base.
         self.assertFalse(
-            np.isclose(vCg_values[0], op_movement.base_operating_point.vCg__E, atol=1e-10)
+            np.isclose(
+                vCg_values[0], op_movement.base_operating_point.vCg__E, atol=1e-10
+            )
         )
 
     def test_custom_spacing_function_works(self):
@@ -636,7 +646,7 @@ class TestOperatingPointMovement(unittest.TestCase):
         vCg_values = np.array([op.vCg__E for op in operating_points], dtype=float)
 
         # Verify that values vary significantly.
-        self.assertGreater(np.max(vCg_values) - np.min(vCg_values), 50.0)
+        self.assertGreater(float(np.max(vCg_values)) - float(np.min(vCg_values)), 50.0)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,9 @@ def make_sine_spacing_operating_point_movement_fixture():
         This is the OperatingPointMovement with sine spacing for vCg__E.
     """
     # Initialize the constructing fixture.
-    base_operating_point = operating_point_fixtures.make_high_speed_operating_point_fixture()
+    base_operating_point = (
+        operating_point_fixtures.make_high_speed_operating_point_fixture()
+    )
 
     # Create the sine spacing OperatingPointMovement.
     sine_spacing_operating_point_movement_fixture = (
@@ -65,7 +67,9 @@ def make_uniform_spacing_operating_point_movement_fixture():
         This is the OperatingPointMovement with uniform spacing for vCg__E.
     """
     # Initialize the constructing fixture.
-    base_operating_point = operating_point_fixtures.make_high_speed_operating_point_fixture()
+    base_operating_point = (
+        operating_point_fixtures.make_high_speed_operating_point_fixture()
+    )
 
     # Create the uniform spacing OperatingPointMovement.
     uniform_spacing_operating_point_movement_fixture = (
@@ -90,7 +94,9 @@ def make_phase_offset_operating_point_movement_fixture():
         This is the OperatingPointMovement with phase offset for vCg__E.
     """
     # Initialize the constructing fixture.
-    base_operating_point = operating_point_fixtures.make_high_speed_operating_point_fixture()
+    base_operating_point = (
+        operating_point_fixtures.make_high_speed_operating_point_fixture()
+    )
 
     # Create the phase offset OperatingPointMovement.
     phase_offset_operating_point_movement_fixture = (
@@ -115,7 +121,9 @@ def make_custom_spacing_operating_point_movement_fixture():
         This is the OperatingPointMovement with custom spacing for vCg__E.
     """
     # Initialize the constructing fixture.
-    base_operating_point = operating_point_fixtures.make_high_speed_operating_point_fixture()
+    base_operating_point = (
+        operating_point_fixtures.make_high_speed_operating_point_fixture()
+    )
 
     # Define a custom harmonic spacing function.
     def custom_harmonic(x):
@@ -182,7 +190,9 @@ def make_large_amplitude_operating_point_movement_fixture():
         This is the OperatingPointMovement with large amplitude for vCg__E.
     """
     # Initialize the constructing fixture.
-    base_operating_point = operating_point_fixtures.make_high_speed_operating_point_fixture()
+    base_operating_point = (
+        operating_point_fixtures.make_high_speed_operating_point_fixture()
+    )
 
     # Create the large amplitude OperatingPointMovement.
     large_amplitude_operating_point_movement_fixture = (

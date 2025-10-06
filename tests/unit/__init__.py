@@ -29,6 +29,9 @@ This package contains the following modules:
 
     test_panel.py: This module contains a class to test Panels.
 
+    test_problems.py: This module contains a class to test SteadyProblems and
+    UnsteadyProblems.
+
     test_ring_vortex.py: This module contains a class to test RingVortices.
 
     test_transformations.py: This module contains classes to test functions in the
@@ -53,6 +56,7 @@ import tests.unit.test_movement
 import tests.unit.test_operating_point
 import tests.unit.test_operating_point_movement
 import tests.unit.test_panel
+import tests.unit.test_problems
 import tests.unit.test_ring_vortex
 import tests.unit.test_transformations
 import tests.unit.test_wing

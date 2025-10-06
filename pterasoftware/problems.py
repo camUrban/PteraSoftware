@@ -19,7 +19,6 @@ from . import _parameter_validation
 from . import operating_point as op
 
 
-# TODO: Add unit tests for this class.
 class SteadyProblem:
     """This is a class for steady aerodynamics problems.
 
@@ -57,7 +56,6 @@ class SteadyProblem:
         self.operating_point = operating_point
 
 
-# TODO: Add unit tests for this class.
 class UnsteadyProblem:
     """This is a class for unsteady aerodynamics problems.
 

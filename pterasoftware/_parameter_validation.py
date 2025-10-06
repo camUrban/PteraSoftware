@@ -15,16 +15,19 @@ def string_return_string(string, name):
 
 
 def boolLike_return_bool(value, name):
-    """Validates that a value is a boolean or NumPy boolean and returns it as a
-    boolean. name must be a string."""
+    """Validates that a value is a boolean, NumPy boolean, or the integers 0 or 1,
+    and returns it as a boolean. name must be a string."""
     name = string_return_string(name, "name")
 
-    if not isinstance(value, (bool, np.bool_)):
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    elif isinstance(value, int) and value in (0, 1):
+        return bool(value)
+    else:
         raise TypeError(
-            f"{name} is a {type(value)} equal to {value} but it must be a boolean."
+            f"{name} is a {type(value)} equal to {value} but it must be a boolean or 0 or 1."
         )
 
-    return bool(value)
 
 
 def int_return_int(value, name):

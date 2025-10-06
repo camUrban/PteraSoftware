@@ -136,6 +136,31 @@ def make_movement_with_custom_delta_time_fixture():
     return movement_with_custom_delta_time_fixture
 
 
+def make_cyclic_movement_fixture():
+    """This method makes a fixture that is a Movement with cyclic motion.
+
+    :return cyclic_movement_fixture: Movement
+        This is the Movement with cyclic motion.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movements = [
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    ]
+    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+    )
+
+    # Create the cyclic Movement.
+    cyclic_movement_fixture = ps.movements.movement.Movement(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        num_cycles=2,
+    )
+
+    # Return the Movement fixture.
+    return cyclic_movement_fixture
+
+
 def make_movement_with_multiple_airplanes_fixture():
     """This method makes a fixture that is a Movement with multiple AirplaneMovements.
 

@@ -7,6 +7,9 @@ import sys
 import time
 import importlib
 
+# Add the gui directory to the Python path so ui_resources can be imported.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 print("Builtin modules imported")
 from PySide6.QtCore import Qt
 
@@ -16,8 +19,8 @@ from PySide6.QtGui import QPixmap
 print("QtGUI imported")
 from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 
-from pterasoftware.ui_resources.main_window import Ui_MainWindowDesign
-from pterasoftware.ui_resources.textdialog import Ui_TextAboutDialog
+from _resources.main_window import Ui_MainWindowDesign
+from _resources.textdialog import Ui_TextAboutDialog
 
 
 class TextAboutDialog(QDialog):

@@ -155,6 +155,20 @@ the docstrings there.
 I am hoping to implement a web-based documentation guide soon! If you'd like to
 contribute to this, feel free to open a feature request issue and start a conversation!
 
+### Using the GUI (Beta)
+
+If you downloaded the source code from GitHub, you can try using the experimental GUI 
+to run the example simulations:
+
+```shell
+python gui/main.py
+```
+
+**Note:** The GUI is currently in beta and is not included in the PyPI package. It is
+only available when you download the source code from GitHub. The GUI provides a
+graphical interface for running the 10 example simulations but does not yet support
+custom aircraft creation. We welcome contributions if you'd like to extend it!
+
 ### What If I'm Having Trouble Getting Set Up?
 
 Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that

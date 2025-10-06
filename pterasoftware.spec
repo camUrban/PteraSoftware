@@ -34,7 +34,7 @@ upx_exclude = [
     'qwindows.dll'
 ]
 a = Analysis(
-    ['main.py'],
+    ['gui/main.py'],
     pathex=[],
     binaries=[],
     datas=[('docs/Logo.ico', 'docs'),

@@ -1,13 +1,16 @@
-# Packaging
+# Building the GUI Installer
 
-There are 2 available packaging formats: Installer or wheel. The former is what is
-distributed, while the latter is
-required for use of the CLI for instance.
+This document describes how to build the **Windows installer for the GUI**. This
+bundles the entire project (pterasoftware package, examples, and GUI) into a
+standalone executable.
 
-When packaging don't forget to check versions in both `setup.py` and
+**Note:** For building the PyPI package (wheel), use `python -m build` from the project
+root. That process is separate and uses `setup.cfg` and `pyproject.toml`.
+
+When packaging the installer, don't forget to check versions in both `setup.cfg` and
 `make_installer.iss` and ensure they match!
 
-### Installer
+## Creating the Windows Installer
 
 **Currently, this is only supported on Windows.**
 

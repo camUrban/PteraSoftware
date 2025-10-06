@@ -6,7 +6,7 @@ This package contains the following subpackages:
     movements: This package contains the movement classes.
 
 This package contains the following directories:
-    ui_resources: This directory contains assets used by the GUI.
+    None
 
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.
@@ -37,7 +37,6 @@ This package contains the following modules:
 """
 
 import pterasoftware.geometry
-import pterasoftware.models
 import pterasoftware.movements
 import pterasoftware.convergence
 import pterasoftware.operating_point

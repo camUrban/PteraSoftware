@@ -340,9 +340,9 @@ class Wing:
         self.symmetry_type = None
         self.num_spanwise_panels = None
         self.num_panels = None
-        self.wake_ring_vortex_vertices = None
-        self.wake_ring_vortices = None
         self.panels = None
+        self.gridWrvp_G_Cg = None
+        self.wake_ring_vortices = None
 
     def generate_mesh(self, symmetry_type):
         """This method generates this Wing's mesh, which finishes the process of
@@ -381,11 +381,9 @@ class Wing:
         # Calculate the number of panels on this wing.
         self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
 
-        # Initialize an empty array to hold this wing's wake ring vortices and its
-        # wake ring vortex vertices.
-        self.wake_ring_vortex_vertices = np.empty(
-            (0, self.num_spanwise_panels + 1, 3), dtype=float
-        )
+        # Initialize an empty array to hold this wing's wake RingVortices and its
+        # wake RingVortex points.
+        self.gridWrvp_G_Cg = np.empty((0, self.num_spanwise_panels + 1, 3), dtype=float)
         self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
 
         # Generate the wing's mesh, which populates the Panels attribute.

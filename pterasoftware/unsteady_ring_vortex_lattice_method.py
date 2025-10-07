@@ -22,6 +22,7 @@ from . import _aerodynamics
 from . import _functions
 from . import _parameter_validation
 from . import _panel
+from . import geometry
 from . import problems
 
 
@@ -553,7 +554,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
 
-                # Convert this Wing's 2D ndarray of Panels and wake RingVortices into 1D ndarrays.
+                # Convert this Wing's 2D ndarray of Panels and wake RingVortices into
+                # 1D ndarrays.
                 panels = np.ravel(wing.panels)
                 wake_ring_vortices = np.ravel(wing.wake_ring_vortices)
 
@@ -1057,9 +1059,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         _functions.process_solver_loads(self, forces_G, moments_G_Cg)
 
-    # REFACTOR: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake(self, prescribed_wake=True):
-        """This method updates the next time step's airplanes' wakes.
+        """This method updates the next time step's Airplanes' wakes.
 
         :param prescribed_wake: Bool, optional
             This parameter determines if the solver uses a prescribed wake model. If
@@ -1067,18 +1068,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
             the solver significantly slower. The default is True.
         :return: None
         """
-        # Populate the locations of the next step's airplanes' wake vortex vertices:
-        self._populate_next_airplanes_wake_vortex_vertices(
+        # Populate the locations of the next time step's Airplanes' wake RingVortex
+        # points.
+        self._populate_next_airplanes_wake_vortex_points(
             prescribed_wake=prescribed_wake
         )
 
-        # Populate the locations of the next step's airplanes' wake vortices.
+        # Populate the locations of the next time step's Airplanes' wake RingVortices.
         self._populate_next_airplanes_wake_vortices()
 
-    # REFACTOR: I haven't yet started refactoring this method.
-    def _populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
-        """This method populates the locations of the next airplanes' wake vortex
-        vertices.
+    def _populate_next_airplanes_wake_vortex_points(self, prescribed_wake=True):
+        """This method populates the locations of the next time step's Airplanes'
+        wake RingVortex points.
 
         This method is not vectorized but its loops only consume 1.1% of the runtime,
         so I have kept it as is for increased readability.
@@ -1089,237 +1090,193 @@ class UnsteadyRingVortexLatticeMethodSolver:
             the solver significantly slower. The default is True.
         :return: None
         """
-        # Check if this is not the last step.
+        # Check that this isn't the last time step.
         if self._current_step < self.num_steps - 1:
 
-            # Get the next time step's airplane objects.
+            # Get the next time step's Airplanes.
             next_airplanes = self.steady_problems[self._current_step + 1].airplanes
 
-            # Get the current airplanes' combined number of wings.
+            # Get the current Airplanes' combined number of Wings.
             num_wings = 0
+            airplane: geometry.airplane.Airplane
             for airplane in self.current_airplanes:
                 num_wings += len(airplane.wings)
 
-            # Iterate through this time step's airplanes' successor objects.
+            # Iterate through this time step's Airplanes' successor objects.
+            next_airplane: geometry.airplane.Airplane
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
-                # Iterate through the next airplane's wings.
+                # Iterate through the next Airplane's Wings.
+                next_wing: geometry.wing.Wing
                 for wing_id, next_wing in enumerate(next_airplane.wings):
 
-                    # Get the wing objects at this position from the current airplane.
+                    # Get the Wings at this position from the current Airplane.
                     this_wing = self.current_airplanes[airplane_id].wings[wing_id]
 
-                    # Check if this is the first step.
+                    # Check if this is the first time step.
                     if self._current_step == 0:
 
-                        # Get the current wing's number of chordwise and spanwise
+                        # Get the current Wing's number of chordwise and spanwise
                         # panels.
                         num_spanwise_panels = this_wing.num_spanwise_panels
                         num_chordwise_panels = this_wing.num_chordwise_panels
 
                         # Set the chordwise position to be at the trailing edge.
-                        chordwise_position = num_chordwise_panels - 1
+                        chordwise_panel_id = num_chordwise_panels - 1
 
-                        # Initialize a matrix to hold the vertices of the new row of
-                        # wake ring vortices.
-                        first_row_of_wake_ring_vortex_vertices = np.zeros(
-                            (1, num_spanwise_panels + 1, 3)
+                        # Initialize a ndarray to hold the points of the new row of
+                        # wake RingVortices (in geometry axes, relative to the CG).
+                        newRowWrvp_G_Cg = np.zeros(
+                            (1, num_spanwise_panels + 1, 3), dtype=float
                         )
 
-                        # Iterate through the spanwise panel positions.
-                        for spanwise_position in range(num_spanwise_panels):
+                        # Iterate through the spanwise Panel positions.
+                        for spanwise_panel_id in range(num_spanwise_panels):
 
-                            # Get the next wing's panel object at this location.
+                            # Get the next time step's Wing's Panel at this location.
                             next_panel = next_wing.panels[
-                                chordwise_position, spanwise_position
+                                chordwise_panel_id, spanwise_panel_id
                             ]
 
-                            # The position of the next front left wake ring vortex
-                            # vertex is the next panel's ring vortex's back left
-                            # vertex.
-                            next_front_left_vertex = next_panel.ring_vortex.Blrvp_G_Cg
+                            # The position of the new front left wake RingVortex's
+                            # point is the next time step's Panel's bound
+                            # RingVortex's back left point.
+                            newFlwrvp_G_Cg = next_panel.ring_vortex.Blrvp_G_Cg
 
-                            # Add this to the new row of wake ring vortex vertices.
-                            first_row_of_wake_ring_vortex_vertices[
-                                0, spanwise_position
-                            ] = next_front_left_vertex
+                            # Add this to the row of new wake RingVortex points.
+                            newRowWrvp_G_Cg[0, spanwise_panel_id] = newFlwrvp_G_Cg
 
-                            # Check if this panel is on the right edge of the wing.
-                            if spanwise_position == (num_spanwise_panels - 1):
-                                # The position of the next front right wake ring
-                                # vortex vertex is the next panel's ring vortex's
-                                # back right vertex.
-                                next_front_right_vertex = (
+                            # If the Panel is at the right edge of the Wing, add its
+                            # back right bound RingVortex point to the row of new
+                            # wake RingVortex points.
+                            if spanwise_panel_id == (num_spanwise_panels - 1):
+                                newRowWrvp_G_Cg[0, spanwise_panel_id + 1] = (
                                     next_panel.ring_vortex.Brrvp_G_Cg
                                 )
 
-                                # Add this to the new row of wake ring vortex vertices.
-                                first_row_of_wake_ring_vortex_vertices[
-                                    0, spanwise_position + 1
-                                ] = next_front_right_vertex
+                        # Set the next time step's Wing's grid of wake RingVortex
+                        # points to a copy of the row of new wake RingVortex points.
+                        # This is correct because it is currently the first time step.
+                        next_wing.gridWrvp_G_Cg = np.copy(newRowWrvp_G_Cg)
 
-                        # Set the next wing's matrix of wake ring vortex vertices to
-                        # a copy of the row of new wake ring vortex vertices. This is
-                        # correct because this is the first time step.
-                        next_wing.wake_ring_vortex_vertices = np.copy(
-                            first_row_of_wake_ring_vortex_vertices
+                        # Initialize variables to hold the number of spanwise wake
+                        # RingVortex points.
+                        num_spanwise_points = num_spanwise_panels + 1
+
+                        # Initialize a new ndarray to hold the second new row of wake
+                        # RingVortex points (in geometry axes, relative to the CG).
+                        secondNewRowWrvp_G_Cg = np.zeros(
+                            (1, num_spanwise_panels + 1, 3), dtype=float
                         )
 
-                        # Initialize variables to hold the number of spanwise vertices.
-                        num_spanwise_vertices = num_spanwise_panels + 1
+                        # Iterate through the spanwise points.
+                        for spanwise_point_id in range(num_spanwise_points):
+                            # Get the corresponding point from the first row.
+                            Wrvp_G_Cg = next_wing.gridWrvp_G_Cg[0, spanwise_point_id]
 
-                        # Initialize a new matrix to hold the second row of wake ring
-                        # vortex vertices.
-                        second_row_of_wake_ring_vortex_vertices = np.zeros(
-                            (1, num_spanwise_panels + 1, 3)
-                        )
+                            # If the wake is prescribed, set the velocity at this
+                            # point to the freestream velocity (in geometry axes,
+                            # observed from the Earth frame). Otherwise, set the
+                            # velocity to the solution velocity at this point (in
+                            # geometry axes, observed from the Earth frame).
+                            if prescribed_wake:
+                                vWrvp_G__E = self._currentVInf_G__E
+                            else:
+                                vWrvp_G__E = self.calculate_solution_velocity(
+                                    np.expand_dims(Wrvp_G_Cg, axis=0)
+                                )
 
-                        # Iterate through the spanwise vertex positions.
-                        for spanwise_vertex_position in range(num_spanwise_vertices):
-
-                            # Get the corresponding vertex from the first row.
-                            wake_ring_vortex_vertex = (
-                                next_wing.wake_ring_vortex_vertices[
-                                    0, spanwise_vertex_position
-                                ]
+                            # Update the second new row with the interpolated
+                            # position of the first point.
+                            secondNewRowWrvp_G_Cg[0, spanwise_point_id] = (
+                                Wrvp_G_Cg + vWrvp_G__E * self.delta_time
                             )
 
-                            if prescribed_wake:
+                        # Update the next time step's Wing's grid of wake RingVortex
+                        # points by vertically stacking the new second row below it.
+                        next_wing.gridWrvp_G_Cg = np.vstack(
+                            (
+                                next_wing.gridWrvp_G_Cg,
+                                secondNewRowWrvp_G_Cg,
+                            )
+                        )
+
+                    # If this isn't the first time step, then do this.
+                    else:
+                        # Set the next time step's Wing's grid of wake RingVortex
+                        # points to a copy of this time step's Wing's grid of wake
+                        # RingVortex points.
+                        next_wing.gridWrvp_G_Cg = np.copy(this_wing.gridWrvp_G_Cg)
+
+                        # Get the number of chordwise and spanwise points.
+                        num_chordwise_points = next_wing.gridWrvp_G_Cg.shape[0]
+                        num_spanwise_points = next_wing.gridWrvp_G_Cg.shape[1]
+
+                        # Iterate through the chordwise and spanwise point positions.
+                        for chordwise_point_id in range(num_chordwise_points):
+                            for spanwise_point_id in range(num_spanwise_points):
+                                # Get the wake RingVortex point at this position.
+                                Wrvp_G_Cg = next_wing.gridWrvp_G_Cg[
+                                    chordwise_point_id,
+                                    spanwise_point_id,
+                                ]
 
                                 # If the wake is prescribed, set the velocity at this
-                                # vertex to the freestream velocity.
-                                velocity_at_first_row_wake_ring_vortex_vertex = (
-                                    self._currentVInf_G__E
-                                )
-                            else:
-
-                                # If the wake is not prescribed, set the velocity at
-                                # this vertex to the solution velocity at this point.
-                                velocity_at_first_row_wake_ring_vortex_vertex = (
-                                    self.calculate_solution_velocity(
-                                        np.expand_dims(wake_ring_vortex_vertex, axis=0)
-                                    )
-                                )
-
-                            # Update the second row with the interpolated position of
-                            # the first vertex.
-                            second_row_of_wake_ring_vortex_vertices[
-                                0, spanwise_vertex_position
-                            ] = (
-                                wake_ring_vortex_vertex
-                                + velocity_at_first_row_wake_ring_vortex_vertex
-                                * self.delta_time
-                            )
-
-                        # Update the wing's wake ring vortex vertex matrix by
-                        # vertically stacking the second row below it.
-                        next_wing.wake_ring_vortex_vertices = np.vstack(
-                            (
-                                next_wing.wake_ring_vortex_vertices,
-                                second_row_of_wake_ring_vortex_vertices,
-                            )
-                        )
-
-                    # If this isn't the first step, then do this.
-                    else:
-
-                        # Set the next wing's wake ring vortex vertex matrix to a
-                        # copy of this wing's wake ring vortex vertex matrix.
-                        next_wing.wake_ring_vortex_vertices = np.copy(
-                            this_wing.wake_ring_vortex_vertices
-                        )
-
-                        # Get the number of chordwise and spanwise vertices.
-                        num_chordwise_vertices = (
-                            next_wing.wake_ring_vortex_vertices.shape[0]
-                        )
-                        num_spanwise_vertices = (
-                            next_wing.wake_ring_vortex_vertices.shape[1]
-                        )
-
-                        # Iterate through the chordwise and spanwise vertex positions.
-                        for chordwise_vertex_position in range(num_chordwise_vertices):
-                            for spanwise_vertex_position in range(
-                                num_spanwise_vertices
-                            ):
-
-                                # Get the wake ring vortex vertex at this position.
-                                wake_ring_vortex_vertex = (
-                                    next_wing.wake_ring_vortex_vertices[
-                                        chordwise_vertex_position,
-                                        spanwise_vertex_position,
-                                    ]
-                                )
-
+                                # point to the freestream velocity (in geometry axes,
+                                # observed from the Earth frame). Otherwise, set the
+                                # velocity to the solution velocity at this point (in
+                                # geometry axes, observed from the Earth frame).
                                 if prescribed_wake:
-
-                                    # If the wake is prescribed, set the velocity at
-                                    # this vertex to the freestream velocity.
-                                    velocity_at_first_row_wake_vortex_vertex = (
-                                        self._currentVInf_G__E
-                                    )
+                                    vWrvp_G__E = self._currentVInf_G__E
                                 else:
-
-                                    # If the wake is not prescribed, set the velocity
-                                    # at this vertex to the solution velocity at this
-                                    # point.
-                                    velocity_at_first_row_wake_vortex_vertex = (
-                                        np.squeeze(
-                                            self.calculate_solution_velocity(
-                                                np.expand_dims(
-                                                    wake_ring_vortex_vertex, axis=0
-                                                )
-                                            )
+                                    vWrvp_G__E = np.squeeze(
+                                        self.calculate_solution_velocity(
+                                            np.expand_dims(Wrvp_G_Cg, axis=0)
                                         )
                                     )
 
-                                # Update the vertex at this point with its
-                                # interpolated position.
-                                next_wing.wake_ring_vortex_vertices[
-                                    chordwise_vertex_position, spanwise_vertex_position
-                                ] += (
-                                    velocity_at_first_row_wake_vortex_vertex
-                                    * self.delta_time
-                                )
+                                # Update this point with its interpolated position.
+                                next_wing.gridWrvp_G_Cg[
+                                    chordwise_point_id, spanwise_point_id
+                                ] += (vWrvp_G__E * self.delta_time)
 
-                        # Set the chordwise position to the trailing edge.
-                        chordwise_position = this_wing.num_chordwise_panels - 1
+                        # Find the chordwise position of the Wing's trailing edge.
+                        chordwise_panel_id = this_wing.num_chordwise_panels - 1
 
-                        # Initialize a new matrix to hold the new first row of wake
-                        # ring vortex vertices.
-                        first_row_of_wake_ring_vortex_vertices = np.zeros(
-                            (1, this_wing.num_spanwise_panels + 1, 3)
+                        # Initialize a new ndarray to hold the new row of wake
+                        # RingVortex vertices.
+                        newRowWrvp_G_Cg = np.zeros(
+                            (1, this_wing.num_spanwise_panels + 1, 3), dtype=float
                         )
 
-                        # Iterate spanwise through the trailing edge panels.
-                        for spanwise_position in range(this_wing.num_spanwise_panels):
-
-                            # Get the panel object at this location on the next
-                            # airplane's wing object.
+                        # Iterate spanwise through the trailing edge Panels.
+                        for spanwise_panel_id in range(this_wing.num_spanwise_panels):
+                            # Get the Panel at this location on the next time step's
+                            # Airplane's Wing.
                             next_panel = next_wing.panels[
-                                chordwise_position, spanwise_position
+                                chordwise_panel_id, spanwise_panel_id
                             ]
 
-                            # Add the panel object's back left ring vortex vertex to
-                            # the matrix of new wake ring vortex vertices.
-                            first_row_of_wake_ring_vortex_vertices[
-                                0, spanwise_position
-                            ] = next_panel.ring_vortex.Blrvp_G_Cg
+                            # Add the Panel's back left bound RingVortex point to the
+                            # grid of new wake RingVortex points.
+                            newRowWrvp_G_Cg[0, spanwise_panel_id] = (
+                                next_panel.ring_vortex.Blrvp_G_Cg
+                            )
 
-                            if spanwise_position == (this_wing.num_spanwise_panels - 1):
-                                # If the panel object is at the right edge of the
-                                # wing, add its back right ring vortex vertex to the
-                                # matrix of new wake ring vortex vertices.
-                                first_row_of_wake_ring_vortex_vertices[
-                                    0, spanwise_position + 1
-                                ] = next_panel.ring_vortex.Brrvp_G_Cg
+                            # If the Panel is at the right edge of the Wing, add its
+                            # back right bound RingVortex point to the grid of new
+                            # wake RingVortex vertices.
+                            if spanwise_panel_id == (this_wing.num_spanwise_panels - 1):
+                                newRowWrvp_G_Cg[0, spanwise_panel_id + 1] = (
+                                    next_panel.ring_vortex.Brrvp_G_Cg
+                                )
 
-                        # Stack the new first row of wake ring vortex vertices above
-                        # the wing's matrix of wake ring vortex vertices.
-                        next_wing.wake_ring_vortex_vertices = np.vstack(
+                        # Stack the new row of wake RingVortex points above the
+                        # Wing's grid of wake RingVortex points.
+                        next_wing.gridWrvp_G_Cg = np.vstack(
                             (
-                                first_row_of_wake_ring_vortex_vertices,
-                                next_wing.wake_ring_vortex_vertices,
+                                newRowWrvp_G_Cg,
+                                next_wing.gridWrvp_G_Cg,
                             )
                         )
 
@@ -1348,15 +1305,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_wing = next_airplane.wings[wing_id]
 
                     # Get the next wing's matrix of wake ring vortex vertices.
-                    next_wing_wake_ring_vortex_vertices = (
-                        next_wing.wake_ring_vortex_vertices
-                    )
-
-                    this_wing_wake_ring_vortices = (
-                        self.current_airplanes[airplane_id]
-                        .wings[wing_id]
-                        .wake_ring_vortices
-                    )
+                    next_wing_wake_ring_vortex_vertices = next_wing.gridWrvp_G_Cg
 
                     # Find the number of chordwise and spanwise vertices in the next
                     # wing's matrix of wake ring vortex vertices.
@@ -1364,6 +1313,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         0
                     ]
                     num_spanwise_vertices = next_wing_wake_ring_vortex_vertices.shape[1]
+
+                    this_wing_wake_ring_vortices = (
+                        self.current_airplanes[airplane_id]
+                        .wings[wing_id]
+                        .wake_ring_vortices
+                    )
 
                     # Initialize a new matrix to hold the new row of wake ring
                     # vortices.

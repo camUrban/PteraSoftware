@@ -150,6 +150,82 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
     return asymmetric_wing_cross_section_fixture
 
 
+def make_middle_wing_cross_section_fixture():
+    """This method makes a fixture that is a valid middle WingCrossSection (with
+    num_spanwise_panels set to a positive integer).
+
+    :return middle_wing_cross_section_fixture: WingCrossSection
+        This is the middle WingCrossSection.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the middle WingCrossSection.
+    middle_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil_fixture,
+        num_spanwise_panels=12,
+        chord=1.2,
+        Lp_Wcsp_Lpp=[0.3, 1.0, 0.15],
+        angles_Wcsp_to_Wcs_ixyz=[7.0, -3.0, 5.0],
+        spanwise_spacing="cosine",
+    )
+
+    # Return the middle WingCrossSection fixture.
+    return middle_wing_cross_section_fixture
+
+
+def make_invalid_middle_wing_cross_section_fixture():
+    """This method makes a fixture that is an invalid middle WingCrossSection (with
+    num_spanwise_panels set to None, which violates middle constraints).
+
+    :return invalid_middle_wing_cross_section_fixture: WingCrossSection
+        This is the invalid middle WingCrossSection.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the invalid middle WingCrossSection.
+    invalid_middle_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=None,
+            chord=1.2,
+            Lp_Wcsp_Lpp=[0.3, 1.0, 0.15],
+            angles_Wcsp_to_Wcs_ixyz=[7.0, -3.0, 5.0],
+            spanwise_spacing=None,
+        )
+    )
+
+    # Return the invalid middle WingCrossSection fixture.
+    return invalid_middle_wing_cross_section_fixture
+
+
+def make_invalid_root_wing_cross_section_fixture():
+    """This method makes a fixture that is an invalid root WingCrossSection (with
+    num_spanwise_panels set to None, which violates root constraints).
+
+    :return invalid_root_wing_cross_section_fixture: WingCrossSection
+        This is the invalid root WingCrossSection.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the invalid root WingCrossSection.
+    invalid_root_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=None,
+            chord=2.0,
+            Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
+            angles_Wcsp_to_Wcs_ixyz=[0.0, 0.0, 0.0],
+            spanwise_spacing=None,
+        )
+    )
+
+    # Return the invalid root WingCrossSection fixture.
+    return invalid_root_wing_cross_section_fixture
+
+
 def make_origin_wing_fixture():
     """This method makes a fixture that is a Wing positioned at the origin,
     suitable for movement testing.
@@ -334,6 +410,133 @@ def make_type_5_wing_fixture():
     )
 
     return type_5_wing_fixture
+
+
+def make_three_section_wing_fixture():
+    """This method makes a fixture that is a Wing with 3 WingCrossSections
+    (root, middle, tip) for testing middle wing cross section validation.
+
+    :return three_section_wing_fixture: Wing
+        This is the Wing with 3 WingCrossSections.
+    """
+    # Create WingCrossSections for the wing.
+    root_wcs = make_root_wing_cross_section_fixture()
+    middle_wcs = make_middle_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create Wing with 3 WingCrossSections.
+    three_section_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        name="Three Section Test Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return three_section_wing_fixture
+
+
+def make_four_section_wing_fixture():
+    """This method makes a fixture that is a Wing with 4 WingCrossSections
+    (root, two middles, tip) for testing multiple middle WingCrossSections.
+
+    :return four_section_wing_fixture: Wing
+        This is the Wing with 4 WingCrossSections.
+    """
+    # Create WingCrossSections for the wing.
+    root_wcs = make_root_wing_cross_section_fixture()
+    middle_wcs_1 = make_middle_wing_cross_section_fixture()
+
+    # Create second middle WingCrossSection with different parameters.
+    test_airfoil = make_test_airfoil_fixture()
+    middle_wcs_2 = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=10,
+        chord=1.0,
+        Lp_Wcsp_Lpp=[0.4, 1.5, 0.2],
+        angles_Wcsp_to_Wcs_ixyz=[5.0, -1.0, 2.0],
+        spanwise_spacing="cosine",
+    )
+
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create Wing with 4 WingCrossSections.
+    four_section_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, middle_wcs_1, middle_wcs_2, tip_wcs],
+        name="Four Section Test Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return four_section_wing_fixture
+
+
+def make_invalid_three_section_wing_fixture():
+    """This method makes a fixture that is an invalid Wing with 3 WingCrossSections
+    where the middle WingCrossSection has num_spanwise_panels=None (violates constraints).
+
+    :return invalid_three_section_wing_fixture: Wing
+        This is the invalid Wing with a bad middle WingCrossSection.
+    """
+    # Create WingCrossSections for the wing.
+    root_wcs = make_root_wing_cross_section_fixture()
+    invalid_middle_wcs = make_invalid_middle_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create invalid Wing (middle has num_spanwise_panels=None).
+    invalid_three_section_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, invalid_middle_wcs, tip_wcs],
+        name="Invalid Three Section Test Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return invalid_three_section_wing_fixture
+
+
+def make_invalid_root_wing_fixture():
+    """This method makes a fixture that is an invalid Wing where the root
+    WingCrossSection has num_spanwise_panels=None (violates root constraints).
+
+    :return invalid_root_wing_fixture: Wing
+        This is the invalid Wing with a bad root WingCrossSection.
+    """
+    # Create WingCrossSections for the Wing.
+    invalid_root_wcs = make_invalid_root_wing_cross_section_fixture()
+    tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create invalid Wing (root has num_spanwise_panels=None).
+    invalid_root_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[invalid_root_wcs, tip_wcs],
+        name="Invalid Root Test Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    return invalid_root_wing_fixture
 
 
 def make_basic_airplane_fixture():

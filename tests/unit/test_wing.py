@@ -121,7 +121,8 @@ class TestWing(unittest.TestCase):
         npt.assert_array_equal(wing.symmetryPoint_G_Cg, np.array([1.0, 0.0, 0.5]))
 
     def test_wing_type_3_properties(self):
-        """Test type 3 wing (mirror_only=True, non-coincident symmetry plane) properties."""
+        """Test type 3 wing (mirror_only=True, non-coincident symmetry plane)
+        properties."""
         wing = self.type_3_wing
 
         # Test basic properties
@@ -148,7 +149,8 @@ class TestWing(unittest.TestCase):
             self.assertEqual(wcs.control_surface_symmetry_type, "symmetric")
 
     def test_wing_type_5_properties(self):
-        """Test type 5 wing (symmetric=True, non-coincident symmetry plane) properties."""
+        """Test type 5 wing (symmetric=True, non-coincident symmetry plane)
+        properties."""
         wing = self.type_5_wing
 
         # Test basic properties (before Airplane processing)
@@ -390,6 +392,40 @@ class TestWing(unittest.TestCase):
         npt.assert_allclose(
             wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]), atol=1e-14
         )
+
+    def test_three_section_wing_validation(self):
+        """Test Wing with 3 WingCrossSections validates correctly."""
+        # Test that valid 3-WingCrossSection Wing initializes correctly
+        wing = geometry_fixtures.make_three_section_wing_fixture()
+        self.assertIsInstance(wing, ps.geometry.wing.Wing)
+        self.assertEqual(len(wing.wing_cross_sections), 3)
+
+        # Verify all WingCrossSections are validated
+        for wcs in wing.wing_cross_sections:
+            self.assertTrue(wcs.validated)
+
+    def test_four_section_wing_validation(self):
+        """Test Wing with 4 WingCrossSections validates correctly."""
+        # Test that valid 4-WingCrossSection Wing initializes correctly
+        wing = geometry_fixtures.make_four_section_wing_fixture()
+        self.assertIsInstance(wing, ps.geometry.wing.Wing)
+        self.assertEqual(len(wing.wing_cross_sections), 4)
+
+        # Verify all WingCrossSections are validated
+        for wcs in wing.wing_cross_sections:
+            self.assertTrue(wcs.validated)
+
+    def test_invalid_middle_wing_cross_section_raises_error(self):
+        """Test that Wing with invalid middle WingCrossSection raises ValueError."""
+        # Test that Wing with middle WingCrossSection having num_spanwise_panels=None fails
+        with self.assertRaises(ValueError):
+            geometry_fixtures.make_invalid_three_section_wing_fixture()
+
+    def test_invalid_root_wing_cross_section_raises_error(self):
+        """Test that Wing with invalid root WingCrossSection raises ValueError."""
+        # Test that Wing with root WingCrossSection having num_spanwise_panels=None fails
+        with self.assertRaises(ValueError):
+            geometry_fixtures.make_invalid_root_wing_fixture()
 
     # TODO: Finalize Wing's get_plottable_data testing.
     # def test_wing_get_plottable_data(self):

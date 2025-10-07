@@ -325,6 +325,13 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tip_wing_cross_section.validate_root_constraints()
 
+        # Test that root WingCrossSection with num_spanwise_panels=None fails
+        invalid_root_wcs = (
+            geometry_fixtures.make_invalid_root_wing_cross_section_fixture()
+        )
+        with self.assertRaises(ValueError):
+            invalid_root_wcs.validate_root_constraints()
+
     def test_validate_tip_constraints(self):
         """Test validate_tip_constraints method."""
         # Test that tip WingCrossSection passes validation
@@ -339,6 +346,34 @@ class TestWingCrossSection(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.root_wing_cross_section.validate_tip_constraints()
+
+    def test_validate_mid_constraints(self):
+        """Test validate_mid_constraints method."""
+        # Test that valid middle WingCrossSection passes validation
+        middle_wcs = geometry_fixtures.make_middle_wing_cross_section_fixture()
+        try:
+            middle_wcs.validate_mid_constraints()
+        except Exception as e:
+            self.fail(f"Middle WingCrossSection validation failed unexpectedly: {e}")
+
+        # Test that basic WingCrossSection (has num_spanwise_panels) passes validation
+        try:
+            self.basic_wing_cross_section.validate_mid_constraints()
+        except Exception as e:
+            self.fail(
+                f"Basic WingCrossSection validation as middle failed unexpectedly: {e}"
+            )
+
+        # Test that middle WingCrossSection with num_spanwise_panels=None fails
+        invalid_middle_wcs = (
+            geometry_fixtures.make_invalid_middle_wing_cross_section_fixture()
+        )
+        with self.assertRaises(ValueError):
+            invalid_middle_wcs.validate_mid_constraints()
+
+        # Test that tip WingCrossSection (has num_spanwise_panels=None) fails
+        with self.assertRaises(ValueError):
+            self.tip_wing_cross_section.validate_mid_constraints()
 
     def test_transformation_matrices_not_validated(self):
         """Test that transformation matrices return None when not validated."""

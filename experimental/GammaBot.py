@@ -70,7 +70,7 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
             Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
             symmetric=True,
             symmetryNormal_G=(0, 1, 0),
-            symmetryPoint_G_Cg=(0, -wing_spacing / 2, 0),
+            symmetryPoint_G_Cg=(0, 0, 0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
         ),

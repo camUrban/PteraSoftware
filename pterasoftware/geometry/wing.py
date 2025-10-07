@@ -261,6 +261,8 @@ class Wing:
             elif wing_cross_section_id == num_wing_cross_sections - 1:
                 # Validate tip WingCrossSection constraints.
                 wing_cross_section.validate_tip_constraints()
+            else:
+                wing_cross_section.validate_mid_constraints()
             # Set the validated flag for this WingCrossSection.
             wing_cross_section.validated = True
         self.wing_cross_sections = wing_cross_sections

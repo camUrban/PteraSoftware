@@ -33,6 +33,9 @@ class WingCrossSection:
         validate_root_constraints: This method is called by the parent Wing to
         validate constraints specific to root WingCrossSections.
 
+        validate_mid_constraints: This method is called by the parent Wing to
+        validate constraints specific to middle WingCrossSections.
+
         validate_tip_constraints: This method is called by the parent Wing to
         validate constraints specific to tip WingCrossSections.
 
@@ -272,8 +275,9 @@ class WingCrossSection:
         """This method is called by the parent Wing to validate constraints specific
         to root WingCrossSections.
 
-        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz
-        set to zero vectors.
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz set
+        to zero vectors. They also must have num_spanwise_panels not None (it's
+        previously been checked to be None or a positive int).
 
         :raises ValueError: If root constraints are violated.
         """
@@ -286,6 +290,24 @@ class WingCrossSection:
         if not np.allclose(self.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
                 "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be np.array([0.0, 0.0, 0.0])."
+            )
+        if self.num_spanwise_panels is None:
+            raise ValueError(
+                "The root WingCrossSection cannot have num_spanwise_panels set to None."
+            )
+
+    def validate_mid_constraints(self):
+        """This method is called by the parent Wing to validate constraints specific
+        to middle WingCrossSections.
+
+        Middle have num_spanwise_panels not None (it's previously been checked to be
+        None or a positive int).
+
+        :raises ValueError: If root constraints are violated.
+        """
+        if self.num_spanwise_panels is None:
+            raise ValueError(
+                "Middle WingCrossSections cannot have num_spanwise_panels set to None."
             )
 
     def validate_tip_constraints(self):

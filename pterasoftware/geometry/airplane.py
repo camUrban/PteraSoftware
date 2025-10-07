@@ -562,6 +562,7 @@ class Airplane:
                 "(0.0, 0.0, 0.0) by definition."
             )
 
+    # TEST: Add more thorough unit tests for this method.
     @staticmethod
     def process_wing_symmetry(wing):
         """This method processes a Wing to determine what type of symmetry it has. If
@@ -577,14 +578,17 @@ class Airplane:
         # Determine if the symmetry plane is coincident with the wing axes' xz-plane.
         # If symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no
         # symmetry and the symmetry plane doesn't exist. Otherwise, the symmetry
-        # plane is coincident to the wing axes' xz-plane if symmetryPoint_G_Cg equals
-        # Ler_Gs_Cgs, and if symmetryNormal_G is parallel with WnY_G. We don't need
-        # to check types, values, or normalize because this is done in Wing's init
-        # method.
+        # plane is coincident to the wing axes' xz-plane if Ler_Gs_Cgs lies on the
+        # symmetry plane, and if symmetryNormal_G is parallel with WnY_G. We don't
+        # need to check types, values, or normalize because this is done in Wing's
+        # init method.
         coincident_symmetry_plane = True
         if wing.symmetryPoint_G_Cg is None or wing.symmetryNormal_G is None:
             coincident_symmetry_plane = False
         else:
+            # If the symmetry plane exists, we first need to check if its normal
+            # vector is parallel with the wing axes' y-axis vector.
+
             # Actively transform geometry axes' second basis vector (in geometry
             # axes) to this Wing's axes' second basis vector (in geometry axes). We
             # can skip the translation step (step 2) as we are only transforming a
@@ -617,10 +621,33 @@ class Airplane:
                 np.array([0.0, 0.0, 0.0], dtype=float),
             )
 
-            if not np.allclose(wing.symmetryPoint_G_Cg, wing.Ler_Gs_Cgs):
+            if not is_parallel:
                 coincident_symmetry_plane = False
-            elif not is_parallel:
-                coincident_symmetry_plane = False
+            else:
+                # If the symmetry plane's normal vector and the wing axes y-axis
+                # vector are parallel, then the last check for a coincident symmetry
+                # plane is to check if the Ler is on the symmetry plane.
+
+                # To do this, we first find the symmetry plane's normal vector (in
+                # geometry axes after accounting for symmetry) and the symmetry
+                # plane's point (in geometry axes after accounting for symmetry,
+                # relative to the CG after accounting for symmetry). As the symmetry
+                # plane is defined using these quantities, they don't change after
+                # reflection.
+                symmetryPoint_Gs_Cgs = wing.symmetryPoint_G_Cg
+                symmetryNormal_Gs_Cgs = wing.symmetryNormal_G
+
+                # The leading edge root point is on the symmetry plane if the
+                # distance between it and the symmetry plane is zero.
+                Ler_on_plane = np.allclose(
+                    np.dot(
+                        symmetryNormal_Gs_Cgs, (wing.Ler_Gs_Cgs - symmetryPoint_Gs_Cgs)
+                    ),
+                    0.0,
+                )
+
+                if not Ler_on_plane:
+                    coincident_symmetry_plane = False
 
         # See the Wing class docstring for the interpretation of the different
         # symmetry types.

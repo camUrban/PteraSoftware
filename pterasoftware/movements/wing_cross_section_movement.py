@@ -105,7 +105,7 @@ class WingCrossSectionMovement:
             The amplitudes of the WingCrossSectionMovement's changes in its
             WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple,
             list, or numpy array of numbers (int or float) in the range [0.0,
-            180.0). Also, each amplitude must be low enough that it doesn't drive its
+            180.0]. Also, each amplitude must be low enough that it doesn't drive its
             base value out of the range of valid values. Otherwise,
             this WingCrossSectionMovement will try to create WingCrossSections with
             invalid parameters values. Values are converted to floats internally. The
@@ -204,10 +204,10 @@ class WingCrossSectionMovement:
         )
         if not (
             np.all(ampAngles_Wcsp_to_Wcs_ixyz >= 0.0)
-            and np.all(ampAngles_Wcsp_to_Wcs_ixyz < 180.0)
+            and np.all(ampAngles_Wcsp_to_Wcs_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in ampAngles_Wcsp_to_Wcs_ixyz must be in the range [0.0, 180.0)."
+                "All elements in ampAngles_Wcsp_to_Wcs_ixyz must be in the range [0.0, 180.0]."
             )
         self.ampAngles_Wcsp_to_Wcs_ixyz = ampAngles_Wcsp_to_Wcs_ixyz
 

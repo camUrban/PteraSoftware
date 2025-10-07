@@ -424,8 +424,13 @@ class TestWingCrossSectionMovement(unittest.TestCase):
 
         base_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
 
-        # Test valid amplitude values within range [0.0, 180.0).
-        valid_amps = [(0.0, 0.0, 0.0), (45.0, 90.0, 135.0), (179.9, 0.0, 90.0)]
+        # Test valid amplitude values within range [0.0, 180.0].
+        valid_amps = [
+            (0.0, 0.0, 0.0),
+            (45.0, 90.0, 135.0),
+            (179.9, 0.0, 90.0),
+            (180.0, 0.0, 0.0),
+        ]
         for amp in valid_amps:
             with self.subTest(amp=amp):
                 wcs_movement = (
@@ -435,11 +440,11 @@ class TestWingCrossSectionMovement(unittest.TestCase):
                 )
                 npt.assert_array_equal(wcs_movement.ampAngles_Wcsp_to_Wcs_ixyz, amp)
 
-        # Test amplitude >= 180.0 raises error.
+        # Test amplitude > 180.0 raises error.
         with self.assertRaises(ValueError):
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=base_wcs,
-                ampAngles_Wcsp_to_Wcs_ixyz=(180.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(180.1, 0.0, 0.0),
             )
 
         # Test negative amplitude raises error.
@@ -872,20 +877,20 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         npt.assert_array_equal(angles_x, angles_x[0])
 
     def test_boundary_amplitude_angles(self):
-        """Test amplitude at boundary value (179.9 degrees)."""
+        """Test amplitude at boundary value (180.0 degrees)."""
         from tests.unit.fixtures import geometry_fixtures
 
         base_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
 
-        # Test amplitude just below 180.0 works.
+        # Test amplitude at 180.0 works.
         wcs_movement = (
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=base_wcs,
-                ampAngles_Wcsp_to_Wcs_ixyz=(179.9, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(180.0, 0.0, 0.0),
                 periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 0.0, 0.0),
             )
         )
-        self.assertEqual(wcs_movement.ampAngles_Wcsp_to_Wcs_ixyz[0], 179.9)
+        self.assertEqual(wcs_movement.ampAngles_Wcsp_to_Wcs_ixyz[0], 180.0)
 
     def test_boundary_phase_values(self):
         """Test phase at boundary values (-179.9, 0.0, and 180.0)."""

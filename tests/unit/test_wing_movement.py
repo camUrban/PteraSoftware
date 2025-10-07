@@ -501,12 +501,12 @@ class TestWingMovement(unittest.TestCase):
             for _ in base_wing.wing_cross_sections
         ]
 
-        # Test with amplitude >= 180 degrees.
+        # Test with amplitude > 180 degrees.
         with self.assertRaises(ValueError):
             ps.movements.wing_movement.WingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wcs_movements,
-                ampAngles_Gs_to_Wn_ixyz=(180.0, 0.0, 0.0),
+                ampAngles_Gs_to_Wn_ixyz=(180.1, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 

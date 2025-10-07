@@ -127,7 +127,7 @@ class WingCrossSection:
             internally. If this is a root WingCrossSection, these are the wing axes.
             If not, the parent axes are the previous WingCrossSection's axes. For the
             root WingCrossSection, this must be a zero vector. For other
-            WingCrossSections, all angles must be in the range (-90, 90) degrees.
+            WingCrossSections, all angles must be in the range [-90, 90] degrees.
             Rotations are intrinsic, and proceed in the x-y'-z" order. The units are
             degrees. The default is (0.0, 0.0, 0.0).
 
@@ -202,9 +202,9 @@ class WingCrossSection:
                     angle,
                     f"angles_Wcsp_to_Wcs_ixyz[{angle_id}]",
                     -90.0,
-                    False,
+                    True,
                     90.0,
-                    False,
+                    True,
                 )
             )
         self.angles_Wcsp_to_Wcs_ixyz = angles_Wcsp_to_Wcs_ixyz

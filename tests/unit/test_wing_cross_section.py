@@ -173,13 +173,15 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_angles_Wcsp_to_Wcs_ixyz_validation(self):
         """Test angles_Wcsp_to_Wcs_ixyz parameter validation."""
-        # Test with valid array-like angles (within -90, 90 range)
+        # Test with valid array-like angles (within [-90, 90] range)
         valid_angles = [
             np.array([0.0, 0.0, 0.0]),  # numpy array of floats
             [45.0, -30.0, 60.0],  # list of floats
             [45, -30, 60],  # list of ints
             (89.9, -89.9, 0.0),  # tuple of floats
             np.array([30, -15, 45]),  # numpy array of ints
+            [90.0, -90.0, 0.0],  # boundary values (list)
+            np.array([90.0, 0.0, -90.0]),  # boundary values (array)
         ]
         for angles in valid_angles:
             with self.subTest(angles=angles):
@@ -194,8 +196,8 @@ class TestWingCrossSection(unittest.TestCase):
 
         # Test with angles outside valid range (using various array-like formats)
         invalid_angles = [
-            [90.0, 0.0, 0.0],  # Exactly 90 (list)
-            np.array([0.0, -90.0, 0.0]),  # Exactly -90 (array)
+            [90.1, 0.0, 0.0],  # Greater than 90 (list)
+            np.array([0.0, -90.1, 0.0]),  # Less than -90 (array)
             [95, 0, 0],  # Greater than 90 (list of ints)
             (0.0, -100.0, 0.0),  # Less than -90 (tuple)
         ]
@@ -422,7 +424,7 @@ class TestWingCrossSection(unittest.TestCase):
             num_spanwise_panels=100,
             chord=50.0,
             Lp_Wcsp_Lpp=np.array([10.0, 20.0, 5.0]),
-            angles_Wcsp_to_Wcs_ixyz=np.array([89.9, -89.9, 89.9]),
+            angles_Wcsp_to_Wcs_ixyz=np.array([90.0, -90.0, 90.0]),
             control_surface_hinge_point=0.001,  # Very small but valid
             control_surface_deflection=5.0,  # Maximum valid deflection
         )

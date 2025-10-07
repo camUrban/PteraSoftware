@@ -174,9 +174,9 @@ class Wing:
             orientation of this Wing's axes relative to the geometry axes (after
             accounting for symmetry). Can be a tuple, list, or numpy array of numbers
             (int or float). Values are converted to floats internally. All angles
-            must be in the range (-90, 90) degrees. Rotations are intrinsic,
-            and proceed in the x-y'-z" order. The units are degrees. The default
-            is (0.0, 0.0, 0.0).
+            must be in the range [-90, 90] degrees. Rotations are intrinsic,
+            and proceed in the x-y'-z" order. The units are degrees. The default is (
+            0.0, 0.0, 0.0).
 
         :param symmetric: boolLike, optional
 
@@ -279,9 +279,9 @@ class Wing:
                 angles_Gs_to_Wn_ixyz, "angles_Gs_to_Wn_ixyz"
             )
         )
-        if not np.all((-90.0 < angles_Gs_to_Wn_ixyz) & (angles_Gs_to_Wn_ixyz < 90.0)):
+        if not np.all((-90.0 <= angles_Gs_to_Wn_ixyz) & (angles_Gs_to_Wn_ixyz <= 90.0)):
             raise ValueError(
-                "All elements of angles_Gs_to_Wn_ixyz must lie in the range (-90, 90) degrees."
+                "All elements of angles_Gs_to_Wn_ixyz must lie in the range [-90, 90] degrees."
             )
         self.angles_Gs_to_Wn_ixyz = angles_Gs_to_Wn_ixyz
 

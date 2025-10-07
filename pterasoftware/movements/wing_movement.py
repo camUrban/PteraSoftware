@@ -109,7 +109,7 @@ class WingMovement:
 
             The amplitudes of the WingMovement's changes in its Wings'
             angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy array of
-            numbers (int or float) in the range [0.0, 180.0). Also, each amplitude
+            numbers (int or float) in the range [0.0, 180.0]. Also, each amplitude
             must be low enough that it doesn't drive its base value out of the range
             of valid values. Otherwise, this WingMovement will try to create Wings
             with invalid parameters values. Values are converted to floats
@@ -215,10 +215,10 @@ class WingMovement:
         )
         if not (
             np.all(ampAngles_Gs_to_Wn_ixyz >= 0.0)
-            and np.all(ampAngles_Gs_to_Wn_ixyz < 180.0)
+            and np.all(ampAngles_Gs_to_Wn_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in ampAngles_Gs_to_Wn_ixyz must be in the range [0.0, 180.0)."
+                "All elements in ampAngles_Gs_to_Wn_ixyz must be in the range [0.0, 180.0]."
             )
         self.ampAngles_Gs_to_Wn_ixyz = ampAngles_Gs_to_Wn_ixyz
 

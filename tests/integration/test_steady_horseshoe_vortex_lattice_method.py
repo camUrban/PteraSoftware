@@ -50,7 +50,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.020
-        c_di_calculated = (
+        c_di_calculated = -(
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
             ].forceCoefficients_W[0]
@@ -58,7 +58,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
         c_l_expected = 0.789
-        c_l_calculated = (
+        c_l_calculated = -(
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
             ].forceCoefficients_W[2]
@@ -102,7 +102,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.008
-        c_di_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
+        c_di_calculated = -self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ].forceCoefficients_W[
             0
@@ -110,7 +110,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
         c_l_expected = 0.513
-        c_l_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
+        c_l_calculated = -self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ].forceCoefficients_W[
             2

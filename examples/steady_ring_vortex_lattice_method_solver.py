@@ -1,219 +1,207 @@
-# NOTE: I haven't yet started refactoring this module.
-"""This is script is an example of how to run Ptera Software's steady ring vortex
-lattice method solver on a custom airplane."""
+"""This is script is an example of how to run Ptera Software's
+SteadyRingVortexLatticeMethodSolver with a custom Airplane."""
 
 # First, import the software's main package. Note that if you wished to import this
-# software into another package, you would first install the software by running "pip
-# install pterasoftware" in your terminal.
+# software into another package, you would first install it by running "pip install
+# pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Create an airplane object. Note, I am going to declare every attribute for each
-# class, even most of them have usable default values. This is simply for educational
-# purposes, even though it makes the code much longer than what it needs to be.
+# Create an Airplane with our custom geometry. I am going to declare every parameter
+# for Airplane, even though most of them have usable default values. This is for
+# educational purposes, but keep in mind that it makes the code much longer than it
+# needs to be. For details about each parameter, read the detailed class docstring.
+# The same caveats apply to the other classes, methods, and functions I call in this
+# script.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    # Define the location of the leading edge of the wing cross
-                    # section relative to the wing's leading edge. These values all
-                    # default to 0.0 meters.
-                    x_le=0.0,
-                    y_le=0.0,
-                    z_le=0.0,
-                    # Define the twist of the wing cross section in degrees. This is
-                    # equivalent to incidence angle of cross section. The twist is
-                    # about the leading edge. Note that the twist is only stable up
-                    # to 45.0 degrees. Values above that produce unexpected results.
-                    # This will be fixed in a future release. The default value is
-                    # 0.0 degrees. Positive twist corresponds to positive rotation
-                    # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,
-                    # Define the type of control surface. The options are "symmetric"
-                    # and "asymmetric". This is only applicable if your wing is also
-                    # symmetric. If so, symmetric control surfaces will deflect in
-                    # the same direction, like flaps, while asymmetric control
-                    # surfaces will deflect in opposite directions, like ailerons.
-                    # The default value is "symmetric".
-                    control_surface_type="asymmetric",
-                    # Define the point on the airfoil where the control surface
-                    # hinges. This is expressed as a fraction of the chord length,
-                    # back from the leading edge. The default value is 0.75.
-                    control_surface_hinge_point=0.75,
-                    # Define the deflection of the control surface in degrees. The
-                    # default is 0.0 degrees. We'll set it to 10.0 degrees to show an
-                    # example of an aileron deflection.
-                    control_surface_deflection=10.0,
-                    # Define the number of spanwise panels on the wing cross section,
-                    # and the spacing between them. The number of spanwise panels
-                    # defaults to 8 panels. The spacing defaults to "cosine",
-                    # which makes the panels relatively finer, in the spanwise
-                    # direction, near the cross section ends. The other option is
-                    # "uniform".
                     num_spanwise_panels=8,
-                    spanwise_spacing="cosine",
-                    # Set the chord of this cross section to be 1.75 meters. This
-                    # value defaults to 1.0 meter.
                     chord=1.5,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=5.0,
+                    spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        # Give the airfoil a name. This defaults to "Untitled
-                        # Airfoil". This name should correspond to a name in the
-                        # airfoil directory or a NACA four series airfoil, unless you
-                        # are passing in your own coordinates.
                         name="naca2412",
-                        # If you wish to pass in coordinates, set this to an N x 2
-                        # array of the airfoil's coordinates, where N is the number
-                        # of coordinates. Treat this as an immutable, don't edit
-                        # directly after initialization. If you wish to load
-                        # coordinates from the airfoil directory, leave this as None.
-                        # The default is None. Make sure that any airfoil coordinates
-                        # used range in x from 0 to 1.
-                        coordinates=None,
-                        # This is the variable that determines whether you would like
-                        # to repanel the airfoil coordinates. This applies to
-                        # coordinates passed in by the user or to the directory
-                        # coordinates. I highly recommended setting this to True. The
-                        # default is True.
-                        repanel=True,
-                        # This is number of points to use if repaneling the airfoil.
-                        # It is ignored if the repanel is False. The default is 400.
+                        outline_A_lp=None,
+                        resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                # Define the next wing cross section. From here on out,
-                # the declarations will not be as commented as the previous. See the
-                # above comments if you have questions.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=1.5,
-                    y_le=6.0,
-                    z_le=0.5,
+                    num_spanwise_panels=None,
                     chord=0.75,
-                    control_surface_type="asymmetric",
+                    Lp_Wcsp_Lpp=(1.5, 6.0, 0.5),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
                     control_surface_hinge_point=0.75,
-                    control_surface_deflection=10.0,
+                    control_surface_deflection=5.0,
+                    spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
             ],
             name="Main Wing",
+            Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             symmetric=True,
+            mirror_only=False,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=8,
             chordwise_spacing="cosine",
-        ),  # Define the next wing.
+        ),
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    chord=1.5,
-                    # Give the root wing cross section an airfoil.
+                    num_spanwise_panels=8,
+                    chord=1.25,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
-                    twist=-5.0,
                 ),
-                # Define the wing's tip wing cross section.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.5,
-                    y_le=2.0,
-                    chord=1.0,
-                    twist=-5.0,  # Give the tip wing cross section an airfoil.
+                    num_spanwise_panels=None,
+                    chord=0.75,
+                    Lp_Wcsp_Lpp=(0.75, 2.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, -5.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
             ],
             name="Horizontal Stabilizer",
+            Ler_Gs_Cgs=(5.5, 0.0, 2.0),
+            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             symmetric=True,
-        ),  # Define the next wing.
+            mirror_only=False,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+            num_chordwise_panels=6,
+            chordwise_spacing="cosine",
+        ),
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    chord=1.5,
-                    # Give the root wing cross section an airfoil.
+                    num_spanwise_panels=8,
+                    chord=1.25,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type=None,
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
-                # Define the wing's tip wing cross section.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.5,
-                    z_le=2.0,
-                    chord=1.0,  # Give the tip wing cross section an airfoil.
+                    num_spanwise_panels=None,
+                    chord=1.25,
+                    Lp_Wcsp_Lpp=(0.5, 2.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type=None,
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
             ],
             name="Vertical Stabilizer",
+            Ler_Gs_Cgs=(5.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(90.0, 0.0, 0.0),
             symmetric=False,
+            mirror_only=False,
+            symmetryNormal_G=None,
+            symmetryPoint_G_Cg=None,
+            num_chordwise_panels=6,
+            chordwise_spacing="cosine",
         ),
     ],
     name="Example Airplane",
+    Cg_E_CgP1=(0.0, 0.0, 0.0),
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    weight=0.0,
     s_ref=None,
     c_ref=None,
     b_ref=None,
 )
 
-# Define a new operating point object. This defines the state at which the airplane
-# object is operating.
+# Define a new OperatingPoint, which we'll pass into the SteadyProblem.
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0
+    rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define a new steady problem. A steady problem contains an airplane object and an
-# operating point object.
+# Define a new SteadyProblem, which contains the OperatingPoint and a list of one or
+# more Airplanes.
 example_problem = ps.problems.SteadyProblem(
-    # Set this steady problem's list of airplane objects to be the one we just created.
     airplanes=[example_airplane],
-    # Set this steady problem's operating point object to be the one we just created.
     operating_point=example_operating_point,
 )
 
-# Now, the airplane and operating point object exist within the steady problem
-# object. I like to delete the external pointers to these objects to ease debugging.
+# Now that the Airplane and OperatingPoints exist within the SteadyProblem, I like to
+# delete the external pointers to these objects to ease debugging.
 del example_airplane
 del example_operating_point
 
-# Define a new solver. The available solver objects are the steady horseshoe vortex
-# lattice method solver, the steady ring vortex lattice method solver, and the
-# unsteady ring vortex lattice method solver.
-example_solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-    # Solvers just take in one attribute: the problem they are going to solve.
-    steady_problem=example_problem
+# Define a new solver. The available solver classes are
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
+# and UnsteadyRingVortexLatticeMethodSolver. We'll create a
+# SteadyRingVortexLatticeMethodSolver, which requires a SteadyProblem.
+example_solver = (
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+        steady_problem=example_problem
+    )
 )
 
-# Delete the extraneous pointer to the problem as it is now contained within the
-# solver. Again, this is unnecessary, I just like to do this to ease debugging.
 del example_problem
 
-# Run the example solver.
+# Run the solver.
 example_solver.run(
-    # This parameter determines the detail of information that the solver's logger
-    # will output while running. The options are, in order of detail and severity,
-    # "Debug", "Info", "Warning", "Error", "Critical". The default value is "Warning".
     logging_level="Warning",
 )
 
 # Call this function from the output module to print the results.
-ps.output.print_results()
+ps.output.print_results(example_solver)
 
-# Call the software's draw function on the solver.
+# Call the output module's draw function on the solver.
 ps.output.draw(
     solver=example_solver,
-    # Tell the draw function to color the aircraft's wing panels with the local
-    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
-    # "side force", or "lift".
     scalar_type="lift",
-    # Tell the draw function to show the calculated streamlines. This value defaults
-    # to false.
     show_streamlines=True,
-    # Tell the draw function to not show any wake vortices. As this is a steady
-    # solver, no vortices have been shed into the wake. This value defaults to false.
     show_wake_vortices=False,
-    # Tell the draw function to not save the drawing as an image file. This way,
-    # the drawing will still be displayed but not saved. This value defaults to false.
     save=False,
+    testing=False,
 )
-
-# Compare the output you see with the expected outputs saved in the "docs/examples
-# expected output" directory.

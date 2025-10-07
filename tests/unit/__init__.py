@@ -22,6 +22,9 @@ This package contains the following modules:
 
     test_movement.py: This module contains a class to test Movements.
 
+    test_movements_functions.py: This module contains a class to test movements
+    functions.
+
     test_operating_point.py: This module contains a class to test OperatingPoints.
 
     test_operating_point_movement.py: This module contains a class to test
@@ -53,6 +56,7 @@ import tests.unit.test_airplane
 import tests.unit.test_airplane_movement
 import tests.unit.test_horseshoe_vortex
 import tests.unit.test_movement
+import tests.unit.test_movements_functions
 import tests.unit.test_operating_point
 import tests.unit.test_operating_point_movement
 import tests.unit.test_panel

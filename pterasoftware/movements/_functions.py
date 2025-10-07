@@ -6,7 +6,6 @@ from scipy import signal
 from .. import _parameter_validation
 
 
-# TODO: Create unit tests for this function.
 def oscillating_sinspaces(amps, periods, phases, bases, num_steps, delta_time):
     """This function returns a (..., num_steps) ndarray of floats that are calculated
     by inputting a vector of linearly spaced time steps into a sine function defined
@@ -90,7 +89,6 @@ def oscillating_sinspaces(amps, periods, phases, bases, num_steps, delta_time):
     return a * np.sin(b * times + h) + k
 
 
-# TODO: Create unit tests for this function.
 def oscillating_linspaces(amps, periods, phases, bases, num_steps, delta_time):
     """This function returns a (..., num_steps) ndarray of floats that are calculated
     by inputting a vector of linearly spaced time steps into a triangular wave
@@ -175,9 +173,8 @@ def oscillating_linspaces(amps, periods, phases, bases, num_steps, delta_time):
     return a * signal.sawtooth((b * times + h), 0.5) + k
 
 
-# TODO: Create unit tests for this function.
 def oscillating_customspaces(
-    amps, periods, bases, phases, num_steps, delta_time, custom_function
+    amps, periods, phases, bases, num_steps, delta_time, custom_function
 ):
     """This function returns a (..., num_steps) ndarray of floats that are calculated
     by inputting a vector of linearly spaced time steps into a custom oscillating
@@ -404,7 +401,7 @@ def _validate_custom_spacing_function(custom_function):
         )
 
     # Extract one period of data for validation (first period).
-    one_period_indices = test_input <= 2 * np.pi
+    one_period_indices = test_input < 2 * np.pi
     one_period_output = test_output[one_period_indices]
 
     tolerance = 0.05
@@ -446,7 +443,7 @@ def _validate_custom_spacing_function(custom_function):
         )
 
     # Check periodicity by comparing first and second periods.
-    second_period_indices = (test_input > 2 * np.pi) & (test_input <= 4 * np.pi)
+    second_period_indices = (test_input >= 2 * np.pi) & (test_input < 4 * np.pi)
     second_period_output = test_output[second_period_indices]
 
     # They should have the same length if properly sampled.

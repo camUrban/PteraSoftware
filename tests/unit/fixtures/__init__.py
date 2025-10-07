@@ -24,6 +24,9 @@ This package contains the following modules:
     movement_fixtures.py: This module contains functions to create Movements for use
     in tests.
 
+    movements_functions_fixtures.py: This module contains functions to create
+    fixtures for movements functions tests.
+
     operating_point_fixtures.py: This module contains functions to create
     OperatingPoints.
 
@@ -48,6 +51,7 @@ import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
 import tests.unit.fixtures.movement_fixtures
+import tests.unit.fixtures.movements_functions_fixtures
 import tests.unit.fixtures.operating_point_fixtures
 import tests.unit.fixtures.operating_point_movement_fixtures
 import tests.unit.fixtures.problem_fixtures

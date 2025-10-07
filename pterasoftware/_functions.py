@@ -17,6 +17,7 @@ from . import unsteady_ring_vortex_lattice_method
 
 
 # REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create an array containing a specified number of
     values between a specified minimum and maximum value that are spaced via a cosine
@@ -54,12 +55,15 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
 
 
 # REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 @njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
 ):
     """This function is used to find the centroid of a quadrilateral. It has been
     optimized for JIT compilation using Numba.
+
+    Note: This function doesn't perform any parameter validation.
 
     :param front_left_vertex: 1D array of floats
         This is an array containing the x, y, and z components of the front left
@@ -101,6 +105,7 @@ def numba_centroid_of_quadrilateral(
 
 
 # REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -158,7 +163,6 @@ def calculate_streamlines(
         )
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 def convert_logging_level_name_to_value(name):
     """This function takes in a string that represents the logging level and returns
     the integer that can be used to set the logger to this level.
@@ -179,10 +183,10 @@ def convert_logging_level_name_to_value(name):
     try:
         return logging_levels[name]
     except KeyError:
-        raise Exception("The name of the logging level provided is not a valid option.")
+        raise ValueError(f"{name} is not a valid value of name.")
 
 
-# TEST: Add unit tests for this method.
+# TEST: Add unit tests for this function.
 def process_solver_loads(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -328,7 +332,6 @@ def process_solver_loads(
         airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
@@ -338,21 +341,26 @@ def update_ring_vortex_solvers_panel_attributes(
     panel: _panel.Panel,
 ):
     """This function populates a ring vortex solver's attributes with the attributes
-    of a given panel.
+    of a given Panel.
 
-    :param ring_vortex_solver: SteadySolver or UnsteadySolver
-        This is the solver object whose attributes are to be updated. It should be a
-        solver that uses ring vortices.
+    Note: This function doesn't perform any parameter validation.
+
+    :param ring_vortex_solver: SteadyRingVortexLatticeMethodSolver or
+    UnsteadyRingVortexLatticeMethodSolver
+
+        This is the solver whose attributes are to be updated.
+
     :param global_panel_position: int
-        This is the position of the panel with respect to the global array of all
-        panels.
+
+        This is the position of the Panel with respect to the global array of Panels.
+
     :param panel: Panel
-        This is the panel object whose attributes will be used to update the solver's
+
+        This is the Panel whose attributes will be used to update the solver's
         attributes.
+
     :return: None
     """
-
-    # Update the solver's list of attributes with this panel's attributes.
     ring_vortex_solver.panels[global_panel_position] = panel
     ring_vortex_solver.stackUnitNormals_G[global_panel_position, :] = panel.unitNormal_G
     ring_vortex_solver.panel_areas[global_panel_position] = panel.area
@@ -402,8 +410,9 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver.panel_is_right_edge[global_panel_position] = panel.is_right_edge
     ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
 
-    # Check if this panel is on the trailing edge. If it is, calculate its
-    # streamline seed point and add it to the solver's # array of seed points.
+    # Check if this Panel is on the trailing edge. If so, calculate its streamline
+    # seed point (in geometry axes, relative to the CG) and add it to the solver's
+    # ndarray of streamline seed points.
     if panel.is_trailing_edge:
         ring_vortex_solver.stackSeedPoints_G_Cg = np.vstack(
             (
@@ -414,6 +423,7 @@ def update_ring_vortex_solvers_panel_attributes(
 
 
 # REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -436,43 +446,46 @@ def calculate_steady_freestream_wing_influences(
     )
 
 
-# REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 @njit(cache=True, fastmath=False)
-def numba_1d_explicit_cross(vectors_1, vectors_2):
-    """This function takes in two arrays, each of which contain N vectors of 3
+def numba_1d_explicit_cross(stackVectors1, stackVectors2):
+    """This function takes in two ndarrays, each of which contain N vectors with 3
     components. The function then calculates and returns the cross product of the two
-    vectors at each position.
+    vectors at each of the N positions.
 
     Note: This function has been optimized for JIT compilation and parallel
-    computation using Numba.
+    computation using Numba. It also doesn't perform any parameter validation.
 
     Citation: Some or all of the following code was written by Jérôme Richard as a
     response to a question on Stack Overflow. The original response is here:
     https://stackoverflow.com/a/66757029/13240504.
 
-    :param vectors_1: array of floats of size (N x 3)
-        This is the first array of N vectors.
-    :param vectors_2: array of floats of size (N x 3)
-        This is the second array of N vectors.
-    :return crosses: array of floats of size (N x 3)
-        This is the cross product of the two inputted vectors at each of the N
-        positions.
+    :param stackVectors1: (N,3) ndarray of numbers
+        This is the first ndarray of N vectors.
+    :param stackVectors2: (N,3) ndarray of numbers
+        This is the second ndarray of N vectors.
+    :return stackCrossProducts: (N,3) ndarray of numbers
+        This is the cross product of the two vectors at each of the N positions.
     """
-    crosses = np.zeros(vectors_1.shape)
-    for i in range(crosses.shape[0]):
-        crosses[i, 0] = (
-            vectors_1[i, 1] * vectors_2[i, 2] - vectors_1[i, 2] * vectors_2[i, 1]
+    stackCrossProducts = np.zeros(stackVectors1.shape)
+    for i in range(stackCrossProducts.shape[0]):
+        stackCrossProducts[i, 0] = (
+            stackVectors1[i, 1] * stackVectors2[i, 2]
+            - stackVectors1[i, 2] * stackVectors2[i, 1]
         )
-        crosses[i, 1] = (
-            vectors_1[i, 2] * vectors_2[i, 0] - vectors_1[i, 0] * vectors_2[i, 2]
+        stackCrossProducts[i, 1] = (
+            stackVectors1[i, 2] * stackVectors2[i, 0]
+            - stackVectors1[i, 0] * stackVectors2[i, 2]
         )
-        crosses[i, 2] = (
-            vectors_1[i, 0] * vectors_2[i, 1] - vectors_1[i, 1] * vectors_2[i, 0]
+        stackCrossProducts[i, 2] = (
+            stackVectors1[i, 0] * stackVectors2[i, 1]
+            - stackVectors1[i, 1] * stackVectors2[i, 0]
         )
-    return crosses
+    return stackCrossProducts
 
 
 # REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 @njit(cache=True, fastmath=False)
 def interp_between_points(start_points, end_points, norm_spacings):
     """This function finds the MxN points between M pairs of points in 3D space given

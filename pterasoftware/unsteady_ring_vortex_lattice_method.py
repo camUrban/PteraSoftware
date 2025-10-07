@@ -1,4 +1,3 @@
-# REFACTOR: I've started refactoring this module.
 """This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
@@ -26,7 +25,6 @@ from . import geometry
 from . import problems
 
 
-# REFACTOR: I've started refactoring this class.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -709,7 +707,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # due to any motion defined in Movement (in geometry axes, observed from
         # the Earth frame).
         currentStackMovementV_G__E = (
-            self._calculate_current_flapping_velocities_at_collocation_points()
+            self._calculate_current_movement_velocities_at_collocation_points()
         )
 
         # Get the current motion influence coefficients at each Panel's
@@ -955,15 +953,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # front LineVortex, and left LineVortex.
         stackVelocityRightLineVortexCenters_G__E = (
             self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpr_G_Cg)
-            + self._calculate_current_flapping_velocities_at_right_leg_centers()
+            + self._calculate_current_movement_velocities_at_right_leg_centers()
         )
         stackVelocityFrontLineVortexCenters_G__E = (
             self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpf_G_Cg)
-            + self._calculate_current_flapping_velocities_at_front_leg_centers()
+            + self._calculate_current_movement_velocities_at_front_leg_centers()
         )
         stackVelocityLeftLineVortexCenters_G__E = (
             self.calculate_solution_velocity(stackP_G_Cg=self.stackCblvpl_G_Cg)
-            + self._calculate_current_flapping_velocities_at_left_leg_centers()
+            + self._calculate_current_movement_velocities_at_left_leg_centers()
         )
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
@@ -1280,39 +1278,40 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
-    # REFACTOR: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake_vortices(self):
-        """This method populates the locations of the next airplanes' wake vortices.
+        """This method populates the locations and strengths of the next time step's
+        wake RingVortices.
 
         This method is not vectorized but its loops only consume 0.4% of the runtime,
         so I have kept it as is for increased readability.
 
         :return: None
         """
-
-        # Check if the current step is not the last step.
+        # Check if the current time step is not the last step.
         if self._current_step < self.num_steps - 1:
 
-            # Get the next step's airplane objects.
+            # Get the next time step's Airplanes.
             next_airplanes = self.steady_problems[self._current_step + 1].airplanes
 
+            # Iterate through the next time step's Airplanes.
+            next_airplane: geometry.airplane.Airplane
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
-                # Iterate through the copy of the current airplane's wing positions.
+                # For a given Airplane in the next time step, iterate through its
+                # predecessor's Wings.
+                this_wing: geometry.wing.Wing
                 for wing_id, this_wing in enumerate(
                     self.current_airplanes[airplane_id].wings
                 ):
                     next_wing = next_airplane.wings[wing_id]
 
-                    # Get the next wing's matrix of wake ring vortex vertices.
-                    next_wing_wake_ring_vortex_vertices = next_wing.gridWrvp_G_Cg
+                    # Get the next time step's Wing's grid of wake RingVortex points.
+                    nextGridWrvp_G_Cg = next_wing.gridWrvp_G_Cg
 
-                    # Find the number of chordwise and spanwise vertices in the next
-                    # wing's matrix of wake ring vortex vertices.
-                    num_chordwise_vertices = next_wing_wake_ring_vortex_vertices.shape[
-                        0
-                    ]
-                    num_spanwise_vertices = next_wing_wake_ring_vortex_vertices.shape[1]
+                    # Find the number of chordwise and spanwise points in the next
+                    # Wing's grid of wake RingVortex points.
+                    num_chordwise_points = nextGridWrvp_G_Cg.shape[0]
+                    num_spanwise_points = nextGridWrvp_G_Cg.shape[1]
 
                     this_wing_wake_ring_vortices = (
                         self.current_airplanes[airplane_id]
@@ -1320,223 +1319,195 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         .wake_ring_vortices
                     )
 
-                    # Initialize a new matrix to hold the new row of wake ring
-                    # vortices.
+                    # Initialize a new ndarray to hold the new row of wake RingVortices.
                     new_row_of_wake_ring_vortices = np.empty(
-                        (1, num_spanwise_vertices - 1), dtype=object
+                        (1, num_spanwise_points - 1), dtype=object
                     )
 
-                    # Stack the new matrix on top of the copy of this wing's matrix
-                    # and assign it to the next wing.
+                    # Create a new ndarray by stacking the new row of wake
+                    # RingVortices on top of the current Wing's grid of wake
+                    # RingVortices and assign it to the next time step's Wing.
                     next_wing.wake_ring_vortices = np.vstack(
                         (new_row_of_wake_ring_vortices, this_wing_wake_ring_vortices)
                     )
 
-                    # Iterate through the vertex positions.
-                    for chordwise_vertex_position in range(num_chordwise_vertices):
-                        for spanwise_vertex_position in range(num_spanwise_vertices):
-
-                            # Set booleans to determine if this vertex is on the
+                    # Iterate through the wake RingVortex point positions.
+                    for chordwise_point_id in range(num_chordwise_points):
+                        for spanwise_point_id in range(num_spanwise_points):
+                            # Set booleans to determine if this point is on the
                             # right and/or trailing edge of the wake.
-                            has_right_vertex = (
-                                spanwise_vertex_position + 1
-                            ) < num_spanwise_vertices
-                            has_back_vertex = (
-                                chordwise_vertex_position + 1
-                            ) < num_chordwise_vertices
+                            has_point_to_right = (
+                                spanwise_point_id + 1
+                            ) < num_spanwise_points
+                            has_point_behind = (
+                                chordwise_point_id + 1
+                            ) < num_chordwise_points
 
-                            if has_right_vertex and has_back_vertex:
-
-                                # If this position is not on the right or trailing
-                                # edge of the wake, get the four vertices that will
-                                # be associated with the corresponding ring vortex at
-                                # this position.
-                                front_left_vertex = next_wing_wake_ring_vortex_vertices[
-                                    chordwise_vertex_position, spanwise_vertex_position
+                            if has_point_to_right and has_point_behind:
+                                # If this point isn't on the right or trailing edge
+                                # of the wake, get the four points that will be
+                                # associated with the corresponding RingVortex at
+                                # this position (in geometry axes, relative to the
+                                # CG), for the next time step.
+                                Flwrvp_G_Cg = nextGridWrvp_G_Cg[
+                                    chordwise_point_id, spanwise_point_id
                                 ]
-                                front_right_vertex = (
-                                    next_wing_wake_ring_vortex_vertices[
-                                        chordwise_vertex_position,
-                                        spanwise_vertex_position + 1,
-                                    ]
-                                )
-                                back_left_vertex = next_wing_wake_ring_vortex_vertices[
-                                    chordwise_vertex_position + 1,
-                                    spanwise_vertex_position,
+                                Frwrvp_G_Cg = nextGridWrvp_G_Cg[
+                                    chordwise_point_id,
+                                    spanwise_point_id + 1,
                                 ]
-                                back_right_vertex = next_wing_wake_ring_vortex_vertices[
-                                    chordwise_vertex_position + 1,
-                                    spanwise_vertex_position + 1,
+                                Blwrvp_G_Cg = nextGridWrvp_G_Cg[
+                                    chordwise_point_id + 1,
+                                    spanwise_point_id,
+                                ]
+                                Brwrvp_G_Cg = nextGridWrvp_G_Cg[
+                                    chordwise_point_id + 1,
+                                    spanwise_point_id + 1,
                                 ]
 
-                                if chordwise_vertex_position > 0:
-
+                                if chordwise_point_id > 0:
                                     # If this isn't the front of the wake, update the
-                                    # position of the ring vortex at this location.
-                                    this_wake_ring_vortex: _aerodynamics.RingVortex = (
+                                    # position of the wake RingVortex at this
+                                    # location for the next time step.
+                                    next_wake_ring_vortex: _aerodynamics.RingVortex = (
                                         next_wing.wake_ring_vortices[
-                                            chordwise_vertex_position,
-                                            spanwise_vertex_position,
+                                            chordwise_point_id,
+                                            spanwise_point_id,
                                         ]
                                     )
-                                    this_wake_ring_vortex.update_position(
-                                        Flrvp_G_Cg=front_left_vertex,
-                                        Frrvp_G_Cg=front_right_vertex,
-                                        Blrvp_G_Cg=back_left_vertex,
-                                        Brrvp_G_Cg=back_right_vertex,
+                                    next_wake_ring_vortex.update_position(
+                                        Flrvp_G_Cg=Flwrvp_G_Cg,
+                                        Frrvp_G_Cg=Frwrvp_G_Cg,
+                                        Blrvp_G_Cg=Blwrvp_G_Cg,
+                                        Brrvp_G_Cg=Brwrvp_G_Cg,
                                     )
 
-                                    # Also, update the age of this RingVortex.
+                                    # Also, update the age of the wake RingVortex at
+                                    # this position for the next time step.
                                     if self._current_step == 0:
-                                        this_wake_ring_vortex.age = self.delta_time
+                                        next_wake_ring_vortex.age = self.delta_time
                                     else:
-                                        this_wake_ring_vortex.age += self.delta_time
+                                        next_wake_ring_vortex.age += self.delta_time
 
-                                if chordwise_vertex_position == 0:
-                                    # If this is the front of the wake, get the
-                                    # vortex strength from the wing panel's ring
-                                    # vortex direction in front of it.
+                                if chordwise_point_id == 0:
+                                    # If this position corresponds to the front of
+                                    # the wake, get the strength from the Panel's
+                                    # bound RingVortex.
                                     this_strength_copy = this_wing.panels[
                                         this_wing.num_chordwise_panels - 1,
-                                        spanwise_vertex_position,
+                                        spanwise_point_id,
                                     ].ring_vortex.strength
 
-                                    # Then, make a new ring vortex at this location,
-                                    # with the panel's ring vortex's strength,
-                                    # and add it to the matrix of ring vortices.
+                                    # Then, for the next time step, make a new wake
+                                    # RingVortex at this position in the wake,
+                                    # with that bound RingVortex's strength, and add
+                                    # it to the grid of the next time step's wake
+                                    # RingVortices.
                                     next_wing.wake_ring_vortices[
-                                        chordwise_vertex_position,
-                                        spanwise_vertex_position,
+                                        chordwise_point_id,
+                                        spanwise_point_id,
                                     ] = _aerodynamics.RingVortex(
-                                        Flrvp_G_Cg=front_left_vertex,
-                                        Frrvp_G_Cg=front_right_vertex,
-                                        Blrvp_G_Cg=back_left_vertex,
-                                        Brrvp_G_Cg=back_right_vertex,
+                                        Flrvp_G_Cg=Flwrvp_G_Cg,
+                                        Frrvp_G_Cg=Frwrvp_G_Cg,
+                                        Blrvp_G_Cg=Blwrvp_G_Cg,
+                                        Brrvp_G_Cg=Brwrvp_G_Cg,
                                         strength=this_strength_copy,
                                     )
 
-    # REFACTOR: I haven't yet started refactoring this method.
-    def _calculate_current_flapping_velocities_at_collocation_points(self):
-        """This method finds the apparent flow velocity due to flapping at the
-        centers of the current airplanes' collocation points.
+    def _calculate_current_movement_velocities_at_collocation_points(self):
+        """Get the current apparent velocities (in geometry axes, observed from the
+        Earth frame) at each Panel's collocation point due to any motion defined in
+        Movement.
 
-        Note: The apparent flow velocity due to flapping is opposite the direction of
-        the wing's motion.
+        Note: At each point, any apparent velocity due to Movement is opposite the
+        motion due to Movement.
 
-        :return: size (M x 3) array of floats, where M is the current airplanes'
-        number of panels
-            This is an array containing the x, y, and z components of the velocity
-            due to flapping at every one of the current airplanes' collocation
-            points. Its units are in meters per second. If the current time step is
-            the first time step, all the flapping velocities will be zero.
+        :return: (M, 3) ndarray of floats
+
+            This is a ndarray containing the apparent velocity (in geometry axes,
+            observed from the Earth frame) at each Panel's collocation point due to
+            any motion defined in Movement. Its units are in meters per second. If
+            the current time step is the first time step, these velocities will all
+            be all zeros.
         """
-        # Check if the current step is the first step.
+        # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
-            # Set the flapping velocities to be zero for all points. Then, return the
-            # flapping velocities.
-            return np.zeros((self.num_panels, 3))
+            return np.zeros((self.num_panels, 3), dtype=float)
 
-        # Get the current airplane's collocation points, and the last airplane's
-        # collocation points.
-        these_collocations = self.stackCpp_G_Cg
-        last_collocations = self._stackLastCpp_G_Cg
+        return -(self.stackCpp_G_Cg - self._stackLastCpp_G_Cg) / self.delta_time
 
-        # Calculate and return the flapping velocities.
-        return -(these_collocations - last_collocations) / self.delta_time
+    def _calculate_current_movement_velocities_at_right_leg_centers(self):
+        """Get the current apparent velocities (in geometry axes, observed from the
+        Earth frame) at the center point of each bound RingVortex's right leg due to
+        any motion defined in Movement.
 
-    # REFACTOR: I haven't yet started refactoring this method.
-    def _calculate_current_flapping_velocities_at_right_leg_centers(self):
-        """This method finds the apparent flow velocity due to flapping at the
-        centers of the current airplanes' bound ring vortices' right legs.
+        Note: At each point, any apparent velocity due to Movement is opposite the
+        motion due to Movement.
 
-        Note: The apparent flow velocity due to flapping is opposite the direction of
-        the wing's motion.
+        :return: (M, 3) ndarray of floats
 
-        :return: size (M x 3) array of floats, where M is the current airplanes'
-        number of panels
-            This is an array containing the x, y, and z components of the velocity
-            due to flapping at every one of the current airplanes' bound vortices'
-            right legs' centers. Its units are in meters per second. If the current
-            time step is the first time step, all the flapping velocities will be zero.
+            This is a ndarray containing the apparent velocity (in geometry axes,
+            observed from the Earth frame) at the center point of each bound
+            RingVortex's right leg due to any motion defined in Movement. Its units
+            are in meters per second. If the current time step is the first time
+            step, these velocities will all be all zeros.
         """
-        # Check if the current step is the first step.
+        # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
-            # Set the flapping velocities to be zero for all points. Then, return the
-            # flapping velocities.
-            return np.zeros((self.num_panels, 3))
+            return np.zeros((self.num_panels, 3), dtype=float)
 
-        # Get the current airplanes' bound vortices' right legs' centers, and the
-        # last airplanes' bound vortices' right legs' centers.
-        these_right_leg_centers = self.stackCblvpr_G_Cg
-        last_right_leg_centers = self._lastStackCblvpr_G_Cg
+        return -(self.stackCblvpr_G_Cg - self._lastStackCblvpr_G_Cg) / self.delta_time
 
-        # Calculate and return the flapping velocities.
-        return -(these_right_leg_centers - last_right_leg_centers) / self.delta_time
+    def _calculate_current_movement_velocities_at_front_leg_centers(self):
+        """Get the current apparent velocities (in geometry axes, observed from the
+        Earth frame) at the center point of each bound RingVortex's front leg due to
+        any motion defined in Movement.
 
-    # REFACTOR: I haven't yet started refactoring this method.
-    def _calculate_current_flapping_velocities_at_front_leg_centers(self):
-        """This method finds the apparent flow velocity due to flapping at the
-        centers of the current airplanes' bound ring vortices' front legs.
+        Note: At each point, any apparent velocity due to Movement is opposite the
+        motion due to Movement.
 
-        Note: The apparent flow velocity due to flapping is opposite the direction of
-        the wing's motion.
+        :return: (M, 3) ndarray of floats
 
-        :return: size (M x 3) array of floats, where M is the current airplanes'
-        number of panels
-            This is an array containing the x, y, and z components of the velocity
-            due to flapping at every one of the current airplanes' bound vortices'
-            front legs' centers. Its units are in meters per second. If the current
-            time step is the first time step, all the flapping velocities will be zero.
+            This is a ndarray containing the apparent velocity (in geometry axes,
+            observed from the Earth frame) at the center point of each bound
+            RingVortex's front leg due to any motion defined in Movement. Its units
+            are in meters per second. If the current time step is the first time
+            step, these velocities will all be all zeros.
         """
-        # Check if the current step is the first step.
+        # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
-            # Set the flapping velocities to be zero for all points. Then, return the
-            # flapping velocities.
-            return np.zeros((self.num_panels, 3))
+            return np.zeros((self.num_panels, 3), dtype=float)
 
-        # Get the current airplanes' bound vortices' front legs' centers, and the
-        # last airplanes' bound vortices' front legs' centers.
-        these_front_leg_centers = self.stackCblvpf_G_Cg
-        last_front_leg_centers = self._lastStackCblvpf_G_Cg
+        return -(self.stackCblvpf_G_Cg - self._lastStackCblvpf_G_Cg) / self.delta_time
 
-        # Calculate and return the flapping velocities.
-        return -(these_front_leg_centers - last_front_leg_centers) / self.delta_time
+    def _calculate_current_movement_velocities_at_left_leg_centers(self):
+        """Get the current apparent velocities (in geometry axes, observed from the
+        Earth frame) at the center point of each bound RingVortex's left leg due to
+        any motion defined in Movement.
 
-    # REFACTOR: I haven't yet started refactoring this method.
-    def _calculate_current_flapping_velocities_at_left_leg_centers(self):
-        """This method finds the apparent flow velocity due to flapping at the
-        centers of the current airplanes' bound ring vortices' left legs.
+        Note: At each point, any apparent velocity due to Movement is opposite the
+        motion due to Movement.
 
-        Note: The apparent flow velocity due to flapping is opposite the direction of
-        the wing's motion.
+        :return: (M, 3) ndarray of floats
 
-        :return: size (M x 3) array of floats, where M is the current airplanes'
-        number of panels
-            This is an array containing the x, y, and z components of the velocity
-            due to flapping at every one of the current airplanes' bound vortices'
-            left legs' centers. Its units are in meters per second. If the current
-            time step is the first time step, all the flapping velocities will be zero.
+            This is a ndarray containing the apparent velocity (in geometry axes,
+            observed from the Earth frame) at the center point of each bound
+            RingVortex's left leg due to any motion defined in Movement. Its units
+            are in meters per second. If the current time step is the first time
+            step, these velocities will all be all zeros.
         """
-        # Check if the current step is the first step.
+        # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
-            # Set the flapping velocities to be zero for all points. Then, return the
-            # flapping velocities.
-            return np.zeros((self.num_panels, 3))
+            return np.zeros((self.num_panels, 3), dtype=float)
 
-        # Get the current airplanes' bound vortices' left legs' centers, and the last
-        # airplanes' bound vortices' left legs' centers.
-        these_left_leg_centers = self.stackCblvpl_G_Cg
-        last_left_leg_centers = self._lastStackCblvpl_G_Cg
+        return -(self.stackCblvpl_G_Cg - self._lastStackCblvpl_G_Cg) / self.delta_time
 
-        # Calculate and return the flapping velocities.
-        return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
-
-    # REFACTOR: I haven't yet started refactoring this method.
     def _finalize_loads(self):
         """For cases with static geometry, this function finds the final loads and
-        load coefficients for each of the problem's airplanes. For cases with
+        load coefficients for each of the SteadyProblem's Airplanes. For cases with
         variable geometry, it finds the final cycle-averaged and
-        cycle-root-mean-squared loads and load coefficients.
+        cycle-root-mean-squared loads and load coefficients for each of the
+        SteadyProblem's Airplanes.
 
         :return: None
         """
@@ -1544,109 +1515,104 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # time step 0), occurs at 0 seconds.
         num_steps_to_average = self.num_steps - self._first_averaging_step
 
-        # Determine if this problem's geometry is static or variable.
-        is_static = self.unsteady_problem.movement.static
+        # Determine if this SteadyProblem's geometry is static or variable.
+        static = self.unsteady_problem.movement.static
 
-        # Initialize matrices to hold the forces, moments, and coefficients at each of
-        # the time steps that has results.
-        total_forces_W = np.zeros((self.num_airplanes, 3, num_steps_to_average))
-        total_force_coefficients_W = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average)
+        # Initialize ndarrays to hold each Airplane's loads and load coefficients at
+        # each of the time steps that calculated the loads.
+        forces_W = np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
+        force_coefficients_W = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
         )
-        total_moments_W_Cg = np.zeros((self.num_airplanes, 3, num_steps_to_average))
-        total_moment_coefficients_W_Cg = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average)
+        moments_W_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
+        moment_coefficients_W_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
         )
 
-        # Initialize a variable to track position in the results arrays.
+        # Initialize a variable to track position in the loads ndarrays.
         results_step = 0
 
-        # Iterate through the time steps with results and add the results to their
-        # respective matrices.
+        # Iterate through the time steps with loads and add the loads to their
+        # respective ndarrays.
         for step in range(self._first_averaging_step, self.num_steps):
 
-            # Get the airplanes from the problem at this step.
+            # Get the Airplanes from the SteadyProblem at this time step.
             these_airplanes = self.steady_problems[step].airplanes
 
-            # Iterate through this step's airplanes.
+            # Iterate through this time step's Airplanes.
+            airplane: geometry.airplane.Airplane
             for airplane_id, airplane in enumerate(these_airplanes):
-                total_forces_W[airplane_id, :, results_step] = airplane.forces_W
-                total_force_coefficients_W[airplane_id, :, results_step] = (
+                forces_W[airplane_id, :, results_step] = airplane.forces_W
+                force_coefficients_W[airplane_id, :, results_step] = (
                     airplane.forceCoefficients_W
                 )
-                total_moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
-                total_moment_coefficients_W_Cg[airplane_id, :, results_step] = (
+                moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
+                moment_coefficients_W_Cg[airplane_id, :, results_step] = (
                     airplane.momentCoefficients_W_Cg
                 )
 
             results_step += 1
 
-        # For each airplane object, calculate and then save the final or
-        # cycle-averaged forces, moments, force coefficients, and moment coefficients.
+        # For each Airplane, calculate and then save the final or cycle-averaged and
+        # RMS loads and load coefficients.
+        airplane: geometry.airplane.Airplane
         for airplane_id, airplane in enumerate(self.steady_problems[0].airplanes):
-
-            if is_static:
-                self.unsteady_problem.finalForces_W.append(
-                    total_forces_W[airplane_id, :, -1]
-                )
+            if static:
+                self.unsteady_problem.finalForces_W.append(forces_W[airplane_id, :, -1])
                 self.unsteady_problem.finalForceCoefficients_W.append(
-                    total_force_coefficients_W[airplane_id, :, -1]
+                    force_coefficients_W[airplane_id, :, -1]
                 )
                 self.unsteady_problem.finalMoments_W_Cg.append(
-                    total_moments_W_Cg[airplane_id, :, -1]
+                    moments_W_Cg[airplane_id, :, -1]
                 )
                 self.unsteady_problem.finalMomentCoefficients_W_Cg.append(
-                    total_moment_coefficients_W_Cg[airplane_id, :, -1]
+                    moment_coefficients_W_Cg[airplane_id, :, -1]
                 )
             else:
-                mean_forces = np.mean(total_forces_W[airplane_id], axis=-1)
-                mean_force_coefficients = np.mean(
-                    total_force_coefficients_W[airplane_id], axis=-1
+                self.unsteady_problem.finalMeanForces_W.append(
+                    np.mean(forces_W[airplane_id], axis=-1)
                 )
-                mean_moments = np.mean(total_moments_W_Cg[airplane_id], axis=-1)
-                mean_moment_coefficients = np.mean(
-                    total_moment_coefficients_W_Cg[airplane_id], axis=-1
-                )
-
-                rms_forces = np.sqrt(
-                    np.mean(
-                        np.square(total_forces_W[airplane_id]),
-                        axis=-1,
-                    )
-                )
-                rms_force_coefficients = np.sqrt(
-                    np.mean(
-                        np.square(total_force_coefficients_W[airplane_id]),
-                        axis=-1,
-                    )
-                )
-                rms_moments = np.sqrt(
-                    np.mean(
-                        np.square(total_moments_W_Cg[airplane_id]),
-                        axis=-1,
-                    )
-                )
-                rms_moment_coefficients = np.sqrt(
-                    np.mean(
-                        np.square(total_moment_coefficients_W_Cg[airplane_id]),
-                        axis=-1,
-                    )
-                )
-
-                self.unsteady_problem.finalMeanForces_W.append(mean_forces)
                 self.unsteady_problem.finalMeanForceCoefficients_W.append(
-                    mean_force_coefficients
+                    np.mean(force_coefficients_W[airplane_id], axis=-1)
                 )
-                self.unsteady_problem.finalMeanMoments_W_Cg.append(mean_moments)
+                self.unsteady_problem.finalMeanMoments_W_Cg.append(
+                    np.mean(moments_W_Cg[airplane_id], axis=-1)
+                )
                 self.unsteady_problem.finalMeanMomentCoefficients_W_Cg.append(
-                    mean_moment_coefficients
+                    np.mean(moment_coefficients_W_Cg[airplane_id], axis=-1)
                 )
 
-                self.unsteady_problem.finalRmsForces_W.append(rms_forces)
-                self.unsteady_problem.finalRmsForceCoefficients_W.append(
-                    rms_force_coefficients
+                self.unsteady_problem.finalRmsForces_W.append(
+                    np.sqrt(
+                        np.mean(
+                            np.square(forces_W[airplane_id]),
+                            axis=-1,
+                        )
+                    )
                 )
-                self.unsteady_problem.finalRmsMoments_W_Cg.append(rms_moments)
+                self.unsteady_problem.finalRmsForceCoefficients_W.append(
+                    np.sqrt(
+                        np.mean(
+                            np.square(force_coefficients_W[airplane_id]),
+                            axis=-1,
+                        )
+                    )
+                )
+                self.unsteady_problem.finalRmsMoments_W_Cg.append(
+                    np.sqrt(
+                        np.mean(
+                            np.square(moments_W_Cg[airplane_id]),
+                            axis=-1,
+                        )
+                    )
+                )
                 self.unsteady_problem.finalRmsMomentCoefficients_W_Cg.append(
-                    rms_moment_coefficients
+                    np.sqrt(
+                        np.mean(
+                            np.square(moment_coefficients_W_Cg[airplane_id]),
+                            axis=-1,
+                        )
+                    )
                 )

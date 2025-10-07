@@ -79,6 +79,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             save=False,
         )
 
+        # FIXME: Determine why this test is failing due to incorrect coefficients.
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(abs(c_di_error) < allowable_error)
         self.assertTrue(abs(c_l_error) < allowable_error)

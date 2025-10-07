@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This is a testing case for the unsteady ring vortex lattice method solver with
 static, multi-wing geometry."""
 

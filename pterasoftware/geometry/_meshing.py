@@ -259,17 +259,18 @@ def mesh_wing(wing):
                 ]
             )
 
-            # TODO: Test that this block of code works under all situations and
-            #  document and understand it. We're reflecting about a plane defined by
-            #  a normal vector in geometry axes and a point in geometry axes relative
-            #  to the CG. But that's okay I guess and we end up with reflected points
-            #  in wing axes relative to the leading edge root point? Also then we
-            #  perform an passive transformation to find them in geometry axes
-            #  relative to the CG? Why do we even need to reflect them if we are
-            #  staying in wing axes? If we take a reflected a non-reflected Wing that
-            #  are otherwise identical, they should have the same coordinates in
-            #  their respective wing axes relative to their respective leading edge
-            #  root points. So why is the active transformation necessary?
+            # TODO: Understand how this block of code works. We're reflecting about a
+            #  plane defined by a normal vector in geometry axes and a point in
+            #  geometry axes relative to the CG. But that's okay I guess and we end
+            #  up with reflected points in wing axes relative to the leading edge
+            #  root point? Also then we perform an passive transformation to find
+            #  them in geometry axes relative to the CG? Why do we even need to
+            #  reflect them if we are staying in wing axes? If we take a reflected a
+            #  non-reflected Wing that are otherwise identical, they should have the
+            #  same coordinates in their respective wing axes relative to their
+            #  respective leading edge root points. So why is the active
+            #  transformation necessary?
+            # DOCUMENT: Document the logic in this block of code.
             reflect_T_act = _transformations.generate_reflect_T(
                 plane_point_A_a=symmetryPoint_G_Cg,
                 plane_normal_A=symmetryNormal_G,

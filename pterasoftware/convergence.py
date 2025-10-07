@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This module contains functions for analyzing the convergence of steady and
 unsteady problems.
 
@@ -33,7 +33,7 @@ convergence_logger.setLevel(logging.INFO)
 logging.basicConfig()
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def analyze_steady_convergence(
     ref_problem,
     solver_type,
@@ -462,8 +462,8 @@ def analyze_steady_convergence(
     return [None, None]
 
 
-# NOTE: I haven't yet started refactoring this function.
-# TODO: Add the new parameters to the documentation.
+# REFACTOR: I haven't yet started refactoring this function.
+# DOCUMENT: Add the new parameters to the documentation.
 def analyze_unsteady_convergence(
     ref_problem,
     prescribed_wake=True,

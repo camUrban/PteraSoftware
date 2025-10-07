@@ -427,15 +427,6 @@ class TestWing(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry_fixtures.make_invalid_root_wing_fixture()
 
-    # TODO: Finalize Wing's get_plottable_data testing.
-    # def test_wing_get_plottable_data(self):
-    #     """Test that the get_plottable_data method works correctly."""
-    #     airplane = geometry_fixtures.make_basic_airplane_fixture()
-    #     airplane = geometry_fixtures.make_type_5_wing_airplane_fixture()
-    #     this_wing = airplane.wings[1]
-    #     this_wing.get_plottable_data(show=True)
-    #     # airplane.draw()
-
 
 if __name__ == "__main__":
     unittest.main()

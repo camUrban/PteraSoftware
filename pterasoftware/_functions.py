@@ -1,4 +1,4 @@
-# NOTE: I've started refactoring this module.
+# REFACTOR: I've started refactoring this module.
 """This module contains functions shared by other modules in the pterasoftware
 package."""
 
@@ -16,7 +16,7 @@ from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create an array containing a specified number of
     values between a specified minimum and maximum value that are spaced via a cosine
@@ -53,7 +53,7 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
     return cosine_spaced_points
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 @njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
@@ -100,7 +100,7 @@ def numba_centroid_of_quadrilateral(
     return np.array([x_average, y_average, z_average])
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -158,7 +158,7 @@ def calculate_streamlines(
         )
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def convert_logging_level_name_to_value(name):
     """This function takes in a string that represents the logging level and returns
     the integer that can be used to set the logger to this level.
@@ -328,7 +328,7 @@ def process_solver_loads(
         airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
@@ -413,7 +413,7 @@ def update_ring_vortex_solvers_panel_attributes(
         )
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -436,7 +436,7 @@ def calculate_steady_freestream_wing_influences(
     )
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 @njit(cache=True, fastmath=False)
 def numba_1d_explicit_cross(vectors_1, vectors_2):
     """This function takes in two arrays, each of which contain N vectors of 3
@@ -472,7 +472,7 @@ def numba_1d_explicit_cross(vectors_1, vectors_2):
     return crosses
 
 
-# NOTE: I haven't yet started refactoring this function.
+# REFACTOR: I haven't yet started refactoring this function.
 @njit(cache=True, fastmath=False)
 def interp_between_points(start_points, end_points, norm_spacings):
     """This function finds the MxN points between M pairs of points in 3D space given

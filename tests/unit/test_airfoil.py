@@ -228,11 +228,6 @@ class TestAirfoil(unittest.TestCase):
         self.assertEqual(len(self.named_airfoil.mcl_A_lp.shape), 2)
         self.assertEqual(self.named_airfoil.mcl_A_lp.shape[1], 2)
 
-    # TODO: Finalize Airfoil's get_plottable_data testing.
-    # def test_airfoil_get_plottable_data(self):
-    #     """Test that the get_plottable_data method works correctly."""
-    #     self.naca0012_airfoil.get_plottable_data(show=True)
-
 
 if __name__ == "__main__":
     unittest.main()

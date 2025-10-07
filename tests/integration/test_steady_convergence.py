@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This module contains testing cases for the steady convergence function."""
 
 import unittest

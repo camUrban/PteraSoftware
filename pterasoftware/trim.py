@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This module contains functions to analyze the trim conditions of steady and
 unsteady solvers.
 
@@ -37,8 +37,8 @@ trim_logger.setLevel(logging.DEBUG)
 logging.basicConfig()
 
 
-# NOTE: I haven't yet started refactoring this function.
-# TODO: Document this function.
+# REFACTOR: I haven't yet started refactoring this function.
+# DOCUMENT: Document this function.
 def analyze_steady_trim(
     problem,
     velocity_bounds,
@@ -91,7 +91,7 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    # TODO: Document this function.
+    # DOCUMENT: Document this function.
     def objective_function(arguments):
         """
 
@@ -203,8 +203,8 @@ def analyze_steady_trim(
     return [np.nan, np.nan, np.nan, np.nan]
 
 
-# NOTE: I haven't yet started refactoring this function.
-# TODO: Document this function.
+# REFACTOR: I haven't yet started refactoring this function.
+# DOCUMENT: Document this function.
 def analyze_unsteady_trim(
     airplane_movement,
     operating_point,
@@ -243,7 +243,7 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan]
 
-    # TODO: Document this function.
+    # DOCUMENT: Document this function.
     def objective_function(arguments):
         """
 

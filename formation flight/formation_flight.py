@@ -1,5 +1,5 @@
-# NOTE: I haven't yet started refactoring this module.
-# TODO: Document this script.
+# REFACTOR: I haven't yet started refactoring this module.
+# DOCUMENT: Document this script.
 import pterasoftware as ps
 
 # Known Converged Values (0.5% convergence, 0 degrees angle of attack):

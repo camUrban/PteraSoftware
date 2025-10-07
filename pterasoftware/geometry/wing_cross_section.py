@@ -328,9 +328,8 @@ class WingCrossSection:
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
-    # TODO: Document and debug this method and convert it to use the standard Ptera
-    #  Software theme for PyVista.
     # TEST: Add unit tests for this method.
+    # DOCUMENT: After testing it, document this method.
     def get_plottable_data(self, show=False):
         """
 

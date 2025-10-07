@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This is script is an example of how to run Ptera Software's unsteady ring vortex
 lattice method solver on three airplanes, flying in formation, each with custom
 geometry and motion. Note, I will comment this example less rigorously than the

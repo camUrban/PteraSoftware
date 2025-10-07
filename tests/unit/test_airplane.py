@@ -478,17 +478,6 @@ class TestAirplane(unittest.TestCase):
             self.assertIsNotNone(wing.symmetry_type)
             self.assertIsNotNone(wing.panels)
 
-    # TODO: Finalize Airplane's get_plottable_data testing.
-    # def test_airplane_get_plottable_data(self):
-    #     """Test that the get_plottable_data method works correctly."""
-    #     airplane = geometry_fixtures.make_basic_airplane_fixture()
-    #     # airplane = geometry_fixtures.make_type_5_wing_airplane_fixture()
-    #     # airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
-    #     # airplane.get_plottable_data(show=True)
-    #     airplane.wings[0].get_plottable_data(show=True)
-    #     # airplane.wings[0].wing_cross_sections[0].get_plottable_data(show=True)
-    #     # airplane.draw()
-
 
 if __name__ == "__main__":
     unittest.main()

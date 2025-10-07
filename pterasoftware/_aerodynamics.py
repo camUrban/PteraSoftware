@@ -436,7 +436,7 @@ def collapsed_velocities_from_ring_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' descriptions and types.
+    # DOCUMENT: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -527,7 +527,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' descriptions and types.
+    # DOCUMENT: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -613,7 +613,7 @@ def expanded_velocities_from_ring_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' descriptions and types.
+    # DOCUMENT: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -704,7 +704,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' descriptions and types.
+    # DOCUMENT: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -793,7 +793,7 @@ def expanded_velocities_from_horseshoe_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' descriptions and types.
+    # DOCUMENT: Update docstring parameters' descriptions and types.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -970,7 +970,7 @@ def _collapsed_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-    # TODO: Update docstring parameters' types and descriptions.
+    # DOCUMENT: Update docstring parameters' types and descriptions.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position
@@ -1106,7 +1106,7 @@ def _expanded_velocities_from_line_vortices(
     simulation performance, it does cause a performance drop for the less intense
     steady simulations.
 
-     # TODO: Update docstring parameters' types and descriptions.
+     # DOCUMENT: Update docstring parameters' types and descriptions.
     :param stackP_G_Cg: 2D array of floats
         This variable is an array of shape (N x 3), where N is the number of points.
         Each row contains the x, y, and z float coordinates of that point's position

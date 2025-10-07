@@ -1,4 +1,4 @@
-# NOTE: I've started refactoring this module.
+# REFACTOR: I've started refactoring this module.
 """This module contains the class definition of this package's unsteady ring vortex
 lattice solver.
 
@@ -25,7 +25,7 @@ from . import _panel
 from . import problems
 
 
-# NOTE: I've started refactoring this class.
+# REFACTOR: I've started refactoring this class.
 class UnsteadyRingVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
 
@@ -1057,7 +1057,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         _functions.process_solver_loads(self, forces_G, moments_G_Cg)
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake(self, prescribed_wake=True):
         """This method updates the next time step's airplanes' wakes.
 
@@ -1075,7 +1075,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next step's airplanes' wake vortices.
         self._populate_next_airplanes_wake_vortices()
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake_vortex_vertices(self, prescribed_wake=True):
         """This method populates the locations of the next airplanes' wake vortex
         vertices.
@@ -1323,7 +1323,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _populate_next_airplanes_wake_vortices(self):
         """This method populates the locations of the next airplanes' wake vortices.
 
@@ -1460,7 +1460,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         strength=this_strength_copy,
                                     )
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _calculate_current_flapping_velocities_at_collocation_points(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' collocation points.
@@ -1489,7 +1489,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_collocations - last_collocations) / self.delta_time
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _calculate_current_flapping_velocities_at_right_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' right legs.
@@ -1518,7 +1518,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_right_leg_centers - last_right_leg_centers) / self.delta_time
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _calculate_current_flapping_velocities_at_front_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' front legs.
@@ -1547,7 +1547,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_front_leg_centers - last_front_leg_centers) / self.delta_time
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _calculate_current_flapping_velocities_at_left_leg_centers(self):
         """This method finds the apparent flow velocity due to flapping at the
         centers of the current airplanes' bound ring vortices' left legs.
@@ -1576,7 +1576,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate and return the flapping velocities.
         return -(these_left_leg_centers - last_left_leg_centers) / self.delta_time
 
-    # NOTE: I haven't yet started refactoring this method.
+    # REFACTOR: I haven't yet started refactoring this method.
     def _finalize_loads(self):
         """For cases with static geometry, this function finds the final loads and
         load coefficients for each of the problem's airplanes. For cases with

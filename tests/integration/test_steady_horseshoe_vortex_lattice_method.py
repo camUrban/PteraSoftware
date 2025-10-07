@@ -1,4 +1,4 @@
-# NOTE: I haven't yet started refactoring this module.
+# REFACTOR: I haven't yet started refactoring this module.
 """This module is a testing case for the steady horseshoe vortex lattice method solver.
 
 Based on an identical XFLR5 testing case, the expected output for the single-wing case

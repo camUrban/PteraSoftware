@@ -182,7 +182,7 @@ def convert_logging_level_name_to_value(name):
         raise Exception("The name of the logging level provided is not a valid option.")
 
 
-# TODO: Add unit tests for this function.
+# TEST: Add unit tests for this method.
 def process_solver_loads(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver

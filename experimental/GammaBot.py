@@ -82,13 +82,11 @@ gammabot_airplane = ps.geometry.airplane.Airplane(
 del gammabot_airplane_wing_cross_sections
 
 
-# TODO: Update this with the actual custom function.
 def gammabot_angleX_function(thetaRad):
     """GammaBot's custom angleX function."""
     return np.sin(thetaRad)
 
 
-# TODO: Update this with the actual custom function.
 def gammabot_angleY_function(thetaRad):
     """GammaBot's custom angleY function."""
     return np.sin(thetaRad)

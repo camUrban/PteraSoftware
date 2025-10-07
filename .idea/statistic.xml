@@ -6,14 +6,22 @@
     <option name="excludeGitArtifactDirectory" value="false" />
     <option name="excludedDirectories">
       <list>
+        <option value="$PROJECT_DIR$/.claude" />
+        <option value="$PROJECT_DIR$/.git" />
+        <option value="$PROJECT_DIR$/.github" />
         <option value="$PROJECT_DIR$/.idea" />
-        <option value="$PROJECT_DIR$/.venv313" />
+        <option value="$PROJECT_DIR$/.venv" />
+        <option value="$PROJECT_DIR$/benchmarks" />
+        <option value="$PROJECT_DIR$/docs" />
+        <option value="$PROJECT_DIR$/examples" />
         <option value="$PROJECT_DIR$/experimental" />
+        <option value="$PROJECT_DIR$/formation flight" />
+        <option value="$PROJECT_DIR$/gui" />
+        <option value="$PROJECT_DIR$/tests" />
+        <option value="$PROJECT_DIR$/validation" />
         <option value="$PROJECT_DIR$/pterasoftware/__pycache__" />
         <option value="$PROJECT_DIR$/pterasoftware/geometry/__pycache__" />
-        <option value="$PROJECT_DIR$/pterasoftware/models/__pycache__" />
-        <option value="$PROJECT_DIR$/pterasoftware/airfoils/__pycache__" />
-        <option value="$PROJECT_DIR$/.git" />
+        <option value="$PROJECT_DIR$/pterasoftware/movements/__pycache__" />
       </list>
     </option>
   </component>

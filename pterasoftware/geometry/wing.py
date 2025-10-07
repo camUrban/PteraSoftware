@@ -393,6 +393,7 @@ class Wing:
 
     # TODO: Document and debug this method and convert it to use the standard Ptera
     #  Software theme for PyVista.
+    # TEST: Add unit tests for this method.
     def get_plottable_data(self, show=False):
         """
 
@@ -864,7 +865,7 @@ class Wing:
 
         return wetted_area
 
-    # TODO: Validate this method.
+    # TEST: Add unit tests for this method.
     @property
     def span(self):
         """This method sets a property for the Wing's span.
@@ -952,7 +953,7 @@ class Wing:
 
         return self.projected_area / self.span
 
-    # TODO: Validate this method.
+    # TEST: Add unit tests for this method.
     @property
     def mean_aerodynamic_chord(self):
         """This method sets a property for the mean aerodynamic chord of the Wing.

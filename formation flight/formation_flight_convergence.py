@@ -189,7 +189,7 @@ for wake_state_id, prescribed_wake in enumerate(wake_state_list):
                 del this_airplane
                 del this_airplane_movement
 
-            this_movement = ps.movement.Movement(
+            this_movement = ps.movements.movement.Movement(
                 airplane_movements=these_airplane_movements,
                 operating_point_movement=this_operating_point_movement,
                 num_steps=None,

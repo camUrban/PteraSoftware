@@ -311,6 +311,7 @@ class TestWingCrossSectionMovement(unittest.TestCase):
             )
 
         # Test invalid types raise error.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=base_wcs, ampLp_Wcsp_Lpp="invalid"
@@ -681,9 +682,11 @@ class TestWingCrossSectionMovement(unittest.TestCase):
         wcs_movement = self.basic_wcs_movement
 
         # Test invalid num_steps.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             wcs_movement.generate_wing_cross_sections(num_steps=0, delta_time=0.01)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             wcs_movement.generate_wing_cross_sections(num_steps=-1, delta_time=0.01)
 
@@ -693,9 +696,11 @@ class TestWingCrossSectionMovement(unittest.TestCase):
             )
 
         # Test invalid delta_time.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             wcs_movement.generate_wing_cross_sections(num_steps=10, delta_time=0.0)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             wcs_movement.generate_wing_cross_sections(num_steps=10, delta_time=-0.01)
 

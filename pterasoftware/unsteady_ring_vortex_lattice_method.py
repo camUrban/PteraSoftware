@@ -265,7 +265,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize list that will hold the approximate, relative times. This has
         # one more element than the number of time steps, because I will also use the
         # progress bar during the simulation initialization.
-        approx_times = np.zeros(self.num_steps + 1)
+        approx_times = np.zeros(self.num_steps + 1, dtype=float)
         for step in range(1, self.num_steps):
             this_problem = self.steady_problems[step]
             these_airplanes = this_problem.airplanes
@@ -312,7 +312,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Update the progress bar based on the initialization step's predicted
             # approximate, relative computing time.
-            bar.update(n=approx_times[0])
+            bar.update(n=float(approx_times[0]))
 
             # Iterate through the time steps.
             for step in range(self.num_steps):
@@ -446,7 +446,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
-                bar.update(n=approx_times[step + 1])
+                bar.update(n=float(approx_times[step + 1]))
 
             logging.info("Calculating averaged or final forces and moments.")
             self._finalize_loads()
@@ -1369,11 +1369,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     # If this isn't the front of the wake, update the
                                     # position of the wake RingVortex at this
                                     # location for the next time step.
-                                    next_wake_ring_vortex: _aerodynamics.RingVortex = (
+                                    next_wake_ring_vortex = (
                                         next_wing.wake_ring_vortices[
                                             chordwise_point_id,
                                             spanwise_point_id,
                                         ]
+                                    )
+                                    assert isinstance(
+                                        next_wake_ring_vortex, _aerodynamics.RingVortex
                                     )
                                     next_wake_ring_vortex.update_position(
                                         Flrvp_G_Cg=Flwrvp_G_Cg,

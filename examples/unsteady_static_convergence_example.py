@@ -61,7 +61,7 @@ operating_point_movement = ps.movements.operating_point_movement.OperatingPointM
 
 # Create a movement object from the airplane movement and operating point movement
 # objects.
-movement = ps.movement.Movement(
+movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
 )

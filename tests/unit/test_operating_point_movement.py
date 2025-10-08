@@ -116,6 +116,7 @@ class TestOperatingPointMovement(unittest.TestCase):
             )
 
         # Test invalid types raise error.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             ps.movements.operating_point_movement.OperatingPointMovement(
                 base_operating_point=base_op, ampVCg__E="invalid"
@@ -325,9 +326,11 @@ class TestOperatingPointMovement(unittest.TestCase):
         op_movement = self.basic_op_movement
 
         # Test invalid num_steps.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             op_movement.generate_operating_points(num_steps=0, delta_time=0.01)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             op_movement.generate_operating_points(num_steps=-1, delta_time=0.01)
 
@@ -335,9 +338,11 @@ class TestOperatingPointMovement(unittest.TestCase):
             op_movement.generate_operating_points(num_steps="invalid", delta_time=0.01)
 
         # Test invalid delta_time.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             op_movement.generate_operating_points(num_steps=10, delta_time=0.0)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             op_movement.generate_operating_points(num_steps=10, delta_time=-0.01)
 

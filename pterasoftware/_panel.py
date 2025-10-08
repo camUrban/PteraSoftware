@@ -315,7 +315,7 @@ class Panel:
 
         spanwise_G = (frontSpanwise_G + backSpanwise_G) / 2
 
-        return spanwise_G / np.linalg.norm(spanwise_G)
+        return spanwise_G / float(np.linalg.norm(spanwise_G))
 
     @property
     def unitChordwise_G(self):
@@ -331,7 +331,7 @@ class Panel:
 
         chordwise_G = (rightChordwise_G + leftChordwise_G) / 2
 
-        return chordwise_G / np.linalg.norm(chordwise_G)
+        return chordwise_G / float(np.linalg.norm(chordwise_G))
 
     @property
     def average_span(self):

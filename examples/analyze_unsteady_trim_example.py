@@ -113,7 +113,7 @@ example_operating_point_movement = (
 
 # Construct this example's movement and problem object. Only calculate final results
 # to speed up the solver.
-example_movement = ps.movement.Movement(
+example_movement = ps.movements.movement.Movement(
     airplane_movements=[example_airplane_movement],
     operating_point_movement=example_operating_point_movement,
 )

@@ -82,6 +82,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for invalid_rho in invalid_rho_values:
             with self.subTest(invalid_rho=invalid_rho):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.operating_point.OperatingPoint(rho=invalid_rho)
 
@@ -100,6 +101,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for invalid_vCg in invalid_vCg_values:
             with self.subTest(invalid_vCg=invalid_vCg):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.operating_point.OperatingPoint(vCg__E=invalid_vCg)
 
@@ -182,6 +184,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         for invalid_nu in invalid_nu_values:
             with self.subTest(invalid_nu=invalid_nu):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.operating_point.OperatingPoint(nu=invalid_nu)
 

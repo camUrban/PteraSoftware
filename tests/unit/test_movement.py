@@ -130,6 +130,7 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
@@ -147,6 +148,7 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
@@ -272,6 +274,7 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,
@@ -300,6 +303,7 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "ten"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,
@@ -328,6 +332,7 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "hundred"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,

@@ -202,7 +202,7 @@ del operating_point
 
 # Define the movement object. This contains each airplane's movement and the operating
 # point movement.
-movement = ps.movement.Movement(
+movement = ps.movements.movement.Movement(
     airplane_movements=[
         lead_airplane_movement,
         right_airplane_movement,

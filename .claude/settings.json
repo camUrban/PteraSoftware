@@ -105,9 +105,7 @@
       "Bash(wget:*)",
       "Bash(wmic:*)",
       "Bash(yum:*)",
-      "Bash(zip:*)",
-      "Exec(*)",
-      "Write:${WORKSPACE}/.git/**"
+      "Bash(zip:*)"
     ],
     "ask": [
       "Bash(.venv/bin/python:-m:unittest:discover:-s:${WORKSPACE}/tests:*)",
@@ -115,9 +113,6 @@
       "Bash(.venv/bin/python:examples/)",
       "Bash(.venv/bin/python:experimental/)",
       "Bash(.venv/bin/python:formation flight/)",
-      "Bash(.venv/Scripts/python.exe:pterasoftware/)",
-      "Bash(.venv/Scripts/python.exe:tests/)",
-      "Bash(.venv/Scripts/python.exe:validation/)",
       "Bash(.venv/Scripts/python.exe:-m:unittest:discover:-s:${WORKSPACE}/tests:*)",
       "Bash(.venv/Scripts/python.exe:benchmarks/)",
       "Bash(.venv/Scripts/python.exe:experimental/)",
@@ -126,12 +121,7 @@
       "Bash(.venv/Scripts/python.exe:tests/)",
       "Bash(.venv/Scripts/python.exe:validation/)",
       "Bash(git:add:${WORKSPACE}/**/*)",
-      "Bash(git:commit:-m:*)",
-      "Write:${WORKSPACE}/**/*.py",
-      "Write:${WORKSPACE}/**/*.md",
-      "Write:${WORKSPACE}/**/*.json",
-      "Write:${WORKSPACE}/**/*.yaml",
-      "Write:${WORKSPACE}/**/*.yml"
+      "Bash(git:commit:-m:*)"
     ]
   }
 }

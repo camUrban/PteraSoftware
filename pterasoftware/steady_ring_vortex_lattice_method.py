@@ -373,8 +373,8 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # Update the RingVortices' and HorseshoeVortices' strengths.
-        for panel_num in range(self.panels.size):
-            panel: _panel.Panel = self.panels[panel_num]
+        for panel_num, panel in enumerate(self.panels):
+            assert isinstance(panel, _panel.Panel)
 
             panel.ring_vortex.update_strength(self._vortex_strengths[panel_num])
 

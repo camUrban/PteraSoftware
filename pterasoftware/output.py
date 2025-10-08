@@ -189,17 +189,19 @@ def draw(
         if np.sign(np.min(these_scalars)) == np.sign(np.max(these_scalars)):
             color_map = _sequential_color_map
             c_min = max(
-                np.mean(these_scalars) - _color_map_num_sig * np.std(these_scalars),
-                np.min(these_scalars),
+                float(np.mean(these_scalars))
+                - _color_map_num_sig * float(np.std(these_scalars)),
+                float(np.min(these_scalars)),
             )
             c_max = min(
-                np.mean(these_scalars) + _color_map_num_sig * np.std(these_scalars),
-                np.max(these_scalars),
+                float(np.mean(these_scalars))
+                + _color_map_num_sig * float(np.std(these_scalars)),
+                float(np.max(these_scalars)),
             )
         else:
             color_map = _diverging_color_map
-            c_min = -_color_map_num_sig * np.std(these_scalars)
-            c_max = _color_map_num_sig * np.std(these_scalars)
+            c_min = -_color_map_num_sig * float(np.std(these_scalars))
+            c_max = _color_map_num_sig * float(np.std(these_scalars))
 
         _plot_scalars(
             plotter,
@@ -388,17 +390,19 @@ def animate(
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
             color_map = _sequential_color_map
             c_min = max(
-                np.mean(all_scalars) - _color_map_num_sig * np.std(all_scalars),
-                np.min(all_scalars),
+                float(np.mean(all_scalars))
+                - _color_map_num_sig * float(np.std(all_scalars)),
+                float(np.min(all_scalars)),
             )
             c_max = min(
-                np.mean(all_scalars) + _color_map_num_sig * np.std(all_scalars),
-                np.max(all_scalars),
+                float(np.mean(all_scalars))
+                + _color_map_num_sig * float(np.std(all_scalars)),
+                float(np.max(all_scalars)),
             )
         else:
             color_map = _diverging_color_map
-            c_min = -_color_map_num_sig * np.std(all_scalars)
-            c_max = _color_map_num_sig * np.std(all_scalars)
+            c_min = -_color_map_num_sig * float(np.std(all_scalars))
+            c_max = _color_map_num_sig * float(np.std(all_scalars))
 
         min_scalar = round(min(all_scalars), 2)
         max_scalar = round(max(all_scalars), 2)

@@ -745,6 +745,7 @@ class TestMovementsFunctions(unittest.TestCase):
 
     def test_oscillating_functions_validation_invalid_num_steps(self):
         """Test that oscillating functions raise error with invalid num_steps."""
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             _functions.oscillating_sinspaces(
                 amps=self.scalar_amps,
@@ -757,6 +758,7 @@ class TestMovementsFunctions(unittest.TestCase):
 
     def test_oscillating_functions_validation_invalid_delta_time(self):
         """Test that oscillating functions raise error with invalid delta_time."""
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             _functions.oscillating_sinspaces(
                 amps=self.scalar_amps,

@@ -345,6 +345,7 @@ class TestAirplaneMovement(unittest.TestCase):
             )
 
         # Test invalid types raise error.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             ps.movements.airplane_movement.AirplaneMovement(
                 base_airplane=base_airplane,
@@ -713,9 +714,11 @@ class TestAirplaneMovement(unittest.TestCase):
         airplane_movement = self.basic_airplane_movement
 
         # Test invalid num_steps.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             airplane_movement.generate_airplanes(num_steps=0, delta_time=0.01)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             airplane_movement.generate_airplanes(num_steps=-1, delta_time=0.01)
 
@@ -723,9 +726,11 @@ class TestAirplaneMovement(unittest.TestCase):
             airplane_movement.generate_airplanes(num_steps="invalid", delta_time=0.01)
 
         # Test invalid delta_time.
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             airplane_movement.generate_airplanes(num_steps=10, delta_time=0.0)
 
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             airplane_movement.generate_airplanes(num_steps=10, delta_time=-0.01)
 

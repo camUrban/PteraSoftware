@@ -6,20 +6,15 @@ import sys
 import time
 import importlib
 
-# Add the gui directory to the Python path so ui_resources can be imported.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-print("Builtin modules imported")
 from PySide6.QtCore import Qt
-
-print("QTCore imported")
 from PySide6.QtGui import QPixmap
-
-print("QtGUI imported")
 from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 
 from _resources.main_window import Ui_MainWindowDesign
 from _resources.textdialog import Ui_TextAboutDialog
+
+# Add the gui directory to the Python path so ui_resources can be imported.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 class TextAboutDialog(QDialog):
@@ -30,9 +25,23 @@ class TextAboutDialog(QDialog):
         self.setWindowTitle(title)
 
 
+def _read_file(file_path: str) -> str:
+    from PySide6.QtCore import QFile
+    from PySide6.QtCore import QTextStream
+    from PySide6.QtCore import QIODevice
+
+    file = QFile(file_path)
+    # noinspection PyUnresolvedReferences
+    file.open(QIODevice.ReadOnly)
+    ts = QTextStream(file)
+    string = ts.readAll()
+    return string
+
+
 class MainWindow(QMainWindow, Ui_MainWindowDesign):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.dialog = None
         self.setupUi(self)
 
         self.actionExample_1.triggered.connect(lambda x: self.exampleMenu(0))
@@ -68,33 +77,23 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
     def updateDisplayText(self, text):
         self.displayText = text
-        self.printTerminalOutput(self, text)
+        self.printTerminalOutput(text)
 
     def menuREADME(self):
         from PySide6.QtGui import QTextDocument
 
         self.dialog = TextAboutDialog("About Ptera Software")
         doc = QTextDocument()
-        doc.setMarkdown(self._read_file("README.md"))
+        doc.setMarkdown(_read_file("README.md"))
         self.dialog.ui.textEdit.setDocument(doc)
         self.dialog.show()
-
-    def _read_file(self, file_path: str) -> str:
-        from PySide6.QtCore import QFile
-        from PySide6.QtCore import QTextStream
-        from PySide6.QtCore import QIODevice
-
-        file = QFile(file_path)
-        file.open(QIODevice.ReadOnly)
-        ts = QTextStream(file)
-        string = ts.readAll()
-        return string
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     pixmap = QPixmap("docs/logo.png")
     splash = QSplashScreen(pixmap)
+    # noinspection PyUnresolvedReferences
     splash.setWindowFlags(Qt.WindowStaysOnTopHint)
     splash.setEnabled(False)
     splash.setMask(pixmap.mask())
@@ -108,4 +107,3 @@ if __name__ == "__main__":
     window.activateWindow()
     splash.finish(window)
     sys.exit(app.exec())
-    print("Exiting")

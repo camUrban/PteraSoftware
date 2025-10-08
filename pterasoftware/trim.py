@@ -23,6 +23,7 @@ This module contains the following functions:
     error."""
 
 import logging
+from typing import Sequence, Any
 
 import numpy as np
 import scipy.optimize
@@ -163,16 +164,22 @@ def analyze_steady_trim(
     initial_guess = np.array(
         [base_velocity, base_alpha, base_beta, base_external_thrust]
     )
-    bounds = (velocity_bounds, alpha_bounds, beta_bounds, external_thrust_bounds)
+    bounds: Sequence[tuple[float, float]] = [
+        (velocity_bounds[0], velocity_bounds[1]),
+        (alpha_bounds[0], alpha_bounds[1]),
+        (beta_bounds[0], beta_bounds[1]),
+        (external_thrust_bounds[0], external_thrust_bounds[1]),
+    ]
 
     trim_logger.info("Starting local search.")
     try:
+        options: Any = {"maxfun": num_calls, "eps": 0.01}
         scipy.optimize.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
             method="L-BFGS-B",
-            options={"maxfun": num_calls, "eps": 0.01},
+            options=options,
         )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
@@ -182,15 +189,17 @@ def analyze_steady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
+        options: Any = {"maxfun": num_calls, "eps": 0.01}
+        minimizer_kwargs: Any = {
+            "method": "L-BFGS-B",
+            "options": options,
+        }
         scipy.optimize.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,
             maxfun=num_calls,
-            minimizer_kwargs={
-                "method": "L-BFGS-B",
-                "options": {"maxfun": num_calls, "eps": 0.01},
-            },
+            minimizer_kwargs=minimizer_kwargs,
         )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")
@@ -324,16 +333,21 @@ def analyze_unsteady_trim(
         return objective
 
     initial_guess = np.array([base_velocity, base_alpha, base_beta])
-    bounds = (velocity_bounds, alpha_bounds, beta_bounds)
+    bounds: Sequence[tuple[float, float]] = [
+        (velocity_bounds[0], velocity_bounds[1]),
+        (alpha_bounds[0], alpha_bounds[1]),
+        (beta_bounds[0], beta_bounds[1]),
+    ]
 
     trim_logger.info("Starting local search.")
     try:
+        options: Any = {"maxfun": num_calls, "eps": 0.01}
         scipy.optimize.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
             method="L-BFGS-B",
-            options={"maxfun": num_calls, "eps": 0.01},
+            options=options,
         )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
@@ -343,15 +357,17 @@ def analyze_unsteady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
+        options: Any = {"maxfun": num_calls, "eps": 0.01}
+        minimizer_kwargs: Any = {
+            "method": "L-BFGS-B",
+            "options": options,
+        }
         scipy.optimize.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,
             maxfun=num_calls,
-            minimizer_kwargs={
-                "method": "L-BFGS-B",
-                "options": {"maxfun": num_calls, "eps": 0.01},
-            },
+            minimizer_kwargs=minimizer_kwargs,
         )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")

@@ -205,6 +205,7 @@ class TestWing(unittest.TestCase):
         invalid_types = [0, 5, -1, 10, "invalid", None]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     wing.generate_mesh(invalid_type)
 
@@ -349,6 +350,7 @@ class TestWing(unittest.TestCase):
             )
 
         # Test invalid num_chordwise_panels
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],

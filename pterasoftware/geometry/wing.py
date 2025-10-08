@@ -948,7 +948,7 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return self.projected_area / self.span
+        return float(self.projected_area) / float(self.span)
 
     # TEST: Add unit tests for this method.
     @property

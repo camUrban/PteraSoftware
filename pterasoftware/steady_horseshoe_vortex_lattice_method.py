@@ -291,9 +291,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Update the HorseshoeVortices' strengths.
-        for panel_num in range(len(self.panels)):
-            this_panel: _panel.Panel = self.panels[panel_num]
-
+        for panel_num, this_panel in enumerate(self.panels):
+            assert isinstance(this_panel, _panel.Panel)
             this_panel.horseshoe_vortex.update_strength(
                 self._vortex_strengths[panel_num]
             )

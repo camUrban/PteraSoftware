@@ -126,21 +126,23 @@ def analyze_steady_convergence(
     # forward, an "iteration" refers to a problem containing one of the combinations
     # of panel aspect ratio and number of chordwise panels.
     iter_times = np.zeros(
-        (len(panel_aspect_ratios_list), len(num_chordwise_panels_list))
+        (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
     force_coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplanes),
-        )
+        ),
+        dtype=float,
     )
     moment_coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplanes),
-        )
+        ),
+        dtype=float,
     )
 
     iteration = 0
@@ -425,7 +427,9 @@ def analyze_steady_convergence(
                     converged_chord_id
                 ]
                 converged_aspect_ratio = panel_aspect_ratios_list[converged_ar_id]
-                converged_iter_time = iter_times[converged_ar_id, converged_chord_id]
+                converged_iter_time = float(
+                    iter_times[converged_ar_id, converged_chord_id]
+                )
 
                 if single_ar or single_chord:
                     convergence_logger.info("The analysis found a semi-converged mesh:")
@@ -553,6 +557,7 @@ def analyze_unsteady_convergence(
         This parameter determines the range of each wing section's number of
         chordwise panels from smallest to largest. The first value must be less than
         or equal to the second value. The default value is (3, 12).
+    :param coefficient_mask:
     :param convergence_criteria: float, optional
         This parameter determines at what point the function continues the problem
         converged. Specifically, it is the absolute percent change in the resultant
@@ -932,19 +937,21 @@ def analyze_unsteady_convergence(
                         # coefficients. If it's variable, get the final RMS load
                         # coefficients.
                         if is_static:
-                            all_force_coefficients = this_problem.final_near_field_force_coefficients_wind_axes[
-                                airplane_id
-                            ]
-                            all_moment_coefficients = this_problem.final_near_field_moment_coefficients_wind_axes[
-                                airplane_id
-                            ]
+                            all_force_coefficients = (
+                                this_problem.finalForceCoefficients_W[airplane_id]
+                            )
+                            all_moment_coefficients = (
+                                this_problem.finalMomentCoefficients_W_Cg[airplane_id]
+                            )
                         else:
-                            all_force_coefficients = this_problem.final_rms_near_field_force_coefficients_wind_axes[
-                                airplane_id
-                            ]
-                            all_moment_coefficients = this_problem.final_rms_near_field_moment_coefficients_wind_axes[
-                                airplane_id
-                            ]
+                            all_force_coefficients = (
+                                this_problem.finalRmsForceCoefficients_W[airplane_id]
+                            )
+                            all_moment_coefficients = (
+                                this_problem.finalRmsMomentCoefficients_W_Cg[
+                                    airplane_id
+                                ]
+                            )
 
                         all_coefficients = np.concatenate(
                             [all_force_coefficients, all_moment_coefficients]
@@ -1153,12 +1160,14 @@ def analyze_unsteady_convergence(
                         converged_aspect_ratio = panel_aspect_ratios_list[
                             converged_ar_id
                         ]
-                        converged_iter_time = iter_times[
-                            converged_wake_id,
-                            converged_length_id,
-                            converged_ar_id,
-                            converged_chord_id,
-                        ]
+                        converged_iter_time = float(
+                            iter_times[
+                                converged_wake_id,
+                                converged_length_id,
+                                converged_ar_id,
+                                converged_chord_id,
+                            ]
+                        )
 
                         if single_wake or single_length or single_ar or single_chord:
                             convergence_logger.info(

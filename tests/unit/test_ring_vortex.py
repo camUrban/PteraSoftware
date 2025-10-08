@@ -318,6 +318,7 @@ class TestRingVortex(unittest.TestCase):
     def test_parameter_validation_invalid_types(self):
         """Test parameter validation with invalid types."""
         # Test with string instead of array.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
                 Frrvp_G_Cg="not_an_array",
@@ -328,6 +329,7 @@ class TestRingVortex(unittest.TestCase):
             )
 
         # Test with wrong-sized ndarray.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
                 Frrvp_G_Cg=np.array([0.0, 0.5], dtype=float),  # Only 2 elements
@@ -338,6 +340,7 @@ class TestRingVortex(unittest.TestCase):
             )
 
         # Test with string strength.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
                 Frrvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),

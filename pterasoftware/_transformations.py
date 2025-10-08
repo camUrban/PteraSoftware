@@ -277,6 +277,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
     n_hat = _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
         plane_normal_A, "plane_normal_A"
     )
+    # noinspection PyUnusedLocal
     passive = _parameter_validation.boolLike_return_bool(passive, "passive")
 
     T_reflect = np.eye(4, dtype=float)

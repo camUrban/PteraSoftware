@@ -136,7 +136,7 @@ for airplane_id in range(num_airplanes):
     del this_airplane
     del this_airplane_movement
 
-this_movement = ps.movement.Movement(
+this_movement = ps.movements.movement.Movement(
     airplane_movements=these_airplane_movements,
     operating_point_movement=this_operating_point_movement,
     num_steps=None,
@@ -166,7 +166,7 @@ this_solver.run(
     calculate_streamlines=False,
 )
 
-ps.output.print_unsteady_results(unsteady_solver=this_solver)
+ps.output.print_results(solver=this_solver)
 
 ps.output.plot_results_versus_time(unsteady_solver=this_solver, save=True)
 

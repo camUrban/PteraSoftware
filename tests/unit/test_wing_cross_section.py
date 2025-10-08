@@ -99,6 +99,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "eight"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -122,6 +123,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_chords = [0.0, -1.0, -0.5, "one"]
         for invalid_chord in invalid_chords:
             with self.subTest(invalid_chord=invalid_chord):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -164,6 +166,7 @@ class TestWingCrossSection(unittest.TestCase):
         ]
         for invalid_vector in invalid_vectors:
             with self.subTest(invalid_vector=invalid_vector):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -229,6 +232,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_types = ["invalid", "flap", "", 123]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -255,6 +259,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_hinge_points = [0.0, 1.0, -0.1, 1.1, "point"]
         for invalid_hinge_point in invalid_hinge_points:
             with self.subTest(invalid_hinge_point=invalid_hinge_point):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -281,6 +286,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_deflections = [-90.0, 90.0, -100.0, 120.0, "deflection"]
         for invalid_deflection in invalid_deflections:
             with self.subTest(invalid_deflection=invalid_deflection):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,
@@ -305,6 +311,7 @@ class TestWingCrossSection(unittest.TestCase):
         invalid_spacings = ["linear", "exponential", "", 123]
         for invalid_spacing in invalid_spacings:
             with self.subTest(invalid_spacing=invalid_spacing):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=self.test_airfoil,

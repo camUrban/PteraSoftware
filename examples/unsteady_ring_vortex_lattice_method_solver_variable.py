@@ -237,7 +237,7 @@ operating_point_movement = ps.movements.operating_point_movement.OperatingPointM
 
 # Define the movement object. This contains the airplane movement and the operating
 # point movement.
-movement = ps.movement.Movement(  # Add the airplane movement.
+movement = ps.movements.movement.Movement(  # Add the airplane movement.
     airplane_movements=[airplane_movement],  # Add the operating point movement.
     operating_point_movement=operating_point_movement,
     # Leave the number of time steps and the length of each time step unspecified.

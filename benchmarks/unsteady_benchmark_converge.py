@@ -77,7 +77,7 @@ operating_point_movement = ps.movements.operating_point_movement.OperatingPointM
 
 del example_operating_point
 
-movement = ps.movement.Movement(
+movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
 )

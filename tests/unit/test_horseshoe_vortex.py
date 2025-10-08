@@ -257,6 +257,7 @@ class TestHorseshoeVortex(unittest.TestCase):
     def test_parameter_validation_invalid_types(self):
         """Test parameter validation with invalid types."""
         # Test with string instead of array for Frhvp_G_Cg.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
                 Frhvp_G_Cg="not_an_array",
@@ -267,6 +268,7 @@ class TestHorseshoeVortex(unittest.TestCase):
             )
 
         # Test with wrong-sized array for leftLegVector_G.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
                 Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
@@ -277,6 +279,7 @@ class TestHorseshoeVortex(unittest.TestCase):
             )
 
         # Test with negative leg length.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
                 Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
@@ -287,6 +290,7 @@ class TestHorseshoeVortex(unittest.TestCase):
             )
 
         # Test with string strength.
+        # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
                 Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
@@ -355,6 +359,7 @@ class TestHorseshoeVortex(unittest.TestCase):
 
     def test_zero_length_leg_vector(self):
         """Test that zero-length leg vector raises error."""
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, ZeroDivisionError)):
             _aerodynamics.HorseshoeVortex(
                 Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),

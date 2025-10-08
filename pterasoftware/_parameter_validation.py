@@ -29,7 +29,6 @@ def boolLike_return_bool(value, name):
         )
 
 
-
 def int_return_int(value, name):
     """Validates that a value is an int and returns it as an int. name must be a string.
 

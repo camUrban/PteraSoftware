@@ -21,6 +21,9 @@ import numpy as np
 # Import the source package.
 import pterasoftware as ps
 
+# Import the transformations module.
+from pterasoftware import _transformations
+
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
 chord = 0.072
@@ -387,7 +390,7 @@ validation_num_steps = math.ceil(
 )
 
 # Define the overall movement.
-validation_movement = ps.movement.Movement(
+validation_movement = ps.movements.movement.Movement(
     airplane_movements=[validation_airplane_movement],
     operating_point_movement=validation_operating_point_movement,
     num_steps=validation_num_steps,
@@ -624,7 +627,7 @@ exp_net_z_forces_wind_axes = np.zeros(exp_net_z_forces_geometry_axes.size)
 # to shift the experimental force z-direction force to the wind frame.
 for force_id, force in enumerate(exp_net_z_forces_geometry_axes):
     exp_net_force_geometry_axes = np.array([0, 0, force])
-    exp_net_force_wind_axes = ps._transformations.apply_T_to_vectors(
+    exp_net_force_wind_axes = _transformations.apply_T_to_vectors(
         T_pas_G_Cg_to_W_Cg, exp_net_force_geometry_axes, has_point=False
     )
     exp_net_z_force_wind_axes = exp_net_force_wind_axes[2]

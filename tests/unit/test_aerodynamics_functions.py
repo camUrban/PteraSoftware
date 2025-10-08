@@ -559,9 +559,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify the velocity is in y-direction (due to right-hand rule). For a
         # conceptual line vortex along +z and evaluation point at +x, the velocity
         # should be in +y.
-        self.assertGreater(v_A__I[1], 0.0)
-        self.assertAlmostEqual(v_A__I[0], 0.0, places=10)
-        self.assertAlmostEqual(v_A__I[2], 0.0, places=10)
+        self.assertGreater(float(v_A__I[1]), 0.0)
+        self.assertAlmostEqual(float(v_A__I[0]), 0.0, places=10)
+        self.assertAlmostEqual(float(v_A__I[2]), 0.0, places=10)
 
     def test_ref_biot_savart_symmetric_configuration(self):
         """Test reference Biot-Savart implementation for symmetric vortex

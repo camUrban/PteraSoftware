@@ -103,6 +103,7 @@ class TestAirplane(unittest.TestCase):
 
         for invalid_position in invalid_positions:
             with self.subTest(invalid_position=invalid_position):
+                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.airplane.Airplane(
                         wings=[self.test_wing_type_1], Cg_E_CgP1=invalid_position

@@ -158,7 +158,6 @@ class Airfoil:
 
         flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
         lowerOutline_A_lp = self._lower_outline()
-        mcl_A_lp = self.mcl_A_lp
 
         flippedUpperOutline_split_index = np.where(
             flippedUpperOutline_A_lp[:, 0] >= hinge_point
@@ -166,7 +165,6 @@ class Airfoil:
         lowerOutline_split_index = np.where(lowerOutline_A_lp[:, 0] >= hinge_point)[0][
             0
         ]
-        mcl_split_index = np.where(mcl_A_lp[:, 0] >= hinge_point)[0][0]
 
         preHingeFlippedUpperOutline_A_lp = flippedUpperOutline_A_lp[
             :flippedUpperOutline_split_index, :
@@ -176,12 +174,9 @@ class Airfoil:
         ]
         preHingeLowerOutline_A_lp = lowerOutline_A_lp[:lowerOutline_split_index, :]
         postHingeLowerOutline_A_lp = lowerOutline_A_lp[lowerOutline_split_index:, :]
-        preHingeMcl_A_lp = mcl_A_lp[:mcl_split_index, :]
-        postHingeMcl_A_lp = mcl_A_lp[mcl_split_index:, :]
 
         flippedUpperOutlineHingePoint_A_lp = preHingeFlippedUpperOutline_A_lp[-1, :]
         lowerOutlineHingePoint_A_lp = preHingeLowerOutline_A_lp[-1, :]
-        mclHingePoint_A_lp = preHingeMcl_A_lp[-1, :]
 
         flippedUpperOutlineHingePoint_Wcs_lp = np.hstack(
             [
@@ -193,18 +188,12 @@ class Airfoil:
         lowerOutlineHingePoint_Wcs_lp = np.hstack(
             [lowerOutlineHingePoint_A_lp[0], 0.0, lowerOutlineHingePoint_A_lp[1]]
         )
-        mclHingePoint_Wcs_lp = np.hstack(
-            [mclHingePoint_A_lp[0], 0.0, mclHingePoint_A_lp[1]]
-        )
 
         flippedUpperOutlineToOrigin_T_act = _transformations.generate_trans_T(
             -flippedUpperOutlineHingePoint_Wcs_lp, passive=False
         )
         lowerOutlineToOrigin_T_act = _transformations.generate_trans_T(
             -lowerOutlineHingePoint_Wcs_lp, passive=False
-        )
-        mclToOrigin_T_act = _transformations.generate_trans_T(
-            -mclHingePoint_Wcs_lp, passive=False
         )
 
         # Make the active rotational homogeneous transformation matrix for the given
@@ -219,18 +208,12 @@ class Airfoil:
         lowerOutlineBack_T_act = _transformations.generate_trans_T(
             lowerOutlineHingePoint_Wcs_lp, passive=False
         )
-        mclBack_T_act = _transformations.generate_trans_T(
-            mclHingePoint_Wcs_lp, passive=False
-        )
 
         postHingeFlippedUpperOutline_T_act = _transformations.compose_T_act(
             flippedUpperOutlineToOrigin_T_act, rot_T, flippedUpperOutlineBack_T_act
         )
         postHingeLowerOutline_T_act = _transformations.compose_T_act(
             lowerOutlineToOrigin_T_act, rot_T, lowerOutlineBack_T_act
-        )
-        postHingeMcl_T_act = _transformations.compose_T_act(
-            mclToOrigin_T_act, rot_T, mclBack_T_act
         )
 
         postHingeFlippedUpperOutline_Wcs_lp = np.column_stack(
@@ -247,13 +230,6 @@ class Airfoil:
                 postHingeLowerOutline_A_lp[:, 1],
             ]
         )
-        postHingeMcl_Wcs_lp = np.column_stack(
-            [
-                postHingeMcl_A_lp[:, 0],
-                np.zeros_like(postHingeMcl_A_lp[:, 0]),
-                postHingeMcl_A_lp[:, 1],
-            ]
-        )
 
         flappedPostHingeFlippedUpperOutline_A_lp = (
             _transformations.apply_T_to_vectors(
@@ -267,11 +243,6 @@ class Airfoil:
             postHingeLowerOutline_Wcs_lp,
             has_point=True,
         )[:, [0, 2]]
-        flappedPostHingeMcl_A_lp = _transformations.apply_T_to_vectors(
-            postHingeMcl_T_act,
-            postHingeMcl_Wcs_lp,
-            has_point=True,
-        )[:, [0, 2]]
 
         flappedFlippedUpperOutline_A_lp = np.vstack(
             [preHingeFlippedUpperOutline_A_lp, flappedPostHingeFlippedUpperOutline_A_lp]
@@ -279,7 +250,6 @@ class Airfoil:
         flappedLowerOutline_A_lp = np.vstack(
             [preHingeLowerOutline_A_lp, flappedPostHingeLowerOutline_A_lp]
         )
-        flappedMcl_A_lp = np.vstack([preHingeMcl_A_lp, flappedPostHingeMcl_A_lp])
 
         flappedOutline_A_lp = np.vstack(
             [

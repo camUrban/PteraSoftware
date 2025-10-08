@@ -73,6 +73,7 @@ class TestPanel(unittest.TestCase):
             )
 
         # Test invalid Frpp_G_Cg size
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             _panel.Panel(
                 Frpp_G_Cg=[0.0, 0.5],  # Only 2 elements
@@ -307,6 +308,7 @@ class TestPanel(unittest.TestCase):
             panel.calculate_projected_area("invalid")
 
         # Test invalid normal_G size
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             panel.calculate_projected_area([0.0, 1.0])  # Only 2 elements
 
@@ -349,10 +351,12 @@ class TestPanel(unittest.TestCase):
             panel.update_coefficients("invalid")
 
         # Test negative qInf__E
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             panel.update_coefficients(-100.0)
 
         # Test zero qInf__E
+        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError, ZeroDivisionError)):
             panel.update_coefficients(0.0)
 

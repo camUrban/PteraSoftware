@@ -628,8 +628,9 @@ class Wing:
         # Step 1: Create T_reflect_pas_G_Cg_to_Gs_Cgs, which maps from which maps in
         # homogeneous coordinates from geometry axes relative to the CG to reflected
         # geometry axes (after accounting for symmetry) relative to the CG (after
-        # accounting for symmetry). This is the reflection step.
-        if self.symmetryNormal_G is not None and self.symmetryPoint_G_Cg is not None:
+        # accounting for symmetry). This is the reflection step. Only apply reflection
+        # for mirror-only Wings (types 2 and 3), not for symmetric Wings (type 4).
+        if self.symmetry_type in (2, 3):
             T_reflect_pas_G_Cg_to_Gs_Cgs = _transformations.generate_reflect_T(
                 plane_point_A_a=self.symmetryPoint_G_Cg,
                 plane_normal_A=self.symmetryNormal_G,

@@ -84,7 +84,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             testing=True,
         )
 
-        # FIXME: Determine why this test is failing due to incorrect coefficients.
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(c_di_error < allowable_error)
         self.assertTrue(c_l_error < allowable_error)
@@ -137,7 +136,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             testing=True,
         )
 
-        # FIXME: Determine why this test is failing due to incorrect coefficients.
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(c_di_error < allowable_error)
         self.assertTrue(c_l_error < allowable_error)

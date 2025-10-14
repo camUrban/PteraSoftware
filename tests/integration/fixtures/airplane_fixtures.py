@@ -50,7 +50,7 @@ def make_steady_validation_airplane():
                         num_spanwise_panels=None,
                         chord=0.75,
                         Lp_Wcsp_Lpp=(1.0, 5.0, 0.0),
-                        angles_Wcsp_to_Wcs_ixyz=(5.0, 0.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
                         control_surface_symmetry_type="symmetric",
                         control_surface_hinge_point=0.75,
                         control_surface_deflection=0.0,

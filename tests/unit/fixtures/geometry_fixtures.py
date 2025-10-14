@@ -325,12 +325,12 @@ def make_type_3_wing_fixture():
     type_3_wing_fixture = ps.geometry.wing.Wing(
         wing_cross_sections=[root_wcs, tip_wcs],
         name="Type 3 Test Wing",
-        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
-        angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
+        Ler_Gs_Cgs=[0.0, 0.0, 0.0],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
         symmetric=False,
         mirror_only=True,
-        symmetryNormal_G=[0.0, 0.707, 0.707],
-        symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
+        symmetryNormal_G=[0.0, 1.0, 0.0],
+        symmetryPoint_G_Cg=[0.0, -0.5, 0.0],
         num_chordwise_panels=8,
         chordwise_spacing="cosine",
     )

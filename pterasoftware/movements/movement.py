@@ -47,6 +47,11 @@ class Movement:
     ):
         """This is the initialization method.
 
+        Note: This method checks that all Wings maintain their symmetry type across
+        all time steps. See the WingMovement class documentation for more details on
+        this requirement, and the Wing class documentation for more information on
+        symmetry types.
+
         :param airplane_movements: list of AirplaneMovements
 
             This is a list of objects which characterize the movement of each
@@ -225,6 +230,33 @@ class Movement:
                     num_steps=self.num_steps, delta_time=self.delta_time
                 )
             )
+
+        # Validate that all Wings maintain their symmetry type across all time steps.
+        for airplane_movement_id, airplane_list in enumerate(self.airplanes):
+            # Get the base Airplane (first time step).
+            base_airplane = airplane_list[0]
+
+            # Store the symmetry types of the base Wings.
+            base_wing_symmetry_types = []
+            for wing in base_airplane.wings:
+                base_wing_symmetry_types.append(wing.symmetry_type)
+
+            # Validate all subsequent time steps.
+            for step_id, airplane in enumerate(airplane_list):
+                # Check that Wings maintain their symmetry types.
+                for wing_id, wing in enumerate(airplane.wings):
+                    base_symmetry_type = base_wing_symmetry_types[wing_id]
+                    if wing.symmetry_type != base_symmetry_type:
+                        raise ValueError(
+                            f"Wing {wing_id} in AirplaneMovement "
+                            f"{airplane_movement_id} changed from type "
+                            f"{base_symmetry_type} symmetry at time step 0 to type "
+                            f"{wing.symmetry_type} symmetry at time step {step_id}. "
+                            f"Wings cannot undergo motion that changes their symmetry "
+                            f"type. This happens when a symmetric Wing moves such "
+                            f"that its symmetry plane is no longer coincident with "
+                            f"the wing axes' yz-plane or vice versa."
+                        )
 
         # Generate a lists of OperatingPoints that are the steps through the
         # OperatingPointMovement.

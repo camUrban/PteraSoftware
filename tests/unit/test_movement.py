@@ -7,6 +7,8 @@ import pterasoftware as ps
 from tests.unit.fixtures import movement_fixtures
 from tests.unit.fixtures import airplane_movement_fixtures
 from tests.unit.fixtures import operating_point_fixtures
+from tests.unit.fixtures import geometry_fixtures
+from tests.unit.fixtures import wing_cross_section_movement_fixtures
 
 
 class TestMovement(unittest.TestCase):
@@ -529,6 +531,258 @@ class TestMovement(unittest.TestCase):
         # Since we use math.ceil, it should be an integer.
         self.assertIsInstance(movement.num_steps, int)
         self.assertGreater(movement.num_steps, 0)
+
+    def test_type_4_to_5_transition_raises_error(self):
+        """Test that a Wing transitioning from type 4 to type 5 symmetry raises
+        an error."""
+        # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
+        base_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_E_CgP1=(0.0, 0.0, 0.0),
+            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a WingMovement with rotation that will cause the symmetry plane
+        # to become non-coincident (type 4->5 transition).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        )
+
+        # Create an AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create an OperatingPointMovement.
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Attempting to create a Movement should raise a ValueError.
+        with self.assertRaises(ValueError) as context:
+            ps.movements.movement.Movement(
+                airplane_movements=[airplane_movement],
+                operating_point_movement=operating_point_movement,
+                num_cycles=1,
+            )
+
+        # Verify the error message mentions symmetry.
+        self.assertIn("symmetry", str(context.exception).lower())
+
+    def test_type_3_to_2_transition_raises_error(self):
+        """Test that a Wing transitioning from type 3 to type 2 symmetry raises
+        an error."""
+        # Create a type 3 Wing (mirror_only=True, non-coincident symmetry plane).
+        base_wing = geometry_fixtures.make_type_3_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_E_CgP1=(0.0, 0.0, 0.0),
+            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a WingMovement with rotation that will cause the symmetry plane
+        # to become coincident (type 3->2 transition).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+            ampLer_Gs_Cgs=(0.0, 0.5, 0.0),
+            periodLer_Gs_Cgs=(0.0, 1.0, 0.0),
+        )
+
+        # Create an AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create an OperatingPointMovement.
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Attempting to create a Movement should raise a ValueError.
+        with self.assertRaises(ValueError) as context:
+            ps.movements.movement.Movement(
+                airplane_movements=[airplane_movement],
+                operating_point_movement=operating_point_movement,
+                delta_time=0.25,
+                num_steps=5,
+            )
+
+        # Verify the error message mentions symmetry.
+        self.assertIn("symmetry", str(context.exception).lower())
+
+    def test_type_2_to_3_transition_raises_error(self):
+        """Test that a Wing transitioning from type 2 to type 3 symmetry raises
+        an error."""
+        # Create a type 2 Wing (mirror_only=True, coincident symmetry plane).
+        base_wing = geometry_fixtures.make_type_2_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_E_CgP1=(0.0, 0.0, 0.0),
+            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a WingMovement with rotation that will cause the symmetry plane
+        # to become non-coincident (type 2->3 transition).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+            ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        )
+
+        # Create an AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create an OperatingPointMovement.
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Attempting to create a Movement should raise a ValueError.
+        with self.assertRaises(ValueError) as context:
+            ps.movements.movement.Movement(
+                airplane_movements=[airplane_movement],
+                operating_point_movement=operating_point_movement,
+                num_cycles=1,
+            )
+
+        # Verify the error message mentions symmetry.
+        self.assertIn("symmetry", str(context.exception).lower())
+
+    def test_static_movement_with_symmetric_wing_succeeds(self):
+        """Test that a Movement with a symmetric Wing but no motion succeeds."""
+        # Create a type 4 Wing.
+        base_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_E_CgP1=(0.0, 0.0, 0.0),
+            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create static WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a static WingMovement (no rotation or translation).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+        )
+
+        # Create a static AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create an OperatingPointMovement.
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Creating a Movement should succeed without raising an error.
+        movement = ps.movements.movement.Movement(
+            airplane_movements=[airplane_movement],
+            operating_point_movement=operating_point_movement,
+            num_chords=3,
+        )
+
+        # Verify the Movement was created successfully.
+        self.assertIsInstance(movement, ps.movements.movement.Movement)
 
 
 if __name__ == "__main__":

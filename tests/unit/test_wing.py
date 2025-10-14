@@ -128,11 +128,8 @@ class TestWing(unittest.TestCase):
         # Test basic properties
         self.assertFalse(wing.symmetric)
         self.assertTrue(wing.mirror_only)
-        # Check that symmetry plane is non-coincident
-        self.assertFalse(np.allclose(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0])))
-        self.assertFalse(
-            np.allclose(wing.symmetryPoint_G_Cg, np.array([0.0, 0.0, 0.0]))
-        )
+        npt.assert_array_equal(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]))
+        npt.assert_array_equal(wing.symmetryPoint_G_Cg, np.array([0.0, -0.5, 0.0]))
 
     def test_wing_type_4_properties(self):
         """Test type 4 wing (symmetric=True, coincident symmetry plane) properties."""
@@ -156,11 +153,10 @@ class TestWing(unittest.TestCase):
         # Test basic properties (before Airplane processing)
         self.assertTrue(wing.symmetric)
         self.assertFalse(wing.mirror_only)
-        # Check that symmetry plane is non-coincident
-        self.assertFalse(np.allclose(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0])))
-        self.assertFalse(
-            np.allclose(wing.symmetryPoint_G_Cg, np.array([0.0, 0.0, 0.0]))
+        npt.assert_array_equal(
+            wing.symmetryNormal_G, np.array([0.0, np.sqrt(2) / 2, np.sqrt(2) / 2])
         )
+        npt.assert_array_equal(wing.symmetryPoint_G_Cg, np.array([0.5, 0.0, 0.0]))
 
     def test_generate_mesh_symmetry_type_1(self):
         """Test generate_mesh method with type 1 symmetry."""

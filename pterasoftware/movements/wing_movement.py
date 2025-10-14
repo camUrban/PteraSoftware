@@ -22,6 +22,14 @@ from .. import _parameter_validation
 class WingMovement:
     """This is a class used to contain the Wing movements.
 
+    Note: Wings cannot undergo motion that causes them to switch symmetry types. A
+    transition between types could change the number of Wings and the panel
+    structure, which is incompatible with the unsteady solver. This happens when a
+    WingMovement defines motion that causes its base Wing's wing axes' yz-plane and
+    its symmetry plane to transition from coincident to non-coincident, or vice
+    versa. This is checked by this WingMovement's parent AirplaneMovement's parent
+    Movement.
+
     This class contains the following public methods:
 
         generate_wings: Creates the Wing at each time step, and returns them in a list.

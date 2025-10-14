@@ -1,305 +1,294 @@
-# REFACTOR: I haven't yet started refactoring this module.
-"""This is script is an example of how to run Ptera Software's unsteady ring vortex
-lattice method solver on a custom airplane with variable geometry."""
+# FIXME: This example reveals an architectural bug in how we handle motion with type 4
+#  symmetry Wings.
+"""This is script is an example of how to run Ptera Software's
+UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a non-static
+Movement."""
 
 # First, import the software's main package. Note that if you wished to import this
-# software into another package, you would first install the software by running "pip
-# install pterasoftware" in your terminal.
+# software into another package, you would first install it by running "pip install
+# pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Create an airplane object. Note, I am going to declare every attribute for each
-# class, even most of them have usable default values. This is simply for educational
-# purposes, even though it makes the code much longer than what it needs to be.
+# Create an Airplane with our custom geometry. I am going to declare every parameter
+# for Airplane, even though most of them have usable default values. This is for
+# educational purposes, but keep in mind that it makes the code much longer than it
+# needs to be. For details about each parameter, read the detailed class docstring.
+# The same caveats apply to the other classes, methods, and functions I call in this
+# script.
 example_airplane = ps.geometry.airplane.Airplane(
-    wings=[  # Create the first wing object in this airplane.
+    wings=[
         ps.geometry.wing.Wing(
-            wing_cross_sections=[  # Create a new wing cross section object.
+            wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    # Define the location of the leading edge of the wing cross
-                    # section relative to the wing's leading edge. These values all
-                    # default to 0.0 meters.
-                    x_le=0.0,
-                    y_le=0.0,
-                    z_le=0.0,
-                    # Define the twist of the wing cross section in degrees. This is
-                    # equivalent to incidence angle of cross section. The twist is
-                    # about the leading edge. Note that the twist is only stable up
-                    # to 45.0 degrees. Values above that produce unexpected results.
-                    # This will be fixed in a future release. The default value is
-                    # 0.0 degrees. Positive twist corresponds to positive rotation
-                    # about the y axis, as defined by the right-hand rule.
-                    twist=0.0,
-                    # Define the type of control surface. The options are "symmetric"
-                    # and "asymmetric". This is only applicable if your wing is also
-                    # symmetric. If so, symmetric control surfaces will deflect in
-                    # the same direction, like flaps, while asymmetric control
-                    # surfaces will deflect in opposite directions, like ailerons.
-                    # The default value is "symmetric".
-                    control_surface_type="symmetric",
-                    # Define the point on the airfoil where the control surface
-                    # hinges. This is expressed as a fraction of the chord length,
-                    # back from the leading edge. The default value is 0.75.
-                    control_surface_hinge_point=0.75,
-                    # Define the deflection of the control surface in degrees. The
-                    # default is 0.0 degrees.
-                    control_surface_deflection=0.0,
-                    # Define the number of spanwise panels on the wing cross section,
-                    # and the spacing between them. The number of spanwise panels
-                    # defaults to 8 panels. The spacing defaults to "cosine",
-                    # which makes the panels relatively finer, in the spanwise
-                    # direction, near the cross section ends. The other option is
-                    # "uniform".
                     num_spanwise_panels=8,
+                    chord=1.75,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
                     spanwise_spacing="cosine",
-                    # Set the chord of this cross section to be 1.75 meters. This
-                    # value defaults to 1.0 meter.
-                    chord=1.75,  # Every wing cross section has an airfoil object.
                     airfoil=ps.geometry.airfoil.Airfoil(
-                        # Give the airfoil a name. This defaults to "Untitled
-                        # Airfoil". This name should correspond to a name in the
-                        # airfoil directory or a NACA four series airfoil, unless you
-                        # are passing in your own coordinates.
                         name="naca2412",
-                        # If you wish to pass in coordinates, set this to an N x 2
-                        # array of the airfoil's coordinates, where N is the number
-                        # of coordinates. Treat this as an immutable, don't edit
-                        # directly after initialization. If you wish to load
-                        # coordinates from the airfoil directory, leave this as None.
-                        # The default is None. Make sure that any airfoil coordinates
-                        # used range in x from 0 to 1.
-                        coordinates=None,
-                        # This is the variable that determines whether you would like
-                        # to repanel the airfoil coordinates. This applies to
-                        # coordinates passed in by the user or to the directory
-                        # coordinates. I highly recommended setting this to True. The
-                        # default is True.
-                        repanel=True,
-                        # This is number of points to use if repaneling the airfoil.
-                        # It is ignored if the repanel is False. The default is 400.
+                        outline_A_lp=None,
+                        resample=True,
                         n_points_per_side=400,
                     ),
                 ),
-                # Define the next wing cross section. From here on out,
-                # the declarations will not be as commented as the previous. See the
-                # above comments if you have questions.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.75,
-                    y_le=6.0,
-                    z_le=1.0,
+                    num_spanwise_panels=None,
                     chord=1.5,
-                    twist=5.0,
-                    # Give this wing cross section an airfoil.
+                    Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
             ],
             name="Main Wing",
+            Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             symmetric=True,
+            mirror_only=False,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
-        ),  # Define the next wing.
+        ),
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
+                    num_spanwise_panels=8,
                     chord=1.5,
-                    # Give the root wing cross section an airfoil.
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
-                    twist=-5.0,
                 ),
-                # Define the wing's tip wing cross section.
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.5,
-                    y_le=2.0,
-                    z_le=1.0,
+                    num_spanwise_panels=None,
                     chord=1.0,
-                    twist=-5.0,
-                    # Give the tip wing cross section an airfoil.
+                    Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    control_surface_hinge_point=0.75,
+                    control_surface_deflection=0.0,
+                    spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
+                        outline_A_lp=None,
+                        resample=True,
+                        n_points_per_side=400,
                     ),
                 ),
             ],
             name="V-Tail",
+            Ler_Gs_Cgs=(5.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(0.0, -5.0, 0.0),
             symmetric=True,
+            mirror_only=False,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
         ),
     ],
     name="Example Airplane",
+    Cg_E_CgP1=(0.0, 0.0, 0.0),
+    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    weight=0.0,
     s_ref=None,
     c_ref=None,
     b_ref=None,
 )
 
-# Now define the main wing's root wing cross section's movement. Cross sections can
-# move in three ways: sweeping, pitching, and heaving. Sweeping is defined as the
-# relative rotation of this wing cross section's leading edge to its preceding wing
-# cross section's leading edge about the airplane's body x axis. Pitching is defined
-# as the relative rotation of this wing cross section's leading edge to the preceding
-# wing cross section's leading edge about the body y axis. Heaving is defined as the
-# relative rotation of this wing cross section's leading edge to the preceding wing
-# cross section's leading edge about the body z axis. The sign of all rotations is
-# determined via the right-hand-rule.
+# Now define the main wing's root and tip WingCrossSections' WingCrossSectionMovements.
 main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0]
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
-
-# Define the main wing's tip wing cross section's movement.
 main_wing_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1]
+        base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
-# Define the v-tail's root wing cross section's movement. This wing will be static,
-# so the movement attributes can be excluded, and the default values will suffice.
+# Now define the v-tail's root and tip WingCrossSections' WingCrossSectionMovements.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0]
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
-
-# Define the v-tail's root wing cross section's movement. This wing will be static,
-# so the movement attributes can be excluded, and the default values will suffice.
 v_tail_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1]
+        base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
-# Now define the main wing's movement. In addition to their wing cross sections'
-# relative movements, wings' leading edge positions can move as well.
+# Now define the main wing's WingMovement and the v-tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
         main_wing_root_wing_cross_section_movement,
         main_wing_tip_wing_cross_section_movement,
     ],
-    x_le_amplitude=0.0,
-    x_le_period=0.0,
-    x_le_spacing="sine",
-    y_le_amplitude=0.0,
-    y_le_period=0.0,
-    y_le_spacing="sine",
-    z_le_amplitude=0.0,
-    z_le_period=0.0,
-    z_le_spacing="sine",
+    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
+    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
-
-# Delete the extraneous wing cross section movement objects, as these are now
-# contained within the wing movement object. This is unnecessary, but it can make
-# debugging easier.
-del main_wing_root_wing_cross_section_movement
-del main_wing_tip_wing_cross_section_movement
-
-# Make the v-tail's wing movement object.
 v_tail_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[1],
     wing_cross_section_movements=[
         v_tail_root_wing_cross_section_movement,
         v_tail_tip_wing_cross_section_movement,
     ],
+    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
 
-# Delete the extraneous wing cross section movement objects, as these are now
-# contained within the wing movement object. This is unnecessary, but it can make
-# debugging easier.
+# Delete the extraneous pointers to the WingCrossSectionMovements, as these are now
+# contained within the WingMovements. This is optional, but it can make debugging
+# easier.
+del main_wing_root_wing_cross_section_movement
+del main_wing_tip_wing_cross_section_movement
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the airplane's movement object. In addition to their wing's and wing
-# cross sections' relative movements, airplane's reference positions can move as well.
+# Now define the example airplane's AirplaneMovement.
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=example_airplane, wing_movements=[main_wing_movement, v_tail_movement]
+    base_airplane=example_airplane,
+    wing_movements=[main_wing_movement, v_tail_movement],
+    ampCg_E_CgP1=(0.0, 0.0, 0.0),
+    periodCg_E_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_E_CgP1=("sine", "sine", "sine"),
+    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
+    ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
+    phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
 )
 
-# Delete the extraneous wing movement objects, as these are now contained within the
-# airplane movement object.
+# Delete the extraneous pointers to the WingMovements.
 del main_wing_movement
 del v_tail_movement
 
-# Define a new operating point object. This defines the state at which the airplane
-# object is operating.
+# Define a new OperatingPoint.
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, nu=15.06e-6
+    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define the operating point's movement. The operating point's velocity can change
-# with respect to time.
+# Define the operating point's OperatingPointMovement.
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point, periodVCg__E=0.0, spacingVCg__E="sine"
 )
 
-# Define the movement object. This contains the airplane movement and the operating
-# point movement.
-movement = ps.movements.movement.Movement(  # Add the airplane movement.
-    airplane_movements=[airplane_movement],  # Add the operating point movement.
+# Delete the extraneous pointer.
+del example_operating_point
+
+# Define the Movement. This contains the AirplaneMovement and the
+# OperatingPointMovement.
+movement = ps.movements.movement.Movement(
+    airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
-    # Leave the number of time steps and the length of each time step unspecified.
-    # The solver will automatically set the length of the time steps so that the wake
-    # ring vortices and the bound ring vortices have approximately the same area. The
-    # solver will also determine if the geometry is static or not. If it is static,
-    # the number of steps will be set such that the wake extends ten chord lengths
-    # back from the main wing. If the geometry isn't static, the number of steps will
-    # be set such that three periods of the slowest movement oscillation complete.
-    num_steps=None,
     delta_time=None,
+    num_cycles=3,
+    num_chords=None,
+    num_steps=None,
 )
 
-# Delete the extraneous airplane and operating point movement objects, as these are
-# now contained within the movement object.
+# Delete the extraneous pointers.
 del airplane_movement
 del operating_point_movement
 
-# Define the unsteady example problem.
+# Define the UnsteadyProblem.
 example_problem = ps.problems.UnsteadyProblem(
     movement=movement,
 )
 
-# Define a new solver. The available solver objects are the steady horseshoe vortex
-# lattice method solver, the steady ring vortex lattice method solver, and the
-# unsteady ring vortex lattice method solver.
-example_solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-    # Solvers just take in one attribute: the problem they are going to solve.
-    unsteady_problem=example_problem,
+# Define a new solver. The available solver classes are
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
+# and UnsteadyRingVortexLatticeMethodSolver. We'll create an
+# UnsteadyRingVortexLatticeMethodSolver, which requires a UnsteadyProblem.
+example_solver = (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=example_problem,
+    )
 )
 
-# Delete the extraneous pointer to the problem as it is now contained within the
-# solver.
+# Delete the extraneous pointer.
 del example_problem
 
-# Run the example solver.
+# Run the solver.
 example_solver.run(
-    # This parameter determines the detail of information that the solver's logger
-    # will output while running. The options are, in order of detail and severity,
-    # "Debug", "Info", "Warning", "Error", "Critical". The default value is "Warning".
     logging_level="Warning",
-    # Use a prescribed wake model. This is faster, but may be slightly less accurate.
     prescribed_wake=True,
 )
 
-# Call the software's animate function on the solver. This produces a GIF of the wake
-# being shed. The GIF is saved in the same directory as this script. Press "q",
+# Call the animate function on the solver. This produces a GIF of the wake being
+# shed. The GIF is saved in the same directory as this script. Press "q",
 # after orienting the view, to begin the animation.
-ps.output.animate(  # Set the unsteady solver to the one we just ran.
+ps.output.animate(
     unsteady_solver=example_solver,
-    # Tell the animate function to color the aircraft's wing panels with the local
-    # lift coefficient. The valid arguments for this parameter are None, "induced drag",
-    # "side force", or "lift".
     scalar_type="lift",
-    # Tell the animate function to show the wake vortices. This value defaults to
-    # False.
     show_wake_vortices=True,
-    # Tell the animate function to not save the animation as file. This way,
-    # the animation will still be displayed but not saved. This value defaults to
-    # False.
     save=False,
 )
-
-# Compare the output you see with the expected outputs saved in the "docs/examples
-# expected output" directory.

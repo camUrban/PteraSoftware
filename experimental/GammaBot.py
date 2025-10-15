@@ -7,28 +7,32 @@ import numpy as np
 import pterasoftware as ps
 import dxf_to_csv
 
+# TODO: Check results with velocity=0.0.
 gammabot_velocity = 0.9
 gammabot_alpha = 0.0
-gammabot_flapping_frequency = 165.0
+gammabot_flapping_frequency = 170.0
 wing_spacing = 0.02172011
+
+# TODO: Get actual GammaBot values for the flapping amplitudes and phase angle.
 gammabot_flapping_amplitude_angleX = 34.0
 gammabot_flapping_amplitude_angleY = 43.0
-# TODO: Get actual value for the phase
-delta = -30
-gammabot_flapping_phase_angleY = 0 - delta
+delta = -5.0
 
-gammabot_flapping_period = 1.0 / gammabot_flapping_frequency
-
+# TODO: Find the converged values for these parameters.
 # Set the number of flap cycles to run the simulation for. The converged result is X
 # flaps. Set the number of chordwise panels. The converged result is X panels. Set
 # the number of sections to map on each Wing. There will be this number +1
 # WingCrossSections per Wing. The converged result is X spanwise sections. Set the
 # chordwise spacing scheme for the panels. This is set to uniform, as is standard for
 # UVLM simulations.
-num_flaps = 1
+num_flaps = 3
 num_chordwise_panels = 5
 num_spanwise_sections = 20
+prescribed_wake = True
+
 chordwise_spacing = "uniform"
+gammabot_flapping_phase_angleY = 0.0 - delta
+gammabot_flapping_period = 1.0 / gammabot_flapping_frequency
 
 num_wing_cross_sections = num_spanwise_sections + 1
 
@@ -213,7 +217,7 @@ gammabot_solver = (
 )
 
 # Run the GammaBot solver. This study was run using an X wake.
-gammabot_solver.run(prescribed_wake=True)
+gammabot_solver.run(prescribed_wake=prescribed_wake)
 
 ps.output.draw(
     solver=gammabot_solver,
@@ -222,17 +226,17 @@ ps.output.draw(
     save=False,
 )
 
-# ps.output.plot_results_versus_time(
-#     unsteady_solver=gammabot_solver,
-#     show=False,
-#     save=True,
-# )
+ps.output.plot_results_versus_time(
+    unsteady_solver=gammabot_solver,
+    show=True,
+    save=True,
+)
 
 ps.output.animate(
     unsteady_solver=gammabot_solver,
     show_wake_vortices=True,
     scalar_type="lift",
-    save=True,
+    save=False,
 )
 
 ps.output.print_results(solver=gammabot_solver)

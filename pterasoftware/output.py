@@ -30,6 +30,7 @@ import numpy as np
 import pyvista as pv
 import webp
 
+from . import _parameter_validation
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
@@ -559,32 +560,44 @@ def animate(
     pv.close_all()
 
 
-# REFACTOR: I haven't yet started refactoring this function.
+# TEST: Add unit tests for this function.
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show=True,
     save=False,
 ):
-    """This method takes in an unsteady solver object, and plots the geometries'
-    forces, moments, force coefficients, and moment coefficients as a function of time.
+    """This method takes in an UnsteadyRingVortexLatticeMethodSolver, and plots the
+    loads and load coefficients as a function of time.
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-        This is the solver object whose resulting forces, moments, and coefficients
-        are to be plotted.
-    :param show: bool, Optional
-        This boolean determines if the plots will be shown. If False, no plots will be
-        shown, which is useful for testing when the user wants to know that the plots
-        were created without having to show them. Its default value is True.
-    :param save: bool, Optional
-        This boolean determines if the plots will be saved as WebP images. The
-        default value is False.
+
+        This is the UnsteadyRingVortexLatticeMethodSolver whose loads will be plotted.
+
+    :param show: boolLike, optional
+
+        Set this to True to show the plots. It can be a boolean or a NumPy boolean
+        and will be converted internally to a boolean. The default is True.
+
+    :param save: boolLike, Optional
+
+        Set this to True to save the plots as PNGs. It can be a boolean or a
+        NumPy boolean and will be converted internally to a boolean. The default is
+        True.
+
     :return: None
     """
+    if not isinstance(
+        unsteady_solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise TypeError("solver must be an UnsteadyRingVortexLatticeMethodSolver.")
+    show = _parameter_validation.boolLike_return_bool(show, "show")
+    save = _parameter_validation.boolLike_return_bool(save, "save")
 
     first_results_step = unsteady_solver.first_results_step
 
-    # Get this solver's time step characteristics. Note that the first time step (
-    # time step 0), occurs at 0 seconds.
+    # Get the time step characteristics. Note that the first time step (time step
+    # 0), occurs at 0 seconds.
     num_steps = unsteady_solver.num_steps
     delta_time = unsteady_solver.delta_time
     num_airplanes = unsteady_solver.num_airplanes
@@ -592,7 +605,7 @@ def plot_results_versus_time(
     final_time_step_time = delta_time * (num_steps - 1)
     num_steps_to_average = num_steps - first_results_step
 
-    # Create a 1D array with the time at each time step where results have been
+    # Create a 1D ndarray with the time at each time step where results have been
     # calculated.
     times = np.linspace(
         first_results_time_step_time,
@@ -601,12 +614,16 @@ def plot_results_versus_time(
         endpoint=True,
     )
 
-    # Initialize matrices to hold the forces, moments, and coefficients at each time
-    # step which has results.
-    forces_W = np.zeros((num_airplanes, 3, num_steps_to_average))
-    forceCoefficients_W = np.zeros((num_airplanes, 3, num_steps_to_average))
-    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average))
-    momentCoefficients_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average))
+    # Initialize matrices to hold the loads and load coefficients at every time step
+    # that has results.
+    forces_W = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    forceCoefficients_W = np.zeros(
+        (num_airplanes, 3, num_steps_to_average), dtype=float
+    )
+    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    momentCoefficients_W_Cg = np.zeros(
+        (num_airplanes, 3, num_steps_to_average), dtype=float
+    )
 
     # Initialize a variable to track position in the results arrays.
     results_step = 0
@@ -614,10 +631,10 @@ def plot_results_versus_time(
     # Iterate through the time steps and add the results to their respective matrices.
     for step in range(first_results_step, num_steps):
 
-        # Get the airplanes from the problem at this step.
+        # Get the Airplanes from the SteadyProblem at this time step.
         airplanes = unsteady_solver.steady_problems[step].airplanes
 
-        # Iterate through this step's airplanes.
+        # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
             forces_W[airplane_id, :, results_step] = airplane.forces_W
             forceCoefficients_W[airplane_id, :, results_step] = (
@@ -630,7 +647,7 @@ def plot_results_versus_time(
 
         results_step += 1
 
-    # Iterate through the airplane id's to plot each airplane's figures.
+    # Iterate through the Airplane ID's to plot each Airplane's figures.
     for airplane_id in range(num_airplanes):
 
         # Initialize the four figures.
@@ -690,7 +707,7 @@ def plot_results_versus_time(
         # Populate the plots.
         force_axes.plot(
             times,
-            forces_W[airplane_id, 0],
+            -forces_W[airplane_id, 0],
             label="Induced Drag",
             color=_drag_color,
             marker=".",
@@ -708,7 +725,7 @@ def plot_results_versus_time(
         )
         force_axes.plot(
             times,
-            forces_W[airplane_id, 2],
+            -forces_W[airplane_id, 2],
             label="Lift",
             color=_lift_color,
             marker=".",
@@ -717,8 +734,8 @@ def plot_results_versus_time(
         )
         force_coefficients_axes.plot(
             times,
-            forceCoefficients_W[airplane_id, 0],
-            label="Induced Drag",
+            -forceCoefficients_W[airplane_id, 0],
+            label="Induced Drag Coefficient",
             color=_drag_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
@@ -727,7 +744,7 @@ def plot_results_versus_time(
         force_coefficients_axes.plot(
             times,
             forceCoefficients_W[airplane_id, 1],
-            label="Side Force",
+            label="Side Force Coefficient",
             color=_side_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
@@ -735,8 +752,8 @@ def plot_results_versus_time(
         )
         force_coefficients_axes.plot(
             times,
-            forceCoefficients_W[airplane_id, 2],
-            label="Lift",
+            -forceCoefficients_W[airplane_id, 2],
+            label="Lift Coefficient",
             color=_lift_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
@@ -772,7 +789,7 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_Cg[airplane_id, 0],
-            label="Roll",
+            label="Roll Coefficient",
             color=_roll_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
@@ -781,7 +798,7 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_Cg[airplane_id, 1],
-            label="Pitch",
+            label="Pitch Coefficient",
             color=_pitch_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
@@ -790,14 +807,14 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_Cg[airplane_id, 2],
-            label="Yaw",
+            label="Yaw Coefficient",
             color=_yaw_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
             markersize=_marker_size,
         )
 
-        # Find and format this airplane's name for use in the plot titles.
+        # Find and format this Airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
         force_title = airplane_name + " Forces vs. Time"
         force_coefficient_title = airplane_name + " Force Coefficients vs. Time"
@@ -809,13 +826,13 @@ def plot_results_versus_time(
         force_axes.set_ylabel("Force (N)", color=_text_color)
         force_axes.set_title(force_title, color=_text_color)
         force_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
-        force_coefficients_axes.set_ylabel("Coefficient", color=_text_color)
+        force_coefficients_axes.set_ylabel("Force Coefficient", color=_text_color)
         force_coefficients_axes.set_title(force_coefficient_title, color=_text_color)
         moment_axes.set_xlabel("Time (s)", color=_text_color)
         moment_axes.set_ylabel("Moment (N m)", color=_text_color)
         moment_axes.set_title(moment_title, color=_text_color)
         moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
-        moment_coefficients_axes.set_ylabel("Coefficient", color=_text_color)
+        moment_coefficients_axes.set_ylabel("Moment Coefficient", color=_text_color)
         moment_coefficients_axes.set_title(moment_coefficient_title, color=_text_color)
 
         # Format the plots' legends.
@@ -859,14 +876,12 @@ def plot_results_versus_time(
                 dpi=300,
             )
 
-        # If the user wants to show the plots, do so.
-        if show:
-            force_figure.show()
-            force_coefficients_figure.show()
-            moment_figure.show()
-            moment_coefficients_figure.show()
-        else:
-            plt.close("all")
+    # If the user wants to show the plots, do so. This is done outside the loop so
+    # that plt.show() is only called once after all figures are created.
+    if show:
+        plt.show()
+    else:
+        plt.close("all")
 
 
 # TEST: Add unit tests for this method.

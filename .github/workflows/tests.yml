@@ -26,6 +26,8 @@ jobs:
     - name: Upload coverage report to Codecov
       if: ${{ github.event_name == 'push' }}
       uses: codecov/codecov-action@v5
+      env:
+          NUMBA_DISABLE_JIT: 1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml

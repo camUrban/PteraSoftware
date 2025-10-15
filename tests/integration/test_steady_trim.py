@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module contains a testing case for the steady trim function."""
 
 import unittest
@@ -8,15 +7,14 @@ from tests.integration.fixtures import airplane_fixtures
 
 
 class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
-    """This is a class for testing the steady trim function on with the horseshoe
-    vortex lattice method solver."""
+    """This is a class for testing the steady trim function on a
+    SteadHorseshoeVortexLatticeMethodSolver."""
 
     def setUp(self):
         """This method sets up the test.
 
         :return: None
         """
-
         self.v_x_ans = 2.9222951743478016
         self.alpha_ans = 1.933469345202583
         self.beta_ans = 0.000
@@ -39,21 +37,17 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             externalFX_W=corrupted_thrust,
         )
 
-        # Create the steady problem.
+        # Create the SteadyProblem.
         self.steady_validation_problem = ps.problems.SteadyProblem(
             airplanes=[this_airplane],
             operating_point=this_operating_point,
         )
-
-        del this_airplane
-        del this_operating_point
 
     def test_function(self):
         """This method tests that the function finds a pre-known trim condition.
 
         :return: None
         """
-
         ans_range = self.ans_corruption * 2
 
         v_x_delta = max(abs(self.v_x_ans * ans_range), 0.01)

@@ -347,7 +347,8 @@ class HorseshoeVortex:
             strength=self.strength,
         )
 
-    # TODO: If we make the LineVortices strengths, then we can get rid of this method.
+    # TODO: If we make the LineVortices strengths properties, then we can get rid of
+    #  this method.
     def update_strength(self, strength):
         """This method updates the strength of this HorseshoeVortex object, and the
         strength of its leg LineVortices.

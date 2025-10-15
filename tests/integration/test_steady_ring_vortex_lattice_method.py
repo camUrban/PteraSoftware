@@ -1,4 +1,4 @@
-"""This module is a testing case for the steady ring vortex lattice method solver.
+"""This module is a testing case for the SteadyRingVortexLatticeMethodSolver.
 
 Based on an identical XFLR5 VLM2 testing case, the expected output for this case is:
     CL:     0.784
@@ -13,7 +13,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
-    """This is a class for testing the steady ring vortex lattice method solver."""
+    """This is a class for testing the SteadyRingVortexLatticeMethodSolver."""
 
     @classmethod
     def setUpClass(cls):
@@ -26,7 +26,9 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
     def test_method(self):
-        """This method tests the solver's output.
+        """This method tests the SteadyRingVortexLatticeMethodSolver's output. It
+        also tests that the solver doesn't throw an error when the draw function is
+        called using it.
 
         :return: None
         """

@@ -1,4 +1,4 @@
-"""This module is a testing case for the steady horseshoe vortex lattice method solver.
+"""This module is a testing case for the SteadyHorseshoeVortexLatticeMethodSolver.
 
 Based on an identical XFLR5 testing case, the expected output for the single-wing case
 is:
@@ -23,7 +23,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
-    """This is a class for testing the steady horseshoe vortex lattice method solver."""
+    """This is a class for testing the SteadyHorseshoeVortexLatticeMethodSolver."""
 
     @classmethod
     def setUpClass(cls):
@@ -39,7 +39,9 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         )
 
     def test_method(self):
-        """This method tests the solver's output.
+        """This method tests the SteadyHorseshoeVortexLatticeMethodSolver's output.
+        It also tests that the solver doesn't throw an error when the draw function
+        is called using it.
 
         :return: None
         """
@@ -87,7 +89,9 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(c_m_error < allowable_error)
 
     def test_method_multiple_wings(self):
-        """This method tests the solver's output with multi-wing geometry.
+        """This method tests the SteadyHorseshoeVortexLatticeMethodSolver's output
+        with multi-wing geometry. It also tests that the solver doesn't throw an
+        error when the draw function is called using it.
 
         :return: None
         """

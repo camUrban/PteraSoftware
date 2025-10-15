@@ -1,5 +1,5 @@
-"""This is a testing case for the unsteady ring vortex lattice method solver with
-static geometry.
+"""This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with static
+geometry.
 
 Based on an equivalent XFLR5 testing case, the expected output for this case is:
     CL:     0.485
@@ -19,7 +19,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
-    """This is a class for testing the unsteady ring vortex lattice method solver on
+    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
     static geometry."""
 
     @classmethod
@@ -33,7 +33,9 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         )
 
     def test_method(self):
-        """This method tests the solver's output.
+        """This method tests the UnsteadyRingVortexLatticeMethodSolver's output. It
+        also tests that the solver doesn't throw an error when the animate and
+        plot_results_versus_time functions are called using it.
 
         :return: None
         """

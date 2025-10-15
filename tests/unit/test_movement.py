@@ -8,7 +8,6 @@ from tests.unit.fixtures import movement_fixtures
 from tests.unit.fixtures import airplane_movement_fixtures
 from tests.unit.fixtures import operating_point_fixtures
 from tests.unit.fixtures import geometry_fixtures
-from tests.unit.fixtures import wing_cross_section_movement_fixtures
 
 
 class TestMovement(unittest.TestCase):

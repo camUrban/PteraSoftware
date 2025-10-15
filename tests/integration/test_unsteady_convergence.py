@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module contains a testing case for the unsteady convergence function."""
 
 import unittest
@@ -15,19 +14,16 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         :return: None
         """
-
-        # Create the unsteady problem.
         self.unsteady_validation_problem = (
             problem_fixtures.make_unsteady_validation_problem_with_static_geometry()
         )
 
     def test_unsteady_convergence(self):
         """This method tests that the function finds pre-known convergence parameters
-        for an unsteady problem.
+        for an UnsteadyRingVortexLatticeMethodSolver.
 
         :return: None
         """
-
         converged_parameters = ps.convergence.analyze_unsteady_convergence(
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,

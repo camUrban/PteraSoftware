@@ -127,6 +127,7 @@ def make_variable_validation_movement():
     unsteady_validation_movement = ps.movements.movement.Movement(
         airplane_movements=[unsteady_validation_airplane_movement],
         operating_point_movement=unsteady_validation_operating_point_movement,
+        num_cycles=1,
     )
 
     return unsteady_validation_movement

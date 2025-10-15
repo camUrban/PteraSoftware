@@ -23,6 +23,7 @@ import numpy as np
 
 from . import geometry
 from . import movements
+from . import operating_point
 from . import problems
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
@@ -128,7 +129,7 @@ def analyze_steady_convergence(
     iter_times = np.zeros(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
-    force_coefficients = np.zeros(
+    forceCoefficients_W = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
@@ -136,7 +137,7 @@ def analyze_steady_convergence(
         ),
         dtype=float,
     )
-    moment_coefficients = np.zeros(
+    momentCoefficients_W_Cg = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
@@ -187,13 +188,8 @@ def analyze_steady_convergence(
                             next_ref_wing_cross_section = ref_wing_cross_sections[
                                 ref_wing_cross_section_id + 1
                             ]
-                            # TODO: Modify this to allow for new geometry with custom
-                            #  planes for the wing cross sections. As of now,
-                            #  it fails for vertical wings.
-                            section_length = (
-                                next_ref_wing_cross_section.y_le
-                                - ref_wing_cross_section.y_le
-                            )
+                            # TODO: Check that this works for vertical Wings.
+                            section_length = next_ref_wing_cross_section.Lp_Wcsp_Lpp[1]
                             root_chord = ref_wing_cross_section.chord
                             tip_chord = next_ref_wing_cross_section.chord
                             section_area = section_length * (root_chord + tip_chord) / 2
@@ -211,18 +207,16 @@ def analyze_steady_convergence(
                                 this_num_spanwise_panels
                             )
                         else:
-                            this_num_spanwise_panels = 0
+                            this_num_spanwise_panels = None
 
                         these_wing_cross_sections.append(
                             geometry.wing_cross_section.WingCrossSection(
                                 # These values are copied from the reference wing
                                 # cross section.
-                                x_le=ref_wing_cross_section.x_le,
-                                y_le=ref_wing_cross_section.y_le,
-                                z_le=ref_wing_cross_section.z_le,
                                 chord=ref_wing_cross_section.chord,
-                                twist=ref_wing_cross_section.twist,
-                                control_surface_type=ref_wing_cross_section.control_surface_type,
+                                Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
+                                angles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                                control_surface_symmetry_type=ref_wing_cross_section.control_surface_symmetry_type,
                                 control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
                                 control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
                                 spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
@@ -230,8 +224,8 @@ def analyze_steady_convergence(
                                 num_spanwise_panels=this_num_spanwise_panels,
                                 airfoil=geometry.airfoil.Airfoil(
                                     name=ref_wing_cross_section.airfoil.name,
-                                    coordinates=ref_wing_cross_section.airfoil.coordinates,
-                                    repanel=ref_wing_cross_section.airfoil.repanel,
+                                    outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
+                                    resample=ref_wing_cross_section.airfoil.resample,
                                     n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
                                 ),
                             )
@@ -239,19 +233,30 @@ def analyze_steady_convergence(
 
                     these_wings.append(
                         geometry.wing.Wing(
-                            wing_cross_sections=these_wing_cross_sections,
+                            # These values are copied from the reference Wing.
                             name=ref_wing.name,
+                            Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
+                            angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
                             symmetric=ref_wing.symmetric,
-                            num_chordwise_panels=num_chordwise_panels,
+                            mirror_only=ref_wing.mirror_only,
+                            symmetryNormal_G=ref_wing.symmetryNormal_G,
+                            symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
                             chordwise_spacing=ref_wing.chordwise_spacing,
+                            # These values change.
+                            wing_cross_sections=these_wing_cross_sections,
+                            num_chordwise_panels=num_chordwise_panels,
                         )
                     )
 
                 these_airplanes.append(
                     geometry.airplane.Airplane(
-                        wings=these_wings,
+                        # These values are copied from the reference Airplane.
                         name=ref_airplane.name,
+                        Cg_E_CgP1=ref_airplane.Cg_E_CgP1,
+                        angles_E_to_B_izyx=ref_airplane.angles_E_to_B_izyx,
                         weight=ref_airplane.weight,
+                        # These values change.
+                        wings=these_wings,
                         s_ref=None,
                         c_ref=None,
                         b_ref=None,
@@ -285,20 +290,20 @@ def analyze_steady_convergence(
 
             # Create and fill arrays with each of this iteration's airplane's
             # resultant force and moment coefficients.
-            these_force_coefficients = np.zeros(len(these_airplanes))
-            these_moment_coefficients = np.zeros(len(these_airplanes))
+            theseForceCoefficients_W = np.zeros(len(these_airplanes), dtype=float)
+            theseMomentCoefficients_W_Cg = np.zeros(len(these_airplanes), dtype=float)
             for airplane_id, airplane in enumerate(these_airplanes):
-                these_force_coefficients[airplane_id] = np.linalg.norm(
-                    airplane.total_near_field_force_coefficients_wind_axes
+                theseForceCoefficients_W[airplane_id] = np.linalg.norm(
+                    airplane.forceCoefficients_W
                 )
-                these_moment_coefficients[airplane_id] = np.linalg.norm(
-                    airplane.total_near_field_moment_coefficients_wind_axes
+                theseMomentCoefficients_W_Cg[airplane_id] = np.linalg.norm(
+                    airplane.momentCoefficients_W_Cg
                 )
 
             # Populate the arrays that store information of all the iterations with
             # the data from this iteration.
-            force_coefficients[ar_id, chord_id, :] = these_force_coefficients
-            moment_coefficients[ar_id, chord_id, :] = these_moment_coefficients
+            forceCoefficients_W[ar_id, chord_id, :] = theseForceCoefficients_W
+            momentCoefficients_W_Cg[ar_id, chord_id, :] = theseMomentCoefficients_W_Cg
             iter_times[ar_id, chord_id] = this_iter_time
 
             convergence_logger.info(
@@ -311,21 +316,21 @@ def analyze_steady_convergence(
             # If this isn't the first panel aspect ratio, calculate the panel aspect
             # ratio APE.
             if ar_id > 0:
-                last_ar_force_coefficients = force_coefficients[ar_id - 1, chord_id, :]
-                last_ar_moment_coefficients = moment_coefficients[
+                last_ar_force_coefficients = forceCoefficients_W[ar_id - 1, chord_id, :]
+                last_ar_moment_coefficients = momentCoefficients_W_Cg[
                     ar_id - 1, chord_id, :
                 ]
                 max_ar_force_pc = max(
                     100
                     * np.abs(
-                        (these_force_coefficients - last_ar_force_coefficients)
+                        (theseForceCoefficients_W - last_ar_force_coefficients)
                         / last_ar_force_coefficients
                     )
                 )
                 max_ar_moment_pc = max(
                     100
                     * np.abs(
-                        (these_moment_coefficients - last_ar_moment_coefficients)
+                        (theseMomentCoefficients_W_Cg - last_ar_moment_coefficients)
                         / last_ar_moment_coefficients
                     )
                 )
@@ -345,23 +350,23 @@ def analyze_steady_convergence(
             # If this isn't the first number of chordwise panels, calculate the
             # number of chordwise panels APE.
             if chord_id > 0:
-                last_chord_force_coefficients = force_coefficients[
+                last_chord_force_coefficients = forceCoefficients_W[
                     ar_id, chord_id - 1, :
                 ]
-                last_chord_moment_coefficients = moment_coefficients[
+                last_chord_moment_coefficients = momentCoefficients_W_Cg[
                     ar_id, chord_id - 1, :
                 ]
                 max_chord_force_pc = max(
                     100
                     * np.abs(
-                        (these_force_coefficients - last_chord_force_coefficients)
+                        (theseForceCoefficients_W - last_chord_force_coefficients)
                         / last_chord_force_coefficients
                     )
                 )
                 max_chord_moment_pc = max(
                     100
                     * np.abs(
-                        (these_moment_coefficients - last_chord_moment_coefficients)
+                        (theseMomentCoefficients_W_Cg - last_chord_moment_coefficients)
                         / last_chord_moment_coefficients
                     )
                 )
@@ -580,6 +585,8 @@ def analyze_unsteady_convergence(
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement
 
+    ref_base_operating_point = ref_operating_point_movement.base_operating_point
+
     if coefficient_mask is None:
         coefficient_mask = [True, True, True, True, True, True]
 
@@ -691,8 +698,8 @@ def analyze_unsteady_convergence(
                     # 3. Create an empty list for the (sub-)sub-movement base objects.
                     # 4: Create an empty list for the (sub-)sub-movement copies.
                     # 5: Iterate over the (sub-)sub-movements.
-                    # 6: Create a copy of the base object.
-                    # 7. Create a copy of the new (sub-)movement.
+                    # 6: Create copies of the base objects.
+                    # 7. Create copies of the new (sub-)movement.
                     # 8. Append the new base object to the list of new base objects.
                     # 9. Append the new (sub-)movement to the list of new (
                     # sub-)movements.
@@ -750,12 +757,9 @@ def analyze_unsteady_convergence(
                                             ref_wing_cross_section_movement_id + 1
                                         ].base_wing_cross_section
                                     )
-                                    # TODO: Modify this to allow for new geometry
-                                    #  with custom planes for the wing cross
-                                    #  sections. As of now, it fails for vertical wings.
+                                    # TODO: Check that this works for vertical Wings.
                                     section_length = (
-                                        next_ref_base_wing_cross_section.y_le
-                                        - ref_base_wing_cross_section.y_le
+                                        next_ref_base_wing_cross_section.Lp_Wcsp_Lpp[1]
                                     )
                                     root_chord = ref_base_wing_cross_section.chord
                                     tip_chord = next_ref_base_wing_cross_section.chord
@@ -778,7 +782,7 @@ def analyze_unsteady_convergence(
                                         this_num_spanwise_panels
                                     )
                                 else:
-                                    this_num_spanwise_panels = 0
+                                    this_num_spanwise_panels = None
 
                                 # 2. Reference this (sub-)movement's list of (
                                 # sub-)sub-movements.
@@ -797,13 +801,11 @@ def analyze_unsteady_convergence(
                                 # 6: Create a copy of the base object.
                                 this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
                                     # These values are copied from the reference base
-                                    # wing cross section.
-                                    x_le=ref_base_wing_cross_section.x_le,
-                                    y_le=ref_base_wing_cross_section.y_le,
-                                    z_le=ref_base_wing_cross_section.z_le,
+                                    # WingCrossSection.
                                     chord=ref_base_wing_cross_section.chord,
-                                    twist=ref_base_wing_cross_section.twist,
-                                    control_surface_type=ref_base_wing_cross_section.control_surface_type,
+                                    Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
+                                    angles_Wcsp_to_Wcs_ixyz=ref_base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                                    control_surface_symmetry_type=ref_base_wing_cross_section.control_surface_symmetry_type,
                                     control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
                                     control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
                                     spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
@@ -811,15 +813,26 @@ def analyze_unsteady_convergence(
                                     num_spanwise_panels=this_num_spanwise_panels,
                                     airfoil=geometry.airfoil.Airfoil(
                                         name=ref_base_wing_cross_section.airfoil.name,
-                                        coordinates=ref_base_wing_cross_section.airfoil.coordinates,
-                                        repanel=ref_base_wing_cross_section.airfoil.repanel,
+                                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
+                                        resample=ref_base_wing_cross_section.airfoil.resample,
                                         n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
                                     ),
                                 )
 
                                 # 7. Create a copy of the new (sub-)movement.
                                 this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
-                                    base_wing_cross_section=this_base_wing_cross_section
+                                    # These values are copied from the reference
+                                    # WingCrossSectionMovement.
+                                    ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
+                                    periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
+                                    spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
+                                    phaseLp_Wcsp_Lpp=ref_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
+                                    ampAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
+                                    periodAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
+                                    spacingAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
+                                    phaseAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
+                                    # These values change.
+                                    base_wing_cross_section=this_base_wing_cross_section,
                                 )
 
                                 # 8. Append the new base object to the list of new
@@ -836,26 +849,35 @@ def analyze_unsteady_convergence(
 
                             # 6: Create a copy of the base object.
                             this_base_wing = geometry.wing.Wing(
-                                wing_cross_sections=these_base_wing_cross_sections,
+                                # These values are copied from the reference Wing.
                                 name=ref_base_wing.name,
+                                Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
+                                angles_Gs_to_Wn_ixyz=ref_base_wing.angles_Gs_to_Wn_ixyz,
                                 symmetric=ref_base_wing.symmetric,
-                                num_chordwise_panels=num_chordwise_panels,
+                                mirror_only=ref_base_wing.mirror_only,
+                                symmetryNormal_G=ref_base_wing.symmetryNormal_G,
+                                symmetryPoint_G_Cg=ref_base_wing.symmetryPoint_G_Cg,
                                 chordwise_spacing=ref_base_wing.chordwise_spacing,
+                                # These values change.
+                                wing_cross_sections=these_base_wing_cross_sections,
+                                num_chordwise_panels=num_chordwise_panels,
                             )
 
                             # 7. Create a copy of the new (sub-)movement.
                             this_wing_movement = movements.wing_movement.WingMovement(
+                                # These values are copied from the reference
+                                # WingMovement.
+                                ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
+                                periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
+                                spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
+                                phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
+                                ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
+                                periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
+                                spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
+                                phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
+                                # These values change.
                                 base_wing=this_base_wing,
                                 wing_cross_section_movements=these_wing_cross_section_movements,
-                                x_le_amplitude=ref_wing_movement.x_le_amplitude,
-                                x_le_period=ref_wing_movement.x_le_period,
-                                x_le_spacing=ref_wing_movement.x_le_spacing,
-                                y_le_amplitude=ref_wing_movement.y_le_amplitude,
-                                y_le_period=ref_wing_movement.y_le_period,
-                                y_le_spacing=ref_wing_movement.y_le_spacing,
-                                z_le_amplitude=ref_wing_movement.z_le_amplitude,
-                                z_le_period=ref_wing_movement.z_le_period,
-                                z_le_spacing=ref_wing_movement.z_le_spacing,
                             )
 
                             # 8. Append the new base object to the list of new base
@@ -866,22 +888,54 @@ def analyze_unsteady_convergence(
                             # sub-)movements.
                             these_wing_movements.append(this_wing_movement)
 
-                        # 6: Create a copy of the base object.
+                        # 6: Create copies of the base objects.
                         this_base_airplane = geometry.airplane.Airplane(
-                            wings=these_base_wings,
+                            # These values are copied from the reference Airplane.
                             name=ref_base_airplane.name,
+                            Cg_E_CgP1=ref_base_airplane.Cg_E_CgP1,
+                            angles_E_to_B_izyx=ref_base_airplane.angles_E_to_B_izyx,
                             weight=ref_base_airplane.weight,
+                            # These values change.
+                            wings=these_base_wings,
                             s_ref=None,
                             c_ref=None,
                             b_ref=None,
                         )
+                        this_base_operating_point = operating_point.OperatingPoint(
+                            # These values are copied from the reference OperatingPoint.
+                            rho=ref_base_operating_point.rho,
+                            vCg__E=ref_base_operating_point.vCg__E,
+                            alpha=ref_base_operating_point.alpha,
+                            beta=ref_base_operating_point.beta,
+                            externalFX_W=ref_base_operating_point.externalFX_W,
+                            nu=ref_base_operating_point.nu,
+                        )
 
-                        # 7. Create a copy of the new (sub-)movement.
-                        this_airplane_movement = (
-                            movements.airplane_movement.AirplaneMovement(
-                                base_airplane=this_base_airplane,
-                                wing_movements=these_wing_movements,
-                            )
+                        # 7. Create copies of the new (sub-)movements.
+                        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
+                            # These values are copied from the reference
+                            # AirplaneMovement.
+                            ampCg_E_CgP1=ref_airplane_movement.ampCg_E_CgP1,
+                            periodCg_E_CgP1=ref_airplane_movement.periodCg_E_CgP1,
+                            spacingCg_E_CgP1=ref_airplane_movement.spacingCg_E_CgP1,
+                            phaseCg_E_CgP1=ref_airplane_movement.phaseCg_E_CgP1,
+                            ampAngles_E_to_B_izyx=ref_airplane_movement.ampAngles_E_to_B_izyx,
+                            periodAngles_E_to_B_izyx=ref_airplane_movement.periodAngles_E_to_B_izyx,
+                            spacingAngles_E_to_B_izyx=ref_airplane_movement.spacingAngles_E_to_B_izyx,
+                            phaseAngles_E_to_B_izyx=ref_airplane_movement.phaseAngles_E_to_B_izyx,
+                            # These values change.
+                            base_airplane=this_base_airplane,
+                            wing_movements=these_wing_movements,
+                        )
+                        this_operating_point_movement = movements.operating_point_movement.OperatingPointMovement(
+                            # These values are copied from the reference
+                            # OperatingPointMovement.
+                            ampVCg__E=ref_operating_point_movement.ampVCg__E,
+                            periodVCg__E=ref_operating_point_movement.periodVCg__E,
+                            spacingVCg__E=ref_operating_point_movement.spacingVCg__E,
+                            phaseVCg__E=ref_operating_point_movement.phaseVCg__E,
+                            # These values change.
+                            base_operating_point=this_base_operating_point,
                         )
 
                         # 8. Append the new base object to the list of new base
@@ -896,13 +950,13 @@ def analyze_unsteady_convergence(
                     if is_static:
                         this_movement = movements.movement.Movement(
                             airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
+                            operating_point_movement=this_operating_point_movement,
                             num_chords=wake_length,
                         )
                     else:
                         this_movement = movements.movement.Movement(
                             airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
+                            operating_point_movement=this_operating_point_movement,
                             num_cycles=wake_length,
                         )
 

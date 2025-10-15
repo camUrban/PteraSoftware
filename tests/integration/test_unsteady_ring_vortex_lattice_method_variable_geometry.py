@@ -1,5 +1,4 @@
-# REFACTOR: I haven't yet started refactoring this module.
-"""This is a testing case for the unsteady ring vortex lattice method solver with
+"""This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with
 variable geometry.
 
 Note: This case does not currently test the solver's output against an expected
@@ -13,7 +12,7 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
-    """This is a class for testing the unsteady ring vortex lattice method solver on
+    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
     variable geometry."""
 
     def setUp(self):
@@ -21,18 +20,17 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
 
         :return: None
         """
-
-        # Create the unsteady method solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry()
         )
 
     def test_method_does_not_throw(self):
-        """This method tests that the solver does not throw any errors.
+        """This method tests that the UnsteadyRingVortexLatticeMethodSolver does not
+        throw any errors. It also tests that the solver doesn't throw an error when
+        the animate and plot_results_versus_time functions are called using it.
 
         :return: None
         """
-        # Run the unsteady solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
             prescribed_wake=True,
             logging_level="Critical",

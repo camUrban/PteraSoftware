@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module contains testing cases for the steady convergence function."""
 
 import unittest
@@ -15,19 +14,16 @@ class TestSteadyConvergence(unittest.TestCase):
 
         :return: None
         """
-
-        # Create the steady problem.
         self.steady_validation_problem = (
             problem_fixtures.make_steady_validation_problem()
         )
 
     def test_steady_horseshoe_convergence(self):
         """This method tests that the function finds pre-known convergence parameters
-        for a horseshoe vortex lattice method solver.
+        for a SteadyHorseshoeVortexLatticeMethodSolver.
 
         :return: None
         """
-
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
@@ -47,11 +43,10 @@ class TestSteadyConvergence(unittest.TestCase):
 
     def test_steady_ring_convergence(self):
         """This method tests that the function finds pre-known convergence parameters
-        for a ring vortex lattice method solver.
+        for a SteadyRingVortexLatticeMethodSolver.
 
         :return: None
         """
-
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",

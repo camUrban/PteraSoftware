@@ -1018,7 +1018,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         forces_G = (
-            rightLegForces_G + leftLegForces_G + rightLegForces_G + unsteady_forces_G
+            rightLegForces_G + frontLegForces_G + leftLegForces_G + unsteady_forces_G
         )
 
         # Find the moments (in geometry axes, relative to the CG) on the Panels'

@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This is a testing case for the unsteady ring vortex lattice method solver with
 static geometry.
 
@@ -23,14 +22,13 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
     """This is a class for testing the unsteady ring vortex lattice method solver on
     static geometry."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """This method sets up the test.
 
         :return: None
         """
-
-        # Create the unsteady method solver.
-        self.unsteady_ring_vortex_lattice_method_validation_solver = (
+        cls.unsteady_ring_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
 
@@ -39,8 +37,6 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         :return: None
         """
-
-        # Run the solver.
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
             prescribed_wake=True,
             logging_level="Critical",
@@ -79,7 +75,6 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             save=False,
         )
 
-        # FIXME: Determine why this test is failing due to incorrect coefficients.
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(abs(c_di_error) < allowable_error)
         self.assertTrue(abs(c_l_error) < allowable_error)

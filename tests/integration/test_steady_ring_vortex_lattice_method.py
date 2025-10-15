@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module is a testing case for the steady ring vortex lattice method solver.
 
 Based on an identical XFLR5 VLM2 testing case, the expected output for this case is:
@@ -16,14 +15,13 @@ from tests.integration.fixtures import solver_fixtures
 class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the steady ring vortex lattice method solver."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """This method sets up the test.
 
         :return: None
         """
-
-        # Create the steady method solver.
-        self.steady_ring_vortex_lattice_method_validation_solver = (
+        cls.steady_ring_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
         )
 
@@ -32,8 +30,6 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-
-        # Run the solver.
         self.steady_ring_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
@@ -72,7 +68,6 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
             testing=True,
         )
 
-        # FIXME: Determine why this test is failing due to incorrect coefficients.
         # Assert that the percent errors are less than the allowable error.
         self.assertTrue(c_di_error < allowable_error)
         self.assertTrue(c_l_error < allowable_error)

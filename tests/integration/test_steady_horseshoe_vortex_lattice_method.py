@@ -1,4 +1,3 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module is a testing case for the steady horseshoe vortex lattice method solver.
 
 Based on an identical XFLR5 testing case, the expected output for the single-wing case
@@ -26,17 +25,16 @@ from tests.integration.fixtures import solver_fixtures
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the steady horseshoe vortex lattice method solver."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """This method sets up the test.
 
         :return: None
         """
-
-        # Create the steady method solvers.
-        self.steady_horseshoe_vortex_lattice_method_validation_solver = (
+        cls.steady_horseshoe_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_steady_horseshoe_vortex_lattice_method_validation_solver()
         )
-        self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver = (
+        cls.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver()
         )
 
@@ -45,7 +43,6 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-        # Run the solver.
         self.steady_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
@@ -94,11 +91,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-
-        # Run the solver.
-        (
-            self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
-        )
+        self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.008

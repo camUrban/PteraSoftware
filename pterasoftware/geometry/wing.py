@@ -182,7 +182,7 @@ class Wing:
 
             Set this to True if the Wing's geometry should be mirrored across the
             symmetry plane while retaining the non-mirrored side. If mirror_only is
-            True, symmetric must be False. If symmetric is true, then neither
+            True, symmetric must be False. If symmetric is True, then neither
             symmetryNormal_G nor symmetryPoint_G_Cg can be None. If the symmetry
             plane is coincident with this Wing's axes' xz-plane, the mirrored and
             non-mirrored geometry will be meshed as a single wing. If not,
@@ -198,7 +198,7 @@ class Wing:
 
             Set this to True if the Wing's geometry should be reflected about the
             symmetry plane without retaining the non-reflected geometry. If symmetric
-            is True, mirror_only must be False. If mirror_only is true, then neither
+            is True, mirror_only must be False. If mirror_only is True, then neither
             symmetryNormal_G nor symmetryPoint_G_Cg can be None. For more
             details on how this parameter interacts with symmetryNormal_G,
             symmetryPoint_G_Cg, and symmetric, see the class docstring. It can be

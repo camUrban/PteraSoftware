@@ -156,7 +156,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.listStackBlwrvp_G_Cg = []
 
         self.stackSeedPoints_G_Cg = None
-        self.stackStreamlinePoints_G_Cg = None
+        self.gridStreamlinePoints_G_Cg = None
 
     def run(
         self,

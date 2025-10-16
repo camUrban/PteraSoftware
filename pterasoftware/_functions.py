@@ -133,14 +133,14 @@ def calculate_streamlines(
     :return: None
     """
     # Initialize an array to hold this solver's matrix of streamline points.
-    solver.stackStreamlinePoints_G_Cg = np.expand_dims(
+    solver.gridStreamlinePoints_G_Cg = np.expand_dims(
         solver.stackSeedPoints_G_Cg, axis=0
     )
 
     # Iterate through the streamline steps.
     for step in range(num_steps):
         # Get the last row of streamline points.
-        last_row_streamline_points = solver.stackStreamlinePoints_G_Cg[-1, :, :]
+        last_row_streamline_points = solver.gridStreamlinePoints_G_Cg[-1, :, :]
 
         # Add the freestream velocity to the induced velocity to get the total
         # velocity at each of the last row of streamline points.
@@ -155,9 +155,9 @@ def calculate_streamlines(
 
         # Stack the new row of streamline points to the bottom of the matrix of
         # streamline points.
-        solver.stackStreamlinePoints_G_Cg = np.vstack(
+        solver.gridStreamlinePoints_G_Cg = np.vstack(
             (
-                solver.stackStreamlinePoints_G_Cg,
+                solver.gridStreamlinePoints_G_Cg,
                 np.expand_dims(new_row_streamline_points, axis=0),
             )
         )

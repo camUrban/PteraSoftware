@@ -17,8 +17,8 @@ This package contains the following modules:
     operating_point.py: This module contains the class definition for a Problem's
     operating point.
 
-    output.py: This module contains useful functions for visualizing solutions to
-    problems.
+    output.py: This module contains useful functions for visualizing geometry and
+    results.
 
     problems.py: This module contains the class definitions for different types of
     problems.

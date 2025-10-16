@@ -770,6 +770,7 @@ def make_named_airfoil_fixture():
     return named_airfoil_fixture
 
 
+# TODO: Move this to its own fixture module.
 def make_basic_panel_fixture():
     """This method makes a fixture that is a Panel for testing purposes.
 

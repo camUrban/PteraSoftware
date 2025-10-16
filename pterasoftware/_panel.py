@@ -66,8 +66,6 @@ class Panel:
         calculate_projected_area: This method calculates the area of the Panel
         projected on a plane defined by a given normal vector (in geometry axes).
 
-        update_coefficients: This method updates the Panel's force coefficients.
-
     This class contains the following class attributes:
         None
 
@@ -171,16 +169,12 @@ class Panel:
         self.ring_vortex = None
         self.horseshoe_vortex = None
 
-        # TODO: Update and standardize these definitions for force coefficients.
         # Initialize variables to hold attributes of the Panel that will be defined
         # after the solver finds a solution.
         self.forces_G = None
         self.moments_G_Cg = None
         self.forces_W = None
         self.moments_W_Cg = None
-        self.induced_drag_coefficient = None
-        self.side_force_coefficient = None
-        self.lift_coefficient = None
 
     @property
     def rightLeg_G(self):
@@ -500,23 +494,3 @@ class Panel:
             projFirstDiagonalOnPlane_G, projSecondDiagonalOnPlane_G
         )
         return np.linalg.norm(projDiagonalsOnPlaneCross_G) / 2
-
-    def update_coefficients(self, qInf__E):
-        """This method updates the Panel's force coefficients.
-
-        :param qInf__E: number
-            This is the fluid's freestream dynamic pressure, as calculated for the
-            current OperatingPoint. It must be a positive number, and will be
-            converted to a float internally. The units are in Pascals.
-        :return: None
-        """
-        qInf__E = _parameter_validation.positive_number_return_float(qInf__E, "qInf__E")
-
-        # TODO: Update and standardize these definitions for force coefficients.
-        induced_drag = -self.forces_W[0]
-        side_force = self.forces_W[1]
-        lift = -self.forces_W[2]
-
-        self.induced_drag_coefficient = induced_drag / self.area / qInf__E
-        self.side_force_coefficient = side_force / self.area / qInf__E
-        self.lift_coefficient = lift / self.area / qInf__E

@@ -389,7 +389,7 @@ class Wing:
         # Generate the wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
 
-    # TEST: Add unit tests for this method.
+    # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
     def get_plottable_data(self, show=False):
         """
@@ -863,7 +863,7 @@ class Wing:
 
         return wetted_area
 
-    # TEST: Add unit tests for this method.
+    # TEST: Consider adding unit tests for this method.
     @property
     def span(self):
         """This method sets a property for the Wing's span.
@@ -951,7 +951,7 @@ class Wing:
 
         return float(self.projected_area) / float(self.span)
 
-    # TEST: Add unit tests for this method.
+    # TEST: Consider adding unit tests for this method.
     @property
     def mean_aerodynamic_chord(self):
         """This method sets a property for the mean aerodynamic chord of the Wing.

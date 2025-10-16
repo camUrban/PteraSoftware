@@ -279,7 +279,6 @@ def make_symmetric_unsteady_validation_airplane():
     return symmetric_unsteady_validation_airplane
 
 
-# TODO: Check that this test case has converged characteristics.
 def make_symmetric_multiple_wing_unsteady_validation_airplane():
     """This function creates a multi-wing, symmetric Airplane to be used as a fixture
     for testing unsteady solvers.

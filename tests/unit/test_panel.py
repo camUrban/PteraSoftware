@@ -54,11 +54,6 @@ class TestPanel(unittest.TestCase):
         self.assertIsNone(panel.forces_W)
         self.assertIsNone(panel.moments_W_Cg)
 
-        # Test that coefficient attributes are None initially
-        self.assertIsNone(panel.induced_drag_coefficient)
-        self.assertIsNone(panel.side_force_coefficient)
-        self.assertIsNone(panel.lift_coefficient)
-
     def test_parameter_validation_corner_points(self):
         """Test parameter validation for corner point inputs."""
         # Test invalid Frpp_G_Cg type
@@ -311,54 +306,6 @@ class TestPanel(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             panel.calculate_projected_area([0.0, 1.0])  # Only 2 elements
-
-    def test_update_coefficients(self):
-        """Test force coefficient updates."""
-        panel = self.basic_panel
-
-        # Set forces in wind axes for testing
-        panel.forces_W = np.array([-10.0, 2.0, -50.0])
-
-        # Calculate coefficients with a test dynamic pressure
-        qInf__E = 100.0  # Pascals
-        panel.update_coefficients(qInf__E)
-
-        # Test induced drag coefficient: -forces_W[0] / area / q
-        expected_induced_drag_coefficient = 10.0 / panel.area / qInf__E
-        self.assertAlmostEqual(
-            panel.induced_drag_coefficient, expected_induced_drag_coefficient, places=10
-        )
-
-        # Test side force coefficient: forces_W[1] / area / q
-        expected_side_force_coefficient = 2.0 / panel.area / qInf__E
-        self.assertAlmostEqual(
-            panel.side_force_coefficient, expected_side_force_coefficient, places=10
-        )
-
-        # Test lift coefficient: -forces_W[2] / area / q
-        expected_lift_coefficient = 50.0 / panel.area / qInf__E
-        self.assertAlmostEqual(
-            panel.lift_coefficient, expected_lift_coefficient, places=10
-        )
-
-    def test_update_coefficients_validation(self):
-        """Test validation of qInf__E parameter."""
-        panel = self.basic_panel
-        panel.forces_W = np.array([1.0, 0.0, 1.0])
-
-        # Test invalid qInf__E type
-        with self.assertRaises(TypeError):
-            panel.update_coefficients("invalid")
-
-        # Test negative qInf__E
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError)):
-            panel.update_coefficients(-100.0)
-
-        # Test zero qInf__E
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError, ZeroDivisionError)):
-            panel.update_coefficients(0.0)
 
     def test_nearly_planar_panel(self):
         """Test with a nearly planar panel."""

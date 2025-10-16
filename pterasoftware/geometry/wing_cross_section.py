@@ -328,7 +328,7 @@ class WingCrossSection:
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
 
-    # TEST: Add unit tests for this method.
+    # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
     def get_plottable_data(self, show=False):
         """

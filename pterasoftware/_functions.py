@@ -17,7 +17,7 @@ from . import unsteady_ring_vortex_lattice_method
 
 
 # REFACTOR: I haven't yet started refactoring this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create an array containing a specified number of
     values between a specified minimum and maximum value that are spaced via a cosine
@@ -55,7 +55,7 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
 
 
 # REFACTOR: I haven't yet started refactoring this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 @njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
     front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
@@ -105,7 +105,7 @@ def numba_centroid_of_quadrilateral(
 
 
 # REFACTOR: I haven't yet started refactoring this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -186,7 +186,7 @@ def convert_logging_level_name_to_value(name):
         raise ValueError(f"{name} is not a valid value of name.")
 
 
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def process_solver_loads(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -284,9 +284,6 @@ def process_solver_loads(
         panel.moments_G_Cg = theseMoments_G_Cg
         panel.forces_W = theseForces_W
         panel.moments_W_Cg = theseMoments_W_Cg
-
-        # Update this Panel's load coefficients.
-        panel.update_coefficients(qInf__E)
 
     # Initialize ndarrays to hold each Airplane's loads.
     stackAirplaneForces_G = np.zeros((solver.num_airplanes, 3), dtype=float)
@@ -423,7 +420,7 @@ def update_ring_vortex_solvers_panel_attributes(
 
 
 # REFACTOR: I haven't yet started refactoring this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -446,7 +443,7 @@ def calculate_steady_freestream_wing_influences(
     )
 
 
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 @njit(cache=True, fastmath=False)
 def numba_1d_explicit_cross(stackVectors1, stackVectors2):
     """This function takes in two ndarrays, each of which contain N vectors with 3
@@ -485,7 +482,7 @@ def numba_1d_explicit_cross(stackVectors1, stackVectors2):
 
 
 # REFACTOR: I haven't yet started refactoring this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 @njit(cache=True, fastmath=False)
 def interp_between_points(start_points, end_points, norm_spacings):
     """This function finds the MxN points between M pairs of points in 3D space given

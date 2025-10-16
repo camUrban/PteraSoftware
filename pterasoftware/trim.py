@@ -211,7 +211,7 @@ def analyze_steady_trim(
 
 # REFACTOR: I haven't yet started refactoring this function.
 # DOCUMENT: Document this function.
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def analyze_unsteady_trim(
     airplane_movement,
     operating_point,

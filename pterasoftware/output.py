@@ -1,4 +1,3 @@
-# REFACTOR: I've started refactoring this module.
 """This module contains useful functions for visualizing geometry and results.
 
 This module contains the following classes:
@@ -92,7 +91,7 @@ _marker_size = 8
 _marker_spacing = 1.0 / _num_markers
 
 
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -192,7 +191,9 @@ def draw(
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         draw_step = solver.num_steps - 1
+
         airplanes = solver.steady_problems[draw_step].airplanes
+        qInf__E = solver.steady_problems[draw_step].operating_point.qInf__E
 
         # If showing wake RingVortices, get their surfaces and plot them.
         if show_wake_vortices:
@@ -207,13 +208,14 @@ def draw(
             )
     else:
         airplanes = solver.airplanes
+        qInf__E = solver.operating_point.qInf__E
 
     # Get the Panel surfaces.
     panel_surfaces = _get_panel_surfaces(airplanes)
 
     # Plot the Panels either with scalar coloring or with a uniform color.
     if scalar_type in ("induced drag", "side force", "lift"):
-        these_scalars = _get_scalars(airplanes, scalar_type)
+        these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
         min_scalar = round(min(these_scalars), 2)
         max_scalar = round(max(these_scalars), 2)
 
@@ -327,7 +329,7 @@ def draw(
     pv.close_all()
 
 
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type=None,
@@ -436,8 +438,12 @@ def animate(
     # If coloring the Panels based on scalars, gather all the scalars across all the
     # time steps and Airplanes. These will be used to set the color map limits.
     if scalar_type is not None:
-        for airplanes in step_airplanes:
-            scalars_to_add = _get_scalars(airplanes, scalar_type)
+        for step_id, airplanes in enumerate(step_airplanes):
+            scalars_to_add = _get_scalars(
+                airplanes,
+                scalar_type,
+                unsteady_solver.steady_problems[step_id].operating_point.qInf__E,
+            )
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map and set its limits based on if the min and max scalars
@@ -469,7 +475,11 @@ def animate(
     # Plot the first time step's Airplanes' Panels either with scalar coloring or
     # with a uniform color.
     if scalar_type is not None and first_results_step == 0:
-        these_scalars = _get_scalars(step_airplanes[0], scalar_type)
+        these_scalars = _get_scalars(
+            step_airplanes[0],
+            scalar_type,
+            unsteady_solver.steady_problems[0].operating_point.qInf__E,
+        )
 
         _plot_scalars(
             plotter,
@@ -565,7 +575,11 @@ def animate(
         # Plot the Panels either with a uniform color or, if the current time step
         # has results, with scalar coloring.
         if scalar_type is not None and first_results_step <= current_step:
-            these_scalars = _get_scalars(airplanes, scalar_type)
+            these_scalars = _get_scalars(
+                airplanes,
+                scalar_type,
+                unsteady_solver.steady_problems[current_step].operating_point.qInf__E,
+            )
 
             _plot_scalars(
                 plotter,
@@ -612,7 +626,7 @@ def animate(
     pv.close_all()
 
 
-# TEST: Add unit tests for this function.
+# TEST: Consider adding unit tests for this function.
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool = True,
@@ -938,7 +952,7 @@ def plot_results_versus_time(
         plt.close("all")
 
 
-# TEST: Add unit tests for this method.
+# TEST: Consider adding unit tests for this function.
 def print_results(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -1267,6 +1281,7 @@ def _get_wake_ring_vortex_surfaces(
 def _get_scalars(
     airplanes: list[geometry.airplane.Airplane],
     scalar_type: str,
+    qInf__E: float,
 ):
     """This function gets the coefficient values from a SteadyProblem's Airplanes'
     Wings' Panels.
@@ -1280,6 +1295,11 @@ def _get_scalars(
         This variable determines how which load coefficient to return as scalars. It
         can be "induced drag", "side force", or "lift", which respectively use each
         Panel's induced drag, side force, and lift coefficient.
+
+    :param qInf__E: float
+
+        This is the freestream dynamic pressure experienced by this SteadyProblem's
+        Airplane(s) (observed in the Earth frame).
 
     :return scalars: (N,) ndarray of floats
 
@@ -1297,21 +1317,32 @@ def _get_scalars(
             these_panels = np.ravel(this_wing.panels)
             for this_panel in these_panels:
 
-                # TODO: Update this once we switch to a different parameter scheme
-                #  for Panel coefficients.
                 # Stack this Panel's scalars.
                 if scalar_type == "induced drag":
-                    scalars = np.hstack((scalars, this_panel.induced_drag_coefficient))
+                    this_induced_drag_coefficient = (
+                        -this_panel.forces_W[0] / qInf__E / this_panel.area
+                    )
+
+                    scalars = np.hstack((scalars, this_induced_drag_coefficient))
+
                 if scalar_type == "side force":
-                    scalars = np.hstack((scalars, this_panel.side_force_coefficient))
+                    this_side_force_coefficient = (
+                        this_panel.forces_W[1] / qInf__E / this_panel.area
+                    )
+
+                    scalars = np.hstack((scalars, this_side_force_coefficient))
+
                 if scalar_type == "lift":
-                    scalars = np.hstack((scalars, this_panel.lift_coefficient))
+                    this_lift_coefficient = (
+                        -this_panel.forces_W[2] / qInf__E / this_panel.area
+                    )
+
+                    scalars = np.hstack((scalars, this_lift_coefficient))
 
     # Return the resulting ndarray of scalars.
     return scalars
 
 
-# REFACTOR: I've started refactoring this function.
 def _plot_scalars(
     plotter: pv.Plotter,
     these_scalars,
@@ -1326,45 +1357,43 @@ def _plot_scalars(
     """This function plots a scalar bar, the surfaces of a set of Panels with a
     particular set of scalars, and labels for the minimum and maximum scalar values.
 
-    # REFACTOR: I've refactored this function up to here.
-
     :param plotter: pyvista.Plotter
 
-        The plotter object used for visualization.
+        The Plotter used for visualization.
 
-    :param these_scalars: 1D array of floats
+    :param these_scalars: (N,) ndarray of floats
 
-        This is the 1D array of floats for each panel's coefficient value.
+        This is the ndarray of floats for each of the N Panels' coefficient values.
 
     :param scalar_type: str
 
-        This variable determines which scalar values will be returned. Acceptable
-        inputs are "induced drag", "side force", and "lift", which respectively
-        return each panel's induced drag, side force, or lift coefficient.
+        This variable determines how which load coefficient to return as scalars. It
+        can be "induced drag", "side force", or "lift", which respectively use each
+        Panel's induced drag, side force, and lift coefficient.
 
     :param min_scalar: float
 
-        Minimum scalar value, which is displayed as text on the plotter.
+        Minimum scalar value, which is displayed as text on the Plotter.
 
     :param max_scalar: float
 
-        Maximum scalar value, which is displayed as text on the plotter.
+        Maximum scalar value, which is displayed as text on the Plotter.
 
     :param color_map: str
 
-        Name of the colormap to use for scalar visualization.
+        Name of the color map to use for scalar visualization.
 
     :param c_min: float
 
-        Lower bound for the colormap scaling.
+        Lower bound for the color map scaling.
 
     :param c_max: float
 
-        Upper bound for the colormap scaling.
+        Upper bound for the color map scaling.
 
     :param panel_surfaces: pyvista.PolyData
 
-        PolyData object representing the mesh panel surfaces.
+        PolyData representing the Panels' surfaces.
 
     :return: None
     """

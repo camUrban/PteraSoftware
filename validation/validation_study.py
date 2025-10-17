@@ -1,4 +1,3 @@
-# REFACTOR: I've started refactoring this module.
 """This script runs a validation case of Ptera Software’s UVLM.
 
 I first emulate the geometry and kinematics of a flapping robotic test stand from
@@ -22,9 +21,6 @@ import numpy as np
 # Import the source package.
 import pterasoftware as ps
 
-# Import the transformations module.
-from pterasoftware import _transformations
-
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
 chord = 0.072
@@ -39,10 +35,6 @@ validation_alpha = 0
 
 # Set the given flapping frequency in Hertz.
 validation_flapping_frequency = 3.3
-
-
-average_angle = 2.0101070341998355
-
 
 # This wing planform has a rounded tip so the outermost WingCrossSection needs to
 # be inset some amount. This value is in meters.
@@ -78,18 +70,18 @@ stackPlanformPoints_YeoXReversed_Ler = stackPlanformPoints_Yeo_Ler * np.array(
 # Swap the axes to the form [chordwise coordinate, spanwise coordinate]. The
 # coordinates are now in wing axes projected onto its xy-plane, and relative to the
 # leading edge root point.
-stackPlanformPoints_WnXy_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
+stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
 # Find the index of the point where the planform point's x component equals the half
 # span.
-tip_index = np.where(stackPlanformPoints_WnXy_Ler[:, 1] == half_span)[0][0]
+tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
 
 # Using the tip index, split the points into two ndarrays of leading and trailing
 # edge points (in wing axes projected onto its xy-plane, relative to the leading edge
 # root point).
-stackLeadingPoints_WnXy_Ler = stackPlanformPoints_WnXy_Ler[:tip_index, :]
-stackTrailingPoints_WnXy_Ler = np.flip(
-    stackPlanformPoints_WnXy_Ler[tip_index:, :], axis=0
+stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[:tip_index, :]
+stackTrailingPointsXY_Wn_Ler = np.flip(
+    stackPlanformPointsXY_Wn_Ler[tip_index:, :], axis=0
 )
 
 # Set the number of flap cycles to run the simulation for. The converged result is 3
@@ -113,10 +105,10 @@ spanwise_step = (half_span - tip_inset) / num_spanwise_sections
 # Define four ndarrays to hold the leading and trailing points of each section’s left
 # and right WingCrossSections (in wing axes projected onto its xy-plane, relative to
 # the leading edge root point).
-stackLeftLps_WnXy_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightLps_WnXy_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackLeftTps_WnXy_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightTps_WnXy_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
+stackLeftLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
+stackRightLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
+stackLeftTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
+stackRightTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 
 # Iterate through the locations of the future sections to populate the left and right
 # WingCrossSection's leading and trailing points (in wing axes projected onto its
@@ -124,32 +116,32 @@ stackRightTps_WnXy_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 for spanwise_loc in range(num_spanwise_sections):
     # Find the y component of the leading and trailing points (in wing axes projected
     # onto its xy-plane, relative to the leading edge root point).
-    stackLeftLps_WnXy_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackLeftTps_WnXy_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackRightLps_WnXy_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
-    stackRightTps_WnXy_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
+    stackLeftLpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
+    stackLeftTpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
+    stackRightLpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
+    stackRightTpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
 
     # Interpolate between the points to find their x components (in wing axes
     # projected onto its xy-plane, relative to the leading edge root point).
-    stackLeftLps_WnXy_Ler[spanwise_loc, 0] = np.interp(
+    stackLeftLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
         spanwise_loc * spanwise_step,
-        stackLeadingPoints_WnXy_Ler[:, 1],
-        stackLeadingPoints_WnXy_Ler[:, 0],
+        stackLeadingPointsXY_Wn_Ler[:, 1],
+        stackLeadingPointsXY_Wn_Ler[:, 0],
     )
-    stackLeftTps_WnXy_Ler[spanwise_loc, 0] = np.interp(
+    stackLeftTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
         spanwise_loc * spanwise_step,
-        stackTrailingPoints_WnXy_Ler[:, 1],
-        stackTrailingPoints_WnXy_Ler[:, 0],
+        stackTrailingPointsXY_Wn_Ler[:, 1],
+        stackTrailingPointsXY_Wn_Ler[:, 0],
     )
-    stackRightLps_WnXy_Ler[spanwise_loc, 0] = np.interp(
+    stackRightLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
         (spanwise_loc + 1) * spanwise_step,
-        stackLeadingPoints_WnXy_Ler[:, 1],
-        stackLeadingPoints_WnXy_Ler[:, 0],
+        stackLeadingPointsXY_Wn_Ler[:, 1],
+        stackLeadingPointsXY_Wn_Ler[:, 0],
     )
-    stackRightTps_WnXy_Ler[spanwise_loc, 0] = np.interp(
+    stackRightTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
         (spanwise_loc + 1) * spanwise_step,
-        stackTrailingPoints_WnXy_Ler[:, 1],
-        stackTrailingPoints_WnXy_Ler[:, 0],
+        stackTrailingPointsXY_Wn_Ler[:, 1],
+        stackTrailingPointsXY_Wn_Ler[:, 0],
     )
 
 # Define an empty list to hold the WingCrossSections.
@@ -163,9 +155,9 @@ for i in range(num_spanwise_sections):
         thisLpX_Wcsp_Lpp = 0.0
     else:
         thisLpY_Wcsp_Lpp = spanwise_step
-        thisLpX_Wcsp_Lpp = stackLeftLps_WnXy_Ler[i, 0] - stackLeftLps_WnXy_Ler[i - 1, 0]
+        thisLpX_Wcsp_Lpp = stackLeftLpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i - 1, 0]
 
-    this_chord = stackLeftTps_WnXy_Ler[i, 0] - stackLeftLps_WnXy_Ler[i, 0]
+    this_chord = stackLeftTpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i, 0]
 
     # Create this WingCrossSection.
     this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -190,10 +182,10 @@ for i in range(num_spanwise_sections):
     if i == num_spanwise_sections - 1:
         thisLpY_Wcsp_Lpp = spanwise_step
         thisLpX_Wcsp_Lpp = (
-            stackRightLps_WnXy_Ler[i, 0] - stackRightLps_WnXy_Ler[i - 1, 0]
+            stackRightLpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i - 1, 0]
         )
 
-        this_chord = stackRightTps_WnXy_Ler[i, 0] - stackRightLps_WnXy_Ler[i, 0]
+        this_chord = stackRightTpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i, 0]
 
         this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=ps.geometry.airfoil.Airfoil(
@@ -418,28 +410,25 @@ validation_solver = (
 # Delete the extraneous pointer.
 del validation_problem
 
-# REFACTOR: I've refactored this module up to here.
-
-# Define the position of the coordinates of interest and the area of their
-# rectangles. These values were extracted by digitizing the figures in Yeo et al.,
-# 2011.
-blue_trailing_point_coords = [0.060, 0.036]
+# Define the position of the points of interest and the area of their rectangles.
+# These values were extracted by digitizing the figures in Yeo et al., 2011.
+blueTrailingPointsXY_Wn_Ler = [0.060, 0.036]
 blue_trailing_area = 0.072 * 0.024
-blue_middle_point_coords = [0.036, 0.036]
+blueMiddlePointsXY_Wn_Ler = [0.036, 0.036]
 blue_middle_area = 0.072 * 0.024
-blue_leading_point_coords = [0.012, 0.036]
+blueLeadingPointsXY_Wn_Ler = [0.012, 0.036]
 blue_leading_area = 0.072 * 0.024
-orange_trailing_point_coords = [0.05532, 0.107]
+orangeTrailingPointsXY_Wn_Ler = [0.05532, 0.107]
 orange_trailing_area = 0.07 * 0.02112
-orange_middle_point_coords = [0.0342, 0.107]
+orangeMiddlePointsXY_Wn_Ler = [0.0342, 0.107]
 orange_middle_area = 0.07 * 0.02112
-orange_leading_point_coords = [0.01308, 0.107]
+orangeLeadingPointsXY_Wn_Ler = [0.01308, 0.107]
 orange_leading_area = 0.07 * 0.02112
-green_trailing_point_coords = [0.04569, 0.162825]
+greenTrailingPointsXY_Wn_Ler = [0.04569, 0.162825]
 green_trailing_area = 0.04165 * 0.015
-green_middle_point_coords = [0.03069, 0.176]
+greenMiddlePointsXY_Wn_Ler = [0.03069, 0.176]
 green_middle_area = 0.06565 * 0.015
-green_leading_point_coords = [0.01569, 0.1775]
+greenLeadingPointsXY_Wn_Ler = [0.01569, 0.1775]
 green_leading_area = 0.071 * 0.015
 
 # Run the validation solver using a prescribed wake.
@@ -448,9 +437,6 @@ validation_solver.run(prescribed_wake=True)
 # Extract the Movement's num_steps and delta_time attributes.
 validation_num_steps = validation_movement.num_steps
 validation_delta_time = validation_movement.delta_time
-
-# Delete the extraneous pointer.
-del validation_airplane_movement
 
 # Create a variable to hold the time in seconds at each of the simulation’s time steps.
 times = np.linspace(
@@ -461,7 +447,7 @@ times = np.linspace(
 )
 
 # Discretize the time period of the final flap analyzed into 100 steps. Store this to
-# an array.
+# a ndarray.
 final_flap_times = np.linspace(
     (num_flaps - 1) / validation_flapping_frequency,
     num_flaps / validation_flapping_frequency,
@@ -469,7 +455,7 @@ final_flap_times = np.linspace(
     endpoint=False,
 )
 
-# Discretize the normalized flap cycle times into 100 steps. Store this to an array.
+# Discretize the normalized flap cycle times into 100 steps. Store this to a ndarray.
 normalized_times = np.linspace(0, 1, 100, endpoint=False)
 
 # Pull the experimental pressure vs. time histories from the digitized data. These
@@ -581,101 +567,93 @@ exp_green_leading_normal_forces = (
     248.84 * exp_green_leading_point_pressures_norm * green_leading_area
 )
 
-# Convert each experimental panel’s normal force time history to a time history of
-# the force in the z axis of the geometry frame. This is done by finding the vertical
-# component given the wing’s sweep angle at each time step.
-exp_blue_trailing_z_forces_geometry_axes = exp_blue_trailing_normal_forces * np.cos(
+# Convert each experimental panel's normal force time history to a time history of
+# the force's geometry axes' z-component.
+stackExpBlueTrailingForcesZ_G = exp_blue_trailing_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_blue_middle_z_forces_geometry_axes = exp_blue_middle_normal_forces * np.cos(
+stackExpBlueMiddleForcesZ_G = exp_blue_middle_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_blue_leading_z_forces_geometry_axes = exp_blue_leading_normal_forces * np.cos(
+stackExpBlueLeadingForcesZ_G = exp_blue_leading_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_trailing_z_forces_geometry_axes = exp_orange_trailing_normal_forces * np.cos(
+stackExpOrangeTrailingForcesZ_G = exp_orange_trailing_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_middle_z_forces_geometry_axes = exp_orange_middle_normal_forces * np.cos(
+stackExpOrangeMiddleForcesZ_G = exp_orange_middle_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_orange_leading_z_forces_geometry_axes = exp_orange_leading_normal_forces * np.cos(
+stackExpOrangeLeadingForcesZ_G = exp_orange_leading_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_trailing_z_forces_geometry_axes = exp_green_trailing_normal_forces * np.cos(
+stackExpGreenTrailingForcesZ_G = exp_green_trailing_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_middle_z_forces_geometry_axes = exp_green_middle_normal_forces * np.cos(
+stackExpGreenMiddleForcesZ_G = exp_green_middle_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
-exp_green_leading_z_forces_geometry_axes = exp_green_leading_normal_forces * np.cos(
+stackExpGreenLeadingForcesZ_G = exp_green_leading_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
 
-# Calculate the net experimental force in the z direction of the geometry axes. This
-# is the sum of all the z-direction-forces on each of the experimental panels
-# multiplied by two ( because the experimental panels only cover one of the symmetric
-# wing halves).
-exp_net_z_forces_geometry_axes = 2 * (
-    exp_blue_trailing_z_forces_geometry_axes
-    + exp_blue_middle_z_forces_geometry_axes
-    + exp_blue_leading_z_forces_geometry_axes
-    + exp_orange_trailing_z_forces_geometry_axes
-    + exp_orange_middle_z_forces_geometry_axes
-    + exp_orange_leading_z_forces_geometry_axes
-    + exp_green_trailing_z_forces_geometry_axes
-    + exp_green_middle_z_forces_geometry_axes
-    + exp_green_leading_z_forces_geometry_axes
+# Calculate the net experimental force's geometry axes' z-component. This is
+# multiplied by two because the experimental panels only cover one of the symmetric
+# wing halves.
+stackExpNetForcesZ_G = 2 * (
+    stackExpBlueTrailingForcesZ_G
+    + stackExpBlueMiddleForcesZ_G
+    + stackExpBlueLeadingForcesZ_G
+    + stackExpOrangeTrailingForcesZ_G
+    + stackExpOrangeMiddleForcesZ_G
+    + stackExpOrangeLeadingForcesZ_G
+    + stackExpGreenTrailingForcesZ_G
+    + stackExpGreenMiddleForcesZ_G
+    + stackExpGreenLeadingForcesZ_G
 )
 
-# Initialize an array to hold the wind frame z-direction forces.
-exp_net_z_forces_wind_axes = np.zeros(exp_net_z_forces_geometry_axes.size)
+# Initialize a ndarray to hold the net force's wind axes' z-component.
+stackExpNetForcesZ_W = np.zeros(stackExpNetForcesZ_G.size, dtype=float)
 
-# Get the geometry-to-wind transformation matrix, which will later be used to convert
-# the experimental pressure-based-lift measurements to wind axes.
+# Get the passive transformation matrix which maps in homogeneous coordinates from
+# geometry axes relative to the CG to wind axes relative to the CG.
 T_pas_G_Cg_to_W_Cg = validation_operating_point.T_pas_G_Cg_to_W_Cg
 
 # Delete the extraneous pointer.
 del validation_operating_point
 
-# To eventually compare the experimental and simulated lifts, use the rotation matrix
-# to shift the experimental force z-direction force to the wind frame.
-for force_id, force in enumerate(exp_net_z_forces_geometry_axes):
-    exp_net_force_geometry_axes = np.array([0, 0, force])
-    exp_net_force_wind_axes = _transformations.apply_T_to_vectors(
-        T_pas_G_Cg_to_W_Cg, exp_net_force_geometry_axes, has_point=False
-    )
-    exp_net_z_force_wind_axes = exp_net_force_wind_axes[2]
-    exp_net_z_forces_wind_axes[force_id] = exp_net_z_force_wind_axes
+# Transform from geometry axes to wind axes.
+for force_id, expNetForceZ_G in enumerate(stackExpNetForcesZ_G):
+    expNetForceHomog_G = np.array([0.0, 0.0, expNetForceZ_G, 0.0], dtype=float)
+    expNetForceHomog_W = T_pas_G_Cg_to_W_Cg @ expNetForceHomog_G
+    expNetForceZ_W = expNetForceHomog_W[2]
+    stackExpNetForcesZ_W[force_id] = expNetForceZ_W
 
-# Get the experimental lift forces. Lift is defined as the z-direction wind-frame
-# force multiplied by negative one.
-exp_lifts = -1 * exp_net_z_forces_wind_axes
+# Get the experimental lift values. Lift is defined as the force's wind axes'
+# z-component multiplied by negative one.
+exp_lifts = -1 * stackExpNetForcesZ_W
 
-# Get this solver’s problem’s airplanes.
+# Get this solver’s SteadyProblems' Airplanes.
 airplanes = []
 for steady_problem in validation_solver.steady_problems:
     airplanes.append(steady_problem.airplanes[0])
 
-# Initialize matrices to hold the forces at each time step.
-sim_forces_wind_axes = np.zeros((3, validation_num_steps))
+# Initialize a ndarray to hold the force at each time step (in wind axes).
+stackSimForces_W = np.zeros((3, validation_num_steps))
 
-# Iterate through the time steps and add the results to their respective matrices.
+# Iterate through the time steps and populate the ndarray.
 for step in range(validation_num_steps):
-    # Get the airplane at this time step.
     airplane = airplanes[step]
-    # Add the total forces on the airplane at this time step to the list
-    # of simulated forces.
-    sim_forces_wind_axes[:, step] = airplane.forces_W
+    stackSimForces_W[:, step] = airplane.forces_W
 
 # Initialize the figure and axes of the experimental versus simulated lift plot.
 lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
 
-# Get the simulated lift forces. Lift is defined as the z-direction wind-frame force
+# Get the simulated lift values. Lift is defined as the force's wind axes' z-component
 # multiplied by negative one.
-sim_lifts = -1 * sim_forces_wind_axes[2, :]
+sim_lifts = -1 * stackSimForces_W[2, :]
 
-# Interpolate the simulated lift forces to find them with respect to the normalized
+# Interpolate the simulated lift values to find them with respect to the normalized
 # final flap timescale.
 final_flap_sim_lifts = np.interp(final_flap_times, times, sim_lifts[:])
 
@@ -700,7 +678,7 @@ lift_axes.set_facecolor(figure_background_color)
 
 marker_spacing = 1.0 / num_markers
 
-# Plot the simulated lift forces. The x-axis is set to the normalized times,
+# Plot the simulated lift values. The x-axis is set to the normalized times,
 # which may seem odd because we just interpolated to get them in terms of the
 # normalized final flap times. But, they are discretized in exactly the same way as
 # the normalized times, just horizontally shifted.
@@ -714,7 +692,7 @@ lift_axes.plot(
     markersize=marker_size,
 )
 
-# Plot the experimental lift forces.
+# Plot the experimental lift values.
 lift_axes.plot(
     normalized_times,
     exp_lifts,
@@ -754,7 +732,7 @@ lift_figure.savefig(
 
 # Delete the extraneous pointers.
 del airplanes
-del sim_forces_wind_axes
+del stackSimForces_W
 del step
 
 # Calculate the lift mean absolute error (MAE). The experimental and simulated lift

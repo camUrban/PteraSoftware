@@ -532,11 +532,11 @@ class Airfoil:
         sanitized_name = self.name.lower().strip()
 
         # Check if the sanitized Airfoil's name matches a name for a NACA 4-series
-        # airfoil (other than NACA0000). If so, generate it.
+        # airfoil (NACA0000 is not a valid NACA 4-series airfoil). If so, generate it.
         if "naca" in sanitized_name:
             naca_number = sanitized_name.split("naca")[1]
             if naca_number.isdigit():
-                if (len(naca_number) == 4) and (naca_number is not "0000"):
+                if (len(naca_number) == 4) and (naca_number != "0000"):
 
                     # Parse the characteristics from the name.
                     max_camber = int(naca_number[0]) * 0.01

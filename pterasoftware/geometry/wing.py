@@ -807,6 +807,7 @@ class Wing:
             for i in range(len(self.wing_cross_sections))
         ]
 
+    # TEST: Consider adding unit tests for this method.
     @property
     def projected_area(self):
         """This method sets a property for the area of the Wing projected onto the
@@ -835,6 +836,7 @@ class Wing:
 
         return projected_area
 
+    # TEST: Consider adding unit tests for this method.
     @property
     def wetted_area(self):
         """This method sets a property for the Wing's wetted area.
@@ -860,6 +862,10 @@ class Wing:
 
         return wetted_area
 
+    # FIXME: The span calculation is producing incorrect results, which is causing
+    #  the standard_mean_chord property to also be incorrect. It's potentially also
+    #  causing issues with the mean_aerodynamic_chord property. Investigate and fix
+    #  the span calculation.
     # TEST: Consider adding unit tests for this method.
     @property
     def span(self):
@@ -930,6 +936,7 @@ class Wing:
 
         return span
 
+    # TEST: Consider adding unit tests for this method.
     @property
     def standard_mean_chord(self):
         """This method sets a property for the standard mean chord of the Wing.

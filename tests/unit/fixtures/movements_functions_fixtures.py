@@ -273,20 +273,6 @@ def make_invalid_custom_function_wrong_end_fixture():
     return invalid_end
 
 
-def make_invalid_custom_function_wrong_mean_fixture():
-    """This method makes a fixture that is an invalid custom function with non-zero
-    mean.
-
-    :return callable
-        This returns an invalid custom function for testing validation.
-    """
-
-    def invalid_mean(x):
-        return np.sin(x) + 0.1 * abs(np.sin(2 * x))
-
-    return invalid_mean
-
-
 def make_invalid_custom_function_wrong_amplitude_fixture():
     """This method makes a fixture that is an invalid custom function with amplitude
     not equal to 1.

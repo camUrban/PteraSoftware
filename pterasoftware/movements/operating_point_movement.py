@@ -67,15 +67,15 @@ class OperatingPointMovement:
 
         :param spacingVCg__E: string, optional
 
-            The value determines the spacing of the OperatingPointMovement's change
-            in its OperatingPoints' Cg_E_CgP1 parameters. Must be either "sine",
-            "uniform", or a callable custom spacing function. Custom spacing
-            functions are for advanced users and must start at 0, return to 0 after
-            one period of 2*pi radians, have zero mean, have amplitude of 1,
-            be periodic, return finite values only, and accept a ndarray as input and
-            return a ndarray of the same shape. The custom function is scaled by
-            ampVCg__E, shifted by phaseVCg__E, and centered around the base value,
-            with the period controlled by periodVCg__E.The default value is "sine".
+            The value determines the spacing of the OperatingPointMovement's change 
+            in its OperatingPoints' Cg_E_CgP1 parameters. Must be either "sine", 
+            "uniform", or a callable custom spacing function. Custom spacing 
+            functions are for advanced users and must start at 0, return to 0 after 
+            one period of 2*pi radians, have amplitude of 1, be periodic, 
+            return finite values only, and accept a ndarray as input and return a 
+            ndarray of the same shape. The custom function is scaled by ampVCg__E, 
+            shifted horizontally by phaseVCg__E, and vertically by the base value, 
+            with the period controlled by periodVCg__E. The default value is "sine".
 
         :param phaseVCg__E: number optional
 

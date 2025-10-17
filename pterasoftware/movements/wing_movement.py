@@ -93,10 +93,10 @@ class WingMovement:
             element can be the string "sine", the string "uniform", or a callable
             custom spacing function. Custom spacing functions are for advanced users
             and must start at 0, return to 0 after one period of 2*pi radians,
-            have zero mean, have amplitude of 1, be periodic, return finite values
-            only, and accept a ndarray as input and return a ndarray of the same
-            shape. The custom function is scaled by ampLer_Gs_Cgs, shifted by
-            phaseLer_Gs_Cgs, and centered around the base value, with the period
+            have amplitude of 1, be periodic, return finite values only, and accept
+            a ndarray as input and return a ndarray of the same shape. The custom
+            function is scaled by ampLer_Gs_Cgs, shifted horizontally by
+            phaseLer_Gs_Cgs, and vertically by the base value, with the period
             controlled by periodLer_Gs_Cgs. The default value is ("sine", "sine",
             "sine").
 
@@ -136,12 +136,12 @@ class WingMovement:
             array. Each element can be the string "sine", the string "uniform",
             or a callable custom spacing function. Custom spacing functions are for
             advanced users and must start at 0, return to 0 after one period of 2*pi
-            radians, have zero mean, have amplitude of 1, be periodic, return finite
-            values only, and accept a ndarray as input and return a ndarray of the
-            same shape. The custom function is scaled by ampAngles_Gs_to_Wn_ixyz,
-            shifted by phaseAngles_Gs_to_Wn_ixyz, and centered around the base value,
-            with the period controlled by periodAngles_Gs_to_Wn_ixyz. The default
-            value is ("sine", "sine", "sine").
+            radians, have amplitude of 1, be periodic, return finite values only,
+            and accept a ndarray as input and return a ndarray of the same shape.
+            The custom function is scaled by ampAngles_Gs_to_Wn_ixyz, shifted
+            horizontally by phaseAngles_Gs_to_Wn_ixyz, and vertically by the base
+            value, with the period controlled by periodAngles_Gs_to_Wn_ixyz. The
+            default value is ("sine", "sine", "sine").
 
         :param phaseAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
 

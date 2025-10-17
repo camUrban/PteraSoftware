@@ -84,16 +84,16 @@ class AirplaneMovement:
 
         :param spacingCg_E_CgP1: array-like of 3 strs or callables, optional
 
-            The value determines the spacing of the AirplaneMovement's change in its
-            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or numpy array.
-            Each element can be the string "sine", the string "uniform",
-            or a callable custom spacing function. Custom spacing functions are for
-            advanced users and must start at 0, return to 0 after one period of 2*pi
-            radians, have zero mean, have amplitude of 1, be periodic, return finite
-            values only, and accept a ndarray as input and return a ndarray of the
-            same shape. The custom function is scaled by ampCg_E_CgP1, shifted by
-            phaseCg_E_CgP1, and centered around the base value, with the period
-            controlled by periodCg_E_CgP1. The default value is ("sine", "sine",
+            The value determines the spacing of the AirplaneMovement's change in its 
+            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or numpy array. 
+            Each element can be the string "sine", the string "uniform", 
+            or a callable custom spacing function. Custom spacing functions are for 
+            advanced users and must start at 0, return to 0 after one period of 2*pi 
+            radians, have amplitude of 1, be periodic, return finite values only, 
+            and accept a ndarray as input and return a ndarray of the same shape. The 
+            custom function is scaled by ampCg_E_CgP1, shifted horizontally by 
+            phaseCg_E_CgP1, and vertically by the base value, with the period 
+            controlled by periodCg_E_CgP1. The default value is ("sine", "sine", 
             "sine").
 
         :param phaseCg_E_CgP1: array-like of 3 numbers, optional
@@ -127,17 +127,17 @@ class AirplaneMovement:
 
         :param spacingAngles_E_to_B_izyx: array-like of 3 strs or callables, optional
 
-            The value determines the spacing of the AirplaneMovement's change in its
-            Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy
-            array. Each element can be the string "sine", the string "uniform", or a
-            callable custom spacing function. Custom spacing functions are for advanced
-            users and must start at 0, return to 0 after one period of 2*pi radians,
-            have zero mean, have amplitude of 1, be periodic, return finite values
-            only, and accept a ndarray as input and return a ndarray of the same shape.
-            The custom function is scaled by ampAngles_E_to_B_izyx, shifted by
-            phaseAngles_E_to_B_izyx, and centered around the base value, with the
-            period controlled by periodAngles_E_to_B_izyx. The default value is
-            ("sine", "sine", "sine").
+            The value determines the spacing of the AirplaneMovement's change in its 
+            Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or numpy 
+            array. Each element can be the string "sine", the string "uniform", 
+            or a callable custom spacing function. Custom spacing functions are for 
+            advanced users and must start at 0, return to 0 after one period of 2*pi 
+            radians, have amplitude of 1, be periodic, return finite values only, 
+            and accept a ndarray as input and return a ndarray of the same shape. The 
+            custom function is scaled by ampAngles_E_to_B_izyx, shifted horizontally 
+            by phaseAngles_E_to_B_izyx, and vertically by the base value, with the 
+            period controlled by periodAngles_E_to_B_izyx. The default value is (
+            "sine", "sine", "sine").
 
         :param phaseAngles_E_to_B_izyx: array-like of 3 numbers, optional
 

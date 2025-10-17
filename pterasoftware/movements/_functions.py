@@ -187,11 +187,15 @@ def oscillating_customspaces(
 
     Custom Function Requirements:
         The function must start at 0 with f(0) = 0, and must return to 0 after one
-        period with f(2*pi) = 0. The function must have zero mean over one period and
-        must have amplitude of 1, meaning (max - min) / 2 = 1.0. The function must be
-        periodic with period 2*pi such that f(x) = f(x + 2*pi). The function must
-        return finite values only with no NaN or Inf. The function must accept a
-        ndarray as input and return a ndarray of the same shape.
+        period with f(2*pi) = 0. The function must have amplitude of 1, meaning (max -
+        min) / 2 = 1.0. The function must be periodic with period 2*pi such that f(x) =
+        f(x + 2*pi). The function must return finite values only with no NaN or Inf.
+        The function must accept a ndarray as input and return a ndarray of the same
+        shape.
+
+        Note: Functions with non-zero mean are allowed but will shift the effective 
+        center of oscillation away from the base value. This can be useful for 
+        creating asymmetric motion (e.g., faster upstroke than downstroke in flapping).
 
     Parameter Interaction:
         The custom function is transformed by the amps, periods, phases, and bases
@@ -366,9 +370,9 @@ def _validate_custom_spacing_function(custom_function):
 
     The function must start at 0 with f(0) approximately equal to 0, and return to
     0 after one period with f(2*pi) approximately equal to 0. The function must have
-    zero mean over one period and have amplitude of 1 with (max - min) / 2
-    approximately equal to 1.0. The function must be periodic such that f(x) is
-    approximately equal to f(x + 2*pi). The function must return finite values only.
+    amplitude of 1 with (max - min) / 2 approximately equal to 1.0. The function must
+    be periodic such that f(x) is approximately equal to f(x + 2*pi). The function
+    must return finite values only.
 
     :param custom_function: callable
         The custom spacing function to validate.
@@ -401,8 +405,8 @@ def _validate_custom_spacing_function(custom_function):
         )
 
     # Extract one period of data for validation (first period).
-    one_period_indices = test_input < 2 * np.pi
-    one_period_output = test_output[one_period_indices]
+    first_period_indices = test_input < 2 * np.pi
+    first_period_output = test_output[first_period_indices]
 
     tolerance = 0.05
 
@@ -424,17 +428,9 @@ def _validate_custom_spacing_function(custom_function):
             f"f(2*pi) = {end_value:.4f}, but should be within {tolerance} of 0."
         )
 
-    # Check zero mean.
-    mean_value = np.mean(one_period_output)
-    if not np.isclose(mean_value, 0.0, atol=tolerance):
-        raise ValueError(
-            f"Custom spacing function must have zero mean over one period. "
-            f"Mean = {mean_value:.4f}, but should be within {tolerance} of 0."
-        )
-
     # Check amplitude = 1.
-    max_value = float(np.max(one_period_output))
-    min_value = float(np.min(one_period_output))
+    max_value = float(np.max(first_period_output))
+    min_value = float(np.min(first_period_output))
     amplitude = (max_value - min_value) / 2.0
     if not np.isclose(amplitude, 1.0, atol=tolerance):
         raise ValueError(
@@ -447,9 +443,9 @@ def _validate_custom_spacing_function(custom_function):
     second_period_output = test_output[second_period_indices]
 
     # They should have the same length if properly sampled.
-    if len(one_period_output) == len(second_period_output):
-        if not np.allclose(one_period_output, second_period_output, atol=tolerance):
-            max_diff = np.max(np.abs(one_period_output - second_period_output))
+    if len(first_period_output) == len(second_period_output):
+        if not np.allclose(first_period_output, second_period_output, atol=tolerance):
+            max_diff = np.max(np.abs(first_period_output - second_period_output))
             raise ValueError(
                 f"Custom spacing function must be periodic with period 2*pi. "
                 f"Maximum difference between first and second period: {max_diff:.4f}, "

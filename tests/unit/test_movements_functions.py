@@ -115,9 +115,6 @@ class TestMovementsFunctions(unittest.TestCase):
         cls.invalid_custom_wrong_end = staticmethod(
             movements_functions_fixtures.make_invalid_custom_function_wrong_end_fixture()
         )
-        cls.invalid_custom_wrong_mean = staticmethod(
-            movements_functions_fixtures.make_invalid_custom_function_wrong_mean_fixture()
-        )
         cls.invalid_custom_wrong_amplitude = staticmethod(
             movements_functions_fixtures.make_invalid_custom_function_wrong_amplitude_fixture()
         )
@@ -594,21 +591,6 @@ class TestMovementsFunctions(unittest.TestCase):
             )
 
         self.assertIn("must return to 0 after one period", str(context.exception))
-
-    def test_oscillating_customspaces_invalid_function_wrong_mean(self):
-        """Test oscillating_customspaces with invalid function with non-zero mean."""
-        with self.assertRaises(ValueError) as context:
-            _functions.oscillating_customspaces(
-                amps=self.scalar_amps,
-                periods=self.scalar_periods,
-                bases=self.scalar_bases,
-                phases=self.scalar_phases,
-                num_steps=self.num_steps,
-                delta_time=self.delta_time,
-                custom_function=self.invalid_custom_wrong_mean,
-            )
-
-        self.assertIn("must have zero mean", str(context.exception))
 
     def test_oscillating_customspaces_invalid_function_wrong_amplitude(self):
         """Test oscillating_customspaces with invalid function with amplitude not equal

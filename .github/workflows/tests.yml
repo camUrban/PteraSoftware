@@ -20,14 +20,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements_ci.txt
     - name: Run tests and generate coverage report
+      env:
+        NUMBA_JIT_COVERAGE: "1"
       run: |
         coverage run --source=pterasoftware -m unittest discover -s tests
         coverage xml -o coverage.xml
     - name: Upload coverage report to Codecov
       if: ${{ github.event_name == 'push' }}
       uses: codecov/codecov-action@v5
-      env:
-          NUMBA_DISABLE_JIT: 1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml

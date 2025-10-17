@@ -522,9 +522,7 @@ def _get_mcs_points(
     # M,N,3) array, where M and N are the number of chordwise points and spanwise
     # points.
     wing_section_mcl_vertices = _functions.interp_between_points(
-        inner_mcl_points_Wn_Ler,
-        outer_mcl_points_Wn_Ler,
-        spanwise_coordinates,
+        inner_mcl_points_Wn_Ler, outer_mcl_points_Wn_Ler, spanwise_coordinates
     )
 
     # Extract the coordinates for corners of each panel point.

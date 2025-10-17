@@ -16,7 +16,6 @@ from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 # TEST: Consider adding unit tests for this function.
 def cosspace(minimum, maximum, n_points=50, endpoint=True):
     """This function is used to create an array containing a specified number of
@@ -37,8 +36,8 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
     :param endpoint: bool, optional
         This determines if the maximum value will be included in the output. The
         default is True.
-    :return cosine_spaced_points: 1D array
-        This is a 1D array of the points, ranging from the minimum to the maximum
+    :return cosine_spaced_points: (N,) ndarray of floats
+        This is a ndarray of the N points, ranging from the minimum to the maximum
         value (inclusive), spaced via a cosine function.
     """
 
@@ -46,65 +45,59 @@ def cosspace(minimum, maximum, n_points=50, endpoint=True):
     mean = (maximum + minimum) / 2
     amp = (maximum - minimum) / 2
 
-    # Space the points by applying cosine to the linspace function. Then return the
-    # points.
-    cosine_spaced_points = mean + amp * np.cos(
-        np.linspace(np.pi, 0, n_points, endpoint=endpoint)
-    )
-    return cosine_spaced_points
+    # Space the points by applying cosine to the output of linspace and return them
+    return mean + amp * np.cos(np.linspace(np.pi, 0, n_points, endpoint=endpoint))
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 # TEST: Consider adding unit tests for this function.
 @njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
-    front_left_vertex, front_right_vertex, back_left_vertex, back_right_vertex
+    frontLeftPoint_A_a,
+    frontRightPoint_A_a,
+    backLeftPoint_A_a,
+    backRightPoint_A_a,
 ):
     """This function is used to find the centroid of a quadrilateral. It has been
     optimized for JIT compilation using Numba.
 
-    Note: This function doesn't perform any parameter validation.
-
-    :param front_left_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the front left
-        vertex of the quadrilateral.
-    :param front_right_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the front right
-        vertex of the quadrilateral.
-    :param back_left_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the back left
-        vertex of the quadrilateral.
-    :param back_right_vertex: 1D array of floats
-        This is an array containing the x, y, and z components of the back right
-        vertex of the quadrilateral.
-    :return: 1D array of floats
-        This is an array containing the x, y, and z components of the centroid of the
-        quadrilateral.
+    :param frontLeftPoint_A_a: (3,) ndarray of floats
+        This is a ndarray containing the x, y, and z components of the front left
+        point of the quadrilateral (in A axes, relative to point a).
+    :param frontRightPoint_A_a: (3,) ndarray of floats
+        This is a ndarray containing the x, y, and z components of the front right
+        point of the quadrilateral (in A axes, relative to point a).
+    :param backLeftPoint_A_a: (3,) ndarray of floats
+        This is a ndarray containing the x, y, and z components of the back left
+        point of the quadrilateral (in A axes, relative to point a).
+    :param backRightPoint_A_a: (3,) ndarray of floats
+        This is a ndarray containing the x, y, and z components of the back right
+        point of the quadrilateral (in A axes, relative to point a).
+    :return: (3,) ndarray of floats
+        This is a ndarray containing the x, y, and z components of the centroid of the
+        quadrilateral (in A axes, relative to point a).
     """
-
     x_average = (
-        front_left_vertex[0]
-        + front_right_vertex[0]
-        + back_left_vertex[0]
-        + back_right_vertex[0]
+        frontLeftPoint_A_a[0]
+        + frontRightPoint_A_a[0]
+        + backLeftPoint_A_a[0]
+        + backRightPoint_A_a[0]
     ) / 4
     y_average = (
-        front_left_vertex[1]
-        + front_right_vertex[1]
-        + back_left_vertex[1]
-        + back_right_vertex[1]
+        frontLeftPoint_A_a[1]
+        + frontRightPoint_A_a[1]
+        + backLeftPoint_A_a[1]
+        + backRightPoint_A_a[1]
     ) / 4
     z_average = (
-        front_left_vertex[2]
-        + front_right_vertex[2]
-        + back_left_vertex[2]
-        + back_right_vertex[2]
+        frontLeftPoint_A_a[2]
+        + frontRightPoint_A_a[2]
+        + backLeftPoint_A_a[2]
+        + backRightPoint_A_a[2]
     ) / 4
 
     return np.array([x_average, y_average, z_average])
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 # TEST: Consider adding unit tests for this function.
 def calculate_streamlines(
     solver: (
@@ -116,53 +109,66 @@ def calculate_streamlines(
     delta_time=0.02,
 ):
     """This function calculates the location of the streamlines coming off the back
-    of the wings.
+    of the Wings.
 
-    This method is vectorized to increase performance.
+    :param solver: steady_horseshoe_vortex_lattice_method
+    .SteadyHorseshoeVortexLatticeMethodSolver or
+    steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver or
+    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
 
-    :param solver: Solver
-        This is the solver object for which to calculate the streamlines.
+        This is the solver for which to calculate the streamlines.
+
     :param num_steps: int, optional
+
         This is the integer number of points along each streamline (not including the
         initial points). It can be increased for higher fidelity visuals. The default
         value is 25.
+
     :param delta_time: float, optional
-        This is the time in seconds between each time step It can be
-        decreased for higher fidelity visuals or to make the streamlines shorter.
-        Its default value is 0.02 seconds.
+
+        This is the time in seconds between each time step It can be decreased for
+        higher fidelity visuals or to make the streamlines shorter. Its default value
+        is 0.02 seconds.
+
     :return: None
     """
-    # Initialize an array to hold this solver's matrix of streamline points.
+    # Initialize a ndarray to hold this solver's grid of streamline points (in
+    # geometry axes, relative to the CG).
     solver.gridStreamlinePoints_G_Cg = np.expand_dims(
         solver.stackSeedPoints_G_Cg, axis=0
     )
 
-    # Iterate through the streamline steps.
+    # Iterate through the streamline time steps.
     for step in range(num_steps):
-        # Get the last row of streamline points.
-        last_row_streamline_points = solver.gridStreamlinePoints_G_Cg[-1, :, :]
+        # Get the previous row of streamline points (in geometry axes, relative to
+        # the CG).
+        lastRowStackStreamlinePoints_G_Cg = solver.gridStreamlinePoints_G_Cg[-1, :, :]
 
-        # Add the freestream velocity to the induced velocity to get the total
-        # velocity at each of the last row of streamline points.
-        total_velocities = solver.calculate_solution_velocity(
-            stackP_G_Cg=last_row_streamline_points
+        # Finds the fluid velocity (in geometry axes, observed from the Earth frame)
+        # at each streamline point in the previous row due to the freestream velocity
+        # and the induced velocity from the vortices.
+        stackVLastRowStreamlinePoints_G__E = solver.calculate_solution_velocity(
+            stackP_G_Cg=lastRowStackStreamlinePoints_G_Cg
         )
 
-        # Interpolate the positions on a new row of streamline points.
-        new_row_streamline_points = (
-            last_row_streamline_points + total_velocities * delta_time
+        # Interpolate to find the new row of streamline points (in geometry axes,
+        # relative to the CG).
+        newRowStackStreamlinePoints_G_Cg = (
+            lastRowStackStreamlinePoints_G_Cg
+            + stackVLastRowStreamlinePoints_G__E * delta_time
         )
 
-        # Stack the new row of streamline points to the bottom of the matrix of
+        # Stack the new row of streamline points to the bottom of the ndarray of
         # streamline points.
         solver.gridStreamlinePoints_G_Cg = np.vstack(
             (
                 solver.gridStreamlinePoints_G_Cg,
-                np.expand_dims(new_row_streamline_points, axis=0),
+                np.expand_dims(newRowStackStreamlinePoints_G_Cg, axis=0),
             )
         )
 
 
+# TEST: Consider adding unit tests for this function.
 def convert_logging_level_name_to_value(name):
     """This function takes in a string that represents the logging level and returns
     the integer that can be used to set the logger to this level.
@@ -329,6 +335,7 @@ def process_solver_loads(
         airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
 
 
+# TEST: Consider adding unit tests for this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
@@ -419,7 +426,6 @@ def update_ring_vortex_solvers_panel_attributes(
         )
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 # TEST: Consider adding unit tests for this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
@@ -428,14 +434,21 @@ def calculate_steady_freestream_wing_influences(
     ),
 ):
     """This function finds the vector of freestream-wing influence coefficients
-    associated with this problem.
+    associated with this solver. These coefficients are the normal velocity (in
+    geometry axes, observed from the Earth frame) at every collocation point due
+    solely to the freestream.
 
-    :param steady_solver:
-    :return:
+    :param steady_solver: steady_horseshoe_vortex_lattice_method
+    .SteadyHorseshoeVortexLatticeMethodSolver or
+    steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+
+        This is the steady solver for which to calculate the freestream-wing influences.
+
+    :return: None
     """
-    # Take the batch dot product of the freestream velocity with each panel's
-    # normal direction. This is now the problem's 1D array of freestream-wing
-    # influence coefficients.
+    # Take the batch dot product of the freestream velocity with each of the N
+    # panel's normal direction. This is now the problem's (N,) ndarray of
+    # freestream-wing influence coefficients.
     steady_solver.stackFreestreamWingInfluences__E = np.einsum(
         "ij,j->i",
         steady_solver.stackUnitNormals_G,
@@ -481,42 +494,49 @@ def numba_1d_explicit_cross(stackVectors1, stackVectors2):
     return stackCrossProducts
 
 
-# REFACTOR: I haven't yet started refactoring this function.
 # TEST: Consider adding unit tests for this function.
 @njit(cache=True, fastmath=False)
-def interp_between_points(start_points, end_points, norm_spacings):
-    """This function finds the MxN points between M pairs of points in 3D space given
+def interp_between_points(stackStartPoints_A_a, stackEndPoints_A_a, norm_spacings):
+    """This function finds the (M,N) grid of points between M pairs of points given
     an array of N normalized spacings.
 
-    :param start_points: (M, 3) array of floats
-        This is the (M, 3) array containing the coordinates of the M starting points.
-        The units are meters.
-    :param end_points: (M, 3) array of floats
-        This is the (M, 3) array containing the coordinates of the M ending points.
-        The units are meters.
-    :param norm_spacings: (N,) array of floats
-        This is the (N,) array of the N spacings between the starting points and
-        ending points. The values are unitless and must be normalized from 0 to 1.
-    :return points: (M, N, 3) array of floats
-        This is the (M, N, 3) array of the coordinates of the MxN interpolated
-        points. The units are meters.
+    :param stackStartPoints_A_a: (M,3) ndarray of floats
+
+        This is the (M,3) ndarray containing the positions of the M start points (in
+        A axes, relative to point a). The units are meters.
+
+    :param stackEndPoints_A_a: (M,3) ndarray of floats
+
+        This is the (M,3) ndarray containing the positions of the M end points (in A
+        axes, relative to point a). The units are meters.
+
+    :param norm_spacings: (N,) ndarray of floats
+
+        This is the (N,) ndarray of the N normalized spacing values between the start
+        and end points. The values are unitless and must be normalized to lie in the
+        range from 0.0 to 1.0.
+
+    :return gridInterpolatedPoints_A_a: (M,N,3) ndarray of floats
+
+        This is the (M,N,3) ndarray of the positions of the M*N interpolated points (
+        in A axes, relative to point a). The units are meters.
     """
-    m = start_points.shape[0]
+    m = stackStartPoints_A_a.shape[0]
     n = norm_spacings.size
 
-    points = np.zeros((m, n, 3))
+    gridInterpolatedPoints_A_a = np.zeros((m, n, 3), dtype=float)
 
     for i in range(m):
-        start_point = start_points[i, :]
-        end_point = end_points[i, :]
+        startPoint_A_a = stackStartPoints_A_a[i, :]
+        endPoint_A_a = stackEndPoints_A_a[i, :]
 
-        vector = end_point - start_point
+        vector_A = endPoint_A_a - startPoint_A_a
 
         for j in range(n):
             norm_spacing = norm_spacings[j]
 
-            spacing = norm_spacing * vector
+            scaledVector_A = norm_spacing * vector_A
 
-            points[i, j, :] = start_point + spacing
+            gridInterpolatedPoints_A_a[i, j, :] = startPoint_A_a + scaledVector_A
 
-    return points
+    return gridInterpolatedPoints_A_a

@@ -135,10 +135,7 @@ class RingVortex:
         # TODO: Consider making this a property.
         # Initialize a variable to hold the centroid of the RingVortex.
         self.Crvp_G_Cg = _functions.numba_centroid_of_quadrilateral(
-            self.Flrvp_G_Cg,
-            self.Frrvp_G_Cg,
-            self.Blrvp_G_Cg,
-            self.Brrvp_G_Cg,
+            self.Flrvp_G_Cg, self.Frrvp_G_Cg, self.Blrvp_G_Cg, self.Brrvp_G_Cg
         )
 
         # Initialize a variable to hold the age of the RingVortex in seconds (in
@@ -240,10 +237,7 @@ class RingVortex:
 
         # Update the variable with the centroid of the RingVortex.
         self.Crvp_G_Cg = _functions.numba_centroid_of_quadrilateral(
-            self.Flrvp_G_Cg,
-            self.Frrvp_G_Cg,
-            self.Blrvp_G_Cg,
-            self.Brrvp_G_Cg,
+            self.Flrvp_G_Cg, self.Frrvp_G_Cg, self.Blrvp_G_Cg, self.Brrvp_G_Cg
         )
 
 

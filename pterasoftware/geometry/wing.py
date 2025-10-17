@@ -3,9 +3,6 @@
 This module contains the following classes:
     Wing: This is a class used to contain wings of an Airplane.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

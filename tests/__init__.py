@@ -5,7 +5,7 @@ This package contains the following subpackages:
     unit: This package contains the unit tests.
 
 This package contains the following directories:
-    None
+    references: This directory contains reference files for tests.
 
 This package contains the following modules:
     __init__.py: This module is this package's initialization script.

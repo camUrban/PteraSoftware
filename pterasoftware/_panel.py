@@ -1,14 +1,4 @@
-"""This module contains the Panel class.
-
-This module contains the following classes:
-    Panel: This class is used to contain the panels of a wing.
-
-This module contains the following exceptions:
-    None
-
-This module contains the following functions:
-    None
-"""
+"""This module contains the Panel class."""
 
 import numpy as np
 

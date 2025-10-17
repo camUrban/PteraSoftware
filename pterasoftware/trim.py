@@ -5,9 +5,6 @@ unsteady solvers.
 This module contains the following classes:
     None
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     analyze_steady_trim: This function attempts to calculate a trim condition of a
     steady solver by varying the operating point's velocity, angle of attack,
@@ -20,7 +17,8 @@ This module contains the following functions:
     angle of sideslip, and external thrust until the net cycle-averaged force and net
     cycle-averaged moment on the aircraft are sufficient low. If a trim condition can
     be found, it returns the trimmed operating point values. Otherwise, it logs an
-    error."""
+    error.
+"""
 
 import logging
 from typing import Sequence, Any

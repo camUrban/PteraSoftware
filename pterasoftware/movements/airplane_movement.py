@@ -3,9 +3,6 @@
 This module contains the following classes:
     AirplaneMovement: This is a class used to contain an Airplane's movement.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

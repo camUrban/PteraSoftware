@@ -3,9 +3,6 @@
 This module contains the following classes:
     WingMovement: This is a class used to contain the Wing movements.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

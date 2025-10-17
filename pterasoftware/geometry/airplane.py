@@ -3,9 +3,6 @@
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

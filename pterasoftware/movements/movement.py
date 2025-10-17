@@ -3,9 +3,6 @@
 This module contains the following classes:
     Movement: This is a class used to contain an UnsteadyProblem's movement.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

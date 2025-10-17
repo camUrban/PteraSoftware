@@ -3,9 +3,6 @@
 This module contains the following classes:
     WingCrossSection: This is a class used to contain wing cross sections of a Wing.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

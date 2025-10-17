@@ -4,9 +4,6 @@ This module contains the following classes:
     OperatingPoint: This is a class used to contain a Problem's operating point
     characteristics.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

@@ -5,9 +5,6 @@ This module contains the following classes:
     UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
     an unsteady ring vortex lattice method.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

@@ -4,9 +4,6 @@ This module contains the following classes:
     SteadyProblem: This is a class for steady aerodynamics problems.
     UnsteadyProblem: This is a class for unsteady aerodynamics problems.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

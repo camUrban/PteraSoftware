@@ -4,9 +4,6 @@ This module contains the following classes:
     WingCrossSectionMovement: This is a class used to contain the WingCrossSection
     movements.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

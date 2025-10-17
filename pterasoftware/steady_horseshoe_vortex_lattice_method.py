@@ -5,9 +5,6 @@ This module contains the following classes:
     SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that
     uses a steady horseshoe vortex lattice method.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

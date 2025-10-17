@@ -3,9 +3,6 @@
 This module contains the following classes:
     Airfoil: This is a class used to contain the Airfoil of a WingCrossSection.
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     None
 """

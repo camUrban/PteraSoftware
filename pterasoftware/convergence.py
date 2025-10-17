@@ -5,9 +5,6 @@ unsteady problems.
 This module contains the following classes:
     None
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     analyze_steady_convergence: This function finds the converged parameters of a
     steady problem.

@@ -3,9 +3,6 @@
 This module contains the following classes:
     None
 
-This module contains the following exceptions:
-    None
-
 This module contains the following functions:
     draw: Draw a solver's Airplane(s).
 

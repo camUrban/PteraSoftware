@@ -49,11 +49,6 @@ class Airfoil:
         This class is not meant to be subclassed.
     """
 
-    # FIXME: Explicitly disallow NACA0000 Airfoils. They occasionally generate
-    #  correctly but often causes issues due to their infinitesimal thickness.
-    #  Mention the alternative of using any NACA00XX Airfoil, as these are the same
-    #  thing for vortex lattice methods.
-
     def __init__(
         self,
         name="NACA0012",
@@ -67,9 +62,11 @@ class Airfoil:
         :param name: str, optional
 
             This is the name of the Airfoil. It should correspond to the name of a
-            file the airfoils directory (once converted to lower-case and stripped of
-            leading and trailing whitespace) unless you are passing in your own
-            array of points using outline_A_lp. The default is "NACA0012".
+            file the airfoils directory, or to a valid NACA 4-series airfoil (once
+            converted to lower-case and stripped of leading and trailing whitespace)
+            unless you are passing in your own array of points using outline_A_lp.
+            Note that NACA0000 isn't a valid NACA-series airfoil. The default is
+            "NACA0012".
 
         :param outline_A_lp: array-like of shape (N,2), optional
 
@@ -535,11 +532,11 @@ class Airfoil:
         sanitized_name = self.name.lower().strip()
 
         # Check if the sanitized Airfoil's name matches a name for a NACA 4-series
-        # airfoil. If so, generate it.
+        # airfoil (other than NACA0000). If so, generate it.
         if "naca" in sanitized_name:
             naca_number = sanitized_name.split("naca")[1]
             if naca_number.isdigit():
-                if len(naca_number) == 4:
+                if (len(naca_number) == 4) and (naca_number is not "0000"):
 
                     # Parse the characteristics from the name.
                     max_camber = int(naca_number[0]) * 0.01
@@ -681,7 +678,8 @@ class Airfoil:
         # throw an error.
         except FileNotFoundError:
             raise ValueError(
-                "name didn't match the NACA 4-series pattern nor was it found in the airfoils database."
+                "name didn't match a valid NACA 4-series pattern nor was it found in "
+                "the airfoils database."
             )
 
     def _resample_outline(self, n_points_per_side):

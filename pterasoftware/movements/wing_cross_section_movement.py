@@ -120,17 +120,17 @@ class WingCrossSectionMovement:
 
         :param spacingAngles_Wcsp_to_Wcs_ixyz: array-like of 3 strs or callables, optional
 
-            The value determines the spacing of the WingCrossSectionMovement's change 
-            in its WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a 
-            tuple, list, or numpy array. Each element can be the string "sine", 
-            the string "uniform", or a callable custom spacing function. Custom 
-            spacing functions are for advanced users and must start at 0, return to 0 
-            after one period of 2*pi radians, have amplitude of 1, be periodic, 
-            return finite values only, and accept a ndarray as input and return a 
-            ndarray of the same shape. The custom function is scaled by 
-            ampAngles_Wcsp_to_Wcs_ixyz, shifted horizontally by 
-            phaseAngles_Wcsp_to_Wcs_ixyz, and vertically by the base value, with the 
-            period controlled by periodAngles_Wcsp_to_Wcs_ixyz. The default value is 
+            The value determines the spacing of the WingCrossSectionMovement's change
+            in its WingCrossSections' angles_Wcsp_to_Wcs_ixyz parameters. Can be a
+            tuple, list, or numpy array. Each element can be the string "sine",
+            the string "uniform", or a callable custom spacing function. Custom
+            spacing functions are for advanced users and must start at 0, return to 0
+            after one period of 2*pi radians, have amplitude of 1, be periodic,
+            return finite values only, and accept a ndarray as input and return a
+            ndarray of the same shape. The custom function is scaled by
+            ampAngles_Wcsp_to_Wcs_ixyz, shifted horizontally by
+            phaseAngles_Wcsp_to_Wcs_ixyz, and vertically by the base value, with the
+            period controlled by periodAngles_Wcsp_to_Wcs_ixyz. The default value is
             ("sine", "sine", "sine").
 
         :param phaseAngles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional

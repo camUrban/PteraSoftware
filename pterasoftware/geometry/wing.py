@@ -75,6 +75,9 @@ class Wing:
 
         wetted_area: This method sets a property for the Wing's wetted area.
 
+        average_panel_aspect_ratio: This method sets a property for average aspect
+        ratio of the Wing's Panels.
+
         span: This method sets a property for the Wing's span.
 
         standard_mean_chord: This method sets a property for the standard mean chord
@@ -861,6 +864,33 @@ class Wing:
                 wetted_area += self.panels[chordwise_location, spanwise_location].area
 
         return wetted_area
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def average_panel_aspect_ratio(self):
+        """This method sets a property for average aspect ratio of the Wing's Panels.
+
+        :return average_panel_aspect_ratio: float or None
+            This attribute is the average aspect ratio of the Wing's Panels. If the
+            Wing hasn't been meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self.panels is None:
+            return None
+
+        aspect_ratio_sum = 0
+
+        # Iterate through the chordwise and spanwise indices of the Panels and sum
+        # all the Panels' aspect ratios.
+        for chordwise_location in range(self.num_chordwise_panels):
+            for spanwise_location in range(self.num_spanwise_panels):
+                aspect_ratio_sum += self.panels[
+                    chordwise_location, spanwise_location
+                ].aspect_ratio
+
+        average_aspect_ratio = aspect_ratio_sum / self.num_panels
+
+        return average_aspect_ratio
 
     # FIXME: The span calculation is producing incorrect results, which is causing
     #  the standard_mean_chord property to also be incorrect. It's potentially also

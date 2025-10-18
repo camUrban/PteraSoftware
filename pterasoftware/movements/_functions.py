@@ -193,8 +193,8 @@ def oscillating_customspaces(
         The function must accept a ndarray as input and return a ndarray of the same
         shape.
 
-        Note: Functions with non-zero mean are allowed but will shift the effective 
-        center of oscillation away from the base value. This can be useful for 
+        Note: Functions with non-zero mean are allowed but will shift the effective
+        center of oscillation away from the base value. This can be useful for
         creating asymmetric motion (e.g., faster upstroke than downstroke in flapping).
 
     Parameter Interaction:

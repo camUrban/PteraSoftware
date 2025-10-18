@@ -28,8 +28,8 @@ class TestSteadyConvergence(unittest.TestCase):
             ref_problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 1),
-            num_chordwise_panels_bounds=(3, 10),
-            convergence_criteria=1.0,
+            num_chordwise_panels_bounds=(3, 15),
+            convergence_criteria=0.1,
         )
 
         converged_panel_ar = converged_parameters[0]

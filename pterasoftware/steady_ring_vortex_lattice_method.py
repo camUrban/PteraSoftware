@@ -13,7 +13,7 @@ import logging
 
 import numpy as np
 
-from . import _aerodynamics
+from . import _aerodynamics, operating_point, geometry
 from . import _functions
 from . import _panel
 from . import _parameter_validation
@@ -45,7 +45,7 @@ class SteadyRingVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, steady_problem):
+    def __init__(self, steady_problem: problems.SteadyProblem):
         """This is the initialization method.
 
         :param steady_problem: SteadyProblem
@@ -54,12 +54,15 @@ class SteadyRingVortexLatticeMethodSolver:
         """
         if not isinstance(steady_problem, problems.SteadyProblem):
             raise TypeError("steady_problem must be a SteadyProblem.")
-        self._steady_problem = steady_problem
+        self._steady_problem: problems.SteadyProblem = steady_problem
 
         self.airplanes = self._steady_problem.airplanes
-        self.operating_point = self._steady_problem.operating_point
+        self.operating_point: operating_point.OperatingPoint = (
+            self._steady_problem.operating_point
+        )
         self.num_airplanes = len(self.airplanes)
         self.num_panels = 0
+        airplane: geometry.airplane.Airplane
         for airplane in self.airplanes:
             self.num_panels += airplane.num_panels
 
@@ -199,7 +202,9 @@ class SteadyRingVortexLatticeMethodSolver:
         vInfHat_G__E = self.operating_point.vInfHat_G__E
 
         # Iterate through each Airplane's Wings.
+        airplane: geometry.airplane.Airplane
         for airplane in self.airplanes:
+            wing: geometry.wing.Wing
             for wing in airplane.wings:
                 # Find a suitable length for the quasi-infinite legs of the
                 # HorseshoeVortices on this wing. At twenty-times the Wing's span,
@@ -211,7 +216,9 @@ class SteadyRingVortexLatticeMethodSolver:
                 for chordwise_position in range(wing.num_chordwise_panels):
                     for spanwise_position in range(wing.num_spanwise_panels):
                         # Pull the panel object out of the Wing's 2D ndarray of Panels.
-                        panel = wing.panels[chordwise_position, spanwise_position]
+                        panel: _panel.Panel = wing.panels[
+                            chordwise_position, spanwise_position
+                        ]
 
                         # Find the location of this Panel's front-left and front-right
                         # RingVortex points (in geometry axes, relative to the CG).
@@ -265,13 +272,16 @@ class SteadyRingVortexLatticeMethodSolver:
         global_panel_position = 0
 
         # Iterate through each Airplane's Wings.
+        airplane: geometry.airplane.Airplane
         for airplane in self.airplanes:
+            wing: geometry.wing.Wing
             for wing in airplane.wings:
 
                 # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
                 panels = np.ravel(wing.panels)
 
                 # Iterate through the 1D ndarray of this Wing's Panels.
+                panel: _panel.Panel
                 for panel in panels:
                     # Update the solver's list of attributes with this Panel's
                     # attributes.
@@ -282,19 +292,23 @@ class SteadyRingVortexLatticeMethodSolver:
                     )
 
                     if panel.is_trailing_edge:
+                        horseshoe_vortex: _aerodynamics.HorseshoeVortex = (
+                            panel.horseshoe_vortex
+                        )
+
                         # Update the attribute lists' HorseshoeVortex attributes at
                         # this position with this Panel's HorseshoeVortex attributes
                         self._stackBrhvp_G_Cg[global_panel_position] = (
-                            panel.horseshoe_vortex.right_leg.Slvp_G_Cg
+                            horseshoe_vortex.right_leg.Slvp_G_Cg
                         )
                         self._stackFrhvp_G_Cg[global_panel_position] = (
-                            panel.horseshoe_vortex.right_leg.Elvp_G_Cg
+                            horseshoe_vortex.right_leg.Elvp_G_Cg
                         )
                         self._stackFlhvp_G_Cg[global_panel_position] = (
-                            panel.horseshoe_vortex.left_leg.Slvp_G_Cg
+                            horseshoe_vortex.left_leg.Slvp_G_Cg
                         )
                         self._stackBlhvp_G_Cg[global_panel_position] = (
-                            panel.horseshoe_vortex.left_leg.Elvp_G_Cg
+                            horseshoe_vortex.left_leg.Elvp_G_Cg
                         )
 
                         # Set the HorseshoeVortex strength at this position to 1.0.
@@ -370,15 +384,14 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # Update the RingVortices' and HorseshoeVortices' strengths.
+        panel: _panel.Panel
         for panel_num, panel in enumerate(self.panels):
-            assert isinstance(panel, _panel.Panel)
+            ring_vortex: _aerodynamics.RingVortex = panel.ring_vortex
+            ring_vortex.update_strength(self._vortex_strengths[panel_num])
 
-            panel.ring_vortex.update_strength(self._vortex_strengths[panel_num])
-
-            if panel.horseshoe_vortex is not None:
-                panel.horseshoe_vortex.update_strength(
-                    self._vortex_strengths[panel_num]
-                )
+            horseshoe_vortex: _aerodynamics.HorseshoeVortex = panel.horseshoe_vortex
+            if horseshoe_vortex is not None:
+                horseshoe_vortex.update_strength(self._vortex_strengths[panel_num])
 
                 # Also update 1D ndarray of HorseshoeVortex strengths at Panel's
                 # location.
@@ -464,12 +477,15 @@ class SteadyRingVortexLatticeMethodSolver:
         effective_left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
         # Iterate through the Airplanes' Wings.
+        airplane: geometry.airplane.Airplane
         for airplane in self.airplanes:
+            wing: geometry.wing.Wing
             for wing in airplane.wings:
                 # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
                 panels = np.ravel(wing.panels)
 
                 # Iterate through this Wing's 1D ndarray of Panels.
+                panel: _panel.Panel
                 for panel in panels:
 
                     # FIXME: After rereading pages 9-10 of "Modeling of
@@ -490,7 +506,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             self._vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_right = wing.panels[
+                        panel_to_right: _panel.Panel = wing.panels[
                             panel.local_chordwise_position,
                             panel.local_spanwise_position + 1,
                         ]
@@ -510,7 +526,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             self._vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_front = wing.panels[
+                        panel_to_front: _panel.Panel = wing.panels[
                             panel.local_chordwise_position - 1,
                             panel.local_spanwise_position,
                         ]
@@ -530,7 +546,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             self._vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_left = wing.panels[
+                        panel_to_left: _panel.Panel = wing.panels[
                             panel.local_chordwise_position,
                             panel.local_spanwise_position - 1,
                         ]

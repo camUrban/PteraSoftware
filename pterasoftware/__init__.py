@@ -12,7 +12,7 @@ This package contains the following modules:
     __init__.py: This module is this package's initialization script.
 
     convergence.py: This module contains functions for analyzing the convergence of
-    steady and unsteady problems.
+    SteadyProblems and UnsteadyProblems.
 
     operating_point.py: This module contains the class definition for a Problem's
     operating point.

@@ -26,7 +26,7 @@ flat_plate_airplane = ps.geometry.airplane.Airplane(
                     num_spanwise_panels=None,
                     chord=1.0,
                     Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
-                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 15.0),
                     control_surface_symmetry_type=None,
                     control_surface_hinge_point=0.75,
                     control_surface_deflection=0.0,
@@ -214,7 +214,7 @@ if solver_type in ("steady_horseshoe", "steady_ring"):
         save=False,
     )
 
-    ps.output.print_results()
+    ps.output.print_results(flat_plate_solver)
 else:
     ps.output.draw(
         solver=flat_plate_solver,

@@ -35,23 +35,7 @@ class Panel:
         unitNormal_G: This method sets a property for an estimate of the Panel's unit
         normal vector (in geometry axes).
 
-        unitSpanwise_G: This method sets a property for the Panel's unit spanwise
-        vector (in geometry axes).
-
-        unitChordwise_G: This method sets a property for the Panel's unit chordwise
-        vector (in geometry axes).
-
-        average_span: This method sets a property for the average span of the Panel.
-
-        average_chord: This method sets a property for the average chord of the Panel.
-
-        normalizedInducedVelocity_G: This method calculates the velocity (in geometry
-        axes) induced at a point (in geometry axes, relative to the Cg) by this
-        Panel's vortices, assuming a unit vortex strength.
-
-        inducedVelocity_G: This method calculates the velocity (in geometry axes)
-        induced at a point (in geometry axes, relative to the Cg) by this Panel's
-        vortices with their given vortex strengths.
+        aspect_ratio: This method sets a property for the aspect ratio of the Panel.
 
         calculate_projected_area: This method calculates the area of the Panel
         projected on a plane defined by a given normal vector (in geometry axes).
@@ -284,64 +268,29 @@ class Panel:
         """
         return self._cross_G / np.linalg.norm(self._cross_G)
 
+    # TEST: Consider adding a unit test for this method.
     @property
-    def unitSpanwise_G(self):
-        """This method sets a property for the Panel's unit spanwise vector (in
-        geometry axes).
-
-        :return: (3,) ndarray of floats
-            This is the Panel's unit spanwise vector as a (3,) ndarray of floats. The
-            positive direction is defined as left to right, which is opposite the
-            direction of the front leg. The units are in meters.
-        """
-        frontSpanwise_G = -self.frontLeg_G
-        backSpanwise_G = self.backLeg_G
-
-        spanwise_G = (frontSpanwise_G + backSpanwise_G) / 2
-
-        return spanwise_G / float(np.linalg.norm(spanwise_G))
-
-    @property
-    def unitChordwise_G(self):
-        """This method sets a property for the Panel's unit chordwise vector (in
-        geometry axes).
-
-        :return: (3,) ndarray of floats
-            This is the Panel's unit chordwise vector as a (3,) ndarray of floats.
-            The positive direction is defined as front to back. The units are in meters.
-        """
-        rightChordwise_G = -self.rightLeg_G
-        leftChordwise_G = self.leftLeg_G
-
-        chordwise_G = (rightChordwise_G + leftChordwise_G) / 2
-
-        return chordwise_G / float(np.linalg.norm(chordwise_G))
-
-    @property
-    def average_span(self):
-        """This method sets a property for the average span of the Panel.
+    def aspect_ratio(self):
+        """This method sets a property for the aspect ratio of the Panel.
 
         :return: float
-            This is the average span, which is defined as the average of the front
-            and back leg lengths. The units are meters.
+            This is the Panel's aspect ratio, which is defined as the distance
+            between the right and left legs' center points divided by the distance
+            between the front and back legs' center points.
         """
-        front_leg_length = np.linalg.norm(self.frontLeg_G)
-        back_leg_length = np.linalg.norm(self.backLeg_G)
+        frontCenterPoint_G_Cg = self.Frpp_G_Cg + self.frontLeg_G / 2
+        leftCenterPoint_G_Cg = self.Flpp_G_Cg + self.leftLeg_G / 2
+        backCenterPoint_G_Cg = self.Blpp_G_Cg + self.backLeg_G / 2
+        rightCenterPoint_G_Cg = self.Brpp_G_Cg + self.rightLeg_G / 2
 
-        return (front_leg_length + back_leg_length) / 2
+        right_left_distance = float(
+            np.linalg.norm(rightCenterPoint_G_Cg - leftCenterPoint_G_Cg)
+        )
+        front_back_distance = float(
+            np.linalg.norm(frontCenterPoint_G_Cg - backCenterPoint_G_Cg)
+        )
 
-    @property
-    def average_chord(self):
-        """This method sets a property for the average chord of the Panel.
-
-        :return: float
-            This is the average chord, which is defined as the average of the right
-            and left leg lengths. The units are meters.
-        """
-        right_leg_length = np.linalg.norm(self.rightLeg_G)
-        left_leg_length = np.linalg.norm(self.leftLeg_G)
-
-        return (right_leg_length + left_leg_length) / 2
+        return right_left_distance / front_back_distance
 
     @property
     def _firstDiagonal_G(self):
@@ -377,68 +326,6 @@ class Panel:
             vectors. The units are meters.
         """
         return np.cross(self._firstDiagonal_G, self._secondDiagonal_G)
-
-    def normalizedInducedVelocity_G(self, point_G_Cg):
-        """This method calculates the velocity (in geometry axes) induced at a point
-        (in geometry axes, relative to the Cg) by this Panel's vortices, assuming a
-        unit vortex strength.
-
-        This method does not include the effect any wake vortices.
-
-        :param point_G_Cg: array-like of 3 numbers
-            Position [x, y, z] of the point (in geometry axes, relative to the CG) to
-            find the induced velocity at. Can be a list, tuple, or numpy array of
-            numbers (int or float). Values are converted to floats internally. The
-            units are in meters.
-        :return: (3,) ndarray of floats
-            This is the normalized induced velocity (in geometry axes). The units are
-            in meters per second.
-        """
-        point_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            point_G_Cg, "point_G_Cg"
-        )
-
-        normalizedInducedVelocity_G = np.zeros(3)
-
-        if self.ring_vortex is not None:
-            normalizedInducedVelocity_G += self.ring_vortex.normalizedInducedVelocity_G(
-                point_G_Cg
-            )
-        if self.horseshoe_vortex is not None:
-            normalizedInducedVelocity_G += (
-                self.horseshoe_vortex.normalizedInducedVelocity_G(point_G_Cg)
-            )
-
-        return normalizedInducedVelocity_G
-
-    def inducedVelocity_G(self, point_G_Cg):
-        """This method calculates the velocity (in geometry axes) induced at a point
-        (in geometry axes, relative to the Cg) by this Panel's vortices with their
-        given vortex strengths.
-
-        This method does not include the effect of any wake vortices.
-
-        :param point_G_Cg: array-like of 3 numbers
-            Position [x, y, z] of the point (in geometry axes, relative to the CG) to
-            find the induced velocity at. Can be a list, tuple, or numpy array of
-            numbers (int or float). Values are converted to floats internally. The
-            units are in meters.
-        :return: (3,) ndarray of floats
-            This is the induced velocity (in geometry axes). The units are in meters
-            per second.
-        """
-        point_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            point_G_Cg, "point_G_Cg"
-        )
-
-        inducedVelocity_G = np.zeros(3)
-
-        if self.ring_vortex is not None:
-            inducedVelocity_G += self.ring_vortex.inducedVelocity_G(point_G_Cg)
-        if self.horseshoe_vortex is not None:
-            inducedVelocity_G += self.horseshoe_vortex.inducedVelocity_G(point_G_Cg)
-
-        return inducedVelocity_G
 
     def calculate_projected_area(self, normal_G):
         """This method calculates the area of the Panel projected on a plane

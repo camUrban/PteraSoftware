@@ -203,52 +203,6 @@ class TestPanel(unittest.TestCase):
         # Verify it's a unit vector
         self.assertAlmostEqual(np.linalg.norm(unitNormal_G), 1.0, places=10)
 
-    def test_unitSpanwise_G_property(self):
-        """Test unit spanwise vector calculation."""
-        panel = self.basic_panel
-
-        unitSpanwise_G = panel.unitSpanwise_G
-
-        # For this panel, spanwise should point in +y direction
-        expected_unitSpanwise_G = np.array([0.0, 1.0, 0.0])
-        npt.assert_array_almost_equal(unitSpanwise_G, expected_unitSpanwise_G)
-
-        # Verify it's a unit vector
-        self.assertAlmostEqual(np.linalg.norm(unitSpanwise_G), 1.0, places=10)
-
-    def test_unitChordwise_G_property(self):
-        """Test unit chordwise vector calculation."""
-        panel = self.basic_panel
-
-        unitChordwise_G = panel.unitChordwise_G
-
-        # For this panel, chordwise should point in +x direction
-        expected_unitChordwise_G = np.array([1.0, 0.0, 0.0])
-        npt.assert_array_almost_equal(unitChordwise_G, expected_unitChordwise_G)
-
-        # Verify it's a unit vector
-        self.assertAlmostEqual(np.linalg.norm(unitChordwise_G), 1.0, places=10)
-
-    def test_average_span_property(self):
-        """Test average span calculation."""
-        panel = self.basic_panel
-
-        average_span = panel.average_span
-
-        # For a rectangular panel with span 0.5 m on both front and back
-        expected_average_span = 0.5
-        self.assertAlmostEqual(average_span, expected_average_span, places=10)
-
-    def test_average_chord_property(self):
-        """Test average chord calculation."""
-        panel = self.basic_panel
-
-        average_chord = panel.average_chord
-
-        # For a rectangular panel with chord 1.0 m on both left and right
-        expected_average_chord = 1.0
-        self.assertAlmostEqual(average_chord, expected_average_chord, places=10)
-
     def test_calculate_projected_area_aligned(self):
         """Test projected area when normal is aligned with panel normal."""
         panel = self.basic_panel
@@ -364,27 +318,6 @@ class TestPanel(unittest.TestCase):
 
         unitNormal_G = panel.unitNormal_G
         self.assertAlmostEqual(np.linalg.norm(unitNormal_G), 1.0, places=10)
-
-    def test_tapered_panel(self):
-        """Test with a tapered (trapezoidal) panel."""
-        # Create a trapezoidal panel with different front and back spans
-        panel = _panel.Panel(
-            Frpp_G_Cg=[0.0, 1.0, 0.0],  # Front span: 1.0 m
-            Flpp_G_Cg=[0.0, 0.0, 0.0],
-            Blpp_G_Cg=[2.0, 0.0, 0.0],
-            Brpp_G_Cg=[2.0, 0.5, 0.0],  # Back span: 0.5 m
-            is_leading_edge=False,
-            is_trailing_edge=False,
-        )
-
-        # Average span should be (1.0 + 0.5) / 2 = 0.75
-        average_span = panel.average_span
-        expected_average_span = 0.75
-        self.assertAlmostEqual(average_span, expected_average_span, places=10)
-
-        # Area should be approximately 1.5 square meters (trapezoid area)
-        area = panel.area
-        self.assertGreater(area, 0.0)
 
 
 if __name__ == "__main__":

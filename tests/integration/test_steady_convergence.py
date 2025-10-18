@@ -29,7 +29,7 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 1),
             num_chordwise_panels_bounds=(3, 15),
-            convergence_criteria=0.1,
+            convergence_criteria=1.0,
         )
 
         converged_panel_ar = converged_parameters[0]

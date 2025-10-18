@@ -3,6 +3,7 @@
 import numpy as np
 
 
+# TEST: Consider adding unit tests for this function.
 def string_return_string(string, name):
     """Validates that a value is a string and returns it as a string. name must also
     be a string."""
@@ -14,6 +15,7 @@ def string_return_string(string, name):
     return string
 
 
+# TEST: Consider adding unit tests for this function.
 def boolLike_return_bool(value, name):
     """Validates that a value is a boolean, NumPy boolean, or the integers 0 or 1,
     and returns it as a boolean. name must be a string."""
@@ -29,6 +31,7 @@ def boolLike_return_bool(value, name):
         )
 
 
+# TEST: Consider adding unit tests for this function.
 def int_return_int(value, name):
     """Validates that a value is an int and returns it as an int. name must be a string.
 
@@ -44,6 +47,7 @@ def int_return_int(value, name):
 
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
+# TEST: Consider adding unit tests for this function.
 def non_negative_int_return_int(value, name):
     """Validates that a value is an int with a value greater than or equal to zero
     and returns it as an int. name must be a string.
@@ -62,6 +66,7 @@ def non_negative_int_return_int(value, name):
 
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
+# TEST: Consider adding unit tests for this function.
 def positive_int_return_int(value, name):
     """Validates that a value is an int with a value greater than zero and returns it
     as an int. name must be a string.
@@ -78,6 +83,7 @@ def positive_int_return_int(value, name):
     return value
 
 
+# TEST: Consider adding unit tests for this function.
 def int_in_range_return_int(
     value, name, min_val, min_inclusive, max_val, max_inclusive
 ):
@@ -127,6 +133,7 @@ def int_in_range_return_int(
     return int(value)
 
 
+# TEST: Consider adding unit tests for this function.
 def number_return_float(value, name):
     """Validates a value is a number and returns it as a float. name must be a
     string.
@@ -145,6 +152,7 @@ def number_return_float(value, name):
 
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
+# TEST: Consider adding unit tests for this function.
 def non_negative_number_return_float(value, name):
     """Validates a value is a number and is greater than or equal to zero and returns
     it as a float. name must be a string.
@@ -166,6 +174,7 @@ def non_negative_number_return_float(value, name):
 
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
+# TEST: Consider adding unit tests for this function.
 def positive_number_return_float(value, name):
     """Validates a value is a number and is greater than zero and returns it as a
     float. name must be a string.
@@ -185,6 +194,7 @@ def positive_number_return_float(value, name):
     return float(value)
 
 
+# TEST: Consider adding unit tests for this function.
 def number_in_range_return_float(
     value, name, min_val, min_inclusive, max_val, max_inclusive
 ):
@@ -239,6 +249,7 @@ def number_in_range_return_float(
     return float(value)
 
 
+# TEST: Consider adding unit tests for this function.
 def arrayLike_of_numbers_in_range_return_float(
     value, name, min_val, min_inclusive, max_val, max_inclusive
 ):
@@ -305,6 +316,7 @@ def arrayLike_of_numbers_in_range_return_float(
     return value
 
 
+# TEST: Consider adding unit tests for this function.
 def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
     """Validates a value is an array-like object of 2D number vector-like objects (
     array-like objects with shape (2,)). It then returns it as a (...,2) numpy array
@@ -334,6 +346,7 @@ def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
     return vectors
 
 
+# TEST: Consider adding unit tests for this function.
 def threeD_number_vectorLike_return_float(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats. name must be a string.
@@ -355,6 +368,7 @@ def threeD_number_vectorLike_return_float(vector, name):
     return vector
 
 
+# TEST: Consider adding unit tests for this function.
 def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
     """Validates a value is an array-like object of 3D number vector-like objects (
     array-like objects with shape (3,)). It then returns it as a (...,3) numpy array
@@ -383,6 +397,7 @@ def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
     return vectors
 
 
+# TEST: Consider adding unit tests for this function.
 def threeD_number_vectorLike_return_float_unit_vector(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats, normalized to have a
@@ -410,27 +425,12 @@ def threeD_number_vectorLike_return_float_unit_vector(vector, name):
     return vector
 
 
+# TEST: Consider adding unit tests for this function.
 def threeD_spacing_vectorLike_return_tuple(vector, name):
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )) of spacing specifications. Each element can be either a string ("sine" or
     "uniform") or a callable (custom spacing function). It then returns it as a tuple
-    of 3 elements. name must be a string.
-
-    :param vector: array-like
-
-        The value to validate. Can be a tuple, list, or numpy array with exactly 3
-        elements. Each element must be either the string "sine", the string "uniform",
-        or a callable object.
-
-    :param name: str
-
-        The name of the parameter being validated.
-
-    :return: tuple of 3 elements
-
-        The validated vector as a tuple. Each element is either a string ("sine" or
-        "uniform") or a callable.
-    """
+    of 3 elements. name must be a string."""
     name = string_return_string(name, "name")
 
     # Convert to list if numpy array, or validate it's a list/tuple.
@@ -463,6 +463,7 @@ def threeD_spacing_vectorLike_return_tuple(vector, name):
     return tuple(validated)
 
 
+# TEST: Consider adding unit tests for this function.
 def fourD_homog_number_vectorLike_return_float(vector, name):
     """Validates a value is a 4D homogeneous vector-like object (array-like object
     with shape (4,) with a final value equal to 0.0 or 1.0). It then returns it as a
@@ -489,6 +490,7 @@ def fourD_homog_number_vectorLike_return_float(vector, name):
     return vector
 
 
+# TEST: Consider adding unit tests for this function.
 def nD_number_vectorLike_return_float(vector, name):
     """Validates a value is an ND vector-like object (array-like object with shape (N,
     )). It then returns it as an (N,) numpy array of floats. name must be a string.
@@ -510,6 +512,7 @@ def nD_number_vectorLike_return_float(vector, name):
     return vector
 
 
+# TEST: Consider adding unit tests for this function.
 def threeByThree_number_arrayLike_return_float(matrix, name):
     """Validates a value is a (3,3) array-like object. It then returns it as a (3,
     3) numpy array of floats. name must be a string.
@@ -531,6 +534,7 @@ def threeByThree_number_arrayLike_return_float(matrix, name):
     return matrix
 
 
+# TEST: Consider adding unit tests for this function.
 def fourByFour_number_arrayLike_return_float(matrix, name):
     """Validates a value is a (4,4) array-like object. It then returns it as a (4,
     4) numpy array of floats. name must be a string.
@@ -552,6 +556,7 @@ def fourByFour_number_arrayLike_return_float(matrix, name):
     return matrix
 
 
+# TEST: Consider adding unit tests for this function.
 def list_return_list(list_parameter, name):
     """Validates a list and returns it. name must be a string."""
     name = string_return_string(name, "name")
@@ -561,6 +566,7 @@ def list_return_list(list_parameter, name):
     return list_parameter
 
 
+# TEST: Consider adding unit tests for this function.
 def non_empty_list_return_list(list_parameter, name):
     """Validates a non-empty list and returns it. name must be a string."""
     name = string_return_string(name, "name")
@@ -574,6 +580,7 @@ def non_empty_list_return_list(list_parameter, name):
     return list_parameter
 
 
+# TEST: Consider adding unit tests for this function.
 def rotation_order_return_string(order, name):
     """Validates string representing a Tait-Bryan rotation sequence, and returns it.
     name must be a string."""

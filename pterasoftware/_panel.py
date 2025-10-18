@@ -268,7 +268,7 @@ class Panel:
         """
         return self._cross_G / np.linalg.norm(self._cross_G)
 
-    # TEST: Consider adding a unit test for this method.
+    # TEST: Consider adding unit tests for this method.
     @property
     def aspect_ratio(self):
         """This method sets a property for the aspect ratio of the Panel.

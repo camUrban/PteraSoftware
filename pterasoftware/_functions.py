@@ -1,4 +1,3 @@
-# REFACTOR: I've started refactoring this module.
 """This module contains functions shared by other modules in the pterasoftware
 package."""
 

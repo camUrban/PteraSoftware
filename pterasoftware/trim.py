@@ -38,6 +38,9 @@ logging.basicConfig()
 
 # REFACTOR: I haven't yet started refactoring this function.
 # DOCUMENT: Document this function.
+# TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
 def analyze_steady_trim(
     problem,
     velocity_bounds,
@@ -210,6 +213,7 @@ def analyze_steady_trim(
 # REFACTOR: I haven't yet started refactoring this function.
 # DOCUMENT: Document this function.
 # TEST: Consider adding unit tests for this function.
+# TEST: Consider adding integration tests for this function.
 def analyze_unsteady_trim(
     airplane_movement,
     operating_point,

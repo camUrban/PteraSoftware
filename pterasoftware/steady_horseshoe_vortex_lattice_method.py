@@ -20,6 +20,9 @@ from . import _parameter_validation
 from . import problems
 
 
+# TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
 class SteadyHorseshoeVortexLatticeMethodSolver:
     """This is an aerodynamics solver that uses a steady horseshoe vortex lattice
     method.

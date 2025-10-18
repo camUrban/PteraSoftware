@@ -89,6 +89,8 @@ _marker_spacing = 1.0 / _num_markers
 
 
 # TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -327,6 +329,8 @@ def draw(
 
 
 # TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type=None,
@@ -624,6 +628,8 @@ def animate(
 
 
 # TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool = True,
@@ -950,6 +956,7 @@ def plot_results_versus_time(
 
 
 # TEST: Consider adding unit tests for this function.
+# TEST: Consider adding integration tests for this function.
 def print_results(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -1144,6 +1151,7 @@ def print_results(
             print("\n")
 
 
+# TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
     airplanes: list[geometry.airplane.Airplane],
 ):
@@ -1204,6 +1212,7 @@ def _get_panel_surfaces(
     return pv.PolyData(panel_vertices, panel_faces)
 
 
+# TEST: Consider adding unit tests for this function.
 def _get_wake_ring_vortex_surfaces(
     solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
@@ -1275,6 +1284,7 @@ def _get_wake_ring_vortex_surfaces(
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
+# TEST: Consider adding unit tests for this function.
 def _get_scalars(
     airplanes: list[geometry.airplane.Airplane],
     scalar_type: str,
@@ -1340,6 +1350,7 @@ def _get_scalars(
     return scalars
 
 
+# TEST: Consider adding unit tests for this function.
 def _plot_scalars(
     plotter: pv.Plotter,
     these_scalars,

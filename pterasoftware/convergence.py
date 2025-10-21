@@ -1,5 +1,3 @@
-# TODO: This module has >1,000 SLC so we should consider breaking it up into several
-#  modules.
 """This module contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
@@ -95,8 +93,8 @@ def analyze_steady_convergence(
     :param solver_type: str
 
         This parameter determines what type of steady solver will be used to analyze
-        the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
-        "steady ring vortex lattice method".
+        the SteadyProblem. The options are "steady horseshoe vortex lattice method"
+        and "steady ring vortex lattice method".
 
     :param panel_aspect_ratio_bounds: tuple of two ints, optional
 
@@ -858,7 +856,7 @@ def analyze_unsteady_convergence(
         if not num_chords_bounds is None:
             raise ValueError(
                 "num_chords_bounds must be None for UnsteadyProblems "
-                "with static geometry."
+                "with variable geometry."
             )
         if not (isinstance(num_cycles_bounds, tuple) and len(num_cycles_bounds) == 2):
             raise TypeError("num_cycles_bounds must be a tuple with length 2.")

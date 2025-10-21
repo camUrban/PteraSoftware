@@ -29,8 +29,8 @@ This package contains the following modules:
     steady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's steady ring vortex lattice solver.
 
-    trim.py: This module contains functions to analyze the trim conditions of steady
-    and unsteady solvers.
+    trim.py: This module contains functions to analyze the trim conditions of
+    SteadyProblems and UnsteadyProblems.
 
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's unsteady ring vortex lattice solver.

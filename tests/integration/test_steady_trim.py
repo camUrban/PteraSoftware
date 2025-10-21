@@ -55,20 +55,21 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         beta_delta = max(abs(self.beta_ans * ans_range), 0.01)
         thrust_delta = max(abs(self.thrust_ans * ans_range), 0.01)
 
-        v_x_bounds = (min((self.v_x_ans - v_x_delta), 0), self.v_x_ans + v_x_delta)
+        v_x_bounds = (self.v_x_ans - v_x_delta, self.v_x_ans + v_x_delta)
         alpha_bounds = (self.alpha_ans - alpha_delta, self.alpha_ans + alpha_delta)
         beta_bounds = (self.beta_ans - beta_delta, self.beta_ans + beta_delta)
         thrust_bounds = (
-            min((self.thrust_ans - thrust_delta), 0),
+            self.thrust_ans - thrust_delta,
             self.thrust_ans + thrust_delta,
         )
 
         trim_conditions = ps.trim.analyze_steady_trim(
             problem=self.steady_validation_problem,
-            velocity_bounds=v_x_bounds,
+            solver_type="steady horseshoe vortex lattice method",
+            boundsVCg__E=v_x_bounds,
             alpha_bounds=alpha_bounds,
             beta_bounds=beta_bounds,
-            external_thrust_bounds=thrust_bounds,
+            boundsExternalFX_W=thrust_bounds,
             objective_cut_off=0.01,
             num_calls=100,
         )

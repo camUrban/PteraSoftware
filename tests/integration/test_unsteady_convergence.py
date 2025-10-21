@@ -32,7 +32,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(2, 6),
             convergence_criteria=5.0,
-            coefficient_mask=[True, False, True, False, True, False],
+            coefficient_mask=(True, False, True, False, True, False),
         )
 
         converged_wake_state = converged_parameters[0]

@@ -48,25 +48,6 @@ def int_return_int(value, name):
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
 # TEST: Consider adding unit tests for this function.
-def non_negative_int_return_int(value, name):
-    """Validates that a value is an int with a value greater than or equal to zero
-    and returns it as an int. name must be a string.
-
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
-    name = string_return_string(name, "name")
-
-    if not isinstance(value, int):
-        raise TypeError(f"{name} must be an integer.")
-
-    if value < 0:
-        raise ValueError(f"{name} must be greater than or equal to zero.")
-
-    return int(value)
-
-
-# TODO: Consider getting rid of this function as its functionality can be replicated
-#  with validate_scalar_int_in_range.
-# TEST: Consider adding unit tests for this function.
 def positive_int_return_int(value, name):
     """Validates that a value is an int with a value greater than zero and returns it
     as an int. name must be a string.
@@ -464,33 +445,6 @@ def threeD_spacing_vectorLike_return_tuple(vector, name):
 
 
 # TEST: Consider adding unit tests for this function.
-def fourD_homog_number_vectorLike_return_float(vector, name):
-    """Validates a value is a 4D homogeneous vector-like object (array-like object
-    with shape (4,) with a final value equal to 0.0 or 1.0). It then returns it as a
-    (4,) numpy array of floats. name must be a string.
-
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
-    name = string_return_string(name, "name")
-
-    try:
-        vector = np.asarray(vector, dtype=float)
-    except (TypeError, ValueError):
-        raise TypeError(f"{name} must be array-like and numeric.")
-
-    if vector.shape != (4,):
-        raise ValueError(f"{name} must be a 4-element vector.")
-
-    if not np.isfinite(vector).all():
-        raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
-
-    last_val = vector[-1]
-    if last_val != 0 and last_val != 1:
-        raise ValueError(f"{name}'s last element must be 0.0 or 1.0.")
-
-    return vector
-
-
-# TEST: Consider adding unit tests for this function.
 def nD_number_vectorLike_return_float(vector, name):
     """Validates a value is an ND vector-like object (array-like object with shape (N,
     )). It then returns it as an (N,) numpy array of floats. name must be a string.
@@ -554,16 +508,6 @@ def fourByFour_number_arrayLike_return_float(matrix, name):
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
     return matrix
-
-
-# TEST: Consider adding unit tests for this function.
-def list_return_list(list_parameter, name):
-    """Validates a list and returns it. name must be a string."""
-    name = string_return_string(name, "name")
-
-    if not isinstance(list_parameter, list):
-        raise TypeError(f"{name} must be a list.")
-    return list_parameter
 
 
 # TEST: Consider adding unit tests for this function.

@@ -140,3 +140,7 @@ cython_debug/
 /dist
 /Output
 .spec
+
+# These are files and folders created by usage to ignore
+Animate.webp
+/ptera

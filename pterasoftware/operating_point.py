@@ -26,19 +26,21 @@ class OperatingPoint:
         qInf__E: This method calculates the freestream dynamic pressure experienced
         by the Airplane (observed in the Earth frame).
 
-        T_pas_G_Cg_to_W_Cg: This method defines a property for the passive
-        transformation matrix which maps in homogeneous coordinates from geometry
-        axes relative to the CG to wind axes relative to the CG.
+        T_pas_GP1_CgP1_to_W_CgP1: This method defines a property for the passive
+        transformation matrix which maps in homogeneous coordinates from the first
+        Airplane's geometry axes relative to the first Airplane's CG to wind axes
+        relative to the first Airplane's CG.
 
-        T_pas_W_Cg_to_G_Cg: This method defines a property for the passive
+        T_pas_W_CgP1_to_GP1_CgP1: This method defines a property for the passive
         transformation matrix which maps in homogeneous coordinates from wind axes
-        relative to the CG to geometry axes relative to the CG.
+        relative to the first Airplane's CG to the first Airplane's geometry axes
+        relative to the first Airplane's CG.
 
-        vInfHat_G__E: This method computes the freestream direction (in geometry
-        axes, observed from the Earth frame).
+        vInfHat_GP1__E: This method computes the freestream direction (in the first
+        Airplane's geometry axes, observed from the Earth frame).
 
-        vInf_G__E: This method computes the freestream velocity (in geometry axes,
-        observed from the Earth frame).
+        vInf_GP1__E: This method computes the freestream velocity (in the first
+        Airplane's geometry axes, observed from the Earth frame).
 
     This class contains the following class attributes:
         None
@@ -66,37 +68,38 @@ class OperatingPoint:
 
         :param vCg__E: number, optional
 
-            This parameter is the speed of the Airplane's CG (observed from the Earth
-            frame). Given that (1) this is the magnitude of a vector, and (2) we
-            always assume a still fluid in our simulations, this value is equivalent
-            to the freestream speed (the speed of the apparent wind, infinitely far
-            away from the Airplane, observed while moving at the same speed as the
-            Airplane's non-accelerating CG). It must be a positive number and will be
-            converted internally to a float. Its units are in meters per second. The
-            default value is 10.0.
+            This parameter is the speed of the Airplane's or Airplanes' CG(s)
+            (observed from the Earth frame). In formation flight with multiple
+            Airplanes, all Airplanes share the same velocity magnitude. Given that (1)
+            this is the magnitude of a vector, and (2) we always assume a still fluid
+            in our simulations, this value is equivalent to the freestream speed (the
+            speed of the apparent wind, infinitely far away from the Airplane or
+            Airplanes, observed while moving at the same speed as the non-accelerating
+            CG or CGs). It must be a positive number and will be converted internally
+            to a float. Its units are in meters per second. The default value is 10.0.
 
         :param alpha: number, optional
 
-            This parameter is the angle of attack. For more details on the exact
-            interpretation of this value, see the description of wind axes in
-            docs/AXES_POINTS_AND_FRAMES.md. It must be a number in the range (-180.0,
-            180.0] and will be converted internally to a float. The units are
-            degrees. The default value is 5.0.
+            This parameter is the angle of attack for the problem's Airplane(s). For
+            more details on the exact interpretation of this value, see the
+            description of wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a
+            number in the range (-180.0, 180.0] and will be converted internally to a
+            float. The units are degrees. The default value is 5.0.
 
         :param beta: number, optional
 
-            This parameter is the sideslip angle. For more details on the exact
-            interpretation of this value, see the description of wind axes in
-            docs/AXES_POINTS_AND_FRAMES.md. It must be a number in the range (-180.0,
-            180.0] and will be converted internally to a float. The units are
-            degrees. The default value is 0.0.
+            This parameter is the sideslip angle for the problem's Airplane(s). For
+            more details on the exact interpretation of this value, see the
+            description of wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a
+            number in the range (-180.0, 180.0] and will be converted internally to a
+            float. The units are degrees. The default value is 0.0.
 
         :param externalFX_W: number, optional
 
-            This parameter is for any additional thrust or drag on the Airplane's
-            body (in wind axes) not due to the Airplane's Wings. It is useful for
-            trim analyses. It must be a number and will be converted internally to a
-            float. The units are Newtons. The default value is 0.0.
+            This parameter is for any additional thrust or drag on a problem's
+            Airplane(s) (in wind axes) not due to the Airplanes' Wings. It is useful
+            for trim analyses. It must be a number and will be converted internally
+            to a float. The units are Newtons. The default value is 0.0.
 
         :param nu: number, optional
 
@@ -139,20 +142,21 @@ class OperatingPoint:
         return 0.5 * self.rho * self.vCg__E**2
 
     @property
-    def T_pas_G_Cg_to_W_Cg(self):
+    def T_pas_GP1_CgP1_to_W_CgP1(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from geometry axes relative to the CG to wind
-        axes relative to the CG.
+        maps in homogeneous coordinates from the first Airplane's geometry axes
+        relative to the first Airplane's CG to wind axes relative to the first
+        Airplane's CG.
 
         :return: (4,4) ndarray of floats
 
             This is the passive transformation matrix which maps in homogeneous
-            coordinates from geometry axes relative to the CG to wind axes relative
-            to the CG.
+            coordinates from the first Airplane's geometry axes relative to the first
+            Airplane's CG to wind axes relative to the first Airplane's CG.
         """
         # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
         # to down). This is equivalent to a 180-degree rotation about y.
-        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
+        T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
             angles=np.array([0.0, 180.0, 0.0]),
             passive=True,
             intrinsic=False,
@@ -161,60 +165,63 @@ class OperatingPoint:
 
         angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
 
-        T_pas_B_Cg_to_W_Cg = _transformations.generate_rot_T(
+        T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
             angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
         )
 
-        return _transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
+        return _transformations.compose_T_pas(
+            T_pas_GP1_CgP1_to_BP1_CgP1, T_pas_BP1_CgP1_to_W_CgP1
+        )
 
     @property
-    def T_pas_W_Cg_to_G_Cg(self):
+    def T_pas_W_CgP1_to_GP1_CgP1(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from wind axes relative to the CG to geometry
-        axes relative to the CG.
+        maps in homogeneous coordinates from wind axes relative to the first
+        Airplane's CG to the first Airplane's geometry axes relative to the first
+        Airplane's CG.
 
         :return: (4,4) ndarray of floats
 
             This is the passive transformation matrix which maps in homogeneous
-            coordinates from wind axes relative to the CG to geometry axes relative
-            to the CG.
+            coordinates from wind axes relative to the first Airplane's CG to the
+            first Airplane's geometry axes relative to the first Airplane's CG.
         """
-        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
+        return _transformations.invert_T_pas(self.T_pas_GP1_CgP1_to_W_CgP1)
 
     @property
-    def vInfHat_G__E(self):
-        """This method computes the freestream direction (in geometry axes, observed
-        from the Earth frame).
+    def vInfHat_GP1__E(self):
+        """This method computes the freestream direction (in the first Airplane's
+        geometry axes, observed from the Earth frame).
 
-        Note: See the docstring for vInf_G__E for details on how to interpret this
+        Note: See the docstring for vInf_GP1__E for details on how to interpret this
         property.
 
         :return: (3,) ndarray of floats
 
-            This is a unit vector along the freestream velocity vector (in geometry
-            axes, observed from the Earth frame).
+            This is a unit vector along the freestream velocity vector (in the first
+            Airplane's geometry axes, observed from the Earth frame).
         """
         vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
 
         return _transformations.apply_T_to_vectors(
-            self.T_pas_W_Cg_to_G_Cg, vInfHat_W__E, has_point=False
+            self.T_pas_W_CgP1_to_GP1_CgP1, vInfHat_W__E, has_point=False
         )
 
     @property
-    def vInf_G__E(self):
-        """This method computes the freestream velocity (in geometry axes, observed
-        from the Earth frame).
+    def vInf_GP1__E(self):
+        """This method computes the freestream velocity (in the first Airplane's
+        geometry axes, observed from the Earth frame).
 
-        Note: I'm defining vInf_G__E to be -1 * vCgX_G__E. This may seem obvious,
+        Note: I'm defining vInf_GP1__E to be -1 * vCgX_GP1__E. This may seem obvious,
         but the important takeaways are that the freestream velocity is (1) entirely
-        due to the body's motion (a still airmass), and (2) the freestream velocity
-        is observed from the Earth frame, which is inertial. Given point 1,
-        a possible interpretation is that vInf_G__E must be zero, which is why I'm
-        being specific with the definition.
+        due to the Airplane's (or Airplanes') body's motion (a still airmass),
+        and (2) the freestream velocity is observed from the Earth frame, which is
+        inertial. Given point 1, a possible interpretation is that vInf_GP1__E must
+        be zero, which is why I'm being specific with the definition.
 
         :return: (3,) ndarray of floats
 
-            This is the freestream velocity vector (in geometry axes, observed from
-            the Earth frame).
+            This is the freestream velocity vector (in the first Airplane's geometry
+            axes, observed from the Earth frame).
         """
-        return self.vInfHat_G__E * self.vCg__E
+        return self.vInfHat_GP1__E * self.vCg__E

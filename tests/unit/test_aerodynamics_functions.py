@@ -76,11 +76,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test collapsed_velocities_from_ring_vortices with single evaluation point."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -98,11 +98,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         points."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.grid_of_points,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.grid_of_points,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -115,11 +115,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test collapsed_velocities_from_ring_vortices with multiple RingVortices."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.multiple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.multiple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.multiple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.multiple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.multiple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.multiple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.multiple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -132,11 +132,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test collapsed_velocities_from_ring_vortices with age parameters."""
         # Call the function with ages.
         velocities_with_ages = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.multiple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.multiple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.multiple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.multiple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.multiple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.multiple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.multiple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             ages=self.ages,
             nu=self.kinematic_viscosity,
@@ -153,11 +153,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=zero_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -174,11 +174,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Call the function.
         velocities = (
             _aerodynamics.collapsed_velocities_from_ring_vortices_chordwise_segments(
-                stackP_G_Cg=self.single_point,
-                stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-                stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-                stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-                stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+                stackP_GP1_CgP1=self.single_point,
+                stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+                stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+                stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+                stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
                 strengths=self.simple_ring_strengths,
                 ages=None,
                 nu=self.kinematic_viscosity,
@@ -196,11 +196,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Call the function.
         velocities = (
             _aerodynamics.collapsed_velocities_from_ring_vortices_chordwise_segments(
-                stackP_G_Cg=self.line_of_points,
-                stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-                stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-                stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-                stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+                stackP_GP1_CgP1=self.line_of_points,
+                stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+                stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+                stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+                stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
                 strengths=self.simple_ring_strengths,
                 ages=None,
                 nu=self.kinematic_viscosity,
@@ -214,11 +214,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test expanded_velocities_from_ring_vortices with single evaluation point."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -231,11 +231,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test expanded_velocities_from_ring_vortices with multiple RingVortices."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.multiple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.multiple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.multiple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.multiple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.multiple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.multiple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.multiple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -249,11 +249,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         points."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_G_Cg=self.line_of_points,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.line_of_points,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -266,11 +266,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test that expanded and collapsed RingVortex functions are consistent."""
         # Get expanded velocities.
         expanded_velocities = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.multiple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.multiple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.multiple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.multiple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.multiple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.multiple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.multiple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -278,11 +278,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         # Get collapsed velocities.
         collapsed_velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrrvp_G_Cg=self.multiple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.multiple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.multiple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.multiple_ring_Blrvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.multiple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.multiple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.multiple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -299,11 +299,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         point."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
         )
 
@@ -319,11 +319,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         points."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.grid_of_points,
-            stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.grid_of_points,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
         )
 
@@ -335,11 +335,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         HorseshoeVortices."""
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.multiple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.multiple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.multiple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.multiple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.multiple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.multiple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.multiple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
             strengths=self.multiple_horseshoe_strengths,
         )
 
@@ -354,11 +354,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         # Call the function.
         velocities = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=zero_strengths,
         )
 
@@ -370,11 +370,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         point."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
         )
 
@@ -386,11 +386,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         HorseshoeVortices."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.multiple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.multiple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.multiple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.multiple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.multiple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.multiple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.multiple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
             strengths=self.multiple_horseshoe_strengths,
         )
 
@@ -402,11 +402,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         points."""
         # Call the function.
         velocities = _aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.line_of_points,
-            stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.line_of_points,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
         )
 
@@ -418,22 +418,22 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         consistent."""
         # Get the expanded velocities.
         expanded_velocities = _aerodynamics.expanded_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=self.single_point,
-            stackBrhvp_G_Cg=self.multiple_horseshoe_Brhvp,
-            stackFrhvp_G_Cg=self.multiple_horseshoe_Frhvp,
-            stackFlhvp_G_Cg=self.multiple_horseshoe_Flhvp,
-            stackBlhvp_G_Cg=self.multiple_horseshoe_Blhvp,
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.multiple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.multiple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.multiple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
             strengths=self.multiple_horseshoe_strengths,
         )
 
         # Get collapsed velocities.
         collapsed_velocities = (
             _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-                stackP_G_Cg=self.single_point,
-                stackBrhvp_G_Cg=self.multiple_horseshoe_Brhvp,
-                stackFrhvp_G_Cg=self.multiple_horseshoe_Frhvp,
-                stackFlhvp_G_Cg=self.multiple_horseshoe_Flhvp,
-                stackBlhvp_G_Cg=self.multiple_horseshoe_Blhvp,
+                stackP_GP1_CgP1=self.single_point,
+                stackBrhvp_GP1_CgP1=self.multiple_horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.multiple_horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.multiple_horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
             )
         )
@@ -448,11 +448,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         """Test velocity functions with random evaluation points."""
         # Test RingVortex function.
         ring_velocities = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=self.random_points,
-            stackBrrvp_G_Cg=self.simple_ring_Brrvp,
-            stackFrrvp_G_Cg=self.simple_ring_Frrvp,
-            stackFlrvp_G_Cg=self.simple_ring_Flrvp,
-            stackBlrvp_G_Cg=self.simple_ring_Blrvp,
+            stackP_GP1_CgP1=self.random_points,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             ages=None,
             nu=self.kinematic_viscosity,
@@ -464,11 +464,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Test HorseshoeVortex function.
         horseshoe_velocities = (
             _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-                stackP_G_Cg=self.random_points,
-                stackBrhvp_G_Cg=self.simple_horseshoe_Brhvp,
-                stackFrhvp_G_Cg=self.simple_horseshoe_Frhvp,
-                stackFlhvp_G_Cg=self.simple_horseshoe_Flhvp,
-                stackBlhvp_G_Cg=self.simple_horseshoe_Blhvp,
+                stackP_GP1_CgP1=self.random_points,
+                stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
             )
         )
@@ -712,22 +712,22 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # geometry axes, observed from the Earth frame).
         vLines_G__E = vRight_G__E + vFront_G__E + vLeft_G__E + vBack_G__E
 
-        stackP_G_Cg = P_G_Cg.reshape(1, 3)
-        stackBrrvp_G_Cg = Br_G_Cg.reshape(1, 3)
-        stackFrrvp_G_Cg = Fr_G_Cg.reshape(1, 3)
-        stackFlrvp_G_Cg = Fl_G_Cg.reshape(1, 3)
-        stackBlrvp_G_Cg = Bl_G_Cg.reshape(1, 3)
+        stackP_GP1_CgP1 = P_G_Cg.reshape(1, 3)
+        stackBrrvp_GP1_CgP1 = Br_G_Cg.reshape(1, 3)
+        stackFrrvp_GP1_CgP1 = Fr_G_Cg.reshape(1, 3)
+        stackFlrvp_GP1_CgP1 = Fl_G_Cg.reshape(1, 3)
+        stackBlrvp_GP1_CgP1 = Bl_G_Cg.reshape(1, 3)
         strengths = np.array([1.0], dtype=float)
 
         # Calculate velocity induced by an equivalent RingVortex (in geometry axes,
         # observed from the Earth frame) using the
         # collapsed_velocities_from_ring_vortices function.
         vRing_G__E = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_G_Cg=stackP_G_Cg,
-            stackBrrvp_G_Cg=stackBrrvp_G_Cg,
-            stackFrrvp_G_Cg=stackFrrvp_G_Cg,
-            stackFlrvp_G_Cg=stackFlrvp_G_Cg,
-            stackBlrvp_G_Cg=stackBlrvp_G_Cg,
+            stackP_GP1_CgP1=stackP_GP1_CgP1,
+            stackBrrvp_GP1_CgP1=stackBrrvp_GP1_CgP1,
+            stackFrrvp_GP1_CgP1=stackFrrvp_GP1_CgP1,
+            stackFlrvp_GP1_CgP1=stackFlrvp_GP1_CgP1,
+            stackBlrvp_GP1_CgP1=stackBlrvp_GP1_CgP1,
             strengths=strengths,
             ages=None,
             nu=0.0,
@@ -760,19 +760,19 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         expected_total = v_right + v_finite + v_left
 
         # Calculate velocity using HorseshoeVortex function.
-        stackP_G_Cg = P.reshape(1, 3)
-        stackBrhvp_G_Cg = Br.reshape(1, 3)
-        stackFrhvp_G_Cg = Fr.reshape(1, 3)
-        stackFlhvp_G_Cg = Fl.reshape(1, 3)
-        stackBlhvp_G_Cg = Bl.reshape(1, 3)
+        stackP_GP1_CgP1 = P.reshape(1, 3)
+        stackBrhvp_GP1_CgP1 = Br.reshape(1, 3)
+        stackFrhvp_GP1_CgP1 = Fr.reshape(1, 3)
+        stackFlhvp_GP1_CgP1 = Fl.reshape(1, 3)
+        stackBlhvp_GP1_CgP1 = Bl.reshape(1, 3)
         strengths = np.array([gamma], dtype=float)
 
         computed_total = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_G_Cg=stackP_G_Cg,
-            stackBrhvp_G_Cg=stackBrhvp_G_Cg,
-            stackFrhvp_G_Cg=stackFrhvp_G_Cg,
-            stackFlhvp_G_Cg=stackFlhvp_G_Cg,
-            stackBlhvp_G_Cg=stackBlhvp_G_Cg,
+            stackP_GP1_CgP1=stackP_GP1_CgP1,
+            stackBrhvp_GP1_CgP1=stackBrhvp_GP1_CgP1,
+            stackFrhvp_GP1_CgP1=stackFrhvp_GP1_CgP1,
+            stackFlhvp_GP1_CgP1=stackFlhvp_GP1_CgP1,
+            stackBlhvp_GP1_CgP1=stackBlhvp_GP1_CgP1,
             strengths=strengths,
         )[0]
 

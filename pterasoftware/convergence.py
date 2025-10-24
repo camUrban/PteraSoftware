@@ -208,7 +208,7 @@ def analyze_steady_convergence(
         ),
         dtype=float,
     )
-    momentCoefficients_W_Cg = np.zeros(
+    momentCoefficients_W_CgP1 = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
@@ -484,20 +484,22 @@ def analyze_steady_convergence(
             # Create and fill ndarrays with each of this iteration's Airplanes'
             # combined load coefficients.
             theseForceCoefficients_W = np.zeros(len(these_airplanes), dtype=float)
-            theseMomentCoefficients_W_Cg = np.zeros(len(these_airplanes), dtype=float)
+            theseMomentCoefficients_W_CgP1 = np.zeros(len(these_airplanes), dtype=float)
             airplane: geometry.airplane.Airplane
             for airplane_id, airplane in enumerate(these_airplanes):
                 theseForceCoefficients_W[airplane_id] = np.linalg.norm(
                     airplane.forceCoefficients_W
                 )
-                theseMomentCoefficients_W_Cg[airplane_id] = np.linalg.norm(
-                    airplane.momentCoefficients_W_Cg
+                theseMomentCoefficients_W_CgP1[airplane_id] = np.linalg.norm(
+                    airplane.momentCoefficients_W_CgP1
                 )
 
             # Populate the ndarrays that store information from all the iterations with
             # the data from this iteration.
             forceCoefficients_W[ar_id, chord_id, :] = theseForceCoefficients_W
-            momentCoefficients_W_Cg[ar_id, chord_id, :] = theseMomentCoefficients_W_Cg
+            momentCoefficients_W_CgP1[ar_id, chord_id, :] = (
+                theseMomentCoefficients_W_CgP1
+            )
             iter_times[ar_id, chord_id] = this_iter_time
 
             convergence_logger.info(
@@ -511,7 +513,7 @@ def analyze_steady_convergence(
             # ratio APE.
             if ar_id > 0:
                 last_ar_force_coefficients = forceCoefficients_W[ar_id - 1, chord_id, :]
-                last_ar_moment_coefficients = momentCoefficients_W_Cg[
+                last_ar_moment_coefficients = momentCoefficients_W_CgP1[
                     ar_id - 1, chord_id, :
                 ]
                 max_ar_force_pc = max(
@@ -524,7 +526,7 @@ def analyze_steady_convergence(
                 max_ar_moment_pc = max(
                     100
                     * np.abs(
-                        (theseMomentCoefficients_W_Cg - last_ar_moment_coefficients)
+                        (theseMomentCoefficients_W_CgP1 - last_ar_moment_coefficients)
                         / last_ar_moment_coefficients
                     )
                 )
@@ -547,7 +549,7 @@ def analyze_steady_convergence(
                 last_chord_force_coefficients = forceCoefficients_W[
                     ar_id, chord_id - 1, :
                 ]
-                last_chord_moment_coefficients = momentCoefficients_W_Cg[
+                last_chord_moment_coefficients = momentCoefficients_W_CgP1[
                     ar_id, chord_id - 1, :
                 ]
                 max_chord_force_pc = max(
@@ -560,7 +562,10 @@ def analyze_steady_convergence(
                 max_chord_moment_pc = max(
                     100
                     * np.abs(
-                        (theseMomentCoefficients_W_Cg - last_chord_moment_coefficients)
+                        (
+                            theseMomentCoefficients_W_CgP1
+                            - last_chord_moment_coefficients
+                        )
                         / last_chord_moment_coefficients
                     )
                 )
@@ -1467,14 +1472,14 @@ def analyze_unsteady_convergence(
                                 this_problem.finalForceCoefficients_W[airplane_id]
                             )
                             all_moment_coefficients = (
-                                this_problem.finalMomentCoefficients_W_Cg[airplane_id]
+                                this_problem.finalMomentCoefficients_W_CgP1[airplane_id]
                             )
                         else:
                             all_force_coefficients = (
                                 this_problem.finalRmsForceCoefficients_W[airplane_id]
                             )
                             all_moment_coefficients = (
-                                this_problem.finalRmsMomentCoefficients_W_Cg[
+                                this_problem.finalRmsMomentCoefficients_W_CgP1[
                                     airplane_id
                                 ]
                             )

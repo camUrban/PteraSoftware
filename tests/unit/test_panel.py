@@ -49,10 +49,10 @@ class TestPanel(unittest.TestCase):
         self.assertIsNone(panel.horseshoe_vortex)
 
         # Test that force and moment attributes are None initially
-        self.assertIsNone(panel.forces_G)
-        self.assertIsNone(panel.moments_G_Cg)
+        self.assertIsNone(panel.forces_GP1)
+        self.assertIsNone(panel.moments_GP1_CgP1)
         self.assertIsNone(panel.forces_W)
-        self.assertIsNone(panel.moments_W_Cg)
+        self.assertIsNone(panel.moments_W_CgP1)
 
     def test_parameter_validation_corner_points(self):
         """Test parameter validation for corner point inputs."""

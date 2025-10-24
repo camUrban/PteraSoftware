@@ -13,8 +13,8 @@ def make_basic_steady_problem_fixture():
     :return basic_steady_problem_fixture: SteadyProblem
         This is the SteadyProblem configured for general testing.
     """
-    # Create a basic Airplane.
-    basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+    # Create an Airplane.
+    first_airplane = geometry_fixtures.make_first_airplane_fixture()
 
     # Create a basic OperatingPoint.
     basic_operating_point = (
@@ -23,7 +23,7 @@ def make_basic_steady_problem_fixture():
 
     # Create the SteadyProblem.
     basic_steady_problem_fixture = ps.problems.SteadyProblem(
-        airplanes=[basic_airplane],
+        airplanes=[first_airplane],
         operating_point=basic_operating_point,
     )
 
@@ -37,7 +37,7 @@ def make_multi_airplane_steady_problem_fixture():
         This is the SteadyProblem with multiple Airplanes.
     """
     # Create multiple Airplanes.
-    airplane1 = geometry_fixtures.make_basic_airplane_fixture()
+    airplane1 = geometry_fixtures.make_first_airplane_fixture()
     airplane2 = geometry_fixtures.make_basic_airplane_fixture()
 
     # Create an OperatingPoint.

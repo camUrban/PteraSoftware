@@ -298,9 +298,9 @@ def analyze_steady_trim(
         netForceCoefficient_W = np.linalg.norm(
             airplane.forceCoefficients_W + externalForceCoefficients_W
         )
-        netMomentCoefficient_W_Cg = np.linalg.norm(airplane.momentCoefficients_W_Cg)
+        netMomentCoefficient_W_CgP1 = np.linalg.norm(airplane.momentCoefficients_W_CgP1)
 
-        objective = (netForceCoefficient_W + netMomentCoefficient_W_Cg) / 2
+        objective = (netForceCoefficient_W + netMomentCoefficient_W_CgP1) / 2
 
         v_str = str(round(vCg__E, 2))
         a_str = str(round(alpha, 2))
@@ -655,7 +655,7 @@ def analyze_unsteady_trim(
 
         finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
         finalMomentCoefficients_W_Cg = (
-            this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
+            this_solver.unsteady_problem.finalMomentCoefficients_W_CgP1
         )
 
         netForceCoefficients_W = np.linalg.norm(

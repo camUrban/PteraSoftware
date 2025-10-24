@@ -30,10 +30,37 @@ class Panel:
         Cpp_G_Cg: This method sets a property for the position of this Panel's
         collocation point (in geometry axes, relative to the Cg).
 
+        rightLeg_GP1: This method sets a property for the Panel's right leg vector (
+        in the first Airplane's geometry axes).
+
+        frontLeg_GP1: This method sets a property for the Panel's front leg vector (
+        in the first Airplane's geometry axes).
+
+        leftLeg_GP1: This method sets a property for the Panel's left leg vector (in
+        the first Airplane's geometry axes).
+
+        backLeg_GP1: This method sets a property for the Panel's back leg vector (in
+        the first Airplane's geometry axes).
+
+        Frbvp_GP1_CgP1: This method sets a property for the position of this Panel's
+        front-right bound vortex point (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG).
+
+        Flbvp_GP1_CgP1: This method sets a property for the position of this Panel's
+        front-left bound vortex point (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG).
+
+        Cpp_GP1_CgP1: This method sets a property for the position of this Panel's
+        collocation point (in the first Airplane's geometry axes, relative to the
+        first Airplane's CG).
+
         area: This method sets a property which is an estimate of the Panel's area.
 
         unitNormal_G: This method sets a property for an estimate of the Panel's unit
         normal vector (in geometry axes).
+
+        unitNormal_GP1: This method sets a property for an estimate of the Panel's
+        unit normal vector (in the first Airplane's geometry axes).
 
         aspect_ratio: This method sets a property for the aspect ratio of the Panel.
 
@@ -138,6 +165,15 @@ class Panel:
         self.local_chordwise_position = None
         self.local_spanwise_position = None
 
+        # Initialize variables to hold the Panel's corner positions in formation
+        # flight coordinates (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG). These will be populated by the SteadyProblem or
+        # UnsteadyProblem during initialization.
+        self.Frpp_GP1_CgP1 = None
+        self.Flpp_GP1_CgP1 = None
+        self.Blpp_GP1_CgP1 = None
+        self.Brpp_GP1_CgP1 = None
+
         # Initialize variables to hold the Panel's RingVortex and HorseshoeVortex.
         # These will be populated by the solver.
         self.ring_vortex = None
@@ -145,10 +181,10 @@ class Panel:
 
         # Initialize variables to hold attributes of the Panel that will be defined
         # after the solver finds a solution.
-        self.forces_G = None
-        self.moments_G_Cg = None
+        self.forces_GP1 = None
+        self.moments_GP1_CgP1 = None
         self.forces_W = None
-        self.moments_W_Cg = None
+        self.moments_W_CgP1 = None
 
     @property
     def rightLeg_G(self):
@@ -239,6 +275,136 @@ class Panel:
         # right legs of the Panel. Then populate the class attribute.
         return rightThreeQuarterChord_G_Cg + 0.5 * threeQuarterChord_G
 
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def rightLeg_GP1(self):
+        """This method sets a property for the Panel's right leg vector (in the first
+        Airplane's geometry axes).
+
+        :return: (3,) ndarray of floats
+            This is the Panel's right leg vector, which is defined from back to
+            front. The units are in meters. Returns None if this Panel is not part of
+            a SteadyProblem or UnsteadyProblem.
+        """
+        if self.Frpp_GP1_CgP1 is None or self.Brpp_GP1_CgP1 is None:
+            return None
+        return self.Frpp_GP1_CgP1 - self.Brpp_GP1_CgP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def frontLeg_GP1(self):
+        """This method sets a property for the Panel's front leg vector (in the first
+        Airplane's geometry axes).
+
+        :return: (3,) ndarray of floats
+            This is the Panel's front leg vector, which is defined from right to
+            left. The units are in meters. Returns None if this Panel is not part of
+            a SteadyProblem or UnsteadyProblem.
+        """
+        if self.Flpp_GP1_CgP1 is None or self.Frpp_GP1_CgP1 is None:
+            return None
+        return self.Flpp_GP1_CgP1 - self.Frpp_GP1_CgP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def leftLeg_GP1(self):
+        """This method sets a property for the Panel's left leg vector (in the first
+        Airplane's geometry axes).
+
+        :return: (3,) ndarray of floats
+            This is the Panel's left leg vector, which is defined from front to
+            back. The units are in meters. Returns None if this Panel is not part of
+            a SteadyProblem or UnsteadyProblem.
+        """
+        if self.Blpp_GP1_CgP1 is None or self.Flpp_GP1_CgP1 is None:
+            return None
+        return self.Blpp_GP1_CgP1 - self.Flpp_GP1_CgP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def backLeg_GP1(self):
+        """This method sets a property for the Panel's back leg vector (in the first
+        Airplane's geometry axes).
+
+        :return: (3,) ndarray of floats
+            This is the Panel's back leg vector, which is defined from left to
+            right. The units are in meters. Returns None if this Panel is not part of
+            a SteadyProblem or UnsteadyProblem.
+        """
+        if self.Brpp_GP1_CgP1 is None or self.Blpp_GP1_CgP1 is None:
+            return None
+        return self.Brpp_GP1_CgP1 - self.Blpp_GP1_CgP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def Frbvp_GP1_CgP1(self):
+        """This method sets a property for the position of this Panel's front-right
+        bound vortex point (in the first Airplane's geometry axes, relative to the
+        first Airplane's CG).
+
+        :return: (3,) ndarray of floats
+            This is the position of this Panel's front-right bound vortex point. The
+            units are in meters. Returns None if this Panel is not part of a
+            SteadyProblem or UnsteadyProblem.
+        """
+        if self.Brpp_GP1_CgP1 is None or self.rightLeg_GP1 is None:
+            return None
+        return self.Brpp_GP1_CgP1 + 0.75 * self.rightLeg_GP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def Flbvp_GP1_CgP1(self):
+        """This method sets a property for the position of this Panel's front-left
+        bound vortex point (in the first Airplane's geometry axes, relative to the
+        first Airplane's CG).
+
+        :return: (3,) ndarray of floats
+
+            This is the position of this Panel's front-left bound vortex point. The
+            units are in meters. Returns None if this Panel is not part of a
+            SteadyProblem or UnsteadyProblem.
+        """
+        if self.Flpp_GP1_CgP1 is None or self.leftLeg_GP1 is None:
+            return None
+        return self.Flpp_GP1_CgP1 + 0.25 * self.leftLeg_GP1
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def Cpp_GP1_CgP1(self):
+        """This method sets a property for the position of this Panel's collocation
+        point (in the first Airplane's geometry axes, relative to the first Airplane's
+        CG).
+
+        :return: (3,) ndarray of floats
+            This is the position of this Panel's collocation point. The units are in
+            meters. Returns None if this Panel is not part of a SteadyProblem or
+            UnsteadyProblem.
+        """
+        if (
+            self.Brpp_GP1_CgP1 is None
+            or self.rightLeg_GP1 is None
+            or self.Flpp_GP1_CgP1 is None
+            or self.leftLeg_GP1 is None
+        ):
+            return None
+
+        # Find the positions of points three quarters of the way down the left and
+        # right legs of the Panel (in the first Airplane's geometry axes, relative to
+        # the first Airplane's CG).
+        rightThreeQuarterChord_GP1_CgP1 = self.Brpp_GP1_CgP1 + 0.25 * self.rightLeg_GP1
+        leftThreeQuarterChord_GP1_CgP1 = self.Flpp_GP1_CgP1 + 0.75 * self.leftLeg_GP1
+
+        # Find the vector (in the first Airplane's geometry axes) between the points
+        # three quarters of the way down the left and right legs of the Panel.
+        threeQuarterChord_GP1 = (
+            leftThreeQuarterChord_GP1_CgP1 - rightThreeQuarterChord_GP1_CgP1
+        )
+
+        # Find the collocation point (in the first Airplane's geometry axes, relative
+        # to the first Airplane's CG), which is halfway between the points three
+        # quarters of the way down the left and right legs of the Panel.
+        return rightThreeQuarterChord_GP1_CgP1 + 0.5 * threeQuarterChord_GP1
+
     @property
     def area(self):
         """This method sets a property which is an estimate of the Panel's area.
@@ -267,6 +433,35 @@ class Panel:
             back-left to back-right). The units are in meters.
         """
         return self._cross_G / np.linalg.norm(self._cross_G)
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def unitNormal_GP1(self):
+        """This method sets a property for an estimate of the Panel's unit normal
+        vector (in the first Airplane's geometry axes).
+
+        :return: (3,) ndarray of floats or None
+            This is an estimate of the Panel's unit normal vector as a (3,) ndarray
+            of floats. The sign is determined via the right-hand rule given the
+            orientation of Panel's leg vectors (front-right to front-left to
+            back-left to back-right). The units are in meters. Returns None if this
+            Panel is not part of a SteadyProblem or UnsteadyProblem.
+        """
+        if (
+            self.Frpp_GP1_CgP1 is None
+            or self.Flpp_GP1_CgP1 is None
+            or self.Blpp_GP1_CgP1 is None
+            or self.Brpp_GP1_CgP1 is None
+        ):
+            return None
+
+        # Compute diagonal vectors (in the first Airplane's geometry axes).
+        firstDiagonal_GP1 = self.Frpp_GP1_CgP1 - self.Blpp_GP1_CgP1
+        secondDiagonal_GP1 = self.Flpp_GP1_CgP1 - self.Brpp_GP1_CgP1
+
+        # Compute the cross product and normalize.
+        cross_GP1 = np.cross(firstDiagonal_GP1, secondDiagonal_GP1)
+        return cross_GP1 / np.linalg.norm(cross_GP1)
 
     # TEST: Consider adding unit tests for this method.
     @property

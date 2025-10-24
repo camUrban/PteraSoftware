@@ -54,15 +54,15 @@ class TestHorseshoeVortex(unittest.TestCase):
             self.basic_horseshoe_vortex, _aerodynamics.HorseshoeVortex
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.Frhvp_G_Cg,
+            self.basic_horseshoe_vortex.Frhvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.Flhvp_G_Cg,
+            self.basic_horseshoe_vortex.Flhvp_GP1_CgP1,
             np.array([0.0, -0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.leftLegVector_G,
+            self.basic_horseshoe_vortex.leftLegVector_GP1,
             np.array([1.0, 0.0, 0.0], dtype=float),
         )
         self.assertEqual(self.basic_horseshoe_vortex.left_right_leg_lengths, 20.0)
@@ -94,77 +94,85 @@ class TestHorseshoeVortex(unittest.TestCase):
         """Test HorseshoeVortex initialization with various finite leg widths."""
         # Test wide finite leg.
         npt.assert_array_equal(
-            self.wide_finite_leg_horseshoe_vortex.Frhvp_G_Cg,
+            self.wide_finite_leg_horseshoe_vortex.Frhvp_GP1_CgP1,
             np.array([0.0, 2.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.wide_finite_leg_horseshoe_vortex.Flhvp_G_Cg,
+            self.wide_finite_leg_horseshoe_vortex.Flhvp_GP1_CgP1,
             np.array([0.0, -2.5, 0.0], dtype=float),
         )
 
         # Test narrow finite leg.
         npt.assert_array_equal(
-            self.narrow_finite_leg_horseshoe_vortex.Frhvp_G_Cg,
+            self.narrow_finite_leg_horseshoe_vortex.Frhvp_GP1_CgP1,
             np.array([0.0, 0.05, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.narrow_finite_leg_horseshoe_vortex.Flhvp_G_Cg,
+            self.narrow_finite_leg_horseshoe_vortex.Flhvp_GP1_CgP1,
             np.array([0.0, -0.05, 0.0], dtype=float),
         )
 
     def test_left_leg_vector_normalization(self):
-        """Test that leftLegVector_G is normalized to unit length."""
+        """Test that leftLegVector_GP1 is normalized to unit length."""
         # The tilted legs fixture uses [0.707, 0.0, 0.707] which should be normalized.
         left_leg_length = np.linalg.norm(
-            self.tilted_legs_horseshoe_vortex.leftLegVector_G
+            self.tilted_legs_horseshoe_vortex.leftLegVector_GP1
         )
         npt.assert_almost_equal(left_leg_length, 1.0, decimal=10)
 
         # Basic fixture uses [1.0, 0.0, 0.0] which is already unit length.
-        left_leg_length = np.linalg.norm(self.basic_horseshoe_vortex.leftLegVector_G)
+        left_leg_length = np.linalg.norm(self.basic_horseshoe_vortex.leftLegVector_GP1)
         npt.assert_almost_equal(left_leg_length, 1.0, decimal=10)
 
     def test_back_points_calculation(self):
-        """Test that back points (Brhvp_G_Cg and Blhvp_G_Cg) are calculated
+        """Test that back points (Brhvp_GP1_CgP1 and Blhvp_GP1_CgP1) are calculated
         correctly."""
         # For basic HorseshoeVortex, back points should be 20 meters in the
         # positive x-direction from front points.
-        expected_Brhvp_G_Cg = np.array([20.0, 0.5, 0.0], dtype=float)
-        expected_Blhvp_G_Cg = np.array([20.0, -0.5, 0.0], dtype=float)
+        expected_Brhvp_GP1_CgP1 = np.array([20.0, 0.5, 0.0], dtype=float)
+        expected_Blhvp_GP1_CgP1 = np.array([20.0, -0.5, 0.0], dtype=float)
 
         npt.assert_array_almost_equal(
-            self.basic_horseshoe_vortex.Brhvp_G_Cg, expected_Brhvp_G_Cg, decimal=10
+            self.basic_horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_Brhvp_GP1_CgP1,
+            decimal=10,
         )
         npt.assert_array_almost_equal(
-            self.basic_horseshoe_vortex.Blhvp_G_Cg, expected_Blhvp_G_Cg, decimal=10
+            self.basic_horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_Blhvp_GP1_CgP1,
+            decimal=10,
         )
 
     def test_back_points_with_different_leg_lengths(self):
         """Test back point calculation with different leg lengths."""
         # For short legs (5 meters).
-        expected_Brhvp_G_Cg = np.array([5.0, 0.5, 0.0], dtype=float)
-        expected_Blhvp_G_Cg = np.array([5.0, -0.5, 0.0], dtype=float)
+        expected_Brhvp_GP1_CgP1 = np.array([5.0, 0.5, 0.0], dtype=float)
+        expected_Blhvp_GP1_CgP1 = np.array([5.0, -0.5, 0.0], dtype=float)
 
         npt.assert_array_almost_equal(
-            self.short_legs_horseshoe_vortex.Brhvp_G_Cg,
-            expected_Brhvp_G_Cg,
+            self.short_legs_horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_Brhvp_GP1_CgP1,
             decimal=10,
         )
         npt.assert_array_almost_equal(
-            self.short_legs_horseshoe_vortex.Blhvp_G_Cg,
-            expected_Blhvp_G_Cg,
+            self.short_legs_horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_Blhvp_GP1_CgP1,
             decimal=10,
         )
 
         # For long legs (100 meters).
-        expected_Brhvp_G_Cg = np.array([100.0, 0.5, 0.0], dtype=float)
-        expected_Blhvp_G_Cg = np.array([100.0, -0.5, 0.0], dtype=float)
+        expected_Brhvp_GP1_CgP1 = np.array([100.0, 0.5, 0.0], dtype=float)
+        expected_Blhvp_GP1_CgP1 = np.array([100.0, -0.5, 0.0], dtype=float)
 
         npt.assert_array_almost_equal(
-            self.long_legs_horseshoe_vortex.Brhvp_G_Cg, expected_Brhvp_G_Cg, decimal=10
+            self.long_legs_horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_Brhvp_GP1_CgP1,
+            decimal=10,
         )
         npt.assert_array_almost_equal(
-            self.long_legs_horseshoe_vortex.Blhvp_G_Cg, expected_Blhvp_G_Cg, decimal=10
+            self.long_legs_horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_Blhvp_GP1_CgP1,
+            decimal=10,
         )
 
     def test_line_vortex_legs_created(self):
@@ -192,32 +200,32 @@ class TestHorseshoeVortex(unittest.TestCase):
         """Test that LineVortex leg positions match HorseshoeVortex points."""
         # Test right leg (from back right to front right).
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.right_leg.Slvp_G_Cg,
-            self.basic_horseshoe_vortex.Brhvp_G_Cg,
+            self.basic_horseshoe_vortex.right_leg.Slvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Brhvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.right_leg.Elvp_G_Cg,
-            self.basic_horseshoe_vortex.Frhvp_G_Cg,
+            self.basic_horseshoe_vortex.right_leg.Elvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Frhvp_GP1_CgP1,
         )
 
         # Test finite leg (from front right to front left).
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.finite_leg.Slvp_G_Cg,
-            self.basic_horseshoe_vortex.Frhvp_G_Cg,
+            self.basic_horseshoe_vortex.finite_leg.Slvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Frhvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.finite_leg.Elvp_G_Cg,
-            self.basic_horseshoe_vortex.Flhvp_G_Cg,
+            self.basic_horseshoe_vortex.finite_leg.Elvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Flhvp_GP1_CgP1,
         )
 
         # Test left leg (from front left to back left).
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.left_leg.Slvp_G_Cg,
-            self.basic_horseshoe_vortex.Flhvp_G_Cg,
+            self.basic_horseshoe_vortex.left_leg.Slvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Flhvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_horseshoe_vortex.left_leg.Elvp_G_Cg,
-            self.basic_horseshoe_vortex.Blhvp_G_Cg,
+            self.basic_horseshoe_vortex.left_leg.Elvp_GP1_CgP1,
+            self.basic_horseshoe_vortex.Blhvp_GP1_CgP1,
         )
 
     def test_update_strength_method(self):
@@ -256,24 +264,24 @@ class TestHorseshoeVortex(unittest.TestCase):
 
     def test_parameter_validation_invalid_types(self):
         """Test parameter validation with invalid types."""
-        # Test with string instead of array for Frhvp_G_Cg.
+        # Test with string instead of array for Frhvp_GP1_CgP1.
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
-                Frhvp_G_Cg="not_an_array",
-                Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
+                Frhvp_GP1_CgP1="not_an_array",
+                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
                 left_right_leg_lengths=20.0,
                 strength=1.0,
             )
 
-        # Test with wrong-sized array for leftLegVector_G.
+        # Test with wrong-sized array for leftLegVector_GP1.
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
-                Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_G=np.array([1.0, 0.0], dtype=float),  # Only 2 elements
+                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                leftLegVector_GP1=np.array([1.0, 0.0], dtype=float),  # Only 2 elements
                 left_right_leg_lengths=20.0,
                 strength=1.0,
             )
@@ -282,9 +290,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
-                Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
+                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
                 left_right_leg_lengths=-5.0,  # Negative length
                 strength=1.0,
             )
@@ -293,9 +301,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.HorseshoeVortex(
-                Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
+                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
                 left_right_leg_lengths=20.0,
                 strength="not_a_number",
             )
@@ -303,9 +311,9 @@ class TestHorseshoeVortex(unittest.TestCase):
     def test_none_strength_handling(self):
         """Test that None strength is handled correctly."""
         horseshoe_vortex = _aerodynamics.HorseshoeVortex(
-            Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-            Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-            leftLegVector_G=np.array([1.0, 0.0, 0.0], dtype=float),
+            Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+            Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+            leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
             left_right_leg_lengths=20.0,
             strength=None,
         )
@@ -322,23 +330,23 @@ class TestHorseshoeVortex(unittest.TestCase):
         """Test HorseshoeVortex with tilted leg vector."""
         # The tilted legs fixture should have a normalized vector.
         npt.assert_almost_equal(
-            np.linalg.norm(self.tilted_legs_horseshoe_vortex.leftLegVector_G),
+            np.linalg.norm(self.tilted_legs_horseshoe_vortex.leftLegVector_GP1),
             1.0,
             decimal=10,
         )
 
         # Back points should be displaced along the tilted direction.
         expected_displacement = (
-            self.tilted_legs_horseshoe_vortex.leftLegVector_G
+            self.tilted_legs_horseshoe_vortex.leftLegVector_GP1
             * self.tilted_legs_horseshoe_vortex.left_right_leg_lengths
         )
-        expected_Blhvp_G_Cg = (
-            self.tilted_legs_horseshoe_vortex.Flhvp_G_Cg + expected_displacement
+        expected_Blhvp_GP1_CgP1 = (
+            self.tilted_legs_horseshoe_vortex.Flhvp_GP1_CgP1 + expected_displacement
         )
 
         npt.assert_array_almost_equal(
-            self.tilted_legs_horseshoe_vortex.Blhvp_G_Cg,
-            expected_Blhvp_G_Cg,
+            self.tilted_legs_horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_Blhvp_GP1_CgP1,
             decimal=10,
         )
 
@@ -347,12 +355,12 @@ class TestHorseshoeVortex(unittest.TestCase):
         # Verify offset was applied correctly.
         expected_offset = np.array([10.0, 5.0, 3.0], dtype=float)
         npt.assert_array_almost_equal(
-            self.offset_horseshoe_vortex.Frhvp_G_Cg,
+            self.offset_horseshoe_vortex.Frhvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.0], dtype=float) + expected_offset,
             decimal=10,
         )
         npt.assert_array_almost_equal(
-            self.offset_horseshoe_vortex.Flhvp_G_Cg,
+            self.offset_horseshoe_vortex.Flhvp_GP1_CgP1,
             np.array([0.0, -0.5, 0.0], dtype=float) + expected_offset,
             decimal=10,
         )
@@ -362,9 +370,9 @@ class TestHorseshoeVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, ZeroDivisionError)):
             _aerodynamics.HorseshoeVortex(
-                Frhvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_G=np.array([0.0, 0.0, 0.0], dtype=float),  # Zero vector
+                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                leftLegVector_GP1=np.array([0.0, 0.0, 0.0], dtype=float),
                 left_right_leg_lengths=20.0,
                 strength=1.0,
             )

@@ -1,9 +1,7 @@
-# REFACTOR: I haven't yet started refactoring this module.
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test the output against an
-expected output. Instead, they test that the methods to create the output don't throw
-any errors.
+Note: Most of the tests in this case do not currently test against an expected
+result. Instead, they test that the functions in output.py don't throw any errors.
 """
 
 import unittest
@@ -41,7 +39,7 @@ class TestOutput(unittest.TestCase):
         )
 
     def test_animate_does_not_throw(self):
-        """This method tests that the animate method does not throw any errors.
+        """This method tests that the animate function does not throw any errors.
 
         :return: None
         """
@@ -57,7 +55,7 @@ class TestOutput(unittest.TestCase):
         )
 
     def test_draw_does_not_throw(self):
-        """This method tests that the draw method does not throw any errors.
+        """This method tests that the draw function does not throw any errors.
 
         :return: None
         """

@@ -10,9 +10,12 @@ This module contains the following functions:
 
 import math
 
+import numpy as np
+
 from . import geometry
 from . import movements
 from . import _parameter_validation
+from . import _transformations
 from . import operating_point as op
 
 
@@ -51,6 +54,40 @@ class SteadyProblem:
         if not isinstance(operating_point, op.OperatingPoint):
             raise TypeError("operating_point must be an OperatingPoint.")
         self.operating_point = operating_point
+
+        # Validate that the first Airplane has Cg_E_CgP1 set to zeros
+        self.airplanes[0].validate_first_airplane_constraints()
+
+        # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the
+        # Panels' positions in the first Airplanes' geometry axes, relative to the
+        # first Airplanes' CG based on their locally defined positions.
+        for airplane_id, airplane in enumerate(self.airplanes):
+            if airplane_id == 0:
+                # First Airplane: use identity transformation (G_Cg == GP1_CgP1)
+                T_pas_G_Cg_to_GP1_CgP1 = np.eye(4, dtype=float)
+            else:
+                # Other Airplanes: compute the passive transformation matrix from
+                # this Airplane's local geometry axes, relative to its CG,
+                # to the first Airplanes' geometry axes, relative to the first
+                # Airplane's CG.
+                T_pas_G_Cg_to_GP1_CgP1 = airplane.compute_T_pas_G_Cg_to_GP1_CgP1(
+                    first_airplane=self.airplanes[0]
+                )
+
+            for wing in airplane.wings:
+                for panel in np.ravel(wing.panels):
+                    panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                        T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, has_point=True
+                    )
+                    panel.Flpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                        T_pas_G_Cg_to_GP1_CgP1, panel.Flpp_G_Cg, has_point=True
+                    )
+                    panel.Blpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                        T_pas_G_Cg_to_GP1_CgP1, panel.Blpp_G_Cg, has_point=True
+                    )
+                    panel.Brpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                        T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
+                    )
 
 
 class UnsteadyProblem:
@@ -121,24 +158,24 @@ class UnsteadyProblem:
         # UnsteadyProblem's Movement is static.
         self.finalForces_W = []
         self.finalForceCoefficients_W = []
-        self.finalMoments_W_Cg = []
-        self.finalMomentCoefficients_W_Cg = []
+        self.finalMoments_W_CgP1 = []
+        self.finalMomentCoefficients_W_CgP1 = []
 
         # Initialize empty lists to hold the final cycle-averaged loads and load
         # coefficients each Airplane experiences. These will only be populated if
         # this UnsteadyProblem's Movement is cyclic.
         self.finalMeanForces_W = []
         self.finalMeanForceCoefficients_W = []
-        self.finalMeanMoments_W_Cg = []
-        self.finalMeanMomentCoefficients_W_Cg = []
+        self.finalMeanMoments_W_CgP1 = []
+        self.finalMeanMomentCoefficients_W_CgP1 = []
 
         # Initialize empty lists to hold the final cycle-root-mean-squared loads and
         # load coefficients each airplane object experiences. These will only be
         # populated for variable geometry problems.
         self.finalRmsForces_W = []
         self.finalRmsForceCoefficients_W = []
-        self.finalRmsMoments_W_Cg = []
-        self.finalRmsMomentCoefficients_W_Cg = []
+        self.finalRmsMoments_W_CgP1 = []
+        self.finalRmsMomentCoefficients_W_CgP1 = []
 
         # Initialize an empty list to hold the SteadyProblems.
         self.steady_problems = []

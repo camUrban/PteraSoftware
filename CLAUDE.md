@@ -105,6 +105,12 @@ This pattern:
 3. **VLM Computation** - Matrix-based influence coefficient methods
 4. **Post-processing** - Force/moment calculation and visualization
 
+**Formation Flight Coordinate Handling:**
+- For multi-Airplane simulations, all solver computations use the first Airplane's geometry axes and CG (GP1_CgP1)
+- Panels store both local (G_Cg) and formation (GP1_CgP1) coordinates; vortices only use GP1_CgP1
+- Coordinate transformations from local to first-Airplane-axes occur in Problem.__init__()
+- Forces and moments are calculated in GP1_CgP1, then transformed to wind axes for output
+
 ### Key Dependencies
 - **NumPy/SciPy**: Core numerical computations
 - **Numba**: JIT compilation for performance-critical loops
@@ -309,26 +315,29 @@ There are four useful combinations of axes, points, and frames. Variables are de
 
 - E: Earth
 - B: body
-- P: airplane
+- P: Airplane
+- P1: the first Airplane
 - W: wind
 - Pr: problem
-- G: geometry
+- G: geometry axes
+- GP1: the first Airplane's geometry axes
 - Gs: geometry axes (after accounting for symmetry)
-- Wn: wing
-- Wcs: wing cross section
-- Wcsp: wing cross section parent
-- A: airfoil
+- Wn: Wing
+- Wcs: WingCrossSection
+- Wcsp: WingCrossSection parent
+- A: Airfoil
 - Cg: CG
+- CgP1: the first Airplane's CG
 - Cgs: CG (after accounting for symmetry)
 - Ler: leading edge root point
 - Lp: leading point
-- Lpp: leading point parent  
-- ...pp...: panel point (Fr=front right, Fl=front left, Bl=back left, Br=back right, C=collocation)
-- ...bhvp...: bound horseshoe vortex point  
-- ...brvp...: bound ring vortex point  
-- ...wrvp...: wake ring vortex point  
-- ...whvp...: wake horseshoe vortex point  
-- ...lvp...: line vortex point (S=start, E=end, C=center)
+- Lpp: leading point parent
+- ...pp...: Panel point (Fr=front right, Fl=front left, Bl=back left, Br=back right, C=collocation)
+- ...bhvp...: bound HorseshoeVortex point
+- ...brvp...: bound RingVortex point
+- ...wrvp...: wake RingVortex point
+- ...whvp...: wake HorseshoeVortex point
+- ...lvp...: LineVortex point (S=start, E=end, C=center)
 
 **Reference Frames:**
 - E: Earth reference frame (inertial)

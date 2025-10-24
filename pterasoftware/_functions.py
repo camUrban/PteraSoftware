@@ -131,38 +131,40 @@ def calculate_streamlines(
 
     :return: None
     """
-    # Initialize a ndarray to hold this solver's grid of streamline points (in
-    # geometry axes, relative to the CG).
-    solver.gridStreamlinePoints_G_Cg = np.expand_dims(
-        solver.stackSeedPoints_G_Cg, axis=0
+    # Initialize a ndarray to hold this solver's grid of streamline points (in the
+    # first Airplane's geometry axes, relative to the first Airplane's CG).
+    solver.gridStreamlinePoints_GP1_CgP1 = np.expand_dims(
+        solver.stackSeedPoints_GP1_CgP1, axis=0
     )
 
     # Iterate through the streamline time steps.
     for step in range(num_steps):
-        # Get the previous row of streamline points (in geometry axes, relative to
-        # the CG).
-        lastRowStackStreamlinePoints_G_Cg = solver.gridStreamlinePoints_G_Cg[-1, :, :]
+        # Get the previous row of streamline points (in the first Airplane's geometry
+        # axes, relative to the first Airplane's CG).
+        lastRowStackStreamlinePoints_GP1_CgP1 = solver.gridStreamlinePoints_GP1_CgP1[
+            -1, :, :
+        ]
 
-        # Finds the fluid velocity (in geometry axes, observed from the Earth frame)
-        # at each streamline point in the previous row due to the freestream velocity
-        # and the induced velocity from the vortices.
-        stackVLastRowStreamlinePoints_G__E = solver.calculate_solution_velocity(
-            stackP_G_Cg=lastRowStackStreamlinePoints_G_Cg
+        # Finds the fluid velocity (in the first Airplane's geometry axes, observed
+        # from the Earth frame) at each streamline point in the previous row due to
+        # the freestream velocity and the induced velocity from the vortices.
+        stackVLastRowStreamlinePoints_GP1__E = solver.calculate_solution_velocity(
+            stackP_GP1_CgP1=lastRowStackStreamlinePoints_GP1_CgP1
         )
 
-        # Interpolate to find the new row of streamline points (in geometry axes,
-        # relative to the CG).
-        newRowStackStreamlinePoints_G_Cg = (
-            lastRowStackStreamlinePoints_G_Cg
-            + stackVLastRowStreamlinePoints_G__E * delta_time
+        # Interpolate to find the new row of streamline points (in the first
+        # Airplane's geometry axes, relative to the first Airplane's CG).
+        newRowStackStreamlinePoints_GP1_CgP1 = (
+            lastRowStackStreamlinePoints_GP1_CgP1
+            + stackVLastRowStreamlinePoints_GP1__E * delta_time
         )
 
         # Stack the new row of streamline points to the bottom of the ndarray of
         # streamline points.
-        solver.gridStreamlinePoints_G_Cg = np.vstack(
+        solver.gridStreamlinePoints_GP1_CgP1 = np.vstack(
             (
-                solver.gridStreamlinePoints_G_Cg,
-                np.expand_dims(newRowStackStreamlinePoints_G_Cg, axis=0),
+                solver.gridStreamlinePoints_GP1_CgP1,
+                np.expand_dims(newRowStackStreamlinePoints_GP1_CgP1, axis=0),
             )
         )
 
@@ -198,33 +200,34 @@ def process_solver_loads(
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
-    stackPanelForces_G,
-    stackPanelMoments_G_Cg,
+    stackPanelForces_GP1,
+    stackPanelMoments_GP1_CgP1,
 ):
-    """This function uses the forces (in geometry axes) and moments (in geometry
-    axes, relative to the CG) a solver has found on its Panels to find the net loads
-    and associated coefficients for each Airplane.
+    """This function uses the forces (in the first Airplane's geometry axes) and
+    moments (in the first Airplane's geometry axes, relative to the first Airplane's
+    CG) a solver has found on its Panels to find the net loads and associated
+    coefficients for each Airplane.
 
     :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
     SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
 
         This is the solver whose loads will be processed.
 
-    :param stackPanelForces_G: (N,3) array-like of numbers
+    :param stackPanelForces_GP1: (N,3) array-like of numbers
 
-        This is an array of the forces (in geometry axes) on each of the solver's
-        Panels. Can be any array-like object (tuple, list, or ndarray) with size (N,
-        3) that has numeric elements (int or float). N must be equal to the solver's
-        number of Panels. Values are converted to floats internally. The units are
-        Newtons.
-
-    :param stackPanelMoments_G_Cg: (N,3) array-like of numbers
-
-        This is an array of the moments (in geometry axes, relative to the CG) on
+        This is an array of the forces (in the first Airplane's geometry axes) on
         each of the solver's Panels. Can be any array-like object (tuple, list,
-        or ndarray) with size (N, 3) that has numeric elements (int or float). N must
+        or ndarray) with size (N,3) that has numeric elements (int or float). N must
         be equal to the solver's number of Panels. Values are converted to floats
-        internally. The units are Newton-meters.
+        internally. The units are Newtons.
+
+    :param stackPanelMoments_GP1_CgP1: (N,3) array-like of numbers
+
+        This is an array of the moments (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG) on each of the solver's Panels. Can be
+        any array-like object (tuple, list, or ndarray) with size (N,3) that has
+        numeric elements (int or float). N must be equal to the solver's number of
+        Panels. Values are converted to floats internally. The units are Newton-meters.
 
     :return: None
     """
@@ -248,51 +251,51 @@ def process_solver_loads(
             f"solver must be a SteadyHorseshoeVortexLatticeMethodSolver, a SteadyRingVortexLatticeMethodSolver, or an UnsteadyRingVortexLatticeMethodSolver."
         )
 
-    stackPanelForces_G = (
+    stackPanelForces_GP1 = (
         _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
-            stackPanelForces_G, "stackPanelForces_G"
+            stackPanelForces_GP1, "stackPanelForces_GP1"
         )
     )
-    if stackPanelForces_G.shape[0] != solver.num_panels:
+    if stackPanelForces_GP1.shape[0] != solver.num_panels:
         raise ValueError(
-            f"The first dimension of stackPanelForces_G must equal solver.num_panels ({solver.num_panels}), got {stackPanelForces_G.shape[0]}."
+            f"The first dimension of stackPanelForces_GP1 must equal solver.num_panels ({solver.num_panels}), got {stackPanelForces_GP1.shape[0]}."
         )
 
-    stackPanelMoments_G_Cg = (
+    stackPanelMoments_GP1_CgP1 = (
         _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
-            stackPanelMoments_G_Cg, "stackPanelMoments_G_Cg"
+            stackPanelMoments_GP1_CgP1, "stackPanelMoments_GP1_CgP1"
         )
     )
-    if stackPanelMoments_G_Cg.shape[0] != solver.num_panels:
+    if stackPanelMoments_GP1_CgP1.shape[0] != solver.num_panels:
         raise ValueError(
-            f"The first dimension of stackPanelMoments_G_Cg must equal solver.num_panels ({solver.num_panels}), got {stackPanelMoments_G_Cg.shape[0]}."
+            f"The first dimension of stackPanelMoments_GP1_CgP1 must equal solver.num_panels ({solver.num_panels}), got {stackPanelMoments_GP1_CgP1.shape[0]}."
         )
 
     qInf__E = this_operating_point.qInf__E
-    T_pas_G_Cg_to_W_Cg = this_operating_point.T_pas_G_Cg_to_W_Cg
+    T_pas_GP1_CgP1_to_W_CgP1 = this_operating_point.T_pas_GP1_CgP1_to_W_CgP1
 
     # Iterate through this solver's Panels.
     panel: _panel.Panel
     for panel_num, panel in enumerate(solver.panels):
-        theseForces_G = stackPanelForces_G[panel_num, :]
-        theseMoments_G_Cg = stackPanelMoments_G_Cg[panel_num, :]
+        theseForces_GP1 = stackPanelForces_GP1[panel_num, :]
+        theseMoments_GP1_CgP1 = stackPanelMoments_GP1_CgP1[panel_num, :]
 
         theseForces_W = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg, theseForces_G, has_point=False
+            T_pas_GP1_CgP1_to_W_CgP1, theseForces_GP1, has_point=False
         )
-        theseMoments_W_Cg = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg, theseMoments_G_Cg, has_point=True
+        theseMoments_W_CgP1 = _transformations.apply_T_to_vectors(
+            T_pas_GP1_CgP1_to_W_CgP1, theseMoments_GP1_CgP1, has_point=True
         )
 
         # Update this Panel's loads.
-        panel.forces_G = theseForces_G
-        panel.moments_G_Cg = theseMoments_G_Cg
+        panel.forces_GP1 = theseForces_GP1
+        panel.moments_GP1_CgP1 = theseMoments_GP1_CgP1
         panel.forces_W = theseForces_W
-        panel.moments_W_Cg = theseMoments_W_Cg
+        panel.moments_W_CgP1 = theseMoments_W_CgP1
 
     # Initialize ndarrays to hold each Airplane's loads.
-    stackAirplaneForces_G = np.zeros((solver.num_airplanes, 3), dtype=float)
-    stackAirplaneMoments_G_Cg = np.zeros((solver.num_airplanes, 3), dtype=float)
+    stackAirplaneForces_GP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
+    stackAirplaneMoments_GP1_CgP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
 
     # Iterate through each Airplane and find the total loads on each by summing up
     # the contributions from its Panels.
@@ -302,19 +305,19 @@ def process_solver_loads(
         for wing in airplane.wings:
             panel: _panel.Panel
             for panel in np.ravel(wing.panels):
-                stackAirplaneForces_G[airplane_num, :] += panel.forces_G
-                stackAirplaneMoments_G_Cg[airplane_num, :] += panel.moments_G_Cg
+                stackAirplaneForces_GP1[airplane_num, :] += panel.forces_GP1
+                stackAirplaneMoments_GP1_CgP1[airplane_num, :] += panel.moments_GP1_CgP1
 
     airplane: geometry.airplane.Airplane
     for airplane_num, airplane in enumerate(these_airplanes):
         airplane.forces_W = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg,
-            stackAirplaneForces_G[airplane_num],
+            T_pas_GP1_CgP1_to_W_CgP1,
+            stackAirplaneForces_GP1[airplane_num],
             has_point=False,
         )
-        airplane.moments_W_Cg = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_W_Cg,
-            stackAirplaneMoments_G_Cg[airplane_num],
+        airplane.moments_W_CgP1 = _transformations.apply_T_to_vectors(
+            T_pas_GP1_CgP1_to_W_CgP1,
+            stackAirplaneMoments_GP1_CgP1[airplane_num],
             has_point=True,
         )
 
@@ -325,13 +328,21 @@ def process_solver_loads(
         cFY_W = airplane.forces_W[1] / qInf__E / airplane.s_ref
         cFZ_W = airplane.forces_W[2] / qInf__E / airplane.s_ref
 
-        cMX_W_Cg = airplane.moments_W_Cg[0] / qInf__E / airplane.s_ref / airplane.b_ref
-        cMY_W_Cg = airplane.moments_W_Cg[1] / qInf__E / airplane.s_ref / airplane.c_ref
-        cMZ_W_Cg = airplane.moments_W_Cg[2] / qInf__E / airplane.s_ref / airplane.b_ref
+        cMX_W_CgP1 = (
+            airplane.moments_W_CgP1[0] / qInf__E / airplane.s_ref / airplane.b_ref
+        )
+        cMY_W_CgP1 = (
+            airplane.moments_W_CgP1[1] / qInf__E / airplane.s_ref / airplane.c_ref
+        )
+        cMZ_W_CgP1 = (
+            airplane.moments_W_CgP1[2] / qInf__E / airplane.s_ref / airplane.b_ref
+        )
 
         # Populate this Airplane's load coefficients.
         airplane.forceCoefficients_W = np.array([cFX_W, cFY_W, cFZ_W])
-        airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
+        airplane.momentCoefficients_W_CgP1 = np.array(
+            [cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1]
+        )
 
 
 # TEST: Consider adding unit tests for this function.
@@ -365,44 +376,46 @@ def update_ring_vortex_solvers_panel_attributes(
     :return: None
     """
     ring_vortex_solver.panels[global_panel_position] = panel
-    ring_vortex_solver.stackUnitNormals_G[global_panel_position, :] = panel.unitNormal_G
+    ring_vortex_solver.stackUnitNormals_GP1[global_panel_position, :] = (
+        panel.unitNormal_GP1
+    )
     ring_vortex_solver.panel_areas[global_panel_position] = panel.area
-    ring_vortex_solver.stackCpp_G_Cg[global_panel_position, :] = panel.Cpp_G_Cg
-    ring_vortex_solver.stackBrbrvp_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.Slvp_G_Cg
+    ring_vortex_solver.stackCpp_GP1_CgP1[global_panel_position, :] = panel.Cpp_GP1_CgP1
+    ring_vortex_solver.stackBrbrvp_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.Slvp_GP1_CgP1
     )
-    ring_vortex_solver.stackFrbrvp_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.Elvp_G_Cg
+    ring_vortex_solver.stackFrbrvp_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.Elvp_GP1_CgP1
     )
-    ring_vortex_solver.stackFlbrvp_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.Slvp_G_Cg
+    ring_vortex_solver.stackFlbrvp_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.Slvp_GP1_CgP1
     )
-    ring_vortex_solver.stackBlbrvp_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.Elvp_G_Cg
+    ring_vortex_solver.stackBlbrvp_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.Elvp_GP1_CgP1
     )
-    ring_vortex_solver.stackCblvpr_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.Clvp_G_Cg
+    ring_vortex_solver.stackCblvpr_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.Clvp_GP1_CgP1
     )
-    ring_vortex_solver.stackRbrv_G[global_panel_position, :] = (
-        panel.ring_vortex.right_leg.vector_G
+    ring_vortex_solver.stackRbrv_GP1[global_panel_position, :] = (
+        panel.ring_vortex.right_leg.vector_GP1
     )
-    ring_vortex_solver.stackCblvpf_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.front_leg.Clvp_G_Cg
+    ring_vortex_solver.stackCblvpf_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.Clvp_GP1_CgP1
     )
-    ring_vortex_solver.stackFbrv_G[global_panel_position, :] = (
-        panel.ring_vortex.front_leg.vector_G
+    ring_vortex_solver.stackFbrv_GP1[global_panel_position, :] = (
+        panel.ring_vortex.front_leg.vector_GP1
     )
-    ring_vortex_solver.stackCblvpl_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.Clvp_G_Cg
+    ring_vortex_solver.stackCblvpl_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.Clvp_GP1_CgP1
     )
-    ring_vortex_solver.stackLbrv_G[global_panel_position, :] = (
-        panel.ring_vortex.left_leg.vector_G
+    ring_vortex_solver.stackLbrv_GP1[global_panel_position, :] = (
+        panel.ring_vortex.left_leg.vector_GP1
     )
-    ring_vortex_solver.stackCblvpb_G_Cg[global_panel_position, :] = (
-        panel.ring_vortex.back_leg.Clvp_G_Cg
+    ring_vortex_solver.stackCblvpb_GP1_CgP1[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.Clvp_GP1_CgP1
     )
-    ring_vortex_solver.stackBbrv_G[global_panel_position, :] = (
-        panel.ring_vortex.back_leg.vector_G
+    ring_vortex_solver.stackBbrv_GP1[global_panel_position, :] = (
+        panel.ring_vortex.back_leg.vector_GP1
     )
     ring_vortex_solver.panel_is_trailing_edge[global_panel_position] = (
         panel.is_trailing_edge
@@ -414,13 +427,13 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
 
     # Check if this Panel is on the trailing edge. If so, calculate its streamline
-    # seed point (in geometry axes, relative to the CG) and add it to the solver's
-    # ndarray of streamline seed points.
+    # seed point (in the first Airplane's geometry axes, relative to the first
+    # Airplane's CG) and add it to the solver's ndarray of streamline seed points.
     if panel.is_trailing_edge:
-        ring_vortex_solver.stackSeedPoints_G_Cg = np.vstack(
+        ring_vortex_solver.stackSeedPoints_GP1_CgP1 = np.vstack(
             (
-                ring_vortex_solver.stackSeedPoints_G_Cg,
-                panel.Blpp_G_Cg + 0.5 * (panel.Brpp_G_Cg - panel.Blpp_G_Cg),
+                ring_vortex_solver.stackSeedPoints_GP1_CgP1,
+                panel.Blpp_GP1_CgP1 + 0.5 * (panel.Brpp_GP1_CgP1 - panel.Blpp_GP1_CgP1),
             )
         )
 
@@ -434,8 +447,8 @@ def calculate_steady_freestream_wing_influences(
 ):
     """This function finds the vector of freestream-wing influence coefficients
     associated with this solver. These coefficients are the normal velocity (in
-    geometry axes, observed from the Earth frame) at every collocation point due
-    solely to the freestream.
+    the first Airplane's geometry axes, observed from the Earth frame) at every
+    collocation point due solely to the freestream.
 
     :param steady_solver: steady_horseshoe_vortex_lattice_method
     .SteadyHorseshoeVortexLatticeMethodSolver or
@@ -450,8 +463,8 @@ def calculate_steady_freestream_wing_influences(
     # freestream-wing influence coefficients.
     steady_solver.stackFreestreamWingInfluences__E = np.einsum(
         "ij,j->i",
-        steady_solver.stackUnitNormals_G,
-        steady_solver.vInf_G__E,
+        steady_solver.stackUnitNormals_GP1,
+        steady_solver.vInf_GP1__E,
     )
 
 

@@ -292,14 +292,14 @@ class TestUnsteadyProblem(unittest.TestCase):
         )
         self.assertEqual(len(self.basic_unsteady_problem.finalForceCoefficients_W), 0)
 
-        self.assertIsInstance(self.basic_unsteady_problem.finalMoments_W_Cg, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalMoments_W_Cg), 0)
+        self.assertIsInstance(self.basic_unsteady_problem.finalMoments_W_CgP1, list)
+        self.assertEqual(len(self.basic_unsteady_problem.finalMoments_W_CgP1), 0)
 
         self.assertIsInstance(
-            self.basic_unsteady_problem.finalMomentCoefficients_W_Cg, list
+            self.basic_unsteady_problem.finalMomentCoefficients_W_CgP1, list
         )
         self.assertEqual(
-            len(self.basic_unsteady_problem.finalMomentCoefficients_W_Cg), 0
+            len(self.basic_unsteady_problem.finalMomentCoefficients_W_CgP1), 0
         )
 
         self.assertIsInstance(self.basic_unsteady_problem.finalMeanForces_W, list)
@@ -312,14 +312,14 @@ class TestUnsteadyProblem(unittest.TestCase):
             len(self.basic_unsteady_problem.finalMeanForceCoefficients_W), 0
         )
 
-        self.assertIsInstance(self.basic_unsteady_problem.finalMeanMoments_W_Cg, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalMeanMoments_W_Cg), 0)
+        self.assertIsInstance(self.basic_unsteady_problem.finalMeanMoments_W_CgP1, list)
+        self.assertEqual(len(self.basic_unsteady_problem.finalMeanMoments_W_CgP1), 0)
 
         self.assertIsInstance(
-            self.basic_unsteady_problem.finalMeanMomentCoefficients_W_Cg, list
+            self.basic_unsteady_problem.finalMeanMomentCoefficients_W_CgP1, list
         )
         self.assertEqual(
-            len(self.basic_unsteady_problem.finalMeanMomentCoefficients_W_Cg), 0
+            len(self.basic_unsteady_problem.finalMeanMomentCoefficients_W_CgP1), 0
         )
 
         self.assertIsInstance(self.basic_unsteady_problem.finalRmsForces_W, list)
@@ -332,14 +332,14 @@ class TestUnsteadyProblem(unittest.TestCase):
             len(self.basic_unsteady_problem.finalRmsForceCoefficients_W), 0
         )
 
-        self.assertIsInstance(self.basic_unsteady_problem.finalRmsMoments_W_Cg, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalRmsMoments_W_Cg), 0)
+        self.assertIsInstance(self.basic_unsteady_problem.finalRmsMoments_W_CgP1, list)
+        self.assertEqual(len(self.basic_unsteady_problem.finalRmsMoments_W_CgP1), 0)
 
         self.assertIsInstance(
-            self.basic_unsteady_problem.finalRmsMomentCoefficients_W_Cg, list
+            self.basic_unsteady_problem.finalRmsMomentCoefficients_W_CgP1, list
         )
         self.assertEqual(
-            len(self.basic_unsteady_problem.finalRmsMomentCoefficients_W_Cg), 0
+            len(self.basic_unsteady_problem.finalRmsMomentCoefficients_W_CgP1), 0
         )
 
     def test_steady_problems_list_initialization(self):

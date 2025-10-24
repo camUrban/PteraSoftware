@@ -68,7 +68,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_m_calculated = (
             self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
                 0
-            ].momentCoefficients_W_Cg[1]
+            ].momentCoefficients_W_CgP1[1]
         )
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
@@ -117,7 +117,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         c_m_expected = -0.336
         c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
-        ].momentCoefficients_W_Cg[
+        ].momentCoefficients_W_CgP1[
             1
         ]
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)

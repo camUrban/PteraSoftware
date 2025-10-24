@@ -261,21 +261,22 @@ def draw(
     if show_streamlines:
         # Iterate through the spanwise positions in the solver's streamline point
         # ndarray.
-        for spanwise_position in range(solver.gridStreamlinePoints_G_Cg.shape[1]):
-            # Get the ndarray of streamline points at this spanwise position.
-            stackStreamlinePoints_G_Cg = solver.gridStreamlinePoints_G_Cg[
+        for spanwise_position in range(solver.gridStreamlinePoints_GP1_CgP1.shape[1]):
+            # Get the ndarray of streamline points at this spanwise position (in the
+            # first Airplane's geometry axes, relative to the first Airplane's CG).
+            stackStreamlinePoints_GP1_CgP1 = solver.gridStreamlinePoints_GP1_CgP1[
                 :, spanwise_position, :
             ]
 
             # Iterate through the streamline points at this spanwise position.
-            for point_index in range(stackStreamlinePoints_G_Cg.shape[0]):
+            for point_index in range(stackStreamlinePoints_GP1_CgP1.shape[0]):
 
                 # Skip the first point because it has no previous point with which
                 # to make a line.
                 if point_index != 0:
                     # Get the current and last point.
-                    point = stackStreamlinePoints_G_Cg[point_index, :]
-                    last_point = stackStreamlinePoints_G_Cg[point_index - 1, :]
+                    point = stackStreamlinePoints_GP1_CgP1[point_index, :]
+                    last_point = stackStreamlinePoints_GP1_CgP1[point_index - 1, :]
 
                     # Add a line to make this segment of the streamline.
                     plotter.add_mesh(
@@ -691,8 +692,8 @@ def plot_results_versus_time(
     forceCoefficients_W = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
-    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    momentCoefficients_W_Cg = np.zeros(
+    moments_W_CgP1 = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    momentCoefficients_W_CgP1 = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
 
@@ -711,9 +712,9 @@ def plot_results_versus_time(
             forceCoefficients_W[airplane_id, :, results_step] = (
                 airplane.forceCoefficients_W
             )
-            moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
-            momentCoefficients_W_Cg[airplane_id, :, results_step] = (
-                airplane.momentCoefficients_W_Cg
+            moments_W_CgP1[airplane_id, :, results_step] = airplane.moments_W_CgP1
+            momentCoefficients_W_CgP1[airplane_id, :, results_step] = (
+                airplane.momentCoefficients_W_CgP1
             )
 
         results_step += 1
@@ -832,7 +833,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_Cg[airplane_id, 0],
+            moments_W_CgP1[airplane_id, 0],
             label="Roll",
             color=_roll_color,
             marker=".",
@@ -841,7 +842,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_Cg[airplane_id, 1],
+            moments_W_CgP1[airplane_id, 1],
             label="Pitch",
             color=_pitch_color,
             marker=".",
@@ -850,7 +851,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_Cg[airplane_id, 2],
+            moments_W_CgP1[airplane_id, 2],
             label="Yaw",
             color=_yaw_color,
             marker=".",
@@ -859,7 +860,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_Cg[airplane_id, 0],
+            momentCoefficients_W_CgP1[airplane_id, 0],
             label="Roll Coefficient",
             color=_roll_color,
             marker=".",
@@ -868,7 +869,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_Cg[airplane_id, 1],
+            momentCoefficients_W_CgP1[airplane_id, 1],
             label="Pitch Coefficient",
             color=_pitch_color,
             marker=".",
@@ -877,7 +878,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_Cg[airplane_id, 2],
+            momentCoefficients_W_CgP1[airplane_id, 2],
             label="Yaw Coefficient",
             color=_yaw_color,
             marker=".",
@@ -1040,9 +1041,9 @@ def print_results(
         title3 = None
         title4 = None
         these_forces_W = None
-        these_moments_W_Cg = None
+        these_moments_W_CgP1 = None
         these_forceCoefficients_W = None
-        these_momentCoefficients_W_Cg = None
+        these_momentCoefficients_W_CgP1 = None
 
         match solver_type:
             case "steady":
@@ -1051,23 +1052,23 @@ def print_results(
                 title3 = f"{pad}Force Coefficients (in wind axes):"
                 title4 = f"{pad}Moment Coefficients (in wind axes, relative to the CG):"
                 these_forces_W = airplane.forces_W
-                these_moments_W_Cg = airplane.moments_W_Cg
+                these_moments_W_CgP1 = airplane.moments_W_CgP1
                 these_forceCoefficients_W = airplane.forceCoefficients_W
-                these_momentCoefficients_W_Cg = airplane.momentCoefficients_W_Cg
+                these_momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
             case "static geometry unsteady":
                 title1 = f"{pad}Final Forces (in wind axes):"
                 title2 = f"{pad}Final Moments (in wind axes, relative to the CG):"
                 title3 = f"{pad}Final Force Coefficients (in wind axes):"
                 title4 = f"{pad}Final Moment Coefficients (in wind axes, relative to the CG):"
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
-                these_moments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
+                these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
                     airplane_num
                 ]
                 these_forceCoefficients_W = (
                     solver.unsteady_problem.finalForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
+                these_momentCoefficients_W_CgP1 = (
+                    solver.unsteady_problem.finalMomentCoefficients_W_CgP1[airplane_num]
                 )
             case "variable geometry unsteady":
                 title1 = f"{pad}Final Cycle-Averaged Forces (in wind axes):"
@@ -1075,14 +1076,14 @@ def print_results(
                 title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in wind axes):"
                 title4 = f"{pad}Final Cycle-Averaged Moment Coefficients (in wind axes, relative to the CG):"
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
-                these_moments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
+                these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
                     airplane_num
                 ]
                 these_forceCoefficients_W = (
                     solver.unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg[
+                these_momentCoefficients_W_CgP1 = (
+                    solver.unsteady_problem.finalMeanMomentCoefficients_W_CgP1[
                         airplane_num
                     ]
                 )
@@ -1093,15 +1094,15 @@ def print_results(
             these_forces_W[0],
             these_forces_W[1],
             these_forces_W[2],
-            these_moments_W_Cg[0],
-            these_moments_W_Cg[1],
-            these_moments_W_Cg[2],
+            these_moments_W_CgP1[0],
+            these_moments_W_CgP1[1],
+            these_moments_W_CgP1[2],
             these_forceCoefficients_W[0],
             these_forceCoefficients_W[1],
             these_forceCoefficients_W[2],
-            these_momentCoefficients_W_Cg[0],
-            these_momentCoefficients_W_Cg[1],
-            these_momentCoefficients_W_Cg[2],
+            these_momentCoefficients_W_CgP1[0],
+            these_momentCoefficients_W_CgP1[1],
+            these_momentCoefficients_W_CgP1[2],
         ]
         col2 = [str(np.round(val, 3)) for val in col2]
         col2 = [
@@ -1114,15 +1115,15 @@ def print_results(
             -these_forces_W[0],
             these_forces_W[1],
             -these_forces_W[2],
-            these_moments_W_Cg[0],
-            these_moments_W_Cg[1],
-            these_moments_W_Cg[2],
+            these_moments_W_CgP1[0],
+            these_moments_W_CgP1[1],
+            these_moments_W_CgP1[2],
             -these_forceCoefficients_W[0],
             these_forceCoefficients_W[1],
             -these_forceCoefficients_W[2],
-            these_momentCoefficients_W_Cg[0],
-            these_momentCoefficients_W_Cg[1],
-            these_momentCoefficients_W_Cg[2],
+            these_momentCoefficients_W_CgP1[0],
+            these_momentCoefficients_W_CgP1[1],
+            these_momentCoefficients_W_CgP1[2],
         ]
         col4 = [str(np.round(val, 3)) for val in col4]
         col4 = [
@@ -1179,14 +1180,14 @@ def _get_panel_surfaces(
             # Unravel this Wing's ndarray of Panels iterate through it.
             panels = np.ravel(wing.panels)
             for panel in panels:
-                # Arrange this Panel's vertices and faces into ndarrays inn the
+                # Arrange this Panel's vertices and faces into ndarrays in the
                 # proper form to represent PolyData surfaces.
                 panel_vertices_to_add = np.vstack(
                     (
-                        panel.Flpp_G_Cg,
-                        panel.Frpp_G_Cg,
-                        panel.Brpp_G_Cg,
-                        panel.Blpp_G_Cg,
+                        panel.Flpp_GP1_CgP1,
+                        panel.Frpp_GP1_CgP1,
+                        panel.Brpp_GP1_CgP1,
+                        panel.Blpp_GP1_CgP1,
                     )
                 )
                 panel_face_to_add = np.array(
@@ -1234,27 +1235,27 @@ def _get_wake_ring_vortex_surfaces(
         This is the PolyData representation of the wake RingVortices.
     """
     num_wake_ring_vortices = solver.list_num_wake_vortices[step]
-    stackFrwrvp_G_Cg = solver.listStackFrwrvp_G_Cg[step]
-    stackFlwrvp_G_Cg = solver.listStackFlwrvp_G_Cg[step]
-    stackBlwrvp_G_Cg = solver.listStackBlwrvp_G_Cg[step]
-    stackBrwrvp_G_Cg = solver.listStackBrwrvp_G_Cg[step]
+    stackFrwrvp_GP1_CgP1 = solver.listStackFrwrvp_GP1_CgP1[step]
+    stackFlwrvp_GP1_CgP1 = solver.listStackFlwrvp_GP1_CgP1[step]
+    stackBlwrvp_GP1_CgP1 = solver.listStackBlwrvp_GP1_CgP1[step]
+    stackBrwrvp_GP1_CgP1 = solver.listStackBrwrvp_GP1_CgP1[step]
 
     # Initialize empty ndarrays to hold each wake RingVortex's vertices and face.
     wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
     wake_ring_vortex_faces = np.zeros(0, dtype=int)
 
     for wake_ring_vortex_num in range(num_wake_ring_vortices):
-        Frwrvp_G_Cg = stackFrwrvp_G_Cg[wake_ring_vortex_num]
-        Flwrvp_G_Cg = stackFlwrvp_G_Cg[wake_ring_vortex_num]
-        Blwrvp_G_Cg = stackBlwrvp_G_Cg[wake_ring_vortex_num]
-        Brwrvp_G_Cg = stackBrwrvp_G_Cg[wake_ring_vortex_num]
+        Frwrvp_GP1_CgP1 = stackFrwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Flwrvp_GP1_CgP1 = stackFlwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Blwrvp_GP1_CgP1 = stackBlwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Brwrvp_GP1_CgP1 = stackBrwrvp_GP1_CgP1[wake_ring_vortex_num]
 
         wake_ring_vortex_vertices_to_add = np.vstack(
             (
-                Flwrvp_G_Cg,
-                Frwrvp_G_Cg,
-                Brwrvp_G_Cg,
-                Blwrvp_G_Cg,
+                Flwrvp_GP1_CgP1,
+                Frwrvp_GP1_CgP1,
+                Brwrvp_GP1_CgP1,
+                Blwrvp_GP1_CgP1,
             )
         )
         wake_ring_vortex_face_to_add = np.array(
@@ -1269,7 +1270,7 @@ def _get_wake_ring_vortex_surfaces(
         )
 
         # Stack this wake RingVortex's vertices and faces to the ndarrays of all wake
-        # RingVortices' vertices and faces..
+        # RingVortices' vertices and faces.
         wake_ring_vortex_vertices = np.vstack(
             (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
         )

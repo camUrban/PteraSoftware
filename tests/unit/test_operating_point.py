@@ -225,9 +225,9 @@ class TestOperatingPoint(unittest.TestCase):
         ratio = op_rho2.qInf__E / op_rho1.qInf__E
         self.assertAlmostEqual(ratio, 2.0, places=10)
 
-    def test_T_pas_G_Cg_to_W_Cg_shape_and_type(self):
-        """Test T_pas_G_Cg_to_W_Cg shape and type."""
-        T = self.basic_op.T_pas_G_Cg_to_W_Cg
+    def test_T_pas_GP1_CgP1_to_W_CgP1_shape_and_type(self):
+        """Test T_pas_GP1_CgP1_to_W_CgP1 shape and type."""
+        T = self.basic_op.T_pas_GP1_CgP1_to_W_CgP1
 
         # Should be 4x4 matrix
         self.assertEqual(T.shape, (4, 4))
@@ -236,9 +236,9 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertIsInstance(T, np.ndarray)
         self.assertEqual(T.dtype, float)
 
-    def test_T_pas_W_Cg_to_G_Cg_shape_and_type(self):
-        """Test T_pas_W_Cg_to_G_Cg shape and type."""
-        T = self.basic_op.T_pas_W_Cg_to_G_Cg
+    def test_T_pas_W_CgP1_to_GP1_CgP1_shape_and_type(self):
+        """Test T_pas_W_CgP1_to_GP1_CgP1 shape and type."""
+        T = self.basic_op.T_pas_W_CgP1_to_GP1_CgP1
 
         # Should be 4x4 matrix
         self.assertEqual(T.shape, (4, 4))
@@ -261,8 +261,8 @@ class TestOperatingPoint(unittest.TestCase):
 
         for op in fixtures:
             with self.subTest(op=op):
-                T_forward = op.T_pas_G_Cg_to_W_Cg
-                T_inverse = op.T_pas_W_Cg_to_G_Cg
+                T_forward = op.T_pas_GP1_CgP1_to_W_CgP1
+                T_inverse = op.T_pas_W_CgP1_to_GP1_CgP1
 
                 # Verify T_forward @ T_inverse = Identity
                 identity = T_forward @ T_inverse
@@ -278,8 +278,8 @@ class TestOperatingPoint(unittest.TestCase):
 
         # With alpha = beta = 0, wind axes align with body axes.
         # The freestream direction in wind axes is [-1, 0, 0].
-        # Transform to geometry axes to verify direction.
-        vInfHat_G__E = op.vInfHat_G__E
+        # Transform to the first Airplane's geometry axes to verify direction.
+        vInfHat_GP1__E = op.vInfHat_GP1__E
 
         # Geometry axes: +x = aft, +y = right, +z = up
         # Body axes: +x = forward, +y = right, +z = down
@@ -288,72 +288,73 @@ class TestOperatingPoint(unittest.TestCase):
         # backward in body axes (forward velocity).
         # In geometry axes, this should be [+1, 0, 0] (forward in geometry is
         # aft direction, opposite of body).
-        npt.assert_allclose(vInfHat_G__E[0], 1.0, atol=1e-14)
-        npt.assert_allclose(vInfHat_G__E[1], 0.0, atol=1e-14)
-        npt.assert_allclose(vInfHat_G__E[2], 0.0, atol=1e-14)
+        npt.assert_allclose(vInfHat_GP1__E[0], 1.0, atol=1e-14)
+        npt.assert_allclose(vInfHat_GP1__E[1], 0.0, atol=1e-14)
+        npt.assert_allclose(vInfHat_GP1__E[2], 0.0, atol=1e-14)
 
     def test_transformation_alpha_only(self):
         """Test transformation with alpha only (beta = 0)."""
         # Positive alpha means the nose points above the direction of travel,
-        # so the relative wind comes from below. In geometry axes (+z = up),
-        # the freestream velocity vector should have a positive z-component.
+        # so the relative wind comes from below. In the first Airplane's geometry
+        # axes (+z = up), the freestream velocity vector should have a positive
+        # z-component.
         op_positive_alpha = ps.operating_point.OperatingPoint(alpha=10.0, beta=0.0)
-        vInf_G__E_pos = op_positive_alpha.vInfHat_G__E
+        vInf_GP1__E_pos = op_positive_alpha.vInfHat_GP1__E
 
         # With positive alpha, the freestream should have a positive z-component
-        # in geometry axes (wind comes from below).
-        self.assertGreater(vInf_G__E_pos[2], 0.0)
+        # in the first Airplane's geometry axes (wind comes from below).
+        self.assertGreater(vInf_GP1__E_pos[2], 0.0)
 
         # The y-component should be approximately zero (no sideslip).
-        npt.assert_allclose(vInf_G__E_pos[1], 0.0, atol=1e-14)
+        npt.assert_allclose(vInf_GP1__E_pos[1], 0.0, atol=1e-14)
 
         # Negative alpha means the nose points below the direction of travel,
         # so the relative wind comes from above.
         op_negative_alpha = ps.operating_point.OperatingPoint(alpha=-10.0, beta=0.0)
-        vInf_G__E_neg = op_negative_alpha.vInfHat_G__E
+        vInf_GP1__E_neg = op_negative_alpha.vInfHat_GP1__E
 
         # With negative alpha, the freestream should have a negative z-component
-        # in geometry axes (wind comes from above).
-        self.assertLess(vInf_G__E_neg[2], 0.0)
+        # in the first Airplane's geometry axes (wind comes from above).
+        self.assertLess(vInf_GP1__E_neg[2], 0.0)
 
         # The y-component should be approximately zero (no sideslip).
-        npt.assert_allclose(vInf_G__E_neg[1], 0.0, atol=1e-14)
+        npt.assert_allclose(vInf_GP1__E_neg[1], 0.0, atol=1e-14)
 
     def test_transformation_beta_only(self):
         """Test transformation with beta only (alpha = 0)."""
         # Positive beta means the nose points to the left of the direction of
         # travel, so the airplane moves to the right of where the nose points.
-        # The relative wind comes from the right. In geometry axes (+y = right),
-        # the freestream velocity vector should have a negative y-component
-        # (pointing left, opposite the airplane's rightward motion).
+        # The relative wind comes from the right. In the first Airplane's geometry
+        # axes (+y = right), the freestream velocity vector should have a negative
+        # y-component (pointing left, opposite the airplane's rightward motion).
         op_positive_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=10.0)
-        vInf_G__E_pos = op_positive_beta.vInfHat_G__E
+        vInf_GP1__E_pos = op_positive_beta.vInfHat_GP1__E
 
         # With positive beta, the freestream should have a negative y-component
-        # in geometry axes (wind from right, pointing left).
-        self.assertLess(vInf_G__E_pos[1], 0.0)
+        # in the first Airplane's geometry axes (wind from right, pointing left).
+        self.assertLess(vInf_GP1__E_pos[1], 0.0)
 
         # The z-component should be approximately zero (no vertical component).
-        npt.assert_allclose(vInf_G__E_pos[2], 0.0, atol=1e-14)
+        npt.assert_allclose(vInf_GP1__E_pos[2], 0.0, atol=1e-14)
 
         # Negative beta means the nose points to the right of the direction of
         # travel, so the airplane moves to the left of where the nose points.
         # The relative wind comes from the left.
         op_negative_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=-10.0)
-        vInf_G__E_neg = op_negative_beta.vInfHat_G__E
+        vInf_GP1__E_neg = op_negative_beta.vInfHat_GP1__E
 
         # With negative beta, the freestream should have a positive y-component
-        # in geometry axes (wind from left, pointing right).
-        self.assertGreater(vInf_G__E_neg[1], 0.0)
+        # in the first Airplane's geometry axes (wind from left, pointing right).
+        self.assertGreater(vInf_GP1__E_neg[1], 0.0)
 
         # The z-component should be approximately zero (no vertical component).
-        npt.assert_allclose(vInf_G__E_neg[2], 0.0, atol=1e-14)
+        npt.assert_allclose(vInf_GP1__E_neg[2], 0.0, atol=1e-14)
 
     def test_transformation_both_alpha_beta(self):
         """Test transformation with both alpha and beta non-zero."""
         # Test that transformations remain valid with both angles present.
         op = self.nonzero_beta_op
-        T = op.T_pas_G_Cg_to_W_Cg
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
 
         # Extract the rotation part (top-left 3x3 submatrix).
         R = T[:3, :3]
@@ -366,7 +367,7 @@ class TestOperatingPoint(unittest.TestCase):
         """Test transformation with boundary angle values."""
         # Test with alpha at boundary
         op_alpha_boundary = ps.operating_point.OperatingPoint(alpha=180.0, beta=0.0)
-        T_alpha = op_alpha_boundary.T_pas_G_Cg_to_W_Cg
+        T_alpha = op_alpha_boundary.T_pas_GP1_CgP1_to_W_CgP1
         R_alpha = T_alpha[:3, :3]
 
         # Verify no numerical issues
@@ -376,7 +377,7 @@ class TestOperatingPoint(unittest.TestCase):
 
         # Test with beta at boundary
         op_beta_boundary = ps.operating_point.OperatingPoint(alpha=0.0, beta=180.0)
-        T_beta = op_beta_boundary.T_pas_G_Cg_to_W_Cg
+        T_beta = op_beta_boundary.T_pas_GP1_CgP1_to_W_CgP1
         R_beta = T_beta[:3, :3]
 
         # Verify no numerical issues
@@ -384,8 +385,8 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertFalse(np.any(np.isnan(T_beta)))
         self.assertFalse(np.any(np.isinf(T_beta)))
 
-    def test_vInfHat_G__E_is_unit_vector(self):
-        """Test that vInfHat_G__E is a unit vector."""
+    def test_vInfHat_GP1__E_is_unit_vector(self):
+        """Test that vInfHat_GP1__E is a unit vector."""
         # Test for all fixtures
         fixtures = [
             self.basic_op,
@@ -397,26 +398,26 @@ class TestOperatingPoint(unittest.TestCase):
 
         for op in fixtures:
             with self.subTest(op=op):
-                vInfHat = op.vInfHat_G__E
-                magnitude = np.linalg.norm(vInfHat)
+                vInfHat_GP1__E = op.vInfHat_GP1__E
+                magnitude = np.linalg.norm(vInfHat_GP1__E)
                 npt.assert_allclose(magnitude, 1.0, atol=1e-14)
 
-    def test_vInfHat_G__E_direction(self):
-        """Test vInfHat_G__E direction consistency."""
-        # For zero alpha and beta, verify direction aligns as expected.
-        # In wind axes, freestream is [-1, 0, 0].
-        # Transform to geometry axes and verify it's a unit vector.
+    def test_vInfHat_GP1__E_direction(self):
+        """Test vInfHat_GP1__E direction consistency."""
+        # For zero alpha and beta, verify direction aligns as expected. In wind axes,
+        # freestream is [-1, 0, 0]. Transform to the first Airplane's geometry axes
+        # and verify it's a unit vector.
         op = self.zero_alpha_beta_op
-        vInfHat = op.vInfHat_G__E
+        vInfHat_GP1__E = op.vInfHat_GP1__E
 
         # Should be a 3-element vector
-        self.assertEqual(len(vInfHat), 3)
+        self.assertEqual(len(vInfHat_GP1__E), 3)
 
         # Should be unit vector
-        npt.assert_allclose(np.linalg.norm(vInfHat), 1.0, atol=1e-14)
+        npt.assert_allclose(np.linalg.norm(vInfHat_GP1__E), 1.0, atol=1e-14)
 
-    def test_vInf_G__E_magnitude(self):
-        """Test that vInf_G__E magnitude equals vCg__E."""
+    def test_vInf_GP1__E_magnitude(self):
+        """Test that vInf_GP1__E magnitude equals vCg__E."""
         # Test for all fixtures
         fixtures = [
             self.basic_op,
@@ -427,12 +428,12 @@ class TestOperatingPoint(unittest.TestCase):
 
         for op in fixtures:
             with self.subTest(op=op):
-                vInf = op.vInf_G__E
-                magnitude = np.linalg.norm(vInf)
+                vInfHat_GP1__E = op.vInf_GP1__E
+                magnitude = np.linalg.norm(vInfHat_GP1__E)
                 npt.assert_allclose(magnitude, op.vCg__E, atol=1e-14)
 
-    def test_vInf_G__E_equals_vInfHat_times_speed(self):
-        """Test that vInf_G__E equals vInfHat_G__E times vCg__E."""
+    def test_vInf_GP1__E_equals_vInfHat_times_speed(self):
+        """Test that vInf_GP1__E equals vInfHat_GP1__E times vCg__E."""
         # Test for all fixtures
         fixtures = [
             self.basic_op,
@@ -445,12 +446,12 @@ class TestOperatingPoint(unittest.TestCase):
 
         for op in fixtures:
             with self.subTest(op=op):
-                vInf = op.vInf_G__E
-                expected_vInf = op.vInfHat_G__E * op.vCg__E
-                npt.assert_allclose(vInf, expected_vInf, atol=1e-14)
+                vInfHat_GP1__E = op.vInf_GP1__E
+                expected_vInfHat_GP1__E = op.vInfHat_GP1__E * op.vCg__E
+                npt.assert_allclose(vInfHat_GP1__E, expected_vInfHat_GP1__E, atol=1e-14)
 
-    def test_vInf_G__E_with_various_alpha_beta(self):
-        """Test vInf_G__E direction changes with alpha and beta."""
+    def test_vInf_GP1__E_with_various_alpha_beta(self):
+        """Test vInf_GP1__E direction changes with alpha and beta."""
         # Create OperatingPoints with different alpha/beta combinations
         test_cases = [
             {"alpha": 0.0, "beta": 0.0},
@@ -464,13 +465,13 @@ class TestOperatingPoint(unittest.TestCase):
         for params in test_cases:
             with self.subTest(params=params):
                 op = ps.operating_point.OperatingPoint(**params)
-                vInf = op.vInf_G__E
+                vInfHat_GP1__E = op.vInf_GP1__E
 
                 # Should be 3-element vector
-                self.assertEqual(len(vInf), 3)
+                self.assertEqual(len(vInfHat_GP1__E), 3)
 
                 # Should have magnitude equal to vCg__E
-                magnitude = np.linalg.norm(vInf)
+                magnitude = np.linalg.norm(vInfHat_GP1__E)
                 npt.assert_allclose(magnitude, op.vCg__E, atol=1e-14)
 
     def test_multiple_operating_points_independent(self):
@@ -485,10 +486,12 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertNotEqual(op1.qInf__E, op2.qInf__E)
 
         # Verify their transformation matrices are different
-        self.assertFalse(np.allclose(op1.T_pas_G_Cg_to_W_Cg, op2.T_pas_G_Cg_to_W_Cg))
+        self.assertFalse(
+            np.allclose(op1.T_pas_GP1_CgP1_to_W_CgP1, op2.T_pas_GP1_CgP1_to_W_CgP1)
+        )
 
         # Verify their velocity vectors are different
-        self.assertFalse(np.allclose(op1.vInf_G__E, op2.vInf_G__E))
+        self.assertFalse(np.allclose(op1.vInf_GP1__E, op2.vInf_GP1__E))
 
     def test_comprehensive_operating_point_properties(self):
         """Test all properties on various fixtures."""
@@ -517,17 +520,17 @@ class TestOperatingPoint(unittest.TestCase):
 
                 # Test all properties return correct types
                 self.assertIsInstance(op.qInf__E, float)
-                self.assertIsInstance(op.T_pas_G_Cg_to_W_Cg, np.ndarray)
-                self.assertIsInstance(op.T_pas_W_Cg_to_G_Cg, np.ndarray)
-                self.assertIsInstance(op.vInfHat_G__E, np.ndarray)
-                self.assertIsInstance(op.vInf_G__E, np.ndarray)
+                self.assertIsInstance(op.T_pas_GP1_CgP1_to_W_CgP1, np.ndarray)
+                self.assertIsInstance(op.T_pas_W_CgP1_to_GP1_CgP1, np.ndarray)
+                self.assertIsInstance(op.vInfHat_GP1__E, np.ndarray)
+                self.assertIsInstance(op.vInf_GP1__E, np.ndarray)
 
                 # Test no NaN or Inf values in properties
                 self.assertFalse(np.isnan(op.qInf__E))
-                self.assertFalse(np.any(np.isnan(op.T_pas_G_Cg_to_W_Cg)))
-                self.assertFalse(np.any(np.isnan(op.T_pas_W_Cg_to_G_Cg)))
-                self.assertFalse(np.any(np.isnan(op.vInfHat_G__E)))
-                self.assertFalse(np.any(np.isnan(op.vInf_G__E)))
+                self.assertFalse(np.any(np.isnan(op.T_pas_GP1_CgP1_to_W_CgP1)))
+                self.assertFalse(np.any(np.isnan(op.T_pas_W_CgP1_to_GP1_CgP1)))
+                self.assertFalse(np.any(np.isnan(op.vInfHat_GP1__E)))
+                self.assertFalse(np.any(np.isnan(op.vInf_GP1__E)))
 
     def test_edge_case_angle_boundaries(self):
         """Test angle validation at boundary values."""
@@ -555,8 +558,8 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertAlmostEqual(op.qInf__E, expected_qInf, places=10)
 
         # Should still produce valid velocity vectors
-        self.assertEqual(len(op.vInf_G__E), 3)
-        npt.assert_allclose(np.linalg.norm(op.vInf_G__E), 0.01, atol=1e-14)
+        self.assertEqual(len(op.vInf_GP1__E), 3)
+        npt.assert_allclose(np.linalg.norm(op.vInf_GP1__E), 0.01, atol=1e-14)
 
     def test_very_high_speed(self):
         """Test with very high speed."""
@@ -567,8 +570,8 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertAlmostEqual(op.qInf__E, expected_qInf, places=10)
 
         # Should still produce valid velocity vectors
-        self.assertEqual(len(op.vInf_G__E), 3)
-        npt.assert_allclose(np.linalg.norm(op.vInf_G__E), 300.0, atol=1e-12)
+        self.assertEqual(len(op.vInf_GP1__E), 3)
+        npt.assert_allclose(np.linalg.norm(op.vInf_GP1__E), 300.0, atol=1e-12)
 
     def test_extreme_density_values(self):
         """Test with extreme but valid density values."""
@@ -583,8 +586,8 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertAlmostEqual(op_high.qInf__E, expected_qInf_high, places=10)
 
         # Both should produce valid transformations
-        self.assertEqual(op_low.T_pas_G_Cg_to_W_Cg.shape, (4, 4))
-        self.assertEqual(op_high.T_pas_G_Cg_to_W_Cg.shape, (4, 4))
+        self.assertEqual(op_low.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
+        self.assertEqual(op_high.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
 
 
 if __name__ == "__main__":

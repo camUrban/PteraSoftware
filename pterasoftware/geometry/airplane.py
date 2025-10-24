@@ -38,6 +38,10 @@ class Airplane:
         validate_first_airplane_constraints: This method validates that the first
         Airplane in a simulation has Cg_E_CgP1 set to zeros.
 
+        compute_T_pas_G_Cg_to_GP1_CgP1: Compute passive transformation matrix from
+        this Airplane's geometry axes, relative to this Airplane's CG to the first
+        Airplane's geometry axes, relative to the first Airplane's CG.
+
         process_wing_symmetry: This method processes a Wing to determine what type of
         symmetry it has. If necessary, it then modifies the Wing. If type 5 symmetry
         is detected, it also creates a second reflected Wing. Finally, a list of
@@ -100,8 +104,9 @@ class Airplane:
             Position (x, y, z) of this Airplane's CG (in Earth axes, relative to the
             first Airplane's CG). Can be a list, tuple, or numpy array of numbers (
             int or float). Values are converted to floats internally. For the first
-            Airplane in a simulation, this must be (0.0, 0.0, 0.0) by definition. The
-            units are in meters. The default is (0.0, 0.0, 0.0).
+            Airplane in a simulation, this must be (0.0, 0.0, 0.0) by definition.
+            Earth axes follow the North-East-Down convention. The units are in
+            meters. The default is (0.0, 0.0, 0.0).
 
         :param angles_E_to_B_izyx: array-like of 3 numbers, optional
 
@@ -198,8 +203,8 @@ class Airplane:
         # force coefficients, and moment coefficients this Airplane experiences.
         self.forces_W = None
         self.forceCoefficients_W = None
-        self.moments_W_Cg = None
-        self.momentCoefficients_W_Cg = None
+        self.moments_W_CgP1 = None
+        self.momentCoefficients_W_CgP1 = None
 
     def draw(self, save=False, testing=False):
         """Draw the 3D geometry of this Airplane.
@@ -548,7 +553,7 @@ class Airplane:
         """This method validates that the first Airplane in a simulation has
         Cg_E_CgP1 set to zeros.
 
-        This method should be called by SteadyProblem or UnsteadyProblem classes.
+        This method should be called by SteadyProblem or UnsteadyProblem.
 
         :raises Exception: If first Airplane constraints are violated.
         """
@@ -557,6 +562,86 @@ class Airplane:
                 "The first Airplane in a simulation must have Cg_E_CgP1 set to"
                 "(0.0, 0.0, 0.0) by definition."
             )
+
+    # TEST: Add unit tests for this method.
+    def compute_T_pas_G_Cg_to_GP1_CgP1(self, first_airplane):
+        """Compute passive transformation matrix from this Airplane's geometry axes,
+        relative to this Airplane's CG to the first Airplane's geometry axes,
+        relative to the first Airplane's CG.
+
+        This method computes the transformation chain: G_Cg > B_Cg > E_CgP1 >
+        BP1_CgP1 > GP1_CgP1. This transformation matrix is used to position Airplanes
+        relative to one another, in problems with more than one Airplane.
+
+        If this Airplane is the first Airplane (where Cg_E_CgP1 = [0, 0, 0]),
+        this returns an identity transformation.
+
+        :param first_airplane: Airplane
+
+            The first Airplane in a problem. This must be an Airplane.
+
+        :return: (4, 4) ndarray of floats
+
+            The passive transformation matrix from this Airplane's geometry axes,
+            relative to its CG to the first Airplane's geometry axes, relative to its
+            CG.
+        """
+        # Step 1: G_Cg > B_Cg (geometry axes to body axes: 180-degree rotation about
+        # y-axis)
+        # This transforms from geometry axes (aft/right/up) to body axes (
+        # forward/right/down)
+        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
+            angles=np.array([0.0, 180.0, 0.0], dtype=float),
+            passive=True,
+            intrinsic=True,
+            order="xyz",
+        )
+
+        # Step 2: B_Cg > E_Cg (body axes to Earth axes using this Airplane's
+        # angles_E_to_B_izyx)
+        # We need to invert the E_Cg > B_Cg transformation to get B_Cg > E_Cg
+        T_pas_E_Cg_to_B_Cg = _transformations.generate_rot_T(
+            angles=self.angles_E_to_B_izyx,
+            passive=True,
+            intrinsic=True,
+            order="zyx",
+        )
+        T_pas_B_Cg_to_E_Cg = _transformations.invert_T_pas(T_pas_E_Cg_to_B_Cg)
+
+        # Step 3: E_Cg > E_CgP1
+        # This offsets by Cg_E_CgP1 (the position of this Airplane's CG relative to the
+        # first Airplane's CG)
+        T_pas_E_Cg_to_E_CgP1 = _transformations.generate_trans_T(
+            translations=self.Cg_E_CgP1, passive=True
+        )
+
+        # Step 4: E_CgP1 > BP1_CgP1 (Earth axes to the first Airplane's body axes)
+        T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+            angles=first_airplane.angles_E_to_B_izyx,
+            passive=True,
+            intrinsic=True,
+            order="zyx",
+        )
+
+        # Step 5: BP1_CgP1 > GP1_CgP1 (the first Airplane's body axes to geometry
+        # axes: 180° rotation about the y-axis)
+        T_pas_BP1_CgP1_to_GP1_CgP1 = _transformations.generate_rot_T(
+            angles=np.array([0.0, 180.0, 0.0], dtype=float),
+            passive=True,
+            intrinsic=True,
+            order="xyz",
+        )
+
+        # Compose the full passive transformation matrix
+        T_pas_G_Cg_to_GP1_CgP1 = _transformations.compose_T_pas(
+            T_pas_G_Cg_to_B_Cg,
+            T_pas_B_Cg_to_E_Cg,
+            T_pas_E_Cg_to_E_CgP1,
+            T_pas_E_CgP1_to_BP1_CgP1,
+            T_pas_BP1_CgP1_to_GP1_CgP1,
+        )
+
+        return T_pas_G_Cg_to_GP1_CgP1
 
     # TEST: Add more thorough unit tests for this method.
     @staticmethod

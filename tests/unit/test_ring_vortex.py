@@ -38,16 +38,20 @@ class TestRingVortex(unittest.TestCase):
         # Test that basic RingVortex initializes correctly.
         self.assertIsInstance(self.basic_ring_vortex, _aerodynamics.RingVortex)
         npt.assert_array_equal(
-            self.basic_ring_vortex.Frrvp_G_Cg, np.array([0.0, 0.5, 0.0], dtype=float)
+            self.basic_ring_vortex.Frrvp_GP1_CgP1,
+            np.array([0.0, 0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.Flrvp_G_Cg, np.array([0.0, -0.5, 0.0], dtype=float)
+            self.basic_ring_vortex.Flrvp_GP1_CgP1,
+            np.array([0.0, -0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.Blrvp_G_Cg, np.array([1.0, -0.5, 0.0], dtype=float)
+            self.basic_ring_vortex.Blrvp_GP1_CgP1,
+            np.array([1.0, -0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.Brrvp_G_Cg, np.array([1.0, 0.5, 0.0], dtype=float)
+            self.basic_ring_vortex.Brrvp_GP1_CgP1,
+            np.array([1.0, 0.5, 0.0], dtype=float),
         )
         self.assertEqual(self.basic_ring_vortex.strength, 1.0)
         self.assertEqual(self.basic_ring_vortex.age, 0)
@@ -67,23 +71,23 @@ class TestRingVortex(unittest.TestCase):
         """Test RingVortex initialization with various geometries."""
         # Test unit square geometry.
         npt.assert_array_equal(
-            self.unit_square_ring_vortex.Frrvp_G_Cg,
+            self.unit_square_ring_vortex.Frrvp_GP1_CgP1,
             np.array([0.5, 0.5, 0.0], dtype=float),
         )
         npt.assert_array_equal(
-            self.unit_square_ring_vortex.Flrvp_G_Cg,
+            self.unit_square_ring_vortex.Flrvp_GP1_CgP1,
             np.array([0.5, -0.5, 0.0], dtype=float),
         )
 
         # Test rectangular geometry.
         npt.assert_array_equal(
-            self.rectangular_ring_vortex.Brrvp_G_Cg,
+            self.rectangular_ring_vortex.Brrvp_GP1_CgP1,
             np.array([2.0, 0.5, 0.0], dtype=float),
         )
 
         # Test tilted geometry.
         npt.assert_array_equal(
-            self.tilted_ring_vortex.Frrvp_G_Cg,
+            self.tilted_ring_vortex.Frrvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.2], dtype=float),
         )
 
@@ -113,57 +117,60 @@ class TestRingVortex(unittest.TestCase):
         """Test that LineVortex leg positions match RingVortex corners."""
         # Test front leg (from front right to front left).
         npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Slvp_G_Cg,
-            self.basic_ring_vortex.Frrvp_G_Cg,
+            self.basic_ring_vortex.front_leg.Slvp_GP1_CgP1,
+            self.basic_ring_vortex.Frrvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Elvp_G_Cg,
-            self.basic_ring_vortex.Flrvp_G_Cg,
+            self.basic_ring_vortex.front_leg.Elvp_GP1_CgP1,
+            self.basic_ring_vortex.Flrvp_GP1_CgP1,
         )
 
         # Test left leg (from front left to back left).
         npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Slvp_G_Cg,
-            self.basic_ring_vortex.Flrvp_G_Cg,
+            self.basic_ring_vortex.left_leg.Slvp_GP1_CgP1,
+            self.basic_ring_vortex.Flrvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Elvp_G_Cg,
-            self.basic_ring_vortex.Blrvp_G_Cg,
+            self.basic_ring_vortex.left_leg.Elvp_GP1_CgP1,
+            self.basic_ring_vortex.Blrvp_GP1_CgP1,
         )
 
         # Test back leg (from back left to back right).
         npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Slvp_G_Cg,
-            self.basic_ring_vortex.Blrvp_G_Cg,
+            self.basic_ring_vortex.back_leg.Slvp_GP1_CgP1,
+            self.basic_ring_vortex.Blrvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Elvp_G_Cg,
-            self.basic_ring_vortex.Brrvp_G_Cg,
+            self.basic_ring_vortex.back_leg.Elvp_GP1_CgP1,
+            self.basic_ring_vortex.Brrvp_GP1_CgP1,
         )
 
         # Test right leg (from back right to front right).
         npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Slvp_G_Cg,
-            self.basic_ring_vortex.Brrvp_G_Cg,
+            self.basic_ring_vortex.right_leg.Slvp_GP1_CgP1,
+            self.basic_ring_vortex.Brrvp_GP1_CgP1,
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Elvp_G_Cg,
-            self.basic_ring_vortex.Frrvp_G_Cg,
+            self.basic_ring_vortex.right_leg.Elvp_GP1_CgP1,
+            self.basic_ring_vortex.Frrvp_GP1_CgP1,
         )
 
     def test_centroid_calculation(self):
         """Test that RingVortex centroid is calculated correctly."""
         # For a unit square centered at origin, centroid should be at origin.
-        expected_centroid = np.array([0.0, 0.0, 0.0], dtype=float)
+        expectedCentroid_GP1_CgP1 = np.array([0.0, 0.0, 0.0], dtype=float)
         npt.assert_array_almost_equal(
-            self.unit_square_ring_vortex.Crvp_G_Cg, expected_centroid, decimal=10
+            self.unit_square_ring_vortex.Crvp_GP1_CgP1,
+            expectedCentroid_GP1_CgP1,
+            decimal=10,
         )
 
         # For the basic RingVortex fixture, the centroid should be at [0.5, 0.0,
-        # 0.0] (in geometry axes, relative to the CG).
-        expected_centroid = np.array([0.5, 0.0, 0.0], dtype=float)
+        # 0.0] (in the first Airplane's geometry axes, relative to the first
+        # Airplane's CG).
+        expectedCentroid_GP1_CgP1 = np.array([0.5, 0.0, 0.0], dtype=float)
         npt.assert_array_almost_equal(
-            self.basic_ring_vortex.Crvp_G_Cg, expected_centroid, decimal=10
+            self.basic_ring_vortex.Crvp_GP1_CgP1, expectedCentroid_GP1_CgP1, decimal=10
         )
 
     def test_initial_age_is_zero(self):
@@ -212,85 +219,102 @@ class TestRingVortex(unittest.TestCase):
     def test_update_position_method(self):
         """Test the update_position method."""
         # Define new positions.
-        new_Frrvp_G_Cg = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_G_Cg = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_G_Cg = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_G_Cg = np.array([2.0, 1.0, 0.5], dtype=float)
+        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
+        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
+        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
+        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
 
         # Update position.
         self.basic_ring_vortex.update_position(
-            new_Frrvp_G_Cg, new_Flrvp_G_Cg, new_Blrvp_G_Cg, new_Brrvp_G_Cg
+            new_Frrvp_GP1_CgP1,
+            new_Flrvp_GP1_CgP1,
+            new_Blrvp_GP1_CgP1,
+            new_Brrvp_GP1_CgP1,
         )
 
         # Verify corner positions were updated.
-        npt.assert_array_equal(self.basic_ring_vortex.Frrvp_G_Cg, new_Frrvp_G_Cg)
-        npt.assert_array_equal(self.basic_ring_vortex.Flrvp_G_Cg, new_Flrvp_G_Cg)
-        npt.assert_array_equal(self.basic_ring_vortex.Blrvp_G_Cg, new_Blrvp_G_Cg)
-        npt.assert_array_equal(self.basic_ring_vortex.Brrvp_G_Cg, new_Brrvp_G_Cg)
+        npt.assert_array_equal(
+            self.basic_ring_vortex.Frrvp_GP1_CgP1, new_Frrvp_GP1_CgP1
+        )
+        npt.assert_array_equal(
+            self.basic_ring_vortex.Flrvp_GP1_CgP1, new_Flrvp_GP1_CgP1
+        )
+        npt.assert_array_equal(
+            self.basic_ring_vortex.Blrvp_GP1_CgP1, new_Blrvp_GP1_CgP1
+        )
+        npt.assert_array_equal(
+            self.basic_ring_vortex.Brrvp_GP1_CgP1, new_Brrvp_GP1_CgP1
+        )
 
     def test_update_position_updates_line_vortices(self):
         """Test that update_position updates LineVortex legs."""
         # Define new positions.
-        new_Frrvp_G_Cg = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_G_Cg = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_G_Cg = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_G_Cg = np.array([2.0, 1.0, 0.5], dtype=float)
+        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
+        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
+        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
+        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
 
         # Update position.
         self.basic_ring_vortex.update_position(
-            new_Frrvp_G_Cg, new_Flrvp_G_Cg, new_Blrvp_G_Cg, new_Brrvp_G_Cg
+            new_Frrvp_GP1_CgP1,
+            new_Flrvp_GP1_CgP1,
+            new_Blrvp_GP1_CgP1,
+            new_Brrvp_GP1_CgP1,
         )
 
         # Verify front leg was updated.
         npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Slvp_G_Cg, new_Frrvp_G_Cg
+            self.basic_ring_vortex.front_leg.Slvp_GP1_CgP1, new_Frrvp_GP1_CgP1
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Elvp_G_Cg, new_Flrvp_G_Cg
+            self.basic_ring_vortex.front_leg.Elvp_GP1_CgP1, new_Flrvp_GP1_CgP1
         )
 
         # Verify left leg was updated.
         npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Slvp_G_Cg, new_Flrvp_G_Cg
+            self.basic_ring_vortex.left_leg.Slvp_GP1_CgP1, new_Flrvp_GP1_CgP1
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Elvp_G_Cg, new_Blrvp_G_Cg
+            self.basic_ring_vortex.left_leg.Elvp_GP1_CgP1, new_Blrvp_GP1_CgP1
         )
 
         # Verify back leg was updated.
         npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Slvp_G_Cg, new_Blrvp_G_Cg
+            self.basic_ring_vortex.back_leg.Slvp_GP1_CgP1, new_Blrvp_GP1_CgP1
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Elvp_G_Cg, new_Brrvp_G_Cg
+            self.basic_ring_vortex.back_leg.Elvp_GP1_CgP1, new_Brrvp_GP1_CgP1
         )
 
         # Verify right leg was updated.
         npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Slvp_G_Cg, new_Brrvp_G_Cg
+            self.basic_ring_vortex.right_leg.Slvp_GP1_CgP1, new_Brrvp_GP1_CgP1
         )
         npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Elvp_G_Cg, new_Frrvp_G_Cg
+            self.basic_ring_vortex.right_leg.Elvp_GP1_CgP1, new_Frrvp_GP1_CgP1
         )
 
     def test_update_position_updates_centroid(self):
         """Test that update_position updates the centroid."""
         # Define new positions that form a square centered at [1.5, 0.0, 0.5] (in
         # geometry axes, relative to the CG).
-        new_Frrvp_G_Cg = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_G_Cg = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_G_Cg = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_G_Cg = np.array([2.0, 1.0, 0.5], dtype=float)
+        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
+        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
+        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
+        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
 
         # Update position.
         self.basic_ring_vortex.update_position(
-            new_Frrvp_G_Cg, new_Flrvp_G_Cg, new_Blrvp_G_Cg, new_Brrvp_G_Cg
+            new_Frrvp_GP1_CgP1,
+            new_Flrvp_GP1_CgP1,
+            new_Blrvp_GP1_CgP1,
+            new_Brrvp_GP1_CgP1,
         )
 
         # Expected centroid.
         expected_centroid = np.array([1.5, 0.0, 0.5], dtype=float)
         npt.assert_array_almost_equal(
-            self.basic_ring_vortex.Crvp_G_Cg, expected_centroid, decimal=10
+            self.basic_ring_vortex.Crvp_GP1_CgP1, expected_centroid, decimal=10
         )
 
     def test_update_position_preserves_strength(self):
@@ -298,14 +322,17 @@ class TestRingVortex(unittest.TestCase):
         original_strength = self.basic_ring_vortex.strength
 
         # Define new positions.
-        new_Frrvp_G_Cg = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_G_Cg = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_G_Cg = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_G_Cg = np.array([2.0, 1.0, 0.5], dtype=float)
+        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
+        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
+        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
+        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
 
         # Update position.
         self.basic_ring_vortex.update_position(
-            new_Frrvp_G_Cg, new_Flrvp_G_Cg, new_Blrvp_G_Cg, new_Brrvp_G_Cg
+            new_Frrvp_GP1_CgP1,
+            new_Flrvp_GP1_CgP1,
+            new_Blrvp_GP1_CgP1,
+            new_Brrvp_GP1_CgP1,
         )
 
         # Verify strength was preserved.
@@ -321,10 +348,10 @@ class TestRingVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
-                Frrvp_G_Cg="not_an_array",
-                Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_G_Cg=np.array([1.0, 0.5, 0.0], dtype=float),
+                Frrvp_GP1_CgP1="not_an_array",
+                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
+                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
                 strength=1.0,
             )
 
@@ -332,10 +359,10 @@ class TestRingVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
-                Frrvp_G_Cg=np.array([0.0, 0.5], dtype=float),  # Only 2 elements
-                Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_G_Cg=np.array([1.0, 0.5, 0.0], dtype=float),
+                Frrvp_GP1_CgP1=np.array([0.0, 0.5], dtype=float),  # Only 2 elements
+                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
+                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
                 strength=1.0,
             )
 
@@ -343,20 +370,20 @@ class TestRingVortex(unittest.TestCase):
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             _aerodynamics.RingVortex(
-                Frrvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_G_Cg=np.array([1.0, 0.5, 0.0], dtype=float),
+                Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
+                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
                 strength="not_a_number",
             )
 
     def test_none_strength_handling(self):
         """Test that None strength is handled correctly."""
         ring_vortex = _aerodynamics.RingVortex(
-            Frrvp_G_Cg=np.array([0.0, 0.5, 0.0], dtype=float),
-            Flrvp_G_Cg=np.array([0.0, -0.5, 0.0], dtype=float),
-            Blrvp_G_Cg=np.array([1.0, -0.5, 0.0], dtype=float),
-            Brrvp_G_Cg=np.array([1.0, 0.5, 0.0], dtype=float),
+            Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+            Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+            Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
+            Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
             strength=None,
         )
 
@@ -372,7 +399,7 @@ class TestRingVortex(unittest.TestCase):
     def test_very_small_vortex(self):
         """Test RingVortex with very small dimensions."""
         # Should handle very small RingVortices without issues.
-        self.assertIsNotNone(self.small_ring_vortex.Crvp_G_Cg)
+        self.assertIsNotNone(self.small_ring_vortex.Crvp_GP1_CgP1)
         self.assertIsNotNone(self.small_ring_vortex.front_leg)
 
     def test_offset_vortex(self):
@@ -380,7 +407,7 @@ class TestRingVortex(unittest.TestCase):
         # Verify offset was applied correctly.
         expected_offset = np.array([5.0, 3.0, 2.0], dtype=float)
         npt.assert_array_almost_equal(
-            self.offset_ring_vortex.Frrvp_G_Cg,
+            self.offset_ring_vortex.Frrvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.0], dtype=float) + expected_offset,
             decimal=10,
         )

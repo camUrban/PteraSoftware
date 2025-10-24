@@ -226,10 +226,10 @@ class TestAirplaneMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement,
         )
         npt.assert_array_equal(
-            airplane_movement.ampCg_E_CgP1, np.array([0.05, 0.03, 0.04])
+            airplane_movement.ampCg_E_CgP1, np.array([0.0, 0.0, 0.0])
         )
         npt.assert_array_equal(
-            airplane_movement.periodCg_E_CgP1, np.array([2.0, 2.0, 2.0])
+            airplane_movement.periodCg_E_CgP1, np.array([0.0, 0.0, 0.0])
         )
         self.assertEqual(airplane_movement.spacingCg_E_CgP1, ("sine", "sine", "sine"))
         npt.assert_array_equal(

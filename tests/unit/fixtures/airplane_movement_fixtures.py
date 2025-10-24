@@ -51,8 +51,8 @@ def make_basic_airplane_movement_fixture():
     basic_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
         base_airplane=base_airplane,
         wing_movements=wing_movements,
-        ampCg_E_CgP1=(0.05, 0.03, 0.04),
-        periodCg_E_CgP1=(2.0, 2.0, 2.0),
+        ampCg_E_CgP1=(0.0, 0.0, 0.0),
+        periodCg_E_CgP1=(0.0, 0.0, 0.0),
         spacingCg_E_CgP1=("sine", "sine", "sine"),
         phaseCg_E_CgP1=(0.0, 0.0, 0.0),
         ampAngles_E_to_B_izyx=(3.0, 2.0, 1.5),

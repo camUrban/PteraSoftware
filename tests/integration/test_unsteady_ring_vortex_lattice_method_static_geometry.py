@@ -57,7 +57,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         c_l_error = abs(c_l_calculated - c_l_expected) / c_l_expected
 
         c_m_expected = -0.166
-        c_m_calculated = this_airplane.momentCoefficients_W_Cg[1]
+        c_m_calculated = this_airplane.momentCoefficients_W_CgP1[1]
         c_m_error = abs(c_m_calculated - c_m_expected) / c_m_expected
 
         # Set the allowable percent error.

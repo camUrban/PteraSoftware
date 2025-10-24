@@ -215,8 +215,8 @@ class TestAirplane(unittest.TestCase):
         # All force/moment attributes should be None initially
         self.assertIsNone(airplane.forces_W)
         self.assertIsNone(airplane.forceCoefficients_W)
-        self.assertIsNone(airplane.moments_W_Cg)
-        self.assertIsNone(airplane.momentCoefficients_W_Cg)
+        self.assertIsNone(airplane.moments_W_CgP1)
+        self.assertIsNone(airplane.momentCoefficients_W_CgP1)
 
     def test_validate_first_airplane_constraints_valid(self):
         """Test validate_first_airplane_constraints with valid first Airplane."""

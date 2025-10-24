@@ -616,16 +616,17 @@ stackExpNetForcesZ_G = 2 * (
 stackExpNetForcesZ_W = np.zeros(stackExpNetForcesZ_G.size, dtype=float)
 
 # Get the passive transformation matrix which maps in homogeneous coordinates from
-# geometry axes relative to the CG to wind axes relative to the CG.
-T_pas_G_Cg_to_W_Cg = validation_operating_point.T_pas_G_Cg_to_W_Cg
+# the first Airplane's geometry axes relative to the first Airplane's CG to wind
+# axes relative to the first Airplane's CG.
+T_pas_GP1_CgP1_to_W_CgP1 = validation_operating_point.T_pas_GP1_CgP1_to_W_CgP1
 
 # Delete the extraneous pointer.
 del validation_operating_point
 
-# Transform from geometry axes to wind axes.
-for force_id, expNetForceZ_G in enumerate(stackExpNetForcesZ_G):
-    expNetForceHomog_G = np.array([0.0, 0.0, expNetForceZ_G, 0.0], dtype=float)
-    expNetForceHomog_W = T_pas_G_Cg_to_W_Cg @ expNetForceHomog_G
+# Transform from the first Airplane's geometry axes to wind axes.
+for force_id, expNetForceZ_GP1 in enumerate(stackExpNetForcesZ_G):
+    expNetForceHomog_GP1 = np.array([0.0, 0.0, expNetForceZ_GP1, 0.0], dtype=float)
+    expNetForceHomog_W = T_pas_GP1_CgP1_to_W_CgP1 @ expNetForceHomog_GP1
     expNetForceZ_W = expNetForceHomog_W[2]
     stackExpNetForcesZ_W[force_id] = expNetForceZ_W
 

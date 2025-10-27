@@ -85,10 +85,3 @@ trim_conditions = ps.trim.analyze_steady_trim(
     objective_cut_off=0.01,
     num_calls=1000,
 )
-
-# Print the trim conditions, if found.
-if not any(trim_condition is None for trim_condition in trim_conditions):
-    print(f"Trim Velocity:\t\t\t{trim_conditions[0]:.2f} m/s")
-    print(f"Trim Alpha:\t\t\t\t{trim_conditions[1]:.2f} deg")
-    print(f"Trim Beta:\t\t\t\t{trim_conditions[2]:.2f} deg")
-    print(f"Trim External Thrust:\t{trim_conditions[3]:.2f} N")

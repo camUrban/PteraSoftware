@@ -1,145 +1,136 @@
-# REFACTOR: I haven't yet started refactoring this module.
-"""This example script demonstrates how to automatically find the trim condition for
-an unsteady simulation. It is not as well documented as some solver example scripts,
-as it assumes you have read and understood those first."""
-
-import logging
+"""This script is an example of how to automatically find the trim condition for an
+unsteady simulation."""
 
 import pterasoftware as ps
 
-# Configure a logger for this example.
-example_logger = logging.getLogger("example")
-example_logger.setLevel(logging.DEBUG)
-
-# Create an airplane object. Read through the solver examples for more details on
-# creating this object.
-example_airplane = ps.geometry.airplane.Airplane(
+# Create an Airplane. We must specify a weight (in Newtons) for the Airplane. We will
+# later find a trim condition where the weight is exactly balanced by lift.
+trim_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=5,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
+                    num_spanwise_panels=5,
+                    control_surface_symmetry_type="symmetric",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.0,
-                    y_le=5.0,
-                    z_le=0.0,
-                    chord=1.0,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
                     ),
+                    num_spanwise_panels=None,
+                    Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    spanwise_spacing=None,
                 ),
             ],
             symmetric=True,
+            symmetryNormal_G=(0, 1, 0),
+            symmetryPoint_G_Cg=(0, 0, 0),
             num_chordwise_panels=5,
         ),
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=5,
-                    twist=-5.0,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
+                    num_spanwise_panels=5,
+                    control_surface_symmetry_type="symmetric",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    x_le=0.0,
-                    y_le=1.0,
-                    chord=1.0,
-                    twist=-5.0,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
+                    num_spanwise_panels=None,
+                    Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
                 ),
             ],
+            Ler_Gs_Cgs=(10, 0, 0),
+            angles_Gs_to_Wn_ixyz=(0.0, -5.0, 0.0),
             symmetric=True,
+            symmetryNormal_G=(0, 1, 0),
+            symmetryPoint_G_Cg=(0, 0, 0),
             num_chordwise_panels=5,
         ),
     ],
     weight=420,
 )
 
-# Create a movement for this example's airplane. Read through the unsteady solver
-# examples for more details on this type of object.
-example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=example_airplane,
+# Create an AirplaneMovement for this example's Airplane.
+trim_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    base_airplane=trim_airplane,
     wing_movements=[
         ps.movements.wing_movement.WingMovement(
-            base_wing=example_airplane.wings[0],
+            base_wing=trim_airplane.wings[0],
             wing_cross_section_movements=[
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=example_airplane.wings[
+                    base_wing_cross_section=trim_airplane.wings[0].wing_cross_sections[
                         0
-                    ].wing_cross_sections[0]
+                    ]
                 ),
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=example_airplane.wings[
-                        0
-                    ].wing_cross_sections[1]
+                    base_wing_cross_section=trim_airplane.wings[0].wing_cross_sections[
+                        1
+                    ]
                 ),
             ],
         ),
         ps.movements.wing_movement.WingMovement(
-            base_wing=example_airplane.wings[1],
+            base_wing=trim_airplane.wings[1],
             wing_cross_section_movements=[
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=example_airplane.wings[
-                        1
-                    ].wing_cross_sections[0]
+                    base_wing_cross_section=trim_airplane.wings[1].wing_cross_sections[
+                        0
+                    ]
                 ),
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=example_airplane.wings[
+                    base_wing_cross_section=trim_airplane.wings[1].wing_cross_sections[
                         1
-                    ].wing_cross_sections[1]
+                    ]
                 ),
             ],
         ),
     ],
 )
 
-# Create an operating point object for this example's problem using the default values.
-example_operating_point = ps.operating_point.OperatingPoint()
+# Create an OperatingPoint using default values.
+trim_operating_point = ps.operating_point.OperatingPoint(
+    externalFX_W=7.5,
+)
 
-# Create an operating point movement object. Read through the unsteady solver
-# examples for more details on this type of object.
-example_operating_point_movement = (
+# Create an OperatingPointMovement using default values.
+trim_operating_point_movement = (
     ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=example_operating_point
+        base_operating_point=trim_operating_point
     )
 )
 
-# Construct this example's movement and problem object. Only calculate final results
-# to speed up the solver.
-example_movement = ps.movements.movement.Movement(
-    airplane_movements=[example_airplane_movement],
-    operating_point_movement=example_operating_point_movement,
+trim_movement = ps.movements.movement.Movement(
+    airplane_movements=[trim_airplane_movement],
+    operating_point_movement=trim_operating_point_movement,
+    num_chords=5,
 )
-example_problem = ps.problems.UnsteadyProblem(
-    movement=example_movement,
-    only_final_results=False,
+
+trim_problem = ps.problems.UnsteadyProblem(
+    movement=trim_movement,
+    only_final_results=True,
 )
 
 # Call the analyze_unsteady_trim function to search for a trim condition (thrust
 # balances drag, weight balances lift, and all moments are close to zero) within a
 # certain set of bounds.
 trim_conditions = ps.trim.analyze_unsteady_trim(
-    airplane_movement=example_airplane_movement,
-    operating_point=example_operating_point,
-    velocity_bounds=(5, 15),
+    problem=trim_problem,
+    boundsVCg__E=(5, 15),
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
+    boundsExternalFX_W=(5, 15),
+    objective_cut_off=0.01,
+    num_calls=100,
 )
-
-# Log the trim conditions. If these display "nan", then the trim function couldn't
-# find a trimmed state.
-example_logger.info("Trim Velocity:\t%.2f m/s" % trim_conditions[0])
-example_logger.info("Trim Alpha:\t%.2f deg" % trim_conditions[1])
-example_logger.info("Trim Beta:\t\t%.2f deg" % trim_conditions[2])
-
-# The expected results are:
-# Trim Velocity: 10.02 m/s
-# Trim Alpha: 4.94 deg
-# Trim Beta: 0.00 deg

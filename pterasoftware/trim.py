@@ -34,6 +34,9 @@ trim_logger = logging.getLogger("trim")
 trim_logger.setLevel(logging.DEBUG)
 logging.basicConfig()
 
+# Set a seed for reproducibility in the dual annealing optimizer.
+_seed = 42
+
 
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
@@ -373,6 +376,7 @@ def analyze_steady_trim(
             x0=initial_guess,
             maxfun=num_calls,
             minimizer_kwargs=minimizer_kwargs,
+            seed=_seed,
         )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")
@@ -639,6 +643,7 @@ def analyze_unsteady_trim(
         this_movement = movements.movement.Movement(
             airplane_movements=[problem.movement.airplane_movements[0]],
             operating_point_movement=this_operating_point_movement,
+            num_steps=problem.movement.num_steps,
         )
 
         this_problem = problems.UnsteadyProblem(
@@ -736,6 +741,7 @@ def analyze_unsteady_trim(
             x0=initial_guess,
             maxfun=num_calls,
             minimizer_kwargs=minimizer_kwargs,
+            seed=_seed,
         )
     except StopIteration:
         trim_logger.info("Acceptable global minima found.")

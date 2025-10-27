@@ -143,4 +143,8 @@ cython_debug/
 
 # These are files and folders created by usage to ignore
 Animate.webp
-/ptera
+Draw.webp
+* Forces.png
+* ForceCoefficients.png
+* Moments.png
+* MomentCoefficients.png

@@ -486,8 +486,8 @@ class Airplane:
                 panel_vertices = np.empty((0, 3), dtype=float)
                 panel_faces = np.empty(0, dtype=int)
 
-                # Initialize a variable to keep track of how many Panels' data has been added
-                # to the arrays
+                # Initialize a variable to keep track of how many Panels' data has
+                # been added to the arrays
                 panel_num = 0
 
                 # Unravel the Wing's Panel matrix and iterate through it
@@ -512,7 +512,8 @@ class Airplane:
                         ]
                     )
 
-                    # Stack this Panel's vertices and faces with the array of all vertices and faces
+                    # Stack this Panel's vertices and faces with the array of all
+                    # vertices and faces
                     panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                     panel_faces = np.hstack((panel_faces, panel_face_to_add))
 

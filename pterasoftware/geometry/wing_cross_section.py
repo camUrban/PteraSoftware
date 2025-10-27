@@ -157,7 +157,7 @@ class WingCrossSection:
             cosine spacing is highly recommended. For tip WingCrossSections it must
             be None.
         """
-        # Validate airfoil.
+        # Validate Airfoil.
         if not isinstance(airfoil, Airfoil):
             raise TypeError("airfoil must be an Airfoil.")
         self.airfoil = airfoil
@@ -276,23 +276,26 @@ class WingCrossSection:
         to zero vectors. They also must have num_spanwise_panels not None (it's
         previously been checked to be None or a positive int).
 
-        :raises ValueError: If root constraints are violated.
+        :raises ValueError: If root WingCrossSection constraints are violated.
         """
         # These checks are sufficient because the types were already validated by the
         # initialization method.
         if not np.allclose(self.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
-                "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, 0.0])."
+                "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, "
+                "0.0])."
             )
         if not np.allclose(self.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
-                "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be np.array([0.0, 0.0, 0.0])."
+                "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be "
+                "np.array([0.0, 0.0, 0.0])."
             )
         if self.num_spanwise_panels is None:
             raise ValueError(
                 "The root WingCrossSection cannot have num_spanwise_panels set to None."
             )
 
+    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_mid_constraints(self):
         """This method is called by the parent Wing to validate constraints specific
         to middle WingCrossSections.
@@ -300,13 +303,14 @@ class WingCrossSection:
         Middle have num_spanwise_panels not None (it's previously been checked to be
         None or a positive int).
 
-        :raises ValueError: If root constraints are violated.
+        :raises ValueError: If mid WingCrossSection constraints are violated.
         """
         if self.num_spanwise_panels is None:
             raise ValueError(
                 "Middle WingCrossSections cannot have num_spanwise_panels set to None."
             )
 
+    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_tip_constraints(self):
         """This method is called by the parent Wing to validate constraints specific
         to tip WingCrossSections.
@@ -314,7 +318,7 @@ class WingCrossSection:
         Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set
         to None.
 
-        :raises ValueError: If tip constraints are violated.
+        :raises ValueError: If tip WingCrossSection constraints are violated.
         """
         if self.num_spanwise_panels is not None:
             raise ValueError(

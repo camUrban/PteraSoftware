@@ -643,8 +643,7 @@ for steady_problem in validation_solver.steady_problems:
 stackSimForces_W = np.zeros((3, validation_num_steps))
 
 # Iterate through the time steps and populate the ndarray.
-for step in range(validation_num_steps):
-    airplane = airplanes[step]
+for step, airplane in enumerate(airplanes):
     stackSimForces_W[:, step] = airplane.forces_W
 
 # Initialize the figure and axes of the experimental versus simulated lift plot.

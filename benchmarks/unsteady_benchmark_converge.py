@@ -140,7 +140,7 @@ ps.convergence.analyze_unsteady_convergence(
 )
 
 # Converged result:
-# wake=free
-# cycles=2
-# ar=4
-# panels=5
+# Wake type: free
+# Wake length: 2 cycles
+# Panel aspect ratio: 4
+# Chordwise Panels: 5

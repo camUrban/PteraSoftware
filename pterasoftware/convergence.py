@@ -34,8 +34,7 @@ logging.basicConfig()
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, return the number of spanwise Panels to use
-#  for each Airplanes' Wings' WingCrossSections.
+# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_steady_convergence(
     ref_problem: problems.SteadyProblem,
     solver_type: str,
@@ -668,6 +667,38 @@ def analyze_steady_convergence(
                 convergence_logger.info(
                     "\tSimulation time: " + str(round(converged_iter_time, 3)) + " s"
                 )
+                convergence_logger.info("\tSpanwise Panels:")
+                for airplane_id, airplane in enumerate(ref_airplanes):
+                    convergence_logger.info("\t\t" + airplane.name + ":")
+                    for wing_id, wing in enumerate(airplane.wings):
+                        convergence_logger.info("\t\t\t" + wing.name + ":")
+                        for wing_cross_section_id, wing_cross_section in enumerate(
+                            wing.wing_cross_sections
+                        ):
+                            if (
+                                wing_cross_section_id
+                                < len(wing.wing_cross_sections) - 1
+                            ):
+                                # Not the last WingCrossSection, retrieve from cache.
+                                num_spanwise_panels_key = (
+                                    converged_ar_id,
+                                    converged_chord_id,
+                                    airplane_id,
+                                    wing_id,
+                                    wing_cross_section_id,
+                                )
+                                num_spanwise_panels = num_spanwise_panels_cache[
+                                    num_spanwise_panels_key
+                                ]
+                            else:
+                                # Last WingCrossSection.
+                                num_spanwise_panels = None
+                            convergence_logger.info(
+                                "\t\t\t\tWingCrossSection "
+                                + str(wing_cross_section_id + 1)
+                                + ": "
+                                + str(num_spanwise_panels)
+                            )
 
                 return (
                     converged_aspect_ratio,
@@ -686,8 +717,7 @@ def analyze_steady_convergence(
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, return the number of spanwise Panels to use
-#  for each Airplanes' Wings' WingCrossSections.
+# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
     prescribed_wake: bool = True,
@@ -1709,7 +1739,7 @@ def analyze_unsteady_convergence(
 
                         if single_wake or single_length or single_ar or single_chord:
                             convergence_logger.info(
-                                "The analysis found a semi-converged mesh:"
+                                "The analysis found a semi-converged case:"
                             )
                             if single_wake:
                                 convergence_logger.warning(
@@ -1729,7 +1759,7 @@ def analyze_unsteady_convergence(
                                 )
                         else:
                             convergence_logger.info(
-                                "The analysis found a converged mesh:"
+                                "The analysis found a converged case:"
                             )
 
                         if converged_wake:
@@ -1757,6 +1787,51 @@ def analyze_unsteady_convergence(
                             + str(round(converged_iter_time, 3))
                             + " s"
                         )
+                        convergence_logger.info("\tSpanwise Panels:")
+                        for airplane_movement_id, airplane_movement in enumerate(
+                            ref_airplane_movements
+                        ):
+                            base_airplane = airplane_movement.base_airplane
+                            convergence_logger.info("\t\t" + base_airplane.name + ":")
+                            for wing_movement_id, wing_movement in enumerate(
+                                airplane_movement.wing_movements
+                            ):
+                                base_wing = wing_movement.base_wing
+                                convergence_logger.info("\t\t\t" + base_wing.name + ":")
+                                for (
+                                    wing_cross_section_movement_id,
+                                    wing_cross_section_movement,
+                                ) in enumerate(
+                                    wing_movement.wing_cross_section_movements
+                                ):
+                                    if (
+                                        wing_cross_section_movement_id
+                                        < len(
+                                            wing_movement.wing_cross_section_movements
+                                        )
+                                        - 1
+                                    ):
+                                        # Not the last WingCrossSection, retrieve
+                                        # from cache.
+                                        num_spanwise_panels_key = (
+                                            converged_ar_id,
+                                            converged_chord_id,
+                                            airplane_movement_id,
+                                            wing_movement_id,
+                                            wing_cross_section_movement_id,
+                                        )
+                                        num_spanwise_panels = num_spanwise_panels_cache[
+                                            num_spanwise_panels_key
+                                        ]
+                                    else:
+                                        # Last WingCrossSection.
+                                        num_spanwise_panels = None
+                                    convergence_logger.info(
+                                        "\t\t\t\tWingCrossSection "
+                                        + str(wing_cross_section_movement_id + 1)
+                                        + ": "
+                                        + str(num_spanwise_panels)
+                                    )
 
                         return (
                             converged_wake,

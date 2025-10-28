@@ -13,9 +13,10 @@ print("\tBenchmarking unsteady solver...")
 setup = """
 import pterasoftware as ps
 
-flapping_frequency = 1
 num_chordwise_panels = 5
-num_spanwise_panels = 20
+num_spanwise_panels = 6
+
+flapping_frequency = 1
 
 benchmark_airplane = ps.geometry.airplane.Airplane(
     wings=[

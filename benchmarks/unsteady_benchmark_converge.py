@@ -135,16 +135,12 @@ ps.convergence.analyze_unsteady_convergence(
     free_wake=True,
     num_cycles_bounds=(1, 4),
     panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(3, 10),
-    convergence_criteria=5.0,
+    num_chordwise_panels_bounds=(3, 7),
+    convergence_criteria=1.0,
 )
 
-# FIXME: Since the refactor, I've struggled to find a converged solution for the
-#  unsteady benchmarking case. Determine what is wrong, find a converged case,
-#  and update these values (and, if necessary, the values in unsteady_benchmark.py
-#  and unsteady_benchmark_timed.py).
 # Converged result:
-# wake=false
+# wake=free
 # cycles=2
 # ar=4
-# panels=9
+# panels=5

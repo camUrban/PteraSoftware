@@ -4,9 +4,10 @@ unsteady_benchmark_timed.py. Avoid committing any changes to this file."""
 
 import pterasoftware as ps
 
-flapping_frequency = 1
 num_chordwise_panels = 5
-num_spanwise_panels = 20
+num_spanwise_panels = 6
+
+flapping_frequency = 1
 
 benchmark_airplane = ps.geometry.airplane.Airplane(
     wings=[
@@ -120,7 +121,7 @@ benchmark_operating_point_movement = (
 benchmark_movement = ps.movements.movement.Movement(
     airplane_movements=[benchmark_airplane_movement],
     operating_point_movement=benchmark_operating_point_movement,
-    num_cycles=3,
+    num_cycles=2,
 )
 
 del benchmark_airplane_movement
@@ -139,6 +140,6 @@ benchmark_solver = (
 del benchmark_problem
 
 benchmark_solver.run(
-    prescribed_wake=True,
+    prescribed_wake=False,
     calculate_streamlines=False,
 )

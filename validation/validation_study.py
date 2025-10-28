@@ -1,3 +1,5 @@
+# TODO: Redo the convergence analysis for this simulation and update the relevant
+#  parameters if necessary.
 """This script runs a validation case of Ptera Software’s UVLM.
 
 I first emulate the geometry and kinematics of a flapping robotic test stand from

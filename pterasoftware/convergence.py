@@ -34,8 +34,6 @@ logging.basicConfig()
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: Add a coefficient mask parameter for this function, like the one in
-#  analyze_unsteady_convergence.
 # TODO: If a converged mesh was found, return the number of spanwise Panels to use
 #  for each Airplanes' Wings' WingCrossSections.
 def analyze_steady_convergence(
@@ -200,7 +198,7 @@ def analyze_steady_convergence(
     iter_times = np.zeros(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
-    forceCoefficients_W = np.zeros(
+    combinedForceCoefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
@@ -208,7 +206,7 @@ def analyze_steady_convergence(
         ),
         dtype=float,
     )
-    momentCoefficients_W_CgP1 = np.zeros(
+    combinedMomentCoefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
@@ -483,22 +481,26 @@ def analyze_steady_convergence(
 
             # Create and fill ndarrays with each of this iteration's Airplanes'
             # combined load coefficients.
-            theseForceCoefficients_W = np.zeros(len(these_airplanes), dtype=float)
-            theseMomentCoefficients_W_CgP1 = np.zeros(len(these_airplanes), dtype=float)
+            theseCombinedForceCoefficients = np.zeros(len(these_airplanes), dtype=float)
+            theseCombinedMomentCoefficients = np.zeros(
+                len(these_airplanes), dtype=float
+            )
             airplane: geometry.airplane.Airplane
             for airplane_id, airplane in enumerate(these_airplanes):
-                theseForceCoefficients_W[airplane_id] = np.linalg.norm(
+                theseCombinedForceCoefficients[airplane_id] = np.linalg.norm(
                     airplane.forceCoefficients_W
                 )
-                theseMomentCoefficients_W_CgP1[airplane_id] = np.linalg.norm(
+                theseCombinedMomentCoefficients[airplane_id] = np.linalg.norm(
                     airplane.momentCoefficients_W_CgP1
                 )
 
             # Populate the ndarrays that store information from all the iterations with
             # the data from this iteration.
-            forceCoefficients_W[ar_id, chord_id, :] = theseForceCoefficients_W
-            momentCoefficients_W_CgP1[ar_id, chord_id, :] = (
-                theseMomentCoefficients_W_CgP1
+            combinedForceCoefficients[ar_id, chord_id, :] = (
+                theseCombinedForceCoefficients
+            )
+            combinedMomentCoefficients[ar_id, chord_id, :] = (
+                theseCombinedMomentCoefficients
             )
             iter_times[ar_id, chord_id] = this_iter_time
 
@@ -512,74 +514,83 @@ def analyze_steady_convergence(
             # If this isn't the first Panel aspect ratio, calculate the Panel aspect
             # ratio APE.
             if ar_id > 0:
-                last_ar_force_coefficients = forceCoefficients_W[ar_id - 1, chord_id, :]
-                last_ar_moment_coefficients = momentCoefficients_W_CgP1[
+                lastArCombinedForceCoefficients = combinedForceCoefficients[
+                    ar_id - 1, chord_id, :
+                ]
+                lastArCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id - 1, chord_id, :
                 ]
                 max_ar_force_pc = max(
                     100
                     * np.abs(
-                        (theseForceCoefficients_W - last_ar_force_coefficients)
-                        / last_ar_force_coefficients
+                        (
+                            theseCombinedForceCoefficients
+                            - lastArCombinedForceCoefficients
+                        )
+                        / lastArCombinedForceCoefficients
                     )
                 )
                 max_ar_moment_pc = max(
                     100
                     * np.abs(
-                        (theseMomentCoefficients_W_CgP1 - last_ar_moment_coefficients)
-                        / last_ar_moment_coefficients
+                        (
+                            theseCombinedMomentCoefficients
+                            - lastArCombinedMomentCoefficients
+                        )
+                        / lastArCombinedMomentCoefficients
                     )
                 )
                 max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                 convergence_logger.info(
-                    "\t\t\tMaximum coefficient change from Panel aspect ratio: "
-                    + str(round(max_ar_pc, 2))
-                    + "%"
+                    "\t\t\tMaximum combined coefficient change from Panel aspect "
+                    "ratio: " + str(round(max_ar_pc, 2)) + "%"
                 )
             else:
                 convergence_logger.info(
-                    "\t\t\tMaximum coefficient change from Panel aspect ratio: "
-                    + str(max_ar_pc)
+                    "\t\t\tMaximum combined coefficient change from Panel aspect "
+                    "ratio: " + str(max_ar_pc)
                 )
 
             # If this isn't the first number of chordwise Panels, calculate the
             # number of chordwise Panels APE.
             if chord_id > 0:
-                last_chord_force_coefficients = forceCoefficients_W[
+                lastChordCombinedForceCoefficients = combinedForceCoefficients[
                     ar_id, chord_id - 1, :
                 ]
-                last_chord_moment_coefficients = momentCoefficients_W_CgP1[
+                lastChordCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id, chord_id - 1, :
                 ]
                 max_chord_force_pc = max(
                     100
                     * np.abs(
-                        (theseForceCoefficients_W - last_chord_force_coefficients)
-                        / last_chord_force_coefficients
+                        (
+                            theseCombinedForceCoefficients
+                            - lastChordCombinedForceCoefficients
+                        )
+                        / lastChordCombinedForceCoefficients
                     )
                 )
                 max_chord_moment_pc = max(
                     100
                     * np.abs(
                         (
-                            theseMomentCoefficients_W_CgP1
-                            - last_chord_moment_coefficients
+                            theseCombinedMomentCoefficients
+                            - lastChordCombinedMomentCoefficients
                         )
-                        / last_chord_moment_coefficients
+                        / lastChordCombinedMomentCoefficients
                     )
                 )
                 max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 convergence_logger.info(
-                    "\t\t\tMaximum coefficient change from number of chordwise Panels:"
-                    + str(round(max_chord_pc, 2))
-                    + "%"
+                    "\t\t\tMaximum combined coefficient change from number of "
+                    "chordwise Panels: " + str(round(max_chord_pc, 2)) + "%"
                 )
             else:
                 convergence_logger.info(
-                    "\t\t\tMaximum coefficient change from number of chordwise Panels:"
-                    + str(max_chord_pc)
+                    "\t\t\tMaximum combined coefficient change from number of "
+                    "chordwise Panels: " + str(max_chord_pc)
                 )
 
             # Consider the Panel aspect ratio value to be saturated if it is equal to
@@ -685,14 +696,6 @@ def analyze_unsteady_convergence(
     num_chords_bounds: tuple[int, int] | None = None,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
-    coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] = (
-        True,
-        True,
-        True,
-        True,
-        True,
-        True,
-    ),
     convergence_criteria=5.0,
 ) -> tuple[bool, int, int, int] | tuple[None, None, None, None]:
     """This function finds the converged parameters of an UnsteadyProblem.
@@ -795,17 +798,6 @@ def analyze_unsteady_convergence(
 
         This parameter is a tuple of two ints in ascending order. It determines the
         range of the Wings' numbers of chordwise panels. The default value is (3, 12).
-
-    :param coefficient_mask: tuple of six bools, optional
-
-        This parameter is a tuple of six bools that determines which load
-        coefficients are factored into the convergence analysis. Each entry
-        corresponds to a load coefficient in the following order: (
-        forceCoefficientX_W, forceCoefficientY_W, forceCoefficientZ_W,
-        momentCoefficientX_W_Cg, momentCoefficientY_W_Cg,
-        and momentCoefficientZ_W_Cg). A value of True means that the corresponding
-        coefficient is included in the analysis, while a value of False means it is
-        excluded. The default value is (True, True, True, True, True, True).
 
     :param convergence_criteria: positive number, optional
 
@@ -918,8 +910,6 @@ def analyze_unsteady_convergence(
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement
 
-    num_coefficients = coefficient_mask.count(True)
-
     # Create the list of wake states to iterate over.
     wake_list = []
     if prescribed_wake:
@@ -955,14 +945,14 @@ def analyze_unsteady_convergence(
         ),
         dtype=float,
     )
-    loadCoefficients = np.zeros(
+    combinedFinalLoadCoefficients = np.zeros(
         (
             len(wake_list),
             len(wake_lengths_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplane_movements),
-            num_coefficients,
+            2,
         ),
         dtype=float,
     )
@@ -1458,45 +1448,44 @@ def analyze_unsteady_convergence(
                     this_iter_time = iter_stop - iter_start
 
                     # Create and fill ndarrays with each of this iteration's Airplanes'
-                    # combined total load coefficients.
-                    these_coefficients = np.zeros(
-                        (len(these_airplane_movements), num_coefficients), dtype=float
+                    # combined final load coefficients.
+                    theseCombinedFinalLoadCoefficients = np.zeros(
+                        (len(these_airplane_movements), 2), dtype=float
                     )
                     airplane: geometry.airplane.Airplane
                     for airplane_id, airplane in enumerate(these_airplane_movements):
-                        # If this UnsteadyProblem is static, then get it's final load
-                        # coefficients. If it's variable, get the final RMS load
-                        # coefficients.
+                        # If this UnsteadyProblem is static, then get it's combined
+                        # final load coefficients. If it's variable, get the combined
+                        # final RMS load coefficients.
                         if static:
-                            all_force_coefficients = (
+                            combinedFinalForceCoefficient = np.linalg.norm(
                                 this_problem.finalForceCoefficients_W[airplane_id]
                             )
-                            all_moment_coefficients = (
+                            combinedFinalMomentCoefficient = np.linalg.norm(
                                 this_problem.finalMomentCoefficients_W_CgP1[airplane_id]
                             )
                         else:
-                            all_force_coefficients = (
+                            combinedFinalForceCoefficient = np.linalg.norm(
                                 this_problem.finalRmsForceCoefficients_W[airplane_id]
                             )
-                            all_moment_coefficients = (
+                            combinedFinalMomentCoefficient = np.linalg.norm(
                                 this_problem.finalRmsMomentCoefficients_W_CgP1[
                                     airplane_id
                                 ]
                             )
 
-                        all_coefficients = np.concatenate(
-                            [all_force_coefficients, all_moment_coefficients]
+                        theseCombinedFinalLoadCoefficients[airplane_id, 0] = (
+                            combinedFinalForceCoefficient
                         )
-
-                        these_coefficients[airplane_id] = all_coefficients[
-                            list(coefficient_mask)
-                        ]
+                        theseCombinedFinalLoadCoefficients[airplane_id, 1] = (
+                            combinedFinalMomentCoefficient
+                        )
 
                     # Populate the ndarrays that store information from all the
                     # iterations with the data from this iteration.
-                    loadCoefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
-                        these_coefficients
-                    )
+                    combinedFinalLoadCoefficients[
+                        wake_id, length_id, ar_id, chord_id, :, :
+                    ] = theseCombinedFinalLoadCoefficients
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     convergence_logger.info(
@@ -1512,99 +1501,117 @@ def analyze_unsteady_convergence(
 
                     # If this isn't the first wake state, calculate the wake state APE.
                     if wake_id > 0:
-                        last_wake_coefficients = loadCoefficients[
-                            wake_id - 1, length_id, ar_id, chord_id, :, :
-                        ]
+                        lastWakeCombinedFinalLoadCoefficients = (
+                            combinedFinalLoadCoefficients[
+                                wake_id - 1, length_id, ar_id, chord_id, :, :
+                            ]
+                        )
                         max_wake_pc = np.max(
                             100
                             * np.abs(
-                                (these_coefficients - last_wake_coefficients)
-                                / last_wake_coefficients
+                                (
+                                    theseCombinedFinalLoadCoefficients
+                                    - lastWakeCombinedFinalLoadCoefficients
+                                )
+                                / lastWakeCombinedFinalLoadCoefficients
                             )
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from wake type: "
-                            + str(round(max_wake_pc, 2))
-                            + "%"
+                            "\t\t\t\t\tMaximum combined coefficient change from wake "
+                            "type: " + str(round(max_wake_pc, 2)) + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from wake type: "
-                            + str(max_wake_pc)
+                            "\t\t\t\t\tMaximum combined coefficient change from wake "
+                            "type: " + str(max_wake_pc)
                         )
 
                     # If this isn't the first wake length, calculate the wake length
                     # APE.
                     if length_id > 0:
-                        last_length_coefficients = loadCoefficients[
-                            wake_id, length_id - 1, ar_id, chord_id, :, :
-                        ]
+                        lastLengthCombinedFinalLoadCoefficients = (
+                            combinedFinalLoadCoefficients[
+                                wake_id, length_id - 1, ar_id, chord_id, :, :
+                            ]
+                        )
                         max_length_pc = np.max(
                             100
                             * np.abs(
-                                (these_coefficients - last_length_coefficients)
-                                / last_length_coefficients
+                                (
+                                    theseCombinedFinalLoadCoefficients
+                                    - lastLengthCombinedFinalLoadCoefficients
+                                )
+                                / lastLengthCombinedFinalLoadCoefficients
                             )
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from wake length: "
-                            + str(round(max_length_pc, 2))
-                            + "%"
+                            "\t\t\t\t\tMaximum combined coefficient change from wake "
+                            "length: " + str(round(max_length_pc, 2)) + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from wake length: "
-                            + str(max_length_pc)
+                            "\t\t\t\t\tMaximum combined coefficient change from wake "
+                            "length: " + str(max_length_pc)
                         )
 
                     # If this isn't the first Panel aspect ratio, calculate the Panel
                     # aspect ratio APE.
                     if ar_id > 0:
-                        last_ar_coefficients = loadCoefficients[
-                            wake_id, length_id, ar_id - 1, chord_id, :, :
-                        ]
+                        lastArCombinedFinalLoadCoefficients = (
+                            combinedFinalLoadCoefficients[
+                                wake_id, length_id, ar_id - 1, chord_id, :, :
+                            ]
+                        )
                         max_ar_pc = np.max(
                             100
                             * np.abs(
-                                (these_coefficients - last_ar_coefficients)
-                                / last_ar_coefficients
+                                (
+                                    theseCombinedFinalLoadCoefficients
+                                    - lastArCombinedFinalLoadCoefficients
+                                )
+                                / lastArCombinedFinalLoadCoefficients
                             )
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from Panel aspect "
-                            "ratio: " + str(round(max_ar_pc, 2)) + "%"
+                            "\t\t\t\t\tMaximum combined coefficient change from Panel "
+                            "aspect ratio: " + str(round(max_ar_pc, 2)) + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from Panel aspect "
-                            "ratio: " + str(max_ar_pc)
+                            "\t\t\t\t\tMaximum combined coefficient change from Panel "
+                            "aspect ratio: " + str(max_ar_pc)
                         )
 
                     # If this isn't the first number of chordwise Panels, calculate
                     # the number of chordwise Panels APE.
                     if chord_id > 0:
-                        last_chord_coefficients = loadCoefficients[
-                            wake_id, length_id, ar_id, chord_id - 1, :, :
-                        ]
+                        lastChordCombinedFinalLoadCoefficients = (
+                            combinedFinalLoadCoefficients[
+                                wake_id, length_id, ar_id, chord_id - 1, :, :
+                            ]
+                        )
                         max_chord_pc = np.max(
                             100
                             * np.abs(
-                                (these_coefficients - last_chord_coefficients)
-                                / last_chord_coefficients
+                                (
+                                    theseCombinedFinalLoadCoefficients
+                                    - lastChordCombinedFinalLoadCoefficients
+                                )
+                                / lastChordCombinedFinalLoadCoefficients
                             )
                         )
 
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from chordwise "
-                            "Panels: " + str(round(max_chord_pc, 2)) + "%"
+                            "\t\t\t\t\tMaximum combined coefficient change from "
+                            "chordwise Panels: " + str(round(max_chord_pc, 2)) + "%"
                         )
                     else:
                         convergence_logger.info(
-                            "\t\t\t\t\tMaximum coefficient change from chordwise "
-                            "Panels: " + str(max_chord_pc)
+                            "\t\t\t\t\tMaximum combined coefficient change from "
+                            "chordwise Panels: " + str(max_chord_pc)
                         )
 
                     # Consider the Panel aspect ratio value to be saturated if it is

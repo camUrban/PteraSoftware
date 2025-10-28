@@ -148,21 +148,15 @@ steady_problem = ps.problems.SteadyProblem(
     operating_point=operating_point,
 )
 
-solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-    steady_problem=steady_problem,
-)
-
-ps.output.draw(solver=solver, scalar_type=None)
-
 del leading_airplane
 del trailing_airplane
 del operating_point
 
-# Run the steady convergence analysis. This will run the SteadyProblem several times,
-# modifying average Panel aspect ratio and number of chordwise Panels with each
-# iteration. Once it detects that the net load coefficients haven't change by more
-# than the convergence criteria (measured as an absolute percent error), it will
-# return the parameters it found to result in a converged solution. See the
+# Run the steady convergence analysis. This will run several simulations, modifying
+# average Panel aspect ratio and number of chordwise Panels with each iteration. Once
+# it detects that the net load coefficients haven't change by more than the
+# convergence criteria (measured as an absolute percent error), it will return the
+# parameters it found to result in a converged solution. See the
 # analyze_steady_convergence function docstring for more details. The progress and
 # results are displayed to the console.
 ps.convergence.analyze_steady_convergence(

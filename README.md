@@ -189,16 +189,27 @@ import pterasoftware as ps
 airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
-            symmetric=True,
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    airfoil=ps.geometry.airfoil.Airfoil(
+                        name="naca2412",
+                    ),
+                    num_spanwise_panels=8,
+                    control_surface_symmetry_type="asymmetric",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
-                    y_le=5.0,
-                    airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                    airfoil=ps.geometry.airfoil.Airfoil(
+                        name="naca2412",
+                    ),
+                    num_spanwise_panels=None,
+                    Lp_Wcsp_Lpp=(0, 5, 0),
+                    control_surface_symmetry_type="asymmetric",
                 ),
             ],
+            symmetric=True,
+            symmetryNormal_G=(0, 1, 0),
+            symmetryPoint_G_Cg=(0, 0, 0),
         ),
     ],
 )
@@ -320,11 +331,13 @@ where applicable.
 * Suhas Kodali
 * Peter Sharpe
 * Zach Tait
+* Jonah Jaffe
 * Ramesh Agarwal
+* E. Farrell Helbling
+* Raphael Zufferey
 * Joseph Katz
 * Allen Plotkin
 * Austin Stover
-* E. Farrell Helbling
 * AeroSandbox
 * Black
 * Codecov

@@ -16,10 +16,10 @@ lead_airplane = ps.geometry.airplane.Airplane(
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
-                    num_spanwise_panels=8,
+                    num_spanwise_panels=10,
                     chord=1.75,
                     control_surface_symmetry_type="symmetric",
-                    spanwise_spacing="uniform",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -33,7 +33,7 @@ lead_airplane = ps.geometry.airplane.Airplane(
                 ),
             ],
             name="Main Wing",
-            Ler_Gs_Cgs=(0.0, 0.5, 0.0),
+            Ler_Gs_Cgs=(0.0, 0.25, 0.0),
             angles_Gs_to_Wn_ixyz=(0.0, 5.0, 0.0),
             symmetric=True,
             symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -68,7 +68,7 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                     ]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -90,7 +90,7 @@ lead_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                     ]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -107,10 +107,10 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
-                    num_spanwise_panels=8,
+                    num_spanwise_panels=10,
                     chord=1.75,
                     control_surface_symmetry_type="symmetric",
-                    spanwise_spacing="uniform",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -124,7 +124,7 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
                 ),
             ],
             name="Main Wing",
-            Ler_Gs_Cgs=(0.0, 0.5, 0.0),
+            Ler_Gs_Cgs=(0.0, 0.25, 0.0),
             angles_Gs_to_Wn_ixyz=(0.0, 5.0, 0.0),
             symmetric=True,
             symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -156,7 +156,7 @@ trailing_right_airplane_movement = ps.movements.airplane_movement.AirplaneMoveme
                     ].wing_cross_sections[1]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -175,7 +175,7 @@ trailing_right_airplane_movement = ps.movements.airplane_movement.AirplaneMoveme
                     ].wing_cross_sections[1]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -192,10 +192,10 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
                     ),
-                    num_spanwise_panels=8,
+                    num_spanwise_panels=10,
                     chord=1.75,
                     control_surface_symmetry_type="symmetric",
-                    spanwise_spacing="uniform",
+                    spanwise_spacing="cosine",
                 ),
                 ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=ps.geometry.airfoil.Airfoil(
@@ -209,7 +209,7 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
                 ),
             ],
             name="Main Wing",
-            Ler_Gs_Cgs=(0.0, 0.5, 0.0),
+            Ler_Gs_Cgs=(0.0, 0.25, 0.0),
             angles_Gs_to_Wn_ixyz=(0.0, 5.0, 0.0),
             symmetric=True,
             symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -241,7 +241,7 @@ left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                     ].wing_cross_sections[1]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -260,7 +260,7 @@ left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
                     ].wing_cross_sections[1]
                 ),
             ],
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(25.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -270,7 +270,7 @@ left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 # Define an OperatingPoint. This defines the state at which all the Airplanes are
 # operating.
-operating_point = ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=0.0)
+operating_point = ps.operating_point.OperatingPoint(vCg__E=15.0, alpha=0.0)
 
 # Define the OperatingPoint's OperatingPointMovement.
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
@@ -293,7 +293,7 @@ movement = ps.movements.movement.Movement(
         left_airplane_movement,
     ],
     operating_point_movement=operating_point_movement,
-    num_cycles=2,
+    num_cycles=3,
 )
 
 # Delete the extraneous pointers to the AirplaneMovements and the

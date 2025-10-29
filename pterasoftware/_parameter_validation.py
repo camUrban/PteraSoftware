@@ -109,7 +109,7 @@ def int_in_range_return_int(
                 raise ValueError(f"{name} must be less than or equal to {max_val}.")
         else:
             if not value < max_val:
-                raise ValueError(f"{name} must be less than {min_val}.")
+                raise ValueError(f"{name} must be less than {max_val}.")
 
     return int(value)
 
@@ -355,8 +355,8 @@ def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
     array-like objects with shape (3,)). It then returns it as a (...,3) numpy array
     of floats. name must be a string.
 
-    Accepts both single vectors of shape (2,) and arrays of vectors with shape
-    (..., 2) where the last dimension must be 2.
+    Accepts both single vectors of shape (3,) and arrays of vectors with shape
+    (..., 3) where the last dimension must be 3.
 
     Note: np.nan, np.inf, and -np.inf won't pass this test."""
     name = string_return_string(name, "name")

@@ -6,6 +6,9 @@ import sys
 import time
 import importlib
 
+# Add the gui directory to the Python path so ui_resources can be imported.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
@@ -13,8 +16,8 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
 from _resources.main_window import Ui_MainWindowDesign
 from _resources.textdialog import Ui_TextAboutDialog
 
-# Add the gui directory to the Python path so ui_resources can be imported.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Get the project root directory (parent of the gui directory).
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class TextAboutDialog(QDialog):
@@ -61,7 +64,8 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
     def exampleMenu(self, ex_num):
         files = []
-        for i, filename in enumerate(os.listdir("examples")):
+        examples_dir = os.path.join(project_root, "examples")
+        for i, filename in enumerate(os.listdir(examples_dir)):
             f = "examples." + filename
             files.append(f)
         file = files[ex_num]
@@ -84,14 +88,16 @@ class MainWindow(QMainWindow, Ui_MainWindowDesign):
 
         self.dialog = TextAboutDialog("About Ptera Software")
         doc = QTextDocument()
-        doc.setMarkdown(_read_file("README.md"))
+        readme_path = os.path.join(project_root, "README.md")
+        doc.setMarkdown(_read_file(readme_path))
         self.dialog.ui.textEdit.setDocument(doc)
         self.dialog.show()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    pixmap = QPixmap("docs/logo.png")
+    logo_path = os.path.join(project_root, "docs", "logo.png")
+    pixmap = QPixmap(logo_path)
     splash = QSplashScreen(pixmap)
     # noinspection PyUnresolvedReferences
     splash.setWindowFlags(Qt.WindowStaysOnTopHint)

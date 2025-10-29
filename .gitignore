@@ -146,6 +146,6 @@ cython_debug/
 Animate.webp
 Draw.webp
 * Forces.png
-* ForceCoefficients.png
+* Force Coefficients.png
 * Moments.png
-* MomentCoefficients.png
+* Moment Coefficients.png

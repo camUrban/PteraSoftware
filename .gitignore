@@ -141,3 +141,11 @@ cython_debug/
 /dist
 /Output
 .spec
+
+# These are files and folders created by usage to ignore
+Animate.webp
+Draw.webp
+* Forces.png
+* ForceCoefficients.png
+* Moments.png
+* MomentCoefficients.png

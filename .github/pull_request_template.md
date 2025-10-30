@@ -36,7 +36,8 @@ impact.
 docstrings.
 - [ ] All new modules, classes, functions, and methods have docstrings in 
 [reStructuredText format](https://realpython.com/documenting-python-code/), and are 
-formatted using [docformatter](https://github.com/PyCQA/docformatter) (--black).
+formatted using [docformatter](https://github.com/PyCQA/docformatter) 
+(`--in-place --black`).
 - [ ] All new classes, functions, and methods use type hints.
 - [ ] If any major functionality was added or significantly changed, I have added or 
 updated tests in the `tests` package.

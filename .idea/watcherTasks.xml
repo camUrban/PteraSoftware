@@ -15,7 +15,7 @@
       </option>
       <option name="outputFromStdout" value="false" />
       <option name="program" value="$PyInterpreterDirectory$/docformatter" />
-      <option name="runOnExternalChanges" value="false" />
+      <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Project Files" />
       <option name="trackOnlyRoot" value="false" />
       <option name="workingDir" value="" />

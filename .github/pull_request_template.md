@@ -1,5 +1,4 @@
 # Description
-
 Provide a concise description of the changes in this pull request.
 
 ## Motivation
@@ -32,14 +31,17 @@ impact.
 - [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
 - [ ] All calculations use S.I. units.
 - [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
-- [ ] All new modules, classes, functions, and methods have docstrings in 
-[reStructuredText format](https://realpython.com/documenting-python-code/).
 - [ ] Code is well documented with block comments where appropriate.
-- [ ] Code passes local automated checks (`codespell`, `black`, and `tests`).
-- [ ] If any major functionality was added or significantly changed, I have added or 
-updated tests in the `tests` package.
 - [ ] Any external code, algorithms, or equations used have been cited in comments or 
 docstrings.
+- [ ] All new modules, classes, functions, and methods have docstrings in 
+[reStructuredText format](https://realpython.com/documenting-python-code/), and are 
+formatted using [docformatter](https://github.com/PyCQA/docformatter) (--black).
+- [ ] All new classes, functions, and methods use type hints.
+- [ ] If any major functionality was added or significantly changed, I have added or 
+updated tests in the `tests` package.
+- [ ] Code locally passes all tests in the `tests` package.
+- [ ] After pushing, PR passes all automated checks (`codespell`, `black`, and `tests`).
 - [ ] PR description links all relevant issues and follows this template.
 
 ---

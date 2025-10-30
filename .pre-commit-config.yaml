@@ -9,3 +9,9 @@ repos:
       - id: codespell
         args: ["--ignore-words=.codespell-ignore.txt"]
         exclude: '.*\.dat$'
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.7
+    hooks:
+      - id: docformatter
+        additional_dependencies: [tomli]
+        args: [--in-place --black --config ./pyproject.toml]

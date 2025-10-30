@@ -123,7 +123,7 @@ Once you understand the process, here's how to implement it:
 
 4. **Make your changes**  
    - Commit frequently with clear, descriptive messages.  
-   - Follow the [code style and standards](#code-style-and-standards).  
+   - Follow the code style and standards described in the [pull request template](.github/pull_request_template.md).  
    - Run automated checks locally before pushing:  
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
@@ -152,18 +152,5 @@ Once you understand the process, here's how to implement it:
    - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  
    - Once approved, it will be merged into main and included in the next release.
-
----
-
-## Code Style and Standards
-
-- Always use S.I. units in calculations and results.  
-- Format code using [black](https://github.com/psf/black) with a line length of 88.  
-- Include docstrings for all new modules, classes, functions, and methods in 
-[reStructuredText format](https://realpython.com/documenting-python-code/).  
-- Use block comments where needed for clarity.  
-- Tag comments with `TODO`, `BUG`, or similar where applicable.  
-- Cite any external sources such as code, equations, or algorithms in comments or 
-  docstrings.
 
 ---

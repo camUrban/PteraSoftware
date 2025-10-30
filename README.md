@@ -269,14 +269,15 @@ Here are the requirements necessary to run Ptera Software:
 
 Additionally, these packages are useful for continued development of the software:
 
-* codecov >= 2.1.13, < 3.0.0
 * black >= 25.1.0, < 26.0.0
-* codespell >= 2.4.1, < 3.0.0
-* pre-commit >= 4.3.0, < 5.0.0
 * build >= 1.3.0, < 2.0.0
-* twine >= 6.1.0, < 7.0.0
+* codecov >= 2.1.13, < 3.0.0
+* codespell >= 2.4.1, < 3.0.0
+* docformatter >= 1.7.7, < 2.0.0
+* pre-commit >= 4.3.0, < 5.0.0
 * PyInstaller >= 6.15.0, < 7.0.0
 * setuptools >= 80.9.0, < 81.0.0
+* twine >= 6.1.0, < 7.0.0
 * wheel >= 0.45.1, < 0.46.0
 
 ## Validation
@@ -308,9 +309,9 @@ contribute and don't know where to start, this is for you!
 ### Style and Documentation
 
 * Maintain the repository's A CodeFactor Rating.
-* We should fill in any of the "Properly document this..." TODO statements.
-* We should ensure that all files be at least 30% comment lines.
-* We should continue to ensure that all source code is formatted using Black.
+* We should continue to ensure that all source code is formatted using Black and all 
+docstrings formatted using docformatter.
+* Classes, functions, and methods should use type hints.
 
 ### Features
 
@@ -324,8 +325,8 @@ contribute and don't know where to start, this is for you!
 
 ## Credits
 
-Here is a list of all the people and packages that helped me created Ptera Software in
-no particular order. Specific citations can be found in the source code's docstrings
+Here is a list of all the people that helped me created Ptera Software in no 
+particular order. Specific citations can be found in the source code's docstrings 
 where applicable.
 
 * Suhas Kodali
@@ -338,28 +339,6 @@ where applicable.
 * Joseph Katz
 * Allen Plotkin
 * Austin Stover
-* AeroSandbox
-* Black
-* Codecov
-* NumPy
-* SciPy
-* PyVista
-* MatPlotLib
-* Numba
-* Pre-Commit
-* SetupTools
-* GitIgnore
-* Shields.io
-* PyPI
-* Wheel
-* Twine
-* SemVer
-* GitFlow
-* GitHub Flow
-* Cmocean
-* Tqdm
-* WebP
-* Build
 
 ## Notes
 

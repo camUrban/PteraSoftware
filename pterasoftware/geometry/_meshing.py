@@ -2,12 +2,15 @@
 
 import numpy as np
 
+from . import wing as wing_mod
+from . import airfoil as airfoil_mod
+from . import wing_cross_section as wing_cross_section_mod
 from .. import _functions
 from .. import _panel
 from .. import _transformations
 
 
-def mesh_wing(wing):
+def mesh_wing(wing: wing_mod.Wing) -> None:
     """This function takes in Wing and creates a quadrilateral mesh of its geometry,
     and then populates its array of Panels with the mesh data.
 
@@ -16,8 +19,8 @@ def mesh_wing(wing):
         Author:               Peter Sharpe
         Date of Retrieval:    05/01/2020
 
-    :param wing: Wing
-        This is the Wing to be meshed.
+    :param wing: The Wing to be meshed.
+
     :return: None
     """
     # Gather this Wing's attributes
@@ -334,38 +337,32 @@ def mesh_wing(wing):
     wing.panels = wing_panels
 
 
-def _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates):
+def _get_mcl_points(
+    inner_airfoil: airfoil_mod.Airfoil,
+    outer_airfoil: airfoil_mod.Airfoil,
+    chordwise_coordinates: np.ndarray,
+) -> list[np.ndarray]:
     """This function takes in the inner and outer Airfoils of a wing section and its
     normalized chordwise coordinates. It returns a list of four column vectors
     containing the normalized components of the positions of points along the mean
     camber line (MCL) (in each Airfoil's axes, relative to each Airfoil's leading
     point).
 
-    In order, the vectors returned are:
-    - The inner Airfoil's MCL points' y-components
-    - The inner Airfoil's MCL points' x-components
-    - The outer Airfoil's MCL points' y-components
-    - The outer Airfoil's MCL points' x-components
+    :param inner_airfoil: The wing section's inner Airfoil.
 
-    :param inner_airfoil: Airfoil
+    :param outer_airfoil: The wing section's outer Airfoil.
 
-        This is the wing section's inner Airfoil.
+    :param chordwise_coordinates: A (N,) ndarray of floats for the normalized
+        chordwise coordinates where we'd like to sample each Airfoil's MCL. The values
+        are normalized from 0.0 to 1.0 and are unitless.
 
-    :param outer_airfoil:
-
-        This is the wing section's outer Airfoil.
-
-    :param chordwise_coordinates: (N,) ndarray of floats
-
-        This is a 1D array of the normalized chordwise coordinates where we'd like to
-        sample each Airfoil's MCL.
-
-    :return: list of 4 (N,1) ndarrays
-
-        This is a list of four column vectors, each with N rows, where N is the
-        number of points at which we'd like to sample each Airfoil's MCL. The column
-        vectors contain components of the positions of points along each Airfoil's
-        MCL. The values are normalized from 0.0 to 1.0 and are unitless.
+    :return: A list of four (N,1) ndarrays of floats, where N is the number of points
+        at which we'd like to sample each Airfoil's MCL. The ndarrays contain components
+        of the positions of points along each Airfoil's MCL. In order, the ndarrays
+        returned are, (1) the inner Airfoil's MCL points' y-components, (2) the inner
+        Airfoil's MCL points' x-components (3) the outer Airfoil's MCL points'
+        y-components, and (4) the outer Airfoil's MCL points' x-components. The values
+        are normalized from 0.0 to 1.0 and are unitless.
     """
 
     # Make the MCLs for each Airfoil. First index is point number, second index is
@@ -403,81 +400,66 @@ def _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates):
 
 
 def _get_mcs_points(
-    T_pas_Wcsi_Lpi_Wn_Ler,
-    T_pas_Wcso_Lpo_Wn_Ler,
-    inner_wing_cross_section,
-    outer_wing_cross_section,
-    inner_mcl_pointsY_Ai_lpAi,
-    inner_mcl_pointsX_Ai_lpAi,
-    outer_mcl_pointsY_Ao_lpAo,
-    outer_mcl_pointsX_Ao_lpAo,
-    spanwise_coordinates,
-):
+    T_pas_Wcsi_Lpi_Wn_Ler: np.ndarray,
+    T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
+    inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,
+    outer_wing_cross_section: wing_cross_section_mod.WingCrossSection,
+    inner_mcl_pointsY_Ai_lpAi: np.ndarray,
+    inner_mcl_pointsX_Ai_lpAi: np.ndarray,
+    outer_mcl_pointsY_Ao_lpAo: np.ndarray,
+    outer_mcl_pointsX_Ao_lpAo: np.ndarray,
+    spanwise_coordinates: np.ndarray,
+) -> list[np.ndarray]:
     """This function calculates the points on a wing section's mean camber surface (
     MCS) (in wing axes, relative to the leading edge root point).
 
+    :param T_pas_Wcsi_Lpi_Wn_Ler: A (4,4) ndarray of floats representing a passive
+        transformation matrix which maps in homogeneous coordinates from the inner
+        WingCrossSection's axes, relative to its leading point to wing axes relative to
+        the leading edge root point.
 
-    :param T_pas_Wcsi_Lpi_Wn_Ler: (4,4) ndarray of floats
+    :param T_pas_Wcso_Lpo_Wn_Ler: A (4,4) ndarray of floats representing a passive
+        transformation matrix which maps in homogeneous coordinates from the outer
+        WingCrossSection's axes, relative to its leading point to wing axes relative to
+        the leading edge root point.
 
-        A passive transformation matrix which maps in homogeneous coordinates from
-        the inner WingCrossSection's axes, relative to its leading point to wing axes
-        relative to the leading edge root point.
+    :param inner_wing_cross_section: The wing section's inner WingCrossSection.
 
-    :param T_pas_Wcso_Lpo_Wn_Ler: (4,4) ndarray of floats
+    :param outer_wing_cross_section: The wing section's outer WingCrossSection.
 
-        A passive transformation matrix which maps in homogeneous coordinates from
-        the outer WingCrossSection's axes, relative to its leading point to wing axes
-        relative to the leading edge root point.
+    :param inner_mcl_pointsY_Ai_lpAi: A (M,1) ndarray of floats, where M is the
+        number of chordwise points in the mesh. Each element represents the y-component
+        of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
+        inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
+        are unitless.
 
-    :param inner_wing_cross_section: WingCrossSection
+    :param inner_mcl_pointsX_Ai_lpAi: A (M,1) ndarray of floats, where M is the
+        number of chordwise points in the mesh. Each element represents the x-component
+        of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
+        inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
+        are unitless.
 
-        This is this wing section's inner WingCrossSection.
+    :param outer_mcl_pointsY_Ao_lpAo: A (M,1) ndarray of floats, where M is the
+        number of chordwise points in the mesh. Each element represents the y-component
+        of the outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the
+        outer Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
+        are unitless.
 
-    :param outer_wing_cross_section: WingCrossSection
+    :param outer_mcl_pointsX_Ao_lpAo: A (M,1) ndarray of floats, where M is the
+        number of chordwise points in the mesh. Each element represents the x-component
+        of the outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the
+        outer Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
+        are unitless.
 
-        This is this wing section's outer WingCrossSection.
+    :param spanwise_coordinates: A (N,1) ndarray of floats, where N is the number of
+        spanwise points. It holds the distances of each spanwise point along the wing
+        section. The values are normalized from 0.0 to 1.0 and are unitless.
 
-    :param inner_mcl_pointsY_Ai_lpAi: (M,1) ndarray of floats
-
-        This is a (M,1) ndarray of floats, where M is the number of chordwise points
-        in the mesh. Each element represents the y-component of the inner Airfoil's
-        MCL points (in the inner Airfoil's axes, relative to the inner Airfoil's
-        leading point). The values are normalized from 0.0 to 1.0 and are unitless.
-
-    :param inner_mcl_pointsX_Ai_lpAi: (M,1) ndarray of floats
-
-        This is a (M,1) ndarray of floats, where M is the number of chordwise points
-        in the mesh. Each element represents the x-component of the inner Airfoil's
-        MCL points (in the inner Airfoil's axes, relative to the inner Airfoil's
-        leading point). The values are normalized from 0.0 to 1.0 and are unitless.
-
-    :param outer_mcl_pointsY_Ao_lpAo: (M,1) ndarray of floats
-
-        This is a (M,1) ndarray of floats, where M is the number of chordwise points
-        in the mesh. Each element represents the y-component of the outer Airfoil's
-        MCL points (in the outer Airfoil's axes, relative to the outer Airfoil's
-        leading point). The values are normalized from 0.0 to 1.0 and are unitless.
-
-    :param outer_mcl_pointsX_Ao_lpAo: (M,1) ndarray of floats
-
-        This is a (M,1) ndarray of floats, where M is the number of chordwise points
-        in the mesh. Each element represents the x-component of the outer Airfoil's
-        MCL points (in the outer Airfoil's axes, relative to the outer Airfoil's
-        leading point). The values are normalized from 0.0 to 1.0 and are unitless.
-
-    :param spanwise_coordinates: (N,1) ndarray of floats
-
-        This parameter is a (N,1) ndarray of floats, where N is the number of spanwise
-        points. It holds the distances of each spanwise point along the wing section.
-        The values are normalized from 0.0 to 1.0 and are unitless.
-
-    :return: list of 4 (M,N,3) ndarrays of floats
-
-        This function returns a list with four (M,N,3) ndarrays, where M is the
-        number of chordwise points and N is the number of spanwise points. The four
-        arrays are this wing section's Panel's forward inner, forward outer, backward
-        inner, and backward outer panel points (in wing axes, relative to the leading
-        edge root point). The units are in meters.
+    :return: A list of four (M,N,3) ndarrays of floats, where M is the number of
+        chordwise points and N is the number of spanwise points. The four ndarrays are,
+        in order, this wing section's Panel's (1) forward inner, (2) forward outer,
+        (3) backward inner, and (4) backward outer panel points (in wing axes, relative
+        to the leading edge root point). The units are in meters.
     """
     inner_mcl_pointsX_Wcsi_Lpi = (
         inner_wing_cross_section.chord * inner_mcl_pointsX_Ai_lpAi
@@ -540,57 +522,44 @@ def _get_mcs_points(
 
 
 def _get_panels(
-    Flpp_G_Cg,
-    Frpp_G_Cg,
-    Blpp_G_Cg,
-    Brpp_G_Cg,
-    is_trailing_edge,
-    is_leading_edge,
-):
-    """This function takes in arrays of Panel attributes and returns a 2D array of
+    Flpp_G_Cg: np.ndarray,
+    Frpp_G_Cg: np.ndarray,
+    Blpp_G_Cg: np.ndarray,
+    Brpp_G_Cg: np.ndarray,
+    is_trailing_edge: np.ndarray,
+    is_leading_edge: np.ndarray,
+) -> np.ndarray:
+    """This function takes in arrays of Panel attributes and returns a 2D ndarray of
     Panels.
 
-    :param Flpp_G_Cg: (M,N,3) ndarray of floats
+    :param Flpp_G_Cg: A (M,N,3) ndarray of floats, where M is the number of
+        chordwise Panels, N is the number of spanwise Panels, and the last dimension
+        contains the position vector of each Panel's front left vertex (in geometry
+        axes, relative to the CG). The values are in meters.
 
-        This is a (M,N,3) ndarray of floats, where M is the number of chordwise panels,
-        N is the number of spanwise panels, and the last dimension contains the
-        position vector of each Panel's front left vertex (in geometry axes, relative
+    :param Frpp_G_Cg: A (M,N,3) ndarray of floats, where M is the number of chordwise
+        Panels, N is the number of spanwise Panels, and the last dimension contains the
+        position vector of each Panel's front right vertex (in geometry axes, relative
         to the CG). The values are in meters.
 
-    :param Frpp_G_Cg: (M,N,3) ndarray of floats
-
-        This is a (M,N,3) ndarray of floats, where M is the number of chordwise panels,
-        N is the number of spanwise panels, and the last dimension contains the
-        position vector of each Panel's front right vertex (in geometry axes,
+    :param Blpp_G_Cg: A (M,N,3) ndarray of floats, where M is the number of
+        chordwise Panels, N is the number of spanwise Panels, and the last dimension
+        contains the position vector of each Panel's back left vertex (in geometry axes,
         relative to the CG). The values are in meters.
 
-    :param Blpp_G_Cg: (M,N,3) ndarray of floats
+    :param Brpp_G_Cg: A (M,N,3) ndarray of floats, where M is the number of chordwise
+        Panels, N is the number of spanwise Panels, and the last dimension contains the
+        position vector of each Panel's back right vertex (in geometry axes, relative to
+        the CG). The values are in meters.
 
-        This is a (M,N,3) ndarray of floats, where M is the number of chordwise panels,
-        N is the number of spanwise panels, and the last dimension contains the
-        position vector of each Panel's back left vertex (in geometry axes, relative
-        to the CG). The values are in meters.
-
-    :param Brpp_G_Cg: (M,N,3) ndarray of floats
-
-        This is a (M,N,3) ndarray of floats, where M is the number of chordwise panels,
-        N is the number of spanwise panels, and the last dimension contains the
-        position vector of each Panel's back right vertex (in geometry axes, relative
-        to the CG). The values are in meters.
-
-    :param is_trailing_edge: (M,N) ndarray of Booleans
-
-        This is a (M,N) ndarray of True or False values that denote if the Panel in
+    :param is_trailing_edge: A (M,N) ndarray of bools that denote if the Panel in
         each location is on the trailing edge of the Wing.
 
-    :param is_leading_edge: (M,N) ndarray of Booleans
+    :param is_leading_edge: A (M,N) ndarray of bools that denote if the Panel in each
+        location is on the leading edge of the Wing.
 
-        This is a (M,N) ndarray of True or False values that denote if the Panel in
-        each location is on the leading edge of the Wing.
-
-    :return panel_array: (M,N) ndarray of Panels
-
-        This is a (M,N) ndarray of Panels constructed using the given parameters.
+    :return panel_array: A (M,N) ndarray of Panels constructed using the given
+        parameters.
     """
     num_chordwise_panels = Flpp_G_Cg.shape[0]
     num_spanwise_panels = Flpp_G_Cg.shape[1]

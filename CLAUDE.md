@@ -57,38 +57,33 @@ This pattern:
 
 ### Core Package Structure
 - **pterasoftware/**: Main package with modular solver architecture
-  - **Geometry**: `geometry/` package (complete object hierarchy)
+  - **Geometry**: `geometry/` package
+    - `geometry/_airfoils/` Directory containing data files with airfoil coordinates
+    - `geometry/_meshing.py`: Wing mesh generation
+    - `geometry/airfoil.py`: Airfoil class with coordinate generation
     - `geometry/airplane.py`: Airplane class with coordinate transformations
     - `geometry/wing.py`: Wing class with symmetry processing
     - `geometry/wing_cross_section.py`: WingCrossSection class with validation
-    - `geometry/airfoil.py`: Airfoil class with coordinate generation
-    - `geometry/panel.py`: Panel class for discretized mesh elements
   - **Movement System**: `movements/` package (flapping dynamics and motion)
-    - `movements/movement.py`: Core Movement class
+    - `movements/_functions.py`: Movement utility functions
     - `movements/airplane_movement.py`: Airplane motion definitions
-    - `movements/wing_movement.py`: Wing flapping motion
-    - `movements/wing_cross_section_movement.py`: Wing cross section motion
+    - `movements/movement.py`: Core Movement class
     - `movements/operating_point_movement.py`: Operating condition changes
-    - `movements/functions.py`: Movement utility functions
-  - **Coordinate System**: `transformations.py` (coordinate transformations and rotations)
-  - **VLM Solvers**: Three solver implementations
-    - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
-    - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
-    - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
-  - **Problem Definitions**: `problems.py` (SteadyProblem, UnsteadyProblem classes)
-  - **Operating Conditions**: `operating_point.py` (OperatingPoint class)
-  - **Core Support Modules**:
-    - `meshing.py`: Wing mesh generation
-    - `aerodynamics.py`: Vortex elements and velocity calculations
-    - `output.py`: Visualization and results processing
-    - `trim.py`: Trim analysis functionality
-    - `convergence.py`: Convergence analysis tools
-    - `functions.py`: Shared utility functions
-    - `parameter_validation.py`: Input validation functions
-  - **Data and Resources**:
-    - `airfoils/`: Airfoil coordinate data collection
-    - `models/`: Example models for GUI
-    - `ui_resources/`: GUI assets and interface components
+    - `movements/wing_cross_section_movement.py`: Wing cross section motion
+    - `movements/wing_movement.py`: Wing flapping motion
+  - `_aerodynamics.py`: Vortex elements and velocity calculations
+  - `_functions.py`: Shared utility functions
+  - `_panel.py`: Panel class for discretized mesh elements
+  - `_parameter_validation.py`: Input validation functions
+  - `_transformations.py` (coordinate transformations and rotations)
+  - `convergence.py`: Convergence analysis tools
+  - `operating_point.py` (OperatingPoint class)
+  - `output.py`: Visualization and results processing
+  - `problems.py` (SteadyProblem, UnsteadyProblem classes)
+  - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
+  - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
+  - `trim.py`: Trim analysis functionality
+  - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 
 ### Key Features
 - **Multiple Simulation Methods**: Steady horseshoe VLM, steady ring VLM, unsteady ring UVLM
@@ -134,7 +129,7 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
 - PySide6 >= 6.9.1, < 7.0.0
 
 **Development Dependencies:**
-- codecov, black, codespell, pre-commit, build, twine, PyInstaller, setuptools, wheel
+- codecov, black, codespell, pre-commit, build, twine, PyInstaller, setuptools, wheel, docformatter
 
 ## Writing Style Guidelines
 
@@ -151,7 +146,7 @@ Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibili
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 
 ### Docstring Style
-- Follow existing PteraSoftware docstring conventions  
+- See pterasoftware/geometry/_meshing.py and pterasoftware/geometry/airfoil.py for gold standard docstring style. 
 - Use reStructuredText (rST) formatting guidelines  
 - Maintain consistent parameter descriptions  
 - Preserve existing documentation structure and completeness unless we are explicitly updating or improving it  

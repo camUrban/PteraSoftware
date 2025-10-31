@@ -1,4 +1,4 @@
-"""This module contains the Airplane class.
+"""Contains the Airplane class.
 
 This module contains the following classes:
     Airplane: This is a class used to contain airplanes.
@@ -12,10 +12,9 @@ import pyvista as pv
 import time
 import webp
 
-from .airfoil import Airfoil
-from .wing import Wing
-from .wing_cross_section import WingCrossSection
-
+from . import airfoil as airfoil_mod
+from . import wing as wing_mod
+from . import wing_cross_section as wing_cross_section_mod
 from .. import _parameter_validation
 from .. import _transformations
 
@@ -147,7 +146,7 @@ class Airplane:
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings = []
         for wing in wings:
-            if not isinstance(wing, Wing):
+            if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
             processed_wings.extend(self.process_wing_symmetry(wing))
         self.wings = processed_wings
@@ -209,16 +208,15 @@ class Airplane:
     def draw(self, save=False, testing=False):
         """Draw the 3D geometry of this Airplane.
 
-        This method provides a convenient way to visualize the Airplane's Panels
-        without needing to create a solver object first. It shows the Panel's
-        surfaces in 3D using PyVista.
+        This method provides a convenient way to visualize the Airplane's Panels without
+        needing to create a solver object first. It shows the Panel's surfaces in 3D
+        using PyVista.
 
-        :param save: bool, optional
-            Set this variable to True to save the image as a WebP. The default
-            value is False.
-        :param testing: bool, optional
-            Set this variable to True to close the image after 1 second, which is
-            useful for running test suites. The default value is False.
+        :param save: bool, optional Set this variable to True to save the image as a
+            WebP. The default value is False.
+        :param testing: bool, optional Set this variable to True to close the image
+            after 1 second, which is useful for running test suites. The default value
+            is False.
         :return: None
         """
         # Define visualization constants
@@ -545,14 +543,13 @@ class Airplane:
     def num_panels(self):
         """This method sets a property for the total number of Panels across all Wings.
 
-        :return: int
-            The total number of Panels.
+        :return: int The total number of Panels.
         """
         return sum(wing.num_panels for wing in self.wings)
 
     def validate_first_airplane_constraints(self):
-        """This method validates that the first Airplane in a simulation has
-        Cg_E_CgP1 set to zeros.
+        """This method validates that the first Airplane in a simulation has Cg_E_CgP1
+        set to zeros.
 
         This method should be called by SteadyProblem or UnsteadyProblem.
 
@@ -567,8 +564,8 @@ class Airplane:
     # TEST: Add unit tests for this method.
     def compute_T_pas_G_Cg_to_GP1_CgP1(self, first_airplane):
         """Compute passive transformation matrix from this Airplane's geometry axes,
-        relative to this Airplane's CG to the first Airplane's geometry axes,
-        relative to the first Airplane's CG.
+        relative to this Airplane's CG to the first Airplane's geometry axes, relative
+        to the first Airplane's CG.
 
         This method computes the transformation chain: G_Cg > B_Cg > E_CgP1 >
         BP1_CgP1 > GP1_CgP1. This transformation matrix is used to position Airplanes
@@ -648,12 +645,12 @@ class Airplane:
     @staticmethod
     def process_wing_symmetry(wing):
         """This method processes a Wing to determine what type of symmetry it has. If
-        necessary, it then modifies the Wing. If type 5 symmetry is detected,
-        it also creates a second reflected Wing. Finally, a list of Wings is
-        returned. For types 1-4 symmetry this contains only the one modified Wing,
-        but for type 5 symmetry it contains the modified Wing followed by the new
-        reflected Wing. Before returning them, this method also calls each Wing's
-        generate_mesh method, preparing them for use simulation.
+        necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
+        creates a second reflected Wing. Finally, a list of Wings is returned. For types
+        1-4 symmetry this contains only the one modified Wing, but for type 5 symmetry
+        it contains the modified Wing followed by the new reflected Wing. Before
+        returning them, this method also calls each Wing's generate_mesh method,
+        preparing them for use simulation.
 
         :return: list of Wings
         """
@@ -787,7 +784,7 @@ class Airplane:
             for wing_cross_section in wing.wing_cross_sections:
                 airfoil = wing_cross_section.airfoil
 
-                reflected_airfoil = Airfoil(
+                reflected_airfoil = airfoil_mod.Airfoil(
                     name=airfoil.name,
                     outline_A_lp=np.copy(airfoil.outline_A_lp),
                     resample=airfoil.resample,
@@ -804,7 +801,7 @@ class Airplane:
                     )
 
                 reflected_wing_cross_sections.append(
-                    WingCrossSection(
+                    wing_cross_section_mod.WingCrossSection(
                         airfoil=reflected_airfoil,
                         num_spanwise_panels=wing_cross_section.num_spanwise_panels,
                         chord=wing_cross_section.chord,
@@ -819,7 +816,7 @@ class Airplane:
                     )
                 )
 
-            reflected_wing = Wing(
+            reflected_wing = wing_mod.Wing(
                 wing_cross_sections=reflected_wing_cross_sections,
                 name=f"Reflected {wing.name}",
                 Ler_Gs_Cgs=np.copy(wing.Ler_Gs_Cgs),

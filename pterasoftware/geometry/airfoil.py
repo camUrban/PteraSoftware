@@ -1,9 +1,9 @@
-"""This module contains the Airfoil class.
+"""Contains the Airfoil class.
 
-This module contains the following classes:
-    Airfoil: This is a class used to contain the Airfoil of a WingCrossSection.
+Contains the following classes:
+    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
 
-This module contains the following functions:
+Contains the following functions:
     None
 """
 
@@ -24,29 +24,25 @@ _TRUST = object()
 
 
 class Airfoil:
-    """This class is used to contain the Airfoil of a WingCrossSection.
+    """A class used to contain the Airfoil of a WingCrossSection.
 
     Citation:
         Adapted from:         geometry.Airfoil in AeroSandbox
         Author:               Peter Sharpe
         Date of Retrieval:    04/27/2020
 
-    This class contains the following public methods:
-        add_control_surface: This method returns a version of the Airfoil with a
-        control surface added at a given point.
+    Contains the following methods:
+        add_control_surface: Returns a version of the Airfoil with a control surface
+        added at a given point.
 
-        draw: This method plots this Airfoil's outlines and mean camber line (MCL)
-        using PyPlot.
+        draw: Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
 
-        get_resampled_mcl: This method returns an array of points along the mean
-        camber line (MCL), resampled from the mcl_A_outline attribute. It is used to
-        discretize the MCL for meshing.
+        get_plottable_data: Returns plottable data for this Airfoil's outline and
+        mean camber line.
 
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+        get_resampled_mcl: Returns a ndarray of points along the mean camber line
+        (MCL), resampled from the mcl_A_outline attribute. It is used to discretize the
+        MCL for meshing.
     """
 
     def __init__(
@@ -56,8 +52,8 @@ class Airfoil:
         resample: bool = True,
         n_points_per_side: int = 400,
         _trust: object | None = None,
-    ):
-        """This is the initialization method.
+    ) -> None:
+        """The initialization method.
 
         :param name: The name of the Airfoil. It should correspond to the name of a
             file the airfoils directory, or to a valid NACA 4-series airfoil (once
@@ -82,6 +78,7 @@ class Airfoil:
             outline will have a total number of points equal to
             (2 * n_points_per_side) - 1. I highly recommend setting this to at least
             100. The default value is 400.
+        :return: None
         """
         self.name = _parameter_validation.string_return_string(name, "name")
 
@@ -119,8 +116,8 @@ class Airfoil:
     def add_control_surface(
         self, deflection: float | int, hinge_point: float | int
     ) -> "Airfoil":
-        """This method returns a version of the Airfoil with a control surface added at
-        a given point. It is called during meshing.
+        """Returns a version of the Airfoil with a control surface added at a given
+        point. It is called during meshing.
 
         :param deflection: The control deflection in degrees. Deflection downwards is
             positive. It must be a number (int or float) in the range [-5.0, 5.0]
@@ -253,8 +250,7 @@ class Airfoil:
         )
 
     def draw(self) -> None:
-        """This method plots this Airfoil's outlines and mean camber line (MCL) using
-        PyPlot.
+        """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
 
         :return: None
         """
@@ -286,9 +282,13 @@ class Airfoil:
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
     def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
-        """
+        """Returns plottable data for this Airfoil's outline and mean camber line.
 
-        :return:
+        :param show: A bool that determines whether to display the plot. If True, the
+            method displays the plot and returns None. If False, the method returns the
+            data without displaying. The default is False.
+        :return: A list of two ndarrays containing the outline and MCL data, or None if
+            show is True.
         """
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
@@ -337,9 +337,8 @@ class Airfoil:
     def get_resampled_mcl(
         self, mcl_fractions: np.ndarray | Sequence[float]
     ) -> np.ndarray:
-        """This method returns a ndarray of points along the mean camber line (MCL),
-        resampled from the mcl_A_outline attribute. It is used to discretize the MCL for
-        meshing.
+        """Returns a ndarray of points along the mean camber line (MCL), resampled from
+        the mcl_A_outline attribute. It is used to discretize the MCL for meshing.
 
         :param mcl_fractions: A (N,) array-like object of floats representing normalized
             distances along the MCL (from the leading to the trailing edge) at which to
@@ -403,8 +402,8 @@ class Airfoil:
         return np.column_stack([mclX_func(mcl_fractions), mclY_func(mcl_fractions)])
 
     def _get_mclY(self, chord_fraction: float | int) -> float:
-        """This method returns the y-component of the Airfoil's MCL (in airfoil axes,
-        relative to the leading point) at a given fraction along the chord.
+        """Returns the y-component of the Airfoil's MCL (in airfoil axes, relative to
+        the leading point) at a given fraction along the chord.
 
         :param chord_fraction: A number (int or float) representing the fraction along
             the chord, from leading to trailing point, at which to return the
@@ -429,8 +428,8 @@ class Airfoil:
         return int(np.argmin(self.outline_A_lp[:, 0]))
 
     def _lower_outline(self) -> np.ndarray:
-        """This method returns a 2D ndarray of points on the lower portion of the
-        Airfoil's outline (in airfoil axes, relative to the leading point).
+        """Returns a 2D ndarray of points on the lower portion of the Airfoil's outline
+        (in airfoil axes, relative to the leading point).
 
         The order of the returned points is from leading point to trailing edge.
         Included is the leading point, so be careful about duplicates if using this
@@ -442,9 +441,9 @@ class Airfoil:
         return self.outline_A_lp[self._lp_index() :, :]
 
     def _populate_mcl(self) -> None:
-        """This method creates a 2D ndarray of points along the Airfoil's MCL (in
-        airfoil axes, relative to the leading point), which it uses to set the mcl_A_lp
-        attribute. It is in order from the leading point to the trailing point.
+        """Creates a 2D ndarray of points along the Airfoil's MCL (in airfoil axes,
+        relative to the leading point), which it uses to set the mcl_A_lp attribute. It
+        is in order from the leading point to the trailing point.
 
         :return: None
         """
@@ -486,13 +485,13 @@ class Airfoil:
         )
 
     def _populate_outline(self) -> None:
-        """This method populates a variable with the points of the Airfoil's outline (in
-        airfoil axes, relative to the leading point).
+        """Populates a variable with the points of the Airfoil's outline (in airfoil
+        axes, relative to the leading point).
 
-        The points will be generated if the Airfoil is a NACA 4-series airfoil,
-        or loaded from the "airfoils" directory inside "pterasoftware", which is a
-        database of dat files containing Airfoil points). NACA 4-series airfoil
-        generation is an adaptation of:
+        The points are generated if the Airfoil is a NACA 4-series airfoil, or loaded
+        from the "airfoils" directory inside "pterasoftware", which is a database of
+        dat files containing Airfoil points). NACA 4-series airfoil generation is an
+        adaptation of:
         https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
 
         :return: None
@@ -653,11 +652,11 @@ class Airfoil:
             )
 
     def _resample_outline(self, n_points_per_side: int) -> None:
-        """This method returns a resampled version of the points on the Airfoil's
-        outline (in airfoil axes, relative to the leading point) with cosine-spaced
-        points on the upper and lower surfaces.
+        """Returns a resampled version of the points on the Airfoil's outline (in
+        airfoil axes, relative to the leading point) with cosine-spaced points on the
+        upper and lower surfaces.
 
-        The number of points defining the final Airfoil's outline will be
+        The number of points defining the final Airfoil's outline is
         (n_points_per_side * 2 - 1), since the leading point is shared by both the upper
         and lower surfaces.
 
@@ -782,8 +781,8 @@ class Airfoil:
         )
 
     def _upper_outline(self) -> np.ndarray:
-        """This method returns a 2D ndarray of points on the upper portion of the
-        Airfoil's outline (in airfoil axes, relative to the leading point).
+        """Returns a 2D ndarray of points on the upper portion of the Airfoil's outline
+        (in airfoil axes, relative to the leading point).
 
         The order of the returned points is from trailing edge to leading point.
         Included is the leading point, so be careful about duplicates if using this
@@ -796,8 +795,8 @@ class Airfoil:
 
     @staticmethod
     def _validate_outline(outline_A_lp: object) -> np.ndarray:
-        """This method performs validates a user's provided outline_A_lp. However, it
-        will fail for "flapped" airfoils.
+        """Validates a user's provided outline_A_lp. However, it will fail for "flapped"
+        airfoils.
 
         :param outline_A_lp: The input to validate (can be any type initially).
         :return: The validated version of outline_A_lp as a (N,2) ndarray of floats.

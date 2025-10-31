@@ -1,4 +1,4 @@
-"""This module contains the Wing class.
+"""Contains the Wing class.
 
 This module contains the following classes:
     Wing: This is a class used to contain wings of an Airplane.
@@ -10,9 +10,8 @@ This module contains the following functions:
 import numpy as np
 import pyvista as pv
 
-from .wing_cross_section import WingCrossSection
 from . import _meshing
-
+from . import wing_cross_section as wing_cross_section_mod
 from .. import _parameter_validation
 from .. import _transformations
 
@@ -241,7 +240,6 @@ class Wing:
             be "cosine" or "uniform". Using cosine spacing is highly recommended for
             steady simulations and uniform spacing is highly recommended for unsteady
             simulations. The default is "cosine".
-
         """
         # Validate wing_cross_sections.
         wing_cross_sections = _parameter_validation.non_empty_list_return_list(
@@ -251,7 +249,7 @@ class Wing:
         if num_wing_cross_sections < 2:
             raise ValueError("wing_cross_sections must contain at least two elements.")
         for wing_cross_section_id, wing_cross_section in enumerate(wing_cross_sections):
-            if not isinstance(wing_cross_section, WingCrossSection):
+            if not isinstance(wing_cross_section, wing_cross_section_mod.WingCrossSection):
                 raise TypeError(
                     "Every element in wing_cross_sections must be a WingCrossSection."
                 )
@@ -346,8 +344,8 @@ class Wing:
 
     def generate_mesh(self, symmetry_type):
         """This method generates this Wing's mesh, which finishes the process of
-        preparing the Wing to be used in a simulation. It is called by the Wing's
-        parent Airplane, after it's determined its symmetry type.
+        preparing the Wing to be used in a simulation. It is called by the Wing's parent
+        Airplane, after it's determined its symmetry type.
 
         :param symmetry_type:
         :return:
@@ -614,13 +612,12 @@ class Wing:
     @property
     def T_pas_G_Cg_to_Wn_Ler(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from geometry axes relative to the CG
-        to wing axes relative to the leading edge root point. This is set to None if
-        the Wing's symmetry type hasn't been defined yet.
+        maps in homogeneous coordinates from geometry axes relative to the CG to wing
+        axes relative to the leading edge root point. This is set to None if the Wing's
+        symmetry type hasn't been defined yet.
 
-        :return: (4,4) ndarray of floats or None
-            4x4 transformation matrix or None in cases where the Wing's symmetry type
-            hasn't been defined yet.
+        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None in
+            cases where the Wing's symmetry type hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -666,13 +663,12 @@ class Wing:
     @property
     def T_pas_Wn_Ler_to_G_Cg(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from wing axes relative to the leading edge
-        root point to geometry axes relative to the CG. This is set to None if the
-        Wing's symmetry type hasn't been defined yet.
+        maps in homogeneous coordinates from wing axes relative to the leading edge root
+        point to geometry axes relative to the CG. This is set to None if the Wing's
+        symmetry type hasn't been defined yet.
 
-        :return: (4,4) ndarray of floats or None
-            4x4 transformation matrix or None in cases where the Wing's symmetry type
-            hasn't been defined yet.
+        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None in
+            cases where the Wing's symmetry type hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -686,9 +682,9 @@ class Wing:
         """This method sets a property for the wing axes' first basis vector (in
         geometry axes).
 
-        :return: (3,) ndarray of floats or None
-            This is the wing axes' first basis vector (in geometry axes) or None in
-            cases where the Wing's symmetry type hasn't been defined yet.
+        :return: (3,) ndarray of floats or None This is the wing axes' first basis
+            vector (in geometry axes) or None in cases where the Wing's symmetry type
+            hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -706,9 +702,9 @@ class Wing:
         """This method sets a property for the wing axes' second basis vector (in
         geometry axes).
 
-        :return: (3,) ndarray of floats or None
-            This is the wing axes' second basis vector (in geometry axes) or None in
-            cases where the Wing's symmetry type hasn't been defined yet.
+        :return: (3,) ndarray of floats or None This is the wing axes' second basis
+            vector (in geometry axes) or None in cases where the Wing's symmetry type
+            hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -726,9 +722,9 @@ class Wing:
         """This method sets a property for the wing axes' third basis vector (in
         geometry axes).
 
-        :return: (3,) ndarray of floats or None
-            This is the wing axes' third basis vector (in geometry axes) or None in
-            cases where the Wing's symmetry type hasn't been defined yet.
+        :return: (3,) ndarray of floats or None This is the wing axes' third basis
+            vector (in geometry axes) or None in cases where the Wing's symmetry type
+            hasn't been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -745,11 +741,11 @@ class Wing:
     def children_T_pas_Wn_Ler_to_Wcs_Lp(self):
         """This method defines a property containing a list of passive transformation
         matrices which maps in homogeneous coordinates from wing axes relative to the
-        leading edge root point to each of this Wing's WingCrossSection's axes,
-        relative to their respective leading points.
+        leading edge root point to each of this Wing's WingCrossSection's axes, relative
+        to their respective leading points.
 
-        :return: list of (4,4) ndarrays of floats
-            list of homogeneous transformation matrices
+        :return: list of (4,4) ndarrays of floats list of homogeneous transformation
+            matrices
         """
 
         return [
@@ -769,8 +765,8 @@ class Wing:
         WingCrossSection's axes, relative to their respective leading points to wing
         axes relative to the leading edge root point.
 
-        :return: list of (4,4) ndarrays of floats
-            list of homogeneous transformation matrices
+        :return: list of (4,4) ndarrays of floats list of homogeneous transformation
+            matrices
         """
 
         return [
@@ -785,8 +781,8 @@ class Wing:
         the CG to each of this Wing's WingCrossSection's axes, relative to their
         respective leading points.
 
-        :return: list of (4,4) ndarrays of floats
-            list of homogeneous transformation matrices
+        :return: list of (4,4) ndarrays of floats list of homogeneous transformation
+            matrices
         """
 
         return [
@@ -800,11 +796,11 @@ class Wing:
     def children_T_pas_Wcs_Lp_to_G_Cg(self):
         """This method defines a property containing a list of passive transformation
         matrices which maps in homogeneous coordinates from each of this Wing's
-        WingCrossSection's axes, relative to their respective leading points to
-        geometry axes relative to the CG.
+        WingCrossSection's axes, relative to their respective leading points to geometry
+        axes relative to the CG.
 
-        :return: list of (4,4) ndarrays of floats
-            list of homogeneous transformation matrices
+        :return: list of (4,4) ndarrays of floats list of homogeneous transformation
+            matrices
         """
 
         return [
@@ -815,15 +811,15 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def projected_area(self):
-        """This method sets a property for the area of the Wing projected onto the
-        plane defined by the wing axes' xy-plane.
+        """This method sets a property for the area of the Wing projected onto the plane
+        defined by the wing axes' xy-plane.
 
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
 
-        :return projected_area: float or None
-            This attribute is the projected area of the wing. It has units of square
-            meters. If the Wing hasn't been meshed yet, None is returned instead.
+        :return projected_area: float or None This attribute is the projected area of
+            the wing. It has units of square meters. If the Wing hasn't been meshed yet,
+            None is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
         if self.panels is None:
@@ -849,9 +845,9 @@ class Wing:
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
 
-        :return wetted_area: float or None
-            This attribute is the wetted area of the wing. It has units of square
-            meters. If the Wing hasn't been meshed yet, None is returned instead.
+        :return wetted_area: float or None This attribute is the wetted area of the
+            wing. It has units of square meters. If the Wing hasn't been meshed yet,
+            None is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
         if self.panels is None:
@@ -872,9 +868,9 @@ class Wing:
     def average_panel_aspect_ratio(self):
         """This method sets a property for average aspect ratio of the Wing's Panels.
 
-        :return average_panel_aspect_ratio: float or None
-            This attribute is the average aspect ratio of the Wing's Panels. If the
-            Wing hasn't been meshed yet, None is returned instead.
+        :return average_panel_aspect_ratio: float or None This attribute is the average
+            aspect ratio of the Wing's Panels. If the Wing hasn't been meshed yet, None
+            is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
         if self.panels is None:
@@ -908,12 +904,12 @@ class Wing:
         axes' third basis vector. The span is defined as the magnitude of this
         projection.
 
-        If the Wing is symmetric and continuous, this method includes the span of
-        the mirrored half.
+        If the Wing is symmetric and continuous, this method includes the span of the
+        mirrored half.
 
-        :return span: float or None
-            This is the Wing's span. It has units of meters. None is returned in
-            cases where the Wing's symmetry type hasn't been defined yet
+        :return span: float or None This is the Wing's span. It has units of meters.
+            None is returned in cases where the Wing's symmetry type hasn't been defined
+            yet
         """
         # TODO: Consider if there's a better way of implementing this method using
         #  one of the children_T_pas_* properties.
@@ -976,9 +972,9 @@ class Wing:
         The standard mean chord is defined as the projected area divided by the span.
         See their respective methods for the definitions of span and projected area.
 
-        :return: float or None
-            This is the standard mean chord of the Wing. It has units of meters. None
-            is returned in cases where the Wing's symmetry type hasn't been defined yet.
+        :return: float or None This is the standard mean chord of the Wing. It has units
+            of meters. None is returned in cases where the Wing's symmetry type hasn't
+            been defined yet.
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
@@ -992,10 +988,9 @@ class Wing:
     def mean_aerodynamic_chord(self):
         """This method sets a property for the mean aerodynamic chord of the Wing.
 
-        :return: float or None
-            This is the mean aerodynamic chord of the Wing. It has units of meters.
-            None is returned in cases where the Wing's symmetry type hasn't been
-            defined yet.
+        :return: float or None This is the mean aerodynamic chord of the Wing. It has
+            units of meters. None is returned in cases where the Wing's symmetry type
+            hasn't been defined yet.
         """
         # TODO: Consider if there's a better way of implementing this method using
         #  one of the children_T_pas_* properties.

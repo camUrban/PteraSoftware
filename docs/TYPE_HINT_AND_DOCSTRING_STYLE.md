@@ -185,11 +185,14 @@ def function_name(
     Optional citation block:
 
     Citation:
-        Adapted from:         <source>
-        Author:               <author>
-        Date of Retrieval:    <date>
+        Adapted from:
+            <source>
+        Author:
+            <author>
+        Date of Retrieval:
+            <date>
 
-    Optional longer description providing more context. This provides detailed explanations of the function's behavior.
+    Optional longer description providing more context. This provides detailed explanations of the function's behavior. It can be one or more paragraphs.
 
     :param param1: A (shape) dtype description of param1. Additional details about
         what it represents, valid ranges, units, etc. Can wrap to multiple lines.
@@ -234,9 +237,12 @@ class ClassName:
     Optional citation block:
 
     Citation:
-        Adapted from:         <source>
-        Author:               <author>
-        Date of Retrieval:    <date>
+        Adapted from:
+            <source>
+        Author:
+            <author>
+        Date of Retrieval:
+            <date>
         
     This class contains the following methods:
         public_method_1: Short description (identical to method's docstring's short 

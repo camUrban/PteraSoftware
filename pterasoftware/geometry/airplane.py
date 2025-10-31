@@ -1,11 +1,13 @@
 """Contains the Airplane class.
 
-This module contains the following classes:
-    Airplane: This is a class used to contain airplanes.
+Contains the following classes:
+    Airplane: A class used to contain airplanes.
 
-This module contains the following functions:
+Contains the following functions:
     None
 """
+
+from collections.abc import Sequence
 
 import numpy as np
 import pyvista as pv
@@ -20,128 +22,103 @@ from .. import _transformations
 
 
 class Airplane:
-    """This is a class used to contain airplanes.
+    """A class used to contain airplanes.
 
     Citation:
-        Adapted from:         geometry.Airplane in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/23/2020
+        Adapted from:
+            geometry.Airplane in AeroSandbox
+        Author:
+            Peter Sharpe
+        Date of Retrieval:
+            04/23/2020
 
-    This class contains the following public methods:
+    Contains the following methods:
+        draw: Draws the 3D geometry of this Airplane.
 
-        draw: Draw the 3D geometry of this Airplane.
+        get_plottable_data: Returns plottable data for this Airplane's Airfoils'
+        outlines and mean camber lines.
 
-        num_panels: This method sets a property for the total number of Panels
-        across all Wings.
+        num_panels: Sets a property for the total number of Panels across all Wings.
 
-        validate_first_airplane_constraints: This method validates that the first
-        Airplane in a simulation has Cg_E_CgP1 set to zeros.
+        validate_first_airplane_constraints: Validates that the first Airplane in a
+        simulation has Cg_E_CgP1 set to zeros.
 
-        compute_T_pas_G_Cg_to_GP1_CgP1: Compute passive transformation matrix from
-        this Airplane's geometry axes, relative to this Airplane's CG to the first
-        Airplane's geometry axes, relative to the first Airplane's CG.
+        compute_T_pas_G_Cg_to_GP1_CgP1: Computes the passive transformation matrix
+        from this Airplane's geometry axes, relative to this Airplane's CG to the
+        first Airplane's geometry axes, relative to the first Airplane's CG.
 
-        process_wing_symmetry: This method processes a Wing to determine what type of
-        symmetry it has. If necessary, it then modifies the Wing. If type 5 symmetry
-        is detected, it also creates a second reflected Wing. Finally, a list of
-        Wings is returned. For types 1-4 symmetry this contains only the one modified
-        Wing, but for type 5 symmetry it contains the modified Wing followed by the
-        new reflected Wing. Before returning them, this method also calls each Wing's
-        generate_mesh method, preparing them for use simulation.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+        process_wing_symmetry: Processes a Wing to determine what type of symmetry it
+        has. If necessary, it then modifies the Wing. If type 5 symmetry is detected,
+        it also creates a second reflected Wing. Finally, it returns a list of Wings.
 
     The Airplane class is responsible for:
-
-    1. Defining the local body axes and geometry axes
-    2. Managing Wings and their coordinate transformations
-    3. Processing symmetric Wings and converting them to separate wings when the
-    symmetry plane is not coincident with the Wing's axes xz-plane (type 5 symmetry)
-    4. Providing reference dimensions for aerodynamic calculations
+        1. Defining the local body axes and geometry axes
+        2. Managing Wings and their coordinate transformations
+        3. Processing symmetric Wings and converting them to separate wings when the
+           symmetry plane is not coincident with the Wing's axes xz-plane
+           (type 5 symmetry)
+        4. Providing reference dimensions for aerodynamic calculations
 
     Every Airplane has a body axis system, where:
-    - +x: Points forward along fuselage
-    - +y: Points to the right (starboard direction)
-    - +z: Points downward (completing right-handed system)
+        - +x: Points forward along fuselage
+        - +y: Points to the right (starboard direction)
+        - +z: Points downward (completing right-handed system)
 
     Every Airplane has a geometry axis system, where:
-    - +x: Points aft along fuselage
-    - +y: Points to the right (starboard direction)
-    - +z: Points upward (completing right-handed system)
+        - +x: Points aft along fuselage
+        - +y: Points to the right (starboard direction)
+        - +z: Points upward (completing right-handed system)
     """
 
     def __init__(
         self,
-        wings,
-        name="Untitled Airplane",
-        Cg_E_CgP1=(0.0, 0.0, 0.0),
-        angles_E_to_B_izyx=(0.0, 0.0, 0.0),
-        weight=0.0,
-        s_ref=None,
-        c_ref=None,
-        b_ref=None,
-    ):
-        """This is the initialization method.
+        wings: list[wing_mod.Wing],
+        name: str = "Untitled Airplane",
+        Cg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        angles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        weight: float | int = 0.0,
+        s_ref: float | int | None = None,
+        c_ref: float | int | None = None,
+        b_ref: float | int | None = None,
+    ) -> None:
+        """The initialization method.
 
-        :param wings: list of Wings
-
-            This is a list of the airplane's wings defined as Wings. It must contain
+        :param wings: A list of the airplane's wings defined as Wings. It must contain
             at least one Wing. Wings with symmetric=True and non-coincident symmetry
             planes will be automatically processed into separate Wings during
             initialization (type 5 symmetry).
-
-        :param name: str, optional
-
-            A sensible name for your airplane. The default is "Untitled Airplane".
-
-        :param Cg_E_CgP1: array-like of 3 numbers, optional
-
-            Position (x, y, z) of this Airplane's CG (in Earth axes, relative to the
-            first Airplane's CG). Can be a list, tuple, or numpy array of numbers (
-            int or float). Values are converted to floats internally. For the first
-            Airplane in a simulation, this must be (0.0, 0.0, 0.0) by definition.
-            Earth axes follow the North-East-Down convention. The units are in
-            meters. The default is (0.0, 0.0, 0.0).
-
-        :param angles_E_to_B_izyx: array-like of 3 numbers, optional
-
-            Angles (angleX, angleY, angleZ) from Earth axes to body axes using an
-            intrinsic z-y'-x" sequence. Can be a tuple, list, or numpy array of
-            numbers (int or float). Values are converted to floats internally. This
-            defines the orientation of the airplane's body axes relative to Earth
-            axes. Note that body axes differ from geometry axes: body axes point
-            forward/right/down while geometry axes point aft/right/up. The units are
-            degrees. All angles must lie in the range (-180.0, 180.0] degrees. The
-            default is (0.0, 0.0, 0.0).
-
-        :param weight: number, optional
-
-            This parameter is a number (int or float) that represents the weight of
-            the aircraft in Newtons. This is used by the trim functions. It must be
-            greater than or equal to zero. The default value is 0.0.
-
-        :param s_ref: number, optional
-
-           This parameter is a number (int or float) that represents the reference
-           wetted area. If not set or set to None (the default value), it populates
-           from first Wing. If set, it must be greater than zero. The units are
-           square meters.
-
-        :param c_ref: float, optional
-
-            This parameter is a number (int or float) that represents the reference
-            chord length. If not set or set to None (the default value), it populates
-            from first Wing. If set, it must be greater than zero. The units are meters.
-
-        :param b_ref: float, optional
-
-            This parameter is a number (int or float) that represents the reference
-            span. If not set or set to None (the default value), it populates from
-            first Wing. If set, it must be greater than zero. The units are meters.
+        :param name: A sensible name for your airplane. The default is "Untitled
+            Airplane".
+        :param Cg_E_CgP1: An array-like object of 3 numbers representing the position
+            of this Airplane's CG (in Earth axes, relative to the first Airplane's CG).
+            Can be a list, tuple, or numpy array of numbers (int or float). Values are
+            converted to floats internally. For the first Airplane in a simulation, this
+            must be equivalent to (0.0, 0.0, 0.0) by definition. Earth axes follow the
+            North-East-Down convention. The units are in meters. The default is (0.0,
+            0.0, 0.0).
+        :param angles_E_to_B_izyx: An array-like object of 3 numbers representing the
+            angles from Earth axes to body axes using an intrinsic z-y'-x" sequence. Can
+            be a tuple, list, or numpy array of numbers (int or float). Values are
+            converted to floats internally. It defines the orientation of the airplane's
+            body axes relative to Earth axes. Note that body axes differ from geometry
+            axes: body axes point forward/right/down while geometry axes point
+            aft/right/up. The units are degrees. All angles must lie in the range
+            (-180.0, 180.0] degrees. The default is (0.0, 0.0, 0.0).
+        :param weight: A number (int or float) representing the weight of the aircraft
+            in Newtons. This is used by the trim functions. It must be greater than or
+            equal to zero. The default is 0.0.
+        :param s_ref: A number (int or float) representing the reference wetted area. If
+            not set or set to None (the default), it populates from first Wing. If set,
+            it must be greater than zero, and will be converted to a float internally.
+            The units are square meters.
+        :param c_ref: A number (int or float) representing the reference chord length.
+            If not set or set to None (the default), it populates from first Wing. If
+            set, it must be greater than zero, and will be converted to a float
+            internally. The units are meters.
+        :param b_ref: A number (int or float) representing the reference span. If not
+            set or set to None (the default value), it populates from first Wing. If
+            set, it must be greater than zero, and will be converted to a float
+            internally. The units are meters.
         """
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings = []
@@ -205,20 +182,22 @@ class Airplane:
         self.moments_W_CgP1 = None
         self.momentCoefficients_W_CgP1 = None
 
-    def draw(self, save=False, testing=False):
-        """Draw the 3D geometry of this Airplane.
+    def draw(self, save: bool = False, testing: bool = False) -> None:
+        """Draws the 3D geometry of this Airplane.
 
         This method provides a convenient way to visualize the Airplane's Panels without
         needing to create a solver object first. It shows the Panel's surfaces in 3D
         using PyVista.
 
-        :param save: bool, optional Set this variable to True to save the image as a
-            WebP. The default value is False.
-        :param testing: bool, optional Set this variable to True to close the image
-            after 1 second, which is useful for running test suites. The default value
-            is False.
+        :param save: Set this bool to True to save the image as a WebP. The default
+            value is False.
+        :param testing: Set this bool to True to close the image after 1 second, which
+            is useful for running test suites. The default value is False.
         :return: None
         """
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        testing = _parameter_validation.boolLike_return_bool(testing, "testing")
+
         # Define visualization constants
         panel_color = "chartreuse"
         plotter_background_color = "black"
@@ -322,11 +301,18 @@ class Airplane:
 
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
-    def get_plottable_data(self, show=False):
-        """
+    def get_plottable_data(self, show: bool = False) -> list[list[np.ndarray]] | None:
+        """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
+        lines.
 
-        :param show:
-        :return:
+        :param show: A bool that determines whether to display the plot. If True, the
+            method displays the plot and returns None. If False, the method returns the
+            data without displaying. The default is False.
+        :return: If show is True, returns None. If show is false, returns a list of two
+            lists, each containing one ndarray for every one of this Airplane's
+            Airfoils. These ndarrays represent points on each Airfoil's outline and mean
+            camber lines, respectively. The points are in geometry axes, relative to the
+            CG. The units are in meters.
         """
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
@@ -540,20 +526,19 @@ class Airplane:
         return None
 
     @property
-    def num_panels(self):
-        """This method sets a property for the total number of Panels across all Wings.
+    def num_panels(self) -> int:
+        """Sets a property for the total number of Panels across all Wings.
 
-        :return: int The total number of Panels.
+        :return: The total number of Panels.
         """
         return sum(wing.num_panels for wing in self.wings)
 
-    def validate_first_airplane_constraints(self):
-        """This method validates that the first Airplane in a simulation has Cg_E_CgP1
-        set to zeros.
+    def validate_first_airplane_constraints(self) -> None:
+        """Validates that the first Airplane in a simulation has Cg_E_CgP1 set to zeros.
 
         This method should be called by SteadyProblem or UnsteadyProblem.
 
-        :raises Exception: If first Airplane constraints are violated.
+        :return: None
         """
         if not np.allclose(self.Cg_E_CgP1, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
@@ -562,27 +547,20 @@ class Airplane:
             )
 
     # TEST: Add unit tests for this method.
-    def compute_T_pas_G_Cg_to_GP1_CgP1(self, first_airplane):
-        """Compute passive transformation matrix from this Airplane's geometry axes,
-        relative to this Airplane's CG to the first Airplane's geometry axes, relative
-        to the first Airplane's CG.
+    def compute_T_pas_G_Cg_to_GP1_CgP1(self, first_airplane: "Airplane") -> np.ndarray:
+        """Computes the passive transformation matrix from this Airplane's geometry
+        axes, relative to this Airplane's CG to the first Airplane's geometry axes,
+        relative to the first Airplane's CG.
 
-        This method computes the transformation chain: G_Cg > B_Cg > E_CgP1 >
-        BP1_CgP1 > GP1_CgP1. This transformation matrix is used to position Airplanes
-        relative to one another, in problems with more than one Airplane.
+        Computes the transformation chain: G_Cg > B_Cg > E_CgP1 > BP1_CgP1 > GP1_CgP1.
+        This transformation matrix is used to position Airplanes relative to one
+        another, in problems with more than one Airplane. If this Airplane is the first
+        Airplane (where Cg_E_CgP1 = [0, 0, 0]), it returns an identity transformation.
 
-        If this Airplane is the first Airplane (where Cg_E_CgP1 = [0, 0, 0]),
-        this returns an identity transformation.
-
-        :param first_airplane: Airplane
-
-            The first Airplane in a problem. This must be an Airplane.
-
-        :return: (4, 4) ndarray of floats
-
-            The passive transformation matrix from this Airplane's geometry axes,
-            relative to its CG to the first Airplane's geometry axes, relative to its
-            CG.
+        :param first_airplane: The first Airplane in a problem.
+        :return: A (4,4) ndarray of floats representing the passive transformation
+            matrix from this Airplane's geometry axes, relative to its CG to the first
+            Airplane's geometry axes, relative to its CG.
         """
         # Step 1: G_Cg > B_Cg (geometry axes to body axes: 180-degree rotation about
         # y-axis)
@@ -643,16 +621,17 @@ class Airplane:
 
     # TEST: Add more thorough unit tests for this method.
     @staticmethod
-    def process_wing_symmetry(wing):
-        """This method processes a Wing to determine what type of symmetry it has. If
-        necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
-        creates a second reflected Wing. Finally, a list of Wings is returned. For types
-        1-4 symmetry this contains only the one modified Wing, but for type 5 symmetry
-        it contains the modified Wing followed by the new reflected Wing. Before
-        returning them, this method also calls each Wing's generate_mesh method,
-        preparing them for use simulation.
+    def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
+        """Processes a Wing to determine what type of symmetry it has. If necessary, it
+        then modifies the Wing. If type 5 symmetry is detected, it also creates a second
+        reflected Wing. Finally, it returns a list of Wings.
 
-        :return: list of Wings
+        :param wing: The Wing to process for symmetry analysis and potential
+            modification.
+        :return: The list of processed Wings. For types 1-4 symmetry it contains only
+            the one modified Wing, but for type 5 symmetry it contains the modified Wing
+            followed by the new reflected Wing. Before returning them, it also calls
+            each Wing's generate_mesh method, preparing them for use simulation.
         """
         # Determine if the symmetry plane is coincident with the wing axes' xz-plane.
         # If symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no

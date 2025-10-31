@@ -24,7 +24,6 @@ This document defines the conventions for type hints and docstrings in the Ptera
 
 ```python
 from collections.abc import Sequence
-
 import numpy as np
 ```
 
@@ -32,14 +31,13 @@ import numpy as np
 
 #### Basic Types
 
-| Parameter Description                 | Type Hint           |
-|---------------------------------------|---------------------|
-| String                                | `str`               |
-| Boolean                               | `bool`              |
-| Boolean (accepting numpy bools)       | `bool \| np.bool_`  |
-| Integer                               | `int`               |
-| Number (int or float)                 | `float \| int`      |
-| Float only                            | `float`             |
+| Parameter Description | Type Hint      |
+|-----------------------|----------------|
+| String                | `str`          |
+| Boolean               | `bool`         |
+| Integer               | `int`          |
+| Number (int or float) | `float \| int` |
+| Float only            | `float`        |
 
 #### Array and Array-Like Types
 
@@ -65,11 +63,12 @@ import numpy as np
 | Optional parameter      | `Type \| None`            |
 | Union of multiple types | `Type1 \| Type2 \| Type3` |
 
-### Module Alias Pattern
+### Module Import Pattern for Avoiding Circular Imports
 
-Import modules with aliases:
+When type hinting classes from the same package:
 
 ```python
+# At top of file
 from . import wing as wing_mod
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
@@ -85,36 +84,6 @@ def _get_mcl_points(
 ) -> list[np.ndarray]:
     ...
 ```
-
-### Avoiding Circular Imports with Type Hints
-
-#### Preferred Method: `from __future__ import annotations`
-
-To avoid circular import errors when type hinting, use `from __future__ import annotations` as the **first import** in your module. This defers evaluation of type hints, treating them as strings automatically:
-
-```python
-from __future__ import annotations
-
-from collections.abc import Sequence
-import numpy as np
-
-from .. import geometry
-from . import wing_movement as wing_movement_mod
-
-# In function signature - no quotes needed!
-def __init__(
-    self,
-    base_airplane: geometry.airplane.Airplane,
-    wing_movements: list[wing_movement_mod.WingMovement],
-) -> None:
-    ...
-```
-
-This approach:
-- Keeps all imports at the top of the file
-- Prevents circular import errors
-- Requires no string quotes around type hints
-- Is the default behavior in Python 3.11+
 
 ---
 
@@ -132,7 +101,7 @@ This approach:
 8. **Never use multiplication sign (×); use lowercase x**
 9. **Never use pi symbol (π); write "pi"**
 10. **Never use approximately-equal sign (≈); use "~"**
-11. **Place closing triple-quotes on their own line**
+11 **Always end with an empty line before closing quotes**
 
 ### Module-Level Docstrings
 
@@ -145,23 +114,20 @@ Module-level docstrings appear at the very top of each Python file and describe 
 ```python
 """Contains the geometry classes.
 
-**Contains the following subpackages:**
+Contains the following subpackages:
+    None
 
-None
+Contains the following directories:
+    None
 
-**Contains the following directories:**
+Contains the following modules:
+    airfoil.py: Contains the Airfoil class.
 
-None
+    airplane.py: Contains the Airplane class.
 
-**Contains the following modules:**
+    wing.py: Contains the Wing class.
 
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
+    wing_cross_section.py: Contains the WingCrossSection class.
 """
 ```
 
@@ -179,13 +145,11 @@ Public modules (e.g., `airfoil.py`, `wing.py`) have structured docstrings listin
 ```python
 """Contains the Airfoil class.
 
-**Contains the following classes:**
+Contains the following classes:
+    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
 
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
+Contains the following functions:
+    None
 """
 ```
 
@@ -217,18 +181,15 @@ def function_name(
     param3: Type3,
 ) -> ReturnType:
     """Short description of what the function does.
-
-    Optional longer description providing more context. This provides detailed explanations of the function's behavior. It can be one or more paragraphs.
     
     Optional citation block:
 
-    **Citation:**
-    
-    Adapted from (can be more specific if the whole function wasn't adapted): <source>
-    
-    Author (or "Authors"): <author>
-    
-    Date of retrieval (don't include if not known): <date>
+    Citation:
+        Adapted from:         <source>
+        Author:               <author>
+        Date of Retrieval:    <date>
+
+    Optional longer description providing more context. This provides detailed explanations of the function's behavior.
 
     :param param1: A (shape) dtype description of param1. Additional details about
         what it represents, valid ranges, units, etc. Can wrap to multiple lines.
@@ -259,8 +220,9 @@ For numpy arrays, always include:
 
 ```python
 :param parameter_name: An array-like object of numbers (int or float) with shape
-    (N,M) representing <description>. Can be a tuple, list, or ndarray. Values are
-    converted to floats internally. The units are <units>. The default is <default>.
+    (N,M) representing <description>. It can be a tuple, list, or numpy array.
+    Values are converted to floats internally. The units are <units>. The default
+    is <default>.
 ```
 
 ### Class Docstrings
@@ -269,28 +231,21 @@ For numpy arrays, always include:
 class ClassName:
     """Short description of the class.
 
-    **Contains the following methods:**
+    Optional citation block:
+
+    Citation:
+        Adapted from:         <source>
+        Author:               <author>
+        Date of Retrieval:    <date>
+        
+    This class contains the following methods:
         public_method_1: Short description (identical to method's docstring's short 
         description.
 
         public_method_2: Short description (identical to method's docstring's short 
         description.
 
-    Optional notes block
-    
-    **Notes:**
-    
-    Detailed description of the class's purpose, behavior, or usage. Can be one or more paragraphs. Avoid numbered or bulleted lists.
-    
-    Optional citation block:
-    
-    **Citation:**
-    
-    Adapted from (can be more specific if the whole class wasn't adapted): <source>
-    
-    Author (or "Authors"): <author>
-    
-    Date of retrieval (don't include if not known): <date>
+    Optional detailed description of the class's purpose, behavior, or usage.
     """
 ```
 
@@ -315,23 +270,20 @@ def property_name(self) -> ReturnType:
 ```python
 """Contains the geometry classes.
 
-**Contains the following subpackages:**
+Contains the following subpackages:
+    None
 
-None
+Contains the following directories:
+    None
 
-**Contains the following directories:**
+Contains the following modules:
+    airfoil.py: Contains the Airfoil class.
 
-None
+    airplane.py: Contains the Airplane class.
 
-**Contains the following modules:**
+    wing.py: Contains the Wing class.
 
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
+    wing_cross_section.py: Contains the WingCrossSection class.
 """
 ```
 
@@ -339,13 +291,11 @@ wing_cross_section.py: Contains the WingCrossSection class.
 ```python
 """Contains the Airfoil class.
 
-**Contains the following classes:**
+Contains the following classes:
+    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
 
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
+Contains the following functions:
+    None
 """
 ```
 
@@ -442,14 +392,14 @@ def __init__(
     :param outline_A_lp: An array-like object of numbers (int or float) with shape
         (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
         axes, relative to the leading point). If you wish to load coordinates from the
-        airfoils directory, leave this as None, which is the default. Can be a tuple,
-        list, or ndarray. Values are converted to floats internally. Make sure all
+        airfoils directory, leave this as None, which is the default. It can be a tuple,
+        list, or numpy array. Values are converted to floats internally. Make sure all
         x-component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: A bool that determines whether you would like to resample the
         points defining the Airfoil's outline. This applies to points passed in by the
         user or to those from the airfoils directory. I highly recommended setting this
-        to True. Can be a bool or a numpy bool and will be converted internally to a
-        bool. The default is True.
+        to True. It can be a boolean or a NumPy boolean and will be converted internally
+        to a boolean. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
         must be a positive int greater than or equal to 3. The resampled outline will
@@ -503,9 +453,9 @@ def get_resampled_mcl(
 
     :param mcl_fractions: A (N,) array-like object of floats representing normalized
         distances along the MCL (from the leading to the trailing edge) at which to
-        return the resampled MCL points. Can be a tuple, list, or ndarray. The first
-        value must be 0.0, the last must be 1.0, and the remaining must be in the range
-        [0.0, 1.0]. All values must be non-duplicated and in ascending order.
+        return the resampled MCL points. It can be a tuple, list, or ndarray. The
+        first value must be 0.0, the last must be 1.0, and the remaining must be in
+        the range [0.0, 1.0]. All values must be non-duplicated and in ascending order.
     :return: A (N,2) ndarray of floats that contains the positions of the resampled
         MCL points (in airfoil axes, relative to the leading point).
     """
@@ -521,7 +471,6 @@ def get_resampled_mcl(
 # Simple types
 param: str
 param: bool
-param: bool | np.bool_  # Accepts both Python and NumPy booleans
 param: int
 param: float | int
 
@@ -561,9 +510,6 @@ param: Type1 | Type2
 # Array parameters
 ":param name: A (shape) ndarray of dtype representing..."
 ":param name: An array-like object of numbers (int or float) with shape..."
-
-# Boolean parameters (accepting numpy bools)
-":param name: A bool that... Can be a bool or a numpy bool and will be converted internally to a bool."
 
 # Return values
 ":return: A (shape) ndarray of dtype that..."

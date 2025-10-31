@@ -1,22 +1,19 @@
 """Contains the geometry classes.
 
-**Contains the following subpackages:**
+Contains the following subpackages:
+    None
 
-None
+Contains the following directories:
+    None
 
-**Contains the following directories:**
+Contains the following modules:
+    airfoil.py: Contains the Airfoil class.
 
-None
+    airplane.py: Contains the Airplane class.
 
-**Contains the following modules:**
+    wing.py: Contains the Wing class.
 
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
+    wing_cross_section.py: Contains the WingCrossSection class.
 """
 
 import pterasoftware.geometry.airfoil

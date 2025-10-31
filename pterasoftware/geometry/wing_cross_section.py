@@ -1,4 +1,4 @@
-"""This module contains the WingCrossSection class.
+"""Contains the WingCrossSection class.
 
 This module contains the following classes:
     WingCrossSection: This is a class used to contain wing cross sections of a Wing.
@@ -10,8 +10,7 @@ This module contains the following functions:
 import numpy as np
 import pyvista as pv
 
-from .airfoil import Airfoil
-
+from . import airfoil as airfoil_mod
 from .. import _parameter_validation
 from .. import _transformations
 from .._transformations import apply_T_to_vectors
@@ -158,7 +157,7 @@ class WingCrossSection:
             be None.
         """
         # Validate Airfoil.
-        if not isinstance(airfoil, Airfoil):
+        if not isinstance(airfoil, airfoil_mod.Airfoil):
             raise TypeError("airfoil must be an Airfoil.")
         self.airfoil = airfoil
 
@@ -269,12 +268,12 @@ class WingCrossSection:
         self.symmetry_type = None
 
     def validate_root_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific
-        to root WingCrossSections.
+        """This method is called by the parent Wing to validate constraints specific to
+        root WingCrossSections.
 
-        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz set
-        to zero vectors. They also must have num_spanwise_panels not None (it's
-        previously been checked to be None or a positive int).
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz set to
+        zero vectors. They also must have num_spanwise_panels not None (it's previously
+        been checked to be None or a positive int).
 
         :raises ValueError: If root WingCrossSection constraints are violated.
         """
@@ -297,8 +296,8 @@ class WingCrossSection:
 
     # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_mid_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific
-        to middle WingCrossSections.
+        """This method is called by the parent Wing to validate constraints specific to
+        middle WingCrossSections.
 
         Middle have num_spanwise_panels not None (it's previously been checked to be
         None or a positive int).
@@ -312,11 +311,11 @@ class WingCrossSection:
 
     # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_tip_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific
-        to tip WingCrossSections.
+        """This method is called by the parent Wing to validate constraints specific to
+        tip WingCrossSections.
 
-        Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set
-        to None.
+        Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set to
+        None.
 
         :raises ValueError: If tip WingCrossSection constraints are violated.
         """
@@ -534,13 +533,13 @@ class WingCrossSection:
     @property
     def T_pas_Wcsp_Lpp_to_Wcs_Lp(self):
         """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from parent wing cross section axes relative
-        to the parent leading point to wing cross section axes relative to the
-        leading point. This is set to None if the WingCrossSection hasn't been
-        fully validated yet.
+        maps in homogeneous coordinates from parent wing cross section axes relative to
+        the parent leading point to wing cross section axes relative to the leading
+        point. This is set to None if the WingCrossSection hasn't been fully validated
+        yet.
 
-        :return: (4,4) ndarray of floats or None
-            4x4 transformation matrix or None if self.validated=False.
+        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None if
+            self.validated=False.
         """
         if not self.validated:
             return None
@@ -568,12 +567,12 @@ class WingCrossSection:
     def T_pas_Wcs_Lp_to_Wcsp_Lpp(self):
         """This method defines a property for the passive transformation matrix which
         maps in homogeneous coordinates from wing cross section axes relative to the
-        leading point to parent wing cross section axes relative to the parent
-        leading point. This is set to None if the WingCrossSection hasn't been fully
-        validated yet.
+        leading point to parent wing cross section axes relative to the parent leading
+        point. This is set to None if the WingCrossSection hasn't been fully validated
+        yet.
 
-        :return: (4,4) ndarray of floats or None
-            4x4 transformation matrix or None if self.validated=False.
+        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None if
+            self.validated=False.
         """
         if not self.validated:
             return None

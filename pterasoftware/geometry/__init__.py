@@ -1,21 +1,19 @@
-"""This package contains the geometry classes.
+"""Contains the geometry classes.
 
-This package contains the following subpackages:
+Contains the following subpackages:
     None
 
-This package contains the following directories:
+Contains the following directories:
     None
 
-This package contains the following modules:
-    __init__.py: This module is this package's initialization script.
+Contains the following modules:
+    airfoil.py: Contains the Airfoil class.
 
-    airfoil.py: This module contains the Airfoil class.
+    airplane.py: Contains the Airplane class.
 
-    airplane.py: This module contains the Airplane class.
+    wing.py: Contains the Wing class.
 
-    wing.py: This module contains the Wing class.
-
-    wing_cross_section.py: This module contains the WingCrossSection class.
+    wing_cross_section.py: Contains the WingCrossSection class.
 """
 
 import pterasoftware.geometry.airfoil

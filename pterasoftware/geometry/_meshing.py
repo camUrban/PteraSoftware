@@ -1,18 +1,21 @@
-"""This module contains the function for meshing Wings."""
+"""Contains the function for meshing Wings."""
 
+from typing import TYPE_CHECKING
 import numpy as np
 
-from . import wing as wing_mod
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
 from .. import _functions
 from .. import _panel
 from .. import _transformations
 
+if TYPE_CHECKING:
+    from . import wing as wing_mod
 
-def mesh_wing(wing: wing_mod.Wing) -> None:
-    """This function takes in Wing and creates a quadrilateral mesh of its geometry, and
-    then populates its array of Panels with the mesh data.
+
+def mesh_wing(wing: "wing_mod.Wing") -> None:
+    """Takes in a Wing, creates a quadrilateral mesh of its geometry, and then populates
+    its array of Panels with the mesh data.
 
     Citation:
         Adapted from:         vlm3.make_panels in AeroSandbox
@@ -20,7 +23,6 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
         Date of Retrieval:    05/01/2020
 
     :param wing: The Wing to be meshed.
-
     :return: None
     """
     # Gather this Wing's attributes
@@ -342,11 +344,10 @@ def _get_mcl_points(
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """This function takes in the inner and outer Airfoils of a wing section and its
-    normalized chordwise coordinates. It returns a list of four column vectors
-    containing the normalized components of the positions of points along the mean
-    camber line (MCL) (in each Airfoil's axes, relative to each Airfoil's leading
-    point).
+    """Takes in the inner and outer Airfoils of a wing section and its normalized
+    chordwise coordinates. It returns a list of four column vectors containing the
+    normalized components of the positions of points along the mean camber line (MCL)
+    (in each Airfoil's axes, relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
     :param outer_airfoil: The wing section's outer Airfoil.
@@ -407,8 +408,8 @@ def _get_mcs_points(
     outer_mcl_pointsX_Ao_lpAo: np.ndarray,
     spanwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """This function calculates the points on a wing section's mean camber surface (MCS)
-    (in wing axes, relative to the leading edge root point).
+    """Calculates the points on a wing section's mean camber surface (MCS) (in wing
+    axes, relative to the leading edge root point).
 
     :param T_pas_Wcsi_Lpi_Wn_Ler: A (4,4) ndarray of floats representing a passive
         transformation matrix which maps in homogeneous coordinates from the inner
@@ -517,8 +518,7 @@ def _get_panels(
     is_trailing_edge: np.ndarray,
     is_leading_edge: np.ndarray,
 ) -> np.ndarray:
-    """This function takes in arrays of Panel attributes and returns a 2D ndarray of
-    Panels.
+    """Takes in arrays of Panel attributes and returns a 2D ndarray of Panels.
 
     :param Flpp_G_Cg: A (M,N,3) ndarray of floats, where M is the number of chordwise
         Panels, N is the number of spanwise Panels, and the last dimension contains the

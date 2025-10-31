@@ -27,9 +27,12 @@ class Airfoil:
     """A class used to contain the Airfoil of a WingCrossSection.
 
     Citation:
-        Adapted from:         geometry.Airfoil in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/27/2020
+        Adapted from:
+            geometry.Airfoil in AeroSandbox
+        Author:
+            Peter Sharpe
+        Date of Retrieval:
+            04/27/2020
 
     Contains the following methods:
         add_control_surface: Returns a version of the Airfoil with a control surface

@@ -8,6 +8,7 @@ Contains the following functions:
 """
 
 from collections.abc import Sequence
+from typing import Any, cast
 
 import numpy as np
 import pyvista as pv
@@ -282,12 +283,12 @@ class Wing:
 
         # These attributes will be initialized or populated once this Wing's parent
         # Airplane calls generate_mesh.
-        self.symmetry_type = None
-        self.num_spanwise_panels = None
-        self.num_panels = None
-        self.panels = None
-        self.gridWrvp_GP1_CgP1 = None
-        self.wake_ring_vortices = None
+        self.symmetry_type: int | None = None
+        self.num_spanwise_panels: int | None = None
+        self.num_panels: int | None = None
+        self.panels: np.ndarray | None = None
+        self.gridWrvp_GP1_CgP1: np.ndarray | None = None
+        self.wake_ring_vortices: np.ndarray | None = None
 
     def generate_mesh(self, symmetry_type: int) -> None:
         """Generates this Wing's mesh, which finishes the process of preparing the Wing
@@ -320,6 +321,10 @@ class Wing:
         # symmetry multiply the summation by two.
         self.num_spanwise_panels = 0
         for wing_cross_section in self.wing_cross_sections[:-1]:
+            assert wing_cross_section.num_spanwise_panels is not None, (
+                "num_spanwise_panels should be set during WingCrossSection "
+                "initialization"
+            )
             self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
         if self.symmetry_type == 4:
             self.num_spanwise_panels *= 2
@@ -367,9 +372,11 @@ class Wing:
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections
         ):
-            [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = (
-                wing_cross_section.get_plottable_data(show=False)
-            )
+            plottable_data = wing_cross_section.get_plottable_data(show=False)
+            assert (
+                plottable_data is not None
+            ), "get_plottable_data with show=False should not return None"
+            [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = plottable_data
 
             T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
                 wing_cross_section_id
@@ -417,7 +424,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)
+        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
         AxesWLerWcs1Lp1_G_Cg = pv.AxesAssembly(
             x_label="WX@Ler/Wcs1XLp1",
@@ -435,7 +442,9 @@ class Wing:
             # orientation=(0.0, 0.0, 0.0),
             # origin=(0.0, 0.0, 0.0),
             scale=(0.25, 0.25, 0.25),
-            user_matrix=np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler),
+            user_matrix=np.linalg.inv(
+                cast(np.ndarray[Any, Any], self.T_pas_G_Cg_to_Wn_Ler)
+            ),
             # user_matrix=wingAxes_T_act,
             name="W/Wcs1",
             shaft_type="cylinder",
@@ -447,7 +456,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
+        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
 
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections
@@ -506,7 +515,7 @@ class Wing:
                     symmetric_bounds=False,
                 )
 
-                plotter.add_actor(AxesWcsLp_G_Cg)
+                plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
 
         if self.panels is not None:
             # Initialize empty arrays to hold the Panels' vertices and faces
@@ -540,8 +549,14 @@ class Wing:
                 )
 
                 # Stack this Panel's vertices and faces with the array of all vertices and faces
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                panel_vertices = cast(
+                    np.ndarray[tuple[int, int], Any],
+                    np.vstack((panel_vertices, panel_vertices_to_add)),
+                )
+                panel_faces = cast(
+                    np.ndarray[tuple[int], Any],
+                    np.hstack((panel_faces, panel_face_to_add)),
+                )
 
                 # Update the number of previous Panels
                 panel_num += 1
@@ -557,7 +572,7 @@ class Wing:
                     smooth_shading=False,
                 )
 
-        plotter.enable_parallel_projection()
+        plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
         plotter.show(
             cpos=(-1, -1, 1),
@@ -612,10 +627,13 @@ class Wing:
             self.angles_Gs_to_Wn_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
-        return _transformations.compose_T_pas(
-            T_reflect_pas_G_Cg_to_Gs_Cgs,
-            T_trans_pas_Gs_Cgs_to_Gs_Ler,
-            T_rot_pas_Gs_to_Wn,
+        return cast(
+            np.ndarray[Any, Any],
+            _transformations.compose_T_pas(
+                T_reflect_pas_G_Cg_to_Gs_Cgs,
+                T_trans_pas_Gs_Cgs_to_Gs_Ler,
+                T_rot_pas_Gs_to_Wn,
+            ),
         )
 
     @property
@@ -633,7 +651,10 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
+        return cast(
+            np.ndarray[Any, Any],
+            _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler),
+        )
 
     @property
     def WnX_G(self) -> None | np.ndarray:
@@ -650,8 +671,11 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
-        return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
+        return cast(
+            np.ndarray[Any, Any],
+            _transformations.apply_T_to_vectors(
+                self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
+            ),
         )
 
     @property
@@ -669,8 +693,11 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
-        return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
+        return cast(
+            np.ndarray[Any, Any],
+            _transformations.apply_T_to_vectors(
+                self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
+            ),
         )
 
     @property
@@ -688,8 +715,11 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
-        return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
+        return cast(
+            np.ndarray[Any, Any],
+            _transformations.apply_T_to_vectors(
+                self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
+            ),
         )
 
     @property
@@ -780,8 +810,9 @@ class Wing:
 
         projected_area = 0
 
-        # Iterate through the chordwise and spanwise indices of the panels and add
+        # Iterate through the chordwise and spanwise indices of the Panels and add
         # their area to the total projected area.
+        assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
                 projected_area += self.panels[
@@ -809,6 +840,7 @@ class Wing:
 
         # Iterate through the chordwise and spanwise indices of the panels and add
         # their area to the total wetted area.
+        assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
                 wetted_area += self.panels[chordwise_location, spanwise_location].area
@@ -831,12 +863,14 @@ class Wing:
 
         # Iterate through the chordwise and spanwise indices of the Panels and sum
         # all the Panels' aspect ratios.
+        assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
                 aspect_ratio_sum += self.panels[
                     chordwise_location, spanwise_location
                 ].aspect_ratio
 
+        assert self.num_panels is not None
         average_aspect_ratio = aspect_ratio_sum / self.num_panels
 
         return average_aspect_ratio
@@ -930,6 +964,7 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
+        assert self.projected_area is not None and self.span is not None
         return float(self.projected_area) / float(self.span)
 
     # TEST: Consider adding unit tests for this method.
@@ -952,7 +987,7 @@ class Wing:
         # aeronautics)#Mean_aerodynamic_chord. This equation integrates the squared
         # chord from the Wing's center to the Wing's tip. We will perform this
         # integral piecewise for each section of the Wing.
-        integral = 0
+        integral = 0.0
 
         # Iterate through the WingCrossSections to add the contribution of their
         # corresponding Wing section to the piecewise integral.
@@ -1017,7 +1052,7 @@ class Wing:
                 section_vector_Wn, np.array([0.0, 1.0, 0.0])
             ) * np.array([0.0, 1.0, 0.0])
 
-            section_span = np.linalg.norm(projected_section_vector)
+            section_span = float(np.linalg.norm(projected_section_vector))
 
             # Each Wing section is, by definition, trapezoidal (at least when
             # projected on to the wing's projection plane). For a trapezoid,
@@ -1029,6 +1064,7 @@ class Wing:
 
         # Multiply the integral's value by the coefficients from the cited equation.
         # Double if the wing is symmetric and continuous.
+        assert self.projected_area is not None
         if self.symmetry_type == 4:
             return 2 * integral / self.projected_area
         return integral / self.projected_area

@@ -52,7 +52,7 @@ class Airfoil:
         self,
         name: str = "NACA0012",
         outline_A_lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
-        resample: bool = True,
+        resample: bool | np.bool_ = True,
         n_points_per_side: int = 400,
         _trust: object | None = None,
     ) -> None:
@@ -70,11 +70,11 @@ class Airfoil:
             default. It can be a tuple, list, or numpy array. Values are converted to
             floats internally. Make sure all x-component values are in the range [0.0,
             1.0]. The default value is None.
-        :param resample: A bool that determines whether you would like to resample
-            the points defining the Airfoil's outline. This applies to points passed in
-            by the user or to those from the airfoils directory. I highly recommended
-            setting this to True. It can be a boolean or a NumPy boolean and will be
-            converted internally to a boolean. The default is True.
+        :param resample: Determines whether to resample the points defining the
+            Airfoil's outline. This applies to points passed in by the user or to those
+            from the airfoils directory. I highly recommend setting this to True. It can
+            be a bool or a numpy bool and will be converted internally to a bool. The
+            default is True.
         :param n_points_per_side: The number of points to use when creating the
             Airfoil's MCL and when resampling the upper and lower parts of the Airfoil's
             outline. It must be a positive int greater than or equal to 3. The resampled
@@ -284,12 +284,15 @@ class Airfoil:
 
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
-    def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
+    def get_plottable_data(
+        self, show: bool | np.bool_ = False
+    ) -> list[np.ndarray] | None:
         """Returns plottable data for this Airfoil's outline and mean camber line.
 
-        :param show: A bool that determines whether to display the plot. If True, the
-            method displays the plot and returns None. If False, the method returns the
-            data without displaying. The default is False.
+        :param show: Determines whether to display the plot. Can be a bool or a numpy
+            bool, and will be converted internally to a bool. If True, the method
+            displays the plot and returns None. If False, the method returns the data
+            without displaying. The default is False.
         :return: A list of two ndarrays containing the outline and MCL data, or None if
             show is True.
         """

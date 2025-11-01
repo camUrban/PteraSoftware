@@ -639,21 +639,14 @@ def plot_results_versus_time(
     """This function takes in an UnsteadyRingVortexLatticeMethodSolver, and plots the
     loads and load coefficients as a function of time.
 
-    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-
-        This is the UnsteadyRingVortexLatticeMethodSolver whose loads will be plotted.
-
-    :param show: boolLike, optional
-
-        Set this to True to show the plots. It can be a boolean or a NumPy boolean
-        and will be converted internally to a boolean. The default is True.
-
-    :param save: boolLike, Optional
-
-        Set this to True to save the plots as PNGs. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default is
-        True.
-
+    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver whose loads will be plotted.
+    :param show: boolLike, optional Set this to True to show the plots. It can be a
+        boolean or a NumPy boolean and will be converted internally to a boolean. The
+        default is True.
+    :param save: boolLike, Optional Set this to True to save the plots as PNGs. It can
+        be a boolean or a NumPy boolean and will be converted internally to a boolean.
+        The default is True.
     :return: None
     """
     if not isinstance(
@@ -968,10 +961,8 @@ def print_results(
     """This function prints the load and load coefficients calculated by a solver.
 
     :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
-    SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
-
+        SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
         This is the solver with the results to be printed.
-
     :return: None
     """
     if isinstance(
@@ -1159,13 +1150,10 @@ def _get_panel_surfaces(
     """This function returns a PolyData representation of the Wings' Panels' surfaces
     associated with all the Airplanes in a list of Airplanes.
 
-    :param airplanes: list of Airplanes
-
-        This is a list of Airplanes whose Wings' Panels' surfaces will be returned.
-
-    :return: pv.PolyData
-
-        This is a PolyData representation of the Airplanes' Wings' Panels' surfaces.
+    :param airplanes: list of Airplanes This is a list of Airplanes whose Wings' Panels'
+        surfaces will be returned.
+    :return: pv.PolyData This is a PolyData representation of the Airplanes' Wings'
+        Panels' surfaces.
     """
     # Initialize empty ndarrays to hold the Panels' vertices and faces.
     panel_vertices = np.empty((0, 3), dtype=float)
@@ -1221,18 +1209,11 @@ def _get_wake_ring_vortex_surfaces(
     """This function returns the PolyData representation of surfaces an
     UnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time step.
 
-    :param solver: UnsteadyRingVortexLatticeMethodSolver
-
-        This is the UnsteadyRingVortexLatticeMethodSolver with the wake RingVortices
-        to process.
-
-    :param step: int
-
-        This is the time step number at which to process the wake RingVortices.
-
-    :return: PolyData
-
-        This is the PolyData representation of the wake RingVortices.
+    :param solver: UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver with the wake RingVortices to process.
+    :param step: int This is the time step number at which to process the wake
+        RingVortices.
+    :return: PolyData  This is the PolyData representation of the wake RingVortices.
     """
     num_wake_ring_vortices = solver.list_num_wake_vortices[step]
     stackFrwrvp_GP1_CgP1 = solver.listStackFrwrvp_GP1_CgP1[step]
@@ -1294,24 +1275,15 @@ def _get_scalars(
     """This function gets the coefficient values from a SteadyProblem's Airplanes'
     Wings' Panels.
 
-    :param airplanes: list of Airplanes
-
-        This is the list of Airplanes with the scalars to return.
-
-    :param scalar_type: str
-
-        This variable determines how which load coefficient to return as scalars. It
-        can be "induced drag", "side force", or "lift", which respectively use each
-        Panel's induced drag, side force, and lift coefficient.
-
-    :param qInf__E: float
-
-        This is the freestream dynamic pressure experienced by this SteadyProblem's
-        Airplane(s) (observed in the Earth frame).
-
-    :return scalars: (N,) ndarray of floats
-
-        This is the (N,) ndarray of floats for the N Panels' load coefficients.
+    :param airplanes: list of Airplanes This is the list of Airplanes with the scalars
+        to return.
+    :param scalar_type: str This variable determines how which load coefficient to
+        return as scalars. It can be "induced drag", "side force", or "lift", which
+        respectively use each Panel's induced drag, side force, and lift coefficient.
+    :param qInf__E: float This is the freestream dynamic pressure experienced by this
+        SteadyProblem's Airplane(s) (observed in the Earth frame).
+    :return scalars: (N,) ndarray of floats This is the (N,) ndarray of floats for the N
+        Panels' load coefficients.
     """
     scalars = np.empty(0, dtype=float)
 
@@ -1420,7 +1392,7 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        cmap=color_map,
+        cmap=[color_map],
         clim=[c_min, c_max],
         scalars=these_scalars,
         smooth_shading=False,

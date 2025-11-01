@@ -8,6 +8,7 @@ Contains the following functions:
 """
 
 from collections.abc import Sequence
+from typing import cast
 
 import numpy as np
 import pyvista as pv
@@ -238,12 +239,12 @@ class WingCrossSection:
         # Define a flag for if this WingCrossSection has been fully validated. This
         # will be set by the parent Wing after calling its additional validation
         # methods.
-        self.validated = False
+        self.validated: bool = False
 
         # Define a flag for this WingCrossSection's parent Wing's symmetry type. This
         # will be set by its parent Wing immediately after it has its own
         # symmetry_type parameter set by its parent Airplane.
-        self.symmetry_type = None
+        self.symmetry_type: int | None = None
 
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
@@ -272,7 +273,11 @@ class WingCrossSection:
         if self.symmetry_type is None or self.validated is None:
             return None
 
-        [airfoilOutline_A_lp, airfoilMcl_A_lp] = self.airfoil.get_plottable_data(False)
+        plottable_data = self.airfoil.get_plottable_data(show=False)
+        assert (
+            plottable_data is not None
+        ), "get_plottable_data with show=False should not return None"
+        [airfoilOutline_A_lp, airfoilMcl_A_lp] = plottable_data
 
         airfoilNonScaledOutline_Wcs_lp = np.column_stack(
             [
@@ -390,7 +395,7 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)
+            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)  # type: ignore[arg-type]
         else:
             AxesWcsLp_Wcsp_lpp = pv.AxesAssembly(
                 x_label="WcsX@Lp",
@@ -445,10 +450,10 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLp_Wcsp_lpp)
-            plotter.add_actor(AxesWcspLpp)
+            plotter.add_actor(AxesWcsLp_Wcsp_lpp)  # type: ignore[arg-type]
+            plotter.add_actor(AxesWcspLpp)  # type: ignore[arg-type]
 
-        plotter.enable_parallel_projection()
+        plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
         plotter.show(
             cpos=(-1, -1, 1),
@@ -547,8 +552,11 @@ class WingCrossSection:
             self.angles_Wcsp_to_Wcs_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
-        return _transformations.compose_T_pas(
-            T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
+        return cast(
+            np.ndarray,
+            _transformations.compose_T_pas(
+                T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
+            ),
         )
 
     @property
@@ -564,4 +572,6 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        return _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+        return cast(
+            np.ndarray, _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+        )

@@ -313,7 +313,7 @@ class Airplane:
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
             without displaying. Can be a bool or a numpy bool and will be converted
-            internally to bool. The default is False.
+            internally to a bool. The default is False.
         :return: If show is True, returns None. If show is False, returns a list of two
             lists, each containing one ndarray for every one of this Airplane's
             Airfoils. These ndarrays represent points on each Airfoil's outline and mean

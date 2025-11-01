@@ -74,6 +74,7 @@ class TestWingCrossSection(unittest.TestCase):
         """Test that airfoil parameter is properly validated."""
         # Test with invalid airfoil type
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.wing_cross_section.WingCrossSection(
                 airfoil="not_an_airfoil",
                 num_spanwise_panels=8,

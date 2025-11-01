@@ -1,11 +1,13 @@
 """Contains the WingCrossSection class.
 
-This module contains the following classes:
-    WingCrossSection: This is a class used to contain wing cross sections of a Wing.
+Contains the following classes:
+    WingCrossSection: A class used to contain wing cross sections of a Wing.
 
-This module contains the following functions:
+Contains the following functions:
     None
 """
+
+from collections.abc import Sequence
 
 import numpy as np
 import pyvista as pv
@@ -17,41 +19,40 @@ from .._transformations import apply_T_to_vectors
 
 
 class WingCrossSection:
-    """This class is used to contain the wing cross sections of a Wing.
+    """A class used to contain the wing cross sections of a Wing.
 
     Citation:
-        Adapted from:         geometry.WingXSec in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/26/2020
+        Adapted from:
+            geometry.WingXSec in AeroSandbox
+        Author:
+            Peter Sharpe
+        Date of Retrieval:
+            04/26/2020
 
-    This class contains the following public methods:
+    Contains the following methods:
+        get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
+        outline and mean camber line.
 
-        validate_root_constraints: This method is called by the parent Wing to
-        validate constraints specific to root WingCrossSections.
+        validate_root_constraints: Called by the parent Wing to validate constraints
+        specific to root WingCrossSections.
 
-        validate_mid_constraints: This method is called by the parent Wing to
-        validate constraints specific to middle WingCrossSections.
+        validate_mid_constraints: Called by the parent Wing to validate constraints
+        specific to middle WingCrossSections.
 
-        validate_tip_constraints: This method is called by the parent Wing to
-        validate constraints specific to tip WingCrossSections.
+        validate_tip_constraints: Called by the parent Wing to validate constraints
+        specific to tip WingCrossSections.
 
-        T_pas_Wcsp_Lpp_to_Wcs_Lp: This method defines a property for the passive
-        transformation matrix which maps in homogeneous coordinates from parent wing
-        cross section axes relative to the parent leading point to wing cross section
-        axes relative to the leading point. This is set to None if the
-        WingCrossSection hasn't been fully validated yet.
+        T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation
+        matrix which maps in homogeneous coordinates from parent wing cross section
+        axes, relative to the parent leading point, to wing cross section axes, relative
+        to the leading point. Is None if the WingCrossSection hasn't been fully
+        validated yet.
 
-        T_pas_Wcs_Lp_to_Wcsp_Lpp: This method defines a property for the passive
-        transformation matrix which maps in homogeneous coordinates from wing cross
-        section axes relative to the leading point to parent wing cross section axes
-        relative to the parent leading point. This is set to None if the
-        WingCrossSection hasn't been fully validated yet.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+        T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation
+        matrix which maps in homogeneous coordinates from wing cross section axes,
+        relative to the leading point, to parent wing cross section axes, relative to
+        the parent leading point. Is None if the WingCrossSection hasn't been fully
+        validated yet.
 
     The first WingCrossSection in a Wing's wing_cross_section list is known as the
     root WingCrossSection. The last is known as the tip WingCrossSection.
@@ -66,97 +67,73 @@ class WingCrossSection:
 
     Things can get a little confusing with respect to WingCrossSections for Wings
     with symmetric or mirror_only set to True. For more details, look in the Wing
-    class's docstring. Also remember that WingCrossSections themselves aren't used
-    for any simulations, they are merely one of the Wing attributes that tell the
-    meshing function how we'd like to generate the Wing's Panels.
+    class's docstring. Also, remember that WingCrossSections themselves aren't used
+    by the solvers, they are merely one of the Wing attributes that tell the meshing
+    function how we'd like to generate the Wing's Panels.
     """
 
     def __init__(
         self,
-        airfoil,
-        num_spanwise_panels,
-        chord=1.0,
-        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        control_surface_symmetry_type=None,
-        control_surface_hinge_point=0.75,
-        control_surface_deflection=0.0,
-        spanwise_spacing=None,
-    ):
-        """This is the initialization method.
+        airfoil: airfoil_mod.Airfoil,
+        num_spanwise_panels: int | None,
+        chord: float | int = 1.0,
+        Lp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        control_surface_symmetry_type: str | None = None,
+        control_surface_hinge_point: float = 0.75,
+        control_surface_deflection: float | int = 0.0,
+        spanwise_spacing: str | None = None,
+    ) -> None:
+        """The initialization method.
 
-        :param airfoil: Airfoil
-
-            This is the Airfoil to be used at this WingCrossSection.
-
-        :param num_spanwise_panels: int or None
-
-            This is the number of spanwise panels to be used between this
-            WingCrossSection and the next one. For tip WingCrossSections, this must
-            be None. For all other WingCrossSections, this must be a positive integer.
-
-        :param chord: number, optional
-
-            This is the chord of the wing at this WingCrossSection. The units are
-            meters. It must be greater than 0.0 and a number (int or float). The
-            default value is 1.0.
-
-        :param Lp_Wcsp_Lpp: array-like of 3 numbers, optional
-
-            This is the position [x, y, z] in meters of this WingCrossSection's
-            leading edge in parent wing cross section axes, relative to the parent
-            leading edge point. Can be a tuple, list, or numpy array of numbers (int
-            or float). Values are converted to floats internally. If this is the root
-            WingCrossSection, the parent wing cross section axes are the wing axes
-            and the parent leading point is the Wing's leading edge root point. If
-            not, the parent axes and point are those of the previous
-            WingCrossSection. If this is the root WingCrossSection, it must be a zero
-            vector. The second component must be non-negative. The default is (0.0,
-            0.0, 0.0).
-
-        :param angles_Wcsp_to_Wcs_ixyz: array-like of 3 numbers, optional
-
-            This is the angle vector of rotation angles [angleX, angleY, angleZ] in
-            degrees that define the orientation of this WingCrossSection's axes
-            relative to the parent wing cross section axes. Can be a tuple, list,
-            or numpy array of numbers (int or float). Values are converted to floats
+        :param airfoil: The Airfoil to be used at this WingCrossSection.
+        :param num_spanwise_panels: The number of spanwise Panels to be used between
+            this WingCrossSection and the next one. For tip WingCrossSections, it must
+            be None. For all other WingCrossSections, it must be a positive integer.
+        :param chord: The Wing's chord at this WingCrossSection. It must be greater than
+            0.0 and a number (int or float), and will be converted internally to a
+            float. The units are in meters. The default value is 1.0.
+        :param Lp_Wcsp_Lpp: An array-like object of 3 numbers (int or float)
+            representing the position in meters of this WingCrossSection's leading edge
+            in parent wing cross section axes, relative to the parent leading edge
+            point. Can be a tuple, list, or ndarray. Values are converted to floats
+            internally. If this is the root WingCrossSection, the parent wing cross
+            section axes are the wing axes and the parent leading point is the Wing's
+            leading edge root point. If not, the parent axes and point are those of the
+            previous WingCrossSection. If this is the root WingCrossSection, it must be
+            a zero vector. The second component must be non-negative. The units are in
+            meters. The default is (0.0, 0.0, 0.0).
+        :param angles_Wcsp_to_Wcs_ixyz: An array-like object of 3 numbers (int or float)
+            representing the angle vector of rotation angles that define the orientation
+            of this WingCrossSection's axes relative to the parent wing cross section
+            axes. Can be a tuple, list, or ndarray. Values are converted to floats
             internally. If this is a root WingCrossSection, these are the wing axes.
             If not, the parent axes are the previous WingCrossSection's axes. For the
             root WingCrossSection, this must be a zero vector. For other
             WingCrossSections, all angles must be in the range [-90, 90] degrees.
-            Rotations are intrinsic, and proceed in the x-y'-z" order. The units are
+            Rotations are intrinsic, and proceed in the x-y'-z" order. The units are in
             degrees. The default is (0.0, 0.0, 0.0).
-
-        :param control_surface_symmetry_type: str or None, optional
-
-            This determines how control surfaces behave when the Wing has symmetry.
-            It can be "symmetric", "asymmetric", or None. With "symmetric", mirrored
-            control surfaces have the same deflection (like flaps). With
-            "asymmetric", mirrored control surfaces have opposite deflections (like
-            ailerons). The default value is None. For Wings with type 4 or 5 symmetry,
-            this parameter must be specified. For Wings with type 1, 2, or 3 symmetry,
-            this parameter must be None. This validation is performed by the parent
-            Airplane during Wing processing.
-
-        :param control_surface_hinge_point: float, optional
-
-            This is the location of the control surface hinge from the leading edge
-            as a fraction of chord. It must be a float the range (0.0, 1.0). The
-            default value is 0.75.
-
-        :param control_surface_deflection: number, optional
-
-            This is the control deflection in degrees. Deflection downwards is
-            positive. It must be a number (int or float) in the range [-5.0,
-            5.0] degrees. The default value is 0.0 degrees.
-
-        :param spanwise_spacing: str or None, optional
-
-            For non-tip WingCrossSections, this can be "cosine" or "uniform". Using
-            cosine spacing is highly recommended. For tip WingCrossSections it must
-            be None.
+        :param control_surface_symmetry_type: Determines how control surfaces behave
+            when the Wing has symmetry. It can be "symmetric", "asymmetric", or None.
+            With "symmetric", mirrored control surfaces have the same deflection (like
+            flaps). With "asymmetric", mirrored control surfaces have opposite
+            deflections (like ailerons). The default is None. For Wings with type
+            4 or 5 symmetry, this parameter must be specified. For Wings with type 1, 2,
+            or 3 symmetry, this parameter must be None. This validation is performed by
+            the parent Airplane during Wing processing.
+        :param control_surface_hinge_point: The location of the control surface hinge
+            from the leading edge as a fraction of chord. It must be a float in the
+            range (0.0, 1.0). The default is 0.75.
+        :param control_surface_deflection: The control deflection in degrees. Deflection
+            downwards is positive. It must be a number (int or float) in the range
+            [-5.0, 5.0] degrees. It will be converted to a float internally. The default
+            is 0.0 degrees.
+        :param spanwise_spacing: For non-tip WingCrossSections, this can be "cosine" or
+            "uniform". I highly recommend using cosine spacing. For tip
+            WingCrossSections it must be None.
+        :return: None
         """
-        # Validate Airfoil.
+        # Validate airfoil.
         if not isinstance(airfoil, airfoil_mod.Airfoil):
             raise TypeError("airfoil must be an Airfoil.")
         self.airfoil = airfoil
@@ -216,7 +193,8 @@ class WingCrossSection:
                 not in valid_control_surface_symmetry_types
             ):
                 raise ValueError(
-                    f"control_surface_symmetry_type must be one of {valid_control_surface_symmetry_types} or None."
+                    f"control_surface_symmetry_type must be one of "
+                    f"{valid_control_surface_symmetry_types} or None."
                 )
         self.control_surface_symmetry_type = control_surface_symmetry_type
 
@@ -267,74 +245,24 @@ class WingCrossSection:
         # symmetry_type parameter set by its parent Airplane.
         self.symmetry_type = None
 
-    def validate_root_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific to
-        root WingCrossSections.
-
-        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz set to
-        zero vectors. They also must have num_spanwise_panels not None (it's previously
-        been checked to be None or a positive int).
-
-        :raises ValueError: If root WingCrossSection constraints are violated.
-        """
-        # These checks are sufficient because the types were already validated by the
-        # initialization method.
-        if not np.allclose(self.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])):
-            raise ValueError(
-                "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, "
-                "0.0])."
-            )
-        if not np.allclose(self.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])):
-            raise ValueError(
-                "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be "
-                "np.array([0.0, 0.0, 0.0])."
-            )
-        if self.num_spanwise_panels is None:
-            raise ValueError(
-                "The root WingCrossSection cannot have num_spanwise_panels set to None."
-            )
-
-    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
-    def validate_mid_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific to
-        middle WingCrossSections.
-
-        Middle have num_spanwise_panels not None (it's previously been checked to be
-        None or a positive int).
-
-        :raises ValueError: If mid WingCrossSection constraints are violated.
-        """
-        if self.num_spanwise_panels is None:
-            raise ValueError(
-                "Middle WingCrossSections cannot have num_spanwise_panels set to None."
-            )
-
-    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
-    def validate_tip_constraints(self):
-        """This method is called by the parent Wing to validate constraints specific to
-        tip WingCrossSections.
-
-        Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set to
-        None.
-
-        :raises ValueError: If tip WingCrossSection constraints are violated.
-        """
-        if self.num_spanwise_panels is not None:
-            raise ValueError(
-                "The tip WingCrossSection must have num_spanwise_panels=None."
-            )
-        if self.spanwise_spacing is not None:
-            raise ValueError(
-                "The tip WingCrossSection must have spanwise_spacing=None."
-            )
-
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
-    def get_plottable_data(self, show=False):
-        """
+    def get_plottable_data(
+        self,
+        show: bool | np.bool_ = False,
+    ) -> list[np.ndarray] | None:
+        """Returns plottable data for this WingCrossSection's Airfoil's outline and mean
+        camber line.
 
-        :param show:
-        :return:
+        :param show: Determines whether to display the plot. If True, the method
+            displays the plot and returns None. If False, the method returns the data
+            without displaying. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
+        :return: If show is True, returns None. If show is False, returns a list of two
+            ndarrays. These ndarrays represent points on this WingCrossSection's
+            Airfoil's outline and mean camber lines, respectively. The points are in
+            wing cross section axes, relative to the leading point. The units are in
+            meters.
         """
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
@@ -530,16 +458,76 @@ class WingCrossSection:
 
         return None
 
-    @property
-    def T_pas_Wcsp_Lpp_to_Wcs_Lp(self):
-        """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from parent wing cross section axes relative to
-        the parent leading point to wing cross section axes relative to the leading
-        point. This is set to None if the WingCrossSection hasn't been fully validated
-        yet.
+    def validate_root_constraints(self) -> None:
+        """Called by the parent Wing to validate constraints specific to root
+        WingCrossSections.
 
-        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None if
-            self.validated=False.
+        Root WingCrossSections must have Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz set to
+        zero vectors. They also must have num_spanwise_panels not None (it's previously
+        been checked to be None or a positive int).
+
+        :return: None
+        """
+        # These checks are sufficient because the types were already validated by the
+        # initialization method.
+        if not np.allclose(self.Lp_Wcsp_Lpp, np.array([0.0, 0.0, 0.0])):
+            raise ValueError(
+                "The root WingCrossSection's Lp_Wcsp_Lpp must be np.array([0.0, 0.0, "
+                "0.0])."
+            )
+        if not np.allclose(self.angles_Wcsp_to_Wcs_ixyz, np.array([0.0, 0.0, 0.0])):
+            raise ValueError(
+                "The root WingCrossSection's angles_Wcsp_to_Wcs_ixyz must be "
+                "np.array([0.0, 0.0, 0.0])."
+            )
+        if self.num_spanwise_panels is None:
+            raise ValueError(
+                "The root WingCrossSection cannot have num_spanwise_panels set to None."
+            )
+
+    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
+    def validate_mid_constraints(self) -> None:
+        """Called by the parent Wing to validate constraints specific to middle
+        WingCrossSections.
+
+        Middle WingCrossSections must have num_spanwise_panels not None (it's previously
+        been checked to be None or a positive int).
+
+        :return: None
+        """
+        if self.num_spanwise_panels is None:
+            raise ValueError(
+                "Middle WingCrossSections cannot have num_spanwise_panels set to None."
+            )
+
+    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
+    def validate_tip_constraints(self) -> None:
+        """Called by the parent Wing to validate constraints specific to tip
+        WingCrossSections.
+
+        Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set to
+        None.
+
+        :return: None
+        """
+        if self.num_spanwise_panels is not None:
+            raise ValueError(
+                "The tip WingCrossSection must have num_spanwise_panels=None."
+            )
+        if self.spanwise_spacing is not None:
+            raise ValueError(
+                "The tip WingCrossSection must have spanwise_spacing=None."
+            )
+
+    @property
+    def T_pas_Wcsp_Lpp_to_Wcs_Lp(self) -> np.ndarray | None:
+        """Defines a property for the passive transformation matrix which maps in
+        homogeneous coordinates from parent wing cross section axes, relative to the
+        parent leading point, to wing cross section axes, relative to the leading point.
+        Is None if the WingCrossSection hasn't been fully validated yet.
+
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if self.validated=False.
         """
         if not self.validated:
             return None
@@ -564,15 +552,14 @@ class WingCrossSection:
         )
 
     @property
-    def T_pas_Wcs_Lp_to_Wcsp_Lpp(self):
-        """This method defines a property for the passive transformation matrix which
-        maps in homogeneous coordinates from wing cross section axes relative to the
-        leading point to parent wing cross section axes relative to the parent leading
-        point. This is set to None if the WingCrossSection hasn't been fully validated
-        yet.
+    def T_pas_Wcs_Lp_to_Wcsp_Lpp(self) -> np.ndarray | None:
+        """Defines a property for the passive transformation matrix which maps in
+        homogeneous coordinates from wing cross section axes, relative to the leading
+        point, to parent wing cross section axes, relative to the parent leading point.
+        Is None if the WingCrossSection hasn't been fully validated yet.
 
-        :return: (4,4) ndarray of floats or None 4x4 transformation matrix or None if
-            self.validated=False.
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if self.validated=False.
         """
         if not self.validated:
             return None

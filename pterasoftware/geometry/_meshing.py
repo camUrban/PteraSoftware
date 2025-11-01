@@ -48,11 +48,11 @@ def mesh_wing(wing: "wing_mod.Wing") -> None:
     num_wing_cross_sections = len(wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
 
-    # Initialize an empty array that will hold the panels of this Wing. It currently
-    # has 0 columns and M rows, where M is the number of the Wing's chordwise panels.
-    wing_panels = np.empty((num_chordwise_panels, 0), dtype=object)
+    # Initialize an empty array that will hold the Panels of this Wing. It currently
+    # has 0 columns and M rows, where M is the number of the Wing's chordwise Panels.
+    wing_panels: np.ndarray = np.empty((num_chordwise_panels, 0), dtype=object)
 
-    # Make the panels for each wing section.
+    # Make the Panels for each wing section.
     for wing_section_num in range(num_wing_sections):
         # Define variables to hold the indices of this wing section's inner
         # WingCrossSection.
@@ -94,6 +94,9 @@ def mesh_wing(wing: "wing_mod.Wing") -> None:
         # Define number of spanwise points and Panels. This is based on the inner
         # WingCrossSection.
         num_spanwise_panels = inner_wing_cross_section.num_spanwise_panels
+        assert (
+            num_spanwise_panels is not None
+        ), "Inner WingCrossSection must have num_spanwise_panels defined."
         num_spanwise_coordinates = num_spanwise_panels + 1
 
         # Get the spanwise coordinates.

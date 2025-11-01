@@ -8,6 +8,7 @@ Contains the following functions:
 """
 
 from collections.abc import Sequence
+from typing import Any, cast
 
 import numpy as np
 import pyvista as pv
@@ -177,10 +178,10 @@ class Airplane:
 
         # Initialize empty class attributes to hold the force, moment,
         # force coefficients, and moment coefficients this Airplane experiences.
-        self.forces_W = None
-        self.forceCoefficients_W = None
-        self.moments_W_CgP1 = None
-        self.momentCoefficients_W_CgP1 = None
+        self.forces_W: np.ndarray | None = None
+        self.forceCoefficients_W: np.ndarray | None = None
+        self.moments_W_CgP1: np.ndarray | None = None
+        self.momentCoefficients_W_CgP1: np.ndarray | None = None
 
     def draw(
         self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False
@@ -201,30 +202,32 @@ class Airplane:
         save = _parameter_validation.boolLike_return_bool(save, "save")
         testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-        # Define visualization constants
+        # Define visualization constants.
         panel_color = "chartreuse"
         plotter_background_color = "black"
         window_size = [1024, 768]
         quality = 75
 
-        # Initialize the plotter and set it to use parallel projection
+        # Initialize the plotter and set it to use parallel projection.
         plotter = pv.Plotter(window_size=window_size, lighting=None)
-        plotter.enable_parallel_projection()
+        plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
-        # Initialize empty arrays to hold the Panels' vertices and faces
+        # Initialize empty arrays to hold the Panels' vertices and faces.
         panel_vertices = np.empty((0, 3), dtype=float)
         panel_faces = np.empty(0, dtype=int)
 
         # Initialize a variable to keep track of how many Panels' data has been added
-        # to the arrays
+        # to the ndarrays.
         panel_num = 0
 
-        # Iterate through this Airplane's Wings
+        # Iterate through this Airplane's Wings.
         for wing in self.wings:
-            # Unravel the Wing's Panel matrix and iterate through it
+            # Unravel the Wing's Panel matrix and iterate through it.
+            if wing.panels is None:
+                continue
             panels = np.ravel(wing.panels)
             for panel in panels:
-                # Stack this Panel's vertices and faces
+                # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(
                     (
                         panel.Flpp_G_Cg,
@@ -243,11 +246,18 @@ class Airplane:
                     ]
                 )
 
-                # Stack this Panel's vertices and faces with the array of all vertices and faces
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                # Stack this Panel's vertices and faces with the array of all
+                # vertices and faces.
+                panel_vertices = cast(
+                    np.ndarray[tuple[int, int], Any],
+                    np.vstack((panel_vertices, panel_vertices_to_add)),
+                )
+                panel_faces = cast(
+                    np.ndarray[tuple[int], Any],
+                    np.hstack((panel_faces, panel_face_to_add)),
+                )
 
-                # Update the number of previous Panels
+                # Update the number of previous Panels.
                 panel_num += 1
 
         # Convert the Panel vertices and faces to PolyData.
@@ -262,7 +272,7 @@ class Airplane:
         )
 
         # Set the plotter's background color
-        plotter.set_background(color=plotter_background_color)
+        plotter.set_background(color=plotter_background_color)  # type: ignore[call-arg]
 
         if not testing:
             # Show the plotter so the user can adjust the camera position and window
@@ -285,13 +295,12 @@ class Airplane:
 
         # If the user wants to save the image, take a screenshot and save as WebP
         if save:
-            image = webp.Image.fromarray(
-                plotter.screenshot(
-                    filename=None,
-                    transparent_background=True,
-                    return_img=True,
-                )
+            screenshot = plotter.screenshot(
+                filename=None,
+                transparent_background=True,
+                return_img=True,
             )
+            image = webp.Image.fromarray(cast(np.ndarray[Any, Any], screenshot))
             webp.save_image(
                 img=image,
                 file_path=f"{self.name}_geometry.webp",
@@ -306,7 +315,7 @@ class Airplane:
     # DOCUMENT: After testing it, document this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
-    ) -> list[list[np.ndarray]] | None:
+    ) -> list[list[list[np.ndarray]]] | None:
         """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
         lines.
 
@@ -314,11 +323,13 @@ class Airplane:
             displays the plot and returns None. If False, the method returns the data
             without displaying. Can be a bool or a numpy bool and will be converted
             internally to a bool. The default is False.
-        :return: If show is True, returns None. If show is False, returns a list of two
-            lists, each containing one ndarray for every one of this Airplane's
-            Airfoils. These ndarrays represent points on each Airfoil's outline and mean
-            camber lines, respectively. The points are in geometry axes, relative to the
-            CG. The units are in meters.
+        :return: If show is True, returns None. If show is False, returns a list of sub-
+            lists (one sub-list for each of this Airplane's Wings). Each sub-list
+            contains sub-sub-lists (one for each of this Wing's WingCrossSections). Each
+            sub-sub-list contains two ndarrays. The first ndarray contains points on
+            that WingCrossSection's Airfoil's outline and the second contains points on
+            its mean camber line. The points are in geometry axes, relative to the CG.
+            The units are in meters.
         """
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
@@ -326,9 +337,11 @@ class Airplane:
         airfoilOutlines_G_Cg = []
         airfoilMcls_G_Cg = []
         for wing_id, wing in enumerate(self.wings):
-            [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler] = wing.get_plottable_data(
-                show=False
-            )
+            plottable_data = wing.get_plottable_data(show=False)
+            assert (
+                plottable_data is not None
+            ), "get_plottable_data with show=False should not return None"
+            [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler] = plottable_data
 
             these_airfoilOutlines_G_Cg = []
             these_airfoilMcls_G_Cg = []
@@ -381,7 +394,7 @@ class Airplane:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)
+        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
         for wing_id, wing in enumerate(self.wings):
             wing_num = wing_id + 1
@@ -402,7 +415,9 @@ class Airplane:
                 # orientation=(0.0, 0.0, 0.0),
                 # origin=(0.0, 0.0, 0.0),
                 scale=(0.25, 0.25, 0.25),
-                user_matrix=np.linalg.inv(wing.T_pas_G_Cg_to_Wn_Ler),
+                user_matrix=np.linalg.inv(
+                    cast(np.ndarray[Any, Any], wing.T_pas_G_Cg_to_Wn_Ler)
+                ),
                 # user_matrix=wingAxes_T_act,
                 name=f"W{wing_num}/Wcs1",
                 shaft_type="cylinder",
@@ -414,7 +429,7 @@ class Airplane:
                 symmetric_bounds=False,
             )
 
-            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
+            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
 
             these_airfoilOutlines_G_Cg = airfoilOutlines_G_Cg[wing_id]
             these_airfoilMcls_G_Cg = airfoilMcls_G_Cg[wing_id]
@@ -469,7 +484,7 @@ class Airplane:
                         symmetric_bounds=False,
                     )
 
-                    plotter.add_actor(AxesWcsLp_G_Cg)
+                    plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
 
             if wing.panels is not None:
                 # Initialize empty arrays to hold the Panels' vertices and faces
@@ -503,11 +518,17 @@ class Airplane:
                     )
 
                     # Stack this Panel's vertices and faces with the array of all
-                    # vertices and faces
-                    panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                    panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                    # vertices and faces.
+                    panel_vertices = cast(
+                        np.ndarray[tuple[int, int], Any],
+                        np.vstack((panel_vertices, panel_vertices_to_add)),
+                    )
+                    panel_faces = cast(
+                        np.ndarray[tuple[int], Any],
+                        np.hstack((panel_faces, panel_face_to_add)),
+                    )
 
-                    # Update the number of previous Panels
+                    # Update the number of previous Panels.
                     panel_num += 1
 
                     # Convert the Panel vertices and faces to PolyData.
@@ -521,7 +542,7 @@ class Airplane:
                         smooth_shading=False,
                     )
 
-        plotter.enable_parallel_projection()
+        plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
         plotter.show(
             cpos=(-1, -1, 1),
@@ -537,7 +558,9 @@ class Airplane:
 
         :return: The total number of Panels.
         """
-        return sum(wing.num_panels for wing in self.wings)
+        return sum(
+            wing.num_panels if wing.num_panels is not None else 0 for wing in self.wings
+        )
 
     def validate_first_airplane_constraints(self) -> None:
         """Validates that the first Airplane in a simulation has Cg_E_CgP1 set to zeros.
@@ -615,12 +638,15 @@ class Airplane:
         )
 
         # Compose the full passive transformation matrix
-        T_pas_G_Cg_to_GP1_CgP1 = _transformations.compose_T_pas(
-            T_pas_G_Cg_to_B_Cg,
-            T_pas_B_Cg_to_E_Cg,
-            T_pas_E_Cg_to_E_CgP1,
-            T_pas_E_CgP1_to_BP1_CgP1,
-            T_pas_BP1_CgP1_to_GP1_CgP1,
+        T_pas_G_Cg_to_GP1_CgP1 = cast(
+            np.ndarray[Any, Any],
+            _transformations.compose_T_pas(
+                T_pas_G_Cg_to_B_Cg,
+                T_pas_B_Cg_to_E_Cg,
+                T_pas_E_Cg_to_E_CgP1,
+                T_pas_E_CgP1_to_BP1_CgP1,
+                T_pas_BP1_CgP1_to_GP1_CgP1,
+            ),
         )
 
         return T_pas_G_Cg_to_GP1_CgP1
@@ -808,8 +834,12 @@ class Airplane:
                 angles_Gs_to_Wn_ixyz=np.copy(wing.angles_Gs_to_Wn_ixyz),
                 symmetric=False,
                 mirror_only=True,
-                symmetryNormal_G=np.copy(wing.symmetryNormal_G),
-                symmetryPoint_G_Cg=np.copy(wing.symmetryPoint_G_Cg),
+                symmetryNormal_G=np.copy(
+                    cast(np.ndarray[Any, Any], wing.symmetryNormal_G)
+                ),
+                symmetryPoint_G_Cg=np.copy(
+                    cast(np.ndarray[Any, Any], wing.symmetryPoint_G_Cg)
+                ),
                 num_chordwise_panels=wing.num_chordwise_panels,
                 chordwise_spacing=wing.chordwise_spacing,
             )

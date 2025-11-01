@@ -1,12 +1,16 @@
 """This module contains common parameter validation functions."""
 
+from typing import Any
+
 import numpy as np
 
 
 # TEST: Consider adding unit tests for this function.
-def string_return_string(string, name):
-    """Validates that a value is a string and returns it as a string. name must also
-    be a string."""
+def string_return_string(string: Any, name: Any) -> str:
+    """Validates that a value is a string and returns it as a string.
+
+    name must also be a string.
+    """
     if not isinstance(name, str):
         raise TypeError("name must be a string.")
 
@@ -16,9 +20,12 @@ def string_return_string(string, name):
 
 
 # TEST: Consider adding unit tests for this function.
-def boolLike_return_bool(value, name):
-    """Validates that a value is a boolean, NumPy boolean, or the integers 0 or 1,
-    and returns it as a boolean. name must be a string."""
+def boolLike_return_bool(value: Any, name: Any) -> bool:
+    """Validates that a value is a boolean, NumPy boolean, or the integers 0 or 1, and
+    returns it as a boolean.
+
+    name must be a string.
+    """
     name = string_return_string(name, "name")
 
     if isinstance(value, (bool, np.bool_)):
@@ -32,7 +39,7 @@ def boolLike_return_bool(value, name):
 
 
 # TEST: Consider adding unit tests for this function.
-def int_return_int(value, name):
+def int_return_int(value: Any, name: Any) -> int:
     """Validates that a value is an int and returns it as an int. name must be a string.
 
     Note: np.nan, np.inf, and -np.inf won't pass this test.
@@ -48,11 +55,12 @@ def int_return_int(value, name):
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with validate_scalar_int_in_range.
 # TEST: Consider adding unit tests for this function.
-def positive_int_return_int(value, name):
-    """Validates that a value is an int with a value greater than zero and returns it
-    as an int. name must be a string.
+def positive_int_return_int(value: Any, name: Any) -> int:
+    """Validates that a value is an int with a value greater than zero and returns it as
+    an int. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(value, int):
@@ -66,14 +74,20 @@ def positive_int_return_int(value, name):
 
 # TEST: Consider adding unit tests for this function.
 def int_in_range_return_int(
-    value, name, min_val, min_inclusive, max_val, max_inclusive
-):
-    """Validates that a value is an int and in a custom range and returns it as an
-    int. If min_val or max_val is None, then value's magnitude isn't checked relative
-    to that parameter. If min_val or max_val is None, the corresponding '*_inclusive'
-    parameter must also be None. name must be a string.
+    value: Any,
+    name: Any,
+    min_val: Any,
+    min_inclusive: Any,
+    max_val: Any,
+    max_inclusive: Any,
+) -> int:
+    """Validates that a value is an int and in a custom range and returns it as an int.
+    If min_val or max_val is None, then value's magnitude isn't checked relative to that
+    parameter. If min_val or max_val is None, the corresponding '*_inclusive' parameter
+    must also be None. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
@@ -115,11 +129,11 @@ def int_in_range_return_int(
 
 
 # TEST: Consider adding unit tests for this function.
-def number_return_float(value, name):
-    """Validates a value is a number and returns it as a float. name must be a
-    string.
+def number_return_float(value: Any, name: Any) -> float:
+    """Validates a value is a number and returns it as a float. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -134,11 +148,12 @@ def number_return_float(value, name):
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
 # TEST: Consider adding unit tests for this function.
-def non_negative_number_return_float(value, name):
-    """Validates a value is a number and is greater than or equal to zero and returns
-    it as a float. name must be a string.
+def non_negative_number_return_float(value: Any, name: Any) -> float:
+    """Validates a value is a number and is greater than or equal to zero and returns it
+    as a float. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -156,11 +171,12 @@ def non_negative_number_return_float(value, name):
 # TODO: Consider getting rid of this function as its functionality can be replicated
 #  with number_in_range_return_float.
 # TEST: Consider adding unit tests for this function.
-def positive_number_return_float(value, name):
-    """Validates a value is a number and is greater than zero and returns it as a
-    float. name must be a string.
+def positive_number_return_float(value: Any, name: Any) -> float:
+    """Validates a value is a number and is greater than zero and returns it as a float.
+    name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(value, (int, float, np.number)):
@@ -177,16 +193,22 @@ def positive_number_return_float(value, name):
 
 # TEST: Consider adding unit tests for this function.
 def number_in_range_return_float(
-    value, name, min_val, min_inclusive, max_val, max_inclusive
-):
-    """Validates a value is a number and is in a custom range and returns it as a
-    float. If min_val or max_val is None, then value's magnitude isn't checked
-    relative to that parameter. If min_val or max_val is None, the corresponding
-    '*_inclusive' parameter must also be None. If not None, these parameters must be
-    booleans. If neither min_val nor max_val are None, then min_val must be less than
-    max_val. name must be a string.
+    value: Any,
+    name: Any,
+    min_val: Any,
+    min_inclusive: Any,
+    max_val: Any,
+    max_inclusive: Any,
+) -> float:
+    """Validates a value is a number and is in a custom range and returns it as a float.
+    If min_val or max_val is None, then value's magnitude isn't checked relative to that
+    parameter. If min_val or max_val is None, the corresponding '*_inclusive' parameter
+    must also be None. If not None, these parameters must be booleans. If neither
+    min_val nor max_val are None, then min_val must be less than max_val. name must be a
+    string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
@@ -232,18 +254,23 @@ def number_in_range_return_float(
 
 # TEST: Consider adding unit tests for this function.
 def arrayLike_of_numbers_in_range_return_float(
-    value, name, min_val, min_inclusive, max_val, max_inclusive
-):
+    value: Any,
+    name: Any,
+    min_val: Any,
+    min_inclusive: Any,
+    max_val: Any,
+    max_inclusive: Any,
+) -> np.ndarray:
     """Validates a value is a number or an array-like object of numbers, all of which
-    fall in a custom range, and returns both a number input and an array-like input
-    as a ndarray of floats (returns a () shape ndarray if value is number). If
-    min_val or max_val is None, then value's magnitude isn't checked relative to that
-    parameter. If min_val or max_val is None, the corresponding '*_inclusive'
-    parameter must also be None. If not None, these parameters must be booleans. If
-    neither min_val nor max_val are None, then min_val must be less than max_val.
-    name must be a string.
+    fall in a custom range, and returns both a number input and an array-like input as a
+    ndarray of floats (returns a () shape ndarray if value is number). If min_val or
+    max_val is None, then value's magnitude isn't checked relative to that parameter. If
+    min_val or max_val is None, the corresponding '*_inclusive' parameter must also be
+    None. If not None, these parameters must be booleans. If neither min_val nor max_val
+    are None, then min_val must be less than max_val. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
     if min_val is not None:
         min_val = number_return_float(min_val, "min_val")
@@ -263,45 +290,48 @@ def arrayLike_of_numbers_in_range_return_float(
             raise ValueError("min_val must be less than max_val")
 
     try:
-        value = np.asarray(value, dtype=float)
+        validated_value = np.asarray(value, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if not np.isfinite(value).all():
+    if not np.isfinite(validated_value).all():
         raise ValueError(f"{name} (or all its elements) can't be nan, inf, or -inf.")
 
     if min_val is not None:
         if min_inclusive:
-            if not np.all(value >= min_val):
+            if not np.all(validated_value >= min_val):
                 raise ValueError(
                     f"{name} (or all its elements) must be greater than or equal to {min_val}."
                 )
         else:
-            if not np.all(value > min_val):
+            if not np.all(validated_value > min_val):
                 raise ValueError(
                     f"{name} (or all its elements) must be greater than {min_val}."
                 )
 
     if max_val is not None:
         if max_inclusive:
-            if not np.all(value <= max_val):
+            if not np.all(validated_value <= max_val):
                 raise ValueError(
                     f"{name} (or all its elements) must be less than or equal to {max_val}."
                 )
         else:
-            if not np.all(value < max_val):
+            if not np.all(validated_value < max_val):
                 raise ValueError(
                     f"{name} (or all its elements) must be less than {max_val}."
                 )
 
-    return value
+    return validated_value
 
 
 # TEST: Consider adding unit tests for this function.
-def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
+def arrayLike_of_twoD_number_vectorLikes_return_float(
+    vectors: Any,
+    name: Any,
+) -> np.ndarray:
     """Validates a value is an array-like object of 2D number vector-like objects (
-    array-like objects with shape (2,)). It then returns it as a (...,2) numpy array
-    of floats. name must be a string.
+    array-like objects with shape (2,)). It then returns it as a (...,2) numpy array of
+    floats. name must be a string.
 
     Accepts both single vectors of shape (2,) and arrays of vectors with shape
     (..., 2) where the last dimension must be 2.
@@ -311,107 +341,117 @@ def arrayLike_of_twoD_number_vectorLikes_return_float(vectors, name):
     name = string_return_string(name, "name")
 
     try:
-        vectors = np.asarray(vectors, dtype=float)
+        validated_vectors = np.asarray(vectors, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if vectors.ndim == 0:
+    if validated_vectors.ndim == 0:
         raise ValueError(f"{name} cannot be a scalar.")
 
-    if vectors.shape[-1] != 2:
+    if validated_vectors.shape[-1] != 2:
         raise ValueError(f"{name} must have 2 elements in the last dimension.")
 
-    if not np.isfinite(vectors).all():
+    if not np.isfinite(validated_vectors).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return vectors
+    return validated_vectors
 
 
 # TEST: Consider adding unit tests for this function.
-def threeD_number_vectorLike_return_float(vector, name):
+def threeD_number_vectorLike_return_float(vector: Any, name: Any) -> np.ndarray:
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        vector = np.asarray(vector, dtype=float)
+        validated_vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if vector.shape != (3,):
+    if validated_vector.shape != (3,):
         raise ValueError(f"{name} must be a 3-element vector.")
 
-    if not np.isfinite(vector).all():
+    if not np.isfinite(validated_vector).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return vector
+    return validated_vector
 
 
 # TEST: Consider adding unit tests for this function.
-def arrayLike_of_threeD_number_vectorLikes_return_float(vectors, name):
+def arrayLike_of_threeD_number_vectorLikes_return_float(
+    vectors: Any, name: Any
+) -> np.ndarray:
     """Validates a value is an array-like object of 3D number vector-like objects (
-    array-like objects with shape (3,)). It then returns it as a (...,3) numpy array
-    of floats. name must be a string.
+    array-like objects with shape (3,)). It then returns it as a (...,3) numpy array of
+    floats. name must be a string.
 
     Accepts both single vectors of shape (3,) and arrays of vectors with shape
     (..., 3) where the last dimension must be 3.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        vectors = np.asarray(vectors, dtype=float)
+        validated_vectors = np.asarray(vectors, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if vectors.ndim == 0:
+    if validated_vectors.ndim == 0:
         raise ValueError(f"{name} cannot be a scalar.")
 
-    if vectors.shape[-1] != 3:
+    if validated_vectors.shape[-1] != 3:
         raise ValueError(f"{name} must have 3 elements in the last dimension.")
 
-    if not np.isfinite(vectors).all():
+    if not np.isfinite(validated_vectors).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return vectors
+    return validated_vectors
 
 
 # TEST: Consider adding unit tests for this function.
-def threeD_number_vectorLike_return_float_unit_vector(vector, name):
+def threeD_number_vectorLike_return_float_unit_vector(
+    vector: Any, name: Any
+) -> np.ndarray:
     """Validates a value is a 3D vector-like object (array-like object with shape (3,
     )). It then returns it as a (3,) numpy array of floats, normalized to have a
     magnitude of 1.0. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        vector = np.asarray(vector, dtype=float)
+        validated_vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if vector.shape != (3,):
+    if validated_vector.shape != (3,):
         raise ValueError(f"{name} must be a 3-element vector.")
 
-    if not np.isfinite(vector).all():
+    if not np.isfinite(validated_vector).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    norm = np.linalg.norm(vector)
+    norm = np.linalg.norm(validated_vector)
     if norm == 0:
         raise ValueError(f"{name} must have a non-zero length.")
     elif not np.isclose(norm, 1.0):
-        return vector / norm
-    return vector
+        return validated_vector / norm
+    return validated_vector
 
 
 # TEST: Consider adding unit tests for this function.
-def threeD_spacing_vectorLike_return_tuple(vector, name):
-    """Validates a value is a 3D vector-like object (array-like object with shape (3,
-    )) of spacing specifications. Each element can be either a string ("sine" or
-    "uniform") or a callable (custom spacing function). It then returns it as a tuple
-    of 3 elements. name must be a string."""
+def threeD_spacing_vectorLike_return_tuple(vector: Any, name: Any) -> tuple[str, ...]:
+    """Validates a value is a 3D vector-like object (array-like object with shape (3, ))
+    of spacing specifications.
+
+    Each element can be either a string ("sine" or "uniform") or a callable (custom
+    spacing function). It then returns it as a tuple of 3 elements. name must be a
+    string.
+    """
     name = string_return_string(name, "name")
 
     # Convert to list if numpy array, or validate it's a list/tuple.
@@ -426,93 +466,99 @@ def threeD_spacing_vectorLike_return_tuple(vector, name):
         raise TypeError(f"{name} must be array-like (tuple, list, or numpy array).")
 
     # Check each element is either a valid string or a callable.
-    validated = []
+    validated_vector = []
     for i, elem in enumerate(vector):
         if isinstance(elem, str):
             if elem not in ["sine", "uniform"]:
                 raise ValueError(
                     f"Element {i} of {name} must be 'sine', 'uniform', or a callable, got string '{elem}'."
                 )
-            validated.append(elem)
+            validated_vector.append(elem)
         elif callable(elem):
-            validated.append(elem)
+            validated_vector.append(elem)
         else:
             raise TypeError(
                 f"Element {i} of {name} must be a string ('sine' or 'uniform') or a callable, got {type(elem).__name__}."
             )
 
-    return tuple(validated)
+    return tuple(validated_vector)
 
 
 # TEST: Consider adding unit tests for this function.
-def nD_number_vectorLike_return_float(vector, name):
+def nD_number_vectorLike_return_float(vector: Any, name: Any) -> np.ndarray:
     """Validates a value is an ND vector-like object (array-like object with shape (N,
     )). It then returns it as an (N,) numpy array of floats. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        vector = np.asarray(vector, dtype=float)
+        validated_vector = np.asarray(vector, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if vector.ndim != 1:
+    if validated_vector.ndim != 1:
         raise ValueError(f"{name} must be an N-element vector.")
 
-    if not np.isfinite(vector).all():
+    if not np.isfinite(validated_vector).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return vector
+    return validated_vector
 
 
 # TEST: Consider adding unit tests for this function.
-def threeByThree_number_arrayLike_return_float(matrix, name):
-    """Validates a value is a (3,3) array-like object. It then returns it as a (3,
-    3) numpy array of floats. name must be a string.
+def threeByThree_number_arrayLike_return_float(matrix: Any, name: Any) -> np.ndarray:
+    """Validates a value is a (3,3) array-like object. It then returns it as a (3, 3)
+    numpy array of floats. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        matrix = np.asarray(matrix, dtype=float)
+        validated_matrix = np.asarray(matrix, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if matrix.shape != (3, 3):
+    if validated_matrix.shape != (3, 3):
         raise ValueError(f"{name} must be a 3x3 matrix.")
 
-    if not np.isfinite(matrix).all():
+    if not np.isfinite(validated_matrix).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return matrix
+    return validated_matrix
 
 
 # TEST: Consider adding unit tests for this function.
-def fourByFour_number_arrayLike_return_float(matrix, name):
-    """Validates a value is a (4,4) array-like object. It then returns it as a (4,
-    4) numpy array of floats. name must be a string.
+def fourByFour_number_arrayLike_return_float(matrix: Any, name: Any) -> np.ndarray:
+    """Validates a value is a (4,4) array-like object. It then returns it as a (4, 4)
+    numpy array of floats. name must be a string.
 
-    Note: np.nan, np.inf, and -np.inf won't pass this test."""
+    Note: np.nan, np.inf, and -np.inf won't pass this test.
+    """
     name = string_return_string(name, "name")
 
     try:
-        matrix = np.asarray(matrix, dtype=float)
+        validated_matrix = np.asarray(matrix, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and numeric.")
 
-    if matrix.shape != (4, 4):
+    if validated_matrix.shape != (4, 4):
         raise ValueError(f"{name} must be a 4x4 matrix.")
 
-    if not np.isfinite(matrix).all():
+    if not np.isfinite(validated_matrix).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")
 
-    return matrix
+    return validated_matrix
 
 
 # TEST: Consider adding unit tests for this function.
-def non_empty_list_return_list(list_parameter, name):
-    """Validates a non-empty list and returns it. name must be a string."""
+def non_empty_list_return_list(list_parameter: Any, name: Any) -> list:
+    """Validates a non-empty list and returns it.
+
+    name must be a string.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(list_parameter, list):
@@ -525,9 +571,11 @@ def non_empty_list_return_list(list_parameter, name):
 
 
 # TEST: Consider adding unit tests for this function.
-def rotation_order_return_string(order, name):
+def rotation_order_return_string(order: Any, name: Any) -> str:
     """Validates string representing a Tait-Bryan rotation sequence, and returns it.
-    name must be a string."""
+
+    name must be a string.
+    """
     name = string_return_string(name, "name")
 
     if not isinstance(order, str):

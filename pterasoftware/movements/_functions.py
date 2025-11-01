@@ -7,10 +7,10 @@ from .. import _parameter_validation
 
 
 def oscillating_sinspaces(amps, periods, phases, bases, num_steps, delta_time):
-    """This function returns a (..., num_steps) ndarray of floats that are calculated
-    by inputting a vector of linearly spaced time steps into a sine function defined
-    with the parameters given by the scalars or array-like objects amp, period,
-    phase, and base.
+    """This function returns a (..., num_steps) ndarray of floats that are calculated by
+    inputting a vector of linearly spaced time steps into a sine function defined with
+    the parameters given by the scalars or array-like objects amp, period, phase, and
+    base.
 
     :param amps: number or array-like of numbers
 
@@ -90,10 +90,10 @@ def oscillating_sinspaces(amps, periods, phases, bases, num_steps, delta_time):
 
 
 def oscillating_linspaces(amps, periods, phases, bases, num_steps, delta_time):
-    """This function returns a (..., num_steps) ndarray of floats that are calculated
-    by inputting a vector of linearly spaced time steps into a triangular wave
-    function defined with the parameters given by the scalars or array-like objects
-    amp, period, phase, and base.
+    """This function returns a (..., num_steps) ndarray of floats that are calculated by
+    inputting a vector of linearly spaced time steps into a triangular wave function
+    defined with the parameters given by the scalars or array-like objects amp, period,
+    phase, and base.
 
     :param amps: number or array-like of numbers
 
@@ -176,10 +176,10 @@ def oscillating_linspaces(amps, periods, phases, bases, num_steps, delta_time):
 def oscillating_customspaces(
     amps, periods, phases, bases, num_steps, delta_time, custom_function
 ):
-    """This function returns a (..., num_steps) ndarray of floats that are calculated
-    by inputting a vector of linearly spaced time steps into a custom oscillating
-    function defined with the parameters given by the scalars or array-like objects
-    amp, period, phase, and base.
+    """This function returns a (..., num_steps) ndarray of floats that are calculated by
+    inputting a vector of linearly spaced time steps into a custom oscillating function
+    defined with the parameters given by the scalars or array-like objects amp, period,
+    phase, and base.
 
     Note: This function is intended for advanced users. The custom function is
     validated to ensure it meets requirements, but users should thoroughly test their
@@ -303,11 +303,12 @@ def oscillating_customspaces(
         )
 
     output_shape = output.shape
-    expected_shape = amps.shape + (num_steps,)
+    expected_shape = amps.shape + int(num_steps)
 
     if output_shape != expected_shape:
         raise ValueError(
-            f"Calling custom_function on your inputs resulted in an ndarray of shape {output_shape}, but the expected shape is {expected_shape}."
+            f"Calling custom_function on your inputs resulted in an ndarray of shape "
+            f"{output_shape}, but the expected shape is {expected_shape}."
         )
     return output
 
@@ -315,9 +316,10 @@ def oscillating_customspaces(
 def _validate_oscillating_function_parameters(
     amps, periods, phases, bases, num_steps, delta_time
 ):
-    """Validates and returns the conditioned parameters for the oscillating_*
-    functions. See their docstrings for details on the requirements for the
-    parameters. It also returns the array mask for identifying static cases.
+    """Validates and returns the conditioned parameters for the oscillating_* functions.
+
+    See their docstrings for details on the requirements for the parameters. It also
+    returns the array mask for identifying static cases.
     """
     amps = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
         amps, "amps", 0.0, True, None, None
@@ -342,26 +344,30 @@ def _validate_oscillating_function_parameters(
         value_shape = value.shape
         if value_shape != expected_shape:
             raise ValueError(
-                f"After conversion to a ndarray, {value_name} must have the same shape as amps, which is {expected_shape}, but its shape is {value_shape}."
+                f"After conversion to a ndarray, {value_name} must have the same "
+                f"shape as amps, which is {expected_shape}, but its shape is "
+                f"{value_shape}."
             )
 
     mask_invalid = (amps == 0.0) ^ (periods == 0.0)
     if np.any(mask_invalid):
         raise ValueError(
-            "If an element in amps is 0.0, the corresponding element in periods must also be 0.0."
+            "If an element in amps is 0.0, the corresponding element in periods must "
+            "also be 0.0."
         )
     mask_static = amps == 0.0
     if np.any(mask_static & (phases != 0.0)):
         raise ValueError(
-            "If the elements at a given location in amps and periods are 0.0, the corresponding element in phases must also be 0.0."
+            "If the elements at a given location in amps and periods are 0.0, "
+            "the corresponding element in phases must also be 0.0."
         )
 
-    num_steps = _parameter_validation.positive_int_return_int(num_steps, "num_steps")
+    valid_num_steps = _parameter_validation.positive_int_return_int(num_steps, "num_steps")
     delta_time = _parameter_validation.positive_number_return_float(
         delta_time, "delta_time"
     )
 
-    return [amps, periods, phases, bases, num_steps, delta_time, mask_static]
+    return [amps, periods, phases, bases, valid_num_steps, delta_time, mask_static]
 
 
 def _validate_custom_spacing_function(custom_function):

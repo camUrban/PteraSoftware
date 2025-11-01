@@ -1392,7 +1392,7 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        cmap=color_map,
+        cmap=[color_map],
         clim=[c_min, c_max],
         scalars=these_scalars,
         smooth_shading=False,

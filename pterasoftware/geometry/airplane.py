@@ -182,17 +182,20 @@ class Airplane:
         self.moments_W_CgP1 = None
         self.momentCoefficients_W_CgP1 = None
 
-    def draw(self, save: bool = False, testing: bool = False) -> None:
+    def draw(
+        self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False
+    ) -> None:
         """Draws the 3D geometry of this Airplane.
 
         This method provides a convenient way to visualize the Airplane's Panels without
         needing to create a solver object first. It shows the Panel's surfaces in 3D
         using PyVista.
 
-        :param save: Set this bool to True to save the image as a WebP. The default
-            value is False.
-        :param testing: Set this bool to True to close the image after 1 second, which
-            is useful for running test suites. The default value is False.
+        :param save: Set to True to save the image as a WebP. Can be a bool or a numpy
+            bool and will be converted internally to bool. The default value is False.
+        :param testing: Set to True to close the image after 1 second, which is useful
+            for running test suites. Can be a bool or a numpy bool and will be converted
+            internally to bool. The default value is False.
         :return: None
         """
         save = _parameter_validation.boolLike_return_bool(save, "save")
@@ -301,14 +304,17 @@ class Airplane:
 
     # TEST: Consider adding unit tests for this method.
     # DOCUMENT: After testing it, document this method.
-    def get_plottable_data(self, show: bool = False) -> list[list[np.ndarray]] | None:
+    def get_plottable_data(
+        self, show: bool | np.bool_ = False
+    ) -> list[list[np.ndarray]] | None:
         """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
         lines.
 
-        :param show: A bool that determines whether to display the plot. If True, the
-            method displays the plot and returns None. If False, the method returns the
-            data without displaying. The default is False.
-        :return: If show is True, returns None. If show is false, returns a list of two
+        :param show: Determines whether to display the plot. If True, the method
+            displays the plot and returns None. If False, the method returns the data
+            without displaying. Can be a bool or a numpy bool and will be converted
+            internally to bool. The default is False.
+        :return: If show is True, returns None. If show is False, returns a list of two
             lists, each containing one ndarray for every one of this Airplane's
             Airfoils. These ndarrays represent points on each Airfoil's outline and mean
             camber lines, respectively. The points are in geometry axes, relative to the

@@ -31,13 +31,14 @@ import numpy as np
 
 #### Basic Types
 
-| Parameter Description | Type Hint      |
-|-----------------------|----------------|
-| String                | `str`          |
-| Boolean               | `bool`         |
-| Integer               | `int`          |
-| Number (int or float) | `float \| int` |
-| Float only            | `float`        |
+| Parameter Description                 | Type Hint           |
+|---------------------------------------|---------------------|
+| String                                | `str`               |
+| Boolean                               | `bool`              |
+| Boolean (accepting numpy bools)       | `bool \| np.bool_`  |
+| Integer                               | `int`               |
+| Number (int or float)                 | `float \| int`      |
+| Float only                            | `float`             |
 
 #### Array and Array-Like Types
 
@@ -244,7 +245,7 @@ class ClassName:
         Date of Retrieval:
             <date>
         
-    This class contains the following methods:
+    Contains the following methods:
         public_method_1: Short description (identical to method's docstring's short 
         description.
 
@@ -477,6 +478,7 @@ def get_resampled_mcl(
 # Simple types
 param: str
 param: bool
+param: bool | np.bool_  # Accepts both Python and NumPy booleans
 param: int
 param: float | int
 
@@ -516,6 +518,9 @@ param: Type1 | Type2
 # Array parameters
 ":param name: A (shape) ndarray of dtype representing..."
 ":param name: An array-like object of numbers (int or float) with shape..."
+
+# Boolean parameters (accepting numpy bools)
+":param name: A bool that... Can be a bool or a numpy bool and will be converted internally to a bool."
 
 # Return values
 ":return: A (shape) ndarray of dtype that..."

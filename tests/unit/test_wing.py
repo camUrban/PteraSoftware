@@ -57,6 +57,7 @@ class TestWing(unittest.TestCase):
 
         # Test non-list raises error
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.wing.Wing(wing_cross_sections="not a list")
 
         # Test single WingCrossSection raises error (need at least 2)
@@ -334,12 +335,14 @@ class TestWing(unittest.TestCase):
         """Test parameter validation for Wing initialization."""
         # Test invalid Ler position
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs], Ler_Gs_Cgs="invalid"
             )
 
         # Test invalid angles
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs],
                 angles_Gs_to_Wn_ixyz="invalid",
@@ -370,6 +373,7 @@ class TestWing(unittest.TestCase):
 
         # Test invalid name type
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
                 wing_cross_sections=[self.root_wcs, self.tip_wcs], name=123
             )

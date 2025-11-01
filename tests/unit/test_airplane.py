@@ -51,10 +51,12 @@ class TestAirplane(unittest.TestCase):
 
         # Test non-list raises error
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings="not a list")
 
         # Test non-Wing objects raise error
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=["not a wing"])
 
         # Test mixed valid and invalid Wings
@@ -71,9 +73,11 @@ class TestAirplane(unittest.TestCase):
 
         # Test invalid name types
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=123)
 
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=None)
 
     def test_Cg_E_CgP1_parameter_validation(self):
@@ -166,6 +170,7 @@ class TestAirplane(unittest.TestCase):
 
         # Test invalid weight types
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], weight="heavy")
 
     def test_reference_dimensions_default_behavior(self):
@@ -194,6 +199,7 @@ class TestAirplane(unittest.TestCase):
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], c_ref=0.0)
 
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], b_ref="large")
 
     def test_num_panels_calculation(self):

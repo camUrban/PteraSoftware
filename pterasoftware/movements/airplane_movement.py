@@ -28,8 +28,8 @@ class AirplaneMovement:
         in a list.
 
         max_period: Defines a property for the longest period of AirplaneMovement's
-        own motion, the motion(s) of its sub-movement object(s), and the motion(s) of
-        its sub-sub-movement object(s).
+        own motion, the motion(s) of its sub-movement object(s), and the motions of
+        its sub-sub-movement objects.
     """
 
     def __init__(
@@ -123,6 +123,7 @@ class AirplaneMovement:
             the corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
             not. Values are converted to floats internally. The units are in degrees.
             The default value is (0.0, 0.0, 0.0).
+        :return: None
         """
         if not isinstance(base_airplane, geometry.airplane.Airplane):
             raise TypeError("base_airplane must be an Airplane.")
@@ -382,8 +383,8 @@ class AirplaneMovement:
     @property
     def max_period(self) -> float:
         """Defines a property for the longest period of AirplaneMovement's own motion,
-        the motion(s) of its sub-movement object(s), and the motion(s) of its
-        sub-sub-movement object(s).
+        the motion(s) of its sub-movement object(s), and the motions of its
+        sub-sub-movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.

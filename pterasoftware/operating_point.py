@@ -51,13 +51,13 @@ class OperatingPoint:
 
     def __init__(
         self,
-        rho=1.225,
-        vCg__E=10.0,
-        alpha=5.0,
-        beta=0.0,
-        externalFX_W=0.0,
-        nu=15.06e-6,
-    ):
+        rho: float | int = 1.225,
+        vCg__E: float | int = 10.0,
+        alpha: float | int = 5.0,
+        beta: float | int = 0.0,
+        externalFX_W: float | int = 0.0,
+        nu: float | int = 15.06e-6,
+    ) -> None:
         """This is the initialization method.
 
         :param rho: number, optional

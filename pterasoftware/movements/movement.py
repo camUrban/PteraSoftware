@@ -1,117 +1,101 @@
 """Contains the Movement class.
 
-This module contains the following classes:
-    Movement: This is a class used to contain an UnsteadyProblem's movement.
+Contains the following classes:
+    Movement: A class used to contain an UnsteadyProblem's movement.
 
-This module contains the following functions:
+Contains the following functions:
     None
 """
 
 import math
 
-from .airplane_movement import AirplaneMovement
-from .operating_point_movement import OperatingPointMovement
+from . import airplane_movement as airplane_movement_mod
+from . import operating_point_movement as operating_point_movement_mod
 
 from .. import _parameter_validation
 
 
 class Movement:
-    """This is a class used to contain an UnsteadyProblem's movement.
+    """A class used to contain an UnsteadyProblem's movement.
 
-    This class contains the following public methods:
+    Contains the following methods:
+        max_period: Defines a property for the longest period of motion of Movement's
+        sub-movement objects, the motion(s) of its sub-sub-movement object(s), and the
+        motions of its sub-sub-sub-movement objects.
 
-        max_period: Defines a property for the longest period of Movement's own
-        motion and that of its sub-movement objects, sub-sub-movement objects, etc.
-
-        static: Defines a property to flag if all the Movement itself, and all of its
-        sub-movement objects, sub-sub-movement objects, etc. represent no motion.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+        static: Defines a property to flag if Movement's sub-movement objects, its
+        sub-sub-movement object(s), and its sub-sub-sub-movement objects all represent
+        no motion.
     """
 
     def __init__(
         self,
-        airplane_movements,
-        operating_point_movement,
-        delta_time=None,
-        num_cycles=None,
-        num_chords=None,
-        num_steps=None,
-    ):
-        """This is the initialization method.
+        airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+        operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+        delta_time: float | int | None = None,
+        num_cycles: int | None = None,
+        num_chords: int | None = None,
+        num_steps: int | None = None,
+    ) -> None:
+        """The initialization method.
 
-        Note: This method checks that all Wings maintain their symmetry type across
-        all time steps. See the WingMovement class documentation for more details on
-        this requirement, and the Wing class documentation for more information on
-        symmetry types.
+        This method checks that all Wings maintain their symmetry type across all time
+        steps. See the WingMovement class documentation for more details on this
+        requirement. See the Wing class documentation for more information on symmetry
+        types.
 
-        :param airplane_movements: list of AirplaneMovements
-
-            This is a list of objects which characterize the movement of each
-            of the airplanes in the UnsteadyProblem.
-
-        :param operating_point_movement: OperatingPointMovement
-
-            This object characterizes changes to the UnsteadyProblem's the operating
-            point.
-
-        :param delta_time: number or None, optional
-
-            delta_time is the time, in seconds, between each time step. If left as
-            None, which is the default value, Movement will calculate a value such
-            that RingVortices shed from the first Wing will have roughly the same
-            chord length as the RingVortices on the first Wing. This is based on
-            first base Airplane's reference chord length, its first Wing's number of
-            chordwise panels, and its base OperatingPoint's velocity. If set,
-            delta_time must be a positive number (int or float). It will be converted
-            internally to a float.
-
-        :param num_cycles: int or None, optional
-
-            num_cycles is the number of cycles of the maximum period motion used to
-            calculate a non-populated num_steps parameter if Movement isn't static.
-            If num_steps is set or Movement is static, this must be left as None,
-            which is the default value. If num_steps isn't set and Movement isn't
-            static, num_cycles must be a positive int. In that case, I recommend
-            setting num_cycles to 3.
-
-        :param num_chords: int or None, optional
-
-            num_chords is the number of chord lengths used to calculate a
-            non-populated num_steps parameter if Movement is static. If num_steps is
-            set or Movement isn't static, this must be left as None, which is the
-            default value. If num_steps isn't set and Movement is static, num_chords
-            must be a positive int. In that case, I recommend setting num_chords to
-            10. For cases with multiple Airplanes, the num_chords will reference the
-            largest reference chord length.
-
-        :param num_steps: int or None, optional
-
-            num_steps is the number of time steps of the unsteady simulation. It must
-            be a positive int. The default value is None. If left as None,
-            and Movement isn't static, Movement will calculate a value such that the
-            simulation will cover some number of cycles of the maximum period of all
-            the motion described in Movement's sub-movement objects, sub-sub-movement
-            objects, etc. If num_steps is left as None, and Movement is static,
-            it will default to the number of time steps such that the wake extends
-            back by some number of reference chord lengths.
+        :param airplane_movements: A list of the AirplaneMovements associated with each
+            of the UnsteadyProblem's Airplanes.
+        :param operating_point_movement: An OperatingPointMovement characterizing any
+            changes to the UnsteadyProblem's operating conditions.
+        :param delta_time: The time between each time step. If set to None, Movement
+            will calculate a value such that RingVortices shed from the first Wing will
+            have roughly the same chord length as the RingVortices on the first Wing.
+            This is based on first base Airplane's reference chord length, its first
+            Wing's number of chordwise panels, and its base OperatingPoint's velocity.
+            If not None, delta_time must be a positive number (int or float). It will be
+            converted internally to a float. The units are in seconds. The default is
+            None.
+        :param num_cycles: The number of cycles of the maximum period motion used to
+            calculate a num_steps parameter initialized as None if Movement isn't
+            static. If num_steps is not None or if Movement is static, this must be
+            None. If num_steps is initialized as None and the Movement isn't static,
+            num_cycles must be a positive int. In that case, I recommend setting
+            num_cycles to 3. The default is None.
+        :param num_chords: The number of chord lengths used to calculate a num_steps
+            parameter initialized as None if Movement is static. If num_steps is not
+            None or if Movement isn't static, this must be None. If num_steps is
+            initialized as None and Movement is static, num_chords must be a positive
+            int. In that case, I recommend setting num_chords to 10. For cases with
+            multiple Airplanes, the num_chords will reference the largest reference
+            chord length. The default is None.
+        :param num_steps: The number of time steps of the unsteady simulation. If
+            initialized as None, and Movement isn't static, Movement will calculate a
+            value for num_steps such that the simulation will cover some number of
+            cycles of the maximum period of all the motion described in Movement's
+            sub-movement objects, sub-sub-movement object(s), and sub-sub-sub-movement
+            objects. If num_steps is initialized as None, and Movement is static,
+            Movement will calculate a value for num_steps such that the simulation will
+            result in a wake extending back by some number of reference chord lengths.
+        :return: None
         """
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
         if len(airplane_movements) < 1:
             raise ValueError("airplane_movements must have at least one element.")
         for airplane_movement in airplane_movements:
-            if not isinstance(airplane_movement, AirplaneMovement):
+            if not isinstance(
+                airplane_movement, airplane_movement_mod.AirplaneMovement
+            ):
                 raise TypeError(
                     "Every element in airplane_movements must be an AirplaneMovement."
                 )
         self.airplane_movements = airplane_movements
 
-        if not isinstance(operating_point_movement, OperatingPointMovement):
+        if not isinstance(
+            operating_point_movement,
+            operating_point_movement_mod.OperatingPointMovement,
+        ):
             raise TypeError(
                 "operating_point_movement must be an OperatingPointMovement."
             )
@@ -137,8 +121,12 @@ class Movement:
                 # chord length as the RingVortices on the first Wing. This is based
                 # on the base Airplane's reference chord length, its first Wing's
                 # number of chordwise panels, and its base OperatingPoint's velocity.
+                c_ref = airplane_movement.base_airplane.c_ref
+                assert (
+                    c_ref is not None
+                ), "c_ref must not be None for automatic delta_time calculation"
                 delta_times.append(
-                    airplane_movement.base_airplane.c_ref
+                    c_ref
                     / airplane_movement.base_airplane.wings[0].num_chordwise_panels
                     / operating_point_movement.base_operating_point.vCg__E
                 )
@@ -153,12 +141,14 @@ class Movement:
             if _static:
                 if num_cycles is not None:
                     raise ValueError(
-                        "If num_steps is None and the Movement is static, num_cycles must be left as None."
+                        "If num_steps is None and the Movement is static, num_cycles "
+                        "must be left as None."
                     )
             else:
                 if num_cycles is None:
                     raise ValueError(
-                        "If num_steps is None and the Movement isn't static, num_cycles must be set."
+                        "If num_steps is None and the Movement isn't static, "
+                        "num_cycles must be set."
                     )
         if num_cycles is not None:
             num_cycles = _parameter_validation.positive_int_return_int(
@@ -170,12 +160,14 @@ class Movement:
             if _static:
                 if num_chords is None:
                     raise ValueError(
-                        "If num_steps is None and the Movement is static, num_chords must be set."
+                        "If num_steps is None and the Movement is static, num_chords "
+                        "must be set."
                     )
             else:
                 if num_chords is not None:
                     raise ValueError(
-                        "If num_steps is None and the Movement isn't static, num_chords must be left as None."
+                        "If num_steps is None and the Movement isn't static, "
+                        "num_chords must be left as None."
                     )
         if num_chords is not None:
             num_chords = _parameter_validation.positive_int_return_int(
@@ -186,7 +178,8 @@ class Movement:
         if self.num_cycles is not None or self.num_chords is not None:
             if num_steps is not None:
                 raise ValueError(
-                    "If either num_cycles or num_chords is not None, num_steps must be None."
+                    "If either num_cycles or num_chords is not None, num_steps must "
+                    "be None."
                 )
         if num_steps is not None:
             num_steps = _parameter_validation.positive_int_return_int(
@@ -198,11 +191,19 @@ class Movement:
                 # base Airplanes.
                 c_refs = []
                 for airplane_movement in self.airplane_movements:
-                    c_refs.append(airplane_movement.base_airplane.c_ref)
+                    c_ref = airplane_movement.base_airplane.c_ref
+                    assert (
+                        c_ref is not None
+                    ), "c_ref must not be None for automatic num_steps calculation"
+                    c_refs.append(c_ref)
                 max_c_ref = max(c_refs)
 
                 # Set the number of time steps such that the wake extends back by
                 # some number of reference chord lengths.
+                assert self.num_chords is not None, (
+                    "num_chords must not be None for automatic num_steps calculation "
+                    "if Movement is static"
+                )
                 wake_length = self.num_chords * max_c_ref
                 distance_per_time_step = (
                     delta_time
@@ -212,6 +213,10 @@ class Movement:
             else:
                 # Set the number of time steps such that the simulation runs for some
                 # number of cycles of the motion with the maximum period.
+                assert self.num_cycles is not None, (
+                    "num_cycles must not be None for automatic num_steps calculation "
+                    "if Movement is not static"
+                )
                 num_steps = math.ceil(
                     self.num_cycles * self.max_period / self.delta_time
                 )
@@ -262,12 +267,13 @@ class Movement:
         )
 
     @property
-    def max_period(self):
-        """Defines a property for the longest period of Movement's own motion and
-        that of its sub-movement objects, sub-sub-movement objects, etc.
+    def max_period(self) -> float:
+        """Defines a property for the longest period of motion of Movement's
+        sub-movement objects, the motion(s) of its sub-sub-movement object(s), and the
+        motions of its sub-sub-sub-movement objects.
 
-        :return: float The longest period in seconds. If the all the motion is
-        static, this will be 0.0.
+        :return: The longest period in seconds. If all the motion is static, this will
+            be 0.0.
         """
         # Iterate through the AirplaneMovements and find the one with the largest max
         # period.
@@ -284,13 +290,13 @@ class Movement:
         )
 
     @property
-    def static(self):
-        """Defines a property to flag if all the Movement itself, and all of its
-        sub-movement objects, sub-sub-movement objects, etc. represent no motion.
+    def static(self) -> bool:
+        """Defines a property to flag if Movement's sub-movement objects, its
+        sub-sub-movement object(s), and its sub-sub-sub-movement objects all represent
+        no motion.
 
-        :return: bool
-
-            True if all Movement and its sub-movement objects, sub-sub-movement
-            objects, etc. represent no motion. False otherwise.
+        :return: True if Movement's sub-movement objects, its sub-sub-movement
+            object(s), and its sub-sub-sub-movement objects all represent no motion.
+            False otherwise.
         """
         return self.max_period == 0

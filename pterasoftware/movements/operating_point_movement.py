@@ -8,9 +8,11 @@ This module contains the following functions:
     None
 """
 
+from collections.abc import Callable
+
 from . import _functions
 
-from .. import operating_point
+from .. import operating_point as operating_point_mod
 from .. import _parameter_validation
 
 
@@ -34,12 +36,12 @@ class OperatingPointMovement:
 
     def __init__(
         self,
-        base_operating_point,
-        ampVCg__E=0.0,
-        periodVCg__E=0.0,
-        spacingVCg__E="sine",
-        phaseVCg__E=0.0,
-    ):
+        base_operating_point: operating_point_mod.OperatingPoint,
+        ampVCg__E: float | int = 0.0,
+        periodVCg__E: float | int = 0.0,
+        spacingVCg__E: str | Callable = "sine",
+        phaseVCg__E: float | int = 0.0,
+    ) -> None:
         """This is the initialization method.
 
         :param base_operating_point: OperatingPoint
@@ -85,7 +87,7 @@ class OperatingPointMovement:
             float internally. The default value is 0.0. It must be 0.0 if ampVCg__E
             is 0.0 and non-zero if not. The units are in degrees.
         """
-        if not isinstance(base_operating_point, operating_point.OperatingPoint):
+        if not isinstance(base_operating_point, operating_point_mod.OperatingPoint):
             raise TypeError("base_operating_point must be an OperatingPoint")
         self.base_operating_point = base_operating_point
 
@@ -118,7 +120,9 @@ class OperatingPointMovement:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
         self.phaseVCg__E = phaseVCg__E
 
-    def generate_operating_points(self, num_steps, delta_time):
+    def generate_operating_points(
+        self, num_steps: int, delta_time: float | int
+    ) -> list[operating_point_mod.OperatingPoint]:
         """Creates the OperatingPoint at each time step, and returns them in a list.
 
         :param num_steps: int
@@ -191,7 +195,7 @@ class OperatingPointMovement:
             thisVCg__E = listVCg__E[step]
 
             # Make a new operating point object for this time step.
-            this_operating_point = operating_point.OperatingPoint(
+            this_operating_point = operating_point_mod.OperatingPoint(
                 rho=this_rho,
                 vCg__E=thisVCg__E,
                 alpha=this_alpha,
@@ -206,7 +210,7 @@ class OperatingPointMovement:
         return operating_points
 
     @property
-    def max_period(self):
+    def max_period(self) -> float:
         """Defines a property for the longest period of OperatingPointMovement's own
         motion.
 

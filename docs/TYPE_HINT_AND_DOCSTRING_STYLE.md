@@ -102,7 +102,7 @@ def _get_mcl_points(
 8. **Never use multiplication sign (×); use lowercase x**
 9. **Never use pi symbol (π); write "pi"**
 10. **Never use approximately-equal sign (≈); use "~"**
-11 **Always end with an empty line before closing quotes**
+11. **Place closing triple-quotes on their own line**
 
 ### Module-Level Docstrings
 

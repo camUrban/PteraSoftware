@@ -1,4 +1,4 @@
-"""This module contains the AirplaneMovement class.
+"""Contains the AirplaneMovement class.
 
 This module contains the following classes:
     AirplaneMovement: This is a class used to contain an Airplane's movement.

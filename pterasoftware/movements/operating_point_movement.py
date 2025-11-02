@@ -1,4 +1,4 @@
-"""This module contains the OperatingPointMovement class.
+"""Contains the OperatingPointMovement class.
 
 This module contains the following classes:
     OperatingPointMovement: This is a class used to contain the OperatingPoint

@@ -64,12 +64,11 @@ import numpy as np
 | Optional parameter      | `Type \| None`            |
 | Union of multiple types | `Type1 \| Type2 \| Type3` |
 
-### Module Import Pattern for Avoiding Circular Imports
+### Module Alias Pattern
 
-When type hinting classes from the same package:
+Import modules with aliases:
 
 ```python
-# At top of file
 from . import wing as wing_mod
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
@@ -85,6 +84,36 @@ def _get_mcl_points(
 ) -> list[np.ndarray]:
     ...
 ```
+
+### Avoiding Circular Imports with Type Hints
+
+#### Preferred Method: `from __future__ import annotations`
+
+To avoid circular import errors when type hinting, use `from __future__ import annotations` as the **first import** in your module. This defers evaluation of type hints, treating them as strings automatically:
+
+```python
+from __future__ import annotations
+
+from collections.abc import Sequence
+import numpy as np
+
+from .. import geometry
+from . import wing_movement as wing_movement_mod
+
+# In function signature - no quotes needed!
+def __init__(
+    self,
+    base_airplane: geometry.airplane.Airplane,
+    wing_movements: list[wing_movement_mod.WingMovement],
+) -> None:
+    ...
+```
+
+This approach:
+- Keeps all imports at the top of the file
+- Prevents circular import errors
+- Requires no string quotes around type hints
+- Is the default behavior in Python 3.11+
 
 ---
 

@@ -1,19 +1,18 @@
 """Contains the function for meshing Wings."""
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
+
 import numpy as np
 
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
+from . import wing as wing_mod
 from .. import _functions
 from .. import _panel
 from .. import _transformations
 
-if TYPE_CHECKING:
-    from . import wing as wing_mod
 
-
-def mesh_wing(wing: "wing_mod.Wing") -> None:
+def mesh_wing(wing: wing_mod.Wing) -> None:
     """Takes in a Wing, creates a quadrilateral mesh of its geometry, and then populates
     its array of Panels with the mesh data.
 

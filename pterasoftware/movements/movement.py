@@ -1,4 +1,4 @@
-"""This module contains the Movement class.
+"""Contains the Movement class.
 
 This module contains the following classes:
     Movement: This is a class used to contain an UnsteadyProblem's movement.

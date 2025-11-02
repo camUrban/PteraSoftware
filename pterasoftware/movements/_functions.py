@@ -1,4 +1,4 @@
-"""This module contains useful functions for the movement classes."""
+"""Contains useful functions for the movement classes."""
 
 import numpy as np
 from scipy import signal
@@ -299,11 +299,12 @@ def oscillating_customspaces(
         output = np.asarray(a * custom_function(b * times + h) + k)
     except Exception as e:
         raise ValueError(
-            f"Calling your custom_function on the inputs resulted in the following exception:\n{e}"
+            f"Calling your custom_function on the inputs resulted in the following "
+            f"exception:\n{e}"
         )
 
     output_shape = output.shape
-    expected_shape = amps.shape + int(num_steps)
+    expected_shape = amps.shape + (num_steps,)
 
     if output_shape != expected_shape:
         raise ValueError(
@@ -362,7 +363,9 @@ def _validate_oscillating_function_parameters(
             "the corresponding element in phases must also be 0.0."
         )
 
-    valid_num_steps = _parameter_validation.positive_int_return_int(num_steps, "num_steps")
+    valid_num_steps = _parameter_validation.positive_int_return_int(
+        num_steps, "num_steps"
+    )
     delta_time = _parameter_validation.positive_number_return_float(
         delta_time, "delta_time"
     )
@@ -400,8 +403,9 @@ def _validate_custom_spacing_function(custom_function):
     test_output = np.asarray(test_output)
     if test_output.shape != test_input.shape:
         raise ValueError(
-            f"Custom spacing function must return a ndarray of the same shape as its input. "
-            f"Input shape: {test_input.shape}, output shape: {test_output.shape}."
+            f"Custom spacing function must return a ndarray of the same shape as its "
+            f"input. Input shape: {test_input.shape}, output shape: "
+            f"{test_output.shape}."
         )
 
     # Check for finite values.

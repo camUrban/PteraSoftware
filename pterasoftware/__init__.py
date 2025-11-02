@@ -1,9 +1,9 @@
 """This package contains all the source code for the Ptera Software.
 
 This package contains the following subpackages:
-    geometry: This package contains the geometry classes.
+    geometry: Contains the geometry classes.
 
-    movements: This package contains the movement classes.
+    movements: Contains the movement classes.
 
 This package contains the following directories:
     None

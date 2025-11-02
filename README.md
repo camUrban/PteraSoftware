@@ -274,6 +274,7 @@ Additionally, these packages are useful for continued development of the softwar
 * codecov >= 2.1.13, < 3.0.0
 * codespell >= 2.4.1, < 3.0.0
 * docformatter >= 1.7.7, < 2.0.0
+* mypy >= 1.18.2, < 2.0.0
 * pre-commit >= 4.3.0, < 5.0.0
 * PyInstaller >= 6.15.0, < 7.0.0
 * setuptools >= 80.9.0, < 81.0.0
@@ -292,7 +293,6 @@ As I said before, the primary goal of this project is to increase the open-sourc
 community's understanding and appreciation for unsteady aerodynamics in general and
 flapping-wing flight in particular. This will only happen through your participation.
 Feel free to request features, report bugs or security issues, and provide suggestions.
-No comment is too big or small!
 
 Before contributing, make sure to read through the
 [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to best help out.

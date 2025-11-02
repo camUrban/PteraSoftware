@@ -1,4 +1,4 @@
-"""This module contains the WingCrossSectionMovement class.
+"""Contains the WingCrossSectionMovement class.
 
 This module contains the following classes:
     WingCrossSectionMovement: This is a class used to contain the WingCrossSection

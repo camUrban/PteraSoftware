@@ -1,4 +1,4 @@
-"""This module contains the WingMovement class.
+"""Contains the WingMovement class.
 
 This module contains the following classes:
     WingMovement: This is a class used to contain the Wing movements.

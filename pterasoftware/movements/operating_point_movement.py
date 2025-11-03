@@ -39,16 +39,16 @@ class OperatingPointMovement:
         :param base_operating_point: The base OperatingPoint from which the
             OperatingPoint at each time step will be created.
         :param ampVCg__E: The amplitude of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameters. Must be a non-negative number (float or
-            int), and is converted to a float internally. The amplitude must be low
+            OperatingPoints' vCg__E parameters. Must be a non-negative number (int or
+            float), and is converted to a float internally. The amplitude must be low
             enough that it doesn't drive its base value out of the range of valid
             values. Otherwise, this OperatingPointMovement will try to create
-            OperatingPoints with invalid parameters values. The units are in meters per
+            OperatingPoints with invalid parameter values. The units are in meters per
             second. The default is 0.0.
         :param periodVCg__E: The period of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameter. Must be a non-negative number (float or
-            int), and is converted to a float internally. It must be 0.0 if ampVCg__E is
-            0.0 and non-zero if not. The units are in seconds. The default is 0.0.
+            OperatingPoints' vCg__E parameter. Must be a non-negative number (int or
+            float), and is converted to a float internally. It must be 0.0 if ampVCg__E
+            is 0.0 and non-zero if not. The units are in seconds. The default is 0.0.
         :param spacingVCg__E: Determines the spacing of the OperatingPointMovement's
             change in its OperatingPoints' vCg__E parameters. Can be "sine", "uniform",
             or a callable custom spacing function. Custom spacing functions are for
@@ -60,9 +60,9 @@ class OperatingPointMovement:
             default is "sine".
         :param phaseVCg__E: The phase offset of the first time step's OperatingPoint's
             vCg__E parameter relative to the base OperatingPoint's vCg__E parameter.
-            Must be a number (float or int) in the range (-180.0, 180.0], and will be
-            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and
-            non-zero if not. The units are in degrees. The default is 0.0.
+            Must be a number (int or float) in the range (-180.0, 180.0], and will be
+            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and non-
+            zero if not. The units are in degrees. The default is 0.0.
         :return: None
         """
         if not isinstance(base_operating_point, operating_point_mod.OperatingPoint):
@@ -108,7 +108,7 @@ class OperatingPointMovement:
         :param num_steps: The number of time steps in this movement. It must be a
             positive int.
         :param delta_time: The time between each time step. It must be a positive number
-            (float or int), and will be converted internally to a float. The units are
+            (int or float), and will be converted internally to a float. The units are
             in seconds.
         :return: The list of OperatingPoints associated with this
             OperatingPointMovement.

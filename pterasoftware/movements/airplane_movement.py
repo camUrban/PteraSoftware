@@ -79,9 +79,9 @@ class AirplaneMovement:
             return to 0.0 after one period of 2*pi radians, have amplitude of 1.0, be
             periodic, return finite values only, and accept a ndarray as input and
             return a ndarray of the same shape. Custom functions are scaled by
-            ampCg_E_CgP1, shifted horizontally and vertically by phaseCg_E_CgP1 the base
-            value, and have a period set by periodCg_E_CgP1. The default is ("sine",
-            "sine", "sine").
+            ampCg_E_CgP1, shifted horizontally and vertically by phaseCg_E_CgP1 and the
+            base value, and have a period set by periodCg_E_CgP1. The default is
+            ("sine", "sine", "sine").
         :param phaseCg_E_CgP1: An array-like object of 3 numbers (floats or ints)
             representing the phase offsets of the elements in the first time step's
             Airplane's Cg_E_CgP1 parameter relative to the base Airplane's Cg_E_CgP1

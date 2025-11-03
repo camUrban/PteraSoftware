@@ -286,7 +286,6 @@ class Airfoil:
         plt.show()
 
     # TEST: Consider adding unit tests for this method.
-    # DOCUMENT: After testing it, document this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[np.ndarray] | None:

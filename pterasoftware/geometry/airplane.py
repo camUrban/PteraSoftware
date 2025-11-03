@@ -312,7 +312,6 @@ class Airplane:
         pv.close_all()
 
     # TEST: Consider adding unit tests for this method.
-    # DOCUMENT: After testing it, document this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[list[list[np.ndarray]]] | None:

@@ -268,8 +268,8 @@ class Movement:
 
     @property
     def max_period(self) -> float:
-        """Defines a property for the longest period of motion of Movement's
-        sub-movement objects, the motion(s) of its sub-sub-movement object(s), and the
+        """Defines a property for the longest period of motion of Movement's sub-
+        movement objects, the motion(s) of its sub-sub-movement object(s), and the
         motions of its sub-sub-sub-movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
@@ -291,9 +291,9 @@ class Movement:
 
     @property
     def static(self) -> bool:
-        """Defines a property to flag if Movement's sub-movement objects, its
-        sub-sub-movement object(s), and its sub-sub-sub-movement objects all represent
-        no motion.
+        """Defines a property to flag if Movement's sub-movement objects, its sub-sub-
+        movement object(s), and its sub-sub-sub-movement objects all represent no
+        motion.
 
         :return: True if Movement's sub-movement objects, its sub-sub-movement
             object(s), and its sub-sub-sub-movement objects all represent no motion.

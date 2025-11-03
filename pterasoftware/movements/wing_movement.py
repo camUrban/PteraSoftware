@@ -1,12 +1,10 @@
 """Contains the WingMovement class.
 
-**Contains the following classes:**
+This module contains the following classes:
+    WingMovement: A class used to contain the Wing movements.
 
-WingMovement: A class used to contain a Wing's movement.
-
-**Contains the following functions:**
-
-None
+This module contains the following functions:
+    None
 """
 
 from __future__ import annotations
@@ -23,22 +21,28 @@ from .. import _parameter_validation
 
 
 class WingMovement:
-    """A class used to contain a Wing's movement.
+    """This is a class used to contain the Wing movements.
 
-    **Contains the following methods:**
+    Note: Wings cannot undergo motion that causes them to switch symmetry types. A
+    transition between types could change the number of Wings and the panel
+    structure, which is incompatible with the unsteady solver. This happens when a
+    WingMovement defines motion that causes its base Wing's wing axes' yz-plane and
+    its symmetry plane to transition from coincident to non-coincident, or vice
+    versa. This is checked by this WingMovement's parent AirplaneMovement's parent
+    Movement.
 
-    generate_wings: Creates the Wing at each time step, and returns them in a list.
+    This class contains the following public methods:
 
-    max_period: Defines a property for WingMovement's longest period of motion.
+        generate_wings: Creates the Wing at each time step, and returns them in a list.
 
-    **Notes:**
+        max_period: Defines a property for the longest period of WingMovement's own
+        motion and that of its sub-movement objects.
 
-    Wings cannot undergo motion that causes them to switch symmetry types. A transition
-    between types could change the number of Wings and the Panel structure, which is
-    incompatible with the unsteady solver. This happens when a WingMovement defines
-    motion that causes its base Wing's wing axes' yz-plane and its symmetry plane to
-    transition from coincident to non-coincident, or vice versa. This is checked by this
-    WingMovement's parent AirplaneMovement's parent Movement.
+    This class contains the following class attributes:
+        None
+
+    Subclassing:
+        This class is not meant to be subclassed.
     """
 
     def __init__(
@@ -68,77 +72,104 @@ class WingMovement:
         ),
         phaseAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
     ) -> None:
-        """The initialization method.
+        """This is the initialization method.
 
-        :param base_wing: The base Wing from which the Wing at each time step will be
+        :param base_wing: Wing
+
+            This is the base Wing, from which the Wing at each time step will be
             created.
-        :param wing_cross_section_movements: A list of WingCrossSectionMovements
-            associated with each of the base Wing's WingCrossSections. It must have the
-            same length as the base Wing's list of WingCrossSections.
-        :param ampLer_Gs_Cgs: An array-like object of non-negative numbers (int or
-            float) with shape (3,) representing the amplitudes of the WingMovement's
-            changes in its Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or
-            ndarray. Values are converted to floats internally. Each amplitude must be
-            low enough that it doesn't drive its base value out of the range of valid
-            values. Otherwise, this WingMovement will try to create Wings with invalid
-            parameters values. The units are in meters. The default is (0.0, 0.0, 0.0).
-        :param periodLer_Gs_Cgs: An array-like object of non-negative numbers (int or
-            float) with shape (3,) representing the periods of the WingMovement's
-            changes in its Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or
-            ndarray. Values are converted to floats internally. Each element must be 0.0
-            if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-zero if not.
-            The units are in seconds. The default is (0.0, 0.0, 0.0).
-        :param spacingLer_Gs_Cgs: An array-like object of strs or callables with shape
-            (3,) representing the spacing of the WingMovement's change in its Wings'
-            Ler_Gs_Cgs parameters. Can be a tuple, list, or ndarray. Each element can be
-            the string "sine", the string "uniform", or a callable custom spacing
-            function. Custom spacing functions are for advanced users and must start at
-            0.0, return to 0.0 after one period of 2*pi radians, have amplitude of 1.0,
-            be periodic, return finite values only, and accept a ndarray as input and
-            return a ndarray of the same shape. The custom function is scaled by
-            ampLer_Gs_Cgs, shifted horizontally and vertically by phaseLer_Gs_Cgs and
-            the base value, and have a period set by periodLer_Gs_Cgs. The default is
-            ("sine", "sine", "sine").
-        :param phaseLer_Gs_Cgs: An array-like object of numbers (int or float) with
-            shape (3,) representing the phase offsets of the elements in the first time
-            step's Wing's Ler_Gs_Cgs parameter relative to the base Wing's Ler_Gs_Cgs
-            parameter. Can be a tuple, list, or ndarray. Values must lie in the range
-            (-180.0, 180.0] and will be converted to floats internally. Each element
-            must be 0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-
-            zero if not. The units are in degrees. The default is (0.0, 0.0, 0.0).
-        :param ampAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
-            with shape (3,) representing the amplitudes of the WingMovement's changes in
-            its Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or
-            ndarray. Values must lie in the range [0.0, 180.0] and will be converted to
-            floats internally. Each amplitude must be low enough that it doesn't drive
-            its base value out of the range of valid values. Otherwise, this
-            WingMovement will try to create Wings with invalid parameters values. The
-            units are in degrees. The default is (0.0, 0.0, 0.0).
-        :param periodAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or
-            float) with shape (3,) representing the periods of the WingMovement's
-            changes in its Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list,
-            or ndarray. Values are converted to floats internally. Each element must be
-            0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is 0.0 and non-
-            zero if not. The units are in seconds. The default is (0.0, 0.0, 0.0).
-        :param spacingAngles_Gs_to_Wn_ixyz: An array-like object of strs or callables
-            with shape (3,) representing the spacing of the WingMovement's change in its
-            Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or ndarray.
-            Each element can be the string "sine", the string "uniform", or a callable
-            custom spacing function. Custom spacing functions are for advanced users and
-            must start at 0.0, return to 0.0 after one period of 2*pi radians, have
-            amplitude of 1.0, be periodic, return finite values only, and accept a
-            ndarray as input and return a ndarray of the same shape. The custom function
-            is scaled by ampAngles_Gs_to_Wn_ixyz, shifted horizontally and vertically by
-            phaseAngles_Gs_to_Wn_ixyz and the base value, with the period set by
-            periodAngles_Gs_to_Wn_ixyz. The default is ("sine", "sine", "sine").
-        :param phaseAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
-            with shape (3,) representing the phase offsets of the elements in the first
-            time step's Wing's angles_Gs_to_Wn_ixyz parameter relative to the base
-            Wing's angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or ndarray.
-            Values must lie in the range (-180.0, 180.0] and will be converted to floats
-            internally. Each element must be 0.0 if the corresponding element in
-            ampAngles_Gs_to_Wn_ixyz is 0.0 and non-zero if not. The units are in
-            degrees. The default is (0.0, 0.0, 0.0).
+
+        :param wing_cross_section_movements: list of WingCrossSectionMovements
+
+            This is a list of the WingCrossSectionMovements associated with each of
+            the base Wing's WingCrossSections. It must have the same length as the
+            base Wing's list of WingCrossSections.
+
+        :param ampLer_Gs_Cgs: array-like of 3 numbers, optional
+
+            The amplitudes of the WingMovement's changes in its Wings' Ler_Gs_Cgs
+            parameters. Can be a tuple, list, or numpy array of non-negative numbers
+            (int or float). Also, each amplitude must be low enough that it doesn't
+            drive its base value out of the range of valid values. Otherwise,
+            this WingMovement will try to create Wings with invalid parameters
+            values. Values are converted to floats internally. The default value is (
+            0.0, 0.0, 0.0). The units are in meters.
+
+        :param periodLer_Gs_Cgs: array-like of 3 numbers, optional
+
+            The periods of the WingMovement's changes in its Wings' Ler_Gs_Cgs
+            parameters. Can be a tuple, list, or numpy array of non-negative numbers
+            (int or float). Values are converted to floats internally. The default
+            value is (0.0, 0.0, 0.0). Each element must be 0.0 if the corresponding
+            element in ampLer_Gs_Cgs is 0.0 and non-zero if not. The units are in
+            seconds.
+
+        :param spacingLer_Gs_Cgs: array-like of 3 strs or callables, optional
+
+            The value determines the spacing of the WingMovement's change in its
+            Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or numpy array. Each
+            element can be the string "sine", the string "uniform", or a callable
+            custom spacing function. Custom spacing functions are for advanced users
+            and must start at 0, return to 0 after one period of 2*pi radians,
+            have amplitude of 1, be periodic, return finite values only, and accept
+            a ndarray as input and return a ndarray of the same shape. The custom
+            function is scaled by ampLer_Gs_Cgs, shifted horizontally by
+            phaseLer_Gs_Cgs, and vertically by the base value, with the period
+            controlled by periodLer_Gs_Cgs. The default value is ("sine", "sine",
+            "sine").
+
+        :param phaseLer_Gs_Cgs: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Wing's
+            Ler_Gs_Cgs parameter relative to the base Wing's Ler_Gs_Cgs parameter.
+            Can be a tuple, list, or numpy array of non-negative numbers (int or
+            float) in the range (-180.0, 180.0]. Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-zero if
+            not. The units are in degrees.
+
+        :param ampAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
+
+            The amplitudes of the WingMovement's changes in its Wings'
+            angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range [0.0, 180.0]. Also, each amplitude
+            must be low enough that it doesn't drive its base value out of the range
+            of valid values. Otherwise, this WingMovement will try to create Wings
+            with invalid parameters values. Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). The units are in degrees.
+
+        :param periodAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
+
+            The periods of the WingMovement's changes in its Wings'
+            angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy array of
+            non-negative numbers (int or float). Values are converted to floats
+            internally. The default value is (0.0, 0.0, 0.0). Each element must be
+            0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is 0.0 and
+            non-zero if not. The units are in seconds.
+
+        :param spacingAngles_Gs_to_Wn_ixyz: array-like of 3 strs or callables, optional
+
+            The value determines the spacing of the WingMovement's change in its
+            Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list, or numpy
+            array. Each element can be the string "sine", the string "uniform",
+            or a callable custom spacing function. Custom spacing functions are for
+            advanced users and must start at 0, return to 0 after one period of 2*pi
+            radians, have amplitude of 1, be periodic, return finite values only,
+            and accept a ndarray as input and return a ndarray of the same shape.
+            The custom function is scaled by ampAngles_Gs_to_Wn_ixyz, shifted
+            horizontally by phaseAngles_Gs_to_Wn_ixyz, and vertically by the base
+            value, with the period controlled by periodAngles_Gs_to_Wn_ixyz. The
+            default value is ("sine", "sine", "sine").
+
+        :param phaseAngles_Gs_to_Wn_ixyz: array-like of 3 numbers, optional
+
+            The phase offsets of the elements in the first time step's Wing's
+            angles_Gs_to_Wn_ixyz parameter relative to the base Wing's
+            angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or numpy array of
+            numbers (int or float) in the range (-180.0, 180.0]. Values are converted
+            to floats internally. The default value is (0.0, 0.0, 0.0). Each element
+            must be 0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is
+            0.0 and non-zero if not. The units are in degrees.
         """
         if not isinstance(base_wing, geometry.wing.Wing):
             raise TypeError("base_wing must be a Wing.")
@@ -148,8 +179,7 @@ class WingMovement:
             raise TypeError("wing_cross_section_movements must be a list.")
         if len(wing_cross_section_movements) != len(self.base_wing.wing_cross_sections):
             raise ValueError(
-                "wing_cross_section_movements must have the same length as "
-                "base_wing.wing_cross_sections."
+                "wing_cross_section_movements must have the same length as base_wing.wing_cross_sections."
             )
         for wing_cross_section_movement in wing_cross_section_movements:
             if not isinstance(
@@ -157,8 +187,7 @@ class WingMovement:
                 wing_cross_section_movement_mod.WingCrossSectionMovement,
             ):
                 raise TypeError(
-                    "Every element in wing_cross_section_movements must be a "
-                    "WingCrossSectionMovement."
+                    "Every element in wing_cross_section_movements must be a WingCrossSectionMovement."
                 )
         self.wing_cross_section_movements = wing_cross_section_movements
 
@@ -178,8 +207,7 @@ class WingMovement:
             amp = self.ampLer_Gs_Cgs[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element "
-                    "in periodLer_Gs_Cgs must be also be 0.0."
+                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element in periodLer_Gs_Cgs must be also be 0.0."
                 )
         self.periodLer_Gs_Cgs = periodLer_Gs_Cgs
 
@@ -202,8 +230,7 @@ class WingMovement:
             amp = self.ampLer_Gs_Cgs[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element "
-                    "in phaseLer_Gs_Cgs must be also be 0.0."
+                    "If an element in ampLer_Gs_Cgs is 0.0, the corresponding element in phaseLer_Gs_Cgs must be also be 0.0."
                 )
         self.phaseLer_Gs_Cgs = phaseLer_Gs_Cgs
 
@@ -217,8 +244,7 @@ class WingMovement:
             and np.all(ampAngles_Gs_to_Wn_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in ampAngles_Gs_to_Wn_ixyz must be in the range [0.0, "
-                "180.0]."
+                "All elements in ampAngles_Gs_to_Wn_ixyz must be in the range [0.0, 180.0]."
             )
         self.ampAngles_Gs_to_Wn_ixyz = ampAngles_Gs_to_Wn_ixyz
 
@@ -235,9 +261,7 @@ class WingMovement:
             amp = self.ampAngles_Gs_to_Wn_ixyz[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, "
-                    "the corresponding element in periodAngles_Gs_to_Wn_ixyz must be "
-                    "also be 0.0."
+                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, the corresponding element in periodAngles_Gs_to_Wn_ixyz must be also be 0.0."
                 )
         self.periodAngles_Gs_to_Wn_ixyz = periodAngles_Gs_to_Wn_ixyz
 
@@ -259,16 +283,13 @@ class WingMovement:
             and np.all(phaseAngles_Gs_to_Wn_ixyz <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_Gs_to_Wn_ixyz must be in the range ("
-                "-180.0, 180.0]."
+                "All elements in phaseAngles_Gs_to_Wn_ixyz must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseAngles_Gs_to_Wn_ixyz):
             amp = self.ampAngles_Gs_to_Wn_ixyz[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, "
-                    "the corresponding element in phaseAngles_Gs_to_Wn_ixyz must be "
-                    "also be 0.0."
+                    "If an element in ampAngles_Gs_to_Wn_ixyz is 0.0, the corresponding element in phaseAngles_Gs_to_Wn_ixyz must be also be 0.0."
                 )
         self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
@@ -277,12 +298,13 @@ class WingMovement:
     ) -> list[geometry.wing.Wing]:
         """Creates the Wing at each time step, and returns them in a list.
 
-        :param num_steps: The number of time steps in this movement. It must be a
-            positive int.
-        :param delta_time: The time between each time step. It must be a positive number
-            (int or float), and will be converted internally to a float. The units are
-            in seconds.
-        :return: The list of Wings associated with this WingMovement.
+        :param num_steps: int This is the number of time steps in this movement. It must
+            be a positive int.
+        :param delta_time: number This is the time between each time step. It must be a
+            positive number ( int or float), and will be converted internally to a
+            float. The units are in seconds.
+        :return: list of Wings This is the list of Wings associated with this
+            WingMovement.
         """
         num_steps = _parameter_validation.positive_int_return_int(
             num_steps, "num_steps"
@@ -431,8 +453,8 @@ class WingMovement:
         """Defines a property for the longest period of WingMovement's own motion and
         that of its sub-movement objects.
 
-        :return: The longest period in seconds. If all the motion is static, this will
-            be 0.0.
+        :return: float The longest period in seconds. If the all the motion is static,
+            this will be 0.0.
         """
         wing_cross_section_movement_max_periods = []
         for wing_cross_section_movement in self.wing_cross_section_movements:

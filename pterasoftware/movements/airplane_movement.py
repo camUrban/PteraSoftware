@@ -1,10 +1,9 @@
 """Contains the AirplaneMovement class.
 
-Contains the following classes:
-    AirplaneMovement: A class used to contain an Airplane's movement.
+Contains the following classes:     AirplaneMovement: A class used to contain an
+Airplane's movement.
 
-Contains the following functions:
-    None
+Contains the following functions:     None
 """
 
 from __future__ import annotations
@@ -23,13 +22,12 @@ from .. import geometry
 class AirplaneMovement:
     """A class used to contain an Airplane's movement.
 
-    Contains the following methods:
-        generate_airplanes: Creates the Airplane at each time step, and returns them
-        in a list.
+    Contains the following methods:     generate_airplanes: Creates the Airplane at each
+    time step, and returns them     in a list.
 
-        max_period: Defines a property for the longest period of AirplaneMovement's
-        own motion, the motion(s) of its sub-movement object(s), and the motions of
-        its sub-sub-movement objects.
+    max_period: Defines a property for the longest period of AirplaneMovement's own
+    motion, the motion(s) of its sub-movement object(s), and the motions of its sub-sub-
+    movement objects.
     """
 
     def __init__(
@@ -38,7 +36,11 @@ class AirplaneMovement:
         wing_movements: list[wing_movement_mod.WingMovement],
         ampCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingCg_E_CgP1: np.ndarray | Sequence[str] = ("sine", "sine", "sine"),
+        spacingCg_E_CgP1: np.ndarray | Sequence[str | Callable] = (
+            "sine",
+            "sine",
+            "sine",
+        ),
         phaseCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         ampAngles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodAngles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
@@ -56,56 +58,58 @@ class AirplaneMovement:
         :param wing_movements: A list of the WingMovements associated with each of the
             base Airplane's Wings. It must have the same length as the base Airplane's
             list of Wings.
-        :param ampCg_E_CgP1: An array-like object of 3 non-negative numbers (floats or
-            ints) representing the amplitudes of the AirplaneMovement's changes in its
-            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or ndarray. Values
-            are converted to floats internally. Each amplitude must be low enough that
-            it doesn't drive its base value out of the range of valid values. Otherwise,
-            this AirplaneMovement will try to create Airplanes with invalid parameters
-            values. Because the first Airplane's Cg_E_CgP1 parameter must be all zeros,
-            this means that the first Airplane's ampCg_E_CgP1 parameter must also be all
-            zeros. The units are in meters. The default is (0.0, 0.0, 0.0).
-        :param periodCg_E_CgP1: An array-like object of 3 non-negative numbers (floats
-            or ints) representing the periods of the AirplaneMovement's changes in its
-            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or ndarray. Values
-            are converted to floats internally. Each element must be 0.0 if the
-            corresponding element in ampCg_E_CgP1 is 0.0 and non-zero if not. The units
-            are in seconds. The default is (0.0, 0.0, 0.0).
-        :param spacingCg_E_CgP1: An array-like object of 3 strs or callables
-            representing the spacing of the AirplaneMovement's change in its Airplanes'
-            Cg_E_CgP1 parameters. Can be a tuple, list, or ndarray. Each element can be
-            the str "sine", the str "uniform", or a callable custom spacing function.
-            Custom spacing functions are for advanced users and must start at 0.0,
-            return to 0.0 after one period of 2*pi radians, have amplitude of 1.0, be
-            periodic, return finite values only, and accept a ndarray as input and
-            return a ndarray of the same shape. Custom functions are scaled by
+        :param ampCg_E_CgP1: An array-like object of non-negative numbers (int or float)
+            with shape (3,) representing the amplitudes of the AirplaneMovement's
+            changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
+            ndarray. Values are converted to floats internally. Each amplitude must be
+            low enough that it doesn't drive its base value out of the range of valid
+            values. Otherwise, this AirplaneMovement will try to create Airplanes with
+            invalid parameter values. Because the first Airplane's Cg_E_CgP1 parameter
+            must be all zeros, this means that the first Airplane's ampCg_E_CgP1
+            parameter must also be all zeros. The units are in meters. The default is
+            (0.0, 0.0, 0.0).
+        :param periodCg_E_CgP1: An array-like object of non-negative numbers (int or
+            float) with shape (3,) representing the periods of the AirplaneMovement's
+            changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
+            ndarray. Values are converted to floats internally. Each element must be 0.0
+            if the corresponding element in ampCg_E_CgP1 is 0.0 and non-zero if not. The
+            units are in seconds. The default is (0.0, 0.0, 0.0).
+        :param spacingCg_E_CgP1: An array-like object of strs or callables with shape
+            (3,) representing the spacing of the AirplaneMovement's changes in its
+            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or ndarray. Each
+            element can be the str "sine", the str "uniform", or a callable custom
+            spacing function. Custom spacing functions are for advanced users and must
+            start at 0.0, return to 0.0 after one period of 2*pi radians, have amplitude
+            of 1.0, be periodic, return finite values only, and accept a ndarray as
+            input and return a ndarray of the same shape. Custom functions are scaled by
             ampCg_E_CgP1, shifted horizontally and vertically by phaseCg_E_CgP1 and the
             base value, and have a period set by periodCg_E_CgP1. The default is
             ("sine", "sine", "sine").
-        :param phaseCg_E_CgP1: An array-like object of 3 numbers (floats or ints)
-            representing the phase offsets of the elements in the first time step's
+        :param phaseCg_E_CgP1: An array-like object of numbers (int or float) with shape
+            (3,) representing the phase offsets of the elements in the first time step's
             Airplane's Cg_E_CgP1 parameter relative to the base Airplane's Cg_E_CgP1
             parameter. Can be a tuple, list, or ndarray. Elements must lie in the range
             (-180.0, 180.0]. Each element must be 0.0 if the corresponding element in
             ampCg_E_CgP1 is 0.0 and non-zero if not. Values are converted to floats
             internally. The units are in degrees. The default is (0.0, 0.0, 0.0).
-        :param ampAngles_E_to_B_izyx: An array-like object of 3 non-negative numbers
-            (floats or ints) representing the amplitudes of the AirplaneMovement's
-            changes in its Airplanes' angles_E_to_B_izyx parameters. Can be a tuple,
-            list, or ndarray. Its elements must lie in the range [0.0, 360.0). Values
-            are converted to floats internally. Each amplitude must be low enough that
-            it doesn't drive its base value out of the range of valid values. Otherwise,
-            this AirplaneMovement will try to create Airplanes with invalid parameters
-            values. The units are in degrees. The default value is (0.0, 0.0, 0.0).
-        :param periodAngles_E_to_B_izyx: An array-like  object of 3 non-negative
-            numbers (floats or ints) representing the periods of the AirplaneMovement's
-            changes in its Airplanes' angles_E_to_B_izyx parameters. Can be a tuple,
-            list, or ndarray. Values are converted to floats internally. Each element
-            must be 0.0 if the corresponding element in ampAngles_E_to_B_izyx is 0.0 and
-            non-zero if not. The units are in seconds. The default value is (0.0, 0.0,
-            0.0).
-        :param spacingAngles_E_to_B_izyx: An array-like object of 3 strs or callables
-            representing the spacing of the AirplaneMovement's change in its
+        :param ampAngles_E_to_B_izyx: An array-like object of non-negative numbers (int
+            or float) with shape (3,) representing the amplitudes of the
+            AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
+            Can be a tuple, list, or ndarray. Its elements must lie in the range [0.0,
+            360.0). Values are converted to floats internally. Each amplitude must be
+            low enough that it doesn't drive its base value out of the range of valid
+            values. Otherwise, this AirplaneMovement will try to create Airplanes with
+            invalid parameter values. The units are in degrees. The default is (0.0,
+            0.0, 0.0).
+        :param periodAngles_E_to_B_izyx: An array-like object of non-negative numbers
+            (int or float) with shape (3,) representing the periods of the
+            AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
+            Can be a tuple, list, or ndarray. Values are converted to floats internally.
+            Each element must be 0.0 if the corresponding element in
+            ampAngles_E_to_B_izyx is 0.0 and non-zero if not. The units are in seconds.
+            The default is (0.0, 0.0, 0.0).
+        :param spacingAngles_E_to_B_izyx: An array-like object of strs or callables with
+            shape (3,) representing the spacing of the AirplaneMovement's change in its
             Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or ndarray.
             Each element can be the str "sine", the str "uniform", or a callable custom
             spacing function. Custom spacing functions are for advanced users and must
@@ -114,15 +118,15 @@ class AirplaneMovement:
             input and return a ndarray of the same shape. The custom function is scaled
             by ampAngles_E_to_B_izyx, shifted horizontally and vertically by
             phaseAngles_E_to_B_izyx and the base value, and have a period set by
-            periodAngles_E_to_B_izyx. The default value is ("sine", "sine", "sine").
-        :param phaseAngles_E_to_B_izyx: An array-like object of 3 numbers (floats or
-            ints) representing the phase offsets of the elements in the first time
-            step's Airplane's angles_E_to_B_izyx parameter relative to the base
+            periodAngles_E_to_B_izyx. The default is ("sine", "sine", "sine").
+        :param phaseAngles_E_to_B_izyx: An array-like object of numbers (int or float)
+            with shape (3,) representing the phase offsets of the elements in the first
+            time step's Airplane's angles_E_to_B_izyx parameter relative to the base
             Airplane's angles_E_to_B_izyx parameter. Can be a tuple, list, or ndarray.
             Elements must lie in the range (-180.0, 180.0]. Each element must be 0.0 if
             the corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
             not. Values are converted to floats internally. The units are in degrees.
-            The default value is (0.0, 0.0, 0.0).
+            The default is (0.0, 0.0, 0.0).
         :return: None
         """
         if not isinstance(base_airplane, geometry.airplane.Airplane):
@@ -383,8 +387,8 @@ class AirplaneMovement:
     @property
     def max_period(self) -> float:
         """Defines a property for the longest period of AirplaneMovement's own motion,
-        the motion(s) of its sub-movement object(s), and the motions of its
-        sub-sub-movement objects.
+        the motion(s) of its sub-movement object(s), and the motions of its sub-sub-
+        movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.

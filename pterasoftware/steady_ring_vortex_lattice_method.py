@@ -566,6 +566,10 @@ class SteadyRingVortexLatticeMethodSolver:
                         effective_right_line_vortex_strengths[global_panel_position] = (
                             self._vortex_strengths[global_panel_position]
                         )
+
+                        panel.effective_right_strength = self._vortex_strengths[
+                            global_panel_position
+                        ]
                     else:
                         panel_to_right: _panel.Panel = _panels[
                             _local_chordwise_position,
@@ -583,12 +587,20 @@ class SteadyRingVortexLatticeMethodSolver:
                             - _ring_vortex_to_right.strength
                         )
 
+                        panel.effective_right_strength = (
+                            self._vortex_strengths[global_panel_position]
+                            - panel_to_right.ring_vortex.strength
+                        )
                     if panel.is_leading_edge:
                         # Set the effective front LineVortex strength to this Panel's
                         # RingVortex's strength.
                         effective_front_line_vortex_strengths[global_panel_position] = (
                             self._vortex_strengths[global_panel_position]
                         )
+
+                        panel.effective_front_strength = self._vortex_strengths[
+                            global_panel_position
+                        ]
                     else:
                         panel_to_front: _panel.Panel = _panels[
                             _local_chordwise_position - 1,
@@ -606,12 +618,20 @@ class SteadyRingVortexLatticeMethodSolver:
                             - _ring_vortex_to_front.strength
                         )
 
+                        panel.effective_front_strength = (
+                            self._vortex_strengths[global_panel_position]
+                            - panel_to_front.ring_vortex.strength
+                        )
                     if panel.is_left_edge:
                         # Set the effective left LineVortex strength to this Panel's
                         # RingVortex's strength.
                         effective_left_line_vortex_strengths[global_panel_position] = (
                             self._vortex_strengths[global_panel_position]
                         )
+
+                        panel.effective_left_strength = self._vortex_strengths[
+                            global_panel_position
+                        ]
                     else:
                         panel_to_left: _panel.Panel = _panels[
                             _local_chordwise_position,
@@ -629,6 +649,11 @@ class SteadyRingVortexLatticeMethodSolver:
                             - _ring_vortex_to_left.strength
                         )
 
+                        panel.effective_left_strength = (
+                            self._vortex_strengths[global_panel_position]
+                            - panel_to_left.ring_vortex.strength
+                        )
+
                     # Increment the global Panel position variable.
                     global_panel_position += 1
 
@@ -644,6 +669,19 @@ class SteadyRingVortexLatticeMethodSolver:
         stackVelocityLeftLineVortexCenters_GP1__E = self.calculate_solution_velocity(
             stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1
         )
+
+        velocitiesAtOverlappingRightAndLeftLineVortexCentersEqual = np.allclose(
+            stackVelocityRightLineVortexCenters_GP1__E[:-1, :],
+            stackVelocityLeftLineVortexCenters_GP1__E[1:, :],
+        )
+
+        airplane: geometry.airplane.Airplane
+        for airplane in self.airplanes:
+            wing: geometry.wing.Wing
+            for wing in airplane.wings:
+                for chordwise_id in range(wing.num_chordwise_panels):
+                    for spanwise_id in range(wing.num_spanwise_panels):
+                        panel = wing.panels[chordwise_id, spanwise_id]
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
         # find the forces (in the first Airplane's geometry axes) on the Panels'

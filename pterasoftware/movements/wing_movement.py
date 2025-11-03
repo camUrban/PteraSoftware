@@ -1,16 +1,20 @@
 """Contains the WingMovement class.
 
 This module contains the following classes:
-    WingMovement: This is a class used to contain the Wing movements.
+    WingMovement: A class used to contain the Wing movements.
 
 This module contains the following functions:
     None
 """
 
+from __future__ import annotations
+
+from collections.abc import Sequence, Callable
+
 import numpy as np
 
 from . import _functions
-from .wing_cross_section_movement import WingCrossSectionMovement
+from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
 from .. import geometry
 from .. import _parameter_validation
@@ -43,17 +47,31 @@ class WingMovement:
 
     def __init__(
         self,
-        base_wing,
-        wing_cross_section_movements,
-        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    ):
+        base_wing: geometry.wing.Wing,
+        wing_cross_section_movements: list[
+            wing_cross_section_movement_mod.WingCrossSectionMovement
+        ],
+        ampLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        periodLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        spacingLer_Gs_Cgs: np.ndarray | Sequence[str | Callable] = (
+            "sine",
+            "sine",
+            "sine",
+        ),
+        phaseLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (
+            0.0,
+            0.0,
+            0.0,
+        ),
+        spacingAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[str | Callable] = (
+            "sine",
+            "sine",
+            "sine",
+        ),
+        phaseAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+    ) -> None:
         """This is the initialization method.
 
         :param base_wing: Wing
@@ -164,7 +182,10 @@ class WingMovement:
                 "wing_cross_section_movements must have the same length as base_wing.wing_cross_sections."
             )
         for wing_cross_section_movement in wing_cross_section_movements:
-            if not isinstance(wing_cross_section_movement, WingCrossSectionMovement):
+            if not isinstance(
+                wing_cross_section_movement,
+                wing_cross_section_movement_mod.WingCrossSectionMovement,
+            ):
                 raise TypeError(
                     "Every element in wing_cross_section_movements must be a WingCrossSectionMovement."
                 )
@@ -272,23 +293,18 @@ class WingMovement:
                 )
         self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
-    def generate_wings(self, num_steps, delta_time):
+    def generate_wings(
+        self, num_steps: int, delta_time: float | int
+    ) -> list[geometry.wing.Wing]:
         """Creates the Wing at each time step, and returns them in a list.
 
-        :param num_steps: int
-
-            This is the number of time steps in this movement. It must be a positive
-            int.
-
-        :param delta_time: number
-
-            This is the time between each time step. It must be a positive number (
-            int or float), and will be converted internally to a float. The units are
-            in seconds.
-
-        :return: list of Wings
-
-            This is the list of Wings associated with this WingMovement.
+        :param num_steps: int This is the number of time steps in this movement. It must
+            be a positive int.
+        :param delta_time: number This is the time between each time step. It must be a
+            positive number ( int or float), and will be converted internally to a
+            float. The units are in seconds.
+        :return: list of Wings This is the list of Wings associated with this
+            WingMovement.
         """
         num_steps = _parameter_validation.positive_int_return_int(
             num_steps, "num_steps"
@@ -433,14 +449,12 @@ class WingMovement:
         return wings
 
     @property
-    def max_period(self):
+    def max_period(self) -> float:
         """Defines a property for the longest period of WingMovement's own motion and
         that of its sub-movement objects.
 
-        :return: float
-
-            The longest period in seconds. If the all the motion is static, this will
-            be 0.0.
+        :return: float The longest period in seconds. If the all the motion is static,
+            this will be 0.0.
         """
         wing_cross_section_movement_max_periods = []
         for wing_cross_section_movement in self.wing_cross_section_movements:

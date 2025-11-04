@@ -1065,7 +1065,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # normals as pointing upward. This convention difference only affects the
         # unsteady force term because it depends on both vortex strength and the normal
         # vector. When converting from CCW to CW, the strength changes sign but the
-        # normal vector does not, requiring a sign  correction. In contrast, steady
+        # normal vector does not, requiring a sign correction. In contrast, steady
         # Kutta-Joukowski forces depend on the strength and the LineVortex vectors. Both
         # have flipped signs, causing the negatives to cancel. See issue #27:
         # https://github.com/camUrban/PteraSoftware/issues/27

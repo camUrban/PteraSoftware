@@ -1,10 +1,12 @@
 """Contains the Airfoil class.
 
-Contains the following classes:
-    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+
+**Contains the following functions:**
+
+None
 """
 
 import importlib.resources
@@ -27,26 +29,27 @@ _TRUST = object()
 class Airfoil:
     """A class used to contain the Airfoil of a WingCrossSection.
 
-    Citation:
-        Adapted from:
-            geometry.Airfoil in AeroSandbox
-        Author:
-            Peter Sharpe
-        Date of Retrieval:
-            04/27/2020
+    **Contains the following methods:**
 
-    Contains the following methods:
-        add_control_surface: Returns a version of the Airfoil with a control surface
-        added at a given point.
+    add_control_surface: Returns a version of the Airfoil with a control surface added
+    at a given point.
 
-        draw: Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
+    draw: Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
 
-        get_plottable_data: Returns plottable data for this Airfoil's outline and
-        mean camber line.
+    get_plottable_data: Returns plottable data for this Airfoil's outline and mean
+    camber line.
 
-        get_resampled_mcl: Returns a ndarray of points along the mean camber line
-        (MCL), resampled from the mcl_A_outline attribute. It is used to discretize the
-        MCL for meshing.
+    get_resampled_mcl: Returns a ndarray of points along the mean camber line (MCL),
+    resampled from the mcl_A_outline attribute. It is used to discretize the MCL for
+    meshing.
+
+    **Citation:**
+
+    Adapted from: geometry.Airfoil in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/27/2020
     """
 
     def __init__(
@@ -59,18 +62,18 @@ class Airfoil:
     ) -> None:
         """The initialization method.
 
-        :param name: The name of the Airfoil. It should correspond to the name of a
-            file the airfoils directory, or to a valid NACA 4-series airfoil (once
-            converted to lower-case and stripped of leading and trailing whitespace)
-            unless you are passing in your own array of points using outline_A_lp. Note
-            that NACA0000 isn't a valid NACA-series airfoil. The default is "NACA0012".
-        :param outline_A_lp: An array-like object of numbers (int or float) with
-            shape (N,2) representing the 2D points making up the Airfoil's outline (in
-            airfoil axes, relative to the leading point). If you wish to load
-            coordinates from the airfoils directory, leave this as None, which is the
-            default. It can be a tuple, list, or numpy array. Values are converted to
-            floats internally. Make sure all x-component values are in the range [0.0,
-            1.0]. The default value is None.
+        :param name: The name of the Airfoil. It should correspond to the name of a file
+            the airfoils directory, or to a valid NACA 4-series airfoil (once converted
+            to lower-case and stripped of leading and trailing whitespace) unless you
+            are passing in your own array of points using outline_A_lp. Note that
+            NACA0000 isn't a valid NACA-series airfoil. The default is "NACA0012".
+        :param outline_A_lp: An array-like object of numbers (int or float) with shape
+            (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
+            axes, relative to the leading point). If you wish to load coordinates from
+            the airfoils directory, leave this as None, which is the default. It can be
+            a tuple, list, or numpy array. Values are converted to floats internally.
+            Make sure all x-component values are in the range [0.0, 1.0]. The default
+            value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
             from the airfoils directory. I highly recommend setting this to True. It can
@@ -79,9 +82,9 @@ class Airfoil:
         :param n_points_per_side: The number of points to use when creating the
             Airfoil's MCL and when resampling the upper and lower parts of the Airfoil's
             outline. It must be a positive int greater than or equal to 3. The resampled
-            outline will have a total number of points equal to
-            (2 * n_points_per_side) - 1. I highly recommend setting this to at least
-            100. The default value is 400.
+            outline will have a total number of points equal to (2 * n_points_per_side)
+            - 1. I highly recommend setting this to at least 100. The default value is
+            400.
         :return: None
         """
         self.name = _parameter_validation.string_return_string(name, "name")
@@ -497,8 +500,8 @@ class Airfoil:
         axes, relative to the leading point).
 
         The points are generated if the Airfoil is a NACA 4-series airfoil, or loaded
-        from the "airfoils" directory inside "pterasoftware", which is a database of
-        dat files containing Airfoil points). NACA 4-series airfoil generation is an
+        from the "airfoils" directory inside "pterasoftware", which is a database of dat
+        files containing Airfoil points). NACA 4-series airfoil generation is an
         adaptation of:
         https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
 
@@ -664,12 +667,12 @@ class Airfoil:
         airfoil axes, relative to the leading point) with cosine-spaced points on the
         upper and lower surfaces.
 
-        The number of points defining the final Airfoil's outline is
-        (n_points_per_side * 2 - 1), since the leading point is shared by both the upper
-        and lower surfaces.
+        The number of points defining the final Airfoil's outline is (n_points_per_side
+        * 2 - 1), since the leading point is shared by both the upper and lower
+        surfaces.
 
-        :param n_points_per_side: The number of points (a positive int) on the upper
-            and lower surfaces.
+        :param n_points_per_side: The number of points (a positive int) on the upper and
+            lower surfaces.
         :return: None
         """
         # Get the upper outline points. This contains the leading point.

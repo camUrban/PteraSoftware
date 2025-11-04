@@ -1,9 +1,12 @@
 """Contains the AirplaneMovement class.
 
-Contains the following classes:     AirplaneMovement: A class used to contain an
-Airplane's movement.
+**Contains the following classes:**
 
-Contains the following functions:     None
+AirplaneMovement: A class used to contain an Airplane's movement.
+
+**Contains the following functions:**
+
+None
 """
 
 from __future__ import annotations
@@ -22,8 +25,10 @@ from .. import geometry
 class AirplaneMovement:
     """A class used to contain an Airplane's movement.
 
-    Contains the following methods:     generate_airplanes: Creates the Airplane at each
-    time step, and returns them     in a list.
+    **Contains the following methods:**
+
+    generate_airplanes: Creates the Airplane at each time step, and returns them in a
+    list.
 
     max_period: Defines a property for the longest period of AirplaneMovement's own
     motion, the motion(s) of its sub-movement object(s), and the motions of its sub-sub-

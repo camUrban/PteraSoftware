@@ -1,10 +1,12 @@
 """Contains the OperatingPointMovement class.
 
-Contains the following classes:
-    OperatingPointMovement: A class used to contain an OperatingPoint's movements.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+OperatingPointMovement: A class used to contain an OperatingPoint's movements.
+
+**Contains the following functions:**
+
+None
 """
 
 from collections.abc import Callable
@@ -18,12 +20,13 @@ from .. import _parameter_validation
 class OperatingPointMovement:
     """A class used to contain an OperatingPoint's movements.
 
-    Contains the following methods:
-        generate_operating_points: Creates the OperatingPoint at each time step, and
-        returns them in a list.
+    **Contains the following methods:**
 
-        max_period: Defines a property for OperatingPointMovement's longest period of
-        motion.
+    generate_operating_points: Creates the OperatingPoint at each time step, and returns
+    them in a list.
+
+    max_period: Defines a property for OperatingPointMovement's longest period of
+    motion.
     """
 
     def __init__(

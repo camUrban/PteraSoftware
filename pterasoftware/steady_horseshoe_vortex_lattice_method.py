@@ -1,5 +1,5 @@
-"""This module contains the class definition of this package's steady horseshoe
-vortex lattice solver.
+"""Contains the class definition of this package's steady horseshoe vortex lattice
+solver.
 
 This module contains the following classes:
     SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that

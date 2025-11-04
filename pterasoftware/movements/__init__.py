@@ -1,21 +1,24 @@
 """Contains the movement classes.
 
-Contains the following subpackages:
-    None
+**Contains the following subpackages:**
 
-Contains the following directories:
-    None
+None
 
-Contains the following modules:
-    airplane_movement.py: Contains the AirplaneMovement class.
+**Contains the following directories:**
 
-    movement.py: Contains the Movement class.
+None
 
-    operating_point_movement.py: Contains the OperatingPointMovement class.
+**Contains the following modules:**
 
-    wing_cross_section_movement.py: Contains the WingCrossSectionMovement class.
+airplane_movement.py: Contains the AirplaneMovement class.
 
-    wing_movement.py: Contains the WingMovement class.
+movement.py: Contains the Movement class.
+
+operating_point_movement.py: Contains the OperatingPointMovement class.
+
+wing_cross_section_movement.py: Contains the WingCrossSectionMovement class.
+
+wing_movement.py: Contains the WingMovement class.
 """
 
 import pterasoftware.movements.airplane_movement

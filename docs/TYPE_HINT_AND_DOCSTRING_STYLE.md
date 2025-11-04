@@ -24,6 +24,7 @@ This document defines the conventions for type hints and docstrings in the Ptera
 
 ```python
 from collections.abc import Sequence
+
 import numpy as np
 ```
 
@@ -144,20 +145,23 @@ Module-level docstrings appear at the very top of each Python file and describe 
 ```python
 """Contains the geometry classes.
 
-Contains the following subpackages:
-    None
+**Contains the following subpackages:**
 
-Contains the following directories:
-    None
+None
 
-Contains the following modules:
-    airfoil.py: Contains the Airfoil class.
+**Contains the following directories:**
 
-    airplane.py: Contains the Airplane class.
+None
 
-    wing.py: Contains the Wing class.
+**Contains the following modules:**
 
-    wing_cross_section.py: Contains the WingCrossSection class.
+airfoil.py: Contains the Airfoil class.
+
+airplane.py: Contains the Airplane class.
+
+wing.py: Contains the Wing class.
+
+wing_cross_section.py: Contains the WingCrossSection class.
 """
 ```
 
@@ -175,11 +179,13 @@ Public modules (e.g., `airfoil.py`, `wing.py`) have structured docstrings listin
 ```python
 """Contains the Airfoil class.
 
-Contains the following classes:
-    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+
+**Contains the following functions:**
+
+None
 """
 ```
 
@@ -211,18 +217,18 @@ def function_name(
     param3: Type3,
 ) -> ReturnType:
     """Short description of what the function does.
+
+    Optional longer description providing more context. This provides detailed explanations of the function's behavior. It can be one or more paragraphs.
     
     Optional citation block:
 
-    Citation:
-        Adapted from:
-            <source>
-        Author:
-            <author>
-        Date of Retrieval:
-            <date>
-
-    Optional longer description providing more context. This provides detailed explanations of the function's behavior. It can be one or more paragraphs.
+    **Citation:**
+    
+    Adapted from: <source>
+    
+    Author: <author>
+    
+    Date of retrieval: <date>
 
     :param param1: A (shape) dtype description of param1. Additional details about
         what it represents, valid ranges, units, etc. Can wrap to multiple lines.
@@ -264,24 +270,28 @@ For numpy arrays, always include:
 class ClassName:
     """Short description of the class.
 
-    Optional citation block:
-
-    Citation:
-        Adapted from:
-            <source>
-        Author:
-            <author>
-        Date of Retrieval:
-            <date>
-        
-    Contains the following methods:
+    **Contains the following methods:**
         public_method_1: Short description (identical to method's docstring's short 
         description.
 
         public_method_2: Short description (identical to method's docstring's short 
         description.
 
-    Optional detailed description of the class's purpose, behavior, or usage.
+    Optional notes block
+    
+    **Notes:**
+    
+    Detailed description of the class's purpose, behavior, or usage. Can be one or more paragraphs. Avoid numbered or bulleted lists.
+    
+    Optional citation block:
+
+    **Citation:**
+    
+    Adapted from: <source>
+    
+    Author: <author>
+    
+    Date of retrieval: <date>
     """
 ```
 
@@ -306,20 +316,23 @@ def property_name(self) -> ReturnType:
 ```python
 """Contains the geometry classes.
 
-Contains the following subpackages:
-    None
+**Contains the following subpackages:**
 
-Contains the following directories:
-    None
+None
 
-Contains the following modules:
-    airfoil.py: Contains the Airfoil class.
+**Contains the following directories:**
 
-    airplane.py: Contains the Airplane class.
+None
 
-    wing.py: Contains the Wing class.
+**Contains the following modules:**
 
-    wing_cross_section.py: Contains the WingCrossSection class.
+airfoil.py: Contains the Airfoil class.
+
+airplane.py: Contains the Airplane class.
+
+wing.py: Contains the Wing class.
+
+wing_cross_section.py: Contains the WingCrossSection class.
 """
 ```
 
@@ -327,11 +340,13 @@ Contains the following modules:
 ```python
 """Contains the Airfoil class.
 
-Contains the following classes:
-    Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+Airfoil: A class used to contain the Airfoil of a WingCrossSection.
+
+**Contains the following functions:**
+
+None
 """
 ```
 

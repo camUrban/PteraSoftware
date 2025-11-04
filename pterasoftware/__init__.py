@@ -1,39 +1,37 @@
-"""This package contains all the source code for the Ptera Software.
+"""Contains the source code for the Ptera Software.
 
-This package contains the following subpackages:
-    geometry: Contains the geometry classes.
+**Contains the following subpackages:**
 
-    movements: Contains the movement classes.
+geometry: Contains the geometry classes.
 
-This package contains the following directories:
-    None
+movements: Contains the movement classes.
 
-This package contains the following modules:
-    __init__.py: This module is this package's initialization script.
+**Contains the following directories:**
 
-    convergence.py: This module contains functions for analyzing the convergence of
-    SteadyProblems and UnsteadyProblems.
+None
 
-    operating_point.py: This module contains the class definition for a Problem's
-    operating point.
+**Contains the following modules:**
 
-    output.py: This module contains useful functions for visualizing geometry and
-    results.
+convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
+UnsteadyProblems.
 
-    problems.py: This module contains the class definitions for different types of
-    problems.
+operating_point.py: Contains the class definition for a Problem's operating point.
 
-    steady_horseshoe_vortex_lattice_method.py: This module contains the class
-    definition of this package's steady horseshoe vortex lattice solver.
+output.py: Contains useful functions for visualizing geometry and results.
 
-    steady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's steady ring vortex lattice solver.
+problems.py: Contains the class definitions for different types of problems.
 
-    trim.py: This module contains functions to analyze the trim conditions of
-    SteadyProblems and UnsteadyProblems.
+steady_horseshoe_vortex_lattice_method.py: Contains the class definition of this
+package's steady horseshoe vortex lattice solver.
 
-    unsteady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's unsteady ring vortex lattice solver.
+steady_ring_vortex_lattice_method.py: Contains the class definition of this package's
+steady ring vortex lattice solver.
+
+trim.py: Contains functions to analyze the trim conditions of SteadyProblems and
+UnsteadyProblems.
+
+unsteady_ring_vortex_lattice_method.py: Contains the class definition of this package's
+unsteady ring vortex lattice solver.
 """
 
 import pterasoftware.geometry

@@ -1,10 +1,12 @@
 """Contains the WingCrossSection class.
 
-Contains the following classes:
-    WingCrossSection: A class used to contain wing cross sections of a Wing.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+WingCrossSection: A class used to contain wing cross sections of a Wing.
+
+**Contains the following functions:**
+
+None
 """
 
 from collections.abc import Sequence
@@ -22,55 +24,56 @@ from .._transformations import apply_T_to_vectors
 class WingCrossSection:
     """A class used to contain the wing cross sections of a Wing.
 
-    Citation:
-        Adapted from:
-            geometry.WingXSec in AeroSandbox
-        Author:
-            Peter Sharpe
-        Date of Retrieval:
-            04/26/2020
+    **Contains the following methods:**
 
-    Contains the following methods:
-        get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
-        outline and mean camber line.
+    get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
+    outline and mean camber line.
 
-        validate_root_constraints: Called by the parent Wing to validate constraints
-        specific to root WingCrossSections.
+    validate_root_constraints: Called by the parent Wing to validate constraints
+    specific to root WingCrossSections.
 
-        validate_mid_constraints: Called by the parent Wing to validate constraints
-        specific to middle WingCrossSections.
+    validate_mid_constraints: Called by the parent Wing to validate constraints specific
+    to middle WingCrossSections.
 
-        validate_tip_constraints: Called by the parent Wing to validate constraints
-        specific to tip WingCrossSections.
+    validate_tip_constraints: Called by the parent Wing to validate constraints specific
+    to tip WingCrossSections.
 
-        T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation
-        matrix which maps in homogeneous coordinates from parent wing cross section
-        axes, relative to the parent leading point, to wing cross section axes, relative
-        to the leading point. Is None if the WingCrossSection hasn't been fully
-        validated yet.
+    T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation matrix
+    which maps in homogeneous coordinates from parent wing cross section axes, relative
+    to the parent leading point, to wing cross section axes, relative to the leading
+    point. Is None if the WingCrossSection hasn't been fully validated yet.
 
-        T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation
-        matrix which maps in homogeneous coordinates from wing cross section axes,
-        relative to the leading point, to parent wing cross section axes, relative to
-        the parent leading point. Is None if the WingCrossSection hasn't been fully
-        validated yet.
+    T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation matrix
+    which maps in homogeneous coordinates from wing cross section axes, relative to the
+    leading point, to parent wing cross section axes, relative to the parent leading
+    point. Is None if the WingCrossSection hasn't been fully validated yet.
 
-    The first WingCrossSection in a Wing's wing_cross_section list is known as the
-    root WingCrossSection. The last is known as the tip WingCrossSection.
+    **Notes:**
+
+    The first WingCrossSection in a Wing's wing_cross_section list is known as the root
+    WingCrossSection. The last is known as the tip WingCrossSection.
 
     Every WingCrossSection has its own wing cross section axes. For root
     WingCrossSections, their wing cross section axes are identical in position,
     orientation, and handedness to their Wing's wing axes. For all other
-    WingCrossSections, their wing cross section axes are defined relative to the axes
-    of the previous WingCrossSection. Locally, the x-axis points from a cross
-    section's leading point to its trailing point, the y-axis points spanwise in the
-    general direction of the next WingCrossSection, and the z-axis points upwards.
+    WingCrossSections, their wing cross section axes are defined relative to the axes of
+    the previous WingCrossSection. Locally, the x-axis points from a cross section's
+    leading point to its trailing point, the y-axis points spanwise in the general
+    direction of the next WingCrossSection, and the z-axis points upwards.
 
-    Things can get a little confusing with respect to WingCrossSections for Wings
-    with symmetric or mirror_only set to True. For more details, look in the Wing
-    class's docstring. Also, remember that WingCrossSections themselves aren't used
-    by the solvers, they are merely one of the Wing attributes that tell the meshing
-    function how we'd like to generate the Wing's Panels.
+    Things can get a little confusing with respect to WingCrossSections for Wings with
+    symmetric or mirror_only set to True. For more details, look in the Wing class's
+    docstring. Also, remember that WingCrossSections themselves aren't used by the
+    solvers, they are merely one of the Wing attributes that tell the meshing function
+    how we'd like to generate the Wing's Panels.
+
+    **Citation:**
+
+    Adapted from: geometry.WingXSec in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/26/2020
     """
 
     def __init__(
@@ -108,20 +111,20 @@ class WingCrossSection:
             representing the angle vector of rotation angles that define the orientation
             of this WingCrossSection's axes relative to the parent wing cross section
             axes. Can be a tuple, list, or ndarray. Values are converted to floats
-            internally. If this is a root WingCrossSection, these are the wing axes.
-            If not, the parent axes are the previous WingCrossSection's axes. For the
-            root WingCrossSection, this must be a zero vector. For other
-            WingCrossSections, all angles must be in the range [-90, 90] degrees.
-            Rotations are intrinsic, and proceed in the x-y'-z" order. The units are in
-            degrees. The default is (0.0, 0.0, 0.0).
+            internally. If this is a root WingCrossSection, these are the wing axes. If
+            not, the parent axes are the previous WingCrossSection's axes. For the root
+            WingCrossSection, this must be a zero vector. For other WingCrossSections,
+            all angles must be in the range [-90, 90] degrees. Rotations are intrinsic,
+            and proceed in the x-y'-z" order. The units are in degrees. The default is
+            (0.0, 0.0, 0.0).
         :param control_surface_symmetry_type: Determines how control surfaces behave
             when the Wing has symmetry. It can be "symmetric", "asymmetric", or None.
             With "symmetric", mirrored control surfaces have the same deflection (like
             flaps). With "asymmetric", mirrored control surfaces have opposite
-            deflections (like ailerons). The default is None. For Wings with type
-            4 or 5 symmetry, this parameter must be specified. For Wings with type 1, 2,
-            or 3 symmetry, this parameter must be None. This validation is performed by
-            the parent Airplane during Wing processing.
+            deflections (like ailerons). The default is None. For Wings with type 4 or 5
+            symmetry, this parameter must be specified. For Wings with type 1, 2, or 3
+            symmetry, this parameter must be None. This validation is performed by the
+            parent Airplane during Wing processing.
         :param control_surface_hinge_point: The location of the control surface hinge
             from the leading edge as a fraction of chord. It must be a float in the
             range (0.0, 1.0). The default is 0.75.

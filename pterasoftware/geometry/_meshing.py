@@ -16,10 +16,13 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     """Takes in a Wing, creates a quadrilateral mesh of its geometry, and then populates
     its array of Panels with the mesh data.
 
-    Citation:
-        Adapted from:         vlm3.make_panels in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    05/01/2020
+    **Citation:**
+
+    Adapted from: vlm3.make_panels in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 05/01/2020
 
     :param wing: The Wing to be meshed.
     :return: None

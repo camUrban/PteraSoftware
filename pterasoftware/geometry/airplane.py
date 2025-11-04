@@ -1,10 +1,12 @@
 """Contains the Airplane class.
 
-Contains the following classes:
-    Airplane: A class used to contain airplanes.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+Airplane: A class used to contain airplanes.
+
+**Contains the following functions:**
+
+None
 """
 
 from collections.abc import Sequence
@@ -25,50 +27,49 @@ from .. import _transformations
 class Airplane:
     """A class used to contain airplanes.
 
-    Citation:
-        Adapted from:
-            geometry.Airplane in AeroSandbox
-        Author:
-            Peter Sharpe
-        Date of Retrieval:
-            04/23/2020
+    **Contains the following methods:**
 
-    Contains the following methods:
-        draw: Draws the 3D geometry of this Airplane.
+    draw: Draws the 3D geometry of this Airplane.
 
-        get_plottable_data: Returns plottable data for this Airplane's Airfoils'
-        outlines and mean camber lines.
+    get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
+    and mean camber lines.
 
-        num_panels: Sets a property for the total number of Panels across all Wings.
+    num_panels: Sets a property for the total number of Panels across all Wings.
 
-        validate_first_airplane_constraints: Validates that the first Airplane in a
-        simulation has Cg_E_CgP1 set to zeros.
+    validate_first_airplane_constraints: Validates that the first Airplane in a
+    simulation has Cg_E_CgP1 set to zeros.
 
-        compute_T_pas_G_Cg_to_GP1_CgP1: Computes the passive transformation matrix
-        from this Airplane's geometry axes, relative to this Airplane's CG to the
-        first Airplane's geometry axes, relative to the first Airplane's CG.
+    compute_T_pas_G_Cg_to_GP1_CgP1: Computes the passive transformation matrix from this
+    Airplane's geometry axes, relative to this Airplane's CG to the first Airplane's
+    geometry axes, relative to the first Airplane's CG.
 
-        process_wing_symmetry: Processes a Wing to determine what type of symmetry it
-        has. If necessary, it then modifies the Wing. If type 5 symmetry is detected,
-        it also creates a second reflected Wing. Finally, it returns a list of Wings.
+    process_wing_symmetry: Processes a Wing to determine what type of symmetry it has.
+    If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
+    creates a second reflected Wing. Finally, it returns a list of Wings.
 
-    The Airplane class is responsible for:
-        1. Defining the local body axes and geometry axes
-        2. Managing Wings and their coordinate transformations
-        3. Processing symmetric Wings and converting them to separate wings when the
-           symmetry plane is not coincident with the Wing's axes xz-plane
-           (type 5 symmetry)
-        4. Providing reference dimensions for aerodynamic calculations
+    **Notes:**
 
-    Every Airplane has a body axis system, where:
-        - +x: Points forward along fuselage
-        - +y: Points to the right (starboard direction)
-        - +z: Points downward (completing right-handed system)
+    The Airplane class is responsible for: (1) Defining the local body axes and geometry
+    axes, (2) managing Wings and their coordinate transformations, (3) processing
+    symmetric Wings and converting them to separate wings when the symmetry plane is not
+    coincident with the Wing's axes xz-plane (type 5 symmetry), and (4) providing
+    reference dimensions for aerodynamic calculations.
 
-    Every Airplane has a geometry axis system, where:
-        - +x: Points aft along fuselage
-        - +y: Points to the right (starboard direction)
-        - +z: Points upward (completing right-handed system)
+    Every Airplane has a body axis system, where +x points forward along fuselage, +y
+    points to the right (starboard direction), and +z points downward (completing a
+    right-handed system).
+
+    Every Airplane also has a geometry axis system, where +x points aft along fuselage,
+    +y points to the right (starboard direction), and +z points upward (completing a
+    right-handed system).
+
+    **Citation:**
+
+    Adapted from: geometry.Airplane in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/23/2020
     """
 
     def __init__(
@@ -90,9 +91,9 @@ class Airplane:
             initialization (type 5 symmetry).
         :param name: A sensible name for your airplane. The default is "Untitled
             Airplane".
-        :param Cg_E_CgP1: An array-like object of 3 numbers representing the position
-            of this Airplane's CG (in Earth axes, relative to the first Airplane's CG).
-            Can be a list, tuple, or numpy array of numbers (int or float). Values are
+        :param Cg_E_CgP1: An array-like object of 3 numbers representing the position of
+            this Airplane's CG (in Earth axes, relative to the first Airplane's CG). Can
+            be a list, tuple, or numpy array of numbers (int or float). Values are
             converted to floats internally. For the first Airplane in a simulation, this
             must be equivalent to (0.0, 0.0, 0.0) by definition. Earth axes follow the
             North-East-Down convention. The units are in meters. The default is (0.0,

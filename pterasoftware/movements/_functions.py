@@ -163,18 +163,23 @@ def oscillating_customspaces(
     linearly spaced time steps into a custom oscillating function defined with the
     parameters given by the scalars or array-like objects amp, period, phase, and base.
 
-    This function is intended for advanced users. The custom function is validated
-    to ensure it meets requirements, but users should thoroughly test their functions
+    This function is intended for advanced users. The custom function is validated to
+    ensure it meets requirements, but users should thoroughly test their functions
     before use in simulations.
 
     **Custom Function Requirements:**
 
-    * Must start at 0 with f(0) = 0
-    * Must return to 0 after one period with f(2*pi) = 0
-    * Must have amplitude of 1, meaning (max - min) / 2 = 1.0
-    * Must be periodic with period 2*pi such that f(x) = f(x + 2*pi)
-    * Must return finite values only with no NaN or Inf
-    * Must accept a ndarray as input and return a ndarray of the same shape
+    Must start at 0 with f(0) = 0
+
+    Must return to 0 after one period with f(2*pi) = 0
+
+    Must have amplitude of 1, meaning (max - min) / 2 = 1.0
+
+    Must be periodic with period 2*pi such that f(x) = f(x + 2*pi)
+
+    Must return finite values only with no NaN or Inf
+
+    Must accept a ndarray as input and return a ndarray of the same shape
 
     Functions with non-zero mean are allowed but will shift the effective center of
     oscillation away from the base value. This can be useful for creating asymmetric
@@ -183,11 +188,11 @@ def oscillating_customspaces(
     **Parameter Interaction:**
 
     The custom function is transformed by the amps, periods, phases, and bases
-    parameters. The output is calculated as amps * custom_function(2*pi * time /
-    periods + deg2rad(phases)) + bases. The amps parameter scales the vertical
-    amplitude of the custom function. The periods parameter scales the horizontal
-    period of the custom function. The phases parameter shifts the function
-    horizontally in degrees. The bases parameter shifts the function vertically.
+    parameters. The output is calculated as amps * custom_function(2*pi * time / periods
+    + deg2rad(phases)) + bases. The amps parameter scales the vertical amplitude of the
+    custom function. The periods parameter scales the horizontal period of the custom
+    function. The phases parameter shifts the function horizontally in degrees. The
+    bases parameter shifts the function vertically.
 
     :param amps: The amplitude(s) of the fluctuation(s). It must be a non-negative
         number (int or float) or an array-like object of non-negative numbers. All

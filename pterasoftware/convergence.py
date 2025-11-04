@@ -1,4 +1,4 @@
-"""This module contains functions for analyzing the convergence of SteadyProblems and
+"""Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
 This module contains the following classes:

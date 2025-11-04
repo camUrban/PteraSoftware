@@ -1,9 +1,8 @@
-"""This module contains the class definition of this package's steady RingVortex
-lattice solver.
+"""Contains the class definition of this package's steady ring vortex lattice solver.
 
 This module contains the following classes:
     SteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses a
-    steady RingVortex lattice method.
+    steady ring vortex lattice method.
 
 This module contains the following functions:
     None
@@ -24,7 +23,7 @@ from . import problems
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class SteadyRingVortexLatticeMethodSolver:
-    """This is an aerodynamics solver that uses a steady RingVortex lattice method.
+    """This is an aerodynamics solver that uses a steady ring vortex lattice method.
 
     Citation:
         Adapted from:         aerodynamics.vlm3.py in AeroSandbox

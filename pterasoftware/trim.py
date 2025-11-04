@@ -1,4 +1,4 @@
-"""This module contains functions to analyze the trim conditions of SteadyProblems and
+"""Contains functions to analyze the trim conditions of SteadyProblems and
 UnsteadyProblems.
 
 This module contains the following classes:

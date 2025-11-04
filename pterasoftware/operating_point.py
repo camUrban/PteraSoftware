@@ -1,4 +1,4 @@
-"""This module contains the class definition for a Problem's operating point.
+"""Contains the class definition for a Problem's operating point.
 
 This module contains the following classes:
     OperatingPoint: This is a class used to contain a Problem's operating point

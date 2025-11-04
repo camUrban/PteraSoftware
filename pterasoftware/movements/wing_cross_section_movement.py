@@ -1,9 +1,12 @@
 """Contains the WingCrossSectionMovement class.
 
-Contains the following classes:     WingCrossSectionMovement: A class used to contain a
-WingCrossSection's movement.
+**Contains the following classes:**
 
-Contains the following functions:     None
+WingCrossSectionMovement: A class used to contain a WingCrossSection's movement.
+
+**Contains the following functions:**
+
+None
 """
 
 from __future__ import annotations
@@ -21,8 +24,10 @@ from .. import _parameter_validation
 class WingCrossSectionMovement:
     """A class used to contain a WingCrossSection's movement.
 
-    Contains the following methods:     generate_wing_cross_sections: Creates the
-    WingCrossSection at each time step,     and returns them in a list.
+    **Contains the following methods:**
+
+    generate_wing_cross_sections: Creates the WingCrossSection at each time step, and
+    returns them in a list.
 
     max_period: Defines a property for WingCrossSectionMovement's longest period of
     motion.

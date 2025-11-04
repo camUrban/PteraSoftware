@@ -1,4 +1,4 @@
-"""This module contains useful functions for visualizing geometry and results.
+"""Contains useful functions for visualizing geometry and results.
 
 This module contains the following classes:
     None

@@ -1,5 +1,4 @@
-"""This module contains the class definition of this package's unsteady ring vortex
-lattice solver.
+"""Contains the class definition of this package's unsteady ring vortex lattice solver.
 
 This module contains the following classes:
     UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses

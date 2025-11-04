@@ -1,4 +1,4 @@
-"""This module contains the class definitions for different types of problems.
+"""Contains the class definitions for different types of problems.
 
 This module contains the following classes:
     SteadyProblem: This is a class for steady aerodynamics problems.

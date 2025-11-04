@@ -1,10 +1,12 @@
 """Contains the Wing class.
 
-Contains the following classes:
-    Wing: A class used to contain wings of an Airplane.
+**Contains the following classes:**
 
-Contains the following functions:
-    None
+Wing: A class used to contain wings of an Airplane.
+
+**Contains the following functions:**
+
+None
 """
 
 from collections.abc import Sequence
@@ -22,91 +24,91 @@ from .. import _transformations
 class Wing:
     """A class used to contain the wings of an Airplane.
 
-    Citation:
-        Adapted from:
-            geometry.Wing in AeroSandbox
-        Author:
-            Peter Sharpe
-        Date of Retrieval:
-            04/24/2020
+    **Contains the following methods:**
 
-    Contains the following methods:
-        generate_mesh: Generates this Wing's mesh, which finishes the process of
-        preparing the Wing to be used in a simulation. It is called by the Wing's
-        parent Airplane, after it's determined its symmetry type.
+    generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
+    the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
+    after it's determined its symmetry type.
 
-        get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines
-        and mean camber lines.
+    get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines and
+    mean camber lines.
 
-        T_pas_G_Cg_to_Wn_Ler: Defines a property for the passive transformation
-        matrix which maps in homogeneous coordinates from geometry axes relative to
-        the CG to wing axes relative to the leading edge root point. It is None if
-        the Wing's symmetry type hasn't been defined yet.
+    T_pas_G_Cg_to_Wn_Ler: Defines a property for the passive transformation matrix which
+    maps in homogeneous coordinates from geometry axes relative to the CG to wing axes
+    relative to the leading edge root point. It is None if the Wing's symmetry type
+    hasn't been defined yet.
 
-        T_pas_Wn_Ler_to_G_Cg: Defines a property for the passive transformation
-        matrix which maps in homogeneous coordinates from wing axes relative to the
-        leading edge root point to geometry axes relative to the CG point. It is None
-        if the Wing's symmetry type hasn't been defined yet.
+    T_pas_Wn_Ler_to_G_Cg: Defines a property for the passive transformation matrix which
+    maps in homogeneous coordinates from wing axes relative to the leading edge root
+    point to geometry axes relative to the CG point. It is None if the Wing's symmetry
+    type hasn't been defined yet.
 
-        WnX_G: Sets a property for the wing axes' first basis vector (in geometry axes).
+    WnX_G: Sets a property for the wing axes' first basis vector (in geometry axes).
 
-        WnY_G: Sets a property for the wing axes' second basis vector (in geometry
-        axes).
+    WnY_G: Sets a property for the wing axes' second basis vector (in geometry axes).
 
-        WnZ_G: Sets a property for the wing axes' third basis vector (in geometry axes).
+    WnZ_G: Sets a property for the wing axes' third basis vector (in geometry axes).
 
-        children_T_pas_Wn_Ler_to_Wcs_Lp: Defines a property for a list of passive
-        transformation matrices which map in homogeneous coordinates from wing axes,
-        relative to the leading edge root point, to each of this Wing's
-        WingCrossSection's axes, relative to their respective leading points.
+    children_T_pas_Wn_Ler_to_Wcs_Lp: Defines a property for a list of passive
+    transformation matrices which map in homogeneous coordinates from wing axes,
+    relative to the leading edge root point, to each of this Wing's WingCrossSection's
+    axes, relative to their respective leading points.
 
-        children_T_pas_Wcs_Lp_to_Wn_Ler: Defines a property for a list of passive
-        transformation matrices which map in homogeneous coordinates from each of this
-        Wing's WingCrossSection's axes, relative to their respective leading points, to
-        wing axes, relative to the leading edge root point.
+    children_T_pas_Wcs_Lp_to_Wn_Ler: Defines a property for a list of passive
+    transformation matrices which map in homogeneous coordinates from each of this
+    Wing's WingCrossSection's axes, relative to their respective leading points, to wing
+    axes, relative to the leading edge root point.
 
-        children_T_pas_G_Cg_to_Wcs_Lp: Defines a property for a list of passive
-        transformation matrices which map in homogeneous coordinates from geometry axes,
-        relative to the CG, to each of this Wing's WingCrossSection's axes, relative to
-        their respective leading points.
+    children_T_pas_G_Cg_to_Wcs_Lp: Defines a property for a list of passive
+    transformation matrices which map in homogeneous coordinates from geometry axes,
+    relative to the CG, to each of this Wing's WingCrossSection's axes, relative to
+    their respective leading points.
 
-        children_T_pas_Wcs_Lp_to_G_Cg: Defines a property for a list of passive
-        transformation matrices which map in homogeneous coordinates from each of this
-        Wing's WingCrossSection's axes, relative to their respective leading points, to
-        geometry axes, relative to the CG.
+    children_T_pas_Wcs_Lp_to_G_Cg: Defines a property for a list of passive
+    transformation matrices which map in homogeneous coordinates from each of this
+    Wing's WingCrossSection's axes, relative to their respective leading points, to
+    geometry axes, relative to the CG.
 
-        projected_area: Sets a property for the area of the Wing projected onto the
-        plane defined by the wing axes' xy-plane.
+    projected_area: Sets a property for the area of the Wing projected onto the plane
+    defined by the wing axes' xy-plane.
 
-        wetted_area: Sets a property for the Wing's wetted area.
+    wetted_area: Sets a property for the Wing's wetted area.
 
-        average_panel_aspect_ratio: Sets a property for average aspect ratio of the
-        Wing's Panels.
+    average_panel_aspect_ratio: Sets a property for average aspect ratio of the Wing's
+    Panels.
 
-        span: Sets a property for the Wing's span.
+    span: Sets a property for the Wing's span.
 
-        standard_mean_chord: Sets a property for the Wing's standard mean chord.
+    standard_mean_chord: Sets a property for the Wing's standard mean chord.
 
-        mean_aerodynamic_chord: Sets a property for the Wing's mean aerodynamic chord.
+    mean_aerodynamic_chord: Sets a property for the Wing's mean aerodynamic chord.
+
+    **Notes:**
 
     Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the Ler_Gs_Cgs and
-    angles_Gs_to_Wn_ixyz parameters. However, the steps for transforming a vector
-    from geometry axes to wing axes, and the interpretation of the wing axes
-    orientation and position relative to an Airplane's geometry axes, also depend on
-    the parameters symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg.
-    In all cases, the order of transformations from geometry axes to wing axes is
-    reflection (if applicable), translation, and then rotation.
+    angles_Gs_to_Wn_ixyz parameters. However, the steps for transforming a vector from
+    geometry axes to wing axes, and the interpretation of the wing axes orientation and
+    position relative to an Airplane's geometry axes, also depend on the parameters
+    symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg. In all cases, the
+    order of transformations from geometry axes to wing axes is reflection (if
+    applicable), translation, and then rotation.
 
-    =========  ===========  ===========================================  =============
-    symmetric  mirror_only  symmetry plane                               symmetry type
-    =========  ===========  ===========================================  =============
-    False      False        must be undefined                            1
-    False      True         coincident with the wing axes' xz-plane      2
-    False      True         not coincident with the wing axes' xz-plane  3
-    True       False        coincident with the wing axes' xz-plane      4
-    True       False        not coincident with the wing axes' xz-plane  5
-    =========  ===========  ===========================================  =============
+    There are five symmetry types. Type 1: symmetric=False, mirror_only=False, and the
+    symmetry plane must be undefined. Type 2: symmetric=False, mirror_only=True, and the
+    symmetry plane is coincident with the wing axes' xz-plane. Type 3: symmetric=False,
+    mirror_only=True, and the symmetry plane is not coincident with the wing axes' xz-
+    plane. Type 4: symmetric=True, mirror_only=False, and the symmetry plane is
+    coincident with the wing axes' xz-plane. Type 5: symmetric=True, mirror_only=False,
+    and the symmetry plane is not coincident with the wing axes' xz-plane.
+
+    **Citation:**
+
+    Adapted from: geometry.Wing in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/24/2020
     """
 
     def __init__(
@@ -144,8 +146,8 @@ class Wing:
             across the symmetry plane while retaining the non-mirrored side. If
             mirror_only is True, symmetric must be False. If symmetric is True, then
             neither symmetryNormal_G nor symmetryPoint_G_Cg can be None. If the symmetry
-            plane is coincident with this Wing's axes' xz-plane, the mirrored and
-            non-mirrored geometry will be meshed as a single wing. If not, this Wing's
+            plane is coincident with this Wing's axes' xz-plane, the mirrored and non-
+            mirrored geometry will be meshed as a single wing. If not, this Wing's
             Airplane will automatically create another Wing with the mirrored geometry,
             modify both Wings' parameters, and add the reflected Wing to its list of
             Wings immediately following this one. For more details on that process, and
@@ -517,18 +519,18 @@ class Wing:
                 plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
 
         if self.panels is not None:
-            # Initialize empty arrays to hold the Panels' vertices and faces
+            # Initialize empty arrays to hold the Panels' vertices and faces.
             panel_vertices = np.empty((0, 3), dtype=float)
             panel_faces = np.empty(0, dtype=int)
 
-            # Initialize a variable to keep track of how many Panels' data has been added
-            # to the arrays
+            # Initialize a variable to keep track of how many Panels' data has been
+            # added to the arrays.
             panel_num = 0
 
-            # Unravel the Wing's Panel matrix and iterate through it
+            # Unravel the Wing's Panel matrix and iterate through it.
             panels = np.ravel(self.panels)
             for panel in panels:
-                # Stack this Panel's vertices and faces
+                # Stack this Panel's vertices and faces.
                 panel_vertices_to_add = np.vstack(
                     (
                         panel.Flpp_G_Cg,
@@ -547,7 +549,8 @@ class Wing:
                     ]
                 )
 
-                # Stack this Panel's vertices and faces with the array of all vertices and faces
+                # Stack this Panel's vertices and faces with the array of all
+                # vertices and faces.
                 panel_vertices = cast(
                     np.ndarray[tuple[int, int], Any],
                     np.vstack((panel_vertices, panel_vertices_to_add)),
@@ -557,13 +560,13 @@ class Wing:
                     np.hstack((panel_faces, panel_face_to_add)),
                 )
 
-                # Update the number of previous Panels
+                # Update the number of previous Panels.
                 panel_num += 1
 
                 # Convert the Panel vertices and faces to PolyData.
                 panel_surfaces = pv.PolyData(panel_vertices, panel_faces)
 
-                # Add the Panels to the plotter
+                # Add the Panels to the plotter.
                 plotter.add_mesh(
                     panel_surfaces,
                     show_edges=True,

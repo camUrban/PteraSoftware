@@ -982,7 +982,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + self._currentVInf_GP1__E,
         )
 
-    def _calculate_loads(self) -> None:
+    # TODO: Remove this old method after verifying that the new method works correctly.
+    def _calculate_loads_old(self):
         """Calculates the forces (in the first Airplane's geometry axes) and moments (in
         the first Airplane's geometry axes, relative to the first Airplane's CG) on
         every Panel at the current time step.
@@ -1215,6 +1216,217 @@ class UnsteadyRingVortexLatticeMethodSolver:
             rightLegMoments_GP1_CgP1
             + frontLegMoments_GP1_CgP1
             + leftLegMoments_GP1_CgP1
+            + unsteady_moments_GP1_CgP1
+        )
+
+        # TODO: Transform forces_GP1 and moments_GP1_CgP1 to each Airplane's local
+        #  geometry axes before passing to process_solver_loads.
+        _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
+
+    def _calculate_loads(self) -> None:
+        """Calculates the forces (in the first Airplane's geometry axes) and moments (in
+        the first Airplane's geometry axes, relative to the first Airplane's CG) on
+        every Panel at the current time step.
+
+        **Notes:**
+
+        This method assumes that the correct strengths for the RingVortices and
+        HorseshoeVortices have already been calculated and set.
+
+        **Citation:**
+
+        Logic adapted from: "Modeling of aerodynamic forces in flapping flight with the
+        Unsteady Vortex Lattice Method" (pp. 9-11)
+
+        Author: Thomas Lambert
+
+        :return: None
+        """
+        # Initialize a variable to hold the global Panel position as we iterate
+        # through them.
+        global_panel_position = 0
+
+        # Initialize four 1D ndarrays to hold the strength of the Panels'
+        # RingVortices' LineVortices.
+        right_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        front_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+
+        # Iterate through the Airplanes' Wings.
+        for airplane in self.current_airplanes:
+            for wing in airplane.wings:
+                _panels = wing.panels
+                assert _panels is not None
+
+                # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
+                panels = np.ravel(wing.panels)
+
+                # Iterate through this Wing's 1D ndarray of Panels.
+                panel: _panel.Panel
+                for panel in panels:
+                    right_line_vortex_strengths[global_panel_position] = (
+                        self._current_bound_vortex_strengths[global_panel_position]
+                    )
+                    front_line_vortex_strengths[global_panel_position] = (
+                        self._current_bound_vortex_strengths[global_panel_position]
+                    )
+                    left_line_vortex_strengths[global_panel_position] = (
+                        self._current_bound_vortex_strengths[global_panel_position]
+                    )
+                    if panel.is_trailing_edge:
+                        if self._current_step == 0:
+                            back_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[
+                                    global_panel_position
+                                ]
+                            )
+                        else:
+                            back_line_vortex_strengths[global_panel_position] = (
+                                back_line_vortex_strengths[global_panel_position]
+                            ) = (
+                                self._current_bound_vortex_strengths[
+                                    global_panel_position
+                                ]
+                                - self._last_bound_vortex_strengths[
+                                    global_panel_position
+                                ]
+                            )
+                    else:
+                        back_line_vortex_strengths[global_panel_position] = (
+                            self._current_bound_vortex_strengths[global_panel_position]
+                        )
+
+                    # Increment the global Panel position variable.
+                    global_panel_position += 1
+
+        # Calculate the velocity (in the first Airplane's geometry axes, observed
+        # from the Earth frame) at the center of every Panels' RingVortex's right
+        # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
+        stackVelocityRightLineVortexCenters_GP1_E = (
+            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1)
+            + self._calculate_current_movement_velocities_at_right_leg_centers()
+        )
+        stackVelocityFrontLineVortexCenters_GP1_E = (
+            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1)
+            + self._calculate_current_movement_velocities_at_front_leg_centers()
+        )
+        stackVelocityLeftLineVortexCenters_GP1_E = (
+            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1)
+            + self._calculate_current_movement_velocities_at_left_leg_centers()
+        )
+        stackVelocityBackLineVortexCenters_GP1_E = (
+            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1)
+            + self._calculate_current_movement_velocities_at_back_leg_centers()
+        )
+
+        # Using the LineVortex strengths and the Kutta-Joukowski theorem, find the
+        # forces (in the first Airplane's geometry axes) on the Panels' RingVortex's
+        # right LineVortex, front LineVortex, left LineVortex and back LineVortex.
+        rightLegForces_GP1 = (
+            self.current_operating_point.rho
+            * np.expand_dims(right_line_vortex_strengths, axis=1)
+            * _functions.numba_1d_explicit_cross(
+                stackVelocityRightLineVortexCenters_GP1_E,
+                self.stackRbrv_GP1,
+            )
+        )
+        frontLegForces_GP1 = (
+            self.current_operating_point.rho
+            * np.expand_dims(front_line_vortex_strengths, axis=1)
+            * _functions.numba_1d_explicit_cross(
+                stackVelocityFrontLineVortexCenters_GP1_E,
+                self.stackFbrv_GP1,
+            )
+        )
+        leftLegForces_GP1 = (
+            self.current_operating_point.rho
+            * np.expand_dims(left_line_vortex_strengths, axis=1)
+            * _functions.numba_1d_explicit_cross(
+                stackVelocityLeftLineVortexCenters_GP1_E,
+                self.stackLbrv_GP1,
+            )
+        )
+        backLegForces_GP1 = (
+            self.current_operating_point.rho
+            * np.expand_dims(back_line_vortex_strengths, axis=1)
+            * _functions.numba_1d_explicit_cross(
+                stackVelocityBackLineVortexCenters_GP1_E,
+                self.stackBbrv_GP1,
+            )
+        )
+
+        # The unsteady force calculation below includes a negative sign to account for a
+        # sign convention mismatch between Ptera Software and the reference literature.
+        # Ptera Software defines RingVortices with counter-clockwise (CCW) vertex
+        # ordering, while the references use clockwise (CW) ordering. Both define panel
+        # normals as pointing upward. This convention difference only affects the
+        # unsteady force term because it depends on both vortex strength and the normal
+        # vector. When converting from CCW to CW, the strength changes sign but the
+        # normal vector does not, requiring a sign correction. In contrast, steady
+        # Kutta-Joukowski forces depend on the strength and the LineVortex vectors. Both
+        # have flipped signs, causing the negatives to cancel. See issue #27:
+        # https://github.com/camUrban/PteraSoftware/issues/27
+
+        # Calculate the unsteady component of the force on each Panel (in geometry
+        # axes), which is derived from the unsteady Bernoulli equation.
+        unsteady_forces_GP1 = -(
+            self.current_operating_point.rho
+            * np.expand_dims(
+                (
+                    self._current_bound_vortex_strengths
+                    - self._last_bound_vortex_strengths
+                ),
+                axis=1,
+            )
+            * np.expand_dims(self.panel_areas, axis=1)
+            * self.stackUnitNormals_GP1
+            / self.delta_time
+        )
+
+        forces_GP1 = (
+            rightLegForces_GP1
+            + frontLegForces_GP1
+            + leftLegForces_GP1
+            + backLegForces_GP1
+            + unsteady_forces_GP1
+        )
+
+        # Find the moments (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
+        # front LineVortex, left LineVortex, and back LineVortex.
+        rightLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+            self.stackCblvpr_GP1_CgP1,
+            rightLegForces_GP1,
+        )
+        frontLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+            self.stackCblvpf_GP1_CgP1,
+            frontLegForces_GP1,
+        )
+        leftLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+            self.stackCblvpl_GP1_CgP1,
+            leftLegForces_GP1,
+        )
+        backLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+            self.stackCblvpb_GP1_CgP1,
+            backLegForces_GP1,
+        )
+
+        # The unsteady moment is calculated at the collocation point because the
+        # unsteady force acts on the bound RingVortex, whose center is at the
+        # collocation point, not at the Panel's centroid.
+
+        # Find the moments (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG) due to the unsteady component of the force on each Panel.
+        unsteady_moments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+            self.stackCpp_GP1_CgP1, unsteady_forces_GP1
+        )
+
+        moments_GP1_CgP1 = (
+            rightLegMoments_GP1_CgP1
+            + frontLegMoments_GP1_CgP1
+            + leftLegMoments_GP1_CgP1
+            + backLegMoments_GP1_CgP1
             + unsteady_moments_GP1_CgP1
         )
 
@@ -1719,6 +1931,32 @@ class UnsteadyRingVortexLatticeMethodSolver:
         return cast(
             np.ndarray,
             -(self.stackCblvpl_GP1_CgP1 - self._lastStackCblvpl_GP1_CgP1)
+            / self.delta_time,
+        )
+
+    def _calculate_current_movement_velocities_at_back_leg_centers(self):
+        """Finds the apparent velocities (in the first Airplane's geometry axes,
+        observed from the Earth frame) at the center point of each bound RingVortex's
+        back leg due to any motion defined in Movement at the current time step.
+
+        **Notes:**
+
+        At each point, any apparent velocity due to Movement is opposite the motion due
+        to Movement.
+
+        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at the center
+            point of each bound RingVortex's back leg due to any motion defined in
+            Movement. If the current time step is the first time step, these velocities
+            will all be all zeros. Its units are in meters per second.
+        """
+        # Check if this is the current time step. If so, return all zeros.
+        if self._current_step < 1:
+            return np.zeros((self.num_panels, 3), dtype=float)
+
+        return cast(
+            np.ndarray,
+            -(self.stackCblvpb_GP1_CgP1 - self._lastStackCblvpb_GP1_CgP1)
             / self.delta_time,
         )
 

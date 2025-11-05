@@ -93,19 +93,18 @@ class Airplane:
             Airplane".
         :param Cg_E_CgP1: An array-like object of 3 numbers representing the position of
             this Airplane's CG (in Earth axes, relative to the first Airplane's CG). Can
-            be a list, tuple, or numpy array of numbers (int or float). Values are
-            converted to floats internally. For the first Airplane in a simulation, this
-            must be equivalent to (0.0, 0.0, 0.0) by definition. Earth axes follow the
-            North-East-Down convention. The units are in meters. The default is (0.0,
-            0.0, 0.0).
+            be a list, tuple, or ndarray. Values are converted to floats internally. For
+            the first Airplane in a simulation, this must be equivalent to (0.0, 0.0,
+            0.0) by definition. Earth axes follow the North-East-Down convention. The
+            units are in meters. The default is (0.0, 0.0, 0.0).
         :param angles_E_to_B_izyx: An array-like object of 3 numbers representing the
             angles from Earth axes to body axes using an intrinsic z-y'-x" sequence. Can
-            be a tuple, list, or numpy array of numbers (int or float). Values are
-            converted to floats internally. It defines the orientation of the airplane's
-            body axes relative to Earth axes. Note that body axes differ from geometry
-            axes: body axes point forward/right/down while geometry axes point
-            aft/right/up. The units are degrees. All angles must lie in the range
-            (-180.0, 180.0] degrees. The default is (0.0, 0.0, 0.0).
+            be a tuple, list, or ndarray. Values are converted to floats internally. It
+            defines the orientation of the airplane's body axes relative to Earth axes.
+            Note that body axes differ from geometry axes: body axes point
+            forward/right/down while geometry axes point aft/right/up. The units are
+            degrees. All angles must lie in the range (-180.0, 180.0] degrees. The
+            default is (0.0, 0.0, 0.0).
         :param weight: A number (int or float) representing the weight of the aircraft
             in Newtons. This is used by the trim functions. It must be greater than or
             equal to zero. The default is 0.0.

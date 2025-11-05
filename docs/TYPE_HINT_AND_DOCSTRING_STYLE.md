@@ -224,11 +224,11 @@ def function_name(
 
     **Citation:**
     
-    Adapted from: <source>
+    Adapted from (can be more specific if the whole function wasn't adapted): <source>
     
-    Author: <author>
+    Author (or "Authors"): <author>
     
-    Date of retrieval: <date>
+    Date of retrieval (don't include if not known): <date>
 
     :param param1: A (shape) dtype description of param1. Additional details about
         what it represents, valid ranges, units, etc. Can wrap to multiple lines.
@@ -259,9 +259,8 @@ For numpy arrays, always include:
 
 ```python
 :param parameter_name: An array-like object of numbers (int or float) with shape
-    (N,M) representing <description>. It can be a tuple, list, or numpy array.
-    Values are converted to floats internally. The units are <units>. The default
-    is <default>.
+    (N,M) representing <description>. Can be a tuple, list, or ndarray. Values are
+    converted to floats internally. The units are <units>. The default is <default>.
 ```
 
 ### Class Docstrings
@@ -284,14 +283,14 @@ class ClassName:
     Detailed description of the class's purpose, behavior, or usage. Can be one or more paragraphs. Avoid numbered or bulleted lists.
     
     Optional citation block:
-
+    
     **Citation:**
     
-    Adapted from: <source>
+    Adapted from (can be more specific if the whole class wasn't adapted): <source>
     
-    Author: <author>
+    Author (or "Authors"): <author>
     
-    Date of retrieval: <date>
+    Date of retrieval (don't include if not known): <date>
     """
 ```
 
@@ -443,14 +442,14 @@ def __init__(
     :param outline_A_lp: An array-like object of numbers (int or float) with shape
         (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
         axes, relative to the leading point). If you wish to load coordinates from the
-        airfoils directory, leave this as None, which is the default. It can be a tuple,
-        list, or numpy array. Values are converted to floats internally. Make sure all
+        airfoils directory, leave this as None, which is the default. Can be a tuple,
+        list, or ndarray. Values are converted to floats internally. Make sure all
         x-component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: A bool that determines whether you would like to resample the
         points defining the Airfoil's outline. This applies to points passed in by the
         user or to those from the airfoils directory. I highly recommended setting this
-        to True. It can be a boolean or a NumPy boolean and will be converted internally
-        to a boolean. The default is True.
+        to True. Can be a bool or a numpy bool and will be converted internally to a
+        bool. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
         must be a positive int greater than or equal to 3. The resampled outline will
@@ -504,9 +503,9 @@ def get_resampled_mcl(
 
     :param mcl_fractions: A (N,) array-like object of floats representing normalized
         distances along the MCL (from the leading to the trailing edge) at which to
-        return the resampled MCL points. It can be a tuple, list, or ndarray. The
-        first value must be 0.0, the last must be 1.0, and the remaining must be in
-        the range [0.0, 1.0]. All values must be non-duplicated and in ascending order.
+        return the resampled MCL points. Can be a tuple, list, or ndarray. The first
+        value must be 0.0, the last must be 1.0, and the remaining must be in the range
+        [0.0, 1.0]. All values must be non-duplicated and in ascending order.
     :return: A (N,2) ndarray of floats that contains the positions of the resampled
         MCL points (in airfoil axes, relative to the leading point).
     """

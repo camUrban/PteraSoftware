@@ -114,7 +114,7 @@ This pattern:
 - **Matplotlib**: 2D plotting and analysis output
 
 ### Python Version Constraint
-Requires Python 3.10.0 to < 3.11.0 (strict constraint for dependency compatibility)  
+Requires Python 3.13  
 
 ### Package Dependencies
 **Core Runtime Dependencies:**

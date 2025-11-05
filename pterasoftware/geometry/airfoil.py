@@ -380,9 +380,11 @@ class Airfoil:
             )
 
         # Find the distance between points along the MCL.
+        mclX_A_lp: np.ndarray = self.mcl_A_lp[:, 0]
+        mclY_A_lp: np.ndarray = self.mcl_A_lp[:, 1]
         mcl_distances_between_points = np.sqrt(
-            np.power(float(self.mcl_A_lp[:-1, 0]) - float(self.mcl_A_lp[1:, 0]), 2)
-            + np.power(float(self.mcl_A_lp[:-1, 1]) - float(self.mcl_A_lp[1:, 1]), 2)
+            np.power(mclX_A_lp[:-1] - mclX_A_lp[1:], 2)
+            + np.power(mclY_A_lp[:-1] - mclY_A_lp[1:], 2)
         )
 
         # Create a horizontal 1D array that contains the distance along the MCL of

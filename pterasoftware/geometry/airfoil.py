@@ -70,13 +70,13 @@ class Airfoil:
         :param outline_A_lp: An array-like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
-            the airfoils directory, leave this as None, which is the default. It can be
-            a tuple, list, or numpy array. Values are converted to floats internally.
+            the airfoils directory, leave this as None, which is the default. Can be
+            a tuple, list, or ndarray. Values are converted to floats internally.
             Make sure all x-component values are in the range [0.0, 1.0]. The default
             value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
-            from the airfoils directory. I highly recommend setting this to True. It can
+            from the airfoils directory. I highly recommend setting this to True. Can
             be a bool or a numpy bool and will be converted internally to a bool. The
             default is True.
         :param n_points_per_side: The number of points to use when creating the
@@ -353,10 +353,9 @@ class Airfoil:
 
         :param mcl_fractions: A (N,) array-like object of floats representing normalized
             distances along the MCL (from the leading to the trailing edge) at which to
-            return the resampled MCL points. It can be a tuple, list, or ndarray. The
-            first value must be 0.0, the last must be 1.0, and the remaining must be in
-            the range [0.0, 1.0]. All values must be non-duplicated and in ascending
-            order.
+            return the resampled MCL points. Can be a tuple, list, or ndarray. The first
+            value must be 0.0, the last must be 1.0, and the remaining must be in the
+            range [0.0, 1.0]. All values must be non-duplicated and in ascending order.
         :return: A (N,2) ndarray of floats that contains the positions of the resampled
             MCL points (in airfoil axes, relative to the leading point).
         """

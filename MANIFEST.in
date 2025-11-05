@@ -1,3 +1,4 @@
 recursive-include pterasoftware *
+include pterasoftware/py.typed
 global-exclude __pycache__
 global-exclude *.pyc

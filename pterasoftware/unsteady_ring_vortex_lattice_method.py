@@ -1057,16 +1057,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         )
 
-        # FIXME: The unsteady force calculation may be wrong. In short, it looks like
-        #  we are getting a result that's -1 times what we expect. However, all the
-        #  reference equations support our implementation. More testing and
-        #  investigation is needed. See
-        #  https://github.com/camUrban/PteraSoftware/issues/27 for more details and
-        #  updates.
+        # The unsteady force calculation below includes a negative sign to account for a
+        # sign convention mismatch between Ptera Software and the reference literature.
+        # Ptera Software defines RingVortices with counter-clockwise (CCW) vertex
+        # ordering, while the references use clockwise (CW) ordering. Both define panel
+        # normals as pointing upward. This convention difference only affects the
+        # unsteady force term because it depends on both vortex strength and the normal
+        # vector. When converting from CCW to CW, the strength changes sign but the
+        # normal vector does not, requiring a sign correction. In contrast, steady
+        # Kutta-Joukowski forces depend on the strength and the LineVortex vectors. Both
+        # have flipped signs, causing the negatives to cancel. See issue #27:
+        # https://github.com/camUrban/PteraSoftware/issues/27
 
         # Calculate the unsteady component of the force on each Panel (in geometry
         # axes), which is derived from the unsteady Bernoulli equation.
-        unsteady_forces_GP1 = (
+        unsteady_forces_GP1 = -(
             self.current_operating_point.rho
             * np.expand_dims(
                 (
@@ -1103,11 +1108,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             leftLegForces_GP1,
         )
 
-        # FIXME: The unsteady moment calculation may also be wrong. Right now,
-        #  we are using the position of the collocation points (in the first
-        #  Airplane's geometry axes, relative to the first Airplane's CG) to
-        #  calculate the moment, but shouldn't we instead use the  to the locations
-        #  of the Panels' centroids?
+        # The unsteady moment is calculated at the collocation point because the
+        # unsteady force acts on the bound RingVortex, whose center is at the
+        # collocation point, not at the Panel's centroid.
 
         # Find the moments (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG) due to the unsteady component of the force on each Panel.

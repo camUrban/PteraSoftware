@@ -29,9 +29,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
             prescribed_wake=True,
             free_wake=True,
             num_chords_bounds=(2, 6),
-            panel_aspect_ratio_bounds=(4, 2),
-            num_chordwise_panels_bounds=(2, 4),
-            convergence_criteria=5.0,
+            panel_aspect_ratio_bounds=(4, 1),
+            num_chordwise_panels_bounds=(2, 6),
+            convergence_criteria=1.0,
         )
 
         converged_wake_state = converged_parameters[0]
@@ -41,8 +41,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         wake_state_ans = True
         num_chords_ans = 4
-        panel_ar_ans = 4
-        num_chordwise_ans = 2
+        panel_ar_ans = 1
+        num_chordwise_ans = 4
 
         self.assertTrue(converged_wake_state == wake_state_ans)
         self.assertTrue(abs(converged_num_chords - num_chords_ans) <= 1)

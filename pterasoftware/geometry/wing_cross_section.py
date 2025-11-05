@@ -118,8 +118,8 @@ class WingCrossSection:
             and proceed in the x-y'-z" order. The units are in degrees. The default is
             (0.0, 0.0, 0.0).
         :param control_surface_symmetry_type: Determines how control surfaces behave
-            when the Wing has symmetry. It can be "symmetric", "asymmetric", or None.
-            With "symmetric", mirrored control surfaces have the same deflection (like
+            when the Wing has symmetry. Can be "symmetric", "asymmetric", or None. With
+            "symmetric", mirrored control surfaces have the same deflection (like
             flaps). With "asymmetric", mirrored control surfaces have opposite
             deflections (like ailerons). The default is None. For Wings with type 4 or 5
             symmetry, this parameter must be specified. For Wings with type 1, 2, or 3

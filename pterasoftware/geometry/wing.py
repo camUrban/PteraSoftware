@@ -152,15 +152,15 @@ class Wing:
             modify both Wings' parameters, and add the reflected Wing to its list of
             Wings immediately following this one. For more details on that process, and
             how this parameter interacts with symmetryNormal_G, symmetryPoint_G_Cg, and
-            mirror_only, see the class docstring. It can be a bool or a numpy bool and
-            will be converted internally to a bool. The default is False.
+            mirror_only, see the class docstring. Can be a bool or a numpy bool and will
+            be converted internally to a bool. The default is False.
         :param mirror_only: Set this to True if the Wing's geometry should be reflected
             about the symmetry plane without retaining the non-reflected geometry. If
             symmetric is True, mirror_only must be False. If mirror_only is True, then
             neither symmetryNormal_G nor symmetryPoint_G_Cg can be None. For more
             details on how this parameter interacts with symmetryNormal_G,
-            symmetryPoint_G_Cg, and symmetric, see the class docstring. It can be a bool
-            or a numpy bool and will be converted internally to a bool. The default is
+            symmetryPoint_G_Cg, and symmetric, see the class docstring. Can be a bool or
+            a numpy bool and will be converted internally to a bool. The default is
             False.
         :param symmetryNormal_G: None, or an array-like of 3 numbers (int or float)
             representing the unit normal vector (in geometry axes) that, together with
@@ -184,7 +184,7 @@ class Wing:
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: The type of spacing between the Wing's chordwise
-            panels. It can be "cosine" or "uniform". Using cosine spacing is highly
+            panels. Can be "cosine" or "uniform". Using cosine spacing is highly
             recommended for steady simulations and uniform spacing is highly recommended
             for unsteady simulations. The default is "cosine".
         :return: None

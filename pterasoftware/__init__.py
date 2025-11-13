@@ -19,7 +19,7 @@ operating_point.py: Contains the class definition for a Problem's operating poin
 
 output.py: Contains useful functions for visualizing geometry and results.
 
-problems.py: Contains the class definitions for different types of problems.
+problems.py: Contains the SteadyProblem and UnsteadyProblem classes.
 
 steady_horseshoe_vortex_lattice_method.py: Contains the class definition of this
 package's steady horseshoe vortex lattice solver.

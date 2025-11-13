@@ -76,7 +76,7 @@ class Airfoil:
             value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
-            from the airfoils directory. I highly recommend setting this to True. Can
+            from the airfoils directory. I highly recommended setting this to True. Can
             be a bool or a numpy bool and will be converted internally to a bool. The
             default is True.
         :param n_points_per_side: The number of points to use when creating the

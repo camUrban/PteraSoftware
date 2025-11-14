@@ -9,6 +9,8 @@ Wing: A class used to contain wings of an Airplane.
 None
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 from typing import Any, cast
 

@@ -1,5 +1,7 @@
 """This module contains the Panel class."""
 
+from __future__ import annotations
+
 import numpy as np
 
 from . import _parameter_validation

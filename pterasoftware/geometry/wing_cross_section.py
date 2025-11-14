@@ -9,6 +9,8 @@ WingCrossSection: A class used to contain wing cross sections of a Wing.
 None
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 
 import numpy as np

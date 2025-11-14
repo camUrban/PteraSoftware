@@ -497,7 +497,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         steady_problem: problems.SteadyProblem
-        for steady_problem in self.steady_problems:
+        for steady_problem_id, steady_problem in enumerate(self.steady_problems):
             # Find the freestream velocity (in the first Airplane's geometry axes,
             # observed from the Earth frame) at this time step.
             this_operating_point: operating_point.OperatingPoint = (
@@ -507,9 +507,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Iterate through this SteadyProblem's Airplanes' Wings.
             airplane: geometry.airplane.Airplane
-            for airplane in steady_problem.airplanes:
+            for airplane_id, airplane in enumerate(steady_problem.airplanes):
                 wing: geometry.wing.Wing
-                for wing in airplane.wings:
+                for wing_id, wing in enumerate(airplane.wings):
 
                     # Iterate through the Wing's chordwise and spanwise positions.
                     for chordwise_position in range(wing.num_chordwise_panels):
@@ -537,29 +537,69 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             else:
                                 # As these vertices are directly behind the trailing
                                 # edge, they are spaced back from their Panel's
-                                # vertex by one quarter the distance traveled during
-                                # a time step. This is to more accurately predict
-                                # drag. More information can be found on pages 37-39
-                                # of "Modeling of aerodynamic forces in flapping
-                                # flight with the Unsteady Vortex Lattice Method" by
-                                # Thomas Lambert.
+                                # vertex by one quarter of the distance traveled by
+                                # the trailing edge during a time step. This is to
+                                # more accurately predict drag. More information can
+                                # be found on pages 37-39 of "Modeling of aerodynamic
+                                # forces in flapping flight with the Unsteady Vortex
+                                # Lattice Method" by Thomas Lambert.
+                                if steady_problem_id < 1:
+                                    Blrvp_GP1_CgP1 = (
+                                        panel.Blpp_GP1_CgP1
+                                        + vInf_GP1__E * self.delta_time * 0.25
+                                    )
+                                    Brrvp_GP1_CgP1 = (
+                                        panel.Brpp_GP1_CgP1
+                                        + vInf_GP1__E * self.delta_time * 0.25
+                                    )
+                                else:
+                                    last_steady_problem = self.steady_problems[
+                                        steady_problem_id - 1
+                                    ]
+                                    last_airplane = last_steady_problem.airplanes[
+                                        airplane_id
+                                    ]
+                                    last_wing = last_airplane.wings[wing_id]
+                                    last_panel = last_wing.panels[
+                                        chordwise_position, spanwise_position
+                                    ]
 
-                                # FIXME: I think this might be a bug. It looks like
-                                #  we are already spacing the points back from the
-                                #  Panels' rear points by a quarter-chord of each
-                                #  Panel. This is spacing even further beyond that.
-                                #  Double check if that is actually correct.
+                                    thisBlpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
+                                    lastBlpp_GP1_CgP1 = last_panel.Blpp_GP1_CgP1
 
-                                Blrvp_GP1_CgP1 = (
-                                    Flrvp_GP1_CgP1
-                                    + (panel.Blpp_GP1_CgP1 - panel.Flpp_GP1_CgP1)
-                                    + vInf_GP1__E * self.delta_time * 0.25
-                                )
-                                Brrvp_GP1_CgP1 = (
-                                    Frrvp_GP1_CgP1
-                                    + (panel.Brpp_GP1_CgP1 - panel.Frpp_GP1_CgP1)
-                                    + vInf_GP1__E * self.delta_time * 0.25
-                                )
+                                    # We subtract (thisBlpp_GP1_CgP1 -
+                                    # lastBlpp_GP1_CgP1) / self.delta_time from
+                                    # vInf_GP1__E, because we want the apparent fluid
+                                    # velocity due to motion (observed in the Earth
+                                    # frame, in the first Airplane's geometry axes).
+                                    # This is the vector pointing opposite the
+                                    # velocity from motion.
+                                    Blrvp_GP1_CgP1 = (
+                                        thisBlpp_GP1_CgP1
+                                        + (
+                                            vInf_GP1__E
+                                            - (thisBlpp_GP1_CgP1 - lastBlpp_GP1_CgP1)
+                                            / self.delta_time
+                                        )
+                                        * self.delta_time
+                                        * 0.25
+                                    )
+
+                                    thisBrpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
+                                    lastBrpp_GP1_CgP1 = last_panel.Brpp_GP1_CgP1
+
+                                    # The comment from above about apparent fluid
+                                    # velocity due to motion applies here as well.
+                                    Brrvp_GP1_CgP1 = (
+                                        thisBrpp_GP1_CgP1
+                                        + (
+                                            vInf_GP1__E
+                                            - (thisBrpp_GP1_CgP1 - lastBrpp_GP1_CgP1)
+                                            / self.delta_time
+                                        )
+                                        * self.delta_time
+                                        * 0.25
+                                    )
 
                             # Initialize the Panel's RingVortex.
                             panel.ring_vortex = _aerodynamics.RingVortex(

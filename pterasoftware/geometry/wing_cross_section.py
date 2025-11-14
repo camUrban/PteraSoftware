@@ -277,9 +277,7 @@ class WingCrossSection:
             return None
 
         plottable_data = self.airfoil.get_plottable_data(show=False)
-        assert (
-            plottable_data is not None
-        ), "get_plottable_data with show=False should not return None"
+        assert plottable_data is not None
         [airfoilOutline_A_lp, airfoilMcl_A_lp] = plottable_data
 
         airfoilNonScaledOutline_Wcs_lp = np.column_stack(

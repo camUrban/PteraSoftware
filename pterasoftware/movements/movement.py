@@ -126,9 +126,7 @@ class Movement:
                 # on the base Airplane's reference chord length, its first Wing's
                 # number of chordwise panels, and its base OperatingPoint's velocity.
                 c_ref = airplane_movement.base_airplane.c_ref
-                assert (
-                    c_ref is not None
-                ), "c_ref must not be None for automatic delta_time calculation"
+                assert c_ref is not None
                 delta_times.append(
                     c_ref
                     / airplane_movement.base_airplane.wings[0].num_chordwise_panels
@@ -196,18 +194,13 @@ class Movement:
                 c_refs = []
                 for airplane_movement in self.airplane_movements:
                     c_ref = airplane_movement.base_airplane.c_ref
-                    assert (
-                        c_ref is not None
-                    ), "c_ref must not be None for automatic num_steps calculation"
+                    assert c_ref is not None
                     c_refs.append(c_ref)
                 max_c_ref = max(c_refs)
 
                 # Set the number of time steps such that the wake extends back by
                 # some number of reference chord lengths.
-                assert self.num_chords is not None, (
-                    "num_chords must not be None for automatic num_steps calculation "
-                    "if Movement is static"
-                )
+                assert self.num_chords is not None
                 wake_length = self.num_chords * max_c_ref
                 distance_per_time_step = (
                     delta_time
@@ -217,10 +210,7 @@ class Movement:
             else:
                 # Set the number of time steps such that the simulation runs for some
                 # number of cycles of the motion with the maximum period.
-                assert self.num_cycles is not None, (
-                    "num_cycles must not be None for automatic num_steps calculation "
-                    "if Movement is not static"
-                )
+                assert self.num_cycles is not None
                 num_steps = math.ceil(
                     self.num_cycles * self.max_period / self.delta_time
                 )

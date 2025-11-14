@@ -113,7 +113,7 @@ class Airfoil:
 
         # Initialize an attribute for an array of points along the MCL (in airfoil
         # axes, relative to the leading point). It will be set by _populate_mcl.
-        self.mcl_A_lp: np.ndarray = None  # type: ignore[assignment]
+        self.mcl_A_lp: np.ndarray | None = None
         self._populate_mcl()
 
     # TODO: In the future, if adding control surfaces becomes more important,
@@ -267,6 +267,8 @@ class Airfoil:
         """
         outlineX_A_lp = self.outline_A_lp[:, 0]
         outlineY_A_lp = self.outline_A_lp[:, 1]
+
+        assert self.mcl_A_lp is not None
         mclX_A_lp = self.mcl_A_lp[:, 0]
         mclY_A_lp = self.mcl_A_lp[:, 1]
 
@@ -306,16 +308,16 @@ class Airfoil:
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 
-        outline_A_lp = self.outline_A_lp
-        mcl_A_lp = self.mcl_A_lp
-
         if not show:
-            return [outline_A_lp, mcl_A_lp]
+            assert self.mcl_A_lp is not None
+            return [self.outline_A_lp, self.mcl_A_lp]
 
         airfoil_figure, airfoil_axes = plt.subplots()
 
         outlineX_A_lp = self.outline_A_lp[:, 0]
         outlineY_A_lp = self.outline_A_lp[:, 1]
+
+        assert self.mcl_A_lp is not None
         mclX_A_lp = self.mcl_A_lp[:, 0]
         mclY_A_lp = self.mcl_A_lp[:, 1]
 
@@ -382,6 +384,7 @@ class Airfoil:
             )
 
         # Find the distance between points along the MCL.
+        assert self.mcl_A_lp is not None
         mclX_A_lp: np.ndarray = self.mcl_A_lp[:, 0]
         mclY_A_lp: np.ndarray = self.mcl_A_lp[:, 1]
         mcl_distances_between_points = np.sqrt(
@@ -426,6 +429,7 @@ class Airfoil:
         :return: The y-component of the MCL (in airfoil axes, relative to the leading
             point) at the requested fraction along the chord.
         """
+        assert self.mcl_A_lp is not None
         mclY_func = sp_interp.PchipInterpolator(
             x=self.mcl_A_lp[:, 0],
             y=self.mcl_A_lp[:, 1],

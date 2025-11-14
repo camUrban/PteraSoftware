@@ -342,41 +342,6 @@ class TestRingVortex(unittest.TestCase):
         self.assertEqual(self.basic_ring_vortex.back_leg.strength, original_strength)
         self.assertEqual(self.basic_ring_vortex.right_leg.strength, original_strength)
 
-    def test_parameter_validation_invalid_types(self):
-        """Test parameter validation with invalid types."""
-        # Test with string instead of array.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.RingVortex(
-                Frrvp_GP1_CgP1="not_an_array",
-                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
-                strength=1.0,
-            )
-
-        # Test with wrong-sized ndarray.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.RingVortex(
-                Frrvp_GP1_CgP1=np.array([0.0, 0.5], dtype=float),  # Only 2 elements
-                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
-                strength=1.0,
-            )
-
-        # Test with string strength.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.RingVortex(
-                Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
-                Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
-                strength="not_a_number",
-            )
-
     def test_none_strength_handling(self):
         """Test that None strength is handled correctly."""
         ring_vortex = _aerodynamics.RingVortex(

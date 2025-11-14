@@ -65,6 +65,60 @@ import numpy as np
 | Optional parameter      | `Type \| None`            |
 | Union of multiple types | `Type1 \| Type2 \| Type3` |
 
+### Type Narrowing Patterns
+
+When working with attributes that may be `None`, use these patterns:
+
+#### Optional Attributes
+
+For class attributes initialized to `None` but populated later:
+
+```python
+class Solver:
+    def __init__(self):
+        # Attribute that will be populated before use
+        self.current_airplanes: list[geometry.airplane.Airplane] | None = None
+```
+
+#### Narrowing with Assertions
+
+Use `assert` when you have a programming invariant (the value should never be `None` at this point):
+
+```python
+def compute_forces(self):
+    # At this point in the code, these should always be populated
+    assert self.current_airplanes is not None
+    for airplane in self.current_airplanes:
+        # mypy now knows current_airplanes is not None
+        ...
+```
+
+**Use `assert` when:**
+- None represents a bug, not a valid state
+- You want runtime safety during development
+- The invariant should always hold
+
+#### Narrowing with cast()
+
+Use `cast()` sparingly, only when the type checker cannot infer what you know to be true:
+
+```python
+from typing import cast
+
+# For dtype=object arrays where we know the element type
+ring_vortex = cast(
+    _aerodynamics.RingVortex,
+    object_array[i, j],
+)
+```
+
+**Use `cast()` when:**
+- Working around type checker limitations (e.g., NumPy dtype=object arrays)
+- You're certain of the type but can't prove it to the type checker
+- No runtime check is needed
+
+**Avoid `cast()` for `Type | None` → `Type` narrowing** - use `assert` instead for runtime safety.
+
 ### Module Alias Pattern
 
 Import modules with aliases:

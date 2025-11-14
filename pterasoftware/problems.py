@@ -75,10 +75,7 @@ class SteadyProblem:
                 )
 
             for wing in airplane.wings:
-                assert wing.panels is not None, (
-                    "This Wing's panels should have been created when its "
-                    "generate_mesh method was called by its parent Airplane."
-                )
+                assert wing.panels is not None
 
                 for panel in np.ravel(wing.panels):
                     panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(

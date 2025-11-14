@@ -322,10 +322,7 @@ class Wing:
         # symmetry multiply the summation by two.
         self.num_spanwise_panels = 0
         for wing_cross_section in self.wing_cross_sections[:-1]:
-            assert wing_cross_section.num_spanwise_panels is not None, (
-                "num_spanwise_panels should be set during WingCrossSection "
-                "initialization"
-            )
+            assert wing_cross_section.num_spanwise_panels is not None
             self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
         if self.symmetry_type == 4:
             self.num_spanwise_panels *= 2
@@ -373,9 +370,7 @@ class Wing:
             self.wing_cross_sections
         ):
             plottable_data = wing_cross_section.get_plottable_data(show=False)
-            assert (
-                plottable_data is not None
-            ), "get_plottable_data with show=False should not return None"
+            assert plottable_data is not None
             [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = plottable_data
 
             T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
@@ -426,6 +421,7 @@ class Wing:
 
         plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
+        assert self.T_pas_G_Cg_to_Wn_Ler is not None
         AxesWLerWcs1Lp1_G_Cg = pv.AxesAssembly(
             x_label="WX@Ler/Wcs1XLp1",
             y_label="WY@Ler/Wcs1YLp1",
@@ -442,9 +438,7 @@ class Wing:
             # orientation=(0.0, 0.0, 0.0),
             # origin=(0.0, 0.0, 0.0),
             scale=(0.25, 0.25, 0.25),
-            user_matrix=np.linalg.inv(
-                cast(np.ndarray[Any, Any], self.T_pas_G_Cg_to_Wn_Ler)
-            ),
+            user_matrix=np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler),
             # user_matrix=wingAxes_T_act,
             name="W/Wcs1",
             shaft_type="cylinder",
@@ -955,7 +949,8 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        assert self.projected_area is not None and self.span is not None
+        assert self.projected_area is not None
+        assert self.span is not None
         return float(self.projected_area) / float(self.span)
 
     # TEST: Consider adding unit tests for this method.

@@ -66,8 +66,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         self.steady_problems = self.unsteady_problem.steady_problems
 
-        self.current_airplanes = None
-        self.current_operating_point = None
+        self.current_airplanes: list[geometry.airplane.Airplane] | None = None
+        self.current_operating_point: operating_point.OperatingPoint | None = None
         first_steady_problem: problems.SteadyProblem = self.steady_problems[0]
         self.num_airplanes = len(first_steady_problem.airplanes)
         num_panels = 0
@@ -77,74 +77,74 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.num_panels = num_panels
 
         # Initialize attributes to hold aerodynamic data that pertain to the simulation.
-        self._currentVInf_GP1__E = None
-        self._currentStackFreestreamWingInfluences__E = None
-        self._currentGridWingWingInfluences__E = None
-        self._currentStackWakeWingInfluences__E = None
-        self._current_bound_vortex_strengths = None
-        self._last_bound_vortex_strengths = None
+        self._currentVInf_GP1__E: np.ndarray | None = None
+        self._currentStackFreestreamWingInfluences__E: np.ndarray | None = None
+        self._currentGridWingWingInfluences__E: np.ndarray | None = None
+        self._currentStackWakeWingInfluences__E: np.ndarray | None = None
+        self._current_bound_vortex_strengths: np.ndarray | None = None
+        self._last_bound_vortex_strengths: np.ndarray | None = None
 
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
-        self.panels = None
-        self.stackUnitNormals_GP1 = None
-        self.panel_areas = None
+        self.panels: np.ndarray | None = None
+        self.stackUnitNormals_GP1: np.ndarray | None = None
+        self.panel_areas: np.ndarray | None = None
 
         # The current and last time step's collocation panel points (in the first
         # Airplane's geometry axes, relative to the first Airplane's CG).
-        self.stackCpp_GP1_CgP1 = None
-        self._stackLastCpp_GP1_CgP1 = None
+        self.stackCpp_GP1_CgP1: np.ndarray | None = None
+        self._stackLastCpp_GP1_CgP1: np.ndarray | None = None
 
         # The current and last time step's back-right, front-right, front-left,
         # and back-left bound RingVortex points (in the first Airplane's geometry
         # axes, relative to the first Airplane's CG).
-        self.stackBrbrvp_GP1_CgP1 = None
-        self.stackFrbrvp_GP1_CgP1 = None
-        self.stackFlbrvp_GP1_CgP1 = None
-        self.stackBlbrvp_GP1_CgP1 = None
-        self._lastStackBrbrvp_GP1_CgP1 = None
-        self._lastStackFrbrvp_GP1_CgP1 = None
-        self._lastStackFlbrvp_GP1_CgP1 = None
-        self._lastStackBlbrvp_GP1_CgP1 = None
+        self.stackBrbrvp_GP1_CgP1: np.ndarray | None = None
+        self.stackFrbrvp_GP1_CgP1: np.ndarray | None = None
+        self.stackFlbrvp_GP1_CgP1: np.ndarray | None = None
+        self.stackBlbrvp_GP1_CgP1: np.ndarray | None = None
+        self._lastStackBrbrvp_GP1_CgP1: np.ndarray | None = None
+        self._lastStackFrbrvp_GP1_CgP1: np.ndarray | None = None
+        self._lastStackFlbrvp_GP1_CgP1: np.ndarray | None = None
+        self._lastStackBlbrvp_GP1_CgP1: np.ndarray | None = None
 
         # The current and last time step's center bound LineVortex points for the
         # right, front, left, and back legs (in the first Airplane's geometry axes,
         # relative to the first Airplane's CG).
-        self.stackCblvpr_GP1_CgP1 = None
-        self.stackCblvpf_GP1_CgP1 = None
-        self.stackCblvpl_GP1_CgP1 = None
-        self.stackCblvpb_GP1_CgP1 = None
-        self._lastStackCblvpr_GP1_CgP1 = None
-        self._lastStackCblvpf_GP1_CgP1 = None
-        self._lastStackCblvpl_GP1_CgP1 = None
-        self._lastStackCblvpb_GP1_CgP1 = None
+        self.stackCblvpr_GP1_CgP1: np.ndarray | None = None
+        self.stackCblvpf_GP1_CgP1: np.ndarray | None = None
+        self.stackCblvpl_GP1_CgP1: np.ndarray | None = None
+        self.stackCblvpb_GP1_CgP1: np.ndarray | None = None
+        self._lastStackCblvpr_GP1_CgP1: np.ndarray | None = None
+        self._lastStackCblvpf_GP1_CgP1: np.ndarray | None = None
+        self._lastStackCblvpl_GP1_CgP1: np.ndarray | None = None
+        self._lastStackCblvpb_GP1_CgP1: np.ndarray | None = None
 
         # Right, front, left, and back bound RingVortex vectors (in the first
         # Airplane's geometry axes).
-        self.stackRbrv_GP1 = None
-        self.stackFbrv_GP1 = None
-        self.stackLbrv_GP1 = None
-        self.stackBbrv_GP1 = None
+        self.stackRbrv_GP1: np.ndarray | None = None
+        self.stackFbrv_GP1: np.ndarray | None = None
+        self.stackLbrv_GP1: np.ndarray | None = None
+        self.stackBbrv_GP1: np.ndarray | None = None
 
         # Initialize variables to hold aerodynamic data that pertains details about
         # each Panel's location on its Wing.
-        self.panel_is_trailing_edge = None
-        self.panel_is_leading_edge = None
-        self.panel_is_left_edge = None
-        self.panel_is_right_edge = None
+        self.panel_is_trailing_edge: np.ndarray | None = None
+        self.panel_is_leading_edge: np.ndarray | None = None
+        self.panel_is_left_edge: np.ndarray | None = None
+        self.panel_is_right_edge: np.ndarray | None = None
 
         # Initialize variables to hold aerodynamic data that pertains to the wake at
         # the current time step.
-        self._current_wake_vortex_strengths = None
-        self._current_wake_vortex_ages = None
+        self._current_wake_vortex_strengths: np.ndarray | None = None
+        self._current_wake_vortex_ages: np.ndarray | None = None
 
         # The current time step's back-right, front-right, front-left, and back-left
         # wake RingVortex points (in the first Airplane's geometry axes, relative to
         # the first Airplane's CG).
-        self._currentStackBrwrvp_GP1_CgP1 = None
-        self._currentStackFrwrvp_GP1_CgP1 = None
-        self._currentStackFlwrvp_GP1_CgP1 = None
-        self._currentStackBlwrvp_GP1_CgP1 = None
+        self._currentStackBrwrvp_GP1_CgP1: np.ndarray | None = None
+        self._currentStackFrwrvp_GP1_CgP1: np.ndarray | None = None
+        self._currentStackFlwrvp_GP1_CgP1: np.ndarray | None = None
+        self._currentStackBlwrvp_GP1_CgP1: np.ndarray | None = None
 
         # Initialize lists to store aerodynamic data about the wake at each time
         # step. These attributes are used by the output module to animate the wake.
@@ -158,8 +158,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.listStackFlwrvp_GP1_CgP1 = []
         self.listStackBlwrvp_GP1_CgP1 = []
 
-        self.stackSeedPoints_GP1_CgP1 = None
-        self.gridStreamlinePoints_GP1_CgP1 = None
+        self.stackSeedPoints_GP1_CgP1: np.ndarray | None = None
+        self.gridStreamlinePoints_GP1_CgP1: np.ndarray | None = None
 
     def run(
         self,
@@ -1038,24 +1038,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.current_operating_point.rho
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityRightLineVortexCenters_GP1_E,
-                self.stackRbrv_GP1,
+                stackVelocityRightLineVortexCenters_GP1_E, self.stackRbrv_GP1
             )
         )
         frontLegForces_GP1 = (
             self.current_operating_point.rho
             * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityFrontLineVortexCenters_GP1_E,
-                self.stackFbrv_GP1,
+                stackVelocityFrontLineVortexCenters_GP1_E, self.stackFbrv_GP1
             )
         )
         leftLegForces_GP1 = (
             self.current_operating_point.rho
             * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
-                stackVelocityLeftLineVortexCenters_GP1_E,
-                self.stackLbrv_GP1,
+                stackVelocityLeftLineVortexCenters_GP1_E, self.stackLbrv_GP1
             )
         )
 
@@ -1098,16 +1095,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
         # front LineVortex, and left LineVortex.
         rightLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpr_GP1_CgP1,
-            rightLegForces_GP1,
+            self.stackCblvpr_GP1_CgP1, rightLegForces_GP1
         )
         frontLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpf_GP1_CgP1,
-            frontLegForces_GP1,
+            self.stackCblvpf_GP1_CgP1, frontLegForces_GP1
         )
         leftLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpl_GP1_CgP1,
-            leftLegForces_GP1,
+            self.stackCblvpl_GP1_CgP1, leftLegForces_GP1
         )
 
         # The unsteady moment is calculated at the collocation point because the
@@ -1117,8 +1111,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Find the moments (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG) due to the unsteady component of the force on each Panel.
         unsteady_moments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCpp_GP1_CgP1,
-            unsteady_forces_GP1,
+            self.stackCpp_GP1_CgP1, unsteady_forces_GP1
         )
 
         moments_GP1_CgP1 = (
@@ -1477,15 +1470,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     next_wake_ring_vortices = (
                                         next_wing.wake_ring_vortices
                                     )
-                                    next_wake_ring_vortex_obj = cast(
-                                        object,
+                                    assert next_wake_ring_vortices is not None
+                                    next_wake_ring_vortex = cast(
+                                        _aerodynamics.RingVortex,
                                         next_wake_ring_vortices[
                                             chordwise_point_id, spanwise_point_id
                                         ],
-                                    )
-                                    next_wake_ring_vortex = cast(
-                                        _aerodynamics.RingVortex,
-                                        next_wake_ring_vortex_obj,
                                     )
 
                                     next_wake_ring_vortex.update_position(

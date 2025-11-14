@@ -262,52 +262,6 @@ class TestHorseshoeVortex(unittest.TestCase):
         self.assertEqual(self.basic_horseshoe_vortex.finite_leg.strength, -3.5)
         self.assertEqual(self.basic_horseshoe_vortex.left_leg.strength, -3.5)
 
-    def test_parameter_validation_invalid_types(self):
-        """Test parameter validation with invalid types."""
-        # Test with string instead of array for Frhvp_GP1_CgP1.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.HorseshoeVortex(
-                Frhvp_GP1_CgP1="not_an_array",
-                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
-                left_right_leg_lengths=20.0,
-                strength=1.0,
-            )
-
-        # Test with wrong-sized array for leftLegVector_GP1.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.HorseshoeVortex(
-                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_GP1=np.array([1.0, 0.0], dtype=float),  # Only 2 elements
-                left_right_leg_lengths=20.0,
-                strength=1.0,
-            )
-
-        # Test with negative leg length.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.HorseshoeVortex(
-                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
-                left_right_leg_lengths=-5.0,  # Negative length
-                strength=1.0,
-            )
-
-        # Test with string strength.
-        # noinspection PyTypeChecker
-        with self.assertRaises((TypeError, ValueError)):
-            _aerodynamics.HorseshoeVortex(
-                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
-                left_right_leg_lengths=20.0,
-                strength="not_a_number",
-            )
-
     def test_none_strength_handling(self):
         """Test that None strength is handled correctly."""
         horseshoe_vortex = _aerodynamics.HorseshoeVortex(
@@ -364,18 +318,6 @@ class TestHorseshoeVortex(unittest.TestCase):
             np.array([0.0, -0.5, 0.0], dtype=float) + expected_offset,
             decimal=10,
         )
-
-    def test_zero_length_leg_vector(self):
-        """Test that zero-length leg vector raises error."""
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, ZeroDivisionError)):
-            _aerodynamics.HorseshoeVortex(
-                Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-                Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-                leftLegVector_GP1=np.array([0.0, 0.0, 0.0], dtype=float),
-                left_right_leg_lengths=20.0,
-                strength=1.0,
-            )
 
 
 if __name__ == "__main__":

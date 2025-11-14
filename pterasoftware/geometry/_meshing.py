@@ -96,9 +96,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
         # Define number of spanwise points and Panels. This is based on the inner
         # WingCrossSection.
         num_spanwise_panels = inner_wing_cross_section.num_spanwise_panels
-        assert (
-            num_spanwise_panels is not None
-        ), "Inner WingCrossSection must have num_spanwise_panels defined."
+        assert num_spanwise_panels is not None
         num_spanwise_coordinates = num_spanwise_panels + 1
 
         # Get the spanwise coordinates.

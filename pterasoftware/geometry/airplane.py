@@ -339,9 +339,7 @@ class Airplane:
         airfoilMcls_G_Cg = []
         for wing_id, wing in enumerate(self.wings):
             plottable_data = wing.get_plottable_data(show=False)
-            assert (
-                plottable_data is not None
-            ), "get_plottable_data with show=False should not return None"
+            assert plottable_data is not None
             [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler] = plottable_data
 
             these_airfoilOutlines_G_Cg = []
@@ -400,6 +398,7 @@ class Airplane:
         for wing_id, wing in enumerate(self.wings):
             wing_num = wing_id + 1
 
+            assert wing.T_pas_G_Cg_to_Wn_Ler is not None
             AxesWLerWcs1Lp1_G_Cg = pv.AxesAssembly(
                 x_label=f"W{wing_num}X@Ler/Wcs1XLp1",
                 y_label=f"W{wing_num}Y@Ler/Wcs1YLp1",
@@ -416,9 +415,7 @@ class Airplane:
                 # orientation=(0.0, 0.0, 0.0),
                 # origin=(0.0, 0.0, 0.0),
                 scale=(0.25, 0.25, 0.25),
-                user_matrix=np.linalg.inv(
-                    cast(np.ndarray[Any, Any], wing.T_pas_G_Cg_to_Wn_Ler)
-                ),
+                user_matrix=np.linalg.inv(wing.T_pas_G_Cg_to_Wn_Ler),
                 # user_matrix=wingAxes_T_act,
                 name=f"W{wing_num}/Wcs1",
                 shaft_type="cylinder",
@@ -825,6 +822,8 @@ class Airplane:
                     )
                 )
 
+            assert wing.symmetryNormal_G is not None
+            assert wing.symmetryPoint_G_Cg is not None
             reflected_wing = wing_mod.Wing(
                 wing_cross_sections=reflected_wing_cross_sections,
                 name=f"Reflected {wing.name}",
@@ -832,12 +831,8 @@ class Airplane:
                 angles_Gs_to_Wn_ixyz=np.copy(wing.angles_Gs_to_Wn_ixyz),
                 symmetric=False,
                 mirror_only=True,
-                symmetryNormal_G=np.copy(
-                    cast(np.ndarray[Any, Any], wing.symmetryNormal_G)
-                ),
-                symmetryPoint_G_Cg=np.copy(
-                    cast(np.ndarray[Any, Any], wing.symmetryPoint_G_Cg)
-                ),
+                symmetryNormal_G=np.copy(wing.symmetryNormal_G),
+                symmetryPoint_G_Cg=np.copy(wing.symmetryPoint_G_Cg),
                 num_chordwise_panels=wing.num_chordwise_panels,
                 chordwise_spacing=wing.chordwise_spacing,
             )

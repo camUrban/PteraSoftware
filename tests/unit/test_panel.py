@@ -54,55 +54,6 @@ class TestPanel(unittest.TestCase):
         self.assertIsNone(panel.forces_W)
         self.assertIsNone(panel.moments_W_CgP1)
 
-    def test_parameter_validation_corner_points(self):
-        """Test parameter validation for corner point inputs."""
-        # Test invalid Frpp_G_Cg type
-        with self.assertRaises(TypeError):
-            _panel.Panel(
-                Frpp_G_Cg="invalid",
-                Flpp_G_Cg=[0.0, 0.0, 0.0],
-                Blpp_G_Cg=[1.0, 0.0, 0.0],
-                Brpp_G_Cg=[1.0, 0.5, 0.0],
-                is_leading_edge=False,
-                is_trailing_edge=False,
-            )
-
-        # Test invalid Frpp_G_Cg size
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError)):
-            _panel.Panel(
-                Frpp_G_Cg=[0.0, 0.5],  # Only 2 elements
-                Flpp_G_Cg=[0.0, 0.0, 0.0],
-                Blpp_G_Cg=[1.0, 0.0, 0.0],
-                Brpp_G_Cg=[1.0, 0.5, 0.0],
-                is_leading_edge=False,
-                is_trailing_edge=False,
-            )
-
-    def test_parameter_validation_edge_booleans(self):
-        """Test parameter validation for edge boolean inputs."""
-        # Test invalid is_leading_edge type
-        with self.assertRaises(TypeError):
-            _panel.Panel(
-                Frpp_G_Cg=[0.0, 0.5, 0.0],
-                Flpp_G_Cg=[0.0, 0.0, 0.0],
-                Blpp_G_Cg=[1.0, 0.0, 0.0],
-                Brpp_G_Cg=[1.0, 0.5, 0.0],
-                is_leading_edge="invalid",
-                is_trailing_edge=False,
-            )
-
-        # Test invalid is_trailing_edge type
-        with self.assertRaises(TypeError):
-            _panel.Panel(
-                Frpp_G_Cg=[0.0, 0.5, 0.0],
-                Flpp_G_Cg=[0.0, 0.0, 0.0],
-                Blpp_G_Cg=[1.0, 0.0, 0.0],
-                Brpp_G_Cg=[1.0, 0.5, 0.0],
-                is_leading_edge=False,
-                is_trailing_edge=123,
-            )
-
     def test_rightLeg_G_property(self):
         """Test right leg vector calculation."""
         panel = self.basic_panel
@@ -248,27 +199,14 @@ class TestPanel(unittest.TestCase):
         # Should still equal full area (since direction is same as panel normal)
         self.assertAlmostEqual(projected_area, panel.area, places=10)
 
-    def test_calculate_projected_area_validation(self):
-        """Test validation of normal vector parameter."""
-        panel = self.basic_panel
-
-        # Test invalid normal_G type
-        with self.assertRaises(TypeError):
-            panel.calculate_projected_area("invalid")
-
-        # Test invalid normal_G size
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError)):
-            panel.calculate_projected_area([0.0, 1.0])  # Only 2 elements
-
     def test_nearly_planar_panel(self):
         """Test with a nearly planar panel."""
         # Create a panel with very slight twist
         panel = _panel.Panel(
-            Frpp_G_Cg=[0.0, 1.0, 0.001],
-            Flpp_G_Cg=[0.0, 0.0, 0.0],
-            Blpp_G_Cg=[2.0, 0.0, 0.0],
-            Brpp_G_Cg=[2.0, 1.0, 0.002],
+            Frpp_G_Cg=np.array([0.0, 1.0, 0.001]),
+            Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
+            Blpp_G_Cg=np.array([2.0, 0.0, 0.0]),
+            Brpp_G_Cg=np.array([2.0, 1.0, 0.002]),
             is_leading_edge=False,
             is_trailing_edge=False,
         )
@@ -284,10 +222,10 @@ class TestPanel(unittest.TestCase):
         """Test with a non-planar (twisted) panel."""
         # Create a twisted panel
         panel = _panel.Panel(
-            Frpp_G_Cg=[0.0, 1.0, 0.5],
-            Flpp_G_Cg=[0.0, 0.0, 0.0],
-            Blpp_G_Cg=[2.0, 0.0, -0.5],
-            Brpp_G_Cg=[2.0, 1.0, 0.0],
+            Frpp_G_Cg=np.array([0.0, 1.0, 0.5]),
+            Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
+            Blpp_G_Cg=np.array([2.0, 0.0, -0.5]),
+            Brpp_G_Cg=np.array([2.0, 1.0, 0.0]),
             is_leading_edge=False,
             is_trailing_edge=False,
         )
@@ -303,10 +241,10 @@ class TestPanel(unittest.TestCase):
         """Test with very small panel dimensions."""
         # Create a very small panel (0.01 m x 0.01 m)
         panel = _panel.Panel(
-            Frpp_G_Cg=[0.00, 0.01, 0.0],
-            Flpp_G_Cg=[0.00, 0.00, 0.0],
-            Blpp_G_Cg=[0.01, 0.00, 0.0],
-            Brpp_G_Cg=[0.01, 0.01, 0.0],
+            Frpp_G_Cg=np.array([0.00, 0.01, 0.0]),
+            Flpp_G_Cg=np.array([0.00, 0.00, 0.0]),
+            Blpp_G_Cg=np.array([0.01, 0.00, 0.0]),
+            Brpp_G_Cg=np.array([0.01, 0.01, 0.0]),
             is_leading_edge=False,
             is_trailing_edge=False,
         )

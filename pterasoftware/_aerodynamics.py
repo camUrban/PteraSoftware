@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import math
 
 import numpy as np
 from numba import njit
 
 from . import _functions
-from . import _parameter_validation
 
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
@@ -42,64 +40,42 @@ class RingVortex:
 
     def __init__(
         self,
-        Frrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Flrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Blrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Brrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        strength: float | int,
+        Frrvp_GP1_CgP1: np.ndarray,
+        Flrvp_GP1_CgP1: np.ndarray,
+        Blrvp_GP1_CgP1: np.ndarray,
+        Brrvp_GP1_CgP1: np.ndarray,
+        strength: float,
     ) -> None:
         """The initialization method.
 
-        :param Frrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the RingVortex's front-right point (in the
-            first Airplane's geometry axes, relative to the first Airplane's CG). The
-            front-right point is defined as the end point of the RingVortex's right leg
-            and the start point of its front leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param Flrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the RingVortex's front-left point (in the
-            first Airplane's geometry axes, relative to the first Airplane's CG). The
-            front-left point is defined as the end point of the RingVortex's front leg
-            and the start point of its left leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param Blrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the RingVortex's back-left point (in the
-            first Airplane's geometry axes, relative to the first Airplane's CG). The
-            back-left point is defined as the end point of the RingVortex's left leg and
-            the start point of its back leg. Can be a list, tuple, or ndarray. Values
-            are converted to floats internally. The units are in meters.
-        :param Brrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the RingVortex's back-right point (in the
-            first Airplane's geometry axes, relative to the first Airplane's CG). The
-            back-right point is defined as the end point of the RingVortex's back leg
-            and the start point of its right leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param strength: The strength of the RingVortex. It must be a number and will be
-            converted internally to a float. Its units are in meters squared per second.
+        :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            RingVortex's front-right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front-right point is defined as
+            the end point of the RingVortex's right leg and the start point of its front
+            leg. The units are in meters.
+        :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            RingVortex's front-left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front-left point is defined as the
+            end point of the RingVortex's front leg and the start point of its left leg.
+            The units are in meters.
+        :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            RingVortex's back-left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The back-left point is defined as the
+            end point of the RingVortex's left leg and the start point of its back leg.
+            The units are in meters.
+        :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            RingVortex's back-right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The back-right point is defined as the
+            end point of the RingVortex's back leg and the start point of its right leg.
+            The units are in meters.
+        :param strength: The strength of the RingVortex. Its units are in meters squared
+            per second.
         :return: None
         """
-        self.Flrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Flrvp_GP1_CgP1, "Flrvp_GP1_CgP1"
-            )
-        )
-        self.Frrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Frrvp_GP1_CgP1, "Frrvp_GP1_CgP1"
-            )
-        )
-        self.Blrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Blrvp_GP1_CgP1, "Blrvp_GP1_CgP1"
-            )
-        )
-        self.Brrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Brrvp_GP1_CgP1, "Brrvp_GP1_CgP1"
-            )
-        )
-        if strength is not None:
-            strength = _parameter_validation.number_return_float(strength, "strength")
+        self.Flrvp_GP1_CgP1 = Flrvp_GP1_CgP1
+        self.Frrvp_GP1_CgP1 = Frrvp_GP1_CgP1
+        self.Blrvp_GP1_CgP1 = Blrvp_GP1_CgP1
+        self.Brrvp_GP1_CgP1 = Brrvp_GP1_CgP1
         self.strength = strength
 
         # Initialize the LineVortices that make up the RingVortex.
@@ -136,12 +112,11 @@ class RingVortex:
         # simulation time).
         self.age = 0
 
-    def update_strength(self, strength: float | int) -> None:
+    def update_strength(self, strength: float) -> None:
         """Updates the strength of this RingVortex and of its four LineVortex legs.
 
-        :param strength: The new strength of the RingVortex. It must be a number and
-            will be converted internally to a float. Its units are in meters squared per
-            second.
+        :param strength: The new strength of the RingVortex. Its units are in meters
+            squared per second.
         :return: None
         """
         self.strength = strength
@@ -152,59 +127,31 @@ class RingVortex:
 
     def update_position(
         self,
-        Frrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Flrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Blrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Brrvp_GP1_CgP1: np.ndarray | Sequence[float | int],
+        Frrvp_GP1_CgP1: np.ndarray,
+        Flrvp_GP1_CgP1: np.ndarray,
+        Blrvp_GP1_CgP1: np.ndarray,
+        Brrvp_GP1_CgP1: np.ndarray,
     ) -> None:
         """Updates the position of the RingVortex and of its attributes.
 
-        :param Frrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the new position of the RingVortex's front-right point (in
-            the first Airplane's geometry axes, relative to the first Airplane's CG).
-            The front-right point is defined as the end point of the RingVortex's right
-            leg and the start point of its front leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param Flrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the new position of the RingVortex's front-left point (in
-            the first Airplane's geometry axes, relative to the first Airplane's CG).
-            The front-left point is defined as the end point of the RingVortex's front
-            leg and the start point of its left leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param Blrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the new position of the RingVortex's back-left point (in
-            the first Airplane's geometry axes, relative to the first Airplane's CG).
-            The back-left point is defined as the end point of the RingVortex's left leg
-            and the start point of its back leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
-        :param Brrvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the new position of the RingVortex's back-right point (in
-            the first Airplane's geometry axes, relative to the first Airplane's CG).
-            The back-right point is defined as the end point of the RingVortex's back
-            leg and the start point of its right leg. Can be a list, tuple, or ndarray.
-            Values are converted to floats internally. The units are in meters.
+        :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
+            the RingVortex's front-right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG).
+        :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
+            the RingVortex's front-left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG).
+        :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
+            the RingVortex's back-left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG).
+        :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
+            the RingVortex's back-right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG).
         :return: None
         """
-        self.Flrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Flrvp_GP1_CgP1, "Flrvp_GP1_CgP1"
-            )
-        )
-        self.Frrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Frrvp_GP1_CgP1, "Frrvp_GP1_CgP1"
-            )
-        )
-        self.Blrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Blrvp_GP1_CgP1, "Blrvp_GP1_CgP1"
-            )
-        )
-        self.Brrvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Brrvp_GP1_CgP1, "Brrvp_GP1_CgP1"
-            )
-        )
+        self.Flrvp_GP1_CgP1 = Flrvp_GP1_CgP1
+        self.Frrvp_GP1_CgP1 = Frrvp_GP1_CgP1
+        self.Blrvp_GP1_CgP1 = Blrvp_GP1_CgP1
+        self.Brrvp_GP1_CgP1 = Brrvp_GP1_CgP1
 
         # TODO: Is it really faster to make new LineVortices instead of writing an
         #  update_position method inside of LineVortex and calling that from this
@@ -252,67 +199,42 @@ class HorseshoeVortex:
 
     def __init__(
         self,
-        Frhvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        Flhvp_GP1_CgP1: np.ndarray | Sequence[float | int],
-        leftLegVector_GP1: np.ndarray | Sequence[float | int],
-        left_right_leg_lengths: float | int,
-        strength: float | int,
+        Frhvp_GP1_CgP1: np.ndarray,
+        Flhvp_GP1_CgP1: np.ndarray,
+        leftLegVector_GP1: np.ndarray,
+        left_right_leg_lengths: float,
+        strength: float,
     ) -> None:
         """The initialization method.
 
-        :param Frhvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the HorseshoeVortex's front-right point
-            (in the first Airplane's geometry axes, relative to the first Airplane's
-            CG). The front-right point is defined as the start point of the
-            HorseshoeVortex's front leg, which is also its one finite leg. Can be a
-            list, tuple, or ndarray. Values are converted to floats internally. The
-            units are in meters.
-        :param Flhvp_GP1_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the position of the HorseshoeVortex's front-left point (in
-            the first Airplane's geometry axes, relative to the first Airplane's CG).
-            The front-left point is defined as the end point of the HorseshoeVortex's
-            front leg, which is also its one finite leg. Can be a list, tuple, or
-            ndarray. Values are converted to floats internally. The units are in meters.
-        :param leftLegVector_GP1: An array-like object of numbers (int or float) with
-            shape (3,) representing the direction vector of the HorseshoeVortex's left
-            leg (in the first Airplane's geometry axes). The left leg starts from the
-            front-left point and ends at the back-left point. It is one of the
-            HorseshoeVortex's two quasi-infinite legs, the other being the right leg.
-            The right leg's vector (in the first Airplane's geometry axes) is defined as
-            -1.0 times this vector. It can be a list, tuple, or ndarray. Values are
-            converted to floats internally. If this isn't already a unit vector, it will
-            be converted to one during initialization. The units are in meters.
+        :param Frhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            HorseshoeVortex's front-right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front-right point is defined as
+            the start point of the HorseshoeVortex's front leg, which is also its one
+            finite leg. The units are in meters.
+        :param Flhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
+            HorseshoeVortex's front-left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front-left point is defined as the
+            end point of the HorseshoeVortex's front leg, which is also its one finite
+            leg. The units are in meters.
+        :param leftLegVector_GP1: A (3,) ndarray of floats representing the direction
+            vector of the HorseshoeVortex's left leg (in the first Airplane's geometry
+            axes). The left leg starts from the front-left point and ends at the
+            back-left point. It is one of the HorseshoeVortex's two quasi-infinite legs,
+            the other being the right leg. The right leg's vector (in the first
+            Airplane's geometry axes) is defined as -1.0 times this vector. It will be
+            normalized to a unit vector during initialization. The units are in meters.
         :param left_right_leg_lengths: The length of the HorseshoeVortex's left and
-            right quasi-infinite legs. It must be a positive number and will be
-            converted internally to a float. I recommend setting it to at least 20 times
-            the length of the finite leg. The units are in meters.
-        :param strength: The strength of the HorseshoeVortex. It must be a number and
-            will be converted internally to a float. Its units are in meters squared per
-            second.
+            right quasi-infinite legs. I recommend setting it to at least 20 times the
+            length of the finite leg. The units are in meters.
+        :param strength: The strength of the HorseshoeVortex. Its units are in meters
+            squared per second.
         :return: None
         """
-        self.Frhvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Frhvp_GP1_CgP1, "Frhvp_GP1_CgP1"
-            )
-        )
-        self.Flhvp_GP1_CgP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                Flhvp_GP1_CgP1, "Flhvp_GP1_CgP1"
-            )
-        )
-        self.leftLegVector_GP1 = (
-            _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
-                leftLegVector_GP1, "leftLegVector_GP1"
-            )
-        )
-        self.left_right_leg_lengths = (
-            _parameter_validation.positive_number_return_float(
-                left_right_leg_lengths, "left_right_leg_lengths"
-            )
-        )
-        if strength is not None:
-            strength = _parameter_validation.number_return_float(strength, "strength")
+        self.Frhvp_GP1_CgP1 = Frhvp_GP1_CgP1
+        self.Flhvp_GP1_CgP1 = Flhvp_GP1_CgP1
+        self.leftLegVector_GP1 = leftLegVector_GP1 / np.linalg.norm(leftLegVector_GP1)
+        self.left_right_leg_lengths = left_right_leg_lengths
         self.strength = strength
 
         # TODO: Consider making these properties.
@@ -345,13 +267,12 @@ class HorseshoeVortex:
 
     # TODO: If we make the LineVortices strengths properties, then we can get rid of
     #  this method.
-    def update_strength(self, strength: float | int) -> None:
+    def update_strength(self, strength: float) -> None:
         """Updates the strength of this HorseshoeVortex and of its three LineVortex
         legs.
 
-        :param strength: The strength of the HorseshoeVortex. It must be a number and
-            will be converted internally to a float. Its units are in meters squared per
-            second.
+        :param strength: The new strength of the HorseshoeVortex. Its units are in
+            meters squared per second.
         :return: None
         """
         self.strength = strength

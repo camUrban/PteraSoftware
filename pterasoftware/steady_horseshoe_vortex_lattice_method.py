@@ -104,7 +104,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._stackBoundVortexVectors_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
-        self.gridStreamlinePoints_GP1_CgP1 = None
+        self.gridStreamlinePoints_GP1_CgP1: np.ndarray | None = None
 
     def run(self, logging_level="Warning"):
         """Run the solver on the SteadyProblem.

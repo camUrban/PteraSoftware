@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from . import _parameter_validation
+from . import _aerodynamics
 
 
 class Panel:
@@ -78,13 +78,13 @@ class Panel:
 
     def __init__(
         self,
-        Frpp_G_Cg,
-        Flpp_G_Cg,
-        Blpp_G_Cg,
-        Brpp_G_Cg,
-        is_leading_edge,
-        is_trailing_edge,
-    ):
+        Frpp_G_Cg: np.ndarray,
+        Flpp_G_Cg: np.ndarray,
+        Blpp_G_Cg: np.ndarray,
+        Brpp_G_Cg: np.ndarray,
+        is_leading_edge: bool,
+        is_trailing_edge: bool,
+    ) -> None:
         """This is the initialization method.
 
         :param Frpp_G_Cg: array-like of 3 numbers
@@ -141,55 +141,43 @@ class Panel:
         """
 
         # Validate and initialize the attributes.
-        self.Frpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            Frpp_G_Cg, "Frpp_G_Cg"
-        )
-        self.Flpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            Flpp_G_Cg, "Flpp_G_Cg"
-        )
-        self.Blpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            Blpp_G_Cg, "Blpp_G_Cg"
-        )
-        self.Brpp_G_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            Brpp_G_Cg, "Brpp_G_Cg"
-        )
-        self.is_leading_edge = _parameter_validation.boolLike_return_bool(
-            is_leading_edge, "is_leading_edge"
-        )
-        self.is_trailing_edge = _parameter_validation.boolLike_return_bool(
-            is_trailing_edge, "is_trailing_edge"
-        )
+        self.Frpp_G_Cg = Frpp_G_Cg
+        self.Flpp_G_Cg = Flpp_G_Cg
+        self.Blpp_G_Cg = Blpp_G_Cg
+        self.Brpp_G_Cg = Brpp_G_Cg
+        self.is_leading_edge = is_leading_edge
+        self.is_trailing_edge = is_trailing_edge
 
         # Initialize variables to hold attributes that describe the Panel's position
         # in its Wing's Panel matrix. They will be populated by the meshing function.
-        self.is_right_edge = None
-        self.is_left_edge = None
-        self.local_chordwise_position = None
-        self.local_spanwise_position = None
+        self.is_right_edge: bool | None = None
+        self.is_left_edge: bool | None = None
+        self.local_chordwise_position: int | None = None
+        self.local_spanwise_position: int | None = None
 
         # Initialize variables to hold the Panel's corner positions in formation
         # flight coordinates (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG). These will be populated by the SteadyProblem or
         # UnsteadyProblem during initialization.
-        self.Frpp_GP1_CgP1 = None
-        self.Flpp_GP1_CgP1 = None
-        self.Blpp_GP1_CgP1 = None
-        self.Brpp_GP1_CgP1 = None
+        self.Frpp_GP1_CgP1: np.ndarray | None = None
+        self.Flpp_GP1_CgP1: np.ndarray | None = None
+        self.Blpp_GP1_CgP1: np.ndarray | None = None
+        self.Brpp_GP1_CgP1: np.ndarray | None = None
 
         # Initialize variables to hold the Panel's RingVortex and HorseshoeVortex.
         # These will be populated by the solver.
-        self.ring_vortex = None
-        self.horseshoe_vortex = None
+        self.ring_vortex: _aerodynamics.RingVortex | None = None
+        self.horseshoe_vortex: _aerodynamics.HorseshoeVortex | None = None
 
         # Initialize variables to hold attributes of the Panel that will be defined
         # after the solver finds a solution.
-        self.forces_GP1 = None
-        self.moments_GP1_CgP1 = None
-        self.forces_W = None
-        self.moments_W_CgP1 = None
+        self.forces_GP1: np.ndarray | None = None
+        self.moments_GP1_CgP1: np.ndarray | None = None
+        self.forces_W: np.ndarray | None = None
+        self.moments_W_CgP1: np.ndarray | None = None
 
     @property
-    def rightLeg_G(self):
+    def rightLeg_G(self) -> np.ndarray:
         """This method sets a property for the Panel's right leg vector (in geometry
         axes).
 
@@ -200,7 +188,7 @@ class Panel:
         return self.Frpp_G_Cg - self.Brpp_G_Cg
 
     @property
-    def frontLeg_G(self):
+    def frontLeg_G(self) -> np.ndarray:
         """This method sets a property for the Panel's front leg vector (in geometry
         axes).
 
@@ -211,7 +199,7 @@ class Panel:
         return self.Flpp_G_Cg - self.Frpp_G_Cg
 
     @property
-    def leftLeg_G(self):
+    def leftLeg_G(self) -> np.ndarray:
         """This method sets a property for the Panel's left leg vector (in geometry
         axes).
 
@@ -222,7 +210,7 @@ class Panel:
         return self.Blpp_G_Cg - self.Flpp_G_Cg
 
     @property
-    def backLeg_G(self):
+    def backLeg_G(self) -> np.ndarray:
         """This method sets a property for the Panel's back leg vector (in geometry
         axes).
 
@@ -233,7 +221,7 @@ class Panel:
         return self.Brpp_G_Cg - self.Blpp_G_Cg
 
     @property
-    def Frbvp_G_Cg(self):
+    def Frbvp_G_Cg(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's front-right
         bound vortex point (in geometry axes, relative to the Cg).
 
@@ -244,7 +232,7 @@ class Panel:
         return self.Brpp_G_Cg + 0.75 * self.rightLeg_G
 
     @property
-    def Flbvp_G_Cg(self):
+    def Flbvp_G_Cg(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's front-left
         bound vortex point (in geometry axes, relative to the Cg).
 
@@ -255,7 +243,7 @@ class Panel:
         return self.Flpp_G_Cg + 0.25 * self.leftLeg_G
 
     @property
-    def Cpp_G_Cg(self):
+    def Cpp_G_Cg(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's collocation
         point (in geometry axes, relative to the Cg).
 
@@ -279,7 +267,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def rightLeg_GP1(self):
+    def rightLeg_GP1(self) -> np.ndarray:
         """This method sets a property for the Panel's right leg vector (in the first
         Airplane's geometry axes).
 
@@ -294,7 +282,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def frontLeg_GP1(self):
+    def frontLeg_GP1(self) -> np.ndarray:
         """This method sets a property for the Panel's front leg vector (in the first
         Airplane's geometry axes).
 
@@ -309,7 +297,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def leftLeg_GP1(self):
+    def leftLeg_GP1(self) -> np.ndarray:
         """This method sets a property for the Panel's left leg vector (in the first
         Airplane's geometry axes).
 
@@ -324,7 +312,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def backLeg_GP1(self):
+    def backLeg_GP1(self) -> np.ndarray:
         """This method sets a property for the Panel's back leg vector (in the first
         Airplane's geometry axes).
 
@@ -339,7 +327,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def Frbvp_GP1_CgP1(self):
+    def Frbvp_GP1_CgP1(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's front-right
         bound vortex point (in the first Airplane's geometry axes, relative to the
         first Airplane's CG).
@@ -355,7 +343,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def Flbvp_GP1_CgP1(self):
+    def Flbvp_GP1_CgP1(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's front-left
         bound vortex point (in the first Airplane's geometry axes, relative to the
         first Airplane's CG).
@@ -372,7 +360,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def Cpp_GP1_CgP1(self):
+    def Cpp_GP1_CgP1(self) -> np.ndarray:
         """This method sets a property for the position of this Panel's collocation
         point (in the first Airplane's geometry axes, relative to the first Airplane's
         CG).
@@ -408,7 +396,7 @@ class Panel:
         return rightThreeQuarterChord_GP1_CgP1 + 0.5 * threeQuarterChord_GP1
 
     @property
-    def area(self):
+    def area(self) -> float:
         """This method sets a property which is an estimate of the Panel's area.
 
         This is only an estimate because the surface defined by four line segments in
@@ -424,7 +412,7 @@ class Panel:
         return np.linalg.norm(self._cross_G) / 2
 
     @property
-    def unitNormal_G(self):
+    def unitNormal_G(self) -> np.ndarray:
         """This method sets a property for an estimate of the Panel's unit normal
         vector (in geometry axes).
 
@@ -438,7 +426,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def unitNormal_GP1(self):
+    def unitNormal_GP1(self) -> np.ndarray:
         """This method sets a property for an estimate of the Panel's unit normal
         vector (in the first Airplane's geometry axes).
 
@@ -467,7 +455,7 @@ class Panel:
 
     # TEST: Consider adding unit tests for this method.
     @property
-    def aspect_ratio(self):
+    def aspect_ratio(self) -> float:
         """This method sets a property for the aspect ratio of the Panel.
 
         :return: float
@@ -490,7 +478,7 @@ class Panel:
         return right_left_distance / front_back_distance
 
     @property
-    def _firstDiagonal_G(self):
+    def _firstDiagonal_G(self) -> np.ndarray:
         """This method sets a property for the Panel's first diagonal vector (in
         geometry axes).
 
@@ -502,7 +490,7 @@ class Panel:
         return self.Frpp_G_Cg - self.Blpp_G_Cg
 
     @property
-    def _secondDiagonal_G(self):
+    def _secondDiagonal_G(self) -> np.ndarray:
         """This method sets a property for the Panel's second diagonal vector (in
         geometry axes).
 
@@ -514,7 +502,7 @@ class Panel:
         return self.Flpp_G_Cg - self.Brpp_G_Cg
 
     @property
-    def _cross_G(self):
+    def _cross_G(self) -> np.ndarray:
         """This method sets a property for cross product (in geometry axes) of the
         Panel's first and second diagonal vectors.
 
@@ -524,26 +512,20 @@ class Panel:
         """
         return np.cross(self._firstDiagonal_G, self._secondDiagonal_G)
 
-    def calculate_projected_area(self, normal_G):
+    def calculate_projected_area(self, normal_G: np.ndarray) -> float:
         """This method calculates the area of the Panel projected on a plane
         defined by a given normal vector (in geometry axes).
 
-        :param normal_G: array-like of 3 numbers
-            Normal vector (in geometry axes) defining the plane that will be used to
-            calculate the projected area. Can be a list, tuple, or numpy array of
-            numbers (int or float). Values are converted to floats internally. If not
-            already a unit vector, it will also be converted to one. The units are in
+        :param normal_G: (3,) ndarray of floats Normal vector (in geometry axes)
+            defining the plane that will be used to calculate the projected area. The units are in
             meters.
+
         :return: float
             This is the area of the Panel projected onto the plane defined by the given
             normal vector. The units are square meters.
         """
-        # Validate and normalize the normal vector.
-        unitNormal_G = (
-            _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
-                normal_G, "normal_G"
-            )
-        )
+        # Normalize the normal vector.
+        unitNormal_G = normal_G / np.linalg.norm(normal_G)
 
         # Find the projections of the first and second diagonal vectors (in geometry
         # axes) onto the plane's unit normal vector.

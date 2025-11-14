@@ -34,7 +34,7 @@ class Airplane:
     get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
     and mean camber lines.
 
-    num_panels: Sets a property for the total number of Panels across all Wings.
+    num_panels: The total number of Panels across all Wings.
 
     validate_first_airplane_constraints: Validates that the first Airplane in a
     simulation has Cg_E_CgP1 set to zeros.
@@ -553,7 +553,7 @@ class Airplane:
 
     @property
     def num_panels(self) -> int:
-        """Sets a property for the total number of Panels across all Wings.
+        """The total number of Panels across all Wings.
 
         :return: The total number of Panels.
         """
@@ -637,15 +637,12 @@ class Airplane:
         )
 
         # Compose the full passive transformation matrix
-        T_pas_G_Cg_to_GP1_CgP1 = cast(
-            np.ndarray[Any, Any],
-            _transformations.compose_T_pas(
-                T_pas_G_Cg_to_B_Cg,
-                T_pas_B_Cg_to_E_Cg,
-                T_pas_E_Cg_to_E_CgP1,
-                T_pas_E_CgP1_to_BP1_CgP1,
-                T_pas_BP1_CgP1_to_GP1_CgP1,
-            ),
+        T_pas_G_Cg_to_GP1_CgP1 = _transformations.compose_T_pas(
+            T_pas_G_Cg_to_B_Cg,
+            T_pas_B_Cg_to_E_Cg,
+            T_pas_E_Cg_to_E_CgP1,
+            T_pas_E_CgP1_to_BP1_CgP1,
+            T_pas_BP1_CgP1_to_GP1_CgP1,
         )
 
         return T_pas_G_Cg_to_GP1_CgP1

@@ -15,7 +15,7 @@ None
 convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
-operating_point.py: Contains the class definition for a Problem's operating point.
+operating_point.py: Contains the OperatingPoint class.
 
 output.py: Contains useful functions for visualizing geometry and results.
 

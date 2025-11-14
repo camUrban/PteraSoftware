@@ -33,55 +33,52 @@ class Wing:
     get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines and
     mean camber lines.
 
-    T_pas_G_Cg_to_Wn_Ler: Defines a property for the passive transformation matrix which
-    maps in homogeneous coordinates from geometry axes relative to the CG to wing axes
-    relative to the leading edge root point. It is None if the Wing's symmetry type
-    hasn't been defined yet.
+    T_pas_G_Cg_to_Wn_Ler: The passive transformation matrix which maps in homogeneous
+    coordinates from geometry axes relative to the CG to wing axes relative to the
+    leading edge root point. It is None if the Wing's symmetry type hasn't been defined
+    yet.
 
-    T_pas_Wn_Ler_to_G_Cg: Defines a property for the passive transformation matrix which
-    maps in homogeneous coordinates from wing axes relative to the leading edge root
-    point to geometry axes relative to the CG point. It is None if the Wing's symmetry
-    type hasn't been defined yet.
+    T_pas_Wn_Ler_to_G_Cg: The passive transformation matrix which maps in homogeneous
+    coordinates from wing axes relative to the leading edge root point to geometry axes
+    relative to the CG point. It is None if the Wing's symmetry type hasn't been defined
+    yet.
 
-    WnX_G: Sets a property for the wing axes' first basis vector (in geometry axes).
+    WnX_G: The wing axes' first basis vector (in geometry axes).
 
-    WnY_G: Sets a property for the wing axes' second basis vector (in geometry axes).
+    WnY_G: The wing axes' second basis vector (in geometry axes).
 
-    WnZ_G: Sets a property for the wing axes' third basis vector (in geometry axes).
+    WnZ_G: The wing axes' third basis vector (in geometry axes).
 
-    children_T_pas_Wn_Ler_to_Wcs_Lp: Defines a property for a list of passive
-    transformation matrices which map in homogeneous coordinates from wing axes,
-    relative to the leading edge root point, to each of this Wing's WingCrossSection's
-    axes, relative to their respective leading points.
+    children_T_pas_Wn_Ler_to_Wcs_Lp: A list of passive transformation matrices which map
+    in homogeneous coordinates from wing axes, relative to the leading edge root point,
+    to each of this Wing's WingCrossSection's axes, relative to their respective leading
+    points.
 
-    children_T_pas_Wcs_Lp_to_Wn_Ler: Defines a property for a list of passive
-    transformation matrices which map in homogeneous coordinates from each of this
-    Wing's WingCrossSection's axes, relative to their respective leading points, to wing
-    axes, relative to the leading edge root point.
+    children_T_pas_Wcs_Lp_to_Wn_Ler: A list of passive transformation matrices which map
+    in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
+    relative to their respective leading points, to wing axes, relative to the leading
+    edge root point.
 
-    children_T_pas_G_Cg_to_Wcs_Lp: Defines a property for a list of passive
-    transformation matrices which map in homogeneous coordinates from geometry axes,
-    relative to the CG, to each of this Wing's WingCrossSection's axes, relative to
-    their respective leading points.
+    children_T_pas_G_Cg_to_Wcs_Lp: A list of passive transformation matrices which map
+    in homogeneous coordinates from geometry axes, relative to the CG, to each of this
+    Wing's WingCrossSection's axes, relative to their respective leading points.
 
-    children_T_pas_Wcs_Lp_to_G_Cg: Defines a property for a list of passive
-    transformation matrices which map in homogeneous coordinates from each of this
-    Wing's WingCrossSection's axes, relative to their respective leading points, to
-    geometry axes, relative to the CG.
+    children_T_pas_Wcs_Lp_to_G_Cg: A list of passive transformation matrices which map
+    in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
+    relative to their respective leading points, to geometry axes, relative to the CG.
 
-    projected_area: Sets a property for the area of the Wing projected onto the plane
-    defined by the wing axes' xy-plane.
+    projected_area: The area of the Wing projected onto the plane defined by the wing
+    axes' xy-plane.
 
-    wetted_area: Sets a property for the Wing's wetted area.
+    wetted_area: The Wing's wetted area.
 
-    average_panel_aspect_ratio: Sets a property for average aspect ratio of the Wing's
-    Panels.
+    average_panel_aspect_ratio: The average aspect ratio of the Wing's Panels.
 
-    span: Sets a property for the Wing's span.
+    span: The Wing's span.
 
-    standard_mean_chord: Sets a property for the Wing's standard mean chord.
+    standard_mean_chord: The Wing's standard mean chord.
 
-    mean_aerodynamic_chord: Sets a property for the Wing's mean aerodynamic chord.
+    mean_aerodynamic_chord: The Wing's mean aerodynamic chord.
 
     **Notes:**
 
@@ -586,10 +583,9 @@ class Wing:
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self) -> None | np.ndarray:
-        """Defines a property for the passive transformation matrix which maps in
-        homogeneous coordinates from geometry axes relative to the CG to wing axes
-        relative to the leading edge root point. Is None if the Wing's symmetry type
-        hasn't been defined yet.
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        geometry axes relative to the CG to wing axes relative to the leading edge root
+        point. Is None if the Wing's symmetry type hasn't been defined yet.
 
         :return: A (4,4) ndarray of floats representing the transformation matrix or
             None if the Wing's symmetry type hasn't been defined yet.
@@ -629,21 +625,17 @@ class Wing:
             self.angles_Gs_to_Wn_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
-        return cast(
-            np.ndarray[Any, Any],
-            _transformations.compose_T_pas(
-                T_reflect_pas_G_Cg_to_Gs_Cgs,
-                T_trans_pas_Gs_Cgs_to_Gs_Ler,
-                T_rot_pas_Gs_to_Wn,
-            ),
+        return _transformations.compose_T_pas(
+            T_reflect_pas_G_Cg_to_Gs_Cgs,
+            T_trans_pas_Gs_Cgs_to_Gs_Ler,
+            T_rot_pas_Gs_to_Wn,
         )
 
     @property
     def T_pas_Wn_Ler_to_G_Cg(self) -> None | np.ndarray:
-        """Defines a property for the passive transformation matrix which maps in
-        homogeneous coordinates from wing axes relative to the leading edge root point
-        to geometry axes relative to the CG. Is None if the Wing's symmetry type hasn't
-        been defined yet.
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        wing axes relative to the leading edge root point to geometry axes relative to
+        the CG. Is None if the Wing's symmetry type hasn't been defined yet.
 
         :return: A (4,4) ndarray of floats representing the transformation matrix or
             None if the Wing's symmetry type hasn't been defined yet.
@@ -653,14 +645,11 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return cast(
-            np.ndarray[Any, Any],
-            _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler),
-        )
+        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
 
     @property
     def WnX_G(self) -> None | np.ndarray:
-        """Sets a property for the wing axes' first basis vector (in geometry axes).
+        """The wing axes' first basis vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing the wing axes' first basis vector
             (in geometry axes) or None if the Wing's symmetry type hasn't been defined
@@ -673,16 +662,13 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
-        return cast(
-            np.ndarray[Any, Any],
-            _transformations.apply_T_to_vectors(
-                self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
-            ),
+        return _transformations.apply_T_to_vectors(
+            self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
         )
 
     @property
     def WnY_G(self) -> None | np.ndarray:
-        """Sets a property for the wing axes' second basis vector (in geometry axes).
+        """The wing axes' second basis vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing the wing axes' second basis
             vector (in geometry axes) or None if the Wing's symmetry type hasn't been
@@ -695,16 +681,13 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
-        return cast(
-            np.ndarray[Any, Any],
-            _transformations.apply_T_to_vectors(
-                self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
-            ),
+        return _transformations.apply_T_to_vectors(
+            self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
         )
 
     @property
     def WnZ_G(self) -> None | np.ndarray:
-        """Sets a property for the wing axes' third basis vector (in geometry axes).
+        """The wing axes' third basis vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing the wing axes' third basis vector
             (in geometry axes) or None if the Wing's symmetry type hasn't been defined
@@ -717,19 +700,16 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
-        return cast(
-            np.ndarray[Any, Any],
-            _transformations.apply_T_to_vectors(
-                self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
-            ),
+        return _transformations.apply_T_to_vectors(
+            self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
         )
 
     @property
     def children_T_pas_Wn_Ler_to_Wcs_Lp(self) -> list[np.ndarray]:
-        """Defines a property for a list of passive transformation matrices which map in
-        homogeneous coordinates from wing axes, relative to the leading edge root point,
-        to each of this Wing's WingCrossSection's axes, relative to their respective
-        leading points.
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from wing axes, relative to the leading edge root point, to each of
+        this Wing's WingCrossSection's axes, relative to their respective leading
+        points.
 
         :return: A list of (4,4) ndarrays of floats representing the homogeneous
             transformation matrices.
@@ -747,10 +727,10 @@ class Wing:
 
     @property
     def children_T_pas_Wcs_Lp_to_Wn_Ler(self) -> list[np.ndarray]:
-        """Defines a property for a list of passive transformation matrices which map in
-        homogeneous coordinates from each of this Wing's WingCrossSection's axes,
-        relative to their respective leading points, to wing axes, relative to the
-        leading edge root point.
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points, to wing axes, relative to the leading edge root
+        point.
 
         :return: A list of (4,4) ndarrays of floats representing the homogeneous
             transformation matrices.
@@ -763,9 +743,9 @@ class Wing:
 
     @property
     def children_T_pas_G_Cg_to_Wcs_Lp(self) -> list[np.ndarray]:
-        """Defines a property for a list of passive transformation matrices which map in
-        homogeneous coordinates from geometry axes, relative to the CG, to each of this
-        Wing's WingCrossSection's axes, relative to their respective leading points.
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from geometry axes, relative to the CG, to each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points.
 
         :return: A list of (4,4) ndarrays of floats representing the homogeneous
             transformation matrices.
@@ -780,10 +760,9 @@ class Wing:
 
     @property
     def children_T_pas_Wcs_Lp_to_G_Cg(self) -> list[np.ndarray]:
-        """Defines a property containing a list of passive transformation matrices which
-        map in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
-        relative to their respective leading points, to geometry axes, relative to the
-        CG.
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points, to geometry axes, relative to the CG.
 
         :return: A list of (4,4) ndarrays of floats representing the homogeneous
             transformation matrices.
@@ -797,8 +776,10 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def projected_area(self) -> None | float:
-        """Sets a property for the area of the Wing projected onto the plane defined by
-        the wing axes' xy-plane.
+        """The area of the Wing projected onto the plane defined by the wing axes'
+        xy-plane.
+
+        **Notes:**
 
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
@@ -826,7 +807,9 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def wetted_area(self) -> None | float:
-        """Sets a property for the Wing's wetted area.
+        """The Wing's wetted area.
+
+        **Notes:**
 
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
@@ -852,7 +835,7 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def average_panel_aspect_ratio(self) -> None | float:
-        """Sets a property for average aspect ratio of the Wing's Panels.
+        """The average aspect ratio of the Wing's Panels.
 
         :return: The average aspect ratio of the Wing's Panels. If the Wing hasn't been
             meshed yet, None is returned instead.
@@ -884,7 +867,9 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def span(self) -> None | float:
-        """Sets a property for the Wing's span.
+        """The Wing's span.
+
+        **Notes:**
 
         The span is derived by first finding the vector connecting the leading edges of
         the root and tip WingCrossSections. Then, this vector is projected onto the wing
@@ -953,7 +938,9 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def standard_mean_chord(self) -> None | float:
-        """Sets a property for the Wing's standard mean chord.
+        """The Wing's standard mean chord.
+
+        **Notes:**
 
         The standard mean chord is defined as the projected area divided by the span.
         See their respective methods for the definitions of span and projected area.
@@ -972,7 +959,7 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def mean_aerodynamic_chord(self) -> None | float:
-        """Sets a property for the Wing's mean aerodynamic chord.
+        """The Wing's mean aerodynamic chord.
 
         :return: The mean aerodynamic chord of the Wing. It has units of meters. None is
             returned if the Wing's symmetry type hasn't been defined yet.

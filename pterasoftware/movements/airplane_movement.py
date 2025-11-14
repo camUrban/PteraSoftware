@@ -30,9 +30,8 @@ class AirplaneMovement:
     generate_airplanes: Creates the Airplane at each time step, and returns them in a
     list.
 
-    max_period: Defines a property for the longest period of AirplaneMovement's own
-    motion, the motion(s) of its sub-movement object(s), and the motions of its sub-sub-
-    movement objects.
+    max_period: The longest period of AirplaneMovement's own motion, the motion(s) of
+    its sub-movement object(s), and the motions of its sub-sub- movement objects.
     """
 
     def __init__(
@@ -391,9 +390,8 @@ class AirplaneMovement:
 
     @property
     def max_period(self) -> float:
-        """Defines a property for the longest period of AirplaneMovement's own motion,
-        the motion(s) of its sub-movement object(s), and the motions of its sub-sub-
-        movement objects.
+        """The longest period of AirplaneMovement's own motion, the motion(s) of its
+        sub-movement object(s), and the motions of its sub-sub- movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.

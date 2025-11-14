@@ -25,8 +25,7 @@ class OperatingPointMovement:
     generate_operating_points: Creates the OperatingPoint at each time step, and returns
     them in a list.
 
-    max_period: Defines a property for OperatingPointMovement's longest period of
-    motion.
+    max_period: OperatingPointMovement's longest period of motion.
     """
 
     def __init__(
@@ -186,7 +185,7 @@ class OperatingPointMovement:
 
     @property
     def max_period(self) -> float:
-        """Defines a property for OperatingPointMovement's longest period of motion.
+        """OperatingPointMovement's longest period of motion.
 
         :return: The longest period in seconds. If the motion is static, this will be
             0.0.

@@ -29,8 +29,7 @@ class WingCrossSectionMovement:
     generate_wing_cross_sections: Creates the WingCrossSection at each time step, and
     returns them in a list.
 
-    max_period: Defines a property for WingCrossSectionMovement's longest period of
-    motion.
+    max_period: WingCrossSectionMovement's longest period of motion.
     """
 
     def __init__(
@@ -396,7 +395,7 @@ class WingCrossSectionMovement:
 
     @property
     def max_period(self) -> float:
-        """Defines a property for WingCrossSectionMovement's longest period of motion.
+        """WingCrossSectionMovement's longest period of motion.
 
         :return: The longest period in seconds. If the motion is static, this will be
             0.0.

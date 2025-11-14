@@ -5,7 +5,7 @@ import numpy as np
 from . import _parameter_validation
 
 
-def _generate_homogs(vectors_A, has_point):
+def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
     """This function converts 3D vector(s) to homogeneous coordinates for use with
     (4,4) transformation matrices.
 
@@ -39,7 +39,7 @@ def _generate_homogs(vectors_A, has_point):
     return vectorsHomog_A
 
 
-def generate_rot_T(angles, passive, intrinsic, order):
+def generate_rot_T(angles, passive, intrinsic, order) -> np.ndarray:
     """This function generates a transformation matrix representing a passive or
     active rotation using an angle vector, and parameters specifying if the matrix
     should be passive or active, intrinsic or extrinsic, and the order by which to
@@ -158,7 +158,7 @@ def generate_rot_T(angles, passive, intrinsic, order):
     return T
 
 
-def generate_trans_T(translations, passive):
+def generate_trans_T(translations, passive) -> np.ndarray:
     """This function generates either a passive or active translational
     transformation matrix using a vector and a parameter specifying if the
     transformation should be passive or active.
@@ -214,7 +214,7 @@ def generate_trans_T(translations, passive):
     return T_trans
 
 
-def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
+def generate_reflect_T(plane_point_A_a, plane_normal_A, passive) -> np.ndarray:
     """This function generates either a passive or active reflectional transformation
     matrix about a plane which is defined by a point (in "A" axes, relative to point
     "a") and a normal vector (in "A" axes).
@@ -291,7 +291,7 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive):
     return T_reflect
 
 
-def _left_compose_T(valid_T_chain):
+def _left_compose_T(valid_T_chain) -> np.ndarray:
     """Left-compose a list of homogeneous transformations
 
     Given: `valid_T_chain=[T_1, T_2, ..., T_n]`
@@ -310,7 +310,7 @@ def _left_compose_T(valid_T_chain):
     return composed_T
 
 
-def compose_T_pas(*T_pas_chain):
+def compose_T_pas(*T_pas_chain) -> np.ndarray:
     """Compose a chain of passive homogeneous transforms.
 
     Pass transforms in the "path order" from the original axes/point to
@@ -339,7 +339,7 @@ def compose_T_pas(*T_pas_chain):
     return _left_compose_T(valid_T_pas_chain)
 
 
-def compose_T_act(*T_act_chain):
+def compose_T_act(*T_act_chain) -> np.ndarray:
     """Compose a chain of active homogeneous transforms.
 
     Pass transforms in the *chronological order* you want to apply them to the vector:
@@ -396,7 +396,7 @@ def compose_T_act(*T_act_chain):
     return _left_compose_T(valid_T_act_chain)
 
 
-def _invert_T_rigid(valid_T):
+def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
     """Invert a rigid homogeneous transform.
 
     Given:
@@ -426,7 +426,7 @@ def _invert_T_rigid(valid_T):
     return valid_T_inv
 
 
-def invert_T_pas(T_pas):
+def invert_T_pas(T_pas) -> np.ndarray:
     """Invert a passive homogeneous transform.
 
     A passive transform maps components of the same physical quantity between an
@@ -473,7 +473,7 @@ def invert_T_pas(T_pas):
     return _invert_T_rigid(valid_T_pas)
 
 
-def invert_T_act(T_act):
+def invert_T_act(T_act) -> np.ndarray:
     """Invert an active homogeneous transform.
 
     An active transform re-orients and optionally translates a quantity within the
@@ -520,7 +520,7 @@ def invert_T_act(T_act):
     return _invert_T_rigid(valid_T_act)
 
 
-def convert_T_pas_to_T_act(T_pas):
+def convert_T_pas_to_T_act(T_pas) -> np.ndarray:
     """Convert a passive transformation matrix to an active transformation matrix.
 
     :param T_pas: (4,4) array-like of numbers
@@ -537,7 +537,7 @@ def convert_T_pas_to_T_act(T_pas):
     return np.linalg.inv(valid_T_pas)
 
 
-def convert_T_act_to_T_pas(T_act):
+def convert_T_act_to_T_pas(T_act) -> np.ndarray:
     """Convert an active transformation matrix to a passive transformation matrix.
 
     :param T_act: (4,4) array-like of numbers
@@ -554,7 +554,7 @@ def convert_T_act_to_T_pas(T_act):
     return np.linalg.inv(valid_T_act)
 
 
-def apply_T_to_vectors(T, vectors_A, has_point):
+def apply_T_to_vectors(T, vectors_A, has_point) -> np.ndarray:
     """Apply a homogeneous transform to 3-element vector(s) and return 3-element
     vector(s).
 

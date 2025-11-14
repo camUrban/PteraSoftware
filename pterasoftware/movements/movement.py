@@ -9,6 +9,8 @@ Movement: A class used to contain an UnsteadyProblem's movement.
 None
 """
 
+from __future__ import annotations
+
 import math
 
 from . import airplane_movement as airplane_movement_mod

@@ -17,6 +17,8 @@ This module contains the following functions:
     OperatingPoint parameters.
 """
 
+from __future__ import annotations
+
 import logging
 from typing import Sequence, Any
 

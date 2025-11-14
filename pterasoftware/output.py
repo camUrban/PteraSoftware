@@ -16,6 +16,8 @@ This module contains the following functions:
     a solver.
 """
 
+from __future__ import annotations
+
 import math
 import time
 

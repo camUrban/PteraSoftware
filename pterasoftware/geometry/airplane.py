@@ -9,6 +9,8 @@ Airplane: A class used to contain airplanes.
 None
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 from typing import Any, cast
 

@@ -9,6 +9,8 @@ OperatingPointMovement: A class used to contain an OperatingPoint's movements.
 None
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable
 
 from . import _functions

@@ -1,5 +1,7 @@
 """Contains the vortex classes and functions for calculating induced velocities."""
 
+from __future__ import annotations
+
 from collections.abc import Sequence
 import math
 

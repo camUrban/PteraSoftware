@@ -11,6 +11,8 @@ UnsteadyProblem: A class used to contain unsteady aerodynamics problems.
 None
 """
 
+from __future__ import annotations
+
 import math
 
 import numpy as np

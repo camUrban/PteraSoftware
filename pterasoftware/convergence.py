@@ -12,6 +12,8 @@ This module contains the following functions:
     UnsteadyProblem solved using the UnsteadyRingVortexLatticeMethodSolver.
 """
 
+from __future__ import annotations
+
 import logging
 import time
 

@@ -9,6 +9,8 @@ Airfoil: A class used to contain the Airfoil of a WingCrossSection.
 None
 """
 
+from __future__ import annotations
+
 import importlib.resources
 from collections.abc import Sequence
 from typing import Any, cast

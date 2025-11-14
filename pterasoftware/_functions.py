@@ -1,6 +1,8 @@
 """This module contains functions shared by other modules in the pterasoftware
 package."""
 
+from __future__ import annotations
+
 import logging
 
 import numpy as np

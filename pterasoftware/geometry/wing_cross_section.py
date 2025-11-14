@@ -10,7 +10,6 @@ None
 """
 
 from collections.abc import Sequence
-from typing import cast
 
 import numpy as np
 import pyvista as pv
@@ -554,11 +553,8 @@ class WingCrossSection:
             self.angles_Wcsp_to_Wcs_ixyz, passive=True, intrinsic=True, order="xyz"
         )
 
-        return cast(
-            np.ndarray,
-            _transformations.compose_T_pas(
-                T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
-            ),
+        return _transformations.compose_T_pas(
+            T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
         )
 
     @property
@@ -574,6 +570,4 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        return cast(
-            np.ndarray, _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
-        )
+        return _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)

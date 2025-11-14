@@ -22,12 +22,12 @@ class Movement:
 
     **Contains the following methods:**
 
-    max_period: Defines a property for the longest period of motion of Movement's sub-
-    movement objects, the motion(s) of its sub-sub-movement object(s), and the motions
-    of its sub-sub-sub-movement objects.
+    max_period: The longest period of motion of Movement's sub-movement objects, the
+    motion(s) of its sub-sub-movement object(s), and the motions of its
+    sub-sub-sub-movement objects.
 
-    static: Defines a property to flag if Movement's sub-movement objects, its sub-sub-
-    movement object(s), and its sub-sub-sub-movement objects all represent no motion.
+    static: Flags if Movement's sub-movement objects, its sub-sub-movement object(s),
+    and its sub-sub-sub-movement objects all represent no motion.
     """
 
     def __init__(
@@ -270,9 +270,9 @@ class Movement:
 
     @property
     def max_period(self) -> float:
-        """Defines a property for the longest period of motion of Movement's sub-
-        movement objects, the motion(s) of its sub-sub-movement object(s), and the
-        motions of its sub-sub-sub-movement objects.
+        """The longest period of motion of Movement's sub-movement objects, the
+        motion(s) of its sub-sub-movement object(s), and the motions of its
+        sub-sub-sub-movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.
@@ -293,9 +293,8 @@ class Movement:
 
     @property
     def static(self) -> bool:
-        """Defines a property to flag if Movement's sub-movement objects, its sub-sub-
-        movement object(s), and its sub-sub-sub-movement objects all represent no
-        motion.
+        """Flags if the Movement's sub-movement objects, its sub-sub-movement object(s),
+        and its sub-sub-sub-movement objects all represent no motion.
 
         :return: True if Movement's sub-movement objects, its sub-sub-movement
             object(s), and its sub-sub-sub-movement objects all represent no motion.

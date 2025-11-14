@@ -543,7 +543,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # be found on pages 37-39 of "Modeling of aerodynamic
                                 # forces in flapping flight with the Unsteady Vortex
                                 # Lattice Method" by Thomas Lambert.
-                                if steady_problem_id < 1:
+                                if steady_problem_id == 0:
                                     Blrvp_GP1_CgP1 = (
                                         panel.Blpp_GP1_CgP1
                                         + vInf_GP1__E * self.delta_time * 0.25

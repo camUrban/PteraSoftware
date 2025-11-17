@@ -34,6 +34,9 @@ This package contains the following modules:
 
     unsteady_ring_vortex_lattice_method.py: This module contains the class definition
     of this package's unsteady ring vortex lattice solver.
+    
+    coupled_unsteady_ring_vortex_lattice_method.py: This module contains the class definition
+    of this package's unsteady ring vortex lattice solver.
 """
 
 import pterasoftware.geometry
@@ -46,3 +49,4 @@ import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method
+import pterasoftware.coupled_unsteady_ring_vortex_lattice_method

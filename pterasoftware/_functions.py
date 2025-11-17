@@ -13,6 +13,7 @@ from . import geometry
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
+from . import coupled_unsteady_ring_vortex_lattice_method
 
 
 # TEST: Consider adding unit tests for this function.
@@ -96,13 +97,14 @@ def numba_centroid_of_quadrilateral(
 
     return np.array([x_average, y_average, z_average])
 
-
+# TODO: make subclassing of solver for ease
 # TEST: Consider adding unit tests for this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     num_steps=25,
     delta_time=0.02,
@@ -199,6 +201,7 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_GP1,
     stackPanelMoments_GP1_CgP1,
@@ -241,8 +244,10 @@ def process_solver_loads(
         these_airplanes = solver.airplanes
         this_operating_point = solver.operating_point
     elif isinstance(
-        solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        solver, (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        )
     ):
         these_airplanes = solver.current_airplanes
         this_operating_point = solver.current_operating_point
@@ -350,6 +355,7 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
     panel: _panel.Panel,

@@ -29,6 +29,7 @@ from . import _parameter_validation
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
+from . import coupled_unsteady_ring_vortex_lattice_method
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -96,6 +97,7 @@ def draw(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type=None,
     show_streamlines: bool = False,
@@ -154,6 +156,7 @@ def draw(
             steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
             steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
             unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
         ),
     ):
         raise TypeError(
@@ -188,6 +191,7 @@ def draw(
     if isinstance(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
     ):
         draw_step = solver.num_steps - 1
 
@@ -333,7 +337,9 @@ def draw(
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 def animate(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: 
+    (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver 
+     | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
     scalar_type=None,
     show_wake_vortices: bool = False,
     save: bool = False,
@@ -375,7 +381,10 @@ def animate(
     """
     if not isinstance(
         unsteady_solver,
-        (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,),
+        (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        ),
     ):
         raise TypeError(
             "unsteady_solver must be an UnsteadyRingVortexLatticeMethodSolver."
@@ -632,7 +641,8 @@ def animate(
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 def plot_results_versus_time(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    unsteady_solver: (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver 
+                      | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
     show: bool = True,
     save: bool = False,
 ):
@@ -658,7 +668,10 @@ def plot_results_versus_time(
     """
     if not isinstance(
         unsteady_solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
+        )
     ):
         raise TypeError(
             "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
@@ -963,6 +976,7 @@ def print_results(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
 ):
     """This function prints the load and load coefficients calculated by a solver.
@@ -985,7 +999,10 @@ def print_results(
         solver_type = "steady"
     elif isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        )
     ):
         these_airplanes = solver.current_airplanes
         if solver.unsteady_problem.movement.static:
@@ -1215,7 +1232,8 @@ def _get_panel_surfaces(
 
 # TEST: Consider adding unit tests for this function.
 def _get_wake_ring_vortex_surfaces(
-    solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    solver: (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+             | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
     step: int,
 ):
     """This function returns the PolyData representation of surfaces an

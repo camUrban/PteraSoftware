@@ -113,7 +113,7 @@ ring_vortex = cast(
 ```
 
 **Use `cast()` when:**
-- Working around type checker limitations (e.g., NumPy dtype=object arrays)
+- Working around type checker limitations (e.g., numpy dtype=object arrays)
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
 
@@ -575,7 +575,7 @@ def get_resampled_mcl(
 # Simple types
 param: str
 param: bool
-param: bool | np.bool_  # Accepts both Python and NumPy booleans
+param: bool | np.bool_  # Accepts both Python and numpy bools
 param: int
 param: float | int
 

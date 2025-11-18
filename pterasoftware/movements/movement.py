@@ -106,8 +106,8 @@ class Movement:
         self.operating_point_movement = operating_point_movement
 
         if delta_time is not None:
-            delta_time = _parameter_validation.positive_number_return_float(
-                delta_time, "delta_time"
+            delta_time = _parameter_validation.number_in_range_return_float(
+                delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
 
@@ -153,8 +153,11 @@ class Movement:
                         "num_cycles must be set."
                     )
         if num_cycles is not None:
-            num_cycles = _parameter_validation.positive_int_return_int(
-                num_cycles, "num_cycles"
+            num_cycles = _parameter_validation.int_in_range_return_int(
+                num_cycles,
+                "num_cycles",
+                min_val=1,
+                min_inclusive=True,
             )
         self.num_cycles = num_cycles
 
@@ -172,8 +175,11 @@ class Movement:
                         "num_chords must be left as None."
                     )
         if num_chords is not None:
-            num_chords = _parameter_validation.positive_int_return_int(
-                num_chords, "num_chords"
+            num_chords = _parameter_validation.int_in_range_return_int(
+                num_chords,
+                "num_chords",
+                min_val=1,
+                min_inclusive=True,
             )
         self.num_chords = num_chords
 
@@ -184,8 +190,11 @@ class Movement:
                     "be None."
                 )
         if num_steps is not None:
-            num_steps = _parameter_validation.positive_int_return_int(
-                num_steps, "num_steps"
+            num_steps = _parameter_validation.int_in_range_return_int(
+                num_steps,
+                "num_steps",
+                min_val=1,
+                min_inclusive=True,
             )
         else:
             if _static:

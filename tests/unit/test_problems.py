@@ -176,7 +176,7 @@ class TestUnsteadyProblem(unittest.TestCase):
 
     def test_only_final_results_parameter_validation(self):
         """Test only_final_results parameter validation."""
-        # Test with valid boolean values.
+        # Test with valid bool values.
         movement = movement_fixtures.make_basic_movement_fixture()
 
         valid_values = [True, False]
@@ -187,19 +187,6 @@ class TestUnsteadyProblem(unittest.TestCase):
                     only_final_results=value,
                 )
                 self.assertEqual(unsteady_problem.only_final_results, value)
-
-        # Test with boolLike values (0, 1).
-        unsteady_problem_zero = ps.problems.UnsteadyProblem(
-            movement=movement,
-            only_final_results=0,
-        )
-        self.assertFalse(unsteady_problem_zero.only_final_results)
-
-        unsteady_problem_one = ps.problems.UnsteadyProblem(
-            movement=movement,
-            only_final_results=1,
-        )
-        self.assertTrue(unsteady_problem_one.only_final_results)
 
     def test_movement_parameter_validation(self):
         """Test that movement parameter is properly validated."""

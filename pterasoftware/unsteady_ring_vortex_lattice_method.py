@@ -180,18 +180,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             This parameter determines if the solver uses a prescribed wake model. If
             False it will use a free-wake, which may be more accurate but will make
-            the solver significantly slower. The default is True. It can be a boolean
-            or a NumPy boolean and will be converted internally to a boolean.
+            the solver significantly slower. The default is True. It can be a bool
+            or a numpy bool and will be converted internally to a bool.
 
         :param calculate_streamlines: boolLike, optional
 
             This parameter determines if the solver calculates streamlines emanating
-            from the back of the wing after running the solver. It can be a boolean
-            or a NumPy boolean and will be converted internally to a boolean.
+            from the back of the wing after running the solver. It can be a bool
+            or a numpy bool and will be converted internally to a bool.
 
         :return: None
         """
-        logging_level = _parameter_validation.string_return_string(
+        logging_level = _parameter_validation.str_return_str(
             logging_level, "logging_level"
         )
         logging_level_value = _functions.convert_logging_level_name_to_value(
@@ -1471,7 +1471,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     # Iterate through the wake RingVortex point positions.
                     for chordwise_point_id in range(num_chordwise_points):
                         for spanwise_point_id in range(num_spanwise_points):
-                            # Set booleans to determine if this point is on the right
+                            # Set bools to determine if this point is on the right
                             # and/or trailing edge of the wake.
                             has_point_to_right = (
                                 spanwise_point_id + 1

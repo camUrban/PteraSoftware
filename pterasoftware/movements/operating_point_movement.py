@@ -73,12 +73,12 @@ class OperatingPointMovement:
             raise TypeError("base_operating_point must be an OperatingPoint")
         self.base_operating_point = base_operating_point
 
-        self.ampVCg__E = _parameter_validation.non_negative_number_return_float(
-            ampVCg__E, "ampVCg__E"
+        self.ampVCg__E = _parameter_validation.number_in_range_return_float(
+            ampVCg__E, "ampVCg__E", min_val=0.0, min_inclusive=True
         )
 
-        periodVCg__E = _parameter_validation.non_negative_number_return_float(
-            periodVCg__E, "periodVCg__E"
+        periodVCg__E = _parameter_validation.number_in_range_return_float(
+            periodVCg__E, "periodVCg__E", min_val=0.0, min_inclusive=True
         )
         if self.ampVCg__E == 0 and periodVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
@@ -117,11 +117,14 @@ class OperatingPointMovement:
         :return: The list of OperatingPoints associated with this
             OperatingPointMovement.
         """
-        num_steps = _parameter_validation.positive_int_return_int(
-            num_steps, "num_steps"
+        num_steps = _parameter_validation.int_in_range_return_int(
+            num_steps,
+            "num_steps",
+            min_val=1,
+            min_inclusive=True,
         )
-        delta_time = _parameter_validation.positive_number_return_float(
-            delta_time, "delta_time"
+        delta_time = _parameter_validation.number_in_range_return_float(
+            delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
 
         # Generate oscillating values for VCg__E.

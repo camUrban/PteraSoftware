@@ -30,7 +30,7 @@ class TestPanel(unittest.TestCase):
         npt.assert_array_equal(panel.Blpp_G_Cg, np.array([1.0, 0.0, 0.0]))
         npt.assert_array_equal(panel.Brpp_G_Cg, np.array([1.0, 0.5, 0.0]))
 
-        # Test that edge booleans are correctly stored
+        # Test that edge bools are correctly stored
         self.assertFalse(panel.is_leading_edge)
         self.assertFalse(panel.is_trailing_edge)
 

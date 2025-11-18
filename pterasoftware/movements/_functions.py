@@ -344,9 +344,14 @@ def _validate_oscillating_function_parameters(
             "the corresponding element in phases must also be 0.0."
         )
 
-    num_steps = _parameter_validation.positive_int_return_int(num_steps, "num_steps")
-    delta_time = _parameter_validation.positive_number_return_float(
-        delta_time, "delta_time"
+    num_steps = _parameter_validation.int_in_range_return_int(
+        num_steps,
+        "num_steps",
+        min_val=1,
+        min_inclusive=True,
+    )
+    delta_time = _parameter_validation.number_in_range_return_float(
+        delta_time, "delta_time", min_val=0.0, min_inclusive=False
     )
 
     return amps, periods, phases, bases, num_steps, delta_time, mask_static

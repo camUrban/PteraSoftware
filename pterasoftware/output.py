@@ -127,26 +127,26 @@ def draw(
     :param show_streamlines: boolLike, optional
 
         Set this to True to show the streamlines emanating from the back of the
-        Wings. It can be a boolean or a NumPy boolean and will be converted
-        internally to a boolean. The default value is False.
+        Wings. It can be a bool or a numpy bool and will be converted
+        internally to a bool. The default value is False.
 
     :param show_wake_vortices: boolLike, optional
 
-        Set this to True to show any wake RingVortices. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default
+        Set this to True to show any wake RingVortices. It can be a bool or a
+        numpy bool and will be converted internally to a bool. The default
         value is False.
 
     :param save: boolLike, optional
 
-        Set this to True to save the image as a WebP. It can be a boolean or a NumPy
-        boolean and will be converted internally to a boolean. The default value is
+        Set this to True to save the image as a WebP. It can be a bool or a NumPy
+        bool and will be converted internally to a bool. The default value is
         False.
 
     :param testing: boolLike, optional
 
         Set this to True to close the image after 1 second, which is useful for
-        running test suites. It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean. The default value is False.
+        running test suites. It can be a bool or a numpy bool and will be
+        converted internally to a bool. The default value is False.
 
     :return: None
     """
@@ -165,9 +165,7 @@ def draw(
         )
 
     if scalar_type is not None:
-        scalar_type = _parameter_validation.string_return_string(
-            scalar_type, "scalar_type"
-        )
+        scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
                 'scalar_type must be None, "induced drag", "side force", or "lift".'
@@ -357,21 +355,21 @@ def animate(
 
     :param show_wake_vortices: boolLike, optional
 
-        Set this to True to show any wake RingVortices. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default
+        Set this to True to show any wake RingVortices. It can be a bool or a
+        numpy bool and will be converted internally to a bool. The default
         value is False.
 
     :param save: boolLike, optional
 
-        Set this to True to save the image as a WebP. It can be a boolean or a NumPy
-        boolean and will be converted internally to a boolean. The default value is
+        Set this to True to save the image as a WebP. It can be a bool or a NumPy
+        bool and will be converted internally to a bool. The default value is
         False.
 
     :param testing: boolLike, optional
 
         Set this to True to close the image after 1 second, which is useful for
-        running test suites. It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean. The default value is False.
+        running test suites. It can be a bool or a numpy bool and will be
+        converted internally to a bool. The default value is False.
 
     :return: None
     """
@@ -384,9 +382,7 @@ def animate(
         )
 
     if scalar_type is not None:
-        scalar_type = _parameter_validation.string_return_string(
-            scalar_type, "scalar_type"
-        )
+        scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
                 'scalar_type must be None, "induced drag", "side force", or "lift".'
@@ -644,10 +640,10 @@ def plot_results_versus_time(
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver This is the
         UnsteadyRingVortexLatticeMethodSolver whose loads will be plotted.
     :param show: boolLike, optional Set this to True to show the plots. It can be a
-        boolean or a NumPy boolean and will be converted internally to a boolean. The
+        bool or a numpy bool and will be converted internally to a bool. The
         default is True.
     :param save: boolLike, Optional Set this to True to save the plots as PNGs. It can
-        be a boolean or a NumPy boolean and will be converted internally to a boolean.
+        be a bool or a numpy bool and will be converted internally to a bool.
         The default is True.
     :return: None
     """

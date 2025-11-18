@@ -142,7 +142,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        logging_level = _parameter_validation.string_return_string(
+        logging_level = _parameter_validation.str_return_str(
             logging_level, "logging_level"
         )
         logging_level_value = _functions.convert_logging_level_name_to_value(

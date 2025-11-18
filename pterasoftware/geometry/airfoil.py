@@ -89,7 +89,7 @@ class Airfoil:
             400.
         :return: None
         """
-        self.name = _parameter_validation.string_return_string(name, "name")
+        self.name = _parameter_validation.str_return_str(name, "name")
 
         if outline_A_lp is not None:
             if _trust is not _TRUST:

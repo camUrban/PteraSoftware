@@ -94,10 +94,12 @@ class OperatingPoint:
             20 degrees Celsius [source: https://www.engineeringtoolbox.com].
         :return: None
         """
-        self.rho = _parameter_validation.positive_number_return_float(rho, "rho")
+        self.rho = _parameter_validation.number_in_range_return_float(
+            rho, "rho", min_val=0.0, min_inclusive=False
+        )
         # TODO: In the future, test what happens with vCg__E = 0.
-        self.vCg__E = _parameter_validation.positive_number_return_float(
-            vCg__E, "vCg__E"
+        self.vCg__E = _parameter_validation.number_in_range_return_float(
+            vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
         )
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
@@ -107,10 +109,12 @@ class OperatingPoint:
         self.beta = _parameter_validation.number_in_range_return_float(
             beta, "beta", -180.0, False, 180.0, True
         )
-        self.externalFX_W = _parameter_validation.number_return_float(
+        self.externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )
-        self.nu = _parameter_validation.positive_number_return_float(nu, "nu")
+        self.nu = _parameter_validation.number_in_range_return_float(
+            nu, "nu", min_val=0.0, min_inclusive=False
+        )
 
     @property
     def qInf__E(self) -> float:

@@ -186,8 +186,7 @@ class WingMovement:
 
         spacingLer_Gs_Cgs = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingLer_Gs_Cgs,
-                "spacingLer_Gs_Cgs",
+                spacingLer_Gs_Cgs, "spacingLer_Gs_Cgs"
             )
         )
         self.spacingLer_Gs_Cgs = spacingLer_Gs_Cgs
@@ -244,8 +243,7 @@ class WingMovement:
 
         spacingAngles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingAngles_Gs_to_Wn_ixyz,
-                "spacingAngles_Gs_to_Wn_ixyz",
+                spacingAngles_Gs_to_Wn_ixyz, "spacingAngles_Gs_to_Wn_ixyz"
             )
         )
         self.spacingAngles_Gs_to_Wn_ixyz = spacingAngles_Gs_to_Wn_ixyz
@@ -285,11 +283,14 @@ class WingMovement:
             in seconds.
         :return: The list of Wings associated with this WingMovement.
         """
-        num_steps = _parameter_validation.positive_int_return_int(
-            num_steps, "num_steps"
+        num_steps = _parameter_validation.int_in_range_return_int(
+            num_steps,
+            "num_steps",
+            min_val=1,
+            min_inclusive=True,
         )
-        delta_time = _parameter_validation.positive_number_return_float(
-            delta_time, "delta_time"
+        delta_time = _parameter_validation.number_in_range_return_float(
+            delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
 
         # Generate oscillating values for each dimension of Ler_Gs_Cgs.

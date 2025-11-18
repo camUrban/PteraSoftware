@@ -200,12 +200,14 @@ def analyze_steady_trim(
         )
 
     # Validate the objective_cut_off parameter.
-    objective_cut_off = _parameter_validation.positive_number_return_float(
-        objective_cut_off, "objective_cut_off"
+    objective_cut_off = _parameter_validation.number_in_range_return_float(
+        objective_cut_off, "objective_cut_off", min_val=0.0, min_inclusive=False
     )
 
     # Validate the num_calls parameter.
-    num_calls = _parameter_validation.positive_int_return_int(num_calls, "num_calls")
+    num_calls = _parameter_validation.int_in_range_return_int(
+        num_calls, "num_calls", min_val=1, min_inclusive=True
+    )
 
     # Get the SteadyProblem's OperatingPoint's initial parameter values and check
     # that the ones that will vary to find a trim condition are within the specified
@@ -546,12 +548,14 @@ def analyze_unsteady_trim(
         )
 
     # Validate the objective_cut_off parameter.
-    objective_cut_off = _parameter_validation.positive_number_return_float(
-        objective_cut_off, "objective_cut_off"
+    objective_cut_off = _parameter_validation.number_in_range_return_float(
+        objective_cut_off, "objective_cut_off", min_val=0.0, min_inclusive=False
     )
 
     # Validate the num_calls parameter.
-    num_calls = _parameter_validation.positive_int_return_int(num_calls, "num_calls")
+    num_calls = _parameter_validation.int_in_range_return_int(
+        num_calls, "num_calls", min_val=1, min_inclusive=True
+    )
 
     base_operating_point = (
         problem.movement.operating_point_movement.base_operating_point

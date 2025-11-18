@@ -147,13 +147,18 @@ class WingCrossSection:
         # will later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if num_spanwise_panels is not None:
-            num_spanwise_panels = _parameter_validation.positive_int_return_int(
-                num_spanwise_panels, "Non-None num_spanwise"
+            num_spanwise_panels = _parameter_validation.int_in_range_return_int(
+                num_spanwise_panels,
+                "Non-None num_spanwise",
+                min_val=1,
+                min_inclusive=True,
             )
         self.num_spanwise_panels = num_spanwise_panels
 
         # Validate chord.
-        self.chord = _parameter_validation.positive_number_return_float(chord, "chord")
+        self.chord = _parameter_validation.number_in_range_return_float(
+            chord, "chord", min_val=0.0, min_inclusive=False
+        )
 
         # Perform a preliminary validation for Lp_Wcsp_Lpp. The parent Wing will
         # later check that this is a zero vector if this WingCrossSection is a root
@@ -161,8 +166,8 @@ class WingCrossSection:
         Lp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
         )
-        Lp_Wcsp_Lpp[1] = _parameter_validation.non_negative_number_return_float(
-            Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]"
+        Lp_Wcsp_Lpp[1] = _parameter_validation.number_in_range_return_float(
+            Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]", min_val=0.0, min_inclusive=True
         )
         self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
 
@@ -189,7 +194,7 @@ class WingCrossSection:
 
         # Validate control surface symmetry type.
         if control_surface_symmetry_type is not None:
-            control_surface_symmetry_type = _parameter_validation.string_return_string(
+            control_surface_symmetry_type = _parameter_validation.str_return_str(
                 control_surface_symmetry_type, "control_surface_symmetry_type"
             )
             valid_control_surface_symmetry_types = ["symmetric", "asymmetric"]
@@ -229,7 +234,7 @@ class WingCrossSection:
         # later check that this is None if this WingCrossSection is a tip
         # WingCrossSection.
         if spanwise_spacing is not None:
-            spanwise_spacing = _parameter_validation.string_return_string(
+            spanwise_spacing = _parameter_validation.str_return_str(
                 spanwise_spacing, "spanwise_spacing"
             )
             valid_non_none_spanwise_spacings = ["cosine", "uniform"]

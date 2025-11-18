@@ -131,7 +131,7 @@ class Airplane:
             processed_wings.extend(self.process_wing_symmetry(wing))
         self.wings = processed_wings
 
-        self.name = _parameter_validation.string_return_string(name, "name")
+        self.name = _parameter_validation.str_return_str(name, "name")
         self.Cg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
             Cg_E_CgP1, "Cg_E_CgP1"
         )
@@ -152,8 +152,11 @@ class Airplane:
         )
         self.angles_E_to_B_izyx = angles_E_to_B_izyx
 
-        self.weight = _parameter_validation.non_negative_number_return_float(
-            weight, "weight"
+        self.weight = _parameter_validation.number_in_range_return_float(
+            weight,
+            "weight",
+            min_val=0.0,
+            min_inclusive=True,
         )
 
         # If any of the passed reference dimensions are None, set them to first Wing's
@@ -162,20 +165,20 @@ class Airplane:
         if s_ref is None:
             self.s_ref = self.wings[0].projected_area
         else:
-            self.s_ref = _parameter_validation.positive_number_return_float(
-                s_ref, "s_ref"
+            self.s_ref = _parameter_validation.number_in_range_return_float(
+                s_ref, "s_ref", min_val=0.0, min_inclusive=False
             )
         if c_ref is None:
             self.c_ref = self.wings[0].mean_aerodynamic_chord
         else:
-            self.c_ref = _parameter_validation.positive_number_return_float(
-                c_ref, "c_ref"
+            self.c_ref = _parameter_validation.number_in_range_return_float(
+                c_ref, "c_ref", min_val=0.0, min_inclusive=False
             )
         if b_ref is None:
             self.b_ref = self.wings[0].span
         else:
-            self.b_ref = _parameter_validation.positive_number_return_float(
-                b_ref, "b_ref"
+            self.b_ref = _parameter_validation.number_in_range_return_float(
+                b_ref, "b_ref", min_val=0.0, min_inclusive=False
             )
 
         # Initialize empty class attributes to hold the force, moment,

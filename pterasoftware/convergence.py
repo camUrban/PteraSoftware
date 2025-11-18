@@ -174,8 +174,8 @@ def analyze_steady_convergence(
         raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
 
     # Validate the convergence_criteria parameter.
-    convergence_criteria = _parameter_validation.positive_number_return_float(
-        convergence_criteria, "convergence_criteria"
+    convergence_criteria = _parameter_validation.number_in_range_return_float(
+        convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
     )
 
     convergence_logger.info("Beginning convergence analysis...")
@@ -933,8 +933,8 @@ def analyze_unsteady_convergence(
         raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
 
     # Validate the convergence_criteria parameter.
-    convergence_criteria = _parameter_validation.positive_number_return_float(
-        convergence_criteria, "convergence_criteria"
+    convergence_criteria = _parameter_validation.number_in_range_return_float(
+        convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
     )
 
     convergence_logger.info("Beginning convergence analysis...")

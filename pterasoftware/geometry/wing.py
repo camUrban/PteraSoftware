@@ -215,7 +215,7 @@ class Wing:
         self.wing_cross_sections = wing_cross_sections
 
         # Validate name and Ler_Gs_Cgs.
-        self.name = _parameter_validation.string_return_string(name, "name")
+        self.name = _parameter_validation.str_return_str(name, "name")
         self.Ler_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
             Ler_Gs_Cgs, "Ler_Gs_Cgs"
         )
@@ -275,8 +275,11 @@ class Wing:
         self.symmetryPoint_G_Cg = symmetryPoint_G_Cg
 
         # Validate num_chordwise_panels and chordwise_spacing.
-        self.num_chordwise_panels = _parameter_validation.positive_int_return_int(
-            num_chordwise_panels, "num_chordwise_panels"
+        self.num_chordwise_panels = _parameter_validation.int_in_range_return_int(
+            num_chordwise_panels,
+            "num_chordwise_panels",
+            min_val=1,
+            min_inclusive=True,
         )
         if chordwise_spacing not in ["cosine", "uniform"]:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
@@ -304,13 +307,14 @@ class Wing:
         # the parent Airplane should have modified a Wing that initially had type 5
         # symmetry to have type 1 symmetry, and then made a new reflected Wing with
         # type 3 symmetry.
-        symmetry_type = _parameter_validation.int_return_int(
-            symmetry_type, "symmetry_type"
+        self.symmetry_type = _parameter_validation.int_in_range_return_int(
+            symmetry_type,
+            "symmetry_type",
+            min_val=1,
+            min_inclusive=True,
+            max_val=4,
+            max_inclusive=True,
         )
-        valid_symmetry_types = [1, 2, 3, 4]
-        if symmetry_type not in valid_symmetry_types:
-            raise ValueError(f"symmetry_type must be one of {valid_symmetry_types}")
-        self.symmetry_type = symmetry_type
 
         # Set this Wing's children WingCrossSections' symmetry type parameters.
         for wing_cross_section in self.wing_cross_sections:

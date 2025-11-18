@@ -86,15 +86,15 @@ def generate_rot_T(angles, passive, intrinsic, order) -> np.ndarray:
 
         If True, returns a matrix that changes coordinates from "A" to "B" axes (`r_B
         = R @ r_A`). If False, returns a matrix that rotates vectors in "A" axes (
-        `rPrime_A = R @ r_A`). It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean.
+        `rPrime_A = R @ r_A`). It can be a bool or a numpy bool and will be
+        converted internally to a bool.
 
     :param intrinsic: boolLike
 
         If True, each subsequent rotation is applied to the current, newly-rotated
         axes. If False, all rotations are performed about the original, non-rotated
-        "A" axes. It can be a boolean or a NumPy boolean and will be converted
-        internally to a boolean.
+        "A" axes. It can be a bool or a numpy bool and will be converted
+        internally to a bool.
 
     :param order: string of length 3
 
@@ -111,7 +111,7 @@ def generate_rot_T(angles, passive, intrinsic, order) -> np.ndarray:
     )
     passive = _parameter_validation.boolLike_return_bool(passive, "passive")
     intrinsic = _parameter_validation.boolLike_return_bool(intrinsic, "intrinsic")
-    order = _parameter_validation.rotation_order_return_string(order, "order")
+    order = _parameter_validation.rotation_order_return_str(order, "order")
 
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
 
@@ -199,8 +199,8 @@ def generate_trans_T(translations, passive) -> np.ndarray:
         homogeneous coordinates (`rHomog_A_b = T_trans @ rHomog_A_a`). If False,
         returns the position vector of point offset from an original position,
         still relative to the same point (`cPrimeHomog_A_a = T_trans @ cHomog_A_a`).
-        It can be a boolean or a NumPy boolean and will be converted internally to a
-        boolean.
+        It can be a bool or a numpy bool and will be converted internally to a
+        bool.
 
     :return: (4, 4) ndarray of floats
 
@@ -266,8 +266,8 @@ def generate_reflect_T(plane_point_A_a, plane_normal_A, passive) -> np.ndarray:
         in homogeneous coordinates to a reference point and axes reflected about the
         specified plane (`cHomog_B_b = T_reflect @ cHomog_A_a`). If False, it returns
         a matrix that reflects a vector (in its original axes) about a specified
-        plane (`cPrimeHomog_A_a = T_reflect @ cHomog_A_a`). It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean.
+        plane (`cPrimeHomog_A_a = T_reflect @ cHomog_A_a`). It can be a bool or a
+        numpy bool and will be converted internally to a bool.
 
     :return: (4, 4) ndarray of floats
 
@@ -583,8 +583,8 @@ def apply_T_to_vectors(T, vectors_A, has_point) -> np.ndarray:
     :param has_point: boolLike
 
         True for vectors relative to a reference point such as position vectors.
-        False for free vectors. It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean.
+        False for free vectors. It can be a bool or a numpy bool and will be
+        converted internally to a bool.
 
     :return: ndarray of floats with same shape as input vectors_A
 

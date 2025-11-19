@@ -23,14 +23,14 @@ def oscillating_sinspaces(
     linearly spaced time steps into a sine function defined with the parameters given by
     the scalars or array-like objects amp, period, phase, and base.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding periods element must also be 0.0, and the corresponding
         results will have no fluctuations. Its units can be anything so long as they
         correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding amps element must also be 0.0, and the corresponding
         results will have no fluctuations. If an array-like object, its shape must match
@@ -93,14 +93,14 @@ def oscillating_linspaces(
     linearly spaced time steps into a triangular wave function defined with the
     parameters given by the scalars or array-like objects amp, period, phase, and base.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding periods element must also be 0.0, and the corresponding
         results will have no fluctuations. Its units can be anything so long as they
         correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding amps element must also be 0.0, and the corresponding
         results will have no fluctuations. If an array-like object, its shape must match
@@ -183,7 +183,7 @@ def oscillating_customspaces(
 
     Must accept a ndarray as input and return a ndarray of the same shape
 
-    Functions with non-zero mean are allowed but will shift the effective center of
+    Functions with non zero mean are allowed but will shift the effective center of
     oscillation away from the base value. This can be useful for creating asymmetric
     motion (e.g., faster upstroke than downstroke in flapping).
 
@@ -196,14 +196,14 @@ def oscillating_customspaces(
     function. The phases parameter shifts the function horizontally in degrees. The
     bases parameter shifts the function vertically.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding periods element must also be 0.0, and the corresponding
         results will have no fluctuations. Its units can be anything so long as they
         correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non-negative
-        number (int or float) or an array-like object of non-negative numbers. All
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative
+        number (int or float) or an array-like object of non negative numbers. All
         elements will be converted to floats internally. If any of its elements are 0.0,
         then the corresponding amps element must also be 0.0, and the corresponding
         results will have no fluctuations. If an array-like object, its shape must match

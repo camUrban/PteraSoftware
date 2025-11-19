@@ -70,7 +70,7 @@ class Wing:
     relative to their respective leading points, to geometry axes, relative to the CG.
 
     projected_area: The area of the Wing projected onto the plane defined by the wing
-    axes' xy-plane.
+    axes' xy plane.
 
     wetted_area: The Wing's wetted area.
 
@@ -95,11 +95,11 @@ class Wing:
 
     There are five symmetry types. Type 1: symmetric=False, mirror_only=False, and the
     symmetry plane must be undefined. Type 2: symmetric=False, mirror_only=True, and the
-    symmetry plane is coincident with the wing axes' xz-plane. Type 3: symmetric=False,
-    mirror_only=True, and the symmetry plane is not coincident with the wing axes' xz-
+    symmetry plane is coincident with the wing axes' xz plane. Type 3: symmetric=False,
+    mirror_only=True, and the symmetry plane is not coincident with the wing axes' xz
     plane. Type 4: symmetric=True, mirror_only=False, and the symmetry plane is
-    coincident with the wing axes' xz-plane. Type 5: symmetric=True, mirror_only=False,
-    and the symmetry plane is not coincident with the wing axes' xz-plane.
+    coincident with the wing axes' xz plane. Type 5: symmetric=True, mirror_only=False,
+    and the symmetry plane is not coincident with the wing axes' xz plane.
 
     **Citation:**
 
@@ -139,13 +139,13 @@ class Wing:
             axes relative to the geometry axes (after accounting for symmetry). Can be a
             tuple, list, or ndarray. Values are converted to floats internally. All
             angles must be in the range [-90, 90] degrees. Rotations are intrinsic, and
-            proceed in the x-y'-z" order. The units are degrees. The default is (0.0,
+            proceed in the xy'z" order. The units are degrees. The default is (0.0,
             0.0, 0.0).
         :param symmetric: Set this to True if the Wing's geometry should be mirrored
-            across the symmetry plane while retaining the non-mirrored side. If
+            across the symmetry plane while retaining the non mirrored side. If
             mirror_only is True, symmetric must be False. If symmetric is True, then
             neither symmetryNormal_G nor symmetryPoint_G_Cg can be None. If the symmetry
-            plane is coincident with this Wing's axes' xz-plane, the mirrored and non-
+            plane is coincident with this Wing's axes' xz plane, the mirrored and non
             mirrored geometry will be meshed as a single wing. If not, this Wing's
             Airplane will automatically create another Wing with the mirrored geometry,
             modify both Wings' parameters, and add the reflected Wing to its list of
@@ -154,7 +154,7 @@ class Wing:
             mirror_only, see the class docstring. Can be a bool or a numpy bool and will
             be converted internally to a bool. The default is False.
         :param mirror_only: Set this to True if the Wing's geometry should be reflected
-            about the symmetry plane without retaining the non-reflected geometry. If
+            about the symmetry plane without retaining the non reflected geometry. If
             symmetric is True, mirror_only must be False. If mirror_only is True, then
             neither symmetryNormal_G nor symmetryPoint_G_Cg can be None. For more
             details on how this parameter interacts with symmetryNormal_G,
@@ -807,8 +807,8 @@ class Wing:
     # TEST: Consider adding unit tests for this method.
     @property
     def projected_area(self) -> None | float:
-        """The area of the Wing projected onto the plane defined by the wing axes'
-        xy-plane.
+        """The area of the Wing projected onto the plane defined by the wing axes' xy
+        plane.
 
         **Notes:**
 
@@ -953,7 +953,7 @@ class Wing:
         # Now we have tip position in wing axes relative to Ler
         tipLp_Wn_Ler = current_position_Wn_Ler
 
-        # Project the tip position onto the wing axes' y-direction (spanwise direction)
+        # Project the tip position onto the wing axes' y direction (spanwise direction)
         projected_tipLp_Wn_Ler = np.dot(
             tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
         ) * np.array([0.0, 1.0, 0.0])
@@ -1072,7 +1072,7 @@ class Wing:
             # Find the section vector and project it onto spanwise direction
             section_vector_Wn = next_position_Wn_Ler - current_position_Wn_Ler
 
-            # Project section vector onto spanwise direction (wing axes y-direction)
+            # Project section vector onto spanwise direction (wing axes y direction)
             projected_section_vector = np.dot(
                 section_vector_Wn, np.array([0.0, 1.0, 0.0])
             ) * np.array([0.0, 1.0, 0.0])

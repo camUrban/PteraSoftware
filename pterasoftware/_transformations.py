@@ -74,7 +74,7 @@ def generate_rot_T(
         the orientation of "B" axes with respect to "A" axes. For `passive=False`, it
         prescribes the angles by which to rotate a vector in "A" axes. In both cases,
         the rotations' type is specified by the intrinsic parameter. Angles are always
-        listed as [about x-axis, about y-axis, about z-axis], but are applied in the
+        listed as [about x axis, about y axis, about z axis], but are applied in the
         sequence given by `order` (e.g., order="zxy" applies angles[2], angles[0],
         angles[1]). Can be a tuple, list, or ndarray. Values are converted to floats
         internally. The units are in degrees.
@@ -85,7 +85,7 @@ def generate_rot_T(
     :param intrinsic: Set this to True to return a transformation matrix where each
         subsequent rotation is applied to the current, newly-rotated axes. Set this to
         False to return a transformation matrix where rotations are performed about the
-        original, non-rotated "A" axes. Can be a bool or a numpy bool and will be
+        original, non rotated "A" axes. Can be a bool or a numpy bool and will be
         converted internally to a bool.
     :param order: A str of three chars that represents the rotation order. Each char can
         be 'x', 'y', or 'z'. Only Tait-Bryan angles are accepted so all accepted chars
@@ -237,7 +237,7 @@ def generate_reflect_T(
         meters.
     :param plane_normal_A: An array-like object of 3 numbers representing a vector
         (in "A" axes) normal to the reflection plane. Can be a tuple, list, or ndarray.
-        It must have a non-zero magnitude, and will be normalized to a unit vector.
+        It must have a non zero magnitude, and will be normalized to a unit vector.
         Values are converted to floats internally.
     :param passive: Set this to True to return a matrix that changes reference point and
         axes of a vector in homogeneous coordinates to a reference point and axes

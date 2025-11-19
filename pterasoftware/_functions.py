@@ -438,7 +438,7 @@ def calculate_steady_freestream_wing_influences(
     due solely to the freestream.
 
     :param steady_solver: The steady solver for which to calculate the freestream-Wing
-    influences.
+        influences.
     :return: None
     """
     # Take the batch dot product of the freestream velocity (in the first Airplane's
@@ -506,8 +506,8 @@ def interp_between_points(
 
     :param stackStartPoints_A_a: The (M,3) ndarray of floats representing the positions
         of the M start points (in A axes, relative to point a). The units are in meters.
-    :param stackEndPoints_A_a: The (M,3) ndarray of floats representing the positions
-        of the M end points (in A axes, relative to point a). The units are in meters.
+    :param stackEndPoints_A_a: The (M,3) ndarray of floats representing the positions of
+        the M end points (in A axes, relative to point a). The units are in meters.
     :param norm_spacings: The (N,) ndarray of floats representing the N normalized
         spacing values between the start and end points. The values are unitless and
         must be normalized to lie in the range from 0.0 to 1.0.

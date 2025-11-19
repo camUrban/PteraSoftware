@@ -116,8 +116,8 @@ def number_in_range_return_float(
     max_val: int | float | None = None,
     max_inclusive: bool | None = None,
 ) -> float:
-    """Validates that a value is a number (an int or a float), that it lies in a
-    custom range, and returns it as a float.
+    """Validates that a value is a number (an int or a float), that it lies in a custom
+    range, and returns it as a float.
 
     np.nan, np.inf, and -np.inf aren't valid values.
 
@@ -385,7 +385,7 @@ def threeD_number_vectorLike_return_float_unit_vector(
 
     norm = np.linalg.norm(validated_vector)
     if norm == 0:
-        raise ValueError(f"{name} must have a non-zero length.")
+        raise ValueError(f"{name} must have a non zero length.")
     elif not np.isclose(norm, 1.0):
         return cast(np.ndarray, validated_vector / norm)
     return validated_vector
@@ -399,8 +399,8 @@ def threeD_spacing_vectorLike_return_tuple(
     of spacing specifications, and then returns it as a tuple of 3 spacing
     specifications.
 
-    Each element can either be a str ("sine" or "uniform") or a callable (custom
-    spacing function).
+    Each element can either be a str ("sine" or "uniform") or a callable (custom spacing
+    function).
 
     :param value: The value to validate.
     :param name: The name of the value.
@@ -493,7 +493,7 @@ def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarra
 
 # TEST: Consider adding unit tests for this function.
 def non_empty_list_return_list(value: Any, name: str) -> list:
-    """Validates a value is a non-empty list and returns it.
+    """Validates a value is a non empty list and returns it.
 
     :param value: The value to validate.
     :param name: The name of the value.

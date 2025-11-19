@@ -1,5 +1,5 @@
 """This script is an example of analyzing the unsteady convergence of an
-UnsteadyProblem with custom geometry and non-static motion. It should take 10-20
+UnsteadyProblem with custom geometry and non static motion. It should take 10-20
 minutes to run. It will display the convergence progress and results in the console."""
 
 import pterasoftware as ps

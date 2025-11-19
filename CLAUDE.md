@@ -203,11 +203,11 @@ Variables must follow one of these four patterns based on their requirements:
 
 **Passive angle vectors (relating two axis systems):**
 - `[variable name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
-- Example: `angles_E_to_B_izyx` (angles from Earth to body axes using intrinsic z-y'-x" sequence)
+- Example: `angles_E_to_B_izyx` (angles from Earth to body axes using intrinsic zy'x" sequence)
 
 **Active angle vectors (for rotation within current axis system):**
 - `[variable name]_act_[sequence ID]`
-- Example: `rotation_angles_act_izyx` (rotation angles using intrinsic z-y'-x" sequence)
+- Example: `rotation_angles_act_izyx` (rotation angles using intrinsic zy'x" sequence)
 
 #### Transformation Matrix Naming
 
@@ -394,18 +394,18 @@ There are four useful combinations of axes, points, and frames. Variables are de
 ### Angle Vectors and Transformations
 
 **Rotation Sequences (Tait-Bryan only):**
-- ixyz, ixzy, iyxz, iyzx, izxy, izyx: intrinsic sequences (x-y'-z", x-z'-y", etc.)
-- exyz, exzy, eyxz, eyzx, ezxy, ezyx: extrinsic sequences (x-y-z, x-z-y, etc.)
+- ixyz, ixzy, iyxz, iyzx, izxy, izyx: intrinsic sequences (xy'z", xz'y", etc.)
+- exyz, exzy, eyxz, eyzx, ezxy, ezyx: extrinsic sequences (xyz, xzy, etc.)
 
 **Passive Angle Vectors (relating axis systems):**
 - Variable pattern: `[name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
 - Text pattern: "[name] describing the orientation of [target axes name] relative to [source axes name] using an [sequence name] sequence"
-- Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic z-y'-x" sequence"
+- Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic zy'x" sequence"
 
 **Active Angle Vectors (rotating within axis system):**
 - Variable pattern: `[name]_act_[sequence ID]`
 - Text pattern: "[name] for rotation using an [sequence name] sequence"
-- Example: `angles_act_izyx` = "angles for rotation using an intrinsic z-y'-x" sequence"
+- Example: `angles_act_izyx` = "angles for rotation using an intrinsic zy'x" sequence"
 
 **Rotation and Transformation Matrices:**
 - **Passive rotation matrices:** `R_pas_[source]_to_[target]` (3x3)
@@ -424,11 +424,12 @@ There are four useful combinations of axes, points, and frames. Variables are de
 ## Miscellaneous Guidelines
 - Use clear, descriptive variable names
 - Avoid abbreviations unless they are well-known in the context
-- In docstrings and comments, never use em-dashes (—) or en-dashes (–); always use hyphens (-) for clarity
-- In docstrings and comments, never use a multiplication sign (×); always use a lowercase x (x)
-- In docstrings and comments, never use the pi symbol (π); always write "pi" instead (e.g., "2*pi" not "2π")
-- In docstrings and comments, never use the approximately-equal sign (≈); always write "~" instead (e.g., "a~b" not "a≈b")
-- **Coordinate and axis references**: When referring to axes, coordinates, or planes, use  lowercase letters with hyphens between coordinate letters and descriptors (e.g., "x-axis", "y-coordinate", "xz-plane", "z-direction"). However, never add hyphens between a word and "axis" or "axes" (e.g., "wing axis" not "wing-axis", "body axes" not "body-axes").  Never use uppercase letters for axis references in text.
+- Never hyphenate words in docstrings or comments. This is because they are often incorrectly wrapped by docformatter and incorrectly rendered in PyCharm's quick documentation. For example, even though not standard grammar, it's okay to write "non symmetric" instead of "non-symmetric".
+- In docstrings and comments, represent subtraction using hyphens surrounded by spaces ( - ); never use em-dashes (—) or en-dashes (–).
+- In docstrings and comments, never use a multiplication sign (×); always use a lowercase x or an asterisk surrounded by spaces (" x " or " * ")
+- In docstrings and comments, never use the pi symbol (π); always write "pi" instead (e.g., "2 * pi" not "2 π")
+- In docstrings and comments, never use the approximately-equal sign (≈); always write " ~ " instead (e.g., "a ~ b" not "a≈b")
+- **Coordinate and axis references**: When referring to axes, coordinates, or planes, use  lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, or docstrings
 - Always use straight single and double quotes, not curly ones
 - In .md files, use "…" instead of "...". In all other files, use "...".

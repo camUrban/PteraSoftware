@@ -88,7 +88,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # to the first Airplane's CG)
         self.stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
-        # Back-right, front-right, front-left, and back-left bound RingVortex points
+        # Back-right, front right, front left, and back left bound RingVortex points
         # (in the first Airplane's geometry axes, relative to the first Airplane's CG).
         self.stackBrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self.stackFrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
@@ -214,7 +214,7 @@ class SteadyRingVortexLatticeMethodSolver:
         for airplane in self.airplanes:
             wing: geometry.wing.Wing
             for wing in airplane.wings:
-                # Find a suitable length for the quasi-infinite legs of the
+                # Find a suitable length for the quasi infinite legs of the
                 # HorseshoeVortices on this wing. At twenty-times the Wing's span,
                 # these legs are essentially infinite.
                 infinite_leg_length = wing.span * 20
@@ -228,13 +228,13 @@ class SteadyRingVortexLatticeMethodSolver:
                             chordwise_position, spanwise_position
                         ]
 
-                        # Find the location of this Panel's front-left and
-                        # front-right RingVortex points (in the first Airplane's
+                        # Find the location of this Panel's front left and
+                        # front right RingVortex points (in the first Airplane's
                         # geometry axes, relative to the first Airplane's CG).
                         Flrvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
                         Frrvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
 
-                        # Define the location of the back-left and back-right
+                        # Define the location of the back left and back right
                         # RingVortex points based on whether the Panel is along the
                         # trailing edge or not.
                         if not panel.is_trailing_edge:

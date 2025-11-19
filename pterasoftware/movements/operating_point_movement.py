@@ -43,16 +43,16 @@ class OperatingPointMovement:
         :param base_operating_point: The base OperatingPoint from which the
             OperatingPoint at each time step will be created.
         :param ampVCg__E: The amplitude of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameters. Must be a non-negative number (int or
+            OperatingPoints' vCg__E parameters. Must be a non negative number (int or
             float), and is converted to a float internally. The amplitude must be low
             enough that it doesn't drive its base value out of the range of valid
             values. Otherwise, this OperatingPointMovement will try to create
             OperatingPoints with invalid parameter values. The units are in meters per
             second. The default is 0.0.
         :param periodVCg__E: The period of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameter. Must be a non-negative number (int or
+            OperatingPoints' vCg__E parameter. Must be a non negative number (int or
             float), and is converted to a float internally. It must be 0.0 if ampVCg__E
-            is 0.0 and non-zero if not. The units are in seconds. The default is 0.0.
+            is 0.0 and non zero if not. The units are in seconds. The default is 0.0.
         :param spacingVCg__E: Determines the spacing of the OperatingPointMovement's
             change in its OperatingPoints' vCg__E parameters. Can be "sine", "uniform",
             or a callable custom spacing function. Custom spacing functions are for
@@ -65,7 +65,7 @@ class OperatingPointMovement:
         :param phaseVCg__E: The phase offset of the first time step's OperatingPoint's
             vCg__E parameter relative to the base OperatingPoint's vCg__E parameter.
             Must be a number (int or float) in the range (-180.0, 180.0], and will be
-            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and non-
+            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and non
             zero if not. The units are in degrees. The default is 0.0.
         :return: None
         """
@@ -162,7 +162,7 @@ class OperatingPointMovement:
         # Create an empty list to hold each time step's OperatingPoint.
         operating_points = []
 
-        # Get the non-changing OperatingPoint attributes.
+        # Get the non changing OperatingPoint attributes.
         this_rho = self.base_operating_point.rho
         this_alpha = self.base_operating_point.alpha
         this_beta = self.base_operating_point.beta

@@ -559,7 +559,7 @@ def get_resampled_mcl(
         distances along the MCL (from the leading to the trailing edge) at which to
         return the resampled MCL points. Can be a tuple, list, or ndarray. The first
         value must be 0.0, the last must be 1.0, and the remaining must be in the range
-        [0.0, 1.0]. All values must be non-duplicated and in ascending order.
+        [0.0, 1.0]. All values must be non duplicated and in ascending order.
     :return: A (N,2) ndarray of floats that contains the positions of the resampled
         MCL points (in airfoil axes, relative to the leading point).
     """
@@ -650,3 +650,4 @@ param: Type1 | Type2
 - All existing code should gradually be updated to match this style
 - Use `docformatter` or similar tools to help maintain consistent formatting
 - Shape information is critical and must always be included in docstrings for arrays
+- Avoid using hyphens or other forms of dashes in docstrings or comments. This is because they are often incorrectly wrapped by docformatter and incorrectly rendered in PyCharm's quick documentation. For example, even though not standard grammar, it's okay to write "non symmetric" instead of "non-symmetric".

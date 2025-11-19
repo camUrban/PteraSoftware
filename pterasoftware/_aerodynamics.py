@@ -49,23 +49,23 @@ class RingVortex:
         """The initialization method.
 
         :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's front-right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front-right point is defined as
+            RingVortex's front right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front right point is defined as
             the end point of the RingVortex's right leg and the start point of its front
             leg. The units are in meters.
         :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's front-left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front-left point is defined as the
+            RingVortex's front left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front left point is defined as the
             end point of the RingVortex's front leg and the start point of its left leg.
             The units are in meters.
         :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's back-left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The back-left point is defined as the
+            RingVortex's back left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The back left point is defined as the
             end point of the RingVortex's left leg and the start point of its back leg.
             The units are in meters.
         :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's back-right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The back-right point is defined as the
+            RingVortex's back right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The back right point is defined as the
             end point of the RingVortex's back leg and the start point of its right leg.
             The units are in meters.
         :param strength: The strength of the RingVortex. Its units are in meters squared
@@ -135,16 +135,16 @@ class RingVortex:
         """Updates the position of the RingVortex and of its attributes.
 
         :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's front-right point (in the first Airplane's geometry axes,
+            the RingVortex's front right point (in the first Airplane's geometry axes,
             relative to the first Airplane's CG).
         :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's front-left point (in the first Airplane's geometry axes,
+            the RingVortex's front left point (in the first Airplane's geometry axes,
             relative to the first Airplane's CG).
         :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's back-left point (in the first Airplane's geometry axes,
+            the RingVortex's back left point (in the first Airplane's geometry axes,
             relative to the first Airplane's CG).
         :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's back-right point (in the first Airplane's geometry axes,
+            the RingVortex's back right point (in the first Airplane's geometry axes,
             relative to the first Airplane's CG).
         :return: None
         """
@@ -208,24 +208,24 @@ class HorseshoeVortex:
         """The initialization method.
 
         :param Frhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's front-right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front-right point is defined as
+            HorseshoeVortex's front right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front right point is defined as
             the start point of the HorseshoeVortex's front leg, which is also its one
             finite leg. The units are in meters.
         :param Flhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's front-left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front-left point is defined as the
+            HorseshoeVortex's front left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The front left point is defined as the
             end point of the HorseshoeVortex's front leg, which is also its one finite
             leg. The units are in meters.
         :param leftLegVector_GP1: A (3,) ndarray of floats representing the direction
             vector of the HorseshoeVortex's left leg (in the first Airplane's geometry
-            axes). The left leg starts from the front-left point and ends at the
-            back-left point. It is one of the HorseshoeVortex's two quasi-infinite legs,
-            the other being the right leg. The right leg's vector (in the first
-            Airplane's geometry axes) is defined as -1.0 times this vector. It will be
-            normalized to a unit vector during initialization. The units are in meters.
+            axes). The left leg starts from the front left point and ends at the back
+            left point. It is one of the HorseshoeVortex's two quasi infinite legs, the
+            other being the right leg. The right leg's vector (in the first Airplane's
+            geometry axes) is defined as -1.0 times this vector. It will be normalized
+            to a unit vector during initialization. The units are in meters.
         :param left_right_leg_lengths: The length of the HorseshoeVortex's left and
-            right quasi-infinite legs. I recommend setting it to at least 20 times the
+            right quasi infinite legs. I recommend setting it to at least 20 times the
             length of the finite leg. The units are in meters.
         :param strength: The strength of the HorseshoeVortex. Its units are in meters
             squared per second.
@@ -354,7 +354,7 @@ def collapsed_velocities_from_ring_vortices(
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
         the N points (in the first Airplane's geometry axes, observed from the Earth
@@ -428,7 +428,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
         the N points (in the first Airplane's geometry axes, observed from the Earth
@@ -498,7 +498,7 @@ def expanded_velocities_from_ring_vortices(
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
@@ -574,7 +574,7 @@ def collapsed_velocities_from_horseshoe_vortices(
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
         None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
         the N points (in the first Airplane's geometry axes, observed from the Earth
@@ -648,7 +648,7 @@ def expanded_velocities_from_horseshoe_vortices(
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
         None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
@@ -724,7 +724,7 @@ def _collapsed_velocities_from_line_vortices(
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
         the N points (in the first Airplane's geometry axes, observed from the Earth
@@ -849,7 +849,7 @@ def _expanded_velocities_from_line_vortices(
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
-    :param nu: A non-negative float representing the kinematic viscosity of the fluid.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)

@@ -22,10 +22,10 @@ class Panel:
 
     backLeg_G: This Panel's back leg vector (in geometry axes).
 
-    Frbvp_G_Cg: The position of this Panel's front-right bound vortex point (in geometry
+    Frbvp_G_Cg: The position of this Panel's front right bound vortex point (in geometry
     axes, relative to the CG).
 
-    Flbvp_G_Cg: The position of this Panel's front-left bound vortex point (in geometry
+    Flbvp_G_Cg: The position of this Panel's front left bound vortex point (in geometry
     axes, relative to the CG).
 
     Cpp_G_Cg: The position of this Panel's collocation point (in geometry axes, relative
@@ -41,10 +41,10 @@ class Panel:
 
     backLeg_GP1: This Panel's back leg vector (in the first Airplane's geometry axes).
 
-    Frbvp_GP1_CgP1: The position of this Panel's front-right bound vortex point (in the
+    Frbvp_GP1_CgP1: The position of this Panel's front right bound vortex point (in the
     first Airplane's geometry axes, relative to the first Airplane's CG).
 
-    Flbvp_GP1_CgP1: The position of this Panel's front-left bound vortex point (in the
+    Flbvp_GP1_CgP1: The position of this Panel's front left bound vortex point (in the
     first Airplane's geometry axes, relative to the first Airplane's CG).
 
     Cpp_GP1_CgP1: The position of this Panel's collocation point (in the first
@@ -178,21 +178,21 @@ class Panel:
 
     @property
     def Frbvp_G_Cg(self) -> np.ndarray:
-        """The position of this Panel's front-right bound vortex point (in geometry
+        """The position of this Panel's front right bound vortex point (in geometry
         axes, relative to the CG).
 
         :return: A (3,) ndarray of floats representing the position of this Panel's
-            front-right bound vortex point. The units are in meters.
+            front right bound vortex point. The units are in meters.
         """
         return cast(np.ndarray, self.Brpp_G_Cg + 0.75 * self.rightLeg_G)
 
     @property
     def Flbvp_G_Cg(self) -> np.ndarray:
-        """The position of this Panel's front-left bound vortex point (in geometry axes,
+        """The position of this Panel's front left bound vortex point (in geometry axes,
         relative to the CG).
 
         :return: A (3,) ndarray of floats representing the position of this Panel's
-            front-left bound vortex point. The units are in meters.
+            front left bound vortex point. The units are in meters.
         """
         return cast(np.ndarray, self.Flpp_G_Cg + 0.25 * self.leftLeg_G)
 
@@ -273,11 +273,11 @@ class Panel:
     # TEST: Consider adding unit tests for this method.
     @property
     def Frbvp_GP1_CgP1(self) -> np.ndarray | None:
-        """The position of this Panel's front-right bound vortex point (in the first
+        """The position of this Panel's front right bound vortex point (in the first
         Airplane's geometry axes, relative to the first Airplane's CG).
 
         :return: A (3,) ndarray of floats representing the position of this Panel's
-            front-right bound vortex point. The units are in meters. Returns None if
+            front right bound vortex point. The units are in meters. Returns None if
             this Panel is not part of a SteadyProblem or UnsteadyProblem.
         """
         if self.Brpp_GP1_CgP1 is None or self.rightLeg_GP1 is None:
@@ -287,12 +287,12 @@ class Panel:
     # TEST: Consider adding unit tests for this method.
     @property
     def Flbvp_GP1_CgP1(self) -> np.ndarray | None:
-        """The position of this Panel's front-left bound vortex point (in the first
+        """The position of this Panel's front left bound vortex point (in the first
         Airplane's geometry axes, relative to the first Airplane's CG).
 
         :return: A (3,) ndarray of floats representing the position of this Panel's
-            front-left bound vortex point. The units are in meters. Returns None if
-            this Panel is not part of a SteadyProblem or UnsteadyProblem.
+            front left bound vortex point. The units are in meters. Returns None if this
+            Panel is not part of a SteadyProblem or UnsteadyProblem.
         """
         if self.Flpp_GP1_CgP1 is None or self.leftLeg_GP1 is None:
             return None
@@ -354,8 +354,8 @@ class Panel:
 
         :return: A (3,) ndarray of floats representing an estimate of this Panel's unit
             normal vector. The sign is determined via the right-hand rule given the
-            orientation of Panel's leg vectors (front-right to front-left to back-left
-            to back-right).
+            orientation of Panel's leg vectors (front right to front left to back left
+            to back right).
         """
         return cast(np.ndarray, self._cross_G / np.linalg.norm(self._cross_G))
 
@@ -367,8 +367,8 @@ class Panel:
 
         :return: A (3,) ndarray of floats representing an estimate of this Panel's unit
             normal vector. The sign is determined via the right-hand rule given the
-            orientation of Panel's leg vectors (front-right to front-left to back-left
-            to back-right). Returns None if this Panel is not part of a SteadyProblem or
+            orientation of Panel's leg vectors (front right to front left to back left
+            to back right). Returns None if this Panel is not part of a SteadyProblem or
             UnsteadyProblem.
         """
         if (
@@ -415,8 +415,8 @@ class Panel:
         """This Panel's first diagonal vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing the Panel's first diagonal
-            vector, which is defined as the vector from the back-left panel point to the
-            front-right panel point. The units are in meters.
+            vector, which is defined as the vector from the back left panel point to the
+            front right panel point. The units are in meters.
         """
         return cast(np.ndarray, self.Frpp_G_Cg - self.Blpp_G_Cg)
 
@@ -425,8 +425,8 @@ class Panel:
         """This Panel's second diagonal vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing the Panel's second diagonal
-            vector, which is defined as the vector from the back-right panel point to
-            the front-left panel point. The units are in meters.
+            vector, which is defined as the vector from the back right panel point to
+            the front left panel point. The units are in meters.
         """
         return cast(np.ndarray, self.Flpp_G_Cg - self.Brpp_G_Cg)
 

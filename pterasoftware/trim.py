@@ -108,7 +108,7 @@ def analyze_steady_trim(
     :param boundsExternalFX_W: tuple of two numbers
 
         This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of external forces (in the wind axes' x-direction) to
+        It determines the range of external forces (in the wind axes' x direction) to
         search, in units of Newtons. The SteadyProblem's OperatingPoint's initial
         externalFX_W must be within these bounds.
 
@@ -279,10 +279,10 @@ def analyze_steady_trim(
         # coefficients. However, simply checking trim against forces and moments in
         # Newtons and Newton meters isn't a good solution because, for example,
         # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non-dimensionalize with reference area,
+        # flying microrobot. I'm choosing to non dimensionalize with reference area,
         # as that is what is used for aerodynamic force coefficients. If we later
         # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non-dimensionalize using different
+        # approach, as moment coefficients non dimensionalize using different
         # dimensions.
         externalForces_W = np.array([externalFX_W, 0, weight])
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
@@ -465,7 +465,7 @@ def analyze_unsteady_trim(
     :param boundsExternalFX_W: tuple of two numbers
 
         This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of external forces (in the wind axes' x-direction) to
+        It determines the range of external forces (in the wind axes' x direction) to
         search, in units of Newtons. The base OperatingPoint's initial
         externalFX_W must be within these bounds.
 
@@ -632,10 +632,10 @@ def analyze_unsteady_trim(
         # coefficients. However, simply checking trim against forces and moments in
         # Newtons and Newton meters isn't a good solution because, for example,
         # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non-dimensionalize with reference area,
+        # flying microrobot. I'm choosing to non dimensionalize with reference area,
         # as that is what is used for aerodynamic force coefficients. If we later
         # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non-dimensionalize using different
+        # approach, as moment coefficients non dimensionalize using different
         # dimensions.
         externalForces_W = np.array([externalFX_W, 0, weight])
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref

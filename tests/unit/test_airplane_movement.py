@@ -148,7 +148,7 @@ class TestAirplaneMovement(unittest.TestCase):
         )
 
         # Extract angles describing the orientation of body axes relative to Earth
-        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        # axes using an intrinsic zy'x" sequence from generated Airplanes.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
 
         # Calculate expected sine wave values.
@@ -169,7 +169,7 @@ class TestAirplaneMovement(unittest.TestCase):
         )
 
         # Extract angles describing the orientation of body axes relative to Earth
-        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        # axes using an intrinsic zy'x" sequence from generated Airplanes.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
 
         # Calculate expected triangular wave values.
@@ -191,7 +191,7 @@ class TestAirplaneMovement(unittest.TestCase):
         )
 
         # Extract angles describing the orientation of body axes relative to Earth
-        # axes using an intrinsic z-y'-x" sequence from generated Airplanes.
+        # axes using an intrinsic zy'x" sequence from generated Airplanes.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
         angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
         angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
@@ -834,7 +834,7 @@ class TestAirplaneMovement(unittest.TestCase):
         airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
 
         # Extract angles describing the orientation of body axes relative to Earth
-        # axes using an intrinsic z-y'-x" sequence.
+        # axes using an intrinsic zy'x" sequence.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
         angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
         angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
@@ -867,7 +867,7 @@ class TestAirplaneMovement(unittest.TestCase):
         airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
 
         # Extract angles describing the orientation of body axes relative to Earth
-        # axes using an intrinsic z-y'-x" sequence.
+        # axes using an intrinsic zy'x" sequence.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
         angles_y = np.array([airplane.angles_E_to_B_izyx[1] for airplane in airplanes])
         angles_x = np.array([airplane.angles_E_to_B_izyx[2] for airplane in airplanes])
@@ -949,7 +949,7 @@ class TestAirplaneMovement(unittest.TestCase):
         airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
 
         # Extract z-angles describing the orientation of body axes relative to
-        # Earth axes using an intrinsic z-y'-x" sequence.
+        # Earth axes using an intrinsic zy'x" sequence.
         angles_z = np.array([airplane.angles_E_to_B_izyx[0] for airplane in airplanes])
 
         # Verify that values vary (not constant).

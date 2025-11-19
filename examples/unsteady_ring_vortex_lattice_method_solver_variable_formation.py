@@ -1,6 +1,6 @@
 """This is script is an example of how to run Ptera Software's
 UnsteadyRingVortexLatticeMethodSolver on three Airplanes, flying in formation,
-each with custom geometry and non-static motion."""
+each with custom geometry and non static motion."""
 
 import pterasoftware as ps
 

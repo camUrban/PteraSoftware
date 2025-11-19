@@ -1,12 +1,13 @@
-"""Contains the class definition of this package's steady horseshoe vortex lattice
-solver.
+"""Contains the SteadyHorseshoeVortexLatticeMethodSolver class.
 
-This module contains the following classes:
-    SteadyHorseshoeVortexLatticeMethodSolver: This is an aerodynamics solver that
-    uses a steady horseshoe vortex lattice method.
+**Contains the following classes:**
 
-This module contains the following functions:
-    None
+SteadyHorseshoeVortexLatticeMethodSolver: A class used to solve SteadyProblems with the
+horseshoe vortex lattice method.
+
+**Contains the following functions:**
+
+None
 """
 
 from __future__ import annotations
@@ -28,35 +29,30 @@ from . import problems
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class SteadyHorseshoeVortexLatticeMethodSolver:
-    """This is an aerodynamics solver that uses a steady horseshoe vortex lattice
-    method.
+    """A class used to solve SteadyProblems with the horseshoe vortex lattice method.
 
-    Citation:
-        Adapted from:         aerodynamics.vlm3.py in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    04/28/2020
+    **Contains the following methods:**
 
-    This class contains the following public methods:
-        run: Run the solver on the SteadyProblem.
+    run: Runs the solver on the SteadyProblem.
 
-        calculate_solution_velocity: This function takes in a group of points (in the
-        first Airplane's geometry axes, relative to the first Airplane's CG). At
-        every point, it finds the fluid velocity (in the first Airplane's geometry
-        axes, observed from the Earth frame) at that point due to the freestream
-        velocity and the induced velocity from every HorseshoeVortex.
+    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
+    geometry axes, observed from the Earth frame) at one or more points (in the first
+    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
+    velocity and the induced velocity from every HorseshoeVortex.
 
-    This class contains the following class attributes:
-        None
+    **Citation:**
 
-    Subclassing:
-        This class is not meant to be subclassed.
+    Adapted from: aerodynamics.vlm3.py in AeroSandbox
+
+    Author: Peter Sharpe
+
+    Date of retrieval: 04/28/2020
     """
 
     def __init__(self, steady_problem: problems.SteadyProblem) -> None:
-        """This is the initialization method.
+        """The initialization method.
 
-        :param steady_problem: SteadyProblem
-            This is the SteadyProblem to be solved.
+        :param steady_problem: The SteadyProblem to be solved.
         :return: None
         """
         if not isinstance(steady_problem, problems.SteadyProblem):
@@ -109,15 +105,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.gridStreamlinePoints_GP1_CgP1: np.ndarray | None = None
 
     def run(self, logging_level: str = "Warning") -> None:
-        """Run the solver on the SteadyProblem.
+        """Runs the solver on the SteadyProblem.
 
-        :param logging_level: str, optional
-
-            This parameter determines the detail of information that the solver's
+        :param logging_level: Determines the detail of information that the solver's
             logger will output while running. The options are, in order of detail and
-            severity, "Debug", "Info", "Warning", "Error", "Critical". The default
-            value is "Warning".
-
+            severity, "Debug", "Info", "Warning", "Error", "Critical". The default is
+            "Warning".
         :return: None
         """
         # Configure the SteadyProblem's logger.
@@ -160,11 +153,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         _functions.calculate_streamlines(self)
 
     def _initialize_panel_vortices(self) -> None:
-        """This method calculates the locations of the HorseshoeVortex vertices,
-        and then initializes the HorseshoeVortices.
+        """Calculates the locations of the HorseshoeVortex vertices, and then
+        initializes the HorseshoeVortices.
 
         Every Panel has a HorseshoeVortex. The HorseshoeVortices' front legs runs along
-        their Panel's quarter chord from right to left. Their quasi-infinite legs point
+        their Panel's quarter chord from right to left. Their quasi infinite legs point
         backward in the direction of the freestream.
 
         :return: None
@@ -181,7 +174,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 _span = wing.span
                 assert _span is not None
 
-                # Find a suitable length for the quasi-infinite legs of the
+                # Find a suitable length for the quasi infinite legs of the
                 # HorseshoeVortices on this Wing. At twenty-times the Wing's span,
                 # these legs are essentially infinite.
                 infinite_leg_length = _span * 20
@@ -219,8 +212,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         )
 
     def _collapse_geometry(self) -> None:
-        """This method converts attributes of the SteadyProblem's geometry into 1D
-        ndarrays. This facilitates vectorization, which speeds up the solver.
+        """Converts attributes of the SteadyProblem's geometry into 1D ndarrays.
+
+        This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
@@ -300,8 +294,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     global_panel_position += 1
 
     def _calculate_wing_wing_influences(self) -> None:
-        """This method finds this SteadyProblem's 2D ndarray of Wing-Wing influence
-        coefficients (observed from the Earth frame).
+        """Finds this SteadyProblem's 2D ndarray of Wing-Wing influence coefficients
+        (observed from the Earth frame).
 
         :return: None
         """
@@ -333,7 +327,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
     def _calculate_vortex_strengths(self) -> None:
-        """Solve for the strength of each Panel's HorseshoeVortex.
+        """Solves for the strength of each Panel's HorseshoeVortex.
 
         :return: None
         """
@@ -352,29 +346,25 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
     def calculate_solution_velocity(
         self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
     ) -> np.ndarray:
-        """This function takes in a group of points (in the first Airplane's geometry
-        axes, relative to the first Airplane's CG). At every point, it finds the
-        fluid velocity (in the first Airplane's geometry axes, observed from the
-        Earth frame) at that point due to the freestream velocity and the induced
-        velocity from every HorseshoeVortex.
+        """Finds the fluid velocity (in the first Airplane's geometry axes, observed
+        from the Earth frame) at one or more points (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG) due to the freestream velocity and
+        the induced velocity from every HorseshoeVortex.
 
-        Note: This method assumes that the correct strengths for the
-        HorseshoeVortices have already been calculated and set.
+        **Notes:**
 
-        :param stackP_GP1_CgP1: (N,3) array-like of numbers
+        This method assumes that the correct strengths for the HorseshoeVortices have
+        already been calculated and set.
 
-            Positions of the evaluation points (in the first Airplane's geometry
-            axes, relative to the first Airplane's CG). Can be any array-like object
-            (tuple, list, or ndarray) with size (N, 3) that has numeric elements (int
-            or float). Values are converted to floats internally. The units are in
-            meters.
-
-        :return: (N,3) ndarray of floats
-
-            The velocity (in the first Airplane's geometry axes, observed from the
-            Earth frame) at every evaluation point due to the summed effects of the
-            freestream velocity and the induced velocity from every HorseshoeVortex.
-            The units are in meters per second.
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list,or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :return: A (N,3) ndarray of floats representing the velocity (in the first
+            Airplane's geometry axes, observed from the Earth frame) at each evaluation
+            point due to the summed effects of the freestream velocity and the induced
+            velocity from every HorseshoeVortex. The units are in meters per second.
         """
         stackP_GP1_CgP1 = (
             _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
@@ -398,12 +388,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)
 
     def _calculate_loads(self) -> None:
-        """Calculate the forces (in the first Airplane's geometry axes) and moments (
-        in the first Airplane's geometry axes, relative to the first Airplane's CG)
-        on every Panel.
+        """Calculates the forces (in the first Airplane's geometry axes) and moments (in
+        the first Airplane's geometry axes, relative to the first Airplane's CG) on
+        every Panel.
 
-        Note: This method assumes that the correct strengths for the
-        HorseshoeVortices have already been calculated and set.
+        **Notes:**
+
+        This method assumes that the correct strengths for the HorseshoeVortices have
+        already been calculated and set.
 
         :return: None
         """

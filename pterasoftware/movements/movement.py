@@ -24,12 +24,12 @@ class Movement:
 
     **Contains the following methods:**
 
-    max_period: The longest period of motion of Movement's sub-movement objects, the
-    motion(s) of its sub-sub-movement object(s), and the motions of its
-    sub-sub-sub-movement objects.
+    max_period: The longest period of motion of Movement's sub movement objects, the
+    motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
+    movement objects.
 
-    static: Flags if Movement's sub-movement objects, its sub-sub-movement object(s),
-    and its sub-sub-sub-movement objects all represent no motion.
+    static: Flags if Movement's sub movement objects, its sub sub movement object(s),
+    and its sub sub sub movement objects all represent no motion.
     """
 
     def __init__(
@@ -76,8 +76,8 @@ class Movement:
         :param num_steps: The number of time steps of the unsteady simulation. If
             initialized as None, and Movement isn't static, Movement will calculate a
             value for num_steps such that the simulation will cover some number of
-            cycles of the maximum period of all the motion described in Movement's sub-
-            movement objects, sub-sub-movement object(s), and sub-sub-sub-movement
+            cycles of the maximum period of all the motion described in Movement's sub
+            movement objects, sub sub movement object(s), and sub sub sub movement
             objects. If num_steps is initialized as None, and Movement is static,
             Movement will calculate a value for num_steps such that the simulation will
             result in a wake extending back by some number of reference chord lengths.
@@ -260,7 +260,7 @@ class Movement:
                             f"Wings cannot undergo motion that changes their symmetry "
                             f"type. This happens when a symmetric Wing moves such "
                             f"that its symmetry plane is no longer coincident with "
-                            f"the wing axes' yz-plane or vice versa."
+                            f"the wing axes' yz plane or vice versa."
                         )
 
         # Generate a lists of OperatingPoints that are the steps through the
@@ -271,9 +271,9 @@ class Movement:
 
     @property
     def max_period(self) -> float:
-        """The longest period of motion of Movement's sub-movement objects, the
-        motion(s) of its sub-sub-movement object(s), and the motions of its
-        sub-sub-sub-movement objects.
+        """The longest period of motion of Movement's sub movement objects, the
+        motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
+        movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.
@@ -294,11 +294,11 @@ class Movement:
 
     @property
     def static(self) -> bool:
-        """Flags if the Movement's sub-movement objects, its sub-sub-movement object(s),
-        and its sub-sub-sub-movement objects all represent no motion.
+        """Flags if the Movement's sub movement objects, its sub sub movement object(s),
+        and its sub sub sub movement objects all represent no motion.
 
-        :return: True if Movement's sub-movement objects, its sub-sub-movement
-            object(s), and its sub-sub-sub-movement objects all represent no motion.
+        :return: True if Movement's sub movement objects, its sub sub movement
+            object(s), and its sub sub sub movement objects all represent no motion.
             False otherwise.
         """
         return self.max_period == 0

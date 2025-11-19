@@ -62,7 +62,7 @@ class AirplaneMovement:
         :param wing_movements: A list of the WingMovements associated with each of the
             base Airplane's Wings. It must have the same length as the base Airplane's
             list of Wings.
-        :param ampCg_E_CgP1: An array-like object of non-negative numbers (int or float)
+        :param ampCg_E_CgP1: An array-like object of non negative numbers (int or float)
             with shape (3,) representing the amplitudes of the AirplaneMovement's
             changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each amplitude must be
@@ -72,11 +72,11 @@ class AirplaneMovement:
             must be all zeros, this means that the first Airplane's ampCg_E_CgP1
             parameter must also be all zeros. The units are in meters. The default is
             (0.0, 0.0, 0.0).
-        :param periodCg_E_CgP1: An array-like object of non-negative numbers (int or
+        :param periodCg_E_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the AirplaneMovement's
             changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each element must be 0.0
-            if the corresponding element in ampCg_E_CgP1 is 0.0 and non-zero if not. The
+            if the corresponding element in ampCg_E_CgP1 is 0.0 and non zero if not. The
             units are in seconds. The default is (0.0, 0.0, 0.0).
         :param spacingCg_E_CgP1: An array-like object of strs or callables with shape
             (3,) representing the spacing of the AirplaneMovement's changes in its
@@ -94,9 +94,9 @@ class AirplaneMovement:
             Airplane's Cg_E_CgP1 parameter relative to the base Airplane's Cg_E_CgP1
             parameter. Can be a tuple, list, or ndarray. Elements must lie in the range
             (-180.0, 180.0]. Each element must be 0.0 if the corresponding element in
-            ampCg_E_CgP1 is 0.0 and non-zero if not. Values are converted to floats
+            ampCg_E_CgP1 is 0.0 and non zero if not. Values are converted to floats
             internally. The units are in degrees. The default is (0.0, 0.0, 0.0).
-        :param ampAngles_E_to_B_izyx: An array-like object of non-negative numbers (int
+        :param ampAngles_E_to_B_izyx: An array-like object of non negative numbers (int
             or float) with shape (3,) representing the amplitudes of the
             AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
             Can be a tuple, list, or ndarray. Its elements must lie in the range [0.0,
@@ -105,12 +105,12 @@ class AirplaneMovement:
             values. Otherwise, this AirplaneMovement will try to create Airplanes with
             invalid parameter values. The units are in degrees. The default is (0.0,
             0.0, 0.0).
-        :param periodAngles_E_to_B_izyx: An array-like object of non-negative numbers
+        :param periodAngles_E_to_B_izyx: An array-like object of non negative numbers
             (int or float) with shape (3,) representing the periods of the
             AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
             Can be a tuple, list, or ndarray. Values are converted to floats internally.
             Each element must be 0.0 if the corresponding element in
-            ampAngles_E_to_B_izyx is 0.0 and non-zero if not. The units are in seconds.
+            ampAngles_E_to_B_izyx is 0.0 and non zero if not. The units are in seconds.
             The default is (0.0, 0.0, 0.0).
         :param spacingAngles_E_to_B_izyx: An array-like object of strs or callables with
             shape (3,) representing the spacing of the AirplaneMovement's change in its
@@ -128,7 +128,7 @@ class AirplaneMovement:
             time step's Airplane's angles_E_to_B_izyx parameter relative to the base
             Airplane's angles_E_to_B_izyx parameter. Can be a tuple, list, or ndarray.
             Elements must lie in the range (-180.0, 180.0]. Each element must be 0.0 if
-            the corresponding element in ampAngles_E_to_B_izyx is 0.0 and non-zero if
+            the corresponding element in ampAngles_E_to_B_izyx is 0.0 and non zero if
             not. Values are converted to floats internally. The units are in degrees.
             The default is (0.0, 0.0, 0.0).
         :return: None
@@ -154,14 +154,14 @@ class AirplaneMovement:
             ampCg_E_CgP1, "ampCg_E_CgP1"
         )
         if not np.all(ampCg_E_CgP1 >= 0.0):
-            raise ValueError("All elements in ampCg_E_CgP1 must be non-negative.")
+            raise ValueError("All elements in ampCg_E_CgP1 must be non negative.")
         self.ampCg_E_CgP1 = ampCg_E_CgP1
 
         periodCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
             periodCg_E_CgP1, "periodCg_E_CgP1"
         )
         if not np.all(periodCg_E_CgP1 >= 0.0):
-            raise ValueError("All elements in periodCg_E_CgP1 must be non-negative.")
+            raise ValueError("All elements in periodCg_E_CgP1 must be non negative.")
         for period_index, period in enumerate(periodCg_E_CgP1):
             amp = self.ampCg_E_CgP1[period_index]
             if amp == 0 and period != 0:
@@ -214,7 +214,7 @@ class AirplaneMovement:
         )
         if not np.all(periodAngles_E_to_B_izyx >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_E_to_B_izyx must be non-negative."
+                "All elements in periodAngles_E_to_B_izyx must be non negative."
             )
         for period_index, period in enumerate(periodAngles_E_to_B_izyx):
             amp = self.ampAngles_E_to_B_izyx[period_index]
@@ -366,7 +366,7 @@ class AirplaneMovement:
         # Create an empty list to hold each time step's Airplane.
         airplanes = []
 
-        # Get the non-changing Airplane attributes.
+        # Get the non changing Airplane attributes.
         this_name = self.base_airplane.name
         this_weight = self.base_airplane.weight
 

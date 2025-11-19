@@ -68,7 +68,7 @@ class WingCrossSectionMovement:
 
         :param base_wing_cross_section: The base WingCrossSection from which the
             WingCrossSection at each time step will be created.
-        :param ampLp_Wcsp_Lpp: An array-like object of non-negative numbers (int or
+        :param ampLp_Wcsp_Lpp: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             WingCrossSectionMovement's changes in its WingCrossSections' Lp_Wcsp_Lpp
             parameters. Can be a tuple, list, or ndarray. Values are converted to floats
@@ -76,12 +76,12 @@ class WingCrossSectionMovement:
             value out of the range of valid values. Otherwise, this
             WingCrossSectionMovement will try to create WingCrossSections with invalid
             parameter values. The units are in meters. The default is (0.0, 0.0, 0.0).
-        :param periodLp_Wcsp_Lpp: An array-like object of non-negative numbers (int or
+        :param periodLp_Wcsp_Lpp: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the
             WingCrossSectionMovement's changes in its WingCrossSections' Lp_Wcsp_Lpp
             parameters. Can be a tuple, list, or ndarray. Values are converted to floats
             internally. Each element must be 0.0 if the corresponding element in
-            ampLp_Wcsp_Lpp is 0.0 and non-zero if not. The units are in seconds. The
+            ampLp_Wcsp_Lpp is 0.0 and non zero if not. The units are in seconds. The
             default is (0.0, 0.0, 0.0).
         :param spacingLp_Wcsp_Lpp: An array-like object of strs or callables with shape
             (3,) representing the spacing of the WingCrossSectionMovement's changes in
@@ -99,10 +99,10 @@ class WingCrossSectionMovement:
             step's WingCrossSection's Lp_Wcsp_Lpp parameter relative to the base
             WingCrossSection's Lp_Wcsp_Lpp parameter. Can be a tuple, list, or ndarray.
             Elements must lie in the range (-180.0, 180.0]. Each element must be 0.0 if
-            the corresponding element in ampLp_Wcsp_Lpp is 0.0 and non-zero if not.
+            the corresponding element in ampLp_Wcsp_Lpp is 0.0 and non zero if not.
             Values are converted to floats internally. The units are in degrees. The
             default is (0.0, 0.0, 0.0).
-        :param ampAngles_Wcsp_to_Wcs_ixyz: An array-like object of non-negative numbers
+        :param ampAngles_Wcsp_to_Wcs_ixyz: An array-like object of non negative numbers
             (int or float) with shape (3,) representing the amplitudes of the
             WingCrossSectionMovement's changes in its WingCrossSections'
             angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray. Values
@@ -111,12 +111,12 @@ class WingCrossSectionMovement:
             this WingCrossSectionMovement will try to create WingCrossSections with
             invalid parameter values. The units are in degrees. The default is (0.0,
             0.0, 0.0).
-        :param periodAngles_Wcsp_to_Wcs_ixyz: An array-like object of non-negative
+        :param periodAngles_Wcsp_to_Wcs_ixyz: An array-like object of non negative
             numbers (int or float) with shape (3,) representing the periods of the
             WingCrossSectionMovement's changes in its WingCrossSections'
             angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray. Values
             are converted to floats internally. Each element must be 0.0 if the
-            corresponding element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if
+            corresponding element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non zero if
             not. The units are in seconds. The default is (0.0, 0.0, 0.0).
         :param spacingAngles_Wcsp_to_Wcs_ixyz: An array-like object of strs or callables
             with shape (3,) representing the spacing of the WingCrossSectionMovement's
@@ -136,7 +136,7 @@ class WingCrossSectionMovement:
             relative to the base WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter.
             Can be a tuple, list, or ndarray. Elements must lie in the range (-180.0,
             180.0]. Each element must be 0.0 if the corresponding element in
-            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non-zero if not. Values are converted
+            ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non zero if not. Values are converted
             to floats internally. The units are in degrees. The default is (0.0, 0.0,
             0.0).
         :return: None
@@ -151,14 +151,14 @@ class WingCrossSectionMovement:
             ampLp_Wcsp_Lpp, "ampLp_Wcsp_Lpp"
         )
         if not np.all(ampLp_Wcsp_Lpp >= 0.0):
-            raise ValueError("All elements in ampLp_Wcsp_Lpp must be non-negative.")
+            raise ValueError("All elements in ampLp_Wcsp_Lpp must be non negative.")
         self.ampLp_Wcsp_Lpp = ampLp_Wcsp_Lpp
 
         periodLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             periodLp_Wcsp_Lpp, "periodLp_Wcsp_Lpp"
         )
         if not np.all(periodLp_Wcsp_Lpp >= 0.0):
-            raise ValueError("All elements in periodLp_Wcsp_Lpp must be non-negative.")
+            raise ValueError("All elements in periodLp_Wcsp_Lpp must be non negative.")
         for period_index, period in enumerate(periodLp_Wcsp_Lpp):
             amp = self.ampLp_Wcsp_Lpp[period_index]
             if amp == 0 and period != 0:
@@ -215,7 +215,7 @@ class WingCrossSectionMovement:
         )
         if not np.all(periodAngles_Wcsp_to_Wcs_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be non-negative."
+                "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be non negative."
             )
         for period_index, period in enumerate(periodAngles_Wcsp_to_Wcs_ixyz):
             amp = self.ampAngles_Wcsp_to_Wcs_ixyz[period_index]
@@ -357,7 +357,7 @@ class WingCrossSectionMovement:
         # Create an empty list to hold each time step's WingCrossSection.
         wing_cross_sections = []
 
-        # Get the non-changing WingCrossSectionAttributes.
+        # Get the non changing WingCrossSectionAttributes.
         this_airfoil = self.base_wing_cross_section.airfoil
         this_num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
         this_chord = self.base_wing_cross_section.chord

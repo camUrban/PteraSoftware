@@ -69,7 +69,7 @@ class OperatingPoint:
             vector, and (2) we always assume a still fluid in our simulations, this
             value is equivalent to the freestream speed (the speed of the apparent wind,
             infinitely far away from the Airplane or Airplanes, observed while moving at
-            the same speed as the non-accelerating CG or CGs). It must be a positive
+            the same speed as the non accelerating CG or CGs). It must be a positive
             number (int or float) and will be converted internally to a float. Its units
             are in meters per second. The default is 10.0.
         :param alpha: The angle of attack for the problem's Airplane(s). For more

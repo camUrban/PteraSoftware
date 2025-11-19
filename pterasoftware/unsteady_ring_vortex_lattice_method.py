@@ -95,8 +95,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.stackCpp_GP1_CgP1: np.ndarray | None = None
         self._stackLastCpp_GP1_CgP1: np.ndarray | None = None
 
-        # The current and last time step's back-right, front-right, front-left,
-        # and back-left bound RingVortex points (in the first Airplane's geometry
+        # The current and last time step's back right, front right, front left,
+        # and back left bound RingVortex points (in the first Airplane's geometry
         # axes, relative to the first Airplane's CG).
         self.stackBrbrvp_GP1_CgP1: np.ndarray | None = None
         self.stackFrbrvp_GP1_CgP1: np.ndarray | None = None
@@ -138,7 +138,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._current_wake_vortex_strengths: np.ndarray | None = None
         self._current_wake_vortex_ages: np.ndarray | None = None
 
-        # The current time step's back-right, front-right, front-left, and back-left
+        # The current time step's back right, front right, front left, and back left
         # wake RingVortex points (in the first Airplane's geometry axes, relative to
         # the first Airplane's CG).
         self._currentStackBrwrvp_GP1_CgP1: np.ndarray | None = None
@@ -520,13 +520,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 chordwise_position, spanwise_position
                             ]
 
-                            # Find the location of this Panel's front-left and
-                            # front-right RingVortex points (in the first Airplane's
+                            # Find the location of this Panel's front left and
+                            # front right RingVortex points (in the first Airplane's
                             # geometry axes, relative to the first Airplane's CG).
                             Flrvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
                             Frrvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
 
-                            # Define the location of the back-left and back-right
+                            # Define the location of the back left and back right
                             # RingVortex points based on whether the Panel is along
                             # the trailing edge or not.
                             if not panel.is_trailing_edge:

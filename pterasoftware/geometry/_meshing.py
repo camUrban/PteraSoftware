@@ -275,7 +275,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             #  root point? Also then we perform an passive transformation to find
             #  them in geometry axes relative to the CG? Why do we even need to
             #  reflect them if we are staying in wing axes? If we take a reflected a
-            #  non-reflected Wing that are otherwise identical, they should have the
+            #  non reflected Wing that are otherwise identical, they should have the
             #  same coordinates in their respective wing axes relative to their
             #  respective leading edge root points. So why is the active
             #  transformation necessary?
@@ -363,10 +363,10 @@ def _get_mcl_points(
     :return: A list of four (N,1) ndarrays of floats, where N is the number of points at
         which we'd like to sample each Airfoil's MCL. The ndarrays contain components of
         the positions of points along each Airfoil's MCL. In order, the ndarrays
-        returned are, (1) the inner Airfoil's MCL points' y-components, (2) the inner
-        Airfoil's MCL points' x-components (3) the outer Airfoil's MCL points'
-        y-components, and (4) the outer Airfoil's MCL points' x-components. The values
-        are normalized from 0.0 to 1.0 and are unitless.
+        returned are, (1) the inner Airfoil's MCL points' y components, (2) the inner
+        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points' y
+        components, and (4) the outer Airfoil's MCL points' x components. The values are
+        normalized from 0.0 to 1.0 and are unitless.
     """
 
     # Make the MCLs for each Airfoil. First index is point number, second index is
@@ -375,22 +375,22 @@ def _get_mcl_points(
     inner_mcl_points_Ai_lpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
     outer_mcl_points_Ao_lpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
 
-    # Extract the y-components of the inner Airfoil's MCL points (in the inner
+    # Extract the y components of the inner Airfoil's MCL points (in the inner
     # Airfoil's axes, relative to the inner Airfoil's leading point) and put them in
     # a column vector.
     inner_mcl_pointsY_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 1], 1)
 
-    # Extract the x-components of the inner Airfoil's MCL points (in the inner
+    # Extract the x components of the inner Airfoil's MCL points (in the inner
     # Airfoil's axes, relative to the inner Airfoil's leading point) and put them in
     # a column vector.
     inner_mcl_pointsX_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 0], 1)
 
-    # Extract the y-components of the outer Airfoil's MCL points (in the outer
+    # Extract the y components of the outer Airfoil's MCL points (in the outer
     # Airfoil's axes, relative to the outer Airfoil's leading point) and put them in
     # a column vector.
     outer_mcl_pointsY_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 1], 1)
 
-    # Extract the x-components of the outer Airfoil's MCL points (in the outer
+    # Extract the x components of the outer Airfoil's MCL points (in the outer
     # Airfoil's axes, relative to the outer Airfoil's leading point) and put them in
     # a column vector.
     outer_mcl_pointsX_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 0], 1)
@@ -428,22 +428,22 @@ def _get_mcs_points(
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
     :param inner_mcl_pointsY_Ai_lpAi: A (M,1) ndarray of floats, where M is the number
-        of chordwise points in the mesh. Each element represents the y-component of the
+        of chordwise points in the mesh. Each element represents the y component of the
         inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
     :param inner_mcl_pointsX_Ai_lpAi: A (M,1) ndarray of floats, where M is the number
-        of chordwise points in the mesh. Each element represents the x-component of the
+        of chordwise points in the mesh. Each element represents the x component of the
         inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
     :param outer_mcl_pointsY_Ao_lpAo: A (M,1) ndarray of floats, where M is the number
-        of chordwise points in the mesh. Each element represents the y-component of the
+        of chordwise points in the mesh. Each element represents the y component of the
         outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
     :param outer_mcl_pointsX_Ao_lpAo: A (M,1) ndarray of floats, where M is the number
-        of chordwise points in the mesh. Each element represents the x-component of the
+        of chordwise points in the mesh. Each element represents the x component of the
         outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.

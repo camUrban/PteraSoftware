@@ -54,7 +54,7 @@ class Airplane:
     The Airplane class is responsible for: (1) Defining the local body axes and geometry
     axes, (2) managing Wings and their coordinate transformations, (3) processing
     symmetric Wings and converting them to separate wings when the symmetry plane is not
-    coincident with the Wing's axes xz-plane (type 5 symmetry), and (4) providing
+    coincident with the Wing's axes xz plane (type 5 symmetry), and (4) providing
     reference dimensions for aerodynamic calculations.
 
     Every Airplane has a body axis system, where +x points forward along fuselage, +y
@@ -88,7 +88,7 @@ class Airplane:
         """The initialization method.
 
         :param wings: A list of the airplane's wings defined as Wings. It must contain
-            at least one Wing. Wings with symmetric=True and non-coincident symmetry
+            at least one Wing. Wings with symmetric=True and non coincident symmetry
             planes will be automatically processed into separate Wings during
             initialization (type 5 symmetry).
         :param name: A sensible name for your airplane. The default is "Untitled
@@ -100,7 +100,7 @@ class Airplane:
             0.0) by definition. Earth axes follow the North-East-Down convention. The
             units are in meters. The default is (0.0, 0.0, 0.0).
         :param angles_E_to_B_izyx: An array-like object of 3 numbers representing the
-            angles from Earth axes to body axes using an intrinsic z-y'-x" sequence. Can
+            angles from Earth axes to body axes using an intrinsic zy'x" sequence. Can
             be a tuple, list, or ndarray. Values are converted to floats internally. It
             defines the orientation of the airplane's body axes relative to Earth axes.
             Note that body axes differ from geometry axes: body axes point
@@ -595,7 +595,7 @@ class Airplane:
             Airplane's geometry axes, relative to its CG.
         """
         # Step 1: G_Cg > B_Cg (geometry axes to body axes: 180-degree rotation about
-        # y-axis)
+        # y axis)
         # This transforms from geometry axes (aft/right/up) to body axes (
         # forward/right/down)
         T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
@@ -632,7 +632,7 @@ class Airplane:
         )
 
         # Step 5: BP1_CgP1 > GP1_CgP1 (the first Airplane's body axes to geometry
-        # axes: 180° rotation about the y-axis)
+        # axes: 180° rotation about the y axis)
         T_pas_BP1_CgP1_to_GP1_CgP1 = _transformations.generate_rot_T(
             angles=np.array([0.0, 180.0, 0.0], dtype=float),
             passive=True,
@@ -665,10 +665,10 @@ class Airplane:
             followed by the new reflected Wing. Before returning them, it also calls
             each Wing's generate_mesh method, preparing them for use simulation.
         """
-        # Determine if the symmetry plane is coincident with the wing axes' xz-plane.
+        # Determine if the symmetry plane is coincident with the wing axes' xz plane.
         # If symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no
         # symmetry and the symmetry plane doesn't exist. Otherwise, the symmetry
-        # plane is coincident to the wing axes' xz-plane if Ler_Gs_Cgs lies on the
+        # plane is coincident to the wing axes' xz plane if Ler_Gs_Cgs lies on the
         # symmetry plane, and if symmetryNormal_G is parallel with WnY_G. We don't
         # need to check types, values, or normalize because this is done in Wing's
         # init method.
@@ -677,7 +677,7 @@ class Airplane:
             coincident_symmetry_plane = False
         else:
             # If the symmetry plane exists, we first need to check if its normal
-            # vector is parallel with the wing axes' y-axis vector.
+            # vector is parallel with the wing axes' y axis vector.
 
             # Actively transform geometry axes' second basis vector (in geometry
             # axes) to this Wing's axes' second basis vector (in geometry axes). We
@@ -714,7 +714,7 @@ class Airplane:
             if not is_parallel:
                 coincident_symmetry_plane = False
             else:
-                # If the symmetry plane's normal vector and the wing axes y-axis
+                # If the symmetry plane's normal vector and the wing axes y axis
                 # vector are parallel, then the last check for a coincident symmetry
                 # plane is to check if the Ler is on the symmetry plane.
 

@@ -58,9 +58,9 @@ class WingCrossSection:
     WingCrossSections, their wing cross section axes are identical in position,
     orientation, and handedness to their Wing's wing axes. For all other
     WingCrossSections, their wing cross section axes are defined relative to the axes of
-    the previous WingCrossSection. Locally, the x-axis points from a cross section's
-    leading point to its trailing point, the y-axis points spanwise in the general
-    direction of the next WingCrossSection, and the z-axis points upwards.
+    the previous WingCrossSection. Locally, the x axis points from a cross section's
+    leading point to its trailing point, the y axis points spanwise in the general
+    direction of the next WingCrossSection, and the z axis points upwards.
 
     Things can get a little confusing with respect to WingCrossSections for Wings with
     symmetric or mirror_only set to True. For more details, look in the Wing class's
@@ -106,7 +106,7 @@ class WingCrossSection:
             section axes are the wing axes and the parent leading point is the Wing's
             leading edge root point. If not, the parent axes and point are those of the
             previous WingCrossSection. If this is the root WingCrossSection, it must be
-            a zero vector. The second component must be non-negative. The units are in
+            a zero vector. The second component must be non negative. The units are in
             meters. The default is (0.0, 0.0, 0.0).
         :param angles_Wcsp_to_Wcs_ixyz: An array-like object of 3 numbers (int or float)
             representing the angle vector of rotation angles that define the orientation
@@ -116,7 +116,7 @@ class WingCrossSection:
             not, the parent axes are the previous WingCrossSection's axes. For the root
             WingCrossSection, this must be a zero vector. For other WingCrossSections,
             all angles must be in the range [-90, 90] degrees. Rotations are intrinsic,
-            and proceed in the x-y'-z" order. The units are in degrees. The default is
+            and proceed in the xy'z" order. The units are in degrees. The default is
             (0.0, 0.0, 0.0).
         :param control_surface_symmetry_type: Determines how control surfaces behave
             when the Wing has symmetry. Can be "symmetric", "asymmetric", or None. With
@@ -133,7 +133,7 @@ class WingCrossSection:
             downwards is positive. It must be a number (int or float) in the range
             [-5.0, 5.0] degrees. It will be converted to a float internally. The default
             is 0.0 degrees.
-        :param spanwise_spacing: For non-tip WingCrossSections, this can be "cosine" or
+        :param spanwise_spacing: For non tip WingCrossSections, this can be "cosine" or
             "uniform". I highly recommend using cosine spacing. For tip
             WingCrossSections it must be None.
         :return: None
@@ -240,7 +240,7 @@ class WingCrossSection:
             valid_non_none_spanwise_spacings = ["cosine", "uniform"]
             if spanwise_spacing not in valid_non_none_spanwise_spacings:
                 raise ValueError(
-                    f"Values for non-None spanwise_spacing must be one of "
+                    f"Values for non None spanwise_spacing must be one of "
                     f"{valid_non_none_spanwise_spacings}."
                 )
         self.spanwise_spacing = spanwise_spacing

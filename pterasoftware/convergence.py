@@ -99,8 +99,8 @@ def analyze_steady_convergence(
 
         This parameter is a tuple of two ints in descending order. It determines the
         range of Panel aspect ratios, from largest to smallest. This value dictates
-        the Panels' average y-component-length (in wing cross section parent axes)
-        divided their average x-component-width (in wing cross section parent axes).
+        the Panels' average y component length (in wing cross section parent axes)
+        divided their average x component width (in wing cross section parent axes).
         Historically, these values range between 5 and 1. Values above 5 can be uses
         for a coarser mesh, but the minimum value should not be less than 1. The
         default value is (4, 1).
@@ -820,8 +820,8 @@ def analyze_unsteady_convergence(
 
         This parameter is a tuple of two ints in descending order. It determines the
         range of Panel aspect ratios, from largest to smallest. This value dictates
-        the Panels' average y-component-length (in wing cross section parent axes)
-        divided their average x-component-width (in wing cross section parent axes).
+        the Panels' average y component length (in wing cross section parent axes)
+        divided their average x component width (in wing cross section parent axes).
         Historically, these values range between 5 and 1. Values above 5 can be used
         for a coarser mesh, but the minimum value should not be less than 1. The
         default value is (4, 1).

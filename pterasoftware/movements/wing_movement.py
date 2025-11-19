@@ -37,8 +37,8 @@ class WingMovement:
     Wings cannot undergo motion that causes them to switch symmetry types. A transition
     between types could change the number of Wings and the Panel structure, which is
     incompatible with the unsteady solver. This happens when a WingMovement defines
-    motion that causes its base Wing's wing axes' yz-plane and its symmetry plane to
-    transition from coincident to non-coincident, or vice versa. This is checked by this
+    motion that causes its base Wing's wing axes' yz plane and its symmetry plane to
+    transition from coincident to non coincident, or vice versa. This is checked by this
     WingMovement's parent AirplaneMovement's parent Movement.
     """
 
@@ -76,18 +76,18 @@ class WingMovement:
         :param wing_cross_section_movements: A list of WingCrossSectionMovements
             associated with each of the base Wing's WingCrossSections. It must have the
             same length as the base Wing's list of WingCrossSections.
-        :param ampLer_Gs_Cgs: An array-like object of non-negative numbers (int or
+        :param ampLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the WingMovement's
             changes in its Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each amplitude must be
             low enough that it doesn't drive its base value out of the range of valid
             values. Otherwise, this WingMovement will try to create Wings with invalid
             parameters values. The units are in meters. The default is (0.0, 0.0, 0.0).
-        :param periodLer_Gs_Cgs: An array-like object of non-negative numbers (int or
+        :param periodLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the WingMovement's
             changes in its Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each element must be 0.0
-            if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-zero if not.
+            if the corresponding element in ampLer_Gs_Cgs is 0.0 and non zero if not.
             The units are in seconds. The default is (0.0, 0.0, 0.0).
         :param spacingLer_Gs_Cgs: An array-like object of strs or callables with shape
             (3,) representing the spacing of the WingMovement's change in its Wings'
@@ -105,7 +105,7 @@ class WingMovement:
             step's Wing's Ler_Gs_Cgs parameter relative to the base Wing's Ler_Gs_Cgs
             parameter. Can be a tuple, list, or ndarray. Values must lie in the range
             (-180.0, 180.0] and will be converted to floats internally. Each element
-            must be 0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non-
+            must be 0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non
             zero if not. The units are in degrees. The default is (0.0, 0.0, 0.0).
         :param ampAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
             with shape (3,) representing the amplitudes of the WingMovement's changes in
@@ -119,7 +119,7 @@ class WingMovement:
             float) with shape (3,) representing the periods of the WingMovement's
             changes in its Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list,
             or ndarray. Values are converted to floats internally. Each element must be
-            0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is 0.0 and non-
+            0.0 if the corresponding element in ampAngles_Gs_to_Wn_ixyz is 0.0 and non
             zero if not. The units are in seconds. The default is (0.0, 0.0, 0.0).
         :param spacingAngles_Gs_to_Wn_ixyz: An array-like object of strs or callables
             with shape (3,) representing the spacing of the WingMovement's change in its
@@ -138,7 +138,7 @@ class WingMovement:
             Wing's angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or ndarray.
             Values must lie in the range (-180.0, 180.0] and will be converted to floats
             internally. Each element must be 0.0 if the corresponding element in
-            ampAngles_Gs_to_Wn_ixyz is 0.0 and non-zero if not. The units are in
+            ampAngles_Gs_to_Wn_ixyz is 0.0 and non zero if not. The units are in
             degrees. The default is (0.0, 0.0, 0.0).
         """
         if not isinstance(base_wing, geometry.wing.Wing):
@@ -167,14 +167,14 @@ class WingMovement:
             ampLer_Gs_Cgs, "ampLer_Gs_Cgs"
         )
         if not np.all(ampLer_Gs_Cgs >= 0.0):
-            raise ValueError("All elements in ampLer_Gs_Cgs must be non-negative.")
+            raise ValueError("All elements in ampLer_Gs_Cgs must be non negative.")
         self.ampLer_Gs_Cgs = ampLer_Gs_Cgs
 
         periodLer_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
             periodLer_Gs_Cgs, "periodLer_Gs_Cgs"
         )
         if not np.all(periodLer_Gs_Cgs >= 0.0):
-            raise ValueError("All elements in periodLer_Gs_Cgs must be non-negative.")
+            raise ValueError("All elements in periodLer_Gs_Cgs must be non negative.")
         for period_index, period in enumerate(periodLer_Gs_Cgs):
             amp = self.ampLer_Gs_Cgs[period_index]
             if amp == 0 and period != 0:
@@ -229,7 +229,7 @@ class WingMovement:
         )
         if not np.all(periodAngles_Gs_to_Wn_ixyz >= 0.0):
             raise ValueError(
-                "All elements in periodAngles_Gs_to_Wn_ixyz must be non-negative."
+                "All elements in periodAngles_Gs_to_Wn_ixyz must be non negative."
             )
         for period_index, period in enumerate(periodAngles_Gs_to_Wn_ixyz):
             amp = self.ampAngles_Gs_to_Wn_ixyz[period_index]
@@ -394,7 +394,7 @@ class WingMovement:
         # Create an empty list to hold each time step's Wing.
         wings = []
 
-        # Get the non-changing Wing attributes.
+        # Get the non changing Wing attributes.
         this_name = self.base_wing.name
         this_symmetric = self.base_wing.symmetric
         this_mirror_only = self.base_wing.mirror_only

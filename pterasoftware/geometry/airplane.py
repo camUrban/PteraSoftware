@@ -124,7 +124,7 @@ class Airplane:
             internally. The units are meters.
         """
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
-        processed_wings = []
+        processed_wings: list[wing_mod.Wing] = []
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
@@ -342,6 +342,7 @@ class Airplane:
         airfoilMcls_G_Cg = []
         for wing_id, wing in enumerate(self.wings):
             plottable_data = wing.get_plottable_data(show=False)
+
             assert plottable_data is not None
             [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler] = plottable_data
 
@@ -351,6 +352,7 @@ class Airplane:
                 airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[airfoil_id]
                 airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[airfoil_id]
 
+                assert wing.T_pas_Wn_Ler_to_G_Cg is not None
                 airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
                     wing.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
                 )

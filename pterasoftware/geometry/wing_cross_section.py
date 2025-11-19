@@ -267,7 +267,8 @@ class WingCrossSection:
             displays the plot and returns None. If False, the method returns the data
             without displaying. Can be a bool or a numpy bool and will be converted
             internally to a bool. The default is False.
-        :return: If show is True, returns None. If show is False, returns a list of two
+        :return: None if the WingCrossSection hasn't been validated, if its symmetry
+            type hasn't been set, or if show is True. Otherwise, returns a list of two
             ndarrays. These ndarrays represent points on this WingCrossSection's
             Airfoil's outline and mean camber lines, respectively. The points are in
             wing cross section axes, relative to the leading point. The units are in
@@ -321,11 +322,14 @@ class WingCrossSection:
 
         plotter = pv.Plotter()
 
+        _T_pas_Wcs_Lp_to_Wcsp_Lpp = self.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        assert _T_pas_Wcs_Lp_to_Wcsp_Lpp is not None
+
         airfoilOutline_Wcsp_lpp = _transformations.apply_T_to_vectors(
-            self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_lp, has_point=True
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_lp, has_point=True
         )
         airfoilMcl_Wcsp_lpp = _transformations.apply_T_to_vectors(
-            self.T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_lp, has_point=True
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_lp, has_point=True
         )
 
         if self.symmetry_type in (2, 3):
@@ -575,4 +579,7 @@ class WingCrossSection:
         if not self.validated:
             return None
 
-        return _transformations.invert_T_pas(self.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+        _T_pas_Wcsp_Lpp_to_Wcs_Lp = self.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        assert _T_pas_Wcsp_Lpp_to_Wcs_Lp is not None
+
+        return _transformations.invert_T_pas(_T_pas_Wcsp_Lpp_to_Wcs_Lp)

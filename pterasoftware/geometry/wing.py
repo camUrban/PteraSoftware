@@ -212,7 +212,9 @@ class Wing:
                 wing_cross_section.validate_mid_constraints()
             # Set the validated flag for this WingCrossSection.
             wing_cross_section.validated = True
-        self.wing_cross_sections = wing_cross_sections
+        self.wing_cross_sections: list[wing_cross_section_mod.WingCrossSection] = (
+            wing_cross_sections
+        )
 
         # Validate name and Ler_Gs_Cgs.
         self.name = _parameter_validation.str_return_str(name, "name")
@@ -228,7 +230,8 @@ class Wing:
         )
         if not np.all((-90.0 <= angles_Gs_to_Wn_ixyz) & (angles_Gs_to_Wn_ixyz <= 90.0)):
             raise ValueError(
-                "All elements of angles_Gs_to_Wn_ixyz must lie in the range [-90, 90] degrees."
+                "All elements of angles_Gs_to_Wn_ixyz must lie in the range [-90, "
+                "90] degrees."
             )
         self.angles_Gs_to_Wn_ixyz = angles_Gs_to_Wn_ixyz
 
@@ -246,7 +249,8 @@ class Wing:
         if self.symmetric or self.mirror_only:
             if symmetryNormal_G is None:
                 raise ValueError(
-                    "symmetryNormal_G cannot be None when symmetric or mirror_only is True."
+                    "symmetryNormal_G cannot be None when symmetric or mirror_only is "
+                    "True."
                 )
             symmetryNormal_G = (
                 _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
@@ -255,7 +259,8 @@ class Wing:
             )
             if symmetryPoint_G_Cg is None:
                 raise ValueError(
-                    "symmetryPoint_G_Cg cannot be None when symmetric or mirror_only is True."
+                    "symmetryPoint_G_Cg cannot be None when symmetric or mirror_only "
+                    "is True."
                 )
             symmetryPoint_G_Cg = (
                 _parameter_validation.threeD_number_vectorLike_return_float(
@@ -265,11 +270,13 @@ class Wing:
         else:
             if symmetryNormal_G is not None:
                 raise ValueError(
-                    "symmetryNormal_G must be None when both symmetric and mirror_only are False."
+                    "symmetryNormal_G must be None when both symmetric and "
+                    "mirror_only are False."
                 )
             if symmetryPoint_G_Cg is not None:
                 raise ValueError(
-                    "symmetryPoint_G_Cg must be None when both symmetric and mirror_only are False."
+                    "symmetryPoint_G_Cg must be None when both symmetric and "
+                    "mirror_only are False."
                 )
         self.symmetryNormal_G = symmetryNormal_G
         self.symmetryPoint_G_Cg = symmetryPoint_G_Cg
@@ -355,11 +362,12 @@ class Wing:
             displays the plot and returns None. If False, the method returns the data
             without displaying. Can be a bool or a numpy bool and will be converted
             internally to a bool. The default is False.
-        :return: If show is True, returns None. If show is False, returns a list of two
-            lists, each containing one ndarray for every one of this Wing's Airfoils.
-            These ndarrays represent points on each Airfoil's outline and mean camber
-            lines, respectively. The points are in wing axes, relative to the leading
-            edge root point. The units are in meters.
+        :return: None if the Wing's symmetry type hasn't been set yet, or if show is
+            True. Otherwise, returns a list of two lists, each containing one ndarray
+            for every one of this Wing's Airfoils. These ndarrays represent points on
+            each Airfoil's outline and mean camber lines, respectively. The points are
+            in wing axes, relative to the leading edge root point. The units are in
+            meters.
         """
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
@@ -375,6 +383,7 @@ class Wing:
         ):
             plottable_data = wing_cross_section.get_plottable_data(show=False)
             assert plottable_data is not None
+
             [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = plottable_data
 
             T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
@@ -425,7 +434,9 @@ class Wing:
 
         plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
-        assert self.T_pas_G_Cg_to_Wn_Ler is not None
+        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
+        assert _T_pas_G_Cg_to_Wn_Ler is not None
+
         AxesWLerWcs1Lp1_G_Cg = pv.AxesAssembly(
             x_label="WX@Ler/Wcs1XLp1",
             y_label="WY@Ler/Wcs1YLp1",
@@ -442,7 +453,7 @@ class Wing:
             # orientation=(0.0, 0.0, 0.0),
             # origin=(0.0, 0.0, 0.0),
             scale=(0.25, 0.25, 0.25),
-            user_matrix=np.linalg.inv(self.T_pas_G_Cg_to_Wn_Ler),
+            user_matrix=np.linalg.inv(_T_pas_G_Cg_to_Wn_Ler),
             # user_matrix=wingAxes_T_act,
             name="W/Wcs1",
             shaft_type="cylinder",
@@ -456,6 +467,9 @@ class Wing:
 
         plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
 
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections
         ):
@@ -463,10 +477,10 @@ class Wing:
             airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[wing_cross_section_id]
 
             airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
-                self.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
+                _T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, has_point=True
             )
             airfoilMcl_G_Cg = _transformations.apply_T_to_vectors(
-                self.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, has_point=True
+                _T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, has_point=True
             )
 
             airfoilOutline_faces = np.hstack(
@@ -601,6 +615,8 @@ class Wing:
         # accounting for symmetry). This is the reflection step. Only apply reflection
         # for mirror-only Wings (types 2 and 3), not for symmetric Wings (type 4).
         if self.symmetry_type in (2, 3):
+            assert self.symmetryPoint_G_Cg is not None
+            assert self.symmetryNormal_G is not None
             T_reflect_pas_G_Cg_to_Gs_Cgs = _transformations.generate_reflect_T(
                 plane_point_A_a=self.symmetryPoint_G_Cg,
                 plane_normal_A=self.symmetryNormal_G,
@@ -645,7 +661,10 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_Wn_Ler)
+        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
+        assert _T_pas_G_Cg_to_Wn_Ler is not None
+
+        return _transformations.invert_T_pas(_T_pas_G_Cg_to_Wn_Ler)
 
     @property
     def WnX_G(self) -> None | np.ndarray:
@@ -662,8 +681,11 @@ class Wing:
 
         WnX_Wn = np.array([1.0, 0.0, 0.0])
 
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
         return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
+            _T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
         )
 
     @property
@@ -681,8 +703,11 @@ class Wing:
 
         WnY_Wn = np.array([0.0, 1.0, 0.0])
 
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
         return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
+            _T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
         )
 
     @property
@@ -700,8 +725,11 @@ class Wing:
 
         WnZ_Wn = np.array([0.0, 0.0, 1.0])
 
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
         return _transformations.apply_T_to_vectors(
-            self.T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
+            _T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
         )
 
     @property
@@ -718,7 +746,7 @@ class Wing:
         return [
             _transformations.compose_T_pas(
                 *(
-                    wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
+                    _assert_T_not_none(wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
                     for wing_cross_section in self.wing_cross_sections[: i + 1]
                 )
             )
@@ -751,9 +779,12 @@ class Wing:
             transformation matrices.
         """
 
+        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
+        assert _T_pas_G_Cg_to_Wn_Ler is not None
+
         return [
             _transformations.compose_T_pas(
-                self.T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
+                _T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
             )
             for i in range(len(self.wing_cross_sections))
         ]
@@ -953,9 +984,13 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        assert self.projected_area is not None
-        assert self.span is not None
-        return float(self.projected_area) / float(self.span)
+        _projected_area = self.projected_area
+        assert _projected_area is not None
+
+        _span = self.span
+        assert _span is not None
+
+        return _projected_area / _span
 
     # TEST: Consider adding unit tests for this method.
     @property
@@ -1052,9 +1087,22 @@ class Wing:
                 section_span * (chord**2 + chord * next_chord + next_chord**2) / 3
             )
 
+        _projected_area = self.projected_area
+        assert _projected_area is not None
+
         # Multiply the integral's value by the coefficients from the cited equation.
         # Double if the wing is symmetric and continuous.
-        assert self.projected_area is not None
         if self.symmetry_type == 4:
-            return 2 * integral / self.projected_area
-        return integral / self.projected_area
+            return 2 * integral / _projected_area
+        return integral / _projected_area
+
+
+def _assert_T_not_none(T: np.ndarray | None) -> np.ndarray:
+    """Assert that a transformation matrix is not None and return it.
+
+    :param T: None, or a (4,4) ndarray of floats representing the transformation matrix.
+    :return: A (4,4) ndarray of floats representing the transformation matrix
+        (guaranteed not to be None).
+    """
+    assert T is not None
+    return T

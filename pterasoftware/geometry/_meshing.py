@@ -125,6 +125,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
         )
 
         # Find the MCS points expressed in geometry axes, relative to the CG.
+        assert T_pas_Wn_Ler_to_G_Cg is not None
         Fipp_G_Cg = _transformations.apply_T_to_vectors(
             T_pas_Wn_Ler_to_G_Cg, Fipp_Wn_Ler, has_point=True
         )
@@ -279,6 +280,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             #  respective leading edge root points. So why is the active
             #  transformation necessary?
             # DOCUMENT: Document the logic in this block of code.
+            assert symmetryPoint_G_Cg is not None
+            assert symmetryNormal_G is not None
             reflect_T_act = _transformations.generate_reflect_T(
                 plane_point_A_a=symmetryPoint_G_Cg,
                 plane_normal_A=symmetryNormal_G,

@@ -24,8 +24,8 @@ problems.py: Contains the SteadyProblem and UnsteadyProblem classes.
 steady_horseshoe_vortex_lattice_method.py: Contains the
 SteadyHorseshoeVortexLatticeMethodSolver class.
 
-steady_ring_vortex_lattice_method.py: Contains the class definition of this package's
-steady ring vortex lattice solver.
+steady_ring_vortex_lattice_method.py: Contains the SteadyRingVortexLatticeMethodSolver
+class.
 
 trim.py: Contains functions to analyze the trim conditions of SteadyProblems and
 UnsteadyProblems.

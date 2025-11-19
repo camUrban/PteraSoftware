@@ -336,9 +336,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # Update the HorseshoeVortices' strengths.
-        this_panel: _panel.Panel
-        for panel_num, this_panel in enumerate(self.panels):
-            horseshoe_vortex = this_panel.horseshoe_vortex
+        panel: _panel.Panel
+        for panel_num, panel in enumerate(self.panels):
+            horseshoe_vortex = panel.horseshoe_vortex
             assert horseshoe_vortex is not None
 
             horseshoe_vortex.update_strength(self._vortex_strengths[panel_num])
@@ -372,17 +372,15 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
         )
 
-        stackVInd_GP1__E: np.ndarray = (
-            _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-                stackP_GP1_CgP1=stackP_GP1_CgP1,
-                stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
-                stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
-                stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
-                stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
-                strengths=self._vortex_strengths,
-                ages=None,
-                nu=self.operating_point.nu,
-            )
+        stackVInd_GP1__E = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
+            stackP_GP1_CgP1=stackP_GP1_CgP1,
+            stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+            stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+            stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+            stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+            strengths=self._vortex_strengths,
+            ages=None,
+            nu=self.operating_point.nu,
         )
 
         return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)

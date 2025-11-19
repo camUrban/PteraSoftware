@@ -272,7 +272,8 @@ def function_name(
 ) -> ReturnType:
     """Short description of what the function does.
 
-    Optional longer description providing more context. This provides detailed explanations of the function's behavior. It can be one or more paragraphs.
+    Optional longer description providing more context. This provides detailed
+    explanations of the function's behavior. It can be one or more paragraphs.
     
     Optional citation block:
 
@@ -324,17 +325,19 @@ class ClassName:
     """Short description of the class.
 
     **Contains the following methods:**
-        public_method_1: Short description (identical to method's docstring's short 
-        description.
+    
+    public_method_1: Short description (identical to method's docstring's short
+    description.
 
-        public_method_2: Short description (identical to method's docstring's short 
-        description.
+    public_method_2: Short description (identical to method's docstring's short 
+    description.
 
     Optional notes block
     
     **Notes:**
     
-    Detailed description of the class's purpose, behavior, or usage. Can be one or more paragraphs. Avoid numbered or bulleted lists.
+    Detailed description of the class's purpose, behavior, or usage. Can be one or more
+    paragraphs. Avoid numbered or bulleted lists.
     
     Optional citation block:
     

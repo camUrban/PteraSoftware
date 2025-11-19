@@ -278,9 +278,12 @@
       <w>xfoil</w>
       <w>xsec</w>
       <w>xsecs</w>
+      <w>xy'z</w>
+      <w>xz'y</w>
       <w>ycoord</w>
       <w>zipfiles</w>
       <w>zufferey</w>
+      <w>zy'x</w>
     </words>
   </dictionary>
 </component>

@@ -1,15 +1,17 @@
 """Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
-This module contains the following classes:
-    None
+**Contains the following classes:**
 
-This module contains the following functions:
-    analyze_steady_convergence: This function finds the converged parameters of a
-    SteadyProblem solved using a given steady solver.
+None
 
-    analyze_unsteady_convergence: This function finds the converged parameters of an
-    UnsteadyProblem solved using the UnsteadyRingVortexLatticeMethodSolver.
+**Contains the following functions:**
+
+analyze_steady_convergence: Finds the converged parameters of a SteadyProblem solved
+using a given steady solver.
+
+analyze_unsteady_convergence: Finds the converged parameters of an UnsteadyProblem
+solved using the UnsteadyRingVortexLatticeMethodSolver.
 """
 
 from __future__ import annotations
@@ -41,90 +43,76 @@ def analyze_steady_convergence(
     solver_type: str,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
-    convergence_criteria=5.0,
+    convergence_criteria: float | int = 5.0,
 ) -> tuple[int, int] | tuple[None, None]:
-    """This function finds the converged parameters of a SteadyProblem solved using a
-    given steady solver.
+    """Finds the converged parameters of a SteadyProblem solved using a given steady
+    solver.
 
-    Convergence is found by varying the SteadyProblem's Airplanes' Panels' aspect
-    ratios their Wings' numbers of chordwise Panels. These values are iterated over
-    via two nested for loops (with the number of chordwise Panels as the inner loop).
+    **Procedure:**
+
+    Convergence is found by varying the SteadyProblem's Airplanes' Panels' aspect ratios
+    their Wings' numbers of chordwise Panels. These values are iterated over via two
+    nested for loops (with the number of chordwise Panels as the inner loop).
 
     With each new combination of these values, the SteadyProblem is solved, and its
-    resultant load coefficients are stored. Each Airplanes' three force coefficients
-    are combined by taking their root-sum-square to find the resultant force
-    coefficient. Then, the absolute percent change (APE) of each Airplanes' resultant
-    force coefficient is found between this iteration, and the iterations with
-    incrementally coarser meshes in the two parameter directions (panel aspect ratio
-    and number of chordwise panels). These two steps are repeated for the three
-    moment coefficients.
+    resultant load coefficients are stored. Each Airplanes' three force coefficients are
+    combined by taking their root-sum-square to find the resultant force coefficient.
+    Then, the absolute percent change (APE) of each Airplanes' resultant force
+    coefficient is found between this iteration, and the iterations with incrementally
+    coarser meshes in the two parameter directions (panel aspect ratio and number of
+    chordwise panels). These two steps are repeated for the three moment coefficients.
 
     The maximums of the resultant force coefficient APEs and resultant moment
     coefficient APEs are found. This leaves us with two maximum APEs, one for each
     parameter direction, per Airplane. Next, we take the maximum of each parameter
     directions' APEs across all Airplanes, leaving us with two maximum APEs total. If
-    either of the parameter direction APEs is below the convergence criteria,
-    then this iteration has found a converged solution for that parameter direction.
+    either of the parameter direction APEs is below the convergence criteria, then this
+    iteration has found a converged solution for that parameter direction.
 
-    If an iteration's two APEs are both below the converged criteria, then we exit
-    the nested for loops and return the converged parameters. However, the converged
-    parameters are actually the values incrementally coarser than the final values (
-    because the incrementally coarser values were found to be within the convergence
+    If an iteration's two APEs are both below the converged criteria, then we exit the
+    nested for loops and return the converged parameters. However, the converged
+    parameters are actually the values incrementally coarser than the final values
+    (because the incrementally coarser values were found to be within the convergence
     criteria percent difference from the final values).
+
+    **Notes:**
 
     There are two edge cases to this function. The first is if the user inputs equal
     values for the coarsest and finest values of either the Panel aspect ratio or the
-    number of chordwise Panels (e.g. panel_aspect_ratio_bounds=(2, 2)). Then,
-    this parameter will not be iterated over, and convergence will only be checked
-    for the other parameter.
+    number of chordwise Panels (e.g. panel_aspect_ratio_bounds=(2, 2)). Then, this
+    parameter will not be iterated over, and convergence will only be checked for the
+    other parameter.
 
-    The second edge case happens if the Panel aspect ratio has not converged at a
-    value of 1. This is the gold standard value for Panel aspect ratio, so this
-    function will return 1 for the converged value of Panel aspect ratio. In the code
-    below, this state is referred to as a "saturated" Panel aspect ratio case.
+    The second edge case happens if the Panel aspect ratio has not converged at a value
+    of 1. This is the gold standard value for Panel aspect ratio, so this function will
+    return 1 for the converged value of Panel aspect ratio. In the code below, this
+    state is referred to as a "saturated" Panel aspect ratio case.
 
-    :param ref_problem: SteadyProblem
-
-        This is the SteadyProblem whose converged parameters, when simulated with the
-        given steady solver, will be found.
-
-    :param solver_type: str
-
-        This parameter determines what type of steady solver will be used to analyze
-        the SteadyProblem. The options are "steady horseshoe vortex lattice method"
-        and "steady ring vortex lattice method".
-
-    :param panel_aspect_ratio_bounds: tuple of two ints, optional
-
-        This parameter is a tuple of two ints in descending order. It determines the
-        range of Panel aspect ratios, from largest to smallest. This value dictates
-        the Panels' average y component length (in wing cross section parent axes)
-        divided their average x component width (in wing cross section parent axes).
-        Historically, these values range between 5 and 1. Values above 5 can be uses
-        for a coarser mesh, but the minimum value should not be less than 1. The
-        default value is (4, 1).
-
-    :param num_chordwise_panels_bounds: tuple of two ints, optional
-
-        This parameter is a tuple of two ints in ascending order. It determines the
-        range of the Wings' numbers of chordwise panels. The default value is (3, 12).
-
-    :param convergence_criteria: positive number, optional
-
-        This parameter must be a positive number (int or float), and it determines at
-        what point the function considers the simulation to have converged.
+    :param ref_problem: The SteadyProblem whose converged parameters will be found.
+    :param solver_type: Determines what type of steady solver will be used to analyze
+        the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
+        "steady ring vortex lattice method".
+    :param panel_aspect_ratio_bounds: A tuple of two ints, in descending order, that
+        determines the range of Panel aspect ratios to consider, from largest to
+        smallest. This value dictates the Panels' average y component length (in wing
+        cross section parent axes) divided their average x component width (in wing
+        cross section parent axes). Historically, these values range between 5 and 1.
+        Values above 5 can be used for a coarser mesh, but the minimum value cannot be
+        less than 1. The default is (4, 1).
+    :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, that
+        determines the range of values to use for the Wings' numbers of chordwise
+        panels. The default is (3, 12).
+    :param convergence_criteria: A positive number (int or float) that determines the
+        point at which the function considers the simulation to have converged.
         Specifically, it is the maximum absolute percent change in the combined load
-        coefficients. Therefore, it is in units of percent. Refer to the description
-        in this function's docstring for more details on how it affects the solver.
-        In short, set this value to 5.0 for a lenient convergence, and 1.0 for a
-        strict convergence. The default value is 5.0.
-
-    :return: tuple of two ints or tuple of two Nones
-
-        This function returns a tuple of two ints or a tuple of two Nones. In order,
-        they are the converged of Panel aspect ratio and the converged number of
-        chordwise Panels. If the function could not find a set of converged
-        parameters, it returns (None, None).
+        coefficients. Therefore, it is in units of percent. Refer to the description in
+        this function's docstring for more details on how it affects the solver. In
+        short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
+        convergence. Values are converted to floats internally. The default is 5.0.
+    :return: A tuple of two ints or a tuple of two Nones. In order, they are the
+        converged of Panel aspect ratio and the converged number of chordwise Panels. If
+        the function could not find a set of converged parameters, it returns (None,
+        None).
     """
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.SteadyProblem):
@@ -728,133 +716,114 @@ def analyze_steady_convergence(
 # TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
-    prescribed_wake: bool = True,
-    free_wake: bool = True,
+    prescribed_wake: bool | np.bool_ = True,
+    free_wake: bool | np.bool_ = True,
     num_cycles_bounds: tuple[int, int] | None = None,
     num_chords_bounds: tuple[int, int] | None = None,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
-    convergence_criteria=5.0,
+    convergence_criteria: float | int = 5.0,
 ) -> tuple[bool, int, int, int] | tuple[None, None, None, None]:
-    """This function finds the converged parameters of an UnsteadyProblem.
+    """Finds the converged parameters of an UnsteadyProblem solved using the
+    UnsteadyRingVortexLatticeMethodSolver.
+
+    **Procedure:**
 
     Convergence is found by varying the UnsteadyRingVortexLatticeMethodSolver's wake
     state (prescribed or free), the final length of the UnsteadyProblem's wake (in
     number of chord lengths for static geometry or number of maximum-period motion
-    cycles for variable geometry), the Airplanes' Wings' Panels' aspect ratios,
-    and the Airplanes' Wings' numbers of chordwise Panels. These values are iterated
-    over via four nested loops. The outermost loop is the wake state. The next loop
-    is the wake length. The loop after that is the Panel aspect ratios, and the
-    innermost loop is the number of chordwise Panels.
+    cycles for variable geometry), the Airplanes' Wings' Panels' aspect ratios, and the
+    Airplanes' Wings' numbers of chordwise Panels. These values are iterated over via
+    four nested loops. The outermost loop is the wake state. The next loop is the wake
+    length. The loop after that is the Panel aspect ratios, and the innermost loop is
+    the number of chordwise Panels.
 
-    With each new combination of these values, the UnsteadyProblem is solved,
-    and each Airplanes' final load coefficients are stored. As this function deals
-    with UnsteadyProblems, it considers the final load coefficients to be the
-    final-cycle's RMS load coefficients for UnsteadyProblems with variable
-    geometry, and the final time step's load coefficients for static geometry cases.
-    For each Airplane, the three final force coefficients are combined by taking
-    their root-sum-square to find the resultant final force coefficient for that
-    Airplane. Then, the absolute percent change (APE) of this Airplane's resultant
-    final force coefficient is found between this iteration and the iterations with
-    incrementally coarser meshes in all four parameter directions (wake state,
-    wake length, Panel aspect ratio, and number of chordwise Panels). These steps are
-    repeated for the three final moment coefficients.
+    With each new combination of these values, the UnsteadyProblem is solved, and each
+    Airplanes' final load coefficients are stored. As this function deals with
+    UnsteadyProblems, it considers the final load coefficients to be the final-cycle's
+    RMS load coefficients for UnsteadyProblems with variable geometry, and the final
+    time step's load coefficients for static geometry cases. For each Airplane, the
+    three final force coefficients are combined by taking their root-sum-square to find
+    the resultant final force coefficient for that Airplane. Then, the absolute percent
+    change (APE) of this Airplane's resultant final force coefficient is found between
+    this iteration and the iterations with incrementally coarser meshes in all four
+    parameter directions (wake state, wake length, Panel aspect ratio, and number of
+    chordwise Panels). These steps are repeated for the three final moment coefficients.
 
     For each Airplane, the maximums of the resultant final force coefficient APEs and
-    resultant final moment coefficient APEs are found. This leaves us with four
-    maximum APEs per Airplane, one for each parameter direction. Next, we find the
-    maximum across all the Airplanes for each parameter directions' maximum APE. Now,
-    we are left with four maximum APEs total. If any of the four parameter direction
-    APEs is below the convergence criteria, then this iteration has found a converged
-    solution for that parameter direction.
+    resultant final moment coefficient APEs are found. This leaves us with four maximum
+    APEs per Airplane, one for each parameter direction. Next, we find the maximum
+    across all the Airplanes for each parameter directions' maximum APE. Now, we are
+    left with four maximum APEs total. If any of the four parameter direction APEs is
+    below the convergence criteria, then this iteration has found a converged solution
+    for that parameter direction.
 
-    If an iteration's four APEs are all below the converged criteria, then we exit
-    the nested for loops and return the converged parameters. However, the converged
+    If an iteration's four APEs are all below the converged criteria, then we exit the
+    nested for loops and return the converged parameters. However, the converged
     parameters are actually the values incrementally coarser than the final values (
     because the incrementally coarser values were found to be within the convergence
     criteria percent difference from the final values).
 
-    There are two edge cases to this function. The first occurs when the user
-    indicates that they only want check a single value for any of the four parameters
-    (e.g. panel_aspect_ratio_bounds=(2, 2), both prescribed_wake=True and
-    free_wake=False, etc.). Then, this parameter will not be iterated over,
-    and convergence will only be checked for the other parameters.
+    **Notes:**
 
-    The second edge case happens if the Panel aspect ratio has not converged at a
-    value of 1 or if the wake state hasn't converged once it's set to a free wake.
-    These conditions are the gold standards for Panel aspect ratio and wake state,
-    so this function will return 1 for the converged value of Panel aspect ratio and
-    a free wake for the converged wake state. In the code below, this state is
-    referred to as a "saturated" Panel aspect ratio or wake state.
+    There are two edge cases to this function. The first occurs when the user indicates
+    that they only want check a single value for any of the four parameters (e.g.
+    panel_aspect_ratio_bounds=(2, 2), both prescribed_wake=True and free_wake=False,
+    etc.). Then, this parameter will not be iterated over, and convergence will only be
+    checked for the other parameters.
 
-    :param ref_problem: UnsteadyProblem
+    The second edge case happens if the Panel aspect ratio has not converged at a value
+    of 1 or if the wake state hasn't converged once it's set to a free wake. These
+    conditions are the gold standards for Panel aspect ratio and wake state, so this
+    function will return 1 for the converged value of Panel aspect ratio and a free wake
+    for the converged wake state. In the code below, this state is referred to as a
+    "saturated" Panel aspect ratio or wake state.
 
-        This is the UnsteadyProblem whose convergence will be analyzed.
-
-    :param prescribed_wake: bool, optional
-
-        This parameter determines if a prescribed wake state should be analyzed. If
-        this parameter is False, then the free_wake parameter must be set to True.
-        The default value is True.
-
-    :param free_wake: bool, optional
-
-        This parameter determines if a free wake type should be analyzed. If this
-        parameter is False, then the prescribed_wake parameter must be set to True.
-        The default value is True.
-
-    :param num_cycles_bounds: tuple of two ints or None, optional
-
-        This parameter determines the range of wake lengths, measured in number of
-        maximum-period motion cycles to simulate. If the problem has static geometry,
-        it must be None, and the num_chords_bounds parameter will control the wake
-        lengths instead. Otherwise, it must be a tuple of two positive ints with the
-        first value less than or equal to the second value. Reasonable values range
-        from 1 to 10, depending strongly on the Strouhal number. The default value is
-        None.
-
-    :param num_chords_bounds: tuple of two ints or None, optional
-
-        This parameter determines the range of wake lengths, measured in number of
-        reference chords the wake should extend to. If the problem has variable
-        geometry, it must be None, and the num_cycles_bounds parameter will control
-        the wake length instead. Otherwise, it must be a tuple of two positive ints
-        with the first value less than or equal to the second value. Reasonable
-        values range from 3 to 20. The default value is None.
-
-    :param panel_aspect_ratio_bounds: tuple of two ints, optional
-
-        This parameter is a tuple of two ints in descending order. It determines the
-        range of Panel aspect ratios, from largest to smallest. This value dictates
-        the Panels' average y component length (in wing cross section parent axes)
-        divided their average x component width (in wing cross section parent axes).
-        Historically, these values range between 5 and 1. Values above 5 can be used
-        for a coarser mesh, but the minimum value should not be less than 1. The
-        default value is (4, 1).
-
-    :param num_chordwise_panels_bounds: tuple of two ints, optional
-
-        This parameter is a tuple of two ints in ascending order. It determines the
-        range of the Wings' numbers of chordwise panels. The default value is (3, 12).
-
-    :param convergence_criteria: positive number, optional
-
-        This parameter must be a positive number (int or float), and it determines at
-        what point the function considers the simulation to have converged.
-        Specifically, it is the maximum absolute percent change of the resultant load
-        coefficients. Therefore, it is in units of percent. Refer to the description
-        in this function's docstring for more details on how it affects the function.
-        In short, set this value to 5.0 for a lenient convergence, and 1.0 for a
-        strict convergence. The default value is 5.0.
-
-    :return: tuple of one bool and three ints or tuple of four Nones
-
-        This function returns a tuple of one bool and three ints or a tuple of four
-        Nones. In order, they are the converged wake state (prescribed=True and
-        free=False), the converged wake length (in num_cycles for variable geometries
-        and num_chords for static geometries), the converged Panel aspect ratio,
-        and the converged number of chordwise Panels. If the function could not find
-        a set of converged parameters, it returns (None, None, None, None).
+    :param ref_problem: The UnsteadyProblem whose converged parameters will be found.
+    :param prescribed_wake: Determines if a prescribed wake state should be analyzed. If
+        this parameter is False, then the ``free_wake`` parameter must be set to True.
+        Can be a bool or a numpy bool and will be converted to a bool internally. The
+        default is True.
+    :param free_wake: Determines if a free wake state should be analyzed. If this
+        parameter is False, then the ``prescribed_wake`` parameter must be set to True.
+        Can be a bool or a numpy bool and will be converted to a bool internally. The
+        default is True.
+    :param num_cycles_bounds: For problems with non static geometry, determines the
+        range of wake lengths (measured in number of maximum-period motion cycles) to
+        simulate. For problems with static geometry, this must be None, and the
+        ``num_chords_bounds`` parameter will control the range of wake lengths instead.
+        Otherwise, it must be a tuple of two positive ints with the first value less
+        than or equal to the second value. Reasonable values range from 1 to 10,
+        depending strongly on the Strouhal number. The default is None.
+    :param num_chords_bounds: For problems with static geometry, determines the range of
+        wake lengths (measured in number of reference chords) to simulate. For problems
+        with non static geometry, it must be None, and the ``num_cycles_bounds``
+        parameter will control the wake length instead. Otherwise, it must be a tuple of
+        two positive ints with the first value less than or equal to the second value.
+        Reasonable values range from 3 to 20. The default is None.
+    :param panel_aspect_ratio_bounds: A tuple of two ints, in descending order, that
+        determines the range of Panel aspect ratios to consider, from largest to
+        smallest. This value dictates the Panels' average y component length (in wing
+        cross section parent axes) divided their average x component width (in wing
+        cross section parent axes). Historically, these values range between 5 and 1.
+        Values above 5 can be used for a coarser mesh, but the minimum value cannot be
+        less than 1. The default is (4, 1).
+    :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, that
+        determines the range of values to use for the Wings' numbers of chordwise
+        panels. The default is (3, 12).
+    :param convergence_criteria: A positive number (int or float) that determines the
+        point at which the function considers the simulation to have converged.
+        Specifically, it is the maximum absolute percent change in the combined load
+        coefficients. Therefore, it is in units of percent. Refer to the description in
+        this function's docstring for more details on how it affects the solver. In
+        short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
+        convergence. Values are converted to floats internally. The default is 5.0.
+    :return: A tuple of one bool and three ints. In order, they are the converged wake
+        state (prescribed=True and free=False), the converged wake length (in number of
+        cycles for non static geometries and number of chords for static geometries),
+        the converged Panel aspect ratio, and the converged number of chordwise Panels.
+        If the function could not find a set of converged parameters, it returns (None,
+        None, None, None).
     """
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.UnsteadyProblem):
@@ -1859,10 +1828,9 @@ def analyze_unsteady_convergence(
     return None, None, None, None
 
 
-# DOCUMENT: Add the parameters and return values to this function's docstring.
 # TEST: Consider adding unit tests for this function.
 def _get_wing_section_movement_num_spanwise_panels(
-    desired_average_panel_aspect_ratio: float,
+    desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
     ref_airplanes: list[geometry.airplane.Airplane],
@@ -1872,9 +1840,34 @@ def _get_wing_section_movement_num_spanwise_panels(
     start_val: int,
     first_applicable_time_step_id: int,
 ) -> int:
-    """Calculate the number of spanwise Panels to use for the Wing sections defined
-    by a pair of WingCrossSectionMovements based on a desired average Panel aspect
-    ratio."""
+    """Calculates the number of spanwise Panels to use for the wing section of a
+    WingMovement based on a desired average Panel aspect ratio.
+
+    :param desired_average_panel_aspect_ratio: The target average Panel aspect ratio to
+        achieve. The Panel aspect ratio is the Panels' average y component length (in
+        wing cross section parent axes) divided by their average x component width (in
+        wing cross section parent axes). It must be a positive int.
+    :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
+        positive int.
+    :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
+        "cosine" or "uniform".
+    :param ref_airplanes: A list of the Airplanes at each time step.
+    :param ref_wing_id: The index of the Wing within each Airplane in ref_airplanes. It
+        must be a non negative int.
+    :param ref_root_wing_cross_section_id: The index of the root WingCrossSection of the
+        wing section within the Wing. It must be a non negative int.
+    :param ref_tip_wing_cross_section_id: The index of the tip WingCrossSection of the
+        wing section within the Wing. It must be a non negative int and greater than
+        ``ref_root_wing_cross_section_id``.
+    :param start_val: The initial number of spanwise Panels to start the search from. It
+        must be a positive int. Using a higher value can speed up the search if a lower
+        bound is already known.
+    :param first_applicable_time_step_id: The index within ref_airplanes of the first
+        time step to consider. It must be a non negative int. All Airplanes from this
+        index onward will be analyzed.
+    :return: The maximum number of spanwise Panels needed across all applicable time
+        steps to achieve the desired average Panel aspect ratio.
+    """
     # Slice the list of Airplanes to only the applicable ones. For cases with static
     # geometry, this is just the last time step's Airplane. For cases with variable
     # geometry, this is the last max-period cycle's time steps' Airplanes
@@ -1883,17 +1876,14 @@ def _get_wing_section_movement_num_spanwise_panels(
     num_time_steps = len(ref_airplanes)
     these_num_spanwise_panels = np.zeros_like(ref_airplanes, dtype=int)
 
-    ref_airplane_at_time_step: geometry.airplane.Airplane
     for time_step_id, ref_airplane_at_time_step in enumerate(ref_airplanes):
-        ref_wing_at_time_step: geometry.wing.Wing = ref_airplane_at_time_step.wings[
-            ref_wing_id
-        ]
-        ref_root_wing_cross_section_at_time_step: (
-            geometry.wing_cross_section.WingCrossSection
-        ) = ref_wing_at_time_step.wing_cross_sections[ref_root_wing_cross_section_id]
-        ref_tip_wing_cross_section_at_time_step: (
-            geometry.wing_cross_section.WingCrossSection
-        ) = ref_wing_at_time_step.wing_cross_sections[ref_tip_wing_cross_section_id]
+        ref_wing_at_time_step = ref_airplane_at_time_step.wings[ref_wing_id]
+        ref_root_wing_cross_section_at_time_step = (
+            ref_wing_at_time_step.wing_cross_sections[ref_root_wing_cross_section_id]
+        )
+        ref_tip_wing_cross_section_at_time_step = (
+            ref_wing_at_time_step.wing_cross_sections[ref_tip_wing_cross_section_id]
+        )
 
         convergence_logger.debug(
             f"\t\t\t\t\t\t\tCalculating the number of spanwise Panels for time step "
@@ -1919,18 +1909,34 @@ def _get_wing_section_movement_num_spanwise_panels(
     return int(max(these_num_spanwise_panels))
 
 
-# DOCUMENT: Add the parameters and return values to this function's docstring.
 # TEST: Consider adding unit tests for this function.
 def _get_wing_section_num_spanwise_panels(
-    desired_average_panel_aspect_ratio: float,
+    desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
     ref_root_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     start_val: int,
 ) -> int:
-    """Calculate the number of spanwise Panels to use for a Wing section based on a
-    desired average Panel aspect ratio."""
+    """Calculates the number of spanwise Panels to use for the wing section of a Wing
+    based on a desired average Panel aspect ratio.
+
+    :param desired_average_panel_aspect_ratio: The target average Panel aspect ratio to
+        achieve. The Panel aspect ratio is the Panels' average y component length (in
+        wing cross section parent axes) divided by their average x component width (in
+        wing cross section parent axes). It must be a positive int.
+    :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
+        positive int.
+    :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
+        "cosine" or "uniform".
+    :param ref_root_wing_cross_section: The root WingCrossSection of the wing section.
+    :param ref_tip_wing_cross_section: The tip WingCrossSection of the wing section.
+    :param start_val: The initial number of spanwise Panels to start the search from. It
+        must be a positive int. Using a higher value can speed up the search if a lower
+        bound is already known.
+    :return: The number of spanwise Panels that results in an average Panel aspect ratio
+        closest to the desired value.
+    """
 
     this_num_spanwise_panels = start_val
     average_panel_aspect_ratios = []
@@ -1965,7 +1971,6 @@ def _get_wing_section_num_spanwise_panels(
     return this_num_spanwise_panels
 
 
-# DOCUMENT: Add the parameters and return values to this function's docstring.
 # TEST: Consider adding unit tests for this function.
 def _get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
@@ -1974,7 +1979,22 @@ def _get_wing_section_average_panel_aspect_ratio(
     ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     num_spanwise_panels: int,
 ) -> float:
-    """Calculate the average aspect ratio of Panels in a Wing section."""
+    """Calculates the average aspect ratio of Panels in a wing section with a particular
+    number of chordwise and spanwise Panels.
+
+    :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
+        positive int.
+    :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
+        "cosine" or "uniform".
+    :param ref_root_wing_cross_section: The root WingCrossSection of the wing section.
+    :param ref_tip_wing_cross_section: The tip WingCrossSection of the wing section.
+    :param num_spanwise_panels: The number of spanwise Panels to use. It must be a
+        positive int.
+    :return: The average Panel aspect ratio for the wing section with the given Panel
+        counts. The Panel aspect ratio is the Panels' average y component length (in
+        wing cross section parent axes) divided by their average x component width (in
+        wing cross section parent axes).
+    """
     this_airplane = geometry.airplane.Airplane(
         wings=[
             geometry.wing.Wing(

@@ -30,8 +30,8 @@ class.
 trim.py: Contains functions to analyze the trim conditions of SteadyProblems and
 UnsteadyProblems.
 
-unsteady_ring_vortex_lattice_method.py: Contains the class definition of this package's
-unsteady ring vortex lattice solver.
+unsteady_ring_vortex_lattice_method.py: Contains the
+UnsteadyRingVortexLatticeMethodSolver class.
 """
 
 import pterasoftware.geometry

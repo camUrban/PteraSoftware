@@ -432,19 +432,19 @@ def calculate_steady_freestream_wing_influences(
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
     ),
 ) -> None:
-    """Finds and sets the vector of freestream-Wing influence coefficients associated
+    """Finds and sets the vector of freestream Wing influence coefficients associated
     with a steady solver. These coefficients are the normal velocity (in the first
     Airplane's geometry axes, observed from the Earth frame) at every collocation point
     due solely to the freestream.
 
-    :param steady_solver: The steady solver for which to calculate the freestream-Wing
+    :param steady_solver: The steady solver for which to calculate the freestream Wing
         influences.
     :return: None
     """
     # Take the batch dot product of the freestream velocity (in the first Airplane's
     # geometry axes, observed from the Earth frame) with each of the N Panel's unit
     # normal vectors (in the first Airplane's geometry axes). This is now the solver's
-    # (N,) ndarray of freestream-Wing influence coefficients.
+    # (N,) ndarray of freestream Wing influence coefficients.
     steady_solver.stackFreestreamWingInfluences__E = np.einsum(
         "ij,j->i",
         steady_solver.stackUnitNormals_GP1,

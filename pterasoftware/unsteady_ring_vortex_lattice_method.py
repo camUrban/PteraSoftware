@@ -1,17 +1,20 @@
-"""Contains the class definition of this package's unsteady ring vortex lattice solver.
+"""Contains the UnsteadyRingVortexLatticeMethodSolver class.
 
-This module contains the following classes:
-    UnsteadyRingVortexLatticeMethodSolver: This is an aerodynamics solver that uses
-    an unsteady ring vortex lattice method.
+**Contains the following classes:**
 
-This module contains the following functions:
-    None
+UnsteadyRingVortexLatticeMethodSolver: A class used to solve UnsteadyProblems with the
+unsteady ring vortex lattice method.
+
+**Contains the following functions:**
+
+None
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import logging
-from typing import cast, Sequence
+from typing import cast
 
 import numpy as np
 from tqdm import tqdm
@@ -30,30 +33,23 @@ from . import problems
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class UnsteadyRingVortexLatticeMethodSolver:
-    """This is an aerodynamics solver that uses an unsteady ring vortex lattice method.
+    """A class used to solve UnsteadyProblems with the unsteady ring vortex lattice
+    method.
 
-    This class contains the following public methods:
+    **Contains the following methods:**
 
-        run: This method runs the solver on the UnsteadyProblem.
+    run: Runs the solver on the UnsteadyProblem.
 
-        calculate_solution_velocity: This function takes in a group of points (in the
-        first Airplane's geometry axes, relative to the first Airplane's CG). At
-        every point, it finds the fluid velocity (in the first Airplane's geometry
-        axes, observed from the Earth frame) at that point due to the freestream
-        velocity and the induced velocity from every RingVortex.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
+    geometry axes, observed from the Earth frame) at one or more points (in the first
+    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
+    velocity and the induced velocity from every RingVortex.
     """
 
     def __init__(self, unsteady_problem: problems.UnsteadyProblem) -> None:
-        """This is the initialization method.
+        """The initialization method.
 
-        :param unsteady_problem: UnsteadyProblem
-            This is the UnsteadyProblem to be solved.
+        :param unsteady_problem: The UnsteadyProblem to be solved.
         :return: None
         """
         if not isinstance(unsteady_problem, problems.UnsteadyProblem):
@@ -65,6 +61,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.first_results_step = self.unsteady_problem.first_results_step
         self._first_averaging_step = self.unsteady_problem.first_averaging_step
         self._current_step: int = 0
+        self._prescribed_wake: bool = True
 
         self.steady_problems = self.unsteady_problem.steady_problems
 
@@ -176,28 +173,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
         prescribed_wake: bool | np.bool_ = True,
         calculate_streamlines: bool | np.bool_ = True,
     ) -> None:
-        """This method runs the solver on the UnsteadyProblem.
+        """Runs the solver on the UnsteadyProblem.
 
-        :param logging_level: str, optional
-
-            This parameter determines the detail of information that the solver's
+        :param logging_level: Determines the detail of information that the solver's
             logger will output while running. The options are, in order of detail and
-            severity, "Debug", "Info", "Warning", "Error", "Critical". The default
-            value is "Warning".
-
-        :param prescribed_wake: boolLike, optional
-
-            This parameter determines if the solver uses a prescribed wake model. If
-            False it will use a free-wake, which may be more accurate but will make
-            the solver significantly slower. The default is True. It can be a bool
-            or a numpy bool and will be converted internally to a bool.
-
-        :param calculate_streamlines: boolLike, optional
-
-            This parameter determines if the solver calculates streamlines emanating
-            from the back of the wing after running the solver. It can be a bool
-            or a numpy bool and will be converted internally to a bool.
-
+            severity, "Debug", "Info", "Warning", "Error", "Critical". The default is
+            "Warning".
+        :param prescribed_wake: Set this to True to solve using a prescribed wake model.
+            Set to False to use a free-wake, which may be more accurate but will make
+            the fun method significantly slower. Can be a bool or a numpy bool and will
+            be converted internally to a bool. The default is True.
+        :param calculate_streamlines: Set this to True to calculate streamlines
+            emanating from the back of the wing after running the solver. It can be a
+            bool or a numpy bool and will be converted internally to a bool. The default
+            is True.
         :return: None
         """
         logging_level = _parameter_validation.str_return_str(
@@ -208,7 +197,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         logging.basicConfig(level=logging_level_value)
 
-        prescribed_wake = _parameter_validation.boolLike_return_bool(
+        self._prescribed_wake = _parameter_validation.boolLike_return_bool(
             prescribed_wake, "prescribed_wake"
         )
         calculate_streamlines = _parameter_validation.boolLike_return_bool(
@@ -445,21 +434,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 logging.info("Collapsing the geometry.")
                 self._collapse_geometry()
 
-                # Find the matrix of Wing-Wing influence coefficients associated with
+                # Find the matrix of Wing Wing influence coefficients associated with
                 # the Airplanes' geometries at this time step.
-                logging.info("Calculating the Wing-Wing influences.")
+                logging.info("Calculating the Wing Wing influences.")
                 self._calculate_wing_wing_influences()
 
                 # Find the normal velocity (in the first Airplane's geometry axes,
                 # observed from the Earth frame) at every collocation point due
                 # solely to the freestream.
-                logging.info("Calculating the freestream-Wing influences.")
+                logging.info("Calculating the freestream Wing influences.")
                 self._calculate_freestream_wing_influences()
 
                 # Find the normal velocity (in the first Airplane's geometry axes,
                 # observed from the Earth frame) at every collocation point due
                 # solely to the wake RingVortices.
-                logging.info("Calculating the wake-Wing influences.")
+                logging.info("Calculating the wake Wing influences.")
                 self._calculate_wake_wing_influences()
 
                 # Solve for each bound RingVortex's strength.
@@ -475,7 +464,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Shed RingVortices into the wake.
                 logging.info("Shedding RingVortices into the wake.")
-                self._populate_next_airplanes_wake(prescribed_wake=prescribed_wake)
+                self._populate_next_airplanes_wake()
 
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
@@ -491,16 +480,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             _functions.calculate_streamlines(self)
 
     def _initialize_panel_vortices(self) -> None:
-        """This method calculates the locations of the Airplanes' bound RingVortices'
-        points, and then initializes the bound RingVortices.
+        """Calculates the locations of the bound RingVortex vertices, and then
+        initializes them.
 
         Every Panel has a RingVortex, which is a quadrangle whose front leg is a
         LineVortex at the Panel's quarter chord. The left and right legs are
-        LineVortices running along the Panel's left and right legs. If the Panel is
-        not along the trailing edge, they extend backwards and meet the back
-        LineVortex, at the rear Panel's quarter chord. Otherwise, they extend
-        backwards and meet the back LineVortex one quarter chord back from the
-        Panel's back leg.
+        LineVortices running along the Panel's left and right legs. If the Panel is not
+        along the trailing edge, they extend backwards and meet the back LineVortex, at
+        the rear Panel's quarter chord. Otherwise, they extend backwards and meet the
+        back LineVortex one quarter chord back from the Panel's back leg.
 
         :return: None
         """
@@ -652,8 +640,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
 
     def _collapse_geometry(self) -> None:
-        """This method converts attributes of the UnsteadyProblem's geometry into 1D
-        ndarrays. This facilitates vectorization, which speeds up the solver.
+        """Converts attributes of the UnsteadyProblem's geometry into 1D ndarrays.
+
+        This facilitates vectorization, which speeds up the solver.
 
         :return: None
         """
@@ -781,8 +770,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         global_panel_position += 1
 
     def _calculate_wing_wing_influences(self) -> None:
-        """This method finds the 2d ndarray of Wing-Wing influence coefficients (
-        observed from the Earth frame).
+        """Finds the current time step's SteadyProblem's 2D ndarray of Wing Wing
+        influence coefficients (observed from the Earth frame).
 
         :return: None
         """
@@ -805,7 +794,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized induced velocities (in the
         # first Airplane's geometry axes, observed from the Earth frame) with each
         # Panel's unit normal direction (in the first Airplane's geometry axes). This
-        # is now the 2D ndarray of Wing-Wing influence coefficients (observed from
+        # is now the 2D ndarray of Wing Wing influence coefficients (observed from
         # the Earth frame).
         self._currentGridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
@@ -814,15 +803,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_freestream_wing_influences(self) -> None:
-        """This method finds the 1D ndarray of freestream-Wing influence coefficients
-        (observed from the Earth frame).
+        """Finds the 1D ndarray of freestream Wing influence coefficients (observed from
+        the Earth frame) at the current time step.
 
-        Note: This method also includes the influence coefficients due to motion
-        defined in Movement (observed from the Earth frame) at every collocation point.
+        **Notes:**
+
+        This method also includes the influence coefficients due to motion defined in
+        Movement (observed from the Earth frame) at every collocation point.
 
         :return: None
         """
-        # Find the normal components of the freestream-only-Wing influence
+        # Find the normal components of the freestream only Wing influence
         # coefficients (observed from the Earth frame) at each Panel's collocation
         # point by taking a batch dot product.
         currentStackFreestreamOnlyWingInfluences__E = np.einsum(
@@ -846,7 +837,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             currentStackMovementV_GP1_E,
         )
 
-        # Calculate the total current freestream-Wing influence coefficients by
+        # Calculate the total current freestream Wing influence coefficients by
         # summing the freestream-only influence coefficients and the motion influence
         # coefficients (all observed from the Earth frame).
         self._currentStackFreestreamWingInfluences__E = (
@@ -855,13 +846,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_wake_wing_influences(self) -> None:
-        """This method finds the 1D ndarray of the wake-Wing influence coefficients (
-        observed from the Earth frame) associated with the UnsteadyProblem at the
-        current time step.
+        """Finds the 1D ndarray of the wake Wing influence coefficients (observed from
+        the Earth frame) at the current time step.
 
-        Note: If the current time step is the first time step, no wake has been shed,
-        so this method will return zero for all the wake-Wing influence coefficients
-        (observed from the Earth frame).
+        **Notes:**
+
+        If the current time step is the first time step, no wake has been shed, so this
+        method will return zero for all the wake Wing influence coefficients (observed
+        from the Earth frame).
 
         :return: None
         """
@@ -882,7 +874,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 )
             )
 
-            # Get the current wake-Wing influence coefficients (observed from the
+            # Get the current wake Wing influence coefficients (observed from the
             # Earth frame) by taking a batch dot product with each Panel's normal
             # vector (in the first Airplane's geometry axes).
             self._currentStackWakeWingInfluences__E = np.einsum(
@@ -898,7 +890,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
     def _calculate_vortex_strengths(self) -> None:
-        """Solve for the strength of each Panel's bound RingVortex.
+        """Solves for the strength of each Panel's bound RingVortex.
 
         :return: None
         """
@@ -924,31 +916,30 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def calculate_solution_velocity(
         self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
     ) -> np.ndarray:
-        """This function takes in a group of points (in the first Airplane's geometry
-        axes, relative to the first Airplane's CG). At every point, it finds the
-        fluid velocity (in the first Airplane's geometry axes, observed from the
-        Earth frame) at that point due to the freestream velocity and the induced
-        velocity from every RingVortex.
+        """Finds the fluid velocity (in the first Airplane's geometry axes, observed
+        from the Earth frame) at one or more points (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG) due to the freestream velocity and
+        the induced velocity from every RingVortex.
 
-        Note: This method assumes that the correct strengths for the RingVortices and
-        HorseshoeVortices have already been calculated and set. This method also does
-        not include the velocity due to the Movement's motion at any of the points
-        provided, as it has no way of knowing if any of the points lie on panels.
+        **Notes:**
 
-        :param stackP_GP1_CgP1: (N,3) array-like of numbers
+        This method assumes that the correct strengths for the RingVortices have already
+        been calculated and set.
 
-            Positions of the evaluation points (in the first Airplane's geometry
-            axes, relative to the first Airplane's CG). Can be any array-like object
-            (tuple, list, or ndarray) with size (N, 3) that has numeric elements (int
-            or float). Values are converted to floats internally. The units are in
-            meters.
+        This method also does not include the velocity due to the Movement's motion at
+        any of the points provided, as it has no way of knowing if any of the points lie
+        on panels.
 
-        :return: (N,3) ndarray of floats
-
-            The velocity (in the first Airplane's geometry axes, observed from the
-            Earth frame) at every evaluation point due to the summed effects of the
-            freestream velocity and the induced velocity from every RingVortex. The
-            units are in meters per second.
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :return: A (N,3) ndarray of floats representing the velocity (in the first
+            Airplane's geometry axes, observed from the Earth frame) at each evaluation
+            point due to the summed effects of the freestream velocity and the induced
+            velocity from every RingVortex and HorseshoeVortex. The units are in meters
+            per second.
         """
         stackP_GP1_CgP1 = (
             _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
@@ -987,16 +978,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_loads(self) -> None:
-        """Calculate the forces (in the first Airplane's geometry axes) and moments (
-        in the first Airplane's geometry axes, relative to the first Airplane's CG)
-        on every Panel.
+        """Calculates the forces (in the first Airplane's geometry axes) and moments (in
+        the first Airplane's geometry axes, relative to the first Airplane's CG) on
+        every Panel at the current time step.
 
-        Citation: This method uses logic described on pages 9-11 of "Modeling of
-        aerodynamic forces in flapping flight with the Unsteady Vortex Lattice
-        Method" by Thomas Lambert.
+        **Notes:**
 
-        Note: This method assumes that the correct strengths for the RingVortices and
+        This method assumes that the correct strengths for the RingVortices and
         HorseshoeVortices have already been calculated and set.
+
+        **Citation:**
+
+        Logic adapted from: "Modeling of aerodynamic forces in flapping flight with the
+        Unsteady Vortex Lattice Method" (pp. 9-11)
+
+        Author: Thomas Lambert
 
         :return: None
         """
@@ -1221,38 +1217,26 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  geometry axes before passing to process_solver_loads.
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
-    def _populate_next_airplanes_wake(self, prescribed_wake=True) -> None:
-        """This method updates the next time step's Airplanes' wakes.
-
-        :param prescribed_wake: Bool, optional
-
-            This parameter determines if the solver uses a prescribed wake model. If
-            false it will use a free-wake, which may be more accurate but will make
-            the solver significantly slower. The default is True.
+    def _populate_next_airplanes_wake(self) -> None:
+        """Updates the next time step's Airplanes' wakes.
 
         :return: None
         """
         # Populate the locations of the next time step's Airplanes' wake RingVortex
         # points.
-        self._populate_next_airplanes_wake_vortex_points(
-            prescribed_wake=prescribed_wake
-        )
+        self._populate_next_airplanes_wake_vortex_points()
 
         # Populate the locations of the next time step's Airplanes' wake RingVortices.
         self._populate_next_airplanes_wake_vortices()
 
-    def _populate_next_airplanes_wake_vortex_points(self, prescribed_wake=True) -> None:
-        """This method populates the locations of the next time step's Airplanes'
-        wake RingVortex points.
+    def _populate_next_airplanes_wake_vortex_points(self) -> None:
+        """Populates the locations of the next time step's Airplanes' wake RingVortex
+        points.
 
-        This method is not vectorized but its loops only consume 1.1% of the runtime,
-        so I have kept it as is for increased readability.
+        **Notes:**
 
-        :param prescribed_wake: Bool, optional
-
-            This parameter determines if the solver uses a prescribed wake model. If
-            false it will use a free-wake, which may be more accurate but will make
-            the solver significantly slower. The default is True.
+        This method is not vectorized but its loops only consume 1.1% of the runtime, so
+        I have kept it as is for increased readability.
 
         :return: None
         """
@@ -1361,7 +1345,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # frame). Otherwise, set the velocity to the solution
                             # velocity at this point (in the first Airplane's
                             # geometry axes, observed from the Earth frame).
-                            if prescribed_wake:
+                            if self._prescribed_wake:
                                 vWrvp_GP1__E = self._currentVInf_GP1__E
                             else:
                                 vWrvp_GP1__E = self.calculate_solution_velocity(
@@ -1412,7 +1396,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # frame). Otherwise, set the velocity to the solution
                                 # velocity at this point (in the first Airplane's
                                 # geometry axes, observed from the Earth frame).
-                                if prescribed_wake:
+                                if self._prescribed_wake:
                                     vWrvp_GP1__E = self._currentVInf_GP1__E
                                 else:
                                     vWrvp_GP1__E = np.squeeze(
@@ -1476,11 +1460,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         )
 
     def _populate_next_airplanes_wake_vortices(self) -> None:
-        """This method populates the locations and strengths of the next time step's
-        wake RingVortices.
+        """Populates the locations and strengths of the next time step's wake
+        RingVortices.
 
-        This method is not vectorized but its loops only consume 0.4% of the runtime,
-        so I have kept it as is for increased readability.
+        **Notes:**
+
+        This method is not vectorized but its loops only consume 0.4% of the runtime, so
+        I have kept it as is for increased readability.
 
         :return: None
         """
@@ -1629,20 +1615,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def _calculate_current_movement_velocities_at_collocation_points(
         self,
     ) -> np.ndarray:
-        """Get the current apparent velocities (in the first Airplane's geometry
-        axes, observed from the Earth frame) at each Panel's collocation point due to
-        any motion defined in Movement.
+        """Finds the apparent velocities (in the first Airplane's geometry axes,
+        observed from the Earth frame) at each Panel's collocation point due to any
+        motion defined in Movement at the current time step.
 
-        Note: At each point, any apparent velocity due to Movement is opposite the
-        motion due to Movement.
+        **Notes:**
 
-        :return: (M, 3) ndarray of floats
+        At each point, any apparent velocity due to Movement is opposite the motion due
+        to Movement.
 
-            This is a ndarray containing the apparent velocity (in the first
-            Airplane's geometry axes, observed from the Earth frame) at each Panel's
-            collocation point due to any motion defined in Movement. Its units are in
-            meters per second. If the current time step is the first time step,
-            these velocities will all be all zeros.
+        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at each
+            Panel's collocation point due to any motion defined in Movement. If the
+            current time step is the first time step, these velocities will all be all
+            zeros. Its units are in meters per second.
         """
         # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
@@ -1654,20 +1640,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_current_movement_velocities_at_right_leg_centers(self) -> np.ndarray:
-        """Get the current apparent velocities (in the first Airplane's geometry
-        axes, observed from the Earth frame) at the center point of each bound
-        RingVortex's right leg due to any motion defined in Movement.
+        """Finds the apparent velocities (in the first Airplane's geometry axes,
+        observed from the Earth frame) at the center point of each bound RingVortex's
+        right leg due to any motion defined in Movement at the current time step.
 
-        Note: At each point, any apparent velocity due to Movement is opposite the
-        motion due to Movement.
+        **Notes:**
 
-        :return: (M, 3) ndarray of floats
+        At each point, any apparent velocity due to Movement is opposite the motion due
+        to Movement.
 
-            This is a ndarray containing the apparent velocity (in the first
-            Airplane's geometry axes, observed from the Earth frame) at the center
+        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at the center
             point of each bound RingVortex's right leg due to any motion defined in
-            Movement. Its units are in meters per second. If the current time step is
-            the first time step, these velocities will all be all zeros.
+            Movement. If the current time step is the first time step, these velocities
+            will all be all zeros. Its units are in meters per second.
         """
         # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
@@ -1680,20 +1666,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_current_movement_velocities_at_front_leg_centers(self) -> np.ndarray:
-        """Get the current apparent velocities (in the first Airplane's geometry
-        axes, observed from the Earth frame) at the center point of each bound
-        RingVortex's front leg due to any motion defined in Movement.
+        """Finds the apparent velocities (in the first Airplane's geometry axes,
+        observed from the Earth frame) at the center point of each bound RingVortex's
+        front leg due to any motion defined in Movement at the current time step.
 
-        Note: At each point, any apparent velocity due to Movement is opposite the
-        motion due to Movement.
+        **Notes:**
 
-        :return: (M, 3) ndarray of floats
+        At each point, any apparent velocity due to Movement is opposite the motion due
+        to Movement.
 
-            This is a ndarray containing the apparent velocity (in the first
-            Airplane's geometry axes, observed from the Earth frame) at the center
+        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at the center
             point of each bound RingVortex's front leg due to any motion defined in
-            Movement. Its units are in meters per second. If the current time step is
-            the first time step, these velocities will all be all zeros.
+            Movement. If the current time step is the first time step, these velocities
+            will all be all zeros. Its units are in meters per second.
         """
         # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
@@ -1706,20 +1692,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_current_movement_velocities_at_left_leg_centers(self) -> np.ndarray:
-        """Get the current apparent velocities (in the first Airplane's geometry
-        axes, observed from the Earth frame) at the center point of each bound
-        RingVortex's left leg due to any motion defined in Movement.
+        """Finds the apparent velocities (in the first Airplane's geometry axes,
+        observed from the Earth frame) at the center point of each bound RingVortex's
+        left leg due to any motion defined in Movement at the current time step.
 
-        Note: At each point, any apparent velocity due to Movement is opposite the
-        motion due to Movement.
+        **Notes:**
 
-        :return: (M, 3) ndarray of floats
+        At each point, any apparent velocity due to Movement is opposite the motion due
+        to Movement.
 
-            This is a ndarray containing the apparent velocity (in the first
-            Airplane's geometry axes, observed from the Earth frame) at the center
+        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at the center
             point of each bound RingVortex's left leg due to any motion defined in
-            Movement. Its units are in meters per second. If the current time step is
-            the first time step, these velocities will all be all zeros.
+            Movement. If the current time step is the first time step, these velocities
+            will all be all zeros. Its units are in meters per second.
         """
         # Check if this is the current time step. If so, return all zeros.
         if self._current_step < 1:
@@ -1732,11 +1718,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _finalize_loads(self) -> None:
-        """For cases with static geometry, this function finds the final loads and
-        load coefficients for each of the SteadyProblem's Airplanes. For cases with
-        variable geometry, it finds the final cycle-averaged and
-        cycle-root-mean-squared loads and load coefficients for each of the
-        SteadyProblem's Airplanes.
+        """For cases with static geometry, finds the final loads and load coefficients
+        for each of the SteadyProblem's Airplanes. For cases with variable geometry,
+        finds the final cycle-averaged and cycle-root-mean-squared loads and load
+        coefficients for each of the SteadyProblem's Airplanes.
 
         :return: None
         """

@@ -153,14 +153,14 @@ class SteadyRingVortexLatticeMethodSolver:
         logging.info("Collapsing geometry.")
         self._collapse_geometry()
 
-        # Find the matrix of Wing-Wing influence coefficients associated with this
+        # Find the matrix of Wing Wing influence coefficients associated with this
         # SteadyProblem's geometry.
-        logging.info("Calculating the Wing-Wing influences.")
+        logging.info("Calculating the Wing Wing influences.")
         self._calculate_wing_wing_influences()
 
         # Find the normal fluid speed (observed from the Earth frame) at every
         # collocation point due solely to the freestream.
-        logging.info("Calculating the freestream-Wing influences.")
+        logging.info("Calculating the freestream Wing influences.")
         _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each Panel's RingVortex's and HorseshoeVortex's strength.
@@ -352,7 +352,7 @@ class SteadyRingVortexLatticeMethodSolver:
                     global_panel_position += 1
 
     def _calculate_wing_wing_influences(self) -> None:
-        """Finds this SteadyProblem's 2D ndarray of Wing-Wing influence coefficients
+        """Finds this SteadyProblem's 2D ndarray of Wing Wing influence coefficients
         (observed from the Earth frame).
 
         :return: None
@@ -403,7 +403,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # Take the batch dot product of the normalized induced velocities (in the
         # first Airplane's geometry axes, observed from the Earth frame) with each
         # Panel's unit normal direction (in the first Airplane's geometry axes). This
-        # is now the 2D ndarray of Wing-Wing influence coefficients (observed from
+        # is now the 2D ndarray of Wing Wing influence coefficients (observed from
         # the Earth frame).
         self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",

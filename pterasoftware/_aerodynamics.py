@@ -110,7 +110,7 @@ class RingVortex:
 
         # Initialize a variable to hold the age of the RingVortex in seconds (in
         # simulation time).
-        self.age = 0
+        self.age: float = 0.0
 
     def update_strength(self, strength: float) -> None:
         """Updates the strength of this RingVortex and of its four LineVortex legs.

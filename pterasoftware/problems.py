@@ -124,8 +124,8 @@ class UnsteadyProblem:
             only_final_results, "only_final_results"
         )
 
-        self.num_steps = self.movement.num_steps
-        self.delta_time = self.movement.delta_time
+        self.num_steps: int = self.movement.num_steps
+        self.delta_time: float = self.movement.delta_time
 
         # For UnsteadyProblems with a static Movement, we are typically interested in
         # the final time step's forces and moments, which, assuming convergence, will be
@@ -134,6 +134,7 @@ class UnsteadyProblem:
         # last cycle simulated. Therefore, determine which time step will be the first
         # with relevant results based on if the Movement is static or cyclic.
         _movement_max_period = self.movement.max_period
+        self.first_averaging_step: int
         if _movement_max_period == 0:
             self.first_averaging_step = self.num_steps - 1
         else:
@@ -146,6 +147,7 @@ class UnsteadyProblem:
         # cyclic Movement) or for the final time step (for a static Movement) set the
         # first step to calculate results to the first averaging step. Otherwise, set it
         # to the zero, which is the first time step.
+        self.first_results_step: int
         if self.only_final_results:
             self.first_results_step = self.first_averaging_step
         else:

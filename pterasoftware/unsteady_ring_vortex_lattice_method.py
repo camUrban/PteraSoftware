@@ -11,16 +11,18 @@ This module contains the following functions:
 from __future__ import annotations
 
 import logging
-from typing import cast
+from typing import cast, Sequence
 
 import numpy as np
 from tqdm import tqdm
 
-from . import _aerodynamics, operating_point, movements
-from . import _functions
-from . import _parameter_validation
-from . import _panel
 from . import geometry
+from . import movements
+from . import _aerodynamics
+from . import _functions
+from . import _panel
+from . import _parameter_validation
+from . import operating_point
 from . import problems
 
 
@@ -47,7 +49,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         This class is not meant to be subclassed.
     """
 
-    def __init__(self, unsteady_problem):
+    def __init__(self, unsteady_problem: problems.UnsteadyProblem) -> None:
         """This is the initialization method.
 
         :param unsteady_problem: UnsteadyProblem
@@ -56,117 +58,124 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         if not isinstance(unsteady_problem, problems.UnsteadyProblem):
             raise TypeError("unsteady_problem must be an UnsteadyProblem.")
-        self.unsteady_problem: problems.UnsteadyProblem = unsteady_problem
+        self.unsteady_problem = unsteady_problem
 
         self.num_steps = self.unsteady_problem.num_steps
         self.delta_time = self.unsteady_problem.delta_time
         self.first_results_step = self.unsteady_problem.first_results_step
         self._first_averaging_step = self.unsteady_problem.first_averaging_step
-        self._current_step = None
+        self._current_step: int = 0
 
         self.steady_problems = self.unsteady_problem.steady_problems
 
-        self.current_airplanes: list[geometry.airplane.Airplane] | None = None
-        self.current_operating_point: operating_point.OperatingPoint | None = None
         first_steady_problem: problems.SteadyProblem = self.steady_problems[0]
-        self.num_airplanes = len(first_steady_problem.airplanes)
+
+        self.current_airplanes: list[geometry.airplane.Airplane] = []
+        self.current_operating_point: operating_point.OperatingPoint = (
+            first_steady_problem.operating_point
+        )
+        self.num_airplanes: int = len(first_steady_problem.airplanes)
+
         num_panels = 0
-        airplane: geometry.airplane.Airplane
         for airplane in first_steady_problem.airplanes:
             num_panels += airplane.num_panels
-        self.num_panels = num_panels
+        self.num_panels: int = num_panels
 
         # Initialize attributes to hold aerodynamic data that pertain to the simulation.
-        self._currentVInf_GP1__E: np.ndarray | None = None
-        self._currentStackFreestreamWingInfluences__E: np.ndarray | None = None
-        self._currentGridWingWingInfluences__E: np.ndarray | None = None
-        self._currentStackWakeWingInfluences__E: np.ndarray | None = None
-        self._current_bound_vortex_strengths: np.ndarray | None = None
-        self._last_bound_vortex_strengths: np.ndarray | None = None
+        self._currentVInf_GP1__E: np.ndarray = (
+            first_steady_problem.operating_point.vInf_GP1__E
+        )
+        self._currentStackFreestreamWingInfluences__E: np.ndarray = np.empty(
+            0, dtype=float
+        )
+        self._currentGridWingWingInfluences__E: np.ndarray = np.empty(0, dtype=float)
+        self._currentStackWakeWingInfluences__E: np.ndarray = np.empty(0, dtype=float)
+        self._current_bound_vortex_strengths: np.ndarray = np.empty(0, dtype=float)
+        self._last_bound_vortex_strengths: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize attributes to hold geometric data that pertain to this
         # UnsteadyProblem.
-        self.panels: np.ndarray | None = None
-        self.stackUnitNormals_GP1: np.ndarray | None = None
-        self.panel_areas: np.ndarray | None = None
+        self.panels: np.ndarray = np.empty(0, dtype=object)
+        self.stackUnitNormals_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.panel_areas: np.ndarray = np.empty(0, dtype=float)
 
         # The current and last time step's collocation panel points (in the first
         # Airplane's geometry axes, relative to the first Airplane's CG).
-        self.stackCpp_GP1_CgP1: np.ndarray | None = None
-        self._stackLastCpp_GP1_CgP1: np.ndarray | None = None
+        self.stackCpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._stackLastCpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # The current and last time step's back right, front right, front left,
         # and back left bound RingVortex points (in the first Airplane's geometry
         # axes, relative to the first Airplane's CG).
-        self.stackBrbrvp_GP1_CgP1: np.ndarray | None = None
-        self.stackFrbrvp_GP1_CgP1: np.ndarray | None = None
-        self.stackFlbrvp_GP1_CgP1: np.ndarray | None = None
-        self.stackBlbrvp_GP1_CgP1: np.ndarray | None = None
-        self._lastStackBrbrvp_GP1_CgP1: np.ndarray | None = None
-        self._lastStackFrbrvp_GP1_CgP1: np.ndarray | None = None
-        self._lastStackFlbrvp_GP1_CgP1: np.ndarray | None = None
-        self._lastStackBlbrvp_GP1_CgP1: np.ndarray | None = None
+        self.stackBrbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackFrbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackFlbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackBlbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackBrbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackFrbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackFlbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackBlbrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # The current and last time step's center bound LineVortex points for the
         # right, front, left, and back legs (in the first Airplane's geometry axes,
         # relative to the first Airplane's CG).
-        self.stackCblvpr_GP1_CgP1: np.ndarray | None = None
-        self.stackCblvpf_GP1_CgP1: np.ndarray | None = None
-        self.stackCblvpl_GP1_CgP1: np.ndarray | None = None
-        self.stackCblvpb_GP1_CgP1: np.ndarray | None = None
-        self._lastStackCblvpr_GP1_CgP1: np.ndarray | None = None
-        self._lastStackCblvpf_GP1_CgP1: np.ndarray | None = None
-        self._lastStackCblvpl_GP1_CgP1: np.ndarray | None = None
-        self._lastStackCblvpb_GP1_CgP1: np.ndarray | None = None
+        self.stackCblvpr_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpf_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpl_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpb_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackCblvpr_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackCblvpf_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackCblvpl_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._lastStackCblvpb_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # Right, front, left, and back bound RingVortex vectors (in the first
         # Airplane's geometry axes).
-        self.stackRbrv_GP1: np.ndarray | None = None
-        self.stackFbrv_GP1: np.ndarray | None = None
-        self.stackLbrv_GP1: np.ndarray | None = None
-        self.stackBbrv_GP1: np.ndarray | None = None
+        self.stackRbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackFbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackLbrv_GP1: np.ndarray = np.empty(0, dtype=float)
+        self.stackBbrv_GP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize variables to hold aerodynamic data that pertains details about
         # each Panel's location on its Wing.
-        self.panel_is_trailing_edge: np.ndarray | None = None
-        self.panel_is_leading_edge: np.ndarray | None = None
-        self.panel_is_left_edge: np.ndarray | None = None
-        self.panel_is_right_edge: np.ndarray | None = None
+        self.panel_is_trailing_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_leading_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_left_edge: np.ndarray = np.empty(0, dtype=bool)
+        self.panel_is_right_edge: np.ndarray = np.empty(0, dtype=bool)
 
         # Initialize variables to hold aerodynamic data that pertains to the wake at
         # the current time step.
-        self._current_wake_vortex_strengths: np.ndarray | None = None
-        self._current_wake_vortex_ages: np.ndarray | None = None
+        self._current_wake_vortex_strengths: np.ndarray = np.empty(0, dtype=float)
+        self._current_wake_vortex_ages: np.ndarray = np.empty(0, dtype=float)
 
         # The current time step's back right, front right, front left, and back left
         # wake RingVortex points (in the first Airplane's geometry axes, relative to
         # the first Airplane's CG).
-        self._currentStackBrwrvp_GP1_CgP1: np.ndarray | None = None
-        self._currentStackFrwrvp_GP1_CgP1: np.ndarray | None = None
-        self._currentStackFlwrvp_GP1_CgP1: np.ndarray | None = None
-        self._currentStackBlwrvp_GP1_CgP1: np.ndarray | None = None
+        self._currentStackBrwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._currentStackFrwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._currentStackFlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self._currentStackBlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize lists to store aerodynamic data about the wake at each time
         # step. These attributes are used by the output module to animate the wake.
-        self.list_num_wake_vortices = []
+        self.list_num_wake_vortices: list[int] = []
         # TODO: Determine if these private attributes are needed and if not
         #  delete them.
-        self._list_wake_vortex_strengths = []
-        self._list_wake_vortex_ages = []
-        self.listStackBrwrvp_GP1_CgP1 = []
-        self.listStackFrwrvp_GP1_CgP1 = []
-        self.listStackFlwrvp_GP1_CgP1 = []
-        self.listStackBlwrvp_GP1_CgP1 = []
+        self._list_wake_vortex_strengths: list[np.ndarray] = []
+        self._list_wake_vortex_ages: list[np.ndarray] = []
+        self.listStackBrwrvp_GP1_CgP1: list[np.ndarray] = []
+        self.listStackFrwrvp_GP1_CgP1: list[np.ndarray] = []
+        self.listStackFlwrvp_GP1_CgP1: list[np.ndarray] = []
+        self.listStackBlwrvp_GP1_CgP1: list[np.ndarray] = []
 
-        self.stackSeedPoints_GP1_CgP1: np.ndarray | None = None
-        self.gridStreamlinePoints_GP1_CgP1: np.ndarray | None = None
+        self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
     def run(
         self,
-        logging_level="Warning",
-        prescribed_wake=True,
-        calculate_streamlines=True,
-    ):
+        logging_level: str = "Warning",
+        prescribed_wake: bool | np.bool_ = True,
+        calculate_streamlines: bool | np.bool_ = True,
+    ) -> None:
         """This method runs the solver on the UnsteadyProblem.
 
         :param logging_level: str, optional
@@ -216,17 +225,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
             these_airplanes = this_problem.airplanes
 
             # Loop through this time step's Airplanes to create a list of their Wings.
-            these_wings = []
-            airplane: geometry.airplane.Airplane
+            these_wings: list[list[geometry.wing.Wing]] = []
             for airplane in these_airplanes:
                 these_wings.append(airplane.wings)
 
             # Iterate through the Wings to get the total number of spanwise Panels.
             this_num_spanwise_panels = 0
             for this_wing_set in these_wings:
-                this_wing: geometry.wing.Wing
                 for this_wing in this_wing_set:
-                    this_num_spanwise_panels += this_wing.num_spanwise_panels
+                    _this_wing_num_spanwise_panels = this_wing.num_spanwise_panels
+                    assert _this_wing_num_spanwise_panels is not None
+
+                    this_num_spanwise_panels += _this_wing_num_spanwise_panels
 
             # The number of wake RingVortices is the time step number multiplied by
             # the number of spanwise Panels. This works because the first time step
@@ -272,13 +282,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # progress bar during the simulation initialization.
         approx_times = np.zeros(self.num_steps + 1, dtype=float)
         for step in range(1, self.num_steps):
-            this_problem: problems.SteadyProblem = self.steady_problems[step]
+            this_problem = self.steady_problems[step]
             these_airplanes = this_problem.airplanes
 
             # Iterate through this time step's Airplanes to get the total number of
             # Wing Panels.
             num_wing_panels = 0
-            airplane: geometry.airplane.Airplane
             for airplane in these_airplanes:
                 num_wing_panels += airplane.num_panels
 
@@ -331,9 +340,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     self._current_step
                 ]
                 self.current_airplanes = current_problem.airplanes
-                self.current_operating_point: operating_point.OperatingPoint = (
-                    current_problem.operating_point
-                )
+                self.current_operating_point = current_problem.operating_point
                 self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
                 logging.info(
                     "Beginning time step "
@@ -483,7 +490,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             logging.info("Calculating streamlines.")
             _functions.calculate_streamlines(self)
 
-    def _initialize_panel_vortices(self):
+    def _initialize_panel_vortices(self) -> None:
         """This method calculates the locations of the Airplanes' bound RingVortices'
         points, and then initializes the bound RingVortices.
 
@@ -497,44 +504,61 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        steady_problem: problems.SteadyProblem
         for steady_problem_id, steady_problem in enumerate(self.steady_problems):
             # Find the freestream velocity (in the first Airplane's geometry axes,
             # observed from the Earth frame) at this time step.
-            this_operating_point: operating_point.OperatingPoint = (
-                steady_problem.operating_point
-            )
+            this_operating_point = steady_problem.operating_point
             vInf_GP1__E = this_operating_point.vInf_GP1__E
 
             # Iterate through this SteadyProblem's Airplanes' Wings.
-            airplane: geometry.airplane.Airplane
             for airplane_id, airplane in enumerate(steady_problem.airplanes):
-                wing: geometry.wing.Wing
                 for wing_id, wing in enumerate(airplane.wings):
+                    _num_spanwise_panels = wing.num_spanwise_panels
+                    assert _num_spanwise_panels is not None
 
                     # Iterate through the Wing's chordwise and spanwise positions.
                     for chordwise_position in range(wing.num_chordwise_panels):
-                        for spanwise_position in range(wing.num_spanwise_panels):
+                        for spanwise_position in range(_num_spanwise_panels):
+                            _panels = wing.panels
+                            assert _panels is not None
+
                             # Pull the Panel out of the Wing's 2D ndarray of Panels.
-                            panel: _panel.Panel = wing.panels[
+                            panel: _panel.Panel = _panels[
                                 chordwise_position, spanwise_position
                             ]
+
+                            _Flbvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
+                            assert _Flbvp_GP1_CgP1 is not None
+
+                            _Frbvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
+                            assert _Frbvp_GP1_CgP1 is not None
 
                             # Find the location of this Panel's front left and
                             # front right RingVortex points (in the first Airplane's
                             # geometry axes, relative to the first Airplane's CG).
-                            Flrvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
-                            Frrvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
+                            Flrvp_GP1_CgP1 = _Flbvp_GP1_CgP1
+                            Frrvp_GP1_CgP1 = _Frbvp_GP1_CgP1
 
                             # Define the location of the back left and back right
                             # RingVortex points based on whether the Panel is along
                             # the trailing edge or not.
                             if not panel.is_trailing_edge:
-                                next_chordwise_panel = wing.panels[
+                                next_chordwise_panel: _panel.Panel = _panels[
                                     chordwise_position + 1, spanwise_position
                                 ]
-                                Blrvp_GP1_CgP1 = next_chordwise_panel.Flbvp_GP1_CgP1
-                                Brrvp_GP1_CgP1 = next_chordwise_panel.Frbvp_GP1_CgP1
+
+                                _nextFlbvp_GP1_CgP1 = (
+                                    next_chordwise_panel.Flbvp_GP1_CgP1
+                                )
+                                assert _nextFlbvp_GP1_CgP1 is not None
+
+                                _nextFrbvp_GP1_CgP1 = (
+                                    next_chordwise_panel.Frbvp_GP1_CgP1
+                                )
+                                assert _nextFrbvp_GP1_CgP1 is not None
+
+                                Blrvp_GP1_CgP1 = _nextFlbvp_GP1_CgP1
+                                Brrvp_GP1_CgP1 = _nextFrbvp_GP1_CgP1
                             else:
                                 # As these vertices are directly behind the trailing
                                 # edge, they are spaced back from their Panel's
@@ -545,12 +569,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 # forces in flapping flight with the Unsteady Vortex
                                 # Lattice Method" by Thomas Lambert.
                                 if steady_problem_id == 0:
+                                    _Blpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
+                                    assert _Blpp_GP1_CgP1 is not None
+
+                                    _Brpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
+                                    assert _Brpp_GP1_CgP1 is not None
+
                                     Blrvp_GP1_CgP1 = (
-                                        panel.Blpp_GP1_CgP1
+                                        _Blpp_GP1_CgP1
                                         + vInf_GP1__E * self.delta_time * 0.25
                                     )
                                     Brrvp_GP1_CgP1 = (
-                                        panel.Brpp_GP1_CgP1
+                                        _Brpp_GP1_CgP1
                                         + vInf_GP1__E * self.delta_time * 0.25
                                     )
                                 else:
@@ -561,12 +591,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         airplane_id
                                     ]
                                     last_wing = last_airplane.wings[wing_id]
-                                    last_panel = last_wing.panels[
+
+                                    _last_panels = last_wing.panels
+                                    assert _last_panels is not None
+
+                                    last_panel: _panel.Panel = _last_panels[
                                         chordwise_position, spanwise_position
                                     ]
 
-                                    thisBlpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
-                                    lastBlpp_GP1_CgP1 = last_panel.Blpp_GP1_CgP1
+                                    _thisBlpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
+                                    assert _thisBlpp_GP1_CgP1 is not None
+
+                                    _lastBlpp_GP1_CgP1 = last_panel.Blpp_GP1_CgP1
+                                    assert _lastBlpp_GP1_CgP1 is not None
 
                                     # We subtract (thisBlpp_GP1_CgP1 -
                                     # lastBlpp_GP1_CgP1) / self.delta_time from
@@ -576,26 +613,29 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     # This is the vector pointing opposite the
                                     # velocity from motion.
                                     Blrvp_GP1_CgP1 = (
-                                        thisBlpp_GP1_CgP1
+                                        _thisBlpp_GP1_CgP1
                                         + (
                                             vInf_GP1__E
-                                            - (thisBlpp_GP1_CgP1 - lastBlpp_GP1_CgP1)
+                                            - (_thisBlpp_GP1_CgP1 - _lastBlpp_GP1_CgP1)
                                             / self.delta_time
                                         )
                                         * self.delta_time
                                         * 0.25
                                     )
 
-                                    thisBrpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
-                                    lastBrpp_GP1_CgP1 = last_panel.Brpp_GP1_CgP1
+                                    _thisBrpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
+                                    assert _thisBrpp_GP1_CgP1 is not None
+
+                                    _lastBrpp_GP1_CgP1 = last_panel.Brpp_GP1_CgP1
+                                    assert _lastBrpp_GP1_CgP1 is not None
 
                                     # The comment from above about apparent fluid
                                     # velocity due to motion applies here as well.
                                     Brrvp_GP1_CgP1 = (
-                                        thisBrpp_GP1_CgP1
+                                        _thisBrpp_GP1_CgP1
                                         + (
                                             vInf_GP1__E
-                                            - (thisBrpp_GP1_CgP1 - lastBrpp_GP1_CgP1)
+                                            - (_thisBrpp_GP1_CgP1 - _lastBrpp_GP1_CgP1)
                                             / self.delta_time
                                         )
                                         * self.delta_time
@@ -608,10 +648,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                                 Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
                                 Brrvp_GP1_CgP1=Brrvp_GP1_CgP1,
-                                strength=None,
+                                strength=1.0,
                             )
 
-    def _collapse_geometry(self):
+    def _collapse_geometry(self) -> None:
         """This method converts attributes of the UnsteadyProblem's geometry into 1D
         ndarrays. This facilitates vectorization, which speeds up the solver.
 
@@ -623,15 +663,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
         global_wake_ring_vortex_position = 0
 
         # Iterate through the current time step's Airplanes' Wings.
-        airplane: geometry.airplane.Airplane
         for airplane in self.current_airplanes:
-            wing: geometry.wing.Wing
             for wing in airplane.wings:
+                _panels = wing.panels
+                assert _panels is not None
+
+                _wake_ring_vortices = wing.wake_ring_vortices
+                assert _wake_ring_vortices is not None
 
                 # Convert this Wing's 2D ndarray of Panels and wake RingVortices into
                 # 1D ndarrays.
-                panels = np.ravel(wing.panels)
-                wake_ring_vortices = np.ravel(wing.wake_ring_vortices)
+                panels = np.ravel(_panels)
+                wake_ring_vortices = np.ravel(_wake_ring_vortices)
 
                 # Iterate through the 1D ndarray of this Wing's Panels.
                 panel: _panel.Panel
@@ -679,65 +722,65 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Reset the global Panel position variable.
             global_panel_position = 0
 
-            last_problem: problems.SteadyProblem = self.steady_problems[
-                self._current_step - 1
-            ]
+            last_problem = self.steady_problems[self._current_step - 1]
             last_airplanes = last_problem.airplanes
 
             # Iterate through the last time step's Airplanes' Wings.
-            last_airplane: geometry.airplane.Airplane
             for last_airplane in last_airplanes:
-                wing: geometry.wing.Wing
-                for wing in last_airplane.wings:
+                for last_wing in last_airplane.wings:
+                    _last_panels = last_wing.panels
+                    assert _last_panels is not None
 
                     # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
-                    panels = np.ravel(wing.panels)
+                    last_panels = np.ravel(_last_panels)
 
                     # Iterate through the 1D ndarray of this Wing's Panels.
-                    panel: _panel.Panel
-                    for panel in panels:
+                    last_panel: _panel.Panel
+                    for last_panel in last_panels:
                         # Update the solver's list of attributes with this Panel's
                         # attributes.
                         self._stackLastCpp_GP1_CgP1[global_panel_position, :] = (
-                            panel.Cpp_GP1_CgP1
+                            last_panel.Cpp_GP1_CgP1
                         )
 
-                        this_ring_vortex: _aerodynamics.RingVortex = panel.ring_vortex
+                        last_ring_vortex = last_panel.ring_vortex
+                        assert last_ring_vortex is not None
+
                         self._last_bound_vortex_strengths[global_panel_position] = (
-                            this_ring_vortex.strength
+                            last_ring_vortex.strength
                         )
 
                         # TODO: Test if we can replace the calls to LineVortex
                         #  attributes with calls to RingVortex attributes.
                         self._lastStackBrbrvp_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.right_leg.Slvp_GP1_CgP1
+                            last_ring_vortex.right_leg.Slvp_GP1_CgP1
                         )
                         self._lastStackFrbrvp_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.right_leg.Elvp_GP1_CgP1
+                            last_ring_vortex.right_leg.Elvp_GP1_CgP1
                         )
                         self._lastStackFlbrvp_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.left_leg.Slvp_GP1_CgP1
+                            last_ring_vortex.left_leg.Slvp_GP1_CgP1
                         )
                         self._lastStackBlbrvp_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.left_leg.Elvp_GP1_CgP1
+                            last_ring_vortex.left_leg.Elvp_GP1_CgP1
                         )
                         self._lastStackCblvpr_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.right_leg.Clvp_GP1_CgP1
+                            last_ring_vortex.right_leg.Clvp_GP1_CgP1
                         )
                         self._lastStackCblvpf_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.front_leg.Clvp_GP1_CgP1
+                            last_ring_vortex.front_leg.Clvp_GP1_CgP1
                         )
                         self._lastStackCblvpl_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.left_leg.Clvp_GP1_CgP1
+                            last_ring_vortex.left_leg.Clvp_GP1_CgP1
                         )
                         self._lastStackCblvpb_GP1_CgP1[global_panel_position, :] = (
-                            this_ring_vortex.back_leg.Clvp_GP1_CgP1
+                            last_ring_vortex.back_leg.Clvp_GP1_CgP1
                         )
 
                         # Increment the global Panel position variable.
                         global_panel_position += 1
 
-    def _calculate_wing_wing_influences(self):
+    def _calculate_wing_wing_influences(self) -> None:
         """This method finds the 2d ndarray of Wing-Wing influence coefficients (
         observed from the Earth frame).
 
@@ -770,7 +813,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             np.expand_dims(self.stackUnitNormals_GP1, axis=1),
         )
 
-    def _calculate_freestream_wing_influences(self):
+    def _calculate_freestream_wing_influences(self) -> None:
         """This method finds the 1D ndarray of freestream-Wing influence coefficients
         (observed from the Earth frame).
 
@@ -811,7 +854,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + currentStackMovementInfluences__E
         )
 
-    def _calculate_wake_wing_influences(self):
+    def _calculate_wake_wing_influences(self) -> None:
         """This method finds the 1D ndarray of the wake-Wing influence coefficients (
         observed from the Earth frame) associated with the UnsteadyProblem at the
         current time step.
@@ -854,7 +897,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.num_panels, dtype=float
             )
 
-    def _calculate_vortex_strengths(self):
+    def _calculate_vortex_strengths(self) -> None:
         """Solve for the strength of each Panel's bound RingVortex.
 
         :return: None
@@ -866,15 +909,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Update the bound RingVortices' strengths.
-        for panel_num in range(self.panels.size):
-            panel: _panel.Panel = self.panels[panel_num]
-            this_ring_vortex: _aerodynamics.RingVortex = panel.ring_vortex
+        _panels = self.panels
+        assert _panels is not None
+        for panel_num in range(_panels.size):
+            panel: _panel.Panel = _panels[panel_num]
+
+            this_ring_vortex = panel.ring_vortex
+            assert this_ring_vortex is not None
 
             this_ring_vortex.update_strength(
                 self._current_bound_vortex_strengths[panel_num]
             )
 
-    def calculate_solution_velocity(self, stackP_GP1_CgP1):
+    def calculate_solution_velocity(
+        self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
+    ) -> np.ndarray:
         """This function takes in a group of points (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). At every point, it finds the
         fluid velocity (in the first Airplane's geometry axes, observed from the
@@ -930,13 +979,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
             nu=self.current_operating_point.nu,
         )
 
-        return (
+        return cast(
+            np.ndarray,
             stackBoundRingVInd_GP1_E
             + stackWakeRingVInd_GP1_E
-            + self._currentVInf_GP1__E
+            + self._currentVInf_GP1__E,
         )
 
-    def _calculate_loads(self):
+    def _calculate_loads(self) -> None:
         """Calculate the forces (in the first Airplane's geometry axes) and moments (
         in the first Airplane's geometry axes, relative to the first Airplane's CG)
         on every Panel.
@@ -961,16 +1011,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
         effective_left_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
 
         # Iterate through the Airplanes' Wings.
-        airplane: geometry.airplane.Airplane
         for airplane in self.current_airplanes:
-            wing: geometry.wing.Wing
             for wing in airplane.wings:
+                _panels = wing.panels
+                assert _panels is not None
+
                 # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
-                panels = np.ravel(wing.panels)
+                panels = np.ravel(_panels)
 
                 # Iterate through this Wing's 1D ndarray of Panels.
                 panel: _panel.Panel
                 for panel in panels:
+                    _local_chordwise_position = panel.local_chordwise_position
+                    assert _local_chordwise_position is not None
+
+                    _local_spanwise_position = panel.local_spanwise_position
+                    assert _local_spanwise_position is not None
 
                     # FIXME: After rereading pages 9-10 of "Modeling of aerodynamic
                     #  forces in flapping flight with the Unsteady Vortex Lattice
@@ -989,13 +1045,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_right: _panel.Panel = wing.panels[
-                            panel.local_chordwise_position,
-                            panel.local_spanwise_position + 1,
+                        panel_to_right: _panel.Panel = _panels[
+                            _local_chordwise_position,
+                            _local_spanwise_position + 1,
                         ]
-                        ring_vortex_to_right: _aerodynamics.RingVortex = (
-                            panel_to_right.ring_vortex
-                        )
+
+                        ring_vortex_to_right = panel_to_right.ring_vortex
+                        assert ring_vortex_to_right is not None
 
                         # Set the effective right LineVortex strength to the
                         # difference between this Panel's RingVortex's strength,
@@ -1012,13 +1068,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_front: _panel.Panel = wing.panels[
-                            panel.local_chordwise_position - 1,
-                            panel.local_spanwise_position,
+                        panel_to_front: _panel.Panel = _panels[
+                            _local_chordwise_position - 1,
+                            _local_spanwise_position,
                         ]
-                        ring_vortex_to_front: _aerodynamics.RingVortex = (
-                            panel_to_front.ring_vortex
-                        )
+
+                        ring_vortex_to_front = panel_to_front.ring_vortex
+                        assert ring_vortex_to_front is not None
 
                         # Set the effective front LineVortex strength to the
                         # difference between this Panel's RingVortex's strength,
@@ -1035,13 +1091,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
-                        panel_to_left: _panel.Panel = wing.panels[
-                            panel.local_chordwise_position,
-                            panel.local_spanwise_position - 1,
+                        panel_to_left: _panel.Panel = _panels[
+                            _local_chordwise_position,
+                            _local_spanwise_position - 1,
                         ]
-                        ring_vortex_to_left: _aerodynamics.RingVortex = (
-                            panel_to_left.ring_vortex
-                        )
+
+                        ring_vortex_to_left = panel_to_left.ring_vortex
+                        assert ring_vortex_to_left is not None
 
                         # Set the effective left LineVortex strength to the
                         # difference between this Panel's RingVortex's strength,
@@ -1165,7 +1221,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  geometry axes before passing to process_solver_loads.
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
-    def _populate_next_airplanes_wake(self, prescribed_wake=True):
+    def _populate_next_airplanes_wake(self, prescribed_wake=True) -> None:
         """This method updates the next time step's Airplanes' wakes.
 
         :param prescribed_wake: Bool, optional
@@ -1185,7 +1241,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next time step's Airplanes' wake RingVortices.
         self._populate_next_airplanes_wake_vortices()
 
-    def _populate_next_airplanes_wake_vortex_points(self, prescribed_wake=True):
+    def _populate_next_airplanes_wake_vortex_points(self, prescribed_wake=True) -> None:
         """This method populates the locations of the next time step's Airplanes'
         wake RingVortex points.
 
@@ -1211,23 +1267,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # Get the current Airplanes' combined number of Wings.
             num_wings = 0
-            airplane: geometry.airplane.Airplane
             for airplane in self.current_airplanes:
                 num_wings += len(airplane.wings)
 
             # Iterate through this time step's Airplanes' successor objects.
-            next_airplane: geometry.airplane.Airplane
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
                 # Iterate through the next Airplane's Wings.
-                next_wing: geometry.wing.Wing
                 for wing_id, next_wing in enumerate(next_airplane.wings):
 
                     # Get the Wings at this position from the current Airplane.
-                    this_airplane: geometry.airplane.Airplane = self.current_airplanes[
-                        airplane_id
-                    ]
-                    this_wing: geometry.wing.Wing = this_airplane.wings[wing_id]
+                    this_airplane = self.current_airplanes[airplane_id]
+                    this_wing = this_airplane.wings[wing_id]
 
                     # Check if this is the first time step.
                     if self._current_step == 0:
@@ -1235,6 +1286,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Get the current Wing's number of chordwise and spanwise
                         # panels.
                         num_spanwise_panels = this_wing.num_spanwise_panels
+                        assert num_spanwise_panels is not None
+
                         num_chordwise_panels = this_wing.num_chordwise_panels
 
                         # Set the chordwise position to be at the trailing edge.
@@ -1249,18 +1302,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # Iterate through the spanwise Panel positions.
                         for spanwise_panel_id in range(num_spanwise_panels):
+                            _next_panels = next_wing.panels
+                            assert _next_panels is not None
 
                             # Get the next time step's Wing's Panel at this location.
-                            next_panel: _panel.Panel = next_wing.panels[
+                            next_panel: _panel.Panel = _next_panels[
                                 chordwise_panel_id, spanwise_panel_id
                             ]
 
                             # The position of the new front left wake RingVortex's
                             # point is the next time step's Panel's bound
                             # RingVortex's back left point.
-                            next_ring_vortex: _aerodynamics.RingVortex = (
-                                next_panel.ring_vortex
-                            )
+                            next_ring_vortex = next_panel.ring_vortex
+                            assert next_ring_vortex is not None
+
                             newFlwrvp_GP1_CgP1 = next_ring_vortex.Blrvp_GP1_CgP1
 
                             # Add this to the row of new wake RingVortex points.
@@ -1298,6 +1353,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             Wrvp_GP1_CgP1 = next_wing.gridWrvp_GP1_CgP1[
                                 0, spanwise_point_id
                             ]
+                            assert Wrvp_GP1_CgP1 is not None
 
                             # If the wake is prescribed, set the velocity at this
                             # point to the freestream velocity (in the first
@@ -1329,12 +1385,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                     # If this isn't the first time step, then do this.
                     else:
+                        _thisGridWrvp_GP1_CgP1 = this_wing.gridWrvp_GP1_CgP1
+                        assert _thisGridWrvp_GP1_CgP1 is not None
+
                         # Set the next time step's Wing's grid of wake RingVortex
                         # points to a copy of this time step's Wing's grid of wake
                         # RingVortex points.
-                        next_wing.gridWrvp_GP1_CgP1 = np.copy(
-                            this_wing.gridWrvp_GP1_CgP1
-                        )
+                        next_wing.gridWrvp_GP1_CgP1 = np.copy(_thisGridWrvp_GP1_CgP1)
 
                         # Get the number of chordwise and spanwise points.
                         num_chordwise_points = next_wing.gridWrvp_GP1_CgP1.shape[0]
@@ -1372,25 +1429,31 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Find the chordwise position of the Wing's trailing edge.
                         chordwise_panel_id = this_wing.num_chordwise_panels - 1
 
+                        _num_spanwise_panels = this_wing.num_spanwise_panels
+                        assert _num_spanwise_panels is not None
+
                         # Initialize a new ndarray to hold the new row of wake
                         # RingVortex vertices.
                         newRowWrvp_GP1_CgP1 = np.zeros(
-                            (1, this_wing.num_spanwise_panels + 1, 3), dtype=float
+                            (1, _num_spanwise_panels + 1, 3), dtype=float
                         )
 
                         # Iterate spanwise through the trailing edge Panels.
-                        for spanwise_panel_id in range(this_wing.num_spanwise_panels):
+                        for spanwise_panel_id in range(_num_spanwise_panels):
+                            _next_panels = next_wing.panels
+                            assert _next_panels is not None
+
                             # Get the Panel at this location on the next time step's
                             # Airplane's Wing.
-                            next_panel: _panel.Panel = next_wing.panels[
+                            this_next_panel: _panel.Panel = _next_panels[
                                 chordwise_panel_id, spanwise_panel_id
                             ]
 
                             # Add the Panel's back left bound RingVortex point to the
                             # grid of new wake RingVortex points.
-                            next_ring_vortex: _aerodynamics.RingVortex = (
-                                next_panel.ring_vortex
-                            )
+                            next_ring_vortex = this_next_panel.ring_vortex
+                            assert next_ring_vortex is not None
+
                             newRowWrvp_GP1_CgP1[0, spanwise_panel_id] = (
                                 next_ring_vortex.Blrvp_GP1_CgP1
                             )
@@ -1398,7 +1461,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             # If the Panel is at the right edge of the Wing, add its
                             # back right bound RingVortex point to the grid of new
                             # wake RingVortex vertices.
-                            if spanwise_panel_id == (this_wing.num_spanwise_panels - 1):
+                            if spanwise_panel_id == (_num_spanwise_panels - 1):
                                 newRowWrvp_GP1_CgP1[0, spanwise_panel_id + 1] = (
                                     next_ring_vortex.Brrvp_GP1_CgP1
                                 )
@@ -1412,7 +1475,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
-    def _populate_next_airplanes_wake_vortices(self):
+    def _populate_next_airplanes_wake_vortices(self) -> None:
         """This method populates the locations and strengths of the next time step's
         wake RingVortices.
 
@@ -1425,25 +1488,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < self.num_steps - 1:
 
             # Get the next time step's Airplanes.
-            next_problem: problems.SteadyProblem = self.steady_problems[
-                self._current_step + 1
-            ]
+            next_problem = self.steady_problems[self._current_step + 1]
             next_airplanes = next_problem.airplanes
 
             # Iterate through the next time step's Airplanes.
-            next_airplane: geometry.airplane.Airplane
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
                 # For a given Airplane in the next time step, iterate through its
                 # predecessor's Wings.
-                this_wing: geometry.wing.Wing
                 for wing_id, this_wing in enumerate(
                     self.current_airplanes[airplane_id].wings
                 ):
-                    next_wing: geometry.wing.Wing = next_airplane.wings[wing_id]
+                    next_wing = next_airplane.wings[wing_id]
 
                     # Get the next time step's Wing's grid of wake RingVortex points.
                     nextGridWrvp_GP1_CgP1 = next_wing.gridWrvp_GP1_CgP1
+                    assert nextGridWrvp_GP1_CgP1 is not None
 
                     # Find the number of chordwise and spanwise points in the next
                     # Wing's grid of wake RingVortex points.
@@ -1455,6 +1515,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         .wings[wing_id]
                         .wake_ring_vortices
                     )
+                    assert this_wing_wake_ring_vortices is not None
 
                     # Initialize a new ndarray to hold the new row of wake RingVortices.
                     new_row_of_wake_ring_vortices = np.empty(
@@ -1533,16 +1594,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         next_wake_ring_vortex.age += self.delta_time
 
                                 if chordwise_point_id == 0:
+                                    _panels = this_wing.panels
+                                    assert _panels is not None
+
                                     # If this position corresponds to the front of
                                     # the wake, get the strength from the Panel's
                                     # bound RingVortex.
-                                    this_panel: _panel.Panel = this_wing.panels[
+                                    this_panel: _panel.Panel = _panels[
                                         this_wing.num_chordwise_panels - 1,
                                         spanwise_point_id,
                                     ]
-                                    this_ring_vortex: _aerodynamics.RingVortex = (
-                                        this_panel.ring_vortex
-                                    )
+
+                                    this_ring_vortex = this_panel.ring_vortex
+                                    assert this_ring_vortex is not None
+
                                     this_strength_copy = this_ring_vortex.strength
 
                                     # Then, for the next time step, make a new wake
@@ -1561,7 +1626,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         strength=this_strength_copy,
                                     )
 
-    def _calculate_current_movement_velocities_at_collocation_points(self):
+    def _calculate_current_movement_velocities_at_collocation_points(
+        self,
+    ) -> np.ndarray:
         """Get the current apparent velocities (in the first Airplane's geometry
         axes, observed from the Earth frame) at each Panel's collocation point due to
         any motion defined in Movement.
@@ -1581,9 +1648,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             return np.zeros((self.num_panels, 3), dtype=float)
 
-        return -(self.stackCpp_GP1_CgP1 - self._stackLastCpp_GP1_CgP1) / self.delta_time
+        return cast(
+            np.ndarray,
+            -(self.stackCpp_GP1_CgP1 - self._stackLastCpp_GP1_CgP1) / self.delta_time,
+        )
 
-    def _calculate_current_movement_velocities_at_right_leg_centers(self):
+    def _calculate_current_movement_velocities_at_right_leg_centers(self) -> np.ndarray:
         """Get the current apparent velocities (in the first Airplane's geometry
         axes, observed from the Earth frame) at the center point of each bound
         RingVortex's right leg due to any motion defined in Movement.
@@ -1603,12 +1673,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             return np.zeros((self.num_panels, 3), dtype=float)
 
-        return (
+        return cast(
+            np.ndarray,
             -(self.stackCblvpr_GP1_CgP1 - self._lastStackCblvpr_GP1_CgP1)
-            / self.delta_time
+            / self.delta_time,
         )
 
-    def _calculate_current_movement_velocities_at_front_leg_centers(self):
+    def _calculate_current_movement_velocities_at_front_leg_centers(self) -> np.ndarray:
         """Get the current apparent velocities (in the first Airplane's geometry
         axes, observed from the Earth frame) at the center point of each bound
         RingVortex's front leg due to any motion defined in Movement.
@@ -1628,12 +1699,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             return np.zeros((self.num_panels, 3), dtype=float)
 
-        return (
+        return cast(
+            np.ndarray,
             -(self.stackCblvpf_GP1_CgP1 - self._lastStackCblvpf_GP1_CgP1)
-            / self.delta_time
+            / self.delta_time,
         )
 
-    def _calculate_current_movement_velocities_at_left_leg_centers(self):
+    def _calculate_current_movement_velocities_at_left_leg_centers(self) -> np.ndarray:
         """Get the current apparent velocities (in the first Airplane's geometry
         axes, observed from the Earth frame) at the center point of each bound
         RingVortex's left leg due to any motion defined in Movement.
@@ -1653,12 +1725,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if self._current_step < 1:
             return np.zeros((self.num_panels, 3), dtype=float)
 
-        return (
+        return cast(
+            np.ndarray,
             -(self.stackCblvpl_GP1_CgP1 - self._lastStackCblvpl_GP1_CgP1)
-            / self.delta_time
+            / self.delta_time,
         )
 
-    def _finalize_loads(self):
+    def _finalize_loads(self) -> None:
         """For cases with static geometry, this function finds the final loads and
         load coefficients for each of the SteadyProblem's Airplanes. For cases with
         variable geometry, it finds the final cycle-averaged and
@@ -1700,7 +1773,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             these_airplanes = this_steady_problem.airplanes
 
             # Iterate through this time step's Airplanes.
-            airplane: geometry.airplane.Airplane
             for airplane_id, airplane in enumerate(these_airplanes):
                 forces_W[airplane_id, :, results_step] = airplane.forces_W
                 force_coefficients_W[airplane_id, :, results_step] = (
@@ -1715,7 +1787,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # For each Airplane, calculate and then save the final or cycle-averaged and
         # RMS loads and load coefficients.
-        airplane: geometry.airplane.Airplane
         first_problem: problems.SteadyProblem = self.steady_problems[0]
         for airplane_id, airplane in enumerate(first_problem.airplanes):
             if static:

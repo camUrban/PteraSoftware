@@ -135,7 +135,7 @@ class Movement:
 
             # Set the delta_time to be the average of the Airplanes' ideal delta times.
             delta_time = sum(delta_times) / len(delta_times)
-        self.delta_time = delta_time
+        self.delta_time: float = delta_time
 
         _static = self.static
 
@@ -223,7 +223,7 @@ class Movement:
                 num_steps = math.ceil(
                     self.num_cycles * self.max_period / self.delta_time
                 )
-        self.num_steps = num_steps
+        self.num_steps: int = num_steps
 
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the

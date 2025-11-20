@@ -22,7 +22,6 @@ import numpy as np
 from . import _parameter_validation
 from . import geometry
 from . import movements
-from . import operating_point
 from . import problems
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
@@ -180,8 +179,7 @@ def analyze_steady_convergence(
 
     convergence_logger.info("Beginning convergence analysis...")
 
-    ref_problem: problems.SteadyProblem
-    ref_operating_point: operating_point.OperatingPoint = ref_problem.operating_point
+    ref_operating_point = ref_problem.operating_point
     ref_airplanes = ref_problem.airplanes
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
@@ -244,17 +242,14 @@ def analyze_steady_convergence(
             # fill the list by making new copies of each of the Airplanes with
             # modified values for Panel aspect ratio and number of chordwise Panels.
             these_airplanes = []
-            ref_airplane: geometry.airplane.Airplane
             for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
                 ref_wings = ref_airplane.wings
                 these_wings = []
 
-                ref_wing: geometry.wing.Wing
                 for ref_wing_id, ref_wing in enumerate(ref_wings):
                     ref_wing_cross_sections = ref_wing.wing_cross_sections
                     these_wing_cross_sections = []
 
-                    ref_wing_cross_section: geometry.wing_cross_section.WingCrossSection
                     for (
                         ref_wing_cross_section_id,
                         ref_wing_cross_section,
@@ -363,7 +358,7 @@ def analyze_steady_convergence(
                                     last_ar_and_chord_cache_val,
                                 )
                                 if last_cache_val != np.inf:
-                                    starting_num_spanwise_panels = last_cache_val
+                                    starting_num_spanwise_panels = int(last_cache_val)
 
                                 next_ref_wing_cross_section = ref_wing_cross_sections[
                                     ref_wing_cross_section_id + 1
@@ -463,6 +458,10 @@ def analyze_steady_convergence(
             )
 
             # Create this iteration's steady solver based on the type specified.
+            this_solver: (
+                steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+            )
             if solver_type == "steady horseshoe vortex lattice method":
                 this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                     steady_problem=this_problem,
@@ -486,13 +485,20 @@ def analyze_steady_convergence(
             theseCombinedMomentCoefficients = np.zeros(
                 len(these_airplanes), dtype=float
             )
-            airplane: geometry.airplane.Airplane
+
             for airplane_id, airplane in enumerate(these_airplanes):
+                _forceCoefficients_W = airplane.forceCoefficients_W
+                assert _forceCoefficients_W is not None
+
                 theseCombinedForceCoefficients[airplane_id] = np.linalg.norm(
-                    airplane.forceCoefficients_W
+                    _forceCoefficients_W
                 )
+
+                _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+                assert _momentCoefficients_W_CgP1 is not None
+
                 theseCombinedMomentCoefficients[airplane_id] = np.linalg.norm(
-                    airplane.momentCoefficients_W_CgP1
+                    _momentCoefficients_W_CgP1
                 )
 
             # Populate the ndarrays that store information from all the iterations with
@@ -951,8 +957,10 @@ def analyze_unsteady_convergence(
 
     # Create the list of wake lengths to iterate over.
     if static:
+        assert num_chords_bounds is not None
         wake_lengths_list = list(range(num_chords_bounds[0], num_chords_bounds[1] + 1))
     else:
+        assert num_cycles_bounds is not None
         wake_lengths_list = list(range(num_cycles_bounds[0], num_cycles_bounds[1] + 1))
 
     # Create the lists of Panel aspect ratios and number of chordwise Panels to
@@ -1268,7 +1276,7 @@ def analyze_unsteady_convergence(
                                             last_ar_and_chord_cache_val,
                                         )
                                         if last_cache_val != np.inf:
-                                            starting_num_spanwise_panels = (
+                                            starting_num_spanwise_panels = int(
                                                 last_cache_val
                                             )
 
@@ -1484,7 +1492,7 @@ def analyze_unsteady_convergence(
                     theseCombinedFinalLoadCoefficients = np.zeros(
                         (len(these_airplane_movements), 2), dtype=float
                     )
-                    airplane: geometry.airplane.Airplane
+
                     for airplane_id, airplane in enumerate(these_airplane_movements):
                         # If this UnsteadyProblem is static, then get it's combined
                         # final load coefficients. If it's variable, get the combined
@@ -2000,4 +2008,8 @@ def _get_wing_section_average_panel_aspect_ratio(
             )
         ]
     )
-    return this_airplane.wings[0].average_panel_aspect_ratio
+
+    _average_panel_aspect_ratio = this_airplane.wings[0].average_panel_aspect_ratio
+    assert _average_panel_aspect_ratio is not None
+
+    return _average_panel_aspect_ratio

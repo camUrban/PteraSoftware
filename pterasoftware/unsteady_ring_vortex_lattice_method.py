@@ -1113,7 +1113,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         else:
                             # Set the effective back LineVortex strength to the
                             # difference between this Panel's RingVortex's strength and
-                            # its strength at the last time step. This models the affect
+                            # its strength at the last time step. This models the effect
                             # of the Panel's back LineVortex being partially cancelled
                             # out by the front LineVortex of the wake RingVortex
                             # immediately to this Panel's rear. This works because that
@@ -1778,7 +1778,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             / self.delta_time,
         )
 
-    def _calculate_current_movement_velocities_at_back_leg_centers(self):
+    def _calculate_current_movement_velocities_at_back_leg_centers(self) -> np.ndarray:
         """Finds the apparent velocities (in the first Airplane's geometry axes,
         observed from the Earth frame) at the center point of each bound RingVortex's
         back leg due to any motion defined in Movement at the current time step.

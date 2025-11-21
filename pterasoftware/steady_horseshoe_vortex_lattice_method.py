@@ -102,7 +102,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self._stackBoundVortexVectors_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
-        self.gridStreamlinePoints_GP1_CgP1: np.ndarray | None = None
+        self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+
+        self.ran = False
 
     def run(self, logging_level: str = "Warning") -> None:
         """Runs the solver on the SteadyProblem.
@@ -151,6 +153,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # edges.
         logging.info("Calculating streamlines.")
         _functions.calculate_streamlines(self)
+
+        # Mark that the solver has run.
+        self.ran = True
 
     def _initialize_panel_vortices(self) -> None:
         """Calculates the locations of the HorseshoeVortex vertices, and then

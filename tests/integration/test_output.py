@@ -13,17 +13,18 @@ from tests.integration.fixtures import solver_fixtures
 class TestOutput(unittest.TestCase):
     """This is a class with functions to test the output module."""
 
-    def setUp(self):
-        """This method is automatically called before each testing method to set up
-        the fixtures.
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all tests in this class.
 
         :return: None
         """
 
         # Set up the constructing fixtures.
-        self.unsteady_solver = (
+        cls.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
+        cls.unsteady_solver.run()
 
     def test_plot_results_versus_time_does_not_throw(self):
         """This method tests that the plot_results_versus_time method doesn't throw

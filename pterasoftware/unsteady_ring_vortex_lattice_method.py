@@ -165,7 +165,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.listStackBlwrvp_GP1_CgP1: list[np.ndarray] = []
 
         self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
-        self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty((0, 3), dtype=float)
+
+        self.ran = False
 
     def run(
         self,
@@ -478,6 +480,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if calculate_streamlines:
             logging.info("Calculating streamlines.")
             _functions.calculate_streamlines(self)
+
+        # Mark that the solver has run.
+        self.ran = True
 
     def _initialize_panel_vortices(self) -> None:
         """Calculates the locations of the bound RingVortex vertices, and then

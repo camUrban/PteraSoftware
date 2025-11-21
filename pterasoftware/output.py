@@ -20,9 +20,10 @@ from __future__ import annotations
 
 import math
 import time
+from typing import cast
 
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 import pyvista as pv
 import webp
 
@@ -41,7 +42,7 @@ _streamline_color = "orchid"
 _plotter_background_color = "black"
 _figure_background_color = "None"
 _text_color = "#818181"
-_quality = 75
+_quality = 75.0
 _window_size = [1024, 768]
 
 # For the figure lines, use the "Prism" qualitative color map from
@@ -99,12 +100,12 @@ def draw(
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
-    scalar_type=None,
-    show_streamlines: bool = False,
-    show_wake_vortices: bool = False,
-    save: bool = False,
-    testing: bool = False,
-):
+    scalar_type: str | None = None,
+    show_streamlines: bool | np.bool_ = False,
+    show_wake_vortices: bool | np.bool_ = False,
+    save: bool | np.bool_ = False,
+    testing: bool | np.bool_ = False,
+) -> None:
     """Draw a solver's Airplane(s).
 
     Citation:
@@ -165,6 +166,11 @@ def draw(
         )
 
     if scalar_type is not None:
+        if not solver.ran:
+            raise RuntimeError(
+                "solver must have run before drawing with scalar_type not None."
+            )
+
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
@@ -174,15 +180,38 @@ def draw(
     show_streamlines = _parameter_validation.boolLike_return_bool(
         show_streamlines, "show_streamlines"
     )
+    if show_streamlines and not solver.ran:
+        raise RuntimeError(
+            "solver must have run before drawing with show_streamlines set to True."
+        )
+    if show_streamlines and len(solver.gridStreamlinePoints_GP1_CgP1) == 0:
+        raise RuntimeError(
+            "solver must have streamline points calculated before drawing with "
+            "show_streamlines set to True."
+        )
+
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
         show_wake_vortices, "show_wake_vortices"
     )
+    if show_wake_vortices and not isinstance(
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_wake_vortices can only be True when drawing an "
+            "UnsteadyRingVortexLatticeMethodSolver."
+        )
+    if show_wake_vortices and not solver.ran:
+        raise RuntimeError(
+            "solver must have run before drawing with show_wake_vortices set to True."
+        )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
-    plotter.enable_parallel_projection()
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # Get the solver's geometry.
     if isinstance(
@@ -291,7 +320,7 @@ def draw(
                     )
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window.
         # When the user closes the window, the Plotter still exists. Therefore,
@@ -312,15 +341,19 @@ def draw(
         )
         time.sleep(1)
 
-    # If saving, take a screenshot, convert it to an Image, and save it as a WebP.
+    # If saving, take a screenshot, convert it to a ndarray, convert that to an Image,
+    # and save it as a WebP.
     if save:
         image = webp.Image.fromarray(
-            plotter.screenshot(
-                filename=None,
-                transparent_background=True,
-                return_img=True,
+            np.array(
+                plotter.screenshot(
+                    filename=None,
+                    transparent_background=True,
+                    return_img=True,
+                )
             )
         )
+
         webp.save_image(
             img=image, file_path="Draw.webp", lossless=False, quality=_quality
         )
@@ -334,11 +367,11 @@ def draw(
 #  extend them if needed.
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    scalar_type=None,
-    show_wake_vortices: bool = False,
-    save: bool = False,
-    testing: bool = False,
-):
+    scalar_type: str | None = None,
+    show_wake_vortices: bool | np.bool_ = False,
+    save: bool | np.bool_ = False,
+    testing: bool | np.bool_ = False,
+) -> None:
     """Animate an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
 
     :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
@@ -382,6 +415,12 @@ def animate(
         )
 
     if scalar_type is not None:
+        if not unsteady_solver.ran:
+            raise RuntimeError(
+                "unsteady_solver must have run before animating with scalar_type not "
+                "None."
+            )
+
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
@@ -391,6 +430,12 @@ def animate(
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
         show_wake_vortices, "show_wake_vortices"
     )
+    if show_wake_vortices and not unsteady_solver.ran:
+        raise RuntimeError(
+            "unsteady_solver must have run before animating with show_wake_vortices set"
+            " to True."
+        )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
@@ -405,20 +450,20 @@ def animate(
 
     # Scale down the true-speed frames per second to at most 50 fps. This is the
     # maximum speed at which some programs can render WebPs.
-    requested_fps = 1 / unsteady_solver.delta_time
-    speed = 1
-    if requested_fps > 50:
-        speed = 50 / requested_fps
-    actual_fps = math.floor(requested_fps * speed)
+    requested_fps = 1.0 / unsteady_solver.delta_time
+    speed = 1.0
+    if requested_fps > 50.0:
+        speed = 50.0 / requested_fps
+    actual_fps = float(math.floor(requested_fps * speed))
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
-    plotter.enable_parallel_projection()
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # Initialize values to hold the color map choice and its limits.
-    c_min = 0
-    c_max = 0
-    color_map = None
+    c_min = 0.0
+    c_max = 0.0
+    color_map: str = ""
 
     # If saving the animation, add text that displays its speed.
     if save:
@@ -432,8 +477,8 @@ def animate(
 
     # Initialize variables to hold the SteadyProblems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=float)
-    min_scalar = None
-    max_scalar = None
+    min_scalar = 0.0
+    max_scalar = 0.0
 
     # If coloring the Panels based on scalars, gather all the scalars across all the
     # time steps and Airplanes. These will be used to set the color map limits.
@@ -444,7 +489,7 @@ def animate(
                 scalar_type,
                 unsteady_solver.steady_problems[step_id].operating_point.qInf__E,
             )
-            all_scalars = np.hstack((all_scalars, scalars_to_add))
+            all_scalars = cast(np.ndarray, np.hstack((all_scalars, scalars_to_add)))
 
         # Choose the color map and set its limits based on if the min and max scalars
         # across all time steps have the same sign (sequential color map) or if they
@@ -501,7 +546,7 @@ def animate(
         )
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
     # If not testing, show the Plotter with the first time step, and print a message
     # to the console on how to adjust the view and start the animation. If testing,
@@ -528,12 +573,15 @@ def animate(
         )
         time.sleep(1)
 
-    # Start a list to hold a WebP Image of each frame.
+    # Start a list to hold a WebP Image of each frame. To start, take a screenshot,
+    # convert it to a ndarray, and convert that to an Image.
     images = [
         webp.Image.fromarray(
-            plotter.screenshot(
-                transparent_background=True,
-                return_img=True,
+            np.array(
+                plotter.screenshot(
+                    transparent_background=True,
+                    return_img=True,
+                )
             )
         )
     ]
@@ -600,14 +648,17 @@ def animate(
                 smooth_shading=False,
             )
 
-        # If saving, append a WebP Image of this frame to the list of Images.
+        # If saving, append a WebP Image of this frame to the list of Images. To do
+        # so, take a screenshot, convert it to a ndarray, and convert that to an Image.
         if save:
             images.append(
                 webp.Image.fromarray(
-                    plotter.screenshot(
-                        filename=None,
-                        transparent_background=True,
-                        return_img=True,
+                    np.array(
+                        plotter.screenshot(
+                            filename=None,
+                            transparent_background=True,
+                            return_img=True,
+                        )
                     )
                 )
             )
@@ -631,9 +682,9 @@ def animate(
 #  extend them if needed.
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    show: bool = True,
-    save: bool = False,
-):
+    show: bool | np.bool_ = True,
+    save: bool | np.bool_ = False,
+) -> None:
     """This function takes in an UnsteadyRingVortexLatticeMethodSolver, and plots the
     loads and load coefficients as a function of time.
 
@@ -656,6 +707,11 @@ def plot_results_versus_time(
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
     save = _parameter_validation.boolLike_return_bool(save, "save")
+
+    if not unsteady_solver.ran:
+        raise RuntimeError(
+            "unsteady_solver must have run before plotting results versus time."
+        )
 
     first_results_step = unsteady_solver.first_results_step
 
@@ -955,7 +1011,7 @@ def print_results(
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
-):
+) -> None:
     """This function prints the load and load coefficients calculated by a solver.
 
     :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
@@ -983,8 +1039,13 @@ def print_results(
             solver_type = "variable geometry unsteady"
     else:
         raise TypeError(
-            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, a SteadyRingVortexLatticeMethodSolver, or an UnsteadyRingVortexLatticeMethodSolver."
+            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
+            "a SteadyRingVortexLatticeMethodSolver, or an "
+            "UnsteadyRingVortexLatticeMethodSolver."
         )
+
+    if not solver.ran:
+        raise RuntimeError("solver must have run before printing results.")
 
     padding_spaces = 2
 
@@ -1025,14 +1086,14 @@ def print_results(
     pad = " " * padding_spaces
 
     for airplane_num, airplane in enumerate(these_airplanes):
-        title1 = None
-        title2 = None
-        title3 = None
-        title4 = None
-        these_forces_W = None
-        these_moments_W_CgP1 = None
-        these_forceCoefficients_W = None
-        these_momentCoefficients_W_CgP1 = None
+        title1: str = ""
+        title2: str = ""
+        title3: str = ""
+        title4: str = ""
+        these_forces_W: np.ndarray = np.empty(0, dtype=float)
+        these_moments_W_CgP1: np.ndarray = np.empty(0, dtype=float)
+        these_forceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
+        these_momentCoefficients_W_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         match solver_type:
             case "steady":
@@ -1040,15 +1101,40 @@ def print_results(
                 title2 = f"{pad}Moments (in wind axes, relative to the CG):"
                 title3 = f"{pad}Force Coefficients (in wind axes):"
                 title4 = f"{pad}Moment Coefficients (in wind axes, relative to the CG):"
-                these_forces_W = airplane.forces_W
-                these_moments_W_CgP1 = airplane.moments_W_CgP1
-                these_forceCoefficients_W = airplane.forceCoefficients_W
-                these_momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+
+                _forces_W = airplane.forces_W
+                assert _forces_W is not None
+
+                these_forces_W = _forces_W
+
+                _moments_W_CgP1 = airplane.moments_W_CgP1
+                assert _moments_W_CgP1 is not None
+
+                these_moments_W_CgP1 = _moments_W_CgP1
+
+                _forceCoefficients_W = airplane.forceCoefficients_W
+                assert _forceCoefficients_W is not None
+
+                these_forceCoefficients_W = _forceCoefficients_W
+
+                _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+                assert _momentCoefficients_W_CgP1 is not None
+
+                these_momentCoefficients_W_CgP1 = _momentCoefficients_W_CgP1
+
             case "static geometry unsteady":
+                assert isinstance(
+                    solver,
+                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                )
+
                 title1 = f"{pad}Final Forces (in wind axes):"
                 title2 = f"{pad}Final Moments (in wind axes, relative to the CG):"
                 title3 = f"{pad}Final Force Coefficients (in wind axes):"
-                title4 = f"{pad}Final Moment Coefficients (in wind axes, relative to the CG):"
+                title4 = (
+                    f"{pad}Final Moment Coefficients (in wind axes, relative to "
+                    f"the CG):"
+                )
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
                     airplane_num
@@ -1060,10 +1146,21 @@ def print_results(
                     solver.unsteady_problem.finalMomentCoefficients_W_CgP1[airplane_num]
                 )
             case "variable geometry unsteady":
+                assert isinstance(
+                    solver,
+                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                )
+
                 title1 = f"{pad}Final Cycle-Averaged Forces (in wind axes):"
-                title2 = f"{pad}Final Cycle-Averaged Moments (in wind axes, relative to the CG):"
+                title2 = (
+                    f"{pad}Final Cycle-Averaged Moments (in wind axes, relative "
+                    f"to the CG):"
+                )
                 title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in wind axes):"
-                title4 = f"{pad}Final Cycle-Averaged Moment Coefficients (in wind axes, relative to the CG):"
+                title4 = (
+                    f"{pad}Final Cycle-Averaged Moment Coefficients (in wind "
+                    f"axes, relative to the CG):"
+                )
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
                     airplane_num
@@ -1144,7 +1241,7 @@ def print_results(
 # TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
     airplanes: list[geometry.airplane.Airplane],
-):
+) -> pv.PolyData:
     """This function returns a PolyData representation of the Wings' Panels' surfaces
     associated with all the Airplanes in a list of Airplanes.
 
@@ -1163,8 +1260,11 @@ def _get_panel_surfaces(
     # Increment through the Airplanes' Wing(s).
     for airplane in airplanes:
         for wing in airplane.wings:
+            _panels = wing.panels
+            assert _panels is not None
+
             # Unravel this Wing's ndarray of Panels iterate through it.
-            panels = np.ravel(wing.panels)
+            panels = np.ravel(_panels)
             for panel in panels:
                 # Arrange this Panel's vertices and faces into ndarrays in the
                 # proper form to represent PolyData surfaces.
@@ -1189,8 +1289,12 @@ def _get_panel_surfaces(
 
                 # Add this Panel's vertices and faces to the ndarray of all vertices
                 # and faces.
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
+                panel_vertices = cast(
+                    np.ndarray, np.vstack((panel_vertices, panel_vertices_to_add))
+                )
+                panel_faces = cast(
+                    np.ndarray, np.hstack((panel_faces, panel_face_to_add))
+                )
 
                 # Update the number of Panels.
                 panel_num += 1
@@ -1203,7 +1307,7 @@ def _get_panel_surfaces(
 def _get_wake_ring_vortex_surfaces(
     solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
-):
+) -> pv.PolyData:
     """This function returns the PolyData representation of surfaces an
     UnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time step.
 
@@ -1250,11 +1354,13 @@ def _get_wake_ring_vortex_surfaces(
 
         # Stack this wake RingVortex's vertices and faces to the ndarrays of all wake
         # RingVortices' vertices and faces.
-        wake_ring_vortex_vertices = np.vstack(
-            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
+        wake_ring_vortex_vertices = cast(
+            np.ndarray,
+            np.vstack((wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)),
         )
-        wake_ring_vortex_faces = np.hstack(
-            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
+        wake_ring_vortex_faces = cast(
+            np.ndarray,
+            np.hstack((wake_ring_vortex_faces, wake_ring_vortex_face_to_add)),
         )
 
         # Increment the wake RingVortex counter.
@@ -1269,7 +1375,7 @@ def _get_scalars(
     airplanes: list[geometry.airplane.Airplane],
     scalar_type: str,
     qInf__E: float,
-):
+) -> np.ndarray:
     """This function gets the coefficient values from a SteadyProblem's Airplanes'
     Wings' Panels.
 
@@ -1286,13 +1392,13 @@ def _get_scalars(
     scalars = np.empty(0, dtype=float)
 
     # Iterate through the Airplanes' Wings.
-    this_airplane: geometry.airplane.Airplane
-    for this_airplane in airplanes:
-        this_wing: geometry.wing.Wing
-        for this_wing in this_airplane.wings:
+    for airplane in airplanes:
+        for wing in airplane.wings:
+            _panels = wing.panels
+            assert _panels is not None
 
             # Unravel this Wing's ndarray of Panels iterate through them.
-            these_panels = np.ravel(this_wing.panels)
+            these_panels = np.ravel(_panels)
             for this_panel in these_panels:
 
                 # Stack this Panel's scalars.
@@ -1301,21 +1407,27 @@ def _get_scalars(
                         -this_panel.forces_W[0] / qInf__E / this_panel.area
                     )
 
-                    scalars = np.hstack((scalars, this_induced_drag_coefficient))
+                    scalars = cast(
+                        np.ndarray, np.hstack((scalars, this_induced_drag_coefficient))
+                    )
 
                 if scalar_type == "side force":
                     this_side_force_coefficient = (
                         this_panel.forces_W[1] / qInf__E / this_panel.area
                     )
 
-                    scalars = np.hstack((scalars, this_side_force_coefficient))
+                    scalars = cast(
+                        np.ndarray, np.hstack((scalars, this_side_force_coefficient))
+                    )
 
                 if scalar_type == "lift":
                     this_lift_coefficient = (
                         -this_panel.forces_W[2] / qInf__E / this_panel.area
                     )
 
-                    scalars = np.hstack((scalars, this_lift_coefficient))
+                    scalars = cast(
+                        np.ndarray, np.hstack((scalars, this_lift_coefficient))
+                    )
 
     # Return the resulting ndarray of scalars.
     return scalars
@@ -1324,7 +1436,7 @@ def _get_scalars(
 # TEST: Consider adding unit tests for this function.
 def _plot_scalars(
     plotter: pv.Plotter,
-    these_scalars,
+    these_scalars: np.ndarray,
     scalar_type: str,
     min_scalar: float,
     max_scalar: float,
@@ -1332,7 +1444,7 @@ def _plot_scalars(
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
-):
+) -> None:
     """This function plots a scalar bar, the surfaces of a set of Panels with a
     particular set of scalars, and labels for the minimum and maximum scalar values.
 
@@ -1390,11 +1502,11 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        cmap=color_map,
+        cmap=color_map,  # type: ignore[arg-type]
         clim=[c_min, c_max],
         scalars=these_scalars,
         smooth_shading=False,
-        scalar_bar_args=scalar_bar_args,
+        scalar_bar_args=scalar_bar_args,  # type: ignore[arg-type]
     )
     plotter.add_text(
         text="Max: " + str(max_scalar),

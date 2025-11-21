@@ -126,7 +126,9 @@ class SteadyRingVortexLatticeMethodSolver:
         self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
-        self.gridStreamlinePoints_GP1_CgP1 = None
+        self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
+
+        self.ran = False
 
     def run(self, logging_level: str = "Warning") -> None:
         """Runs the solver on the SteadyProblem.
@@ -177,6 +179,9 @@ class SteadyRingVortexLatticeMethodSolver:
         # edges.
         logging.info("Calculating streamlines.")
         _functions.calculate_streamlines(self)
+
+        # Mark that the solver has run.
+        self.ran = True
 
     def _initialize_panel_vortices(self) -> None:
         """Calculates the locations of the RingVortex and HorseshoeVortex vertices, and

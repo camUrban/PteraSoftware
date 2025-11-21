@@ -56,7 +56,6 @@ import numpy as np
 |------------------------------------|--------------------------|--------------------------------------------|
 | Class from same package            | `ClassName`              | Direct reference                           |
 | Class from imported module         | `module_alias.ClassName` | Use module alias to avoid circular imports |
-| Self-reference (forward reference) | `"ClassName"`            | Use string quotes for return types         |
 
 #### Optional and Union Types
 
@@ -124,8 +123,8 @@ ring_vortex = cast(
 Import modules with aliases:
 
 ```python
-from . import wing as wing_mod
 from . import airfoil as airfoil_mod
+from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
 # In function signature
@@ -152,8 +151,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 import numpy as np
 
-from .. import geometry
 from . import wing_movement as wing_movement_mod
+
+from .. import geometry
 
 # In function signature - no quotes needed!
 def __init__(
@@ -520,7 +520,7 @@ def __init__(
 ```python
 def add_control_surface(
     self, deflection: float | int, hinge_point: float | int
-) -> "Airfoil":
+) -> Airfoil:
     """Returns a version of the Airfoil with a control surface added at a given point. 
     It is called during meshing.
 

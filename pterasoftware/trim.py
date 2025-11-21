@@ -218,7 +218,7 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    def objective_function(arguments: tuple[float, float, float, float]) -> float:
+    def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
 
@@ -230,8 +230,8 @@ def analyze_steady_trim(
         If the objective falls below the cutoff threshold, it raises StopIteration to
         signal successful trim convergence.
 
-        :param arguments: OperatingPoint parameters to evaluate: (vCg__E, alpha, beta,
-            externalFX_W).
+        :param arguments: A (4,) ndarray of floats with the OperatingPoint parameters to
+            evaluate: vCg__E, alpha, beta, externalFX_W.
         :return: The trim objective value, computed as the average magnitude of the net
             load coefficients.
         """
@@ -560,7 +560,7 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    def objective_function(arguments: tuple[float, float, float, float]) -> float:
+    def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
 
@@ -572,8 +572,8 @@ def analyze_unsteady_trim(
         If the objective falls below the cutoff threshold, it raises StopIteration to
         signal successful trim convergence.
 
-        :param arguments: OperatingPoint parameters to evaluate: (vCg__E, alpha, beta,
-            externalFX_W).
+        :param arguments: A (4,) ndarray of floats with the base OperatingPoint
+            parameters to evaluate: vCg__E, alpha, beta, externalFX_W.
         :return: The trim objective value, computed as the average magnitude of the net
             load coefficients.
         """

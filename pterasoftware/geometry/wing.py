@@ -19,6 +19,7 @@ import pyvista as pv
 
 from . import _meshing
 from . import wing_cross_section as wing_cross_section_mod
+from .. import _panel
 from .. import _parameter_validation
 from .. import _transformations
 
@@ -822,16 +823,21 @@ class Wing:
         if self.panels is None:
             return None
 
-        projected_area = 0
+        projected_area = 0.0
 
         # Iterate through the chordwise and spanwise indices of the Panels and add
         # their area to the total projected area.
         assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
-                projected_area += self.panels[
+                this_panel: _panel.Panel = self.panels[
                     chordwise_location, spanwise_location
-                ].calculate_projected_area(self.WnZ_G)
+                ]
+
+                thisWnZ_G = self.WnZ_G
+                assert thisWnZ_G is not None
+
+                projected_area += this_panel.calculate_projected_area(thisWnZ_G)
 
         return projected_area
 
@@ -852,14 +858,17 @@ class Wing:
         if self.panels is None:
             return None
 
-        wetted_area = 0
+        wetted_area = 0.0
 
         # Iterate through the chordwise and spanwise indices of the panels and add
         # their area to the total wetted area.
         assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
-                wetted_area += self.panels[chordwise_location, spanwise_location].area
+                this_panel: _panel.Panel = self.panels[
+                    chordwise_location, spanwise_location
+                ]
+                wetted_area += this_panel.area
 
         return wetted_area
 
@@ -875,16 +884,17 @@ class Wing:
         if self.panels is None:
             return None
 
-        aspect_ratio_sum = 0
+        aspect_ratio_sum = 0.0
 
         # Iterate through the chordwise and spanwise indices of the Panels and sum
         # all the Panels' aspect ratios.
         assert self.num_spanwise_panels is not None
         for chordwise_location in range(self.num_chordwise_panels):
             for spanwise_location in range(self.num_spanwise_panels):
-                aspect_ratio_sum += self.panels[
+                this_panel: _panel.Panel = self.panels[
                     chordwise_location, spanwise_location
-                ].aspect_ratio
+                ]
+                aspect_ratio_sum += this_panel.aspect_ratio
 
         assert self.num_panels is not None
         average_aspect_ratio = aspect_ratio_sum / self.num_panels

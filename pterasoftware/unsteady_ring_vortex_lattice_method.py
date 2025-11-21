@@ -1095,7 +1095,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Set the effective left LineVortex strength to 1/2 the
                         # difference between this Panel's RingVortex's strength,
                         # and the RingVortex's strength of the Panel to the left.
-                        effective_left_vortex_line_strengths[global_panel_position] = (
+                        effective_left_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                             - ring_vortex_to_left.strength
                         ) / 2

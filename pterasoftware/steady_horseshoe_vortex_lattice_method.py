@@ -284,15 +284,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # Calculate this Panel's streamline seed point (in the first
                         # Airplane's geometry axes, relative to the first Airplane's
                         # CG). Add it to the solver's 1D ndarray of seed points.
-                        self.stackSeedPoints_GP1_CgP1 = cast(
-                            np.ndarray,
-                            np.vstack(
-                                (
-                                    self.stackSeedPoints_GP1_CgP1,
-                                    _Blpp_GP1_CgP1
-                                    + 0.5 * (_Brpp_GP1_CgP1 - _Blpp_GP1_CgP1),
-                                )
-                            ),
+                        self.stackSeedPoints_GP1_CgP1 = np.vstack(
+                            (
+                                self.stackSeedPoints_GP1_CgP1,
+                                _Blpp_GP1_CgP1
+                                + 0.5 * (_Brpp_GP1_CgP1 - _Blpp_GP1_CgP1),
+                            )
                         )
 
                     # Increment the global Panel position variable.

@@ -477,8 +477,9 @@ def numba_1d_explicit_cross(
     :return: The (N,3) ndarray of floats representing the cross products (in A axes) of
         the two vectors at each of the N positions.
     """
-    stackCrossProducts = np.zeros(stackVectors1_A.shape, dtype=float)
-    for i in range(stackCrossProducts.shape[0]):
+    num_vectors = stackVectors1_A.shape[0]
+    stackCrossProducts = np.zeros((num_vectors, 3), dtype=float)
+    for i in range(num_vectors):
         stackCrossProducts[i, 0] = (
             stackVectors1_A[i, 1] * stackVectors2_A[i, 2]
             - stackVectors1_A[i, 2] * stackVectors2_A[i, 1]

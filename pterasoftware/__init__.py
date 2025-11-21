@@ -17,7 +17,7 @@ UnsteadyProblems.
 
 operating_point.py: Contains the OperatingPoint class.
 
-output.py: Contains useful functions for visualizing geometry and results.
+output.py: Contains functions for visualizing geometry and results.
 
 problems.py: Contains the SteadyProblem and UnsteadyProblem classes.
 

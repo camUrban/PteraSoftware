@@ -184,7 +184,7 @@ class Panel:
         :return: A (3,) ndarray of floats representing the position of this Panel's
             front right bound vortex point. The units are in meters.
         """
-        return cast(np.ndarray, self.Brpp_G_Cg + 0.75 * self.rightLeg_G)
+        return self.Brpp_G_Cg + 0.75 * self.rightLeg_G
 
     @property
     def Flbvp_G_Cg(self) -> np.ndarray:
@@ -194,7 +194,7 @@ class Panel:
         :return: A (3,) ndarray of floats representing the position of this Panel's
             front left bound vortex point. The units are in meters.
         """
-        return cast(np.ndarray, self.Flpp_G_Cg + 0.25 * self.leftLeg_G)
+        return self.Flpp_G_Cg + 0.25 * self.leftLeg_G
 
     @property
     def Cpp_G_Cg(self) -> np.ndarray:

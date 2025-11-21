@@ -1008,9 +1008,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize three 1D ndarrays to hold the effective strength of the Panels'
         # RingVortices' LineVortices.
-        effective_right_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
-        effective_front_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
-        effective_left_vortex_line_strengths = np.zeros(self.num_panels, dtype=float)
+        effective_right_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        effective_front_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        effective_left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
         effective_back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
         # Iterate through the Airplanes' Wings.
@@ -1034,7 +1034,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if panel.is_right_edge:
                         # Set the effective right LineVortex strength to this Panel's
                         # RingVortex's strength.
-                        effective_right_vortex_line_strengths[global_panel_position] = (
+                        effective_right_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
@@ -1049,7 +1049,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Set the effective right LineVortex strength to 1/2 the
                         # difference between this Panel's RingVortex's strength,
                         # and the RingVortex's strength of the Panel to the right.
-                        effective_right_vortex_line_strengths[global_panel_position] = (
+                        effective_right_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                             - ring_vortex_to_right.strength
                         ) / 2
@@ -1057,7 +1057,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if panel.is_leading_edge:
                         # Set the effective front LineVortex strength to this Panel's
                         # RingVortex's strength.
-                        effective_front_vortex_line_strengths[global_panel_position] = (
+                        effective_front_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
@@ -1072,7 +1072,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # Set the effective front LineVortex strength to 1/2 the
                         # difference between this Panel's RingVortex's strength,
                         # and the RingVortex's strength of the Panel in front of it.
-                        effective_front_vortex_line_strengths[global_panel_position] = (
+                        effective_front_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                             - ring_vortex_to_front.strength
                         ) / 2
@@ -1080,7 +1080,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     if panel.is_left_edge:
                         # Set the effective left LineVortex strength to this Panel's
                         # RingVortex's strength.
-                        effective_left_vortex_line_strengths[global_panel_position] = (
+                        effective_left_line_vortex_strengths[global_panel_position] = (
                             self._current_bound_vortex_strengths[global_panel_position]
                         )
                     else:
@@ -1175,21 +1175,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # LineVortex using the effective vortex strengths.
         rightLegForces_GP1 = (
             self.current_operating_point.rho
-            * np.expand_dims(effective_right_vortex_line_strengths, axis=1)
+            * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
                 stackVelocityRightLineVortexCenters_GP1__E, self.stackRbrv_GP1
             )
         )
         frontLegForces_GP1 = (
             self.current_operating_point.rho
-            * np.expand_dims(effective_front_vortex_line_strengths, axis=1)
+            * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
                 stackVelocityFrontLineVortexCenters_GP1__E, self.stackFbrv_GP1
             )
         )
         leftLegForces_GP1 = (
             self.current_operating_point.rho
-            * np.expand_dims(effective_left_vortex_line_strengths, axis=1)
+            * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
             * _functions.numba_1d_explicit_cross(
                 stackVelocityLeftLineVortexCenters_GP1__E, self.stackLbrv_GP1
             )

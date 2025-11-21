@@ -34,7 +34,7 @@ Select the option that best describes the size and impact of your change:
 - [ ] All new classes, functions, and methods use type hints.
 - [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
 - [ ] Code locally passes all tests in the `tests` package.
-- [ ] After pushing, PR passes all automated checks (`codespell`, `black`, and `tests`).
+- [ ] After pushing, PR passes all automated checks (`codespell`, `black`, `mypy`, and `tests`).
 - [ ] PR description links all relevant issues and follows this template.
 
 ---

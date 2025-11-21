@@ -126,7 +126,7 @@ class Airfoil:
     #  need to write some logic to remove those.
     def add_control_surface(
         self, deflection: float | int, hinge_point: float | int
-    ) -> "Airfoil":
+    ) -> Airfoil:
         """Returns a version of the Airfoil with a control surface added at a given
         point. It is called during meshing.
 

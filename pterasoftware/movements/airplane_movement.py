@@ -38,22 +38,14 @@ class AirplaneMovement:
         self,
         base_airplane: geometry.airplane.Airplane,
         wing_movements: list[wing_movement_mod.WingMovement],
-        ampCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        periodCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingCg_E_CgP1: np.ndarray | Sequence[str | Callable] = (
+        ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1: np.ndarray | Sequence[str | Callable] = (
             "sine",
             "sine",
             "sine",
         ),
-        phaseCg_E_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        ampAngles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        periodAngles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingAngles_E_to_B_izyx: np.ndarray | Sequence[str | Callable] = (
-            "sine",
-            "sine",
-            "sine",
-        ),
-        phaseAngles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        phaseCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
     ) -> None:
         """The initialization method.
 
@@ -62,75 +54,41 @@ class AirplaneMovement:
         :param wing_movements: A list of the WingMovements associated with each of the
             base Airplane's Wings. It must have the same length as the base Airplane's
             list of Wings.
-        :param ampCg_E_CgP1: An array-like object of non negative numbers (int or float)
-            with shape (3,) representing the amplitudes of the AirplaneMovement's
-            changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
+        :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
+            float) with shape (3,) representing the amplitudes of the AirplaneMovement's
+            changes in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each amplitude must be
             low enough that it doesn't drive its base value out of the range of valid
             values. Otherwise, this AirplaneMovement will try to create Airplanes with
-            invalid parameter values. Because the first Airplane's Cg_E_CgP1 parameter
-            must be all zeros, this means that the first Airplane's ampCg_E_CgP1
+            invalid parameter values. Because the first Airplane's Cg_GP1_CgP1 parameter
+            must be all zeros, this means that the first Airplane's ampCg_GP1_CgP1
             parameter must also be all zeros. The units are in meters. The default is
             (0.0, 0.0, 0.0).
-        :param periodCg_E_CgP1: An array-like object of non negative numbers (int or
+        :param periodCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the AirplaneMovement's
-            changes in its Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or
+            changes in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or
             ndarray. Values are converted to floats internally. Each element must be 0.0
-            if the corresponding element in ampCg_E_CgP1 is 0.0 and non zero if not. The
-            units are in seconds. The default is (0.0, 0.0, 0.0).
-        :param spacingCg_E_CgP1: An array-like object of strs or callables with shape
+            if the corresponding element in ampCg_GP1_CgP1 is 0.0 and non zero if not.
+            The units are in seconds. The default is (0.0, 0.0, 0.0).
+        :param spacingCg_GP1_CgP1: An array-like object of strs or callables with shape
             (3,) representing the spacing of the AirplaneMovement's changes in its
-            Airplanes' Cg_E_CgP1 parameters. Can be a tuple, list, or ndarray. Each
+            Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or ndarray. Each
             element can be the str "sine", the str "uniform", or a callable custom
             spacing function. Custom spacing functions are for advanced users and must
             start at 0.0, return to 0.0 after one period of 2*pi radians, have amplitude
             of 1.0, be periodic, return finite values only, and accept a ndarray as
             input and return a ndarray of the same shape. Custom functions are scaled by
-            ampCg_E_CgP1, shifted horizontally and vertically by phaseCg_E_CgP1 and the
-            base value, and have a period set by periodCg_E_CgP1. The default is
+            ampCg_GP1_CgP1, shifted horizontally and vertically by phaseCg_GP1_CgP1 and
+            the base value, and have a period set by periodCg_GP1_CgP1. The default is
             ("sine", "sine", "sine").
-        :param phaseCg_E_CgP1: An array-like object of numbers (int or float) with shape
-            (3,) representing the phase offsets of the elements in the first time step's
-            Airplane's Cg_E_CgP1 parameter relative to the base Airplane's Cg_E_CgP1
-            parameter. Can be a tuple, list, or ndarray. Elements must lie in the range
-            (-180.0, 180.0]. Each element must be 0.0 if the corresponding element in
-            ampCg_E_CgP1 is 0.0 and non zero if not. Values are converted to floats
-            internally. The units are in degrees. The default is (0.0, 0.0, 0.0).
-        :param ampAngles_E_to_B_izyx: An array-like object of non negative numbers (int
-            or float) with shape (3,) representing the amplitudes of the
-            AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
-            Can be a tuple, list, or ndarray. Its elements must lie in the range [0.0,
-            360.0). Values are converted to floats internally. Each amplitude must be
-            low enough that it doesn't drive its base value out of the range of valid
-            values. Otherwise, this AirplaneMovement will try to create Airplanes with
-            invalid parameter values. The units are in degrees. The default is (0.0,
-            0.0, 0.0).
-        :param periodAngles_E_to_B_izyx: An array-like object of non negative numbers
-            (int or float) with shape (3,) representing the periods of the
-            AirplaneMovement's changes in its Airplanes' angles_E_to_B_izyx parameters.
-            Can be a tuple, list, or ndarray. Values are converted to floats internally.
-            Each element must be 0.0 if the corresponding element in
-            ampAngles_E_to_B_izyx is 0.0 and non zero if not. The units are in seconds.
-            The default is (0.0, 0.0, 0.0).
-        :param spacingAngles_E_to_B_izyx: An array-like object of strs or callables with
-            shape (3,) representing the spacing of the AirplaneMovement's change in its
-            Airplanes' angles_E_to_B_izyx parameters. Can be a tuple, list, or ndarray.
-            Each element can be the str "sine", the str "uniform", or a callable custom
-            spacing function. Custom spacing functions are for advanced users and must
-            start at 0.0, return to 0.0 after one period of 2*pi radians, have amplitude
-            of 1.0, be periodic, return finite values only, and accept a ndarray as
-            input and return a ndarray of the same shape. The custom function is scaled
-            by ampAngles_E_to_B_izyx, shifted horizontally and vertically by
-            phaseAngles_E_to_B_izyx and the base value, and have a period set by
-            periodAngles_E_to_B_izyx. The default is ("sine", "sine", "sine").
-        :param phaseAngles_E_to_B_izyx: An array-like object of numbers (int or float)
-            with shape (3,) representing the phase offsets of the elements in the first
-            time step's Airplane's angles_E_to_B_izyx parameter relative to the base
-            Airplane's angles_E_to_B_izyx parameter. Can be a tuple, list, or ndarray.
-            Elements must lie in the range (-180.0, 180.0]. Each element must be 0.0 if
-            the corresponding element in ampAngles_E_to_B_izyx is 0.0 and non zero if
-            not. Values are converted to floats internally. The units are in degrees.
-            The default is (0.0, 0.0, 0.0).
+        :param phaseCg_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (3,) representing the phase offsets of the elements in the first time
+            step's Airplane's Cg_GP1_CgP1 parameter relative to the base Airplane's
+            Cg_GP1_CgP1 parameter. Can be a tuple, list, or ndarray. Elements must lie
+            in the range (-180.0, 180.0]. Each element must be 0.0 if the corresponding
+            element in ampCg_GP1_CgP1 is 0.0 and non zero if not. Values are converted
+            to floats internally. The units are in degrees. The default is (0.0, 0.0,
+            0.0).
         :return: None
         """
         if not isinstance(base_airplane, geometry.airplane.Airplane):
@@ -150,109 +108,51 @@ class AirplaneMovement:
                 )
         self.wing_movements = wing_movements
 
-        ampCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
-            ampCg_E_CgP1, "ampCg_E_CgP1"
+        ampCg_GP1_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            ampCg_GP1_CgP1, "ampCg_GP1_CgP1"
         )
-        if not np.all(ampCg_E_CgP1 >= 0.0):
-            raise ValueError("All elements in ampCg_E_CgP1 must be non negative.")
-        self.ampCg_E_CgP1 = ampCg_E_CgP1
+        if not np.all(ampCg_GP1_CgP1 >= 0.0):
+            raise ValueError("All elements in ampCg_GP1_CgP1 must be non negative.")
+        self.ampCg_GP1_CgP1 = ampCg_GP1_CgP1
 
-        periodCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
-            periodCg_E_CgP1, "periodCg_E_CgP1"
+        periodCg_GP1_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            periodCg_GP1_CgP1, "periodCg_GP1_CgP1"
         )
-        if not np.all(periodCg_E_CgP1 >= 0.0):
-            raise ValueError("All elements in periodCg_E_CgP1 must be non negative.")
-        for period_index, period in enumerate(periodCg_E_CgP1):
-            amp = self.ampCg_E_CgP1[period_index]
+        if not np.all(periodCg_GP1_CgP1 >= 0.0):
+            raise ValueError("All elements in periodCg_GP1_CgP1 must be non negative.")
+        for period_index, period in enumerate(periodCg_GP1_CgP1):
+            amp = self.ampCg_GP1_CgP1[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
-                    "If an element in ampCg_E_CgP1 is 0.0, the corresponding element "
-                    "in periodCg_E_CgP1 must be also be 0.0."
+                    "If an element in ampCg_GP1_CgP1 is 0.0, the corresponding element "
+                    "in periodCg_GP1_CgP1 must be also be 0.0."
                 )
-        self.periodCg_E_CgP1 = periodCg_E_CgP1
+        self.periodCg_GP1_CgP1 = periodCg_GP1_CgP1
 
-        spacingCg_E_CgP1 = _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-            spacingCg_E_CgP1, "spacingCg_E_CgP1"
-        )
-        self.spacingCg_E_CgP1 = spacingCg_E_CgP1
-
-        phaseCg_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
-            phaseCg_E_CgP1, "phaseCg_E_CgP1"
-        )
-        if not (np.all(phaseCg_E_CgP1 > -180.0) and np.all(phaseCg_E_CgP1 <= 180.0)):
-            raise ValueError(
-                "All elements in phaseCg_E_CgP1 must be in the range (-180.0, 180.0]."
-            )
-        for phase_index, phase in enumerate(phaseCg_E_CgP1):
-            amp = self.ampCg_E_CgP1[phase_index]
-            if amp == 0 and phase != 0:
-                raise ValueError(
-                    "If an element in ampCg_E_CgP1 is 0.0, the corresponding element "
-                    "in phaseCg_E_CgP1 must be also be 0.0."
-                )
-        self.phaseCg_E_CgP1 = phaseCg_E_CgP1
-
-        ampAngles_E_to_B_izyx = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                ampAngles_E_to_B_izyx, "ampAngles_E_to_B_izyx"
-            )
-        )
-        if not (
-            np.all(ampAngles_E_to_B_izyx >= 0.0)
-            and np.all(ampAngles_E_to_B_izyx < 360.0)
-        ):
-            raise ValueError(
-                "All elements in ampAngles_E_to_B_izyx must be in the range [0.0, "
-                "360.0)."
-            )
-        self.ampAngles_E_to_B_izyx = ampAngles_E_to_B_izyx
-
-        periodAngles_E_to_B_izyx = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                periodAngles_E_to_B_izyx, "periodAngles_E_to_B_izyx"
-            )
-        )
-        if not np.all(periodAngles_E_to_B_izyx >= 0.0):
-            raise ValueError(
-                "All elements in periodAngles_E_to_B_izyx must be non negative."
-            )
-        for period_index, period in enumerate(periodAngles_E_to_B_izyx):
-            amp = self.ampAngles_E_to_B_izyx[period_index]
-            if amp == 0 and period != 0:
-                raise ValueError(
-                    "If an element in ampAngles_E_to_B_izyx is 0.0, the corresponding "
-                    "element in periodAngles_E_to_B_izyx must be also be 0.0."
-                )
-        self.periodAngles_E_to_B_izyx = periodAngles_E_to_B_izyx
-
-        spacingAngles_E_to_B_izyx = (
+        spacingCg_GP1_CgP1 = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
-                spacingAngles_E_to_B_izyx, "spacingAngles_E_to_B_izyx"
+                spacingCg_GP1_CgP1, "spacingCg_GP1_CgP1"
             )
         )
-        self.spacingAngles_E_to_B_izyx = spacingAngles_E_to_B_izyx
+        self.spacingCg_GP1_CgP1 = spacingCg_GP1_CgP1
 
-        phaseAngles_E_to_B_izyx = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                phaseAngles_E_to_B_izyx, "phaseAngles_E_to_B_izyx"
-            )
+        phaseCg_GP1_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            phaseCg_GP1_CgP1, "phaseCg_GP1_CgP1"
         )
         if not (
-            np.all(phaseAngles_E_to_B_izyx > -180.0)
-            and np.all(phaseAngles_E_to_B_izyx <= 180.0)
+            np.all(phaseCg_GP1_CgP1 > -180.0) and np.all(phaseCg_GP1_CgP1 <= 180.0)
         ):
             raise ValueError(
-                "All elements in phaseAngles_E_to_B_izyx must be in the range ("
-                "-180.0, 180.0]."
+                "All elements in phaseCg_GP1_CgP1 must be in the range (-180.0, 180.0]."
             )
-        for phase_index, phase in enumerate(phaseAngles_E_to_B_izyx):
-            amp = self.ampAngles_E_to_B_izyx[phase_index]
+        for phase_index, phase in enumerate(phaseCg_GP1_CgP1):
+            amp = self.ampCg_GP1_CgP1[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
-                    "If an element in ampAngles_E_to_B_izyx is 0.0, the corresponding "
-                    "element in phaseAngles_E_to_B_izyx must be also be 0.0."
+                    "If an element in ampCg_GP1_CgP1 is 0.0, the corresponding element "
+                    "in phaseCg_GP1_CgP1 must be also be 0.0."
                 )
-        self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
+        self.phaseCg_GP1_CgP1 = phaseCg_GP1_CgP1
 
     def generate_airplanes(
         self, num_steps: int, delta_time: float | int
@@ -276,69 +176,34 @@ class AirplaneMovement:
             delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
 
-        # Generate oscillating values for each dimension of Cg_E_CgP1.
-        listCg_E_CgP1 = np.zeros((3, num_steps), dtype=float)
+        # Generate oscillating values for each dimension of Cg_GP1_CgP1.
+        listCg_GP1_CgP1 = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingCg_E_CgP1[dim]
+            spacing = self.spacingCg_GP1_CgP1[dim]
             if spacing == "sine":
-                listCg_E_CgP1[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=self.base_airplane.Cg_E_CgP1[dim],
+                listCg_GP1_CgP1[dim, :] = _functions.oscillating_sinspaces(
+                    amps=self.ampCg_GP1_CgP1[dim],
+                    periods=self.periodCg_GP1_CgP1[dim],
+                    phases=self.phaseCg_GP1_CgP1[dim],
+                    bases=self.base_airplane.Cg_GP1_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
-                listCg_E_CgP1[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=self.base_airplane.Cg_E_CgP1[dim],
+                listCg_GP1_CgP1[dim, :] = _functions.oscillating_linspaces(
+                    amps=self.ampCg_GP1_CgP1[dim],
+                    periods=self.periodCg_GP1_CgP1[dim],
+                    phases=self.phaseCg_GP1_CgP1[dim],
+                    bases=self.base_airplane.Cg_GP1_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
-                listCg_E_CgP1[dim, :] = _functions.oscillating_customspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=self.base_airplane.Cg_E_CgP1[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
-
-        # Generate oscillating values for each dimension of angles_E_to_B_izyx.
-        listAngles_E_to_B_izyx = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingAngles_E_to_B_izyx[dim]
-            if spacing == "sine":
-                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listAngles_E_to_B_izyx[dim, :] = _functions.oscillating_customspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=self.base_airplane.angles_E_to_B_izyx[dim],
+                listCg_GP1_CgP1[dim, :] = _functions.oscillating_customspaces(
+                    amps=self.ampCg_GP1_CgP1[dim],
+                    periods=self.periodCg_GP1_CgP1[dim],
+                    phases=self.phaseCg_GP1_CgP1[dim],
+                    bases=self.base_airplane.Cg_GP1_CgP1[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                     custom_function=spacing,
@@ -372,16 +237,14 @@ class AirplaneMovement:
 
         # Iterate through the time steps.
         for step in range(num_steps):
-            thisCg_E_CgP1 = listCg_E_CgP1[:, step]
-            theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[:, step]
+            thisCg_GP1_CgP1 = listCg_GP1_CgP1[:, step]
             these_wings = list(wings[:, step])
 
             # Make a new Airplane for this time step.
             this_airplane = geometry.airplane.Airplane(
                 wings=these_wings,
                 name=this_name,
-                Cg_E_CgP1=thisCg_E_CgP1,
-                angles_E_to_B_izyx=theseAngles_E_to_B_izyx,
+                Cg_GP1_CgP1=thisCg_GP1_CgP1,
                 weight=this_weight,
             )
 
@@ -406,7 +269,6 @@ class AirplaneMovement:
         return float(
             max(
                 max_wing_movement_period,
-                np.max(self.periodCg_E_CgP1),
-                np.max(self.periodAngles_E_to_B_izyx),
+                np.max(self.periodCg_GP1_CgP1),
             )
         )

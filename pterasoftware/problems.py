@@ -56,23 +56,17 @@ class SteadyProblem:
             raise TypeError("operating_point must be an OperatingPoint.")
         self.operating_point = operating_point
 
-        # Validate that the first Airplane has Cg_E_CgP1 set to zeros.
+        # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
         self.airplanes[0].validate_first_airplane_constraints()
 
         # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the Panels'
         # positions in the first Airplanes' geometry axes, relative to the first
         # Airplanes' CG based on their locally defined positions.
         for airplane_id, airplane in enumerate(self.airplanes):
-            if airplane_id == 0:
-                # First Airplane: Use the identity transformation (G_Cg == GP1_CgP1).
-                T_pas_G_Cg_to_GP1_CgP1 = np.eye(4, dtype=float)
-            else:
-                # Other Airplanes: Compute the passive transformation matrix from this
-                # Airplane's local geometry axes, relative to its CG, to the first
-                # Airplanes' geometry axes, relative to the first Airplane's CG.
-                T_pas_G_Cg_to_GP1_CgP1 = airplane.compute_T_pas_G_Cg_to_GP1_CgP1(
-                    first_airplane=self.airplanes[0]
-                )
+            # Compute the passive transformation matrix from this Airplane's local
+            # geometry axes, relative to its CG, to the first Airplanes' geometry axes,
+            # relative to the first Airplane's CG.
+            T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
 
             for wing in airplane.wings:
                 assert wing.panels is not None

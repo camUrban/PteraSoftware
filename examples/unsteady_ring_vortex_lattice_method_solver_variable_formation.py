@@ -43,8 +43,7 @@ lead_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Lead Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 # Now define the lead Airplane's AirplaneMovement.
@@ -134,8 +133,7 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Right Airplane",
-    Cg_E_CgP1=(x_spacing, y_spacing, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(x_spacing, y_spacing, 0.0),
 )
 
 # Create the trailing right Airplane's AirplaneMovement.
@@ -219,8 +217,7 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Left Airplane",
-    Cg_E_CgP1=(x_spacing, -y_spacing, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(x_spacing, -y_spacing, 0.0),
 )
 
 # Create the trailing left Airplane's AirplaneMovement.

@@ -429,8 +429,7 @@ def analyze_steady_convergence(
                     geometry.airplane.Airplane(
                         # These values are copied from the reference Airplane.
                         name=ref_airplane.name,
-                        Cg_E_CgP1=ref_airplane.Cg_E_CgP1,
-                        angles_E_to_B_izyx=ref_airplane.angles_E_to_B_izyx,
+                        Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
                         weight=ref_airplane.weight,
                         # These values change.
                         wings=these_wings,
@@ -1383,8 +1382,7 @@ def analyze_unsteady_convergence(
                         this_base_airplane = geometry.airplane.Airplane(
                             # These values are copied from the reference Airplane.
                             name=ref_base_airplane.name,
-                            Cg_E_CgP1=ref_base_airplane.Cg_E_CgP1,
-                            angles_E_to_B_izyx=ref_base_airplane.angles_E_to_B_izyx,
+                            Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
                             weight=ref_base_airplane.weight,
                             # These values change.
                             wings=these_base_wings,
@@ -1397,14 +1395,10 @@ def analyze_unsteady_convergence(
                         this_airplane_movement = movements.airplane_movement.AirplaneMovement(
                             # These values are copied from the reference
                             # AirplaneMovement.
-                            ampCg_E_CgP1=ref_airplane_movement.ampCg_E_CgP1,
-                            periodCg_E_CgP1=ref_airplane_movement.periodCg_E_CgP1,
-                            spacingCg_E_CgP1=ref_airplane_movement.spacingCg_E_CgP1,
-                            phaseCg_E_CgP1=ref_airplane_movement.phaseCg_E_CgP1,
-                            ampAngles_E_to_B_izyx=ref_airplane_movement.ampAngles_E_to_B_izyx,
-                            periodAngles_E_to_B_izyx=ref_airplane_movement.periodAngles_E_to_B_izyx,
-                            spacingAngles_E_to_B_izyx=ref_airplane_movement.spacingAngles_E_to_B_izyx,
-                            phaseAngles_E_to_B_izyx=ref_airplane_movement.phaseAngles_E_to_B_izyx,
+                            ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
+                            periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
+                            spacingCg_GP1_CgP1=ref_airplane_movement.spacingCg_GP1_CgP1,
+                            phaseCg_GP1_CgP1=ref_airplane_movement.phaseCg_GP1_CgP1,
                             # These values change.
                             base_airplane=this_base_airplane,
                             wing_movements=these_wing_movements,

@@ -6,7 +6,9 @@
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
 ![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
+![python](https://img.shields.io/pypi/pyversions/pterasoftware)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
+![types](https://img.shields.io/pypi/types/pterasoftware)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
 
 ***
@@ -88,9 +90,10 @@ understanding of biological flight.
 
 ## Installation and Use
 
-First things first, you will need a copy of Python 3.13, which you can download from the
-official Python website. At this time, I do not recommend using a version from the 
-Anaconda distribution as it could introduce compatibility issues with PyPI.
+First things first, you will need a copy of Python (3.11, 3.12, or 3.13), which you can 
+download from the official Python website. At this time, I do not recommend using a 
+version from the Anaconda distribution as it could introduce compatibility issues with 
+PyPI.
 
 There are two ways to use Ptera Software. The first is by downloading GitHub release,
 which will provide you your own copy of the source code, in which you can get a feel
@@ -174,9 +177,8 @@ custom aircraft creation. We welcome contributions if you'd like to extend it!
 Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that
 walks through getting Ptera Software up and running. It includes every step, from 
 downloading Python for the first time to setting up your IDE to running the software. 
-Please note that the video demonstrates installation with Python 3.8, but for Ptera 
-Software version 3.2.0 and later, you should use Python 3.13. If you still run into 
-problems, feel free to open an issue for guidance.
+Please note that the video demonstrates installation with Python 3.8, but you should use
+Python 3.11, 3.12, or 3.13 for the current version of Ptera Software.
 
 ## Example Code
 

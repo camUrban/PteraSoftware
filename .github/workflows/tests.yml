@@ -32,7 +32,7 @@ jobs:
         coverage run --source=pterasoftware -m unittest discover -s tests
         coverage xml -o coverage.xml
     - name: Upload coverage report to Codecov
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && matrix.python-version == '3.13' }}
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

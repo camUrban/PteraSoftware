@@ -541,8 +541,7 @@ class TestMovement(unittest.TestCase):
         base_airplane = ps.geometry.airplane.Airplane(
             wings=[base_wing],
             name="Test Airplane",
-            Cg_E_CgP1=(0.0, 0.0, 0.0),
-            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         # Now reference the Wing from the Airplane (after symmetry processing).
@@ -605,8 +604,7 @@ class TestMovement(unittest.TestCase):
         base_airplane = ps.geometry.airplane.Airplane(
             wings=[base_wing],
             name="Test Airplane",
-            Cg_E_CgP1=(0.0, 0.0, 0.0),
-            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         # Now reference the Wing from the Airplane (after symmetry processing).
@@ -670,8 +668,7 @@ class TestMovement(unittest.TestCase):
         base_airplane = ps.geometry.airplane.Airplane(
             wings=[base_wing],
             name="Test Airplane",
-            Cg_E_CgP1=(0.0, 0.0, 0.0),
-            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         # Now reference the Wing from the Airplane (after symmetry processing).
@@ -733,8 +730,7 @@ class TestMovement(unittest.TestCase):
         base_airplane = ps.geometry.airplane.Airplane(
             wings=[base_wing],
             name="Test Airplane",
-            Cg_E_CgP1=(0.0, 0.0, 0.0),
-            angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
         # Now reference the Wing from the Airplane (after symmetry processing).

@@ -214,7 +214,7 @@ Variables must follow one of these four patterns based on their requirements:
 
 **Passive angle vectors (relating two axis systems):**
 - `[variable name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
-- Example: `angles_E_to_B_izyx` (angles from Earth to body axes using intrinsic zy'x" sequence)
+- Example: `angles_Wcsp_to_Wcs_ixyz` (angles from wing cross section parent axes to wing cross section axes using an intrinsic xy'z" sequence)
 
 **Active angle vectors (for rotation within current axis system):**
 - `[variable name]_act_[sequence ID]`
@@ -269,7 +269,7 @@ When referencing coordinate variables in comments and docstrings, use the follow
 - All angle vectors must take the form `[angleX, angleY, angleZ]`
 - This applies to both passive and active angle vectors
 - Angles are always in degrees unless explicitly noted otherwise
-- Example: `angles_E_to_B_izyx = np.array([15.0, -5.2, 30.0])`
+- Example: `angles_Wcsp_to_Wcs_ixyz = np.array([15.0, -5.2, 30.0])`
 - Example: `rotationAngles_act_izyx = np.array([0.0, 45.0, 0.0])`
 
 **Homogeneous Coordinates:**
@@ -411,7 +411,7 @@ There are four useful combinations of axes, points, and frames. Variables are de
 **Passive Angle Vectors (relating axis systems):**
 - Variable pattern: `[name]_[source axes ID]_to_[target axes ID]_[sequence ID]`
 - Text pattern: "[name] describing the orientation of [target axes name] relative to [source axes name] using an [sequence name] sequence"
-- Example: `angles_E_to_B_izyx` = "angles describing the orientation of body axes relative to Earth axes using an intrinsic zy'x" sequence"
+- Example: `angles_Wcsp_to_Wcs_ixyz` = "angles describing the orientation of wing cross section axes relative to wing cross section parent axes using an intrinsic xy'z" sequence"
 
 **Active Angle Vectors (rotating within axis system):**
 - Variable pattern: `[name]_act_[sequence ID]`

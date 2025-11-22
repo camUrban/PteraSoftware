@@ -107,8 +107,7 @@ example_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Example Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0.0,
     s_ref=None,
     c_ref=None,
@@ -267,14 +266,10 @@ del v_tail_tip_wing_cross_section_movement
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement, v_tail_movement],
-    ampCg_E_CgP1=(0.0, 0.0, 0.0),
-    periodCg_E_CgP1=(0.0, 0.0, 0.0),
-    spacingCg_E_CgP1=("sine", "sine", "sine"),
-    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
-    ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-    phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+    phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 # Delete the extraneous pointers to the WingMovements.

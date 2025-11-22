@@ -136,7 +136,7 @@ trailing_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Airplane",
-    Cg_E_CgP1=(-20, 5, 0),
+    Cg_GP1_CgP1=(-20, 5, 0),
 )
 
 # Create an OperatingPoint.

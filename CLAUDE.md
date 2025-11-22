@@ -125,7 +125,7 @@ Requires Python 3.11, but active development is done in 3.13
 - PySide6 >= 6.8.1, < 7.0.0
 - pyvista >= 0.45.0, < 1.0.0
 - scipy >= 1.15.0, < 2.0.0
-- tqdm >= 4.65.0, < 5.0.0
+- tqdm >= 4.66.3, < 5.0.0
 - webp >= 0.4.0, < 1.0.0
 
 **Development Dependencies:**

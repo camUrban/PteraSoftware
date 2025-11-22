@@ -41,7 +41,7 @@ jobs:
     - name: Run tests without coverage
       if: ${{ !(matrix.python-version == '3.13' && matrix.dependency-set == 'latest') }}
       run: |
-        pterasoftware -m unittest discover -s tests
+        python -m unittest discover -s tests
     - name: Run tests with coverage and generate coverage report
       env:
         NUMBA_JIT_COVERAGE: "1"

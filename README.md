@@ -266,7 +266,7 @@ Here are the requirements necessary to run Ptera Software:
 * PySide6 >= 6.8.1, < 7.0.0
 * pyvista >= 0.45.0, < 1.0.0
 * scipy >= 1.15.0, < 2.0.0
-* tqdm >= 4.65.0, < 5.0.0
+* tqdm >= 4.66.3, < 5.0.0
 * webp >= 0.4.0, < 1.0.0
 
 Additionally, these packages are useful for continued development of the software:

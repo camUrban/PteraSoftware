@@ -128,7 +128,9 @@ Once you understand the process, here's how to implement it:
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
      codespell --ignore-words=.codespell-ignore.txt --skip="*.dat"
+     docformatter --black --in-place pterasoftware -r
      black .
+     mypy pterasoftware
      python -m unittest discover -s tests
      ```  
 

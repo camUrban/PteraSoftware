@@ -327,10 +327,10 @@ class Airplane:
             displays the plot and returns None. If False, the method returns the data
             without displaying. Can be a bool or a numpy bool and will be converted
             internally to a bool. The default is False.
-        :return: If show is True, returns None. If show is False, returns a list of sub-
-            lists (one sub-list for each of this Airplane's Wings). Each sub-list
-            contains sub-sub-lists (one for each of this Wing's WingCrossSections). Each
-            sub-sub-list contains two ndarrays. The first ndarray contains points on
+        :return: If show is True, returns None. If show is False, returns a list of sub
+            lists (one sub list for each of this Airplane's Wings). Each sub list
+            contains sub sub lists (one for each of this Wing's WingCrossSections). Each
+            sub sub list contains two ndarrays. The first ndarray contains points on
             that WingCrossSection's Airfoil's outline and the second contains points on
             its mean camber line. The points are in geometry axes, relative to the CG.
             The units are in meters.

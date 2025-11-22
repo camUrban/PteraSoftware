@@ -30,7 +30,7 @@ class WingMovement:
     generate_wings: Creates the Wing at each time step, and returns them in a list.
 
     max_period: The longest period of WingMovement's own motion and that of its
-    sub-movement objects.
+    sub movement objects.
 
     **Notes:**
 
@@ -430,7 +430,7 @@ class WingMovement:
 
     @property
     def max_period(self) -> float:
-        """The longest period of WingMovement's own motion and that of its sub-movement
+        """The longest period of WingMovement's own motion and that of its sub movement
         objects.
 
         :return: The longest period in seconds. If all the motion is static, this will

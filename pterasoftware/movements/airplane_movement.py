@@ -31,7 +31,7 @@ class AirplaneMovement:
     list.
 
     max_period: The longest period of AirplaneMovement's own motion, the motion(s) of
-    its sub-movement object(s), and the motions of its sub-sub- movement objects.
+    its sub movement object(s), and the motions of its sub sub  movement objects.
     """
 
     def __init__(
@@ -392,8 +392,8 @@ class AirplaneMovement:
 
     @property
     def max_period(self) -> float:
-        """The longest period of AirplaneMovement's own motion, the motion(s) of its
-        sub-movement object(s), and the motions of its sub-sub- movement objects.
+        """The longest period of AirplaneMovement's own motion, the motion(s) of its sub
+        movement object(s), and the motions of its sub sub  movement objects.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.

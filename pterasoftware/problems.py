@@ -112,7 +112,7 @@ class UnsteadyProblem:
         :param only_final_results: Determines whether the Solver will only calculate
             loads for the final time step (for static Movements) or (for non static
             Movements) for will only calculate loads for the time steps in the final
-            complete motion cycle (of the Movement's sub-Movement with the longest
+            complete motion cycle (of the Movement's sub Movement with the longest
             period), which increases simulation speed. Can be a bool or a numpy bool and
             will be converted internally to a bool. The default is False.
         :return: None

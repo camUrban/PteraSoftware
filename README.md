@@ -61,7 +61,7 @@ understanding of biological flight.
     * Wings can be defined as a collection of two or more wing cross sections of any
       dimensions and positions.
     * Wing cross sections can be specified to match the mean camber line of an airfoil.
-    * The package comes with a massive database of airfoils to chose from.
+    * The package comes with a massive database of airfoils to choose from.
     * Wings are automatically discretized into panels with customizable sizes and
       spacings.
 3. Customizable Aircraft Motion

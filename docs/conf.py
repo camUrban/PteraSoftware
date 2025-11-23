@@ -69,13 +69,14 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+
 def _repo_rel_for_autoapi_page(pagename: str) -> str | None:
     """Return a repo-relative path for an AutoAPI page's corresponding source file."""
     if not pagename.startswith("api/"):
         return None
-    rel = pagename[len("api/"):]
+    rel = pagename[len("api/") :]
     if rel.endswith("/index"):
-        rel = rel[:-len("/index")]
+        rel = rel[: -len("/index")]
     py_path = REPO_ROOT / (rel.replace("/", os.sep) + ".py")
     if py_path.exists():
         target = py_path
@@ -87,6 +88,7 @@ def _repo_rel_for_autoapi_page(pagename: str) -> str | None:
             return None
     return target.relative_to(REPO_ROOT).as_posix()
 
+
 def _html_page_context(app, pagename, templatename, context, doctree):
     repo_rel = _repo_rel_for_autoapi_page(pagename)
     if repo_rel:
@@ -97,8 +99,10 @@ def _html_page_context(app, pagename, templatename, context, doctree):
             f"https://github.com/camUrban/PteraSoftware/blob/main/{repo_rel}?plain=true"
         )
 
+
 def setup(app):
     app.connect("html-page-context", _html_page_context)
+
     # Copy favicon assets to the site root so browsers that look for
     # e.g. "/favicon.ico" or "/apple-touch-icon.png" can find them.
     def _copy_favicons(app, exception):
@@ -119,7 +123,9 @@ def setup(app):
             p = src / n
             if p.exists():
                 (outdir / n).write_bytes(p.read_bytes())
+
     app.connect("build-finished", _copy_favicons)
+
 
 # -- AutoAPI configuration ---------------------------------------------------
 

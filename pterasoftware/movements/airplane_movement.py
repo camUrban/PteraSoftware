@@ -40,7 +40,9 @@ class AirplaneMovement:
         wing_movements: list[wing_movement_mod.WingMovement],
         ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingCg_GP1_CgP1: np.ndarray | Sequence[str | Callable] = (
+        spacingCg_GP1_CgP1: (
+            np.ndarray | Sequence[str | Callable[[np.ndarray], np.ndarray]]
+        ) = (
             "sine",
             "sine",
             "sine",

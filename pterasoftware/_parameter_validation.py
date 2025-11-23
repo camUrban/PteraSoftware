@@ -392,9 +392,11 @@ def threeD_number_vectorLike_return_float_unit_vector(
 
 
 # TEST: Consider adding unit tests for this function.
-def threeD_spacing_vectorLike_return_tuple(
-    value: Any, name: str
-) -> tuple[str | Callable, str | Callable, str | Callable]:
+def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
+    str | Callable[[np.ndarray], np.ndarray],
+    str | Callable[[np.ndarray], np.ndarray],
+    str | Callable[[np.ndarray], np.ndarray],
+]:
     """Validates a value is a 3D vector-like object (array-like object with shape (3,))
     of spacing specifications, and then returns it as a tuple of 3 spacing
     specifications.
@@ -436,7 +438,14 @@ def threeD_spacing_vectorLike_return_tuple(
             )
 
     validated_value = tuple(validated_list)
-    return cast(tuple[str | Callable, str | Callable, str | Callable], validated_value)
+    return cast(
+        tuple[
+            str | Callable[[np.ndarray], np.ndarray],
+            str | Callable[[np.ndarray], np.ndarray],
+            str | Callable[[np.ndarray], np.ndarray],
+        ],
+        validated_value,
+    )
 
 
 # TEST: Consider adding unit tests for this function.
@@ -492,7 +501,7 @@ def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarra
 
 
 # TEST: Consider adding unit tests for this function.
-def non_empty_list_return_list(value: Any, name: str) -> list:
+def non_empty_list_return_list(value: Any, name: str) -> list[Any]:
     """Validates a value is a non empty list and returns it.
 
     :param value: The value to validate.

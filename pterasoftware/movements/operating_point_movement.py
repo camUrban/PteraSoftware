@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+import numpy as np
+
 from . import _functions
 
 from .. import operating_point as operating_point_mod
@@ -35,7 +37,7 @@ class OperatingPointMovement:
         base_operating_point: operating_point_mod.OperatingPoint,
         ampVCg__E: float | int = 0.0,
         periodVCg__E: float | int = 0.0,
-        spacingVCg__E: str | Callable = "sine",
+        spacingVCg__E: str | Callable[[np.ndarray], np.ndarray] = "sine",
         phaseVCg__E: float | int = 0.0,
     ) -> None:
         """The initialization method.

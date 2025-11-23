@@ -328,7 +328,7 @@ def draw(
     # If saving, take a screenshot, convert it to a ndarray, convert that to an Image,
     # and save it as a WebP.
     if save:
-        image = webp.Image.fromarray(  # type: ignore[attr-defined]
+        image = webp.Image.fromarray(
             np.array(
                 plotter.screenshot(
                     filename=None,
@@ -544,7 +544,7 @@ def animate(
     # Start a list to hold a WebP Image of each frame. To start, take a screenshot,
     # convert it to a ndarray, and convert that to an Image.
     images = [
-        webp.Image.fromarray(  # type: ignore[attr-defined]
+        webp.Image.fromarray(
             np.array(
                 plotter.screenshot(
                     transparent_background=True,
@@ -620,7 +620,7 @@ def animate(
         # so, take a screenshot, convert it to a ndarray, and convert that to an Image.
         if save:
             images.append(
-                webp.Image.fromarray(  # type: ignore[attr-defined]
+                webp.Image.fromarray(
                     np.array(
                         plotter.screenshot(
                             filename=None,

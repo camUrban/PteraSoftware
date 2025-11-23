@@ -50,7 +50,7 @@ def cosspace(
 
 
 # TEST: Consider adding unit tests for this function.
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def numba_centroid_of_quadrilateral(
     frontLeftPoint_A_a: np.ndarray,
     frontRightPoint_A_a: np.ndarray,
@@ -453,7 +453,7 @@ def calculate_steady_freestream_wing_influences(
 
 
 # TEST: Consider adding unit tests for this function.
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def numba_1d_explicit_cross(
     stackVectors1_A: np.ndarray, stackVectors2_A: np.ndarray
 ) -> np.ndarray:
@@ -496,7 +496,7 @@ def numba_1d_explicit_cross(
 
 
 # TEST: Consider adding unit tests for this function.
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def interp_between_points(
     stackStartPoints_A_a: np.ndarray,
     stackEndPoints_A_a: np.ndarray,

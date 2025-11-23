@@ -316,7 +316,7 @@ class _LineVortex:
         self.Clvp_GP1_CgP1 = self.Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
 
 
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -389,7 +389,7 @@ def collapsed_velocities_from_ring_vortices(
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -460,7 +460,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -535,7 +535,7 @@ def expanded_velocities_from_ring_vortices(
 
 # TODO: Remove the ability to specify HorseshoeVortex ages they are never used in
 #  unsteady simulations.
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrhvp_GP1_CgP1: np.ndarray,
@@ -609,7 +609,7 @@ def collapsed_velocities_from_horseshoe_vortices(
 
 # TODO: Remove the ability to specify HorseshoeVortex ages they are never used in
 #  unsteady simulations.
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrhvp_GP1_CgP1: np.ndarray,
@@ -681,7 +681,7 @@ def expanded_velocities_from_horseshoe_vortices(
     return gridVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def _collapsed_velocities_from_line_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,
@@ -806,7 +806,7 @@ def _collapsed_velocities_from_line_vortices(
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)  # type: ignore
+@njit(cache=True, fastmath=False)
 def _expanded_velocities_from_line_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,

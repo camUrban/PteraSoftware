@@ -280,7 +280,7 @@ class Airplane:
                 transparent_background=True,
                 return_img=True,
             )
-            image = webp.Image.fromarray(  # type: ignore[attr-defined]
+            image = webp.Image.fromarray(
                 cast(np.ndarray[Any, Any], screenshot),
             )
             webp.save_image(

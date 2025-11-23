@@ -429,6 +429,413 @@ class TestWing(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry_fixtures.make_invalid_root_wing_fixture()
 
+    def test_span_simple_rectangular_wing(self):
+        """Test span calculation for simple rectangular Wing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 2.0 meters (from y=0 to y=2.0)
+        expected_span = 2.0
+        actual_span = wing.span
+
+        self.assertIsNotNone(actual_span)
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_simple_tapered_wing(self):
+        """Test span calculation for simple tapered Wing."""
+        wing = geometry_fixtures.make_simple_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 3.0 meters (from y=0 to y=3.0)
+        expected_span = 3.0
+        actual_span = wing.span
+
+        self.assertIsNotNone(actual_span)
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_symmetric_continuous_rectangular_wing(self):
+        """Test span calculation for symmetric continuous rectangular Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        # Expected span: 5.0 meters (2 * 2.5, due to symmetry)
+        expected_span = 5.0
+        actual_span = wing.span
+
+        self.assertIsNotNone(actual_span)
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_three_section_tapered_wing(self):
+        """Test span calculation for three section tapered Wing."""
+        wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 4.0 meters (from y=0 to y=4.0)
+        expected_span = 4.0
+        actual_span = wing.span
+
+        self.assertIsNotNone(actual_span)
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_projected_area_simple_rectangular_wing(self):
+        """Test projected area calculation for simple rectangular Wing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected projected area: 2.0 square meters (1.0 m chord * 2.0 m span)
+        expected_area = 2.0
+        actual_area = wing.projected_area
+
+        self.assertIsNotNone(actual_area)
+        npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
+
+    def test_projected_area_simple_tapered_wing(self):
+        """Test projected area calculation for simple tapered Wing."""
+        wing = geometry_fixtures.make_simple_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected projected area: 4.5 square meters
+        # Trapezoid: (chord_root + chord_tip) / 2 * span = (2.0 + 1.0) / 2 * 3.0 = 4.5
+        expected_area = 4.5
+        actual_area = wing.projected_area
+
+        self.assertIsNotNone(actual_area)
+        npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
+
+    def test_projected_area_symmetric_continuous_rectangular_wing(self):
+        """Test projected area calculation for symmetric continuous rectangular
+        Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        # Expected projected area: 7.5 square meters
+        # Rectangle: chord * span = 1.5 * 5.0 = 7.5
+        expected_area = 7.5
+        actual_area = wing.projected_area
+
+        self.assertIsNotNone(actual_area)
+        npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
+
+    def test_projected_area_three_section_tapered_wing(self):
+        """Test projected area calculation for three section tapered Wing."""
+        wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected projected area: 8.0 square meters
+        # Section 1 (root to middle): (3.0 + 2.0) / 2 * 2.0 = 5.0
+        # Section 2 (middle to tip): (2.0 + 1.0) / 2 * 2.0 = 3.0
+        # Total: 5.0 + 3.0 = 8.0
+        expected_area = 8.0
+        actual_area = wing.projected_area
+
+        self.assertIsNotNone(actual_area)
+        npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
+
+    def test_wetted_area_greater_than_projected_area(self):
+        """Test that wetted area is greater than or equal to projected area for all
+        Wings."""
+        wings = [
+            geometry_fixtures.make_simple_rectangular_wing_fixture(),
+            geometry_fixtures.make_simple_tapered_wing_fixture(),
+            geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture(),
+            geometry_fixtures.make_three_section_tapered_wing_fixture(),
+        ]
+
+        symmetry_types = [1, 1, 4, 1]
+
+        for wing, symmetry_type in zip(wings, symmetry_types):
+            with self.subTest(wing=wing.name):
+                wing.generate_mesh(symmetry_type)
+
+                projected_area = wing.projected_area
+                wetted_area = wing.wetted_area
+
+                self.assertIsNotNone(projected_area)
+                self.assertIsNotNone(wetted_area)
+                self.assertGreaterEqual(wetted_area, projected_area)
+
+    def test_standard_mean_chord_simple_rectangular_wing(self):
+        """Test standard mean chord calculation for simple rectangular Wing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Standard mean chord = projected_area / span = 2.0 / 2.0 = 1.0
+        expected_smc = 1.0
+        actual_smc = wing.standard_mean_chord
+
+        self.assertIsNotNone(actual_smc)
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
+    def test_standard_mean_chord_simple_tapered_wing(self):
+        """Test standard mean chord calculation for simple tapered Wing."""
+        wing = geometry_fixtures.make_simple_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Standard mean chord = projected_area / span = 4.5 / 3.0 = 1.5
+        expected_smc = 1.5
+        actual_smc = wing.standard_mean_chord
+
+        self.assertIsNotNone(actual_smc)
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
+    def test_standard_mean_chord_symmetric_continuous_rectangular_wing(self):
+        """Test standard mean chord calculation for symmetric continuous rectangular
+        Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        # Standard mean chord = projected_area / span = 7.5 / 5.0 = 1.5
+        expected_smc = 1.5
+        actual_smc = wing.standard_mean_chord
+
+        self.assertIsNotNone(actual_smc)
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
+    def test_standard_mean_chord_three_section_tapered_wing(self):
+        """Test standard mean chord calculation for three section tapered Wing."""
+        wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Standard mean chord = projected_area / span = 8.0 / 4.0 = 2.0
+        expected_smc = 2.0
+        actual_smc = wing.standard_mean_chord
+
+        self.assertIsNotNone(actual_smc)
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
+    def test_mean_aerodynamic_chord_simple_rectangular_wing(self):
+        """Test mean aerodynamic chord calculation for simple rectangular Wing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # For a rectangular wing (constant chord), MAC = chord = 1.0
+        expected_mac = 1.0
+        actual_mac = wing.mean_aerodynamic_chord
+
+        self.assertIsNotNone(actual_mac)
+        npt.assert_allclose(actual_mac, expected_mac, rtol=1e-10, atol=1e-14)
+
+    def test_mean_aerodynamic_chord_simple_tapered_wing(self):
+        """Test mean aerodynamic chord calculation for simple tapered Wing."""
+        wing = geometry_fixtures.make_simple_tapered_wing_fixture()
+        wing.generate_mesh(1)
+
+        # For a linearly tapered wing:
+        # MAC = (2/3) * (c_root + c_tip - c_root * c_tip / (c_root + c_tip))
+        # With c_root=2.0, c_tip=1.0:
+        # MAC = (2/3) * (2.0 + 1.0 - 2.0 * 1.0 / (2.0 + 1.0))
+        # MAC = (2/3) * (3.0 - 2.0/3.0) = (2/3) * (7.0/3.0) = 14.0/9.0 = 1.555...
+        c_root = 2.0
+        c_tip = 1.0
+        expected_mac = (2.0 / 3.0) * (
+            c_root + c_tip - c_root * c_tip / (c_root + c_tip)
+        )
+
+        actual_mac = wing.mean_aerodynamic_chord
+
+        self.assertIsNotNone(actual_mac)
+        npt.assert_allclose(actual_mac, expected_mac, rtol=1e-10, atol=1e-14)
+
+    def test_mean_aerodynamic_chord_symmetric_continuous_rectangular_wing(self):
+        """Test mean aerodynamic chord calculation for symmetric continuous
+        rectangular Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        # For a rectangular wing (constant chord), MAC = chord = 1.5
+        expected_mac = 1.5
+        actual_mac = wing.mean_aerodynamic_chord
+
+        self.assertIsNotNone(actual_mac)
+        npt.assert_allclose(actual_mac, expected_mac, rtol=1e-10, atol=1e-14)
+
+    def test_geometric_properties_consistency(self):
+        """Test that geometric properties are internally consistent across different
+        Wings."""
+        wings_data = [
+            (geometry_fixtures.make_simple_rectangular_wing_fixture(), 1),
+            (geometry_fixtures.make_simple_tapered_wing_fixture(), 1),
+            (
+                geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture(),
+                4,
+            ),
+            (geometry_fixtures.make_three_section_tapered_wing_fixture(), 1),
+        ]
+
+        for wing, symmetry_type in wings_data:
+            with self.subTest(wing=wing.name):
+                wing.generate_mesh(symmetry_type)
+
+                # Get properties
+                span = wing.span
+                projected_area = wing.projected_area
+                standard_mean_chord = wing.standard_mean_chord
+
+                # Verify consistency: projected_area = span * standard_mean_chord
+                self.assertIsNotNone(span)
+                self.assertIsNotNone(projected_area)
+                self.assertIsNotNone(standard_mean_chord)
+
+                calculated_area = span * standard_mean_chord
+                npt.assert_allclose(
+                    projected_area, calculated_area, rtol=1e-10, atol=1e-14
+                )
+
+    def test_properties_none_before_meshing(self):
+        """Test that span, standard_mean_chord, and mean_aerodynamic_chord return
+        None before meshing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+
+        # Properties should return None before meshing
+        self.assertIsNone(wing.span)
+        self.assertIsNone(wing.projected_area)
+        self.assertIsNone(wing.wetted_area)
+        self.assertIsNone(wing.standard_mean_chord)
+        self.assertIsNone(wing.mean_aerodynamic_chord)
+
+    def test_properties_available_after_meshing(self):
+        """Test that span, standard_mean_chord, and mean_aerodynamic_chord are
+        available after meshing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Properties should be available and positive after meshing
+        self.assertIsNotNone(wing.span)
+        self.assertIsNotNone(wing.projected_area)
+        self.assertIsNotNone(wing.wetted_area)
+        self.assertIsNotNone(wing.standard_mean_chord)
+        self.assertIsNotNone(wing.mean_aerodynamic_chord)
+
+        self.assertGreater(wing.span, 0.0)
+        self.assertGreater(wing.projected_area, 0.0)
+        self.assertGreater(wing.wetted_area, 0.0)
+        self.assertGreater(wing.standard_mean_chord, 0.0)
+        self.assertGreater(wing.mean_aerodynamic_chord, 0.0)
+
+    def test_span_rotated_wing_x_axis(self):
+        """Test span calculation invariance for Wing rotated about x axis."""
+        # Create a Wing rotated 45 degrees about x axis
+        wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
+        wing.generate_mesh(1)
+
+        # Expected span: 2.0 meters (rotation about x axis does not affect y extent)
+        expected_span = 2.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_rotated_wing_y_axis(self):
+        """Test span calculation invariance for Wing rotated about y axis."""
+        # Create a Wing rotated 30 degrees about y axis
+        wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 30.0, 0.0])
+        wing.generate_mesh(1)
+
+        # Expected span: 2.0 meters (rotation about y axis does not affect y extent)
+        expected_span = 2.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_rotated_wing_z_axis(self):
+        """Test span calculation invariance for Wing rotated about z axis."""
+        # Create a Wing rotated 60 degrees about z axis
+        wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 0.0, 60.0])
+        wing.generate_mesh(1)
+
+        # Expected span: 2.0 meters (rotation about z axis does not affect y extent)
+        expected_span = 2.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_rotated_wing_combined_rotations(self):
+        """Test span calculation invariance for Wing with combined rotations."""
+        # Create a Wing with combined rotations
+        wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            [15.0, 25.0, 35.0]
+        )
+        wing.generate_mesh(1)
+
+        # Expected span: 2.0 meters (rotations do not affect y extent in wing axes)
+        expected_span = 2.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_wing_with_rotated_cross_sections(self):
+        """Test span calculation for Wing with rotated WingCrossSections."""
+        wing = geometry_fixtures.make_wing_with_rotated_cross_sections_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 5.0 meters (rotation about y axis does not affect y position)
+        expected_span = 5.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_swept_wing(self):
+        """Test span calculation for swept Wing."""
+        wing = geometry_fixtures.make_swept_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 3.0 meters (sweep in x direction does not affect y extent)
+        expected_span = 3.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_span_dihedral_wing(self):
+        """Test span calculation for Wing with dihedral."""
+        wing = geometry_fixtures.make_dihedral_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected span: 3.0 meters (dihedral in z direction does not affect y extent in wing axes)
+        expected_span = 3.0
+
+        actual_span = wing.span
+        self.assertIsNotNone(actual_span)
+
+        npt.assert_allclose(actual_span, expected_span, rtol=1e-10, atol=1e-14)
+
+    def test_standard_mean_chord_rotated_wing(self):
+        """Test standard mean chord calculation for rotated Wing."""
+        # Create a Wing rotated 45 degrees about x axis
+        wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
+        wing.generate_mesh(1)
+
+        # Expected standard mean chord: 1.0 (projected_area / span = 2.0 / 2.0)
+        expected_smc = 1.0
+
+        actual_smc = wing.standard_mean_chord
+        self.assertIsNotNone(actual_smc)
+
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
+    def test_standard_mean_chord_swept_wing(self):
+        """Test standard mean chord calculation for swept Wing."""
+        wing = geometry_fixtures.make_swept_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Expected standard mean chord: projected_area / span = 4.5 / 3.0 = 1.5
+        expected_smc = 1.5
+
+        actual_smc = wing.standard_mean_chord
+        self.assertIsNotNone(actual_smc)
+
+        npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
+
 
 if __name__ == "__main__":
     unittest.main()

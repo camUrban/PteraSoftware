@@ -14,3 +14,4 @@ jobs:
         continue-on-error: true
         with:
           ignore_words_file: .codespell-ignore.txt
+          skip: "*/_build/*,*.dat"

@@ -140,8 +140,8 @@ class Wing:
             axes relative to the geometry axes (after accounting for symmetry). Can be a
             tuple, list, or ndarray. Values are converted to floats internally. All
             angles must be in the range [-90, 90] degrees. Rotations are intrinsic, and
-            proceed in the xy'z" order. The units are degrees. The default is (0.0,
-            0.0, 0.0).
+            proceed in the xy'z" order. The units are degrees. The default is (0.0, 0.0,
+            0.0).
         :param symmetric: Set this to True if the Wing's geometry should be mirrored
             across the symmetry plane while retaining the non mirrored side. If
             mirror_only is True, symmetric must be False. If symmetric is True, then
@@ -805,7 +805,6 @@ class Wing:
             for i in range(len(self.wing_cross_sections))
         ]
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def projected_area(self) -> None | float:
         """The area of the Wing projected onto the plane defined by the wing axes' xy
@@ -841,7 +840,6 @@ class Wing:
 
         return projected_area
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def wetted_area(self) -> None | float:
         """The Wing's wetted area.
@@ -901,11 +899,6 @@ class Wing:
 
         return average_aspect_ratio
 
-    # FIXME: The span calculation is producing incorrect results, which is causing
-    #  the standard_mean_chord property to also be incorrect. It's potentially also
-    #  causing issues with the mean_aerodynamic_chord property. Investigate and fix
-    #  the span calculation.
-    # TEST: Consider adding unit tests for this method.
     @property
     def span(self) -> None | float:
         """The Wing's span.
@@ -914,7 +907,7 @@ class Wing:
 
         The span is derived by first finding the vector connecting the leading edges of
         the root and tip WingCrossSections. Then, this vector is projected onto the wing
-        axes' third basis vector. The span is defined as the magnitude of this
+        axes' second basis vector. The span is defined as the magnitude of this
         projection.
 
         If the Wing is symmetric and continuous, this method includes the span of the
@@ -923,52 +916,25 @@ class Wing:
         :return: The Wing's span. It has units of meters. None is returned if the Wing's
             symmetry type hasn't been defined yet.
         """
-        # TODO: Consider if there's a better way of implementing this method using
-        #  one of the children_T_pas_* properties.
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
         if self.symmetry_type is None:
             return None
 
-        # Calculate the tip WingCrossSection's leading point position by chaining
-        # transformations through all WingCrossSections from root to tip.
+        tipLp_Wcsp_Lpp = self.wing_cross_sections[-1].Lp_Wcsp_Lpp
 
-        # Start at root leading point (wing axes origin)
-        current_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
+        tip_T_pas_Wcsp_Lpp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[-2]
 
-        # For each subsequent WingCrossSection, accumulate its displacement
-        for i in range(1, len(self.wing_cross_sections)):
-            wing_cross_section = self.wing_cross_sections[i]
-
-            # Get the position of the leading point (in wing cross section parent axes,
-            # relative to the leading point parent)
-            Lp_Wcsp_Lpp = wing_cross_section.Lp_Wcsp_Lpp
-
-            # Compute transformation from parent axes to wing axes
-            T_parent_to_wing = np.eye(4, dtype=float)
-            for j in range(i - 1, 0, -1):  # Go backwards from parent to root
-                T_parent_to_wing = (
-                    self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
-                    @ T_parent_to_wing
-                )
-
-            # Transform displacement from parent axes to wing axes
-            displacement_wing = _transformations.apply_T_to_vectors(
-                T_parent_to_wing, Lp_Wcsp_Lpp, has_point=True
-            )
-
-            # Add to accumulated position
-            current_position_Wn_Ler += displacement_wing
-
-        # Now we have tip position in wing axes relative to Ler
-        tipLp_Wn_Ler = current_position_Wn_Ler
+        tipLp_Wn_Ler = _transformations.apply_T_to_vectors(
+            tip_T_pas_Wcsp_Lpp_to_Wn_Ler, tipLp_Wcsp_Lpp, has_point=True
+        )
 
         # Project the tip position onto the wing axes' y direction (spanwise direction)
-        projected_tipLp_Wn_Ler = np.dot(
+        projectedTipLp_Wn_Ler = np.dot(
             tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
         ) * np.array([0.0, 1.0, 0.0])
 
-        span = float(np.linalg.norm(projected_tipLp_Wn_Ler))
+        span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
 
         # If the wing is symmetric and continuous, multiply the span by two.
         if self.symmetry_type == 4:
@@ -976,7 +942,6 @@ class Wing:
 
         return span
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def standard_mean_chord(self) -> None | float:
         """The Wing's standard mean chord.
@@ -1002,7 +967,6 @@ class Wing:
 
         return _projected_area / _span
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def mean_aerodynamic_chord(self) -> None | float:
         """The Wing's mean aerodynamic chord.
@@ -1010,8 +974,6 @@ class Wing:
         :return: The mean aerodynamic chord of the Wing. It has units of meters. None is
             returned if the Wing's symmetry type hasn't been defined yet.
         """
-        # TODO: Consider if there's a better way of implementing this method using
-        #  one of the children_T_pas_* properties.
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
         if self.symmetry_type is None:
@@ -1040,57 +1002,38 @@ class Wing:
             # WingCrossSections in wing axes, then finding the distance between them.
 
             # Calculate current WingCrossSection's position in wing axes
-            current_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
-            for k in range(1, wing_cross_section_id + 1):
-                wcs = self.wing_cross_sections[k]
-                displacement_parent = wcs.Lp_Wcsp_Lpp
+            Lp_Wcs_Lp = np.array([0.0, 0.0, 0.0])
 
-                # Transform from parent axes to wing axes
-                T_parent_to_wing = np.eye(4, dtype=float)
-                for j in range(k - 1, 0, -1):
-                    T_parent_to_wing = (
-                        self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
-                        @ T_parent_to_wing
-                    )
+            T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
+                wing_cross_section_id
+            ]
 
-                displacement_wing = _transformations.apply_T_to_vectors(
-                    T_parent_to_wing, displacement_parent, has_point=True
-                )
-
-                current_position_Wn_Ler += displacement_wing
+            Lp_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, Lp_Wcs_Lp, has_point=True
+            )
 
             # Calculate next WingCrossSection's position in wing axes
-            next_position_Wn_Ler = np.array([0.0, 0.0, 0.0])
-            for k in range(1, wing_cross_section_id + 2):
-                wcs = self.wing_cross_sections[k]
-                displacement_parent = wcs.Lp_Wcsp_Lpp
+            nextLp_nextWcs_nextLp = np.array([0.0, 0.0, 0.0])
 
-                # Transform from parent axes to wing axes
-                T_parent_to_wing = np.eye(4, dtype=float)
-                for j in range(k - 1, 0, -1):
-                    T_parent_to_wing = (
-                        self.wing_cross_sections[j].T_pas_Wcs_Lp_to_Wcsp_Lpp
-                        @ T_parent_to_wing
-                    )
+            T_pas_nextWcs_nextLp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
+                wing_cross_section_id + 1
+            ]
 
-                displacement_wing = _transformations.apply_T_to_vectors(
-                    T_parent_to_wing, displacement_parent, has_point=True
-                )
+            nextLp_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_nextWcs_nextLp_to_Wn_Ler, nextLp_nextWcs_nextLp, has_point=True
+            )
 
-                next_position_Wn_Ler += displacement_wing
+            # Find the section vector and project it onto spanwise direction (wing axes y direction)
+            nextLp_Wn_Lp = nextLp_Wn_Ler - Lp_Wn_Ler
 
-            # Find the section vector and project it onto spanwise direction
-            section_vector_Wn = next_position_Wn_Ler - current_position_Wn_Ler
-
-            # Project section vector onto spanwise direction (wing axes y direction)
-            projected_section_vector = np.dot(
-                section_vector_Wn, np.array([0.0, 1.0, 0.0])
+            nextLpProj_Wn_Lp = np.dot(
+                nextLp_Wn_Lp, np.array([0.0, 1.0, 0.0])
             ) * np.array([0.0, 1.0, 0.0])
 
-            section_span = float(np.linalg.norm(projected_section_vector))
+            section_span = float(np.linalg.norm(nextLpProj_Wn_Lp))
 
             # Each Wing section is, by definition, trapezoidal (at least when
-            # projected on to the wing's projection plane). For a trapezoid,
+            # projected on to the wing axes' xy plane). For a trapezoid,
             # the integral from the cited equation can be shown to evaluate to the
             # following.
             integral += (

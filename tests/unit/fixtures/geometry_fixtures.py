@@ -784,3 +784,459 @@ def make_basic_panel_fixture():
     )
 
     return basic_panel_fixture
+
+
+def make_simple_rectangular_wing_fixture():
+    """This method makes a fixture that is a simple rectangular Wing with constant
+    chord and no sweep or dihedral for testing geometric property calculations.
+
+    This Wing has:
+    - Root and tip at y=0 and y=2, with chord=1.0 at both
+    - No sweep, twist, or dihedral
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 2.0 meters
+    - Expected projected area (when meshed): 2.0 square meters
+
+    :return simple_rectangular_wing_fixture: Wing
+        This is the simple rectangular Wing for geometric property testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=8,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection at y=2.0, same chord
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create simple rectangular Wing
+    simple_rectangular_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Simple Rectangular Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=4,
+        chordwise_spacing="uniform",
+    )
+
+    return simple_rectangular_wing_fixture
+
+
+def make_simple_tapered_wing_fixture():
+    """This method makes a fixture that is a simple tapered Wing with linearly
+    varying chord and no sweep or dihedral for testing geometric property
+    calculations.
+
+    This Wing has:
+    - Root at y=0 with chord=2.0
+    - Tip at y=3.0 with chord=1.0
+    - No sweep, twist, or dihedral
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 3.0 meters
+    - Expected projected area (when meshed): 4.5 square meters (trapezoid area)
+
+    :return simple_tapered_wing_fixture: Wing
+        This is the simple tapered Wing for geometric property testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin with chord=2.0
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=12,
+        chord=2.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection at y=3.0 with chord=1.0
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 3.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create simple tapered Wing
+    simple_tapered_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Simple Tapered Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="uniform",
+    )
+
+    return simple_tapered_wing_fixture
+
+
+def make_symmetric_continuous_rectangular_wing_fixture():
+    """This method makes a fixture that is a symmetric and continuous rectangular
+    Wing for testing geometric property calculations with type 4 symmetry.
+
+    This Wing has:
+    - Root at y=0 with chord=1.5
+    - Tip at y=2.5 with chord=1.5
+    - No sweep, twist, or dihedral
+    - Type 4 symmetry (symmetric and continuous)
+    - Expected span (after symmetry): 5.0 meters (2 * 2.5)
+    - Expected projected area (when meshed, after symmetry): 7.5 square meters (2 * 3.75)
+
+    :return symmetric_continuous_rectangular_wing_fixture: Wing
+        This is the symmetric continuous rectangular Wing for geometric property
+        testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin with chord=1.5
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=10,
+        chord=1.5,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        control_surface_symmetry_type="symmetric",
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection at y=2.5 with chord=1.5
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.5,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.5, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        control_surface_symmetry_type="symmetric",
+        spanwise_spacing=None,
+    )
+
+    # Create symmetric continuous rectangular Wing
+    symmetric_continuous_rectangular_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Symmetric Continuous Rectangular Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=True,
+        mirror_only=False,
+        symmetryNormal_G=np.array([0.0, 1.0, 0.0]),
+        symmetryPoint_G_Cg=np.array([0.0, 0.0, 0.0]),
+        num_chordwise_panels=6,
+        chordwise_spacing="uniform",
+    )
+
+    return symmetric_continuous_rectangular_wing_fixture
+
+
+def make_three_section_tapered_wing_fixture():
+    """This method makes a fixture that is a Wing with 3 WingCrossSections
+    (root, middle, tip) with varying chords for testing geometric property
+    calculations.
+
+    This Wing has:
+    - Root at y=0 with chord=3.0
+    - Middle at y=2.0 with chord=2.0
+    - Tip at y=4.0 with chord=1.0
+    - No sweep, twist, or dihedral
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 4.0 meters
+    - Expected projected area (when meshed): 8.0 square meters
+
+    :return three_section_tapered_wing_fixture: Wing
+        This is the three section tapered Wing for geometric property testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin with chord=3.0
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=8,
+        chord=3.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Middle WingCrossSection at y=2.0 with chord=2.0
+    middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=8,
+        chord=2.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection at y=4.0 with chord=1.0
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create three section tapered Wing
+    three_section_tapered_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        name="Three Section Tapered Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="uniform",
+    )
+
+    return three_section_tapered_wing_fixture
+
+
+def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
+    """This method makes a fixture that is a simple rectangular Wing rotated
+    relative to geometry axes for testing span calculation invariance under rotation.
+
+    This Wing has the same geometry as make_simple_rectangular_wing_fixture but is
+    rotated by the specified angles. The span should remain 2.0 meters regardless
+    of rotation.
+
+    :param angles_Gs_to_Wn_ixyz: (3,) array-like of floats representing the rotation
+        angles (in geometry axes, to wing axes, intrinsic xyz sequence). Units are
+        degrees.
+    :return rotated_rectangular_wing_fixture: Wing
+        This is the rotated rectangular Wing for span invariance testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=8,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection at y=2.0, same chord
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create rotated rectangular Wing
+    rotated_rectangular_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Rotated Rectangular Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array(angles_Gs_to_Wn_ixyz),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=4,
+        chordwise_spacing="uniform",
+    )
+
+    return rotated_rectangular_wing_fixture
+
+
+def make_wing_with_rotated_cross_sections_fixture():
+    """This method makes a fixture that is a Wing with rotated WingCrossSections
+    for testing that span calculation correctly handles cross section rotations.
+
+    This Wing has:
+    - Root at y=0 with chord=2.0, no rotation
+    - Middle at y=3.0 with chord=1.5, rotated 15 degrees about the Wing's axes y axis
+    - Tip at y=5.0 with chord=1.0, rotated 30 degrees about Wing's axes y axis
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 5.0 meters (rotation about the Wing's axes y axis does not affect y
+      position)
+
+    :return wing_with_rotated_cross_sections_fixture: Wing
+        This is the Wing with rotated WingCrossSections.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=10,
+        chord=2.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=8,
+        chord=1.5,
+        Lp_Wcsp_Lpp=np.array([0.0, 3.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 15.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 15.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    wing_with_rotated_cross_sections_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        name="Wing with Rotated Cross Sections Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=6,
+        chordwise_spacing="uniform",
+    )
+
+    return wing_with_rotated_cross_sections_fixture
+
+
+def make_swept_wing_fixture():
+    """This method makes a fixture that is a swept Wing (sweep in xz plane)
+    for testing span calculation with sweep.
+
+    This Wing has:
+    - Root at y=0 with chord=2.0
+    - Tip at x=1.5, y=3.0, z=0 (swept back 1.5 m) with chord=1.0
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 3.0 meters (sweep does not affect spanwise extent)
+
+    :return swept_wing_fixture: Wing
+        This is the swept Wing for testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin with chord=2.0
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=12,
+        chord=2.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection swept back by 1.5 m at y=3.0
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([1.5, 3.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create swept Wing
+    swept_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Swept Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="uniform",
+    )
+
+    return swept_wing_fixture
+
+
+def make_dihedral_wing_fixture():
+    """This method makes a fixture that is a Wing with dihedral (upward angle)
+    for testing span calculation with dihedral.
+
+    This Wing has:
+    - Root at y=0, z=0 with chord=2.0
+    - Tip at y=3.0, z=0.5 (dihedral angle ~ 9.46 deg) with chord=1.0
+    - Type 1 symmetry (no symmetry)
+    - Expected span: 3.0 meters (dihedral does not affect spanwise extent in wing axes)
+
+    :return dihedral_wing_fixture: Wing
+        This is the Wing with dihedral for testing.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection at origin with chord=2.0
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=10,
+        chord=2.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection with dihedral (y=3.0, z=0.5)
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 3.0, 0.5]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create Wing with dihedral
+    dihedral_wing_fixture = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Dihedral Test Wing",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=8,
+        chordwise_spacing="uniform",
+    )
+
+    return dihedral_wing_fixture

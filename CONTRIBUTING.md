@@ -127,7 +127,7 @@ Once you understand the process, here's how to implement it:
    - Run automated checks locally before pushing:  
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
-     codespell --ignore-words=.codespell-ignore.txt --skip="*.dat"
+     codespell --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
      docformatter --black --in-place pterasoftware -r
      black .
      mypy pterasoftware

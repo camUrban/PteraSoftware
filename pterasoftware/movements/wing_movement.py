@@ -50,7 +50,9 @@ class WingMovement:
         ],
         ampLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLer_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingLer_Gs_Cgs: np.ndarray | Sequence[str | Callable] = (
+        spacingLer_Gs_Cgs: (
+            np.ndarray | Sequence[str | Callable[[np.ndarray], np.ndarray]]
+        ) = (
             "sine",
             "sine",
             "sine",
@@ -62,7 +64,9 @@ class WingMovement:
             0.0,
             0.0,
         ),
-        spacingAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[str | Callable] = (
+        spacingAngles_Gs_to_Wn_ixyz: (
+            np.ndarray | Sequence[str | Callable[[np.ndarray], np.ndarray]]
+        ) = (
             "sine",
             "sine",
             "sine",

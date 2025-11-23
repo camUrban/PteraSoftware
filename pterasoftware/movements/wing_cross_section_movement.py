@@ -37,7 +37,9 @@ class WingCrossSectionMovement:
         base_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
         ampLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp: np.ndarray | Sequence[str | Callable] = (
+        spacingLp_Wcsp_Lpp: (
+            np.ndarray | Sequence[str | Callable[[np.ndarray], np.ndarray]]
+        ) = (
             "sine",
             "sine",
             "sine",
@@ -53,7 +55,9 @@ class WingCrossSectionMovement:
             0.0,
             0.0,
         ),
-        spacingAngles_Wcsp_to_Wcs_ixyz: np.ndarray | Sequence[str | Callable] = (
+        spacingAngles_Wcsp_to_Wcs_ixyz: (
+            np.ndarray | Sequence[str | Callable[[np.ndarray], np.ndarray]]
+        ) = (
             "sine",
             "sine",
             "sine",

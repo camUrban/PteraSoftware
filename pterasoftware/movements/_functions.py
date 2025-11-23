@@ -159,7 +159,7 @@ def oscillating_customspaces(
     bases: float | int | np.ndarray | Sequence[float | int],
     num_steps: int,
     delta_time: float | int,
-    custom_function: Callable,
+    custom_function: Callable[[np.ndarray], np.ndarray],
 ) -> np.ndarray:
     """Returns a (...,num_steps) ndarray of floats calculated by inputting a vector of
     linearly spaced time steps into a custom oscillating function defined with the

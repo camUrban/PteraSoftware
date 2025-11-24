@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PteraSoftware"
-#define MyAppVersion "4.0.0"
+#define MyAppVersion "4.0.1"
 #define MyAppPublisher "CamUrban"
 #define MyAppURL "https://github.com/camUrban/PteraSoftware"
 #define MyAppExeName "PteraSoftware.exe"

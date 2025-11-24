@@ -20,7 +20,7 @@ problems.
 
 output.py: Contains functions for visualizing geometry and results.
 
-problems.py: Contains the SteadyProblem and UnsteadyProblem classes.
+problems.py: Contains classes for aerodynamic problems.
 
 steady_horseshoe_vortex_lattice_method.py: Contains the
 SteadyHorseshoeVortexLatticeMethodSolver class.

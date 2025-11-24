@@ -668,7 +668,7 @@ class CoupledMovement:
         delta_time: float | int,
         prescribed_num_steps: int,
         free_num_steps: int,
-    ):
+    ) -> None:
         """The initialization method.
 
         Note: This method checks that all Wings maintain their symmetry type across all
@@ -688,6 +688,7 @@ class CoupledMovement:
             simulate before the free time steps. It must be a positive int.
         :param free_num_steps: The number of free flight time steps to simulate after
             the prescribed time steps. It must be a positive int.
+        :return: None
         """
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
@@ -782,7 +783,7 @@ class CoupledMovement:
         self.coupled_operating_points = [self.initial_coupled_operating_points]
 
     @property
-    def max_period(self):
+    def max_period(self) -> float:
         """The longest period of motion of CoupledMovement's sub AirplaneMovements, of
         their sub WingMovements, and of their sub WingCrossSectionMovements.
 
@@ -797,7 +798,7 @@ class CoupledMovement:
         return max(airplane_movement_max_periods)
 
     @property
-    def static(self):
+    def static(self) -> bool:
         """Flags if CoupledMovement's sub AirplaneMovements, their sub WingMovements,
         and their sub WingCrossSectionMovements all represent no motion.
 

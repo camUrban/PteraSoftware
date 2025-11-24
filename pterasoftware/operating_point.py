@@ -211,6 +211,7 @@ class OperatingPoint:
 
 
 # REFACTOR: Add a section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds.
+# TEST: Add unit tests for this class's initialization.
 class CoupledOperatingPoint:
     """A class used to contain the operating conditions of one of the Airplanes in a
     free flight aerodynamic problem.
@@ -348,6 +349,7 @@ class CoupledOperatingPoint:
             nu, "nu", min_val=0.0, min_inclusive=False
         )
 
+    # TEST: Add unit tests for this method.
     @property
     def qInf__E(self) -> float:
         """The freestream dynamic pressure experienced by the Airplane (observed in the
@@ -358,6 +360,7 @@ class CoupledOperatingPoint:
         """
         return 0.5 * self.rho * self.vCg__E**2
 
+    # TEST: Add unit tests for this method.
     @property
     def T_pas_G_Cg_to_W_Cg(self) -> np.ndarray:
         """The passive transformation matrix which maps in homogeneous coordinates from
@@ -385,6 +388,7 @@ class CoupledOperatingPoint:
 
         return _transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
 
+    # TEST: Add unit tests for this method.
     @property
     def T_pas_W_Cg_to_G_Cg(self) -> np.ndarray:
         """The passive transformation matrix which maps in homogeneous coordinates from
@@ -397,6 +401,7 @@ class CoupledOperatingPoint:
         """
         return _transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
 
+    # TEST: Add unit tests for this method.
     @property
     def vInfHat_G__E(self) -> np.ndarray:
         """The freestream direction (in the Airplane's geometry axes, observed from the
@@ -415,6 +420,7 @@ class CoupledOperatingPoint:
             self.T_pas_W_Cg_to_G_Cg, vInfHat_W__E, has_point=False
         )
 
+    # TEST: Add unit tests for this method.
     @property
     def vInf_G__E(self) -> np.ndarray:
         """The freestream velocity (in the Airplane's geometry axes, observed from the

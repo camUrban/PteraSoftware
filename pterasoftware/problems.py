@@ -228,6 +228,7 @@ class UnsteadyProblem:
             self.steady_problems.append(this_steady_problem)
 
 
+# TEST: Add unit tests for this class's initialization.
 class CoupledSteadyProblem:
     """A class used to contain steady aerodynamics problems that characterize each time
     step of a coupled unsteady simulation.
@@ -309,6 +310,7 @@ class CoupledSteadyProblem:
                     )
 
 
+# TEST: Add unit tests for this class's initialization.
 class CoupledUnsteadyProblem:
     """A class used to contain unsteady aerodynamics problems that will be used for
     coupled unsteady simulations.

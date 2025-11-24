@@ -647,6 +647,7 @@ def _optimize_delta_time(
     return optimized_delta_time
 
 
+# TEST: Add unit tests for this class's initialization.
 class CoupledMovement:
     """A class used to contain a CoupledUnsteadyProblem's movement.
 
@@ -782,6 +783,7 @@ class CoupledMovement:
         # to.
         self.coupled_operating_points = [self.initial_coupled_operating_points]
 
+    # TEST: Add unit tests for this method.
     @property
     def max_period(self) -> float:
         """The longest period of motion of CoupledMovement's sub AirplaneMovements, of
@@ -797,6 +799,7 @@ class CoupledMovement:
             airplane_movement_max_periods.append(airplane_movement.max_period)
         return max(airplane_movement_max_periods)
 
+    # TEST: Add unit tests for this method.
     @property
     def static(self) -> bool:
         """Flags if CoupledMovement's sub AirplaneMovements, their sub WingMovements,

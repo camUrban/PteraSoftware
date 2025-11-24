@@ -217,15 +217,19 @@ class CoupledOperatingPoint:
 
     **Notes:**
 
-    CoupledUnsteadyProblems problems are initialized with a list of AirplaneMovements
-    and a list of CoupledOperatingPoints. These lists must have the same length, as each
-    CoupledOperatingPoint represents the initial operating conditions experienced by the
-    first Airplane of the corresponding AirplaneMovement's list of Airplanes. During
-    initialization, the CoupledUnsteadyProblem will create a CoupledSteadyProblem,
-    representing that first time step. During the simulation, a new
-    CoupledSteadyProblem, is created for each time step, and it will contain each
-    Airplane associated with that time step along with each Airplane's new
-    CoupledOperatingPoint.
+    CoupledUnsteadyProblems problems are initialized with a CoupledMovement object. This
+    CoupledMovement contains a list of AirplaneMovements and a list of
+    CoupledOperatingPoints. These lists must have the same length, as each
+    CoupledOperatingPoint in the list passed to CoupledMovement represents the initial
+    operating conditions experienced by the first Airplane of the corresponding
+    AirplaneMovement's list of Airplanes. During initialization, the
+    CoupledUnsteadyProblem will create a CoupledSteadyProblem, and pass it a list of
+    Airplanes (each of its CoupledMovement's AirplaneMovement's first Airplane) and its
+    CoupledMovement's list of CoupledOperatingPoints. This CoupledSteadyProblem will
+    thus represent the Airplanes and their operating conditions at the first time step.
+    During the simulation, a new CoupledSteadyProblem is created for each time step, and
+    it will contain the Airplane's associated with that time step along a new
+    CoupledOperatingPoint for each Airplane's current operating conditions.
 
     **Contains the following methods:**
 

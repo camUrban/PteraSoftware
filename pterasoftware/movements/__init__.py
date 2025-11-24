@@ -12,7 +12,7 @@ None
 
 airplane_movement.py: Contains the AirplaneMovement class.
 
-movement.py: Contains the Movement class.
+movement.py: Contains the Movement and CoupledMovement classes.
 
 operating_point_movement.py: Contains the OperatingPointMovement class.
 

@@ -15,6 +15,9 @@ None
 convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
+mujoco_model.py: Contains the class definition for interfacing with MuJoCo for free
+flight simulations.
+
 operating_point.py: Contains classes for the operating conditions of aerodynamic
 problems.
 

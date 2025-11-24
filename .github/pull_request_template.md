@@ -30,8 +30,8 @@ Select the option that best describes the size and impact of your change:
 - [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
 - [ ] Code is well documented with block comments where appropriate.
 - [ ] Any external code, algorithms, or equations used have been cited in comments or docstrings.
-- [ ] All new modules, classes, functions, and methods have docstrings in [reStructuredText format](https://realpython.com/documenting-python-code/), and are formatted using [docformatter](https://github.com/PyCQA/docformatter) (`--in-place --black`).
-- [ ] All new classes, functions, and methods use type hints.
+- [ ] All new modules, classes, functions, and methods have docstrings in [reStructuredText format](https://realpython.com/documenting-python-code/), and are formatted using [docformatter](https://github.com/PyCQA/docformatter) (`--in-place --black`). See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE_GUIDE.md) for more details.
+- [ ] All new classes, functions, and methods in the `pterasoftware` package use type hints. See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE_GUIDE.md) for more details.
 - [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
 - [ ] Code locally passes all tests in the `tests` package.
 - [ ] After pushing, PR passes all automated checks (`codespell`, `black`, `mypy`, and `tests`).

@@ -1,0 +1,20 @@
+Airplane "GammaBot Airplane":
+  Final Cycle-Averaged Forces (in wind axes):
+    FX_W:      0.000646 N    Drag:             -0.000646 N
+    FY_W:      0.0 N         Side Force:       0.0 N
+    FZ_W:      -0.0 N        Lift:             0.0 N
+  Final Cycle-Averaged Moments (in wind axes, relative to the CG):
+    MX_W_Cg:   -0.0 Nm       Rolling Moment:   -0.0 Nm
+    MY_W_Cg:   -0.0 Nm       Pitching Moment:  -0.0 Nm
+    MZ_W_Cg:   0.0 Nm        Yawing Moment:    0.0 Nm
+  Final Cycle-Averaged Force Coefficients (in wind axes):
+    cFX_W:     23.71306      CDi:              -23.71306
+    cFY_W:     0.0           CY:               0.0
+    cFZ_W:     -0.00455      CL:               0.00455
+  Final Cycle-Averaged Moment Coefficients (in wind axes, relative to the CG):
+    cMX_W_Cg:  -0.0          Cl:               -0.0
+    cMY_W_Cg:  -0.000153     Cm:               -0.000153
+    cMZ_W_Cg:  0.0           Cn:               0.0
+
+
+Thrust = 66 mgf

@@ -6,7 +6,7 @@ This document tracks the development progress and goals for the free flight simu
 - **Branch name**: `feature/free_flight`
 - **Base branch**: `main`
 
-## Current Status Summary (as of commit 331ec61)
+## Current Status Summary
 
 **🟡 DEVELOPMENT IN PROGRESS - Core Infrastructure Complete, Debugging Active Issues**
 
@@ -44,7 +44,7 @@ A parallel class hierarchy has been created with "Coupled" prefixes to distingui
 
 ```
 CoupledOperatingPoint (extends OperatingPoint)
-    └─ Adds: `omegas_E_to_B__E` (angular speeds)
+    └─ Adds: `omegas_E_to_B__E` (angular speeds) and `angles_E_to_B_ixyz` (orientation)
 
 CoupledMovement (parallel to Movement)
     └─ Contains: AirplaneMovements + initial CoupledOperatingPoint
@@ -114,8 +114,8 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Support for loading models from XML strings or file paths
    - Methods for applying loads: `apply_loads(forces_E, moments_E_Cg)`
    - Methods for advancing simulation: `step()`
-   - Methods for extracting state: `get_state()` returns `position_E_E`, `R_pas_E_to_B`, `velocity_E__E`, `omegas_E_to_B__E`, time
-   - Methods for resetting: `reset(qpos, qvel)`
+   - Methods for extracting state: `get_state()` returns `position_E_E`, `R_pas_E_to_B`, `velocity_E__E`, `omegas_B__E`, time
+   - Methods for resetting: `reset()`
    - Proper parameter validation and error handling
    - Follows Ptera Software coordinate system naming conventions
 
@@ -129,11 +129,11 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Previous MuJoCo integration reference files
 
 6. **Bug Fixes**
-   - Fixed uninitialized `self.current_airplanes` in `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` (line 222)
-   - Fixed missing `self.` assignment for `initial_coupled_operating_point` in `CoupledMovement.__init__()` (`movement.py`:413)
+   - Fixed uninitialized `self.current_airplanes` in `CoupledUnsteadyRingVortexLatticeMethodSolver.run()`
+   - Fixed missing `self.` assignment for `initial_coupled_operating_point` in `CoupledMovement.__init__()`
 
 7. **Load Passing to MuJoCo** (`pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
-   - `_pass_loads_to_mujoco()` method implemented (line 1158-1233)
+   - `_pass_loads_to_mujoco()` method implemented
    - Transforms aerodynamic loads from wind axes to Earth axes
    - Transformation chain: W_CgP1 > GP1_CgP1 > BP1_CgP1 > E_CgP1
    - Uses `_transformations` module for coordinate transformations
@@ -141,7 +141,7 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Comprehensive docstring documenting transformation approach
 
 8. **Processing MuJoCo State Updates** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
-   - `_process_new_states_from_mujoco()` method implemented (line 1238-1313)
+   - `_process_new_states_from_mujoco()` method implemented
    - Receives updated state from MuJoCo (position, orientation, velocity, angular velocity)
    - Computes speed and freestream velocity from vehicle motion (assuming still air)
    - Transforms freestream velocity: E > BP1 > body axes for alpha/beta computation
@@ -151,14 +151,14 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Comprehensive docstring with transformation chain documentation
 
 9. **Creating Next Time Step's Problem** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
-   - `_create_next_coupled_steady_problem()` method implemented (line 1341-1429)
+   - `_create_next_coupled_steady_problem()` method implemented
    - Retrieves prescribed Airplane geometry (correct flapping Wing positions)
    - Extracts Euler angles from MuJoCo rotation matrix (z-y'-x" intrinsic sequence)
    - Creates new Airplane with updated position/orientation from MuJoCo
    - Preserves Wing geometry from prescribed motion (flapping kinematics)
    - Retrieves CoupledOperatingPoint created by _process_new_states_from_mujoco()
    - Creates and appends new CoupledSteadyProblem for next time step
-   - Enforces `Cg_E_CgP1 = (0.0, 0.0, 0.0)` constraint (first Airplane's CG defines origin)
+   - Enforces `Cg_GP1_CgP1 = (0.0, 0.0, 0.0)` constraint (first Airplane's CG defines origin)
    - TODO: Verify wake handling (wake RingVortices have absolute GP1_CgP1 coordinates)
 
 10. **Initial Free Flight Test Case** (examples/free_flight_simple_glider.py)
@@ -171,29 +171,29 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Demonstrates complete workflow: aerodynamics → MuJoCo → state extraction → next problem
 
 11. **Bug Fixes During Initial Testing**
-   - Fixed einsum signature in `_calculate_freestream_wing_influences()` (line 757)
+   - Fixed einsum signature in `_calculate_freestream_wing_influences()`
      - Changed from `"ij,j->i"` to `"ij,ij->i"` to handle rotational velocity component
      - `np.cross` produces `(num_panels, 3)` array, not `(3,)` vector
    - Fixed first Airplane CG position constraint in `_create_next_coupled_steady_problem()`
-     - Enforced `Cg_E_CgP1 = (0.0, 0.0, 0.0)` by design (line 1392)
+     - Enforced `Cg_GP1_CgP1 = (0.0, 0.0, 0.0)` by design
      - Motion captured in orientation and velocities, not absolute position
-   - Fixed ring vortex initialization timing (lines 439-502)
+   - Fixed ring vortex initialization timing
      - First step: Initialize in main loop with conditional check
      - Subsequent steps: Initialize after creating next problem, before populating wake
      - Prevents `_populate_next_wake()` from accessing uninitialized ring_vortices
 
-12. **Bug Fixes During Debugging Phase** (multiple commits: 99d147d..331ec61)
-   - Fixed incorrect initial orientation in MuJoCo model by computing proper quaternion from rotation matrix (`coupled_unsteady_ring_vortex_lattice_method.py`:75-78, `4_simple_glider_free_flight.py`:16-48)
-   - Fixed wake RingVortex coordinate transformations in `animate_free_flight()` (`output.py`:753-761)
-   - Added external forces (weight + external wind axes x-force) to MuJoCo loads (`coupled_unsteady_ring_vortex_lattice_method.py`:1216-1218, 1260-1263)
-   - Modified solver to iterate several prescribed motion steps before free flight to prevent numerical issues from initial wake shedding spikes (`coupled_unsteady_ring_vortex_lattice_method.py`:1272-1277)
-   - Updated `draw()` function to work with coupled solver (`output.py`:217-229)
-   - Added state history arrays (`stackCgP1_E_E`, `stackR_pas_E_to_BP1`) for visualization (`coupled_unsteady_ring_vortex_lattice_method.py`:184-185, 1310-1311)
-   - Added `initial_key_frame_name` parameter to MuJoCoModel for proper initialization (`mujoco_model.py`:43, 65-69, 98-114)
-   - Improved MuJoCo rotation matrix extraction (semi-fixed, still brittle) (`mujoco_model.py`:192-205)
+12. **Bug Fixes During Debugging Phase**
+   - Fixed incorrect initial orientation in MuJoCo model by computing proper quaternion from rotation matrix (`coupled_unsteady_ring_vortex_lattice_method.py`, `4_simple_glider_free_flight.py`)
+   - Fixed wake RingVortex coordinate transformations in `animate_free_flight()` (`output.py`)
+   - Added external forces (weight + external wind axes x-force) to MuJoCo loads (`coupled_unsteady_ring_vortex_lattice_method.py`)
+   - Modified solver to iterate several prescribed motion steps before free flight to prevent numerical issues from initial wake shedding spikes (`coupled_unsteady_ring_vortex_lattice_method.py`)
+   - Updated `draw()` function to work with coupled solver (`output.py`)
+   - Added state history arrays (`stackPosition_E_E`, `stackR_pas_E_to_BP1`) for visualization (`coupled_unsteady_ring_vortex_lattice_method.py`)
+   - Added `initial_key_frame_name` parameter to MuJoCoModel for proper initialization (`mujoco_model.py`)
+   - Improved MuJoCo rotation matrix extraction (semi-fixed, still brittle) (`mujoco_model.py`)
 
 13. **Free Flight Visualization** (`pterasoftware/output.py`)
-   - `animate_free_flight()` function implemented (line 667-995)
+   - `animate_free_flight()` function implemented
    - Shows Airplane trajectory through 3D space with proper Earth axes transformations
    - Displays wake RingVortices in correct reference frame
    - Supports scalar coloring (lift, induced drag, side force)
@@ -216,7 +216,7 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
 
 ### ⚠️ In Progress / Known Issues
 
-**Current Debugging Status (as of commit 331ec61):**
+**Current Debugging Status:**
 
 The coupled solver is now stable for prescribed motion steps and has been extensively debugged. The free flight portion completes without crashing but still exhibits non-physical behavior. Key achievements and remaining issues:
 
@@ -225,27 +225,25 @@ The coupled solver is now stable for prescribed motion steps and has been extens
 - Eliminated wild instability by temporarily disabling omega-related velocity terms
 - Successfully created converged, trimmed, stable simple glider based on XFLR5 validation
 - Fixed initial orientation quaternion generation
-- Improved alpha/beta calculation from MuJoCo state (works for alpha > 0, beta = 0, angles_E_to_B_izyx = (0, 0, 0))
+- Improved alpha/beta calculation from MuJoCo state (works for alpha > 0, beta = 0)
 
 **⚠️ Active Debugging Issues:**
 
 1. **Rotational Motion Velocity Terms Disabled** (CRITICAL)
-   - All velocity components due to angular velocities (`omegas_E_to_B__E`) are currently multiplied by zero
-   - Lines affected: `coupled_unsteady_ring_vortex_lattice_method.py`:784, 1068, 1071, 1074
+   - All velocity components due to angular velocities (`omegas_B__E`) are currently multiplied by zero
    - This is non-physical but necessary to maintain stability
    - Hints that remaining bugs exist in how rotational motion affects local velocities
    - Need to investigate: cross product sign conventions, reference frame transformations
 
 2. **Euler Angle Extraction Disabled** (CRITICAL)
    - Euler angle extraction in `_create_next_coupled_steady_problem()` is hardcoded to zero
-   - Line 1408-1410: `angleY = 0.0`, `angleX = 0.0`, `angleZ = 0.0`
-   - Original extraction formulas commented out (lines 1405-1407)
+   - Original extraction formulas commented out
    - This prevents proper orientation updates from MuJoCo
    - Related to issue with rotation matrix transformations
 
 3. **Rotation Matrix Transformation is Brittle** (HIGH PRIORITY)
-   - `MuJoCoModel.get_state()` uses janky transformation logic (`mujoco_model.py`:192-205)
-   - Only verified to work for: alpha > 0, beta = 0, angles_E_to_B_izyx = (0, 0, 0)
+   - `MuJoCoModel.get_state()` uses janky transformation logic
+   - Only verified to work for: alpha > 0 and beta = 0
    - Unclear what `xmat[self.body_id].reshape(3, 3)` actually represents in MuJoCo
    - Need to understand MuJoCo's rotation matrix convention and map it properly to Ptera Software's coordinate systems
    - Current approach uses empirical matrix transformations without theoretical justification
@@ -347,8 +345,8 @@ The current blocker for realistic free flight is the disabled rotational velocit
 1. **Understand and Fix MuJoCo Rotation Matrix Convention**
    - Research MuJoCo's `xmat` documentation to understand what rotation it represents
    - Determine proper transformation from MuJoCo's rotation matrix to Ptera Software's R_pas_E_to_B
-   - Test with non-zero beta and non-zero angles_E_to_B_izyx cases
-   - Replace empirical transformation in `mujoco_model.py`:192-205 with theoretically justified approach
+   - Test with non-zero beta cases
+   - Replace empirical transformation in `mujoco_model.py` with theoretically justified approach
 
 2. **Re-enable and Fix Euler Angle Extraction**
    - Once rotation matrix issue is resolved, re-enable angle extraction in `_create_next_coupled_steady_problem()`
@@ -357,7 +355,7 @@ The current blocker for realistic free flight is the disabled rotational velocit
 3. **Re-enable and Fix Rotational Velocity Terms**
    - Investigate cross product sign conventions for omega-induced velocities
    - Verify reference frame transformations for rotational motion effects
-   - Gradually re-enable terms (remove 0.0 multipliers) at lines 784, 1068, 1071, 1074
+   - Gradually re-enable terms (remove 0.0 multipliers)
    - Test stability with single-panel flat plate case first, then simple glider
 
 **Priority 2: Validation and Verification**
@@ -397,9 +395,9 @@ The current blocker for realistic free flight is the disabled rotational velocit
 ## Related Files
 
 ### Core Implementation
-- `pterasoftware/operating_point.py` - CoupledOperatingPoint class (line 225+)
-- `pterasoftware/problems.py` - CoupledSteadyProblem (line 207+), CoupledUnsteadyProblem (line 286+)
-- `pterasoftware/movements/movement.py` - CoupledMovement class (line 306+)
+- `pterasoftware/operating_point.py` - CoupledOperatingPoint class
+- `pterasoftware/problems.py` - CoupledSteadyProblem, CoupledUnsteadyProblem
+- `pterasoftware/movements/movement.py` - CoupledMovement class
 - `pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py` - Main solver
 - `pterasoftware/mujoco_model.py` - MuJoCoModel class for MuJoCo interface
 
@@ -416,30 +414,25 @@ The current blocker for realistic free flight is the disabled rotational velocit
 
 ### From Code Comments
 
-- **`CoupledOperatingPoint.__init__()`** (operating_point.py:86):
+- **`CoupledOperatingPoint.__init__()`**:
   - REFACTOR: Add section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds
 
-- **`CoupledSteadyProblem.__init__()`** (problems.py:244-250):
-  - REFACTOR: Consider how to handle reference points with multiple Airplanes in free flight
-  - Suggestion: Disallow free flight with multiple Airplanes initially
-
-- **`CoupledMovement.__init__()`** (movements/movement.py:419-425):
+- **`CoupledMovement.__init__()`**:
   - FIXME: Automatic delta_time calculation gives poor results at high Strouhal numbers
   - Consider improving time step calculation for flapping-dominated motion
 
-- **`CoupledUnsteadyRingVortexLatticeMethodSolver.run()`** (line 325-326):
+- **`CoupledUnsteadyRingVortexLatticeMethodSolver.run()`**:
   - TODO: Initialization steps at start of time loop may be redundant, consider optimizing
 
 ### Open Questions
 
-1. Should MuJoCo handle collision detection between Airplane components?
-2. How to handle control surface actuation in free flight (coupled with controller)?
-3. Should gravity be included in CoupledOperatingPoint or handled entirely by MuJoCo?
-4. How to best visualize free flight trajectories?
+1. How to handle control surface actuation in free flight (coupled with controller)?
+2. Should gravity be included in CoupledOperatingPoint or handled entirely by MuJoCo?
+3. How to best visualize free flight trajectories?
 
 ## Debugging Insights and Lessons Learned
 
-### Key Insights from Debugging Process (commits 99d147d..331ec61)
+### Key Insights from Debugging Process
 
 **1. Importance of Validated Test Cases**
 - Creating a simple glider with known converged, trimmed, and stable parameters (validated via XFLR5) was crucial
@@ -453,7 +446,7 @@ The current blocker for realistic free flight is the disabled rotational velocit
 **3. Prescribed Motion Steps as Numerical Stabilizer**
 - Initial wake shedding causes large force spikes that can destabilize MuJoCo integration
 - Running several prescribed motion steps first allows wake to develop before enabling coupling
-- This workaround is documented in `coupled_unsteady_ring_vortex_lattice_method.py`:1272-1277
+- This workaround is documented in `coupled_unsteady_ring_vortex_lattice_method.py`
 
 **4. Coordinate Transformation Complexity**
 - The interface between MuJoCo's coordinate conventions and Ptera Software's extensive coordinate system formalism is surprisingly difficult to get right
@@ -465,7 +458,7 @@ The current blocker for realistic free flight is the disabled rotational velocit
 - However, these workarounds must be documented clearly and eventually removed
 
 **6. Importance of State History for Visualization**
-- Adding `stackCgP1_E_E` and `stackR_pas_E_to_BP1` arrays enabled simple debugging plots
+- Adding `stackPosition_E_E` and `stackR_pas_E_to_BP1` arrays enabled simple debugging plots
 - Being able to plot position and orientation over time was invaluable for understanding behavior
 - Need to expand this to include forces, moments, and aerodynamic angles for complete debugging picture
 

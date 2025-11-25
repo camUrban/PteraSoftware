@@ -196,7 +196,9 @@ def make_basic_coupled_movement_fixture():
         This is the CoupledMovement with general-purpose values for testing.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_basic_coupled_operating_point_fixture()
     )
@@ -222,7 +224,9 @@ def make_static_coupled_movement_fixture():
         This is the CoupledMovement with no motion.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_static_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_static_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_basic_coupled_operating_point_fixture()
     )
@@ -248,7 +252,9 @@ def make_coupled_movement_with_angular_speed_fixture():
         This is the CoupledMovement with non zero initial angular speed.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_with_angular_speed_coupled_operating_point_fixture()
     )
@@ -274,7 +280,9 @@ def make_coupled_movement_with_attitude_angles_fixture():
         This is the CoupledMovement with non zero initial attitude angles.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_with_attitude_angles_coupled_operating_point_fixture()
     )
@@ -329,7 +337,9 @@ def make_coupled_movement_with_custom_delta_time_fixture():
         This is the CoupledMovement with custom delta time.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_basic_coupled_operating_point_fixture()
     )
@@ -357,7 +367,9 @@ def make_coupled_movement_with_more_prescribed_steps_fixture():
         This is the CoupledMovement with more prescribed steps.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_basic_coupled_operating_point_fixture()
     )
@@ -385,7 +397,9 @@ def make_coupled_movement_with_more_free_steps_fixture():
         This is the CoupledMovement with more free steps.
     """
     # Initialize the constructing fixtures.
-    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    airplane_movement = (
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    )
     initial_coupled_operating_point = (
         operating_point_fixtures.make_basic_coupled_operating_point_fixture()
     )

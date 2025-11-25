@@ -1228,10 +1228,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         backLegForces_GP1 = (
             self.current_operating_point.rho
             * np.expand_dims(effective_back_line_vortex_strengths, axis=1)
-            * np.cross(
-                stackVelocityBackLineVortexCenters_GP1__E,
-                self.stackBbrv_GP1,
-                axis=-1,
+            * _functions.numba_1d_explicit_cross(
+                stackVelocityBackLineVortexCenters_GP1__E, self.stackBbrv_GP1
             )
         )
 

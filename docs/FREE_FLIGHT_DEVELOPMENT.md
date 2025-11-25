@@ -8,7 +8,7 @@ This document tracks the development progress and goals for the free flight simu
 
 ## Current Status Summary
 
-**🟡 DEVELOPMENT IN PROGRESS - Core Infrastructure Complete, Debugging Active Issues**
+**🟢 DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional**
 
 **What Works:**
 - ✅ Complete coupled solver infrastructure implemented and functional
@@ -18,15 +18,17 @@ This document tracks the development progress and goals for the free flight simu
 - ✅ Comprehensive debugging infrastructure with systematic test progression
 - ✅ Free flight visualization tools (animate_free_flight, draw support)
 - ✅ Converged, trimmed, stable test case (simple glider validated with XFLR5)
+- ✅ MuJoCo rotation matrix convention understood and properly transformed
+- ✅ Euler angle extraction from rotation matrix (with gimbal lock handling)
+- ✅ Rotational velocity terms properly implemented with body-to-geometry transformation
 
-**What Doesn't Work Yet:**
-- ❌ Rotational velocity terms disabled (set to zero to maintain stability)
-- ❌ Euler angle extraction disabled (hardcoded to zero)
-- ❌ Rotation matrix transformation from MuJoCo is brittle and empirical
-- ❌ Free flight portion exhibits non-physical behavior when rotational terms enabled
+**What Needs Testing/Validation:**
+- ⚠️ Full 6-DOF dynamics need validation against known solutions
+- ⚠️ Non-zero sideslip (beta) cases need testing
+- ⚠️ Animation coordinate transformations may still have issues
 
 **Immediate Focus:**
-Understanding and fixing MuJoCo's rotation matrix convention and coordinate transformations to enable proper 6-DOF rotational dynamics. This is the primary blocker for realistic free flight simulation.
+Validating the complete 6-DOF free flight simulation against known solutions and debugging any remaining coordinate transformation issues in visualization.
 
 ## Overview
 
@@ -214,72 +216,87 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - XFLR5 model (`simple_glider.xfl`) for validation with known stable configuration
    - Simple glider design verified: converged, trimmed, statically stable in pitch/yaw, realistic inertia
 
+15. **MuJoCo Rotation Matrix Convention Resolved** (pterasoftware/mujoco_model.py)
+   - Clarified that MuJoCo's `xmat` is `R_pas_B_to_E` (transforms vectors from body to Earth axes)
+   - Fixed `get_state()` to properly compute `R_pas_E_to_B = R_pas_B_to_E.T`
+   - Removed janky empirical transformation logic
+   - Added clear documentation in docstring explaining `xmat` convention
+
+16. **Euler Angle Extraction Implemented** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Implemented proper extraction for intrinsic z-y'-x" (izyx) sequence from R_pas_E_to_B
+   - Added gimbal lock detection and handling (when pitch near ±90°)
+   - Documented matrix element formulas in code comments
+   - REFACTOR note added for future extraction into `_transformations.py`
+
+17. **Rotational Velocity Terms Re-enabled** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Fixed `_calculate_freestream_wing_influences()` to properly include omega cross r terms
+   - Added coordinate transformation from body axes to geometry axes for angular velocity
+   - Body to geometry transformation: `omegas_GP1__E = omegas_BP1__E * [-1, 1, -1]` (180° rotation about Y)
+   - Properly converts angular velocity from degrees/s to radians/s for cross product
+   - Added detailed comments explaining the transformation and physics
+
+18. **Code Quality Improvements**
+   - Fixed sign convention for beta in initial orientation calculation (debugging scripts)
+   - Added REFACTOR notes for functions that should be moved to `_transformations.py`
+   - Improved docstrings in `MuJoCoModel` with explicit `xfrc_applied` and state variable documentation
+   - Standardized use of `np.rad2deg()` and `np.deg2rad()` instead of manual `* 180 / pi`
+
 ### ⚠️ In Progress / Known Issues
 
-**Current Debugging Status:**
+**Current Status:**
 
-The coupled solver is now stable for prescribed motion steps and has been extensively debugged. The free flight portion completes without crashing but still exhibits non-physical behavior. Key achievements and remaining issues:
+The core 6-DOF dynamics infrastructure is now complete. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms) have been resolved. The focus shifts to validation and testing.
 
-**✅ Recent Progress:**
-- Prescribed and free flight simulations now match closely during prescribed time steps
-- Eliminated wild instability by temporarily disabling omega-related velocity terms
-- Successfully created converged, trimmed, stable simple glider based on XFLR5 validation
-- Fixed initial orientation quaternion generation
-- Improved alpha/beta calculation from MuJoCo state (works for alpha > 0, beta = 0)
+**⚠️ Needs Validation/Testing:**
 
-**⚠️ Active Debugging Issues:**
+1. **Full 6-DOF Dynamics Validation** (HIGH PRIORITY)
+   - Rotational velocity terms are now enabled but need validation against known solutions
+   - Euler angle extraction needs verification with various initial orientations
+   - Energy conservation should be checked for gliding simulations
 
-1. **Rotational Motion Velocity Terms Disabled** (CRITICAL)
-   - All velocity components due to angular velocities (`omegas_B__E`) are currently multiplied by zero
-   - This is non-physical but necessary to maintain stability
-   - Hints that remaining bugs exist in how rotational motion affects local velocities
-   - Need to investigate: cross product sign conventions, reference frame transformations
+2. **Non-Zero Sideslip Cases** (MEDIUM PRIORITY)
+   - Current implementation verified for alpha > 0, beta = 0
+   - Need to test with non-zero sideslip angles
+   - May reveal remaining coordinate transformation issues
 
-2. **Euler Angle Extraction Disabled** (CRITICAL)
-   - Euler angle extraction in `_create_next_coupled_steady_problem()` is hardcoded to zero
-   - Original extraction formulas commented out
-   - This prevents proper orientation updates from MuJoCo
-   - Related to issue with rotation matrix transformations
-
-3. **Rotation Matrix Transformation is Brittle** (HIGH PRIORITY)
-   - `MuJoCoModel.get_state()` uses janky transformation logic
-   - Only verified to work for: alpha > 0 and beta = 0
-   - Unclear what `xmat[self.body_id].reshape(3, 3)` actually represents in MuJoCo
-   - Need to understand MuJoCo's rotation matrix convention and map it properly to Ptera Software's coordinate systems
-   - Current approach uses empirical matrix transformations without theoretical justification
-
-4. **Wake Coordinate Handling in Free Flight** (MEDIUM PRIORITY)
+3. **Wake Coordinate Handling in Free Flight** (MEDIUM PRIORITY)
    - Wake RingVortices stored in Wing have absolute coordinates (GP1_CgP1)
    - When Airplane position/orientation change, wake may need coordinate updates
    - Alternatively, consider storing wake in solver instead of Wing for coupled simulations
    - Lower priority since visualization fixes suggest current approach may work
 
-**🔍 Less-Likely Issues (Lower Priority):**
+**🔍 Lower Priority Issues:**
 
-5. **Animation Coordinate Issues**
+4. **Animation Coordinate Issues**
    - Airplane appears rotated 180° about body y-axis in `animate_free_flight()`
    - Airplane appears to move in opposite direction from expected
    - Both likely visualization transformation issues since wake convects correctly in `draw()`
 
-6. **Airplane Mesh Disappears in Animation**
+5. **Airplane Mesh Disappears in Animation**
    - After several tens of time steps in `animate_free_flight()`, Airplane mesh vanishes
    - May be rendering issue or coordinate transformation problem
 
-**📋 Future Issues (Post-Stability):**
+**📋 Future Issues (Post-Validation):**
 
-7. **No MuJoCo Model Visualization**
+6. **No MuJoCo Model Visualization**
    - Cannot easily verify MuJoCo XML setup is correct
    - Consider integration with MuJoCo's built-in visualizer
 
-8. **Airplane Direction Reversal**
+7. **Airplane Direction Reversal**
    - If Airplane switches direction, wake sheds from wrong edge
    - Detection exists but no recovery mechanism
    - Low priority for gliding simulations
 
-9. **MuJoCo Model Not Programmatically Generated**
+8. **MuJoCo Model Not Programmatically Generated**
     - MuJoCo XML created separately from CoupledUnsteadyProblem
     - Changes to problem don't automatically update MuJoCo model
     - Consider programmatic model generation from problem definition
+
+9. **Utility Functions Need Extraction** (REFACTOR)
+   - `R_to_quat_wxyz` function duplicated in debugging scripts; should be in `_transformations.py`
+   - Euler angle extraction from rotation matrix should be in `_transformations.py`
+   - Alpha/beta extraction from velocity vector should be in `_transformations.py`
+   - Body-to-geometry axes transformation should have dedicated function
 
 ### ❌ Not Yet Started
 
@@ -333,27 +350,25 @@ The coupled solver is now stable for prescribed motion steps and has been extens
 
 ### Immediate (Next Steps)
 
-**Priority 1: Fix Rotational Motion and Coordinate Transformations (CRITICAL)**
+**Priority 1: Rotational Motion and Coordinate Transformations (COMPLETED ✅)**
 
-The current blocker for realistic free flight is the disabled rotational velocity terms and Euler angle extraction. These must be fixed to enable proper 6-DOF dynamics:
+All previously critical blockers have been resolved:
 
-1. **Understand and Fix MuJoCo Rotation Matrix Convention**
-   - Research MuJoCo's `xmat` documentation to understand what rotation it represents
-   - Determine proper transformation from MuJoCo's rotation matrix to Ptera Software's R_pas_E_to_B
-   - Test with non-zero beta cases
-   - Replace empirical transformation in `mujoco_model.py` with theoretically justified approach
+1. ✅ **MuJoCo Rotation Matrix Convention** (COMPLETED)
+   - Clarified that MuJoCo's `xmat` is `R_pas_B_to_E`
+   - Implemented proper transformation: `R_pas_E_to_B = R_pas_B_to_E.T`
+   - Removed empirical transformation logic
 
-2. **Re-enable and Fix Euler Angle Extraction**
-   - Once rotation matrix issue is resolved, re-enable angle extraction in `_create_next_coupled_steady_problem()`
-   - Verify extracted angles produce correct Airplane orientations
+2. ✅ **Euler Angle Extraction** (COMPLETED)
+   - Implemented proper extraction for izyx sequence with gimbal lock handling
+   - Verified formulas against rotation matrix structure
 
-3. **Re-enable and Fix Rotational Velocity Terms**
-   - Investigate cross product sign conventions for omega-induced velocities
-   - Verify reference frame transformations for rotational motion effects
-   - Gradually re-enable terms (remove 0.0 multipliers)
-   - Test stability with single-panel flat plate case first, then simple glider
+3. ✅ **Rotational Velocity Terms** (COMPLETED)
+   - Re-enabled omega cross r terms in `_calculate_freestream_wing_influences()`
+   - Added proper body-to-geometry coordinate transformation for angular velocity
+   - Documented physics and sign conventions in code comments
 
-**Priority 2: Validation and Verification**
+**Priority 2: Validation and Verification (CURRENT FOCUS)**
 
 4. ✅ **Create Simple Free Flight Test Case** (COMPLETED)
    - ✅ Implemented simple gliding wing test case (`debugging scripts/4_simple_glider_free_flight.py`)
@@ -369,12 +384,13 @@ The current blocker for realistic free flight is the disabled rotational velocit
    - ⚠️ Animation has coordinate transformation issues (lower priority)
    - 🔲 Still need: comprehensive time-series plots (forces, moments, alpha, beta, omegas)
 
-6. **Debug and Validate Once Core Issues Resolved**
+6. **Validate Full 6-DOF Dynamics** (IN PROGRESS)
    - Verify force/moment calculations produce physically sensible results
    - Check energy conservation (kinetic + potential should be approximately constant for gliding)
    - Compare simple glider free flight trajectory with XFLR5 dynamic stability predictions
    - Tune time step size for stability/accuracy trade-off
    - Validate wake convection is physically reasonable
+   - Test with non-zero sideslip (beta) cases
 
 ### Medium-term
 
@@ -468,9 +484,16 @@ The current blocker for realistic free flight is the disabled rotational velocit
 
 ### Next Steps Based on Insights
 
-The debugging process has clarified that the core issue is **coordinate transformation between MuJoCo and Ptera Software**, specifically:
-- Understanding what rotation matrix MuJoCo's `xmat` represents
-- Properly mapping that to Ptera Software's `R_pas_E_to_B` convention
-- Ensuring rotational velocity cross products use correct sign conventions and reference frames
+The coordinate transformation issues identified during debugging have now been resolved:
 
-Once this is resolved, the rest of the infrastructure is in place for full 6-DOF free flight simulation.
+**✅ Resolved Issues:**
+- MuJoCo's `xmat` is `R_pas_B_to_E`; we take the transpose to get `R_pas_E_to_B`
+- Euler angle extraction uses the izyx sequence with proper gimbal lock handling
+- Rotational velocity cross products now use the correct body-to-geometry transformation
+
+**Current Focus:**
+The infrastructure is now complete for full 6-DOF free flight simulation. The next steps are:
+1. Validate the simulation produces physically sensible results
+2. Test with various initial conditions including non-zero sideslip
+3. Compare against XFLR5 dynamic stability predictions
+4. Extract utility functions into `_transformations.py` for reuse and testing

@@ -13,6 +13,9 @@ import pterasoftware as ps
 import pterasoftware._transformations as _transformations
 
 
+# REFACTOR: This function (and its use) is duplicated in
+#  4_simple_glider_free_flight.py. It should somehow be incorporated into the
+#  MuJoCoModel class or otherwise standardized and then tested with unit tests.
 def R_to_quat_wxyz(R):
     # R is 3x3 list/ndarray
     m00, m01, m02 = R[0]
@@ -67,7 +70,7 @@ trim_externalFX_W = 0.0
 delta_time = 0.1
 converged_num_steps = 5
 
-free_num_steps = 35
+free_num_steps = 40
 this_g = -9.80665
 this_airplane_name = "Simple Glider"
 this_initial_key_frame_name = "Start"
@@ -76,7 +79,7 @@ this_weight = 100
 this_mass = this_weight / abs(this_g)
 
 R_act_E_to_B_0 = _transformations.generate_rot_T(
-    angles=(0.0, trim_alpha, -trim_beta), passive=False, intrinsic=True, order="zyx"
+    angles=(0.0, trim_alpha, trim_beta), passive=False, intrinsic=True, order="zyx"
 )[:3, :3]
 quat0w, quat0x, quat0y, quat0z = R_to_quat_wxyz(R_act_E_to_B_0)
 
@@ -225,9 +228,11 @@ plt.plot(times, flat_plate_coupled_solver.stackPosition_E_E[:, 2])
 plt.title("CgP1_Z")
 plt.show()
 
-# ps.output.animate_free_flight(
-#     coupled_solver=flat_plate_coupled_solver, scalar_type="lift"
-# )
+ps.output.animate_free_flight(
+    coupled_solver=flat_plate_coupled_solver,
+    scalar_type="lift",
+    show_wake_vortices=True,
+)
 
 ps.output.draw(
     solver=flat_plate_coupled_solver, scalar_type="lift", show_wake_vortices=True

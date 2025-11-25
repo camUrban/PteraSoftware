@@ -19,7 +19,6 @@ import mujoco
 import numpy as np
 
 from . import _parameter_validation
-from . import _transformations
 
 
 # TEST: Add unit tests for this class's initialization.
@@ -124,9 +123,16 @@ class MuJoCoModel:
     ) -> None:
         """Applies loads to the body.
 
-        The forces are in Earth axes and moments are in Earth axes relative to the
-        body's CG. Both are applied at the body's CG. They will persist until the next
-        call to apply_loads or until they are explicitly cleared.
+        **Notes:**
+
+        xfrc_applied[0:3] = forces_E: The current force applied to the body's CG (in
+        Earth axes) in Newtons.
+
+        xfrc_applied[3:6] = moments_E_Cg: The current moment applied to the body's CG
+        (in Earth axes, relative to the CG) in Newton-meters.
+
+        The loads will persist until the next call to apply_loads or until they are
+        explicitly cleared.
 
         :param forces_E: A (3,) array-like object of numbers (int or float) representing
             the forces (in Earth axes) to apply to the body at its CG. Can be a tuple,
@@ -164,46 +170,47 @@ class MuJoCoModel:
         """Extracts the current position, orientation, velocity, and angular velocity of
         the body.
 
+        **Notes:**
+
+        qpos[0:3] = position_E_E: The current position of the body's CG (in Earth
+        axes, relative to the Earth origin) in meters.
+
+        qvel[0:3] = velocity_E__E: The current velocity of the body's CG (in Earth
+        axes, observed from the Earth frame) in meters per second.
+
+        np.rad2deg(qvel[3:6]) = omegas_B__E: The current angular velocity of the body
+        axes (in body axes, observed from the Earth frame) in degrees per second.
+
+        xmat = R_pas_B_to_E: The current orientation of the body as a passive
+        rotation matrix from body axes to Earth axes.
+
+        We define MuJoCo world coordinates to be identical to Ptera Software Earth axes.
+
         :return: A dictionary containing the following keys: ``position_E_E``, a (3,)
-            ndarray of floats representing the current position of the body's CG in
-            Earth axes relative to the Earth origin in meters; ``R_pas_E_to_B``, a (3,3)
-            ndarray of floats representing the current orientation of the body as a
-            passive rotation matrix from Earth axes to body axes; ``velocity_E__E``, a
-            (3,) ndarray of floats representing the current velocity of the body's CG in
-            Earth axes as observed from the Earth frame in meters per second;
+            ndarray of floats representing the current position of the body's CG (in
+            Earth axes, relative to the Earth origin) in meters; ``R_pas_E_to_B``, a
+            (3,3) ndarray of floats representing the current orientation of the body as
+            a passive rotation matrix from Earth axes to body axes; ``velocity_E__E``, a
+            (3,) ndarray of floats representing the current velocity of the body's CG
+            (in Earth axes, observed from the Earth frame) in meters per second;
             ``omegas_B__E``, a (3,) ndarray of floats representing the current angular
-            velocity of the body axes in Earth axes as observed from the Earth frame in
+            velocity of the body axes (in body axes, observed from the Earth frame) in
             degrees per second; ``time``, a float representing the current simulation
             time in seconds.
         """
-        # REFACTOR: This transformation logic is EXTREMELY janky. We should clean it
-        #  up and get a better understanding of what is actually happening. I
-        #  verified that it works with alpha > 0, beta = 0, and angles_E_to_B_ixyz =
-        #  (0, 0, 0). However, I have no idea if it will work with other parameters.
-        #  What does xmat[self.body_id].reshape(3, 3) actually represent? How do we
-        #  incorporate both alpha and beta, and the orientation angles.
-        R_mujoco = np.copy(self.data.xmat[self.body_id].reshape(3, 3))
-        R_pas_W_Cg_to_G_Cg = (
-            np.asarray(
-                [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]], dtype=float
-            )
-            @ R_mujoco.T
-        )
-        T_pas_W_Cg_to_G_Cg = np.eye(4, dtype=float)
-        T_pas_W_Cg_to_G_Cg[:3, :3] = R_pas_W_Cg_to_G_Cg
-        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
-            angles=(0, 180, 0), passive=True, intrinsic=True, order="zyx"
-        )
-        T_pas_W_Cg_to_B_Cg = _transformations.compose_T_pas(
-            T_pas_W_Cg_to_G_Cg, T_pas_G_Cg_to_B_Cg
-        )
+        # MuJoCo's xmat is R_pas_B_to_E: it transforms vectors from body axes to Earth
+        # axes. To get R_pas_E_to_B, we take the transpose.
+        R_pas_B_to_E = self.data.xmat[self.body_id].reshape(3, 3)
+        # REFACTOR: Consider creating an invert_R_pas function in _transformations.py
+        #  and calling it here.
+        R_pas_E_to_B = R_pas_B_to_E.T
 
         return {
             "position_E_E": np.copy(self.data.qpos[0:3]),
-            "R_pas_E_to_B": T_pas_W_Cg_to_B_Cg[0:3, 0:3],
+            "R_pas_E_to_B": np.copy(R_pas_E_to_B),
             "velocity_E__E": np.copy(self.data.qvel[0:3]),
             "omegas_B__E": np.rad2deg(np.copy(self.data.qvel[3:6])),
-            "time": self.data.time,
+            "time": float(self.data.time),
         }
 
     # TEST: Add unit tests for this method.

@@ -842,14 +842,33 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
+        # Transform angular velocity from body axes to geometry axes.
+        # Body and geometry axes differ by 180 degrees about Y:
+        #   G_x = -B_x, G_y = B_y, G_z = -B_z
+        # This is equivalent to: R_pas_B_to_G = [[-1, 0, 0], [0, 1, 0], [0, 0, -1]]
+        # For a free vector (angular velocity), applying this transformation:
+        #   omegas_GP1__E = R_pas_B_to_G @ omegas_BP1__E
+        # Which simplifies to negating the x and z components.
+        # REFACTOR: Consider making specific functions in _transformations.py for
+        #  transformations between body and geometry axes.
+        omegas_GP1__E = self._currentOmegas_BP1__E * np.array([-1.0, 1.0, -1.0])
+
+        # Convert angular velocity from degrees per second to radians per second for the
+        # cross product calculation.
+        omegas_GP1__E_rad = np.deg2rad(omegas_GP1__E)
+
         # Find the normal components of the freestream only Wing influence
         # coefficients (observed from the Earth frame) at each Panel's collocation
         # point by taking a batch dot product. Compute the total velocity at each
         # collocation point (freestream + rotational).
+        #
+        # The velocity at a point due to rotation is: v = omega x r
+        # where r is the position vector from the rotation center (CG) to the point.
+        # This gives the velocity of the point in the rotating frame.
+        # The apparent wind velocity is opposite to this motion, hence the subtraction.
         velocity_at_collocation_points_GP1__E = (
-            self._currentVInf_GP1__E  # Broadcasts from (3,) to (num_panels, 3).
-            # REFACTOR: Re-enable rotational influence after debugging.
-            - 0.0 * np.cross(self._currentOmegas_BP1__E, self.stackCpp_GP1_CgP1)
+            self._currentVInf_GP1__E  # Broadcasts from (3,) to (num_panels,3).
+            - np.cross(omegas_GP1__E_rad, self.stackCpp_GP1_CgP1)
         )
         currentStackFreestreamOnlyWingInfluences__E = np.einsum(
             "ij,ij->i",
@@ -1416,24 +1435,41 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         self.stackPosition_E_E[self._current_step] = self._nextPosition_E_E.copy()
         self.stackR_pas_E_to_BP1[self._current_step] = self._nextR_pas_E_to_BP1.copy()
 
-        # REFACTOR: Add the effects of changing orientation back in after debugging
-        #  the logic.
-        # Extract Euler angles from the rotation matrix.
-        # For intrinsic z-y'-x" sequence (order="zyx", intrinsic=True):
-        # R = Rx(angleX) @ Ry(angleY) @ Rz(angleZ)
-        # R = self._nextR_pas_E_to_BP1
-        # Extract angles using standard Euler angle extraction formulas for z-y'-x".
-        # The formulas are:
-        # angleY = asin(-R[2, 0])
-        # angleX = atan2(R[2, 1], R[2, 2])
-        # angleZ = atan2(R[1, 0], R[0, 0])
-        # angleY = np.arcsin(-R[2, 0]) * 180.0 / np.pi
-        # angleX = np.arctan2(R[2, 1], R[2, 2]) * 180.0 / np.pi
-        # angleZ = np.arctan2(R[1, 0], R[0, 0]) * 180.0 / np.pi
-        angleY = 0.0
-        angleX = 0.0
-        angleZ = 0.0
-
+        # REFACTOR: This method of extracting Euler angles from a rotation matrix should
+        #  be converted into a function _transformations.py and then checked with unit
+        #  tests.
+        # Extract Euler angles from the rotation matrix R_pas_E_to_B.
+        # For intrinsic z-y'-x" sequence (izyx), the passive rotation matrix is:
+        #   R_pas = (Rz(angleZ) @ Ry(angleY) @ Rx(angleX)).T
+        #
+        # The matrix structure:
+        #   R_pas[0,2] = -sin(angleY)
+        #   R_pas[1,2] = cos(angleY) * sin(angleX)
+        #   R_pas[2,2] = cos(angleY) * cos(angleX)
+        #   R_pas[0,1] = sin(angleZ) * cos(angleY)
+        #   R_pas[0,0] = cos(angleZ) * cos(angleY)
+        #
+        # Extraction formulas:
+        #   angleY = asin(-R[0, 2])
+        #   angleX = atan2(R[1, 2], R[2, 2])
+        #   angleZ = atan2(R[0, 1], R[0, 0])
+        #
+        # Gimbal lock occurs when angleY = +/- 90 degrees (cos(angleY) = 0).
+        R = self._nextR_pas_E_to_BP1
+        # Extract pitch (angleY) with clamping to avoid numerical issues with asin.
+        sin_angleY = -R[0, 2]
+        sin_angleY = np.clip(sin_angleY, -1.0, 1.0)
+        angleY = np.rad2deg(np.arcsin(sin_angleY))
+        # Check for gimbal lock (pitch near +/- 90 degrees).
+        if np.abs(sin_angleY) > 0.99999:
+            # Gimbal lock: set roll to zero and compute yaw from remaining elements.
+            # At gimbal lock, R[1,0] = -sin(angleZ) and R[1,1] = cos(angleZ).
+            angleX = 0.0
+            angleZ = np.rad2deg(np.arctan2(-R[1, 0], R[1, 1]))
+        else:
+            # Normal case: extract roll and yaw.
+            angleX = np.rad2deg(np.arctan2(R[1, 2], R[2, 2]))
+            angleZ = np.rad2deg(np.arctan2(R[0, 1], R[0, 0]))
         # Assemble the angles into the angles_E_to_B_izyx vector.
         angles_E_to_B_izyx = np.array([angleX, angleY, angleZ], dtype=float)
 
@@ -1448,8 +1484,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # matrix R_pas_E_to_B maps vectors from Earth to body axes.
         vInf_BP1__E = self._nextR_pas_E_to_BP1 @ vInf_E__E
 
-        # REFACTOR: Double-check this logic. Is there a way to do this using a
-        #  transformation matrix, as is done elsewhere?
+        # REFACTOR: This method of extracting alpha and beta from vInf_BP1__E should be
+        #  converted into a function _transformations.py and then checked with unit
+        #  tests
         # Compute alpha and beta from the freestream velocity in body axes.
         # The freestream direction in body axes is used to determine the wind axes.
         # Standard formulas:
@@ -1457,14 +1494,11 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         #   freestream onto body xz-plane.
         # - beta (sideslip angle): angle between freestream and body xz-plane.
         u, v, w = vInf_BP1__E
-        alpha = np.arctan2(-w, -u) * 180.0 / np.pi
-
-        # REFACTOR: Double-check this logic. Is there a way to do this using a
-        #  transformation matrix, as is done elsewhere?
+        alpha = np.rad2deg(np.arctan2(-w, -u))
         # Guard against numerical issues when computing beta.
         v_normalized = v / (vCg__E + 1e-12)
         v_normalized = np.clip(v_normalized, -1.0, 1.0)
-        beta = np.arcsin(v_normalized) * 180.0 / np.pi
+        beta = np.rad2deg(np.arcsin(v_normalized))
 
         # Get the previous operating point's density and viscosity (these don't change).
         rho = self.current_coupled_operating_point.rho

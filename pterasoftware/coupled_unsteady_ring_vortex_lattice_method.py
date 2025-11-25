@@ -98,10 +98,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize attributes to hold aerodynamic data that pertain to the simulation.
         self._currentVInf_GP1__E: np.ndarray = (
-            first_coupled_steady_problem.coupled_operating_point.vInf_G__E
+            first_coupled_steady_problem.coupled_operating_point.vInf_GP1__E
         )
         self._currentOmegas_BP1__E: np.ndarray = (
-            first_coupled_steady_problem.coupled_operating_point.omegas_B__E
+            first_coupled_steady_problem.coupled_operating_point.omegas_BP1__E
         )
         self._currentStackFreestreamWingInfluences__E: np.ndarray = np.empty(
             0, dtype=float
@@ -335,7 +335,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 )
 
                 self._currentVInf_GP1__E = (
-                    self.current_coupled_operating_point.vInf_G__E
+                    self.current_coupled_operating_point.vInf_GP1__E
                 )
                 logging.info(
                     "Beginning time step "
@@ -350,10 +350,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 # Initialize attributes to hold aerodynamic data that pertain to the
                 # simulation at this time step.
                 self._currentVInf_GP1__E = (
-                    self.current_coupled_operating_point.vInf_G__E
+                    self.current_coupled_operating_point.vInf_GP1__E
                 )
                 self._currentOmegas_BP1__E = (
-                    self.current_coupled_operating_point.omegas_B__E
+                    self.current_coupled_operating_point.omegas_BP1__E
                 )
 
                 self._currentStackFreestreamWingInfluences__E = np.zeros(
@@ -535,7 +535,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         this_coupled_steady_problem = self.coupled_steady_problems[step]
 
         this_airplane = this_coupled_steady_problem.airplane
-        thisVInf_GP1__E = this_coupled_steady_problem.coupled_operating_point.vInf_G__E
+        thisVInf_GP1__E = (
+            this_coupled_steady_problem.coupled_operating_point.vInf_GP1__E
+        )
 
         # Iterate through the current SteadyProblem's Airplane's Wings.
         for wing_id, wing in enumerate(this_airplane.wings):
@@ -624,7 +626,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                             assert _lastBlpp_GP1_CgP1 is not None
 
                             # We subtract (thisBlpp_GP1_CgP1 - lastBlpp_GP1_CgP1) /
-                            # self.delta_time from thisVInf_G__E, because we want the
+                            # self.delta_time from thisVInf_GP1__E, because we want the
                             # apparent fluid velocity due to motion (in first Airplane's
                             # geometry axes, observed from the Earth frame). This is the
                             # vector pointing opposite the velocity from motion.
@@ -842,12 +844,14 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Transform angular velocity from body axes to geometry axes.
+        # Transform angular velocity from the first Airplane's body axes to the first
+        # Airplane's geometry axes.
+        #
         # Body and geometry axes differ by 180 degrees about Y:
-        #   G_x = -B_x, G_y = B_y, G_z = -B_z
-        # This is equivalent to: R_pas_B_to_G = [[-1, 0, 0], [0, 1, 0], [0, 0, -1]]
+        #   GP1_x = -BP1_x, GP1_y = BP1_y, GP1_z = -BP1_z
+        # This is equivalent to: R_pas_BP1_to_GP1 = [[-1, 0, 0], [0, 1, 0], [0, 0, -1]]
         # For a free vector (angular velocity), applying this transformation:
-        #   omegas_GP1__E = R_pas_B_to_G @ omegas_BP1__E
+        #   omegas_GP1__E = R_pas_BP1_to_GP1 @ omegas_BP1__E
         # Which simplifies to negating the x and z components.
         # REFACTOR: Consider making specific functions in _transformations.py for
         #  transformations between body and geometry axes.
@@ -1348,7 +1352,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         # Step 1: W_CgP1 > GP1_CgP1
         T_pas_W_CgP1_to_GP1_CgP1 = (
-            self.current_coupled_operating_point.T_pas_W_Cg_to_G_Cg
+            self.current_coupled_operating_point.T_pas_W_CgP1_to_GP1_CgP1
         )
 
         # Step 2: GP1_CgP1 > BP1_CgP1 (180-degree rotation about y-axis).
@@ -1362,7 +1366,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # Step 3: BP1_CgP1 > E_CgP1.
         # First create E_CgP1 > BP1_CgP1, then invert it.
         T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-            angles=self.current_coupled_operating_point.angles_E_to_B_izyx,
+            angles=self.current_coupled_operating_point.angles_E_to_BP1_izyx,
             passive=True,
             intrinsic=True,
             order="zyx",
@@ -1427,9 +1431,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         # Store the state for use in _create_next_coupled_steady_problem.
         self._nextPosition_E_E = cast(np.ndarray, state["position_E_E"])
-        self._nextR_pas_E_to_BP1 = cast(np.ndarray, state["R_pas_E_to_B"])
+        self._nextR_pas_E_to_BP1 = cast(np.ndarray, state["R_pas_E_to_BP1"])
         self._nextVelocity_E__E = cast(np.ndarray, state["velocity_E__E"])
-        self._nextOmegas_BP1__E = cast(np.ndarray, state["omegas_B__E"])
+        self._nextOmegas_BP1__E = cast(np.ndarray, state["omegas_BP1__E"])
 
         # Store the state in history ndarrays for visualization.
         self.stackPosition_E_E[self._current_step] = self._nextPosition_E_E.copy()
@@ -1438,7 +1442,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # REFACTOR: This method of extracting Euler angles from a rotation matrix should
         #  be converted into a function _transformations.py and then checked with unit
         #  tests.
-        # Extract Euler angles from the rotation matrix R_pas_E_to_B.
+        # Extract Euler angles from the rotation matrix R_pas_E_to_BP1.
         # For intrinsic z-y'-x" sequence (izyx), the passive rotation matrix is:
         #   R_pas = (Rz(angleZ) @ Ry(angleY) @ Rx(angleX)).T
         #
@@ -1470,8 +1474,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             # Normal case: extract roll and yaw.
             angleX = np.rad2deg(np.arctan2(R[1, 2], R[2, 2]))
             angleZ = np.rad2deg(np.arctan2(R[0, 1], R[0, 0]))
-        # Assemble the angles into the angles_E_to_B_izyx vector.
-        angles_E_to_B_izyx = np.array([angleX, angleY, angleZ], dtype=float)
+        # Assemble the angles into the angles_E_to_BP1_izyx vector.
+        angles_E_to_BP1_izyx = np.array([angleX, angleY, angleZ], dtype=float)
 
         # Compute the speed (magnitude of velocity in Earth frame).
         vCg__E = float(np.linalg.norm(self._nextVelocity_E__E))
@@ -1480,8 +1484,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # Assuming still air, the apparent wind is opposite to the Airplane's motion.
         vInf_E__E = -self._nextVelocity_E__E
 
-        # Transform freestream velocity from Earth axes to body axes. The rotation
-        # matrix R_pas_E_to_B maps vectors from Earth to body axes.
+        # Transform freestream velocity from Earth axes to the first Airplane's body
+        # axes. The rotation matrix R_pas_E_to_BP1 maps vectors from Earth to the
+        # first Airplane's body axes.
         vInf_BP1__E = self._nextR_pas_E_to_BP1 @ vInf_E__E
 
         # REFACTOR: This method of extracting alpha and beta from vInf_BP1__E should be
@@ -1509,8 +1514,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         new_coupled_operating_point = operating_point.CoupledOperatingPoint(
             rho=rho,
             vCg__E=vCg__E,
-            omegas_B__E=self._nextOmegas_BP1__E,
-            angles_E_to_B_izyx=angles_E_to_B_izyx,
+            omegas_BP1__E=self._nextOmegas_BP1__E,
+            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
             alpha=alpha,
             beta=beta,
             externalFX_W=externalFX_W,

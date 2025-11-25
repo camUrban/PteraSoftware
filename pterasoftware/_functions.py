@@ -179,7 +179,7 @@ def process_solver_loads(
         are in Newtons.
     :param stackPanelMoments_GP1_CgP1: A (N,3) ndarray of floats representing the
         moments (in the first Airplane's geometry axes, relative to the first Airplane's
-        CG) on each of the solver's Panels. The units are in Newton-meters.
+        CG) on each of the solver's Panels. The units are in Newton meters.
     :return: None
     """
     if isinstance(
@@ -214,12 +214,9 @@ def process_solver_loads(
         these_airplanes = [solver.current_airplane]
 
         qInf__E = solver.current_coupled_operating_point.qInf__E
-        # Get the transformation matrix from current CoupledOperatingPoint. In this
-        # case, T_pas_G_Cg_to_W_Cg is identical to T_pas_GP1_CgP1_to_W_CgP1 because
-        # the CoupledUnsteadyRingVortexLatticeMethodSolver can only simulate a single
-        # Airplane.
+        # Get the transformation matrix from current CoupledOperatingPoint.
         T_pas_GP1_CgP1_to_W_CgP1 = (
-            solver.current_coupled_operating_point.T_pas_G_Cg_to_W_Cg
+            solver.current_coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1
         )
     else:
         raise ValueError(

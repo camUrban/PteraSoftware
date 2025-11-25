@@ -5,8 +5,8 @@
 OperatingPoint: A class used to contain the operating conditions of an aerodynamic
 problem.
 
-CoupledOperatingPoint: A class used to contain the operating conditions at one of the
-time steps in a coupled aerodynamic problem.
+CoupledOperatingPoint: A subclass of OperatingPoint used to contain the operating
+conditions at one of the time steps in a coupled aerodynamic problem.
 
 **Contains the following functions:**
 
@@ -212,11 +212,13 @@ class OperatingPoint:
 
 # REFACTOR: Add a section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds.
 # TEST: Add unit tests for this class's initialization.
-class CoupledOperatingPoint:
-    """A class used to contain the operating conditions at one of the time steps in a
-    coupled aerodynamic problem.
+class CoupledOperatingPoint(OperatingPoint):
+    """A subclass of OperatingPoint used to contain the operating conditions at one of
+    the time steps in a coupled aerodynamic problem.
 
     **Notes:**
+
+    Inherits all parameters and methods from OperatingPoint without modification.
 
     CoupledUnsteadyProblems problems are initialized with a CoupledMovement object. This
     CoupledMovement contains an AirplaneMovement and a CoupledOperatingPoint. During
@@ -227,32 +229,22 @@ class CoupledOperatingPoint:
     will contain the Airplane associated with that time step along with a new
     CoupledOperatingPoint with the current operating conditions.
 
+    Although the CoupledUnsteadyRingVortexLatticeMethodSolver can only simulate a single
+    airplane, CoupledOperatingPoint's documentation still include phrases like "in the
+    first Airplane's geometry axes" and variable suffices like "_CgP1_GP1" for
+    consistency with the rest of the codebase.
+
     **Contains the following methods:**
 
-    qInf__E: The freestream dynamic pressure experienced by the Airplane (observed in
-    the Earth frame).
-
-    T_pas_G_Cg_to_W_Cg: The passive transformation matrix which maps in homogeneous
-    coordinates from the Airplane's geometry axes relative to the Airplane's CG to wind
-    axes relative to the Airplane's CG.
-
-    T_pas_W_Cg_to_G_Cg: The passive transformation matrix which maps in homogeneous
-    coordinates from wind axes relative to the Airplane's CG to the Airplane's geometry
-    axes relative to the Airplane's CG.
-
-    vInfHat_G__E: The freestream direction (in the Airplane's geometry axes, observed
-    from the Earth frame).
-
-    vInf_G__E: The freestream velocity (in the Airplane's geometry axes, observed from
-    the Earth frame).
+    None
     """
 
     def __init__(
         self,
         rho: float | int = 1.225,
         vCg__E: float | int = 10.0,
-        omegas_B__E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        angles_E_to_B_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        omegas_BP1__E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        angles_E_to_BP1_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         alpha: float | int = 5.0,
         beta: float | int = 0.0,
         externalFX_W: float | int = 0.0,
@@ -260,177 +252,57 @@ class CoupledOperatingPoint:
     ) -> None:
         """The initialization method.
 
-        :param rho: The fluid's current density. It must be a positive number (int or
-            float) and will be converted internally to a float. The units are in
-            kilograms per meters cubed. The default is 1.225.
-        :param vCg__E: The current speed of the Airplane's CG (observed from the Earth
-            frame). Given that (1) this is the magnitude of a vector, and (2) we always
-            assume a still fluid in our simulations, this value is equivalent to the
-            freestream speed (the speed of the apparent wind, infinitely far away from
-            the Airplane, observed while moving at the same speed as the non
-            accelerating CG). It must be a positive number (int or float) and will be
-            converted internally to a float. Its units are in meters per second. The
-            default is 10.0.
-        :param omegas_B__E: An array-like object of numbers (int or float), with shape
-            (3,), representing the current angular speed of the Airplane's body axes
-            (observed from the Earth frame). Can be a tuple, list, or ndarray. Values
-            are converted to floats internally. The units are in degrees per second. The
-            default is (0.0, 0.0, 0.0).
-        :param angles_E_to_B_izyx: An array-like object of 3 numbers representing the
-            current angles from Earth axes to body axes using an intrinsic zy'x"
-            sequence. Can be a tuple, list, or ndarray. Values are converted to floats
-            internally. Note that body axes differ from geometry axes: body axes point
-            forward/right/down while geometry axes point aft/right/up. The units are
-            degrees. All angles must lie in the range (-180.0, 180.0] degrees. The
-            default is (0.0, 0.0, 0.0).
-        :param alpha: The current angle of attack for the Airplane. For more details on
-            the exact interpretation of this value, see the description of wind axes in
-            docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
-            range (-180.0, 180.0] and will be converted internally to a float. The units
-            are in degrees. The default is 5.0.
-        :param beta: The current sideslip angle for the Airplane. For more details on
-            the exact interpretation of this value, see the description of wind axes in
-            docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
-            range (-180.0, 180.0] and will be converted internally to a float. The units
-            are in degrees. The default is 0.0.
-        :param externalFX_W: The current additional thrust or drag on the Airplane (in
-            wind axes) not due to its Wings. It is useful for trim analyses. It must be
-            a number (int or float) and will be converted internally to a float. The
-            units are in Newtons. The default is 0.0.
-        :param nu: The fluid's current kinematic viscosity. The units are in meters
-            squared per second. It must be a positive number and will be converted
-            internally to a float. Its units are in meters squared per second. The
-            default is 15.06e-6, which corresponds to air's kinematic viscosity at 20
-            degrees Celsius [source: https://www.engineeringtoolbox.com].
+        See OperatingPoint's initialization method for descriptions of inherited
+        parameters.
+
+        :param omegas_BP1__E: An array-like object of numbers (int or float), with shape
+            (3,), representing the current angular speed of the first Airplane's body
+            axes (observed from the Earth frame). Can be a tuple, list, or ndarray.
+            Values are converted to floats internally. The units are in degrees per
+            second. The default is (0.0, 0.0, 0.0).
+        :param angles_E_to_BP1_izyx: An array-like object of 3 numbers representing the
+            current angles from Earth axes to the first Airplane's body axes using an
+            intrinsic zy'x" sequence. Can be a tuple, list, or ndarray. Values are
+            converted to floats internally. Note that body axes differ from geometry
+            axes: body axes point forward/right/down while geometry axes point
+            aft/right/up. The units are degrees. All angles must lie in the range
+            (-180.0, 180.0] degrees. The default is (0.0, 0.0, 0.0).
         :return: None
         """
-        self.rho = _parameter_validation.number_in_range_return_float(
-            rho, "rho", min_val=0.0, min_inclusive=False
-        )
-        # TODO: In the future, test what happens with vCg__E = 0.
-        self.vCg__E = _parameter_validation.number_in_range_return_float(
-            vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
-        )
-        self.omegas_B__E = _parameter_validation.threeD_number_vectorLike_return_float(
-            omegas_B__E, "omegas_B__E"
-        )
-        angles_E_to_B_izyx = (
+        super().__init__(rho, vCg__E, alpha, beta, externalFX_W, nu)
+
+        self.omegas_BP1__E = (
             _parameter_validation.threeD_number_vectorLike_return_float(
-                angles_E_to_B_izyx, "angles_E_to_B_izyx"
+                omegas_BP1__E, "omegas_BP1__E"
             )
         )
-        angles_E_to_B_izyx[0] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_B_izyx[0], "angles_E_to_B_izyx[0]", -180.0, False, 180.0, True
+        angles_E_to_BP1_izyx = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                angles_E_to_BP1_izyx, "angles_E_to_BP1_izyx"
+            )
         )
-        angles_E_to_B_izyx[1] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_B_izyx[1], "angles_E_to_B_izyx[1]", -180.0, False, 180.0, True
+        angles_E_to_BP1_izyx[0] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[0],
+            "angles_E_to_BP1_izyx[0]",
+            -180.0,
+            False,
+            180.0,
+            True,
         )
-        angles_E_to_B_izyx[2] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_B_izyx[2], "angles_E_to_B_izyx[2]", -180.0, False, 180.0, True
+        angles_E_to_BP1_izyx[1] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[1],
+            "angles_E_to_BP1_izyx[1]",
+            -180.0,
+            False,
+            180.0,
+            True,
         )
-        self.angles_E_to_B_izyx = angles_E_to_B_izyx
-        # TODO: Restrict alpha and beta's range if testing reveals that high absolute
-        #  magnitude values break things.
-        self.alpha = _parameter_validation.number_in_range_return_float(
-            alpha, "alpha", -180.0, False, 180.0, True
+        angles_E_to_BP1_izyx[2] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[2],
+            "angles_E_to_BP1_izyx[2]",
+            -180.0,
+            False,
+            180.0,
+            True,
         )
-        self.beta = _parameter_validation.number_in_range_return_float(
-            beta, "beta", -180.0, False, 180.0, True
-        )
-        self.externalFX_W = _parameter_validation.number_in_range_return_float(
-            externalFX_W, "externalFX_W"
-        )
-        self.nu = _parameter_validation.number_in_range_return_float(
-            nu, "nu", min_val=0.0, min_inclusive=False
-        )
-
-    # TEST: Add unit tests for this method.
-    @property
-    def qInf__E(self) -> float:
-        """The freestream dynamic pressure experienced by the Airplane (observed in the
-        Earth frame).
-
-        :return: The freestream dynamic pressure (observed in the Earth frame). Its
-            units are in Pascals.
-        """
-        return 0.5 * self.rho * self.vCg__E**2
-
-    # TEST: Add unit tests for this method.
-    @property
-    def T_pas_G_Cg_to_W_Cg(self) -> np.ndarray:
-        """The passive transformation matrix which maps in homogeneous coordinates from
-        the Airplane's geometry axes relative to the Airplane's CG to wind axes relative
-        to the Airplane's CG.
-
-        :return: The passive transformation matrix which maps in homogeneous coordinates
-            from the Airplane's geometry axes relative to the Airplane's CG to wind axes
-            relative to the Airplane's CG.
-        """
-        # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
-        # to down). This is equivalent to a 180-degree rotation about y.
-        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
-            angles=np.array([0.0, 180.0, 0.0]),
-            passive=True,
-            intrinsic=False,
-            order="xyz",
-        )
-
-        angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
-
-        T_pas_B_Cg_to_W_Cg = _transformations.generate_rot_T(
-            angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
-        )
-
-        return _transformations.compose_T_pas(T_pas_G_Cg_to_B_Cg, T_pas_B_Cg_to_W_Cg)
-
-    # TEST: Add unit tests for this method.
-    @property
-    def T_pas_W_Cg_to_G_Cg(self) -> np.ndarray:
-        """The passive transformation matrix which maps in homogeneous coordinates from
-        wind axes relative to the Airplane's CG to the Airplane's geometry axes relative
-        to the Airplane's CG.
-
-        :return: The passive transformation matrix which maps in homogeneous coordinates
-            from wind axes relative to the Airplane's CG to the Airplane's geometry axes
-            relative to the Airplane's CG.
-        """
-        return _transformations.invert_T_pas(self.T_pas_G_Cg_to_W_Cg)
-
-    # TEST: Add unit tests for this method.
-    @property
-    def vInfHat_G__E(self) -> np.ndarray:
-        """The freestream direction (in the Airplane's geometry axes, observed from the
-        Earth frame).
-
-        **Notes:**
-
-        See the docstring for vInf_G__E for details on how to interpret this property.
-
-        :return: The unit vector along the freestream velocity vector (in the Airplane's
-            geometry axes, observed from the Earth frame).
-        """
-        vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
-
-        return _transformations.apply_T_to_vectors(
-            self.T_pas_W_Cg_to_G_Cg, vInfHat_W__E, has_point=False
-        )
-
-    # TEST: Add unit tests for this method.
-    @property
-    def vInf_G__E(self) -> np.ndarray:
-        """The freestream velocity (in the Airplane's geometry axes, observed from the
-        Earth frame).
-
-        **Notes:**
-
-        I'm defining vInf_GP__E to be -1 * vCgX_GP__E. This may seem obvious, but the
-        important takeaways are that the freestream velocity is (1) entirely due to the
-        Airplane's body's motion (a still airmass), and (2) the freestream velocity is
-        observed from the Earth frame, which is inertial. Given point 1, a possible
-        interpretation is that vInf_GP__E must be zero, which is why I'm being specific
-        with the definition.
-
-        :return: The freestream velocity vector (in the Airplane's geometry axes,
-            observed from the Earth frame).
-        """
-        return self.vInfHat_G__E * self.vCg__E
+        self.angles_E_to_BP1_izyx = angles_E_to_BP1_izyx

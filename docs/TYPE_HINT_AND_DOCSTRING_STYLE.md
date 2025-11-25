@@ -351,6 +351,62 @@ class ClassName:
     """
 ```
 
+### Subclass Docstrings
+
+When a class inherits from another class, use a modified pattern that avoids duplicating documentation from the parent class.
+
+#### Subclass Class Docstring Template
+
+```python
+class ChildClass(ParentClass):
+    """A subclass of ParentClass used to <description>.
+
+    **Notes:**
+
+    Inherits all parameters and methods from ParentClass without modification.
+
+    Additional notes specific to the subclass. Can be one or more paragraphs.
+
+    **Contains the following methods:**
+
+    new_method_1: Short description of new method (if any).
+
+    None (if no new methods are added)
+    """
+```
+
+**Key points:**
+- Short description explicitly mentions "A subclass of ParentClass"
+- Notes section states what is inherited from the parent
+- "Contains the following methods:" lists only NEW methods unique to this subclass
+- Write "None" if no new methods are added
+
+#### Subclass `__init__` Docstring Template
+
+```python
+def __init__(
+    self,
+    inherited_param1: Type1,
+    inherited_param2: Type2,
+    new_param: Type3,
+) -> None:
+    """The initialization method.
+
+    See ParentClass's initialization method for descriptions of inherited
+    parameters.
+
+    :param new_param: Description of the new parameter unique to this subclass.
+    :return: None
+    """
+    super().__init__(inherited_param1, inherited_param2)
+    self.new_param = new_param
+```
+
+**Key points:**
+- Reference the parent class's `__init__` docstring for inherited parameters
+- Only document parameters that are NEW to the subclass
+- Call `super().__init__()` with inherited parameters
+
 ### Property Docstring Template
 
 ```python

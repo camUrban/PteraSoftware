@@ -26,17 +26,17 @@ class MuJoCoModel:
     """A class that wraps MuJoCo models and data objects to provide a clean interface
     for free flight simulations.
 
-    Provides methods for applying aerodynamic loads to a rigid body, advancing the
-    MuJoCo simulation, and extracting the current state of the body.
+    Provides methods for applying aerodynamic loads to the first Airplane, advancing the
+    MuJoCo simulation, and extracting the current state of the first Airplane.
 
     **Contains the following methods:**
 
-    apply_loads: Applies loads to the body.
+    apply_loads: Applies loads to the first Airplane.
 
     step: Advances the MuJoCo simulation by one time step.
 
     get_state: Extracts the current position, orientation, velocity, and angular
-    velocity of the body.
+    velocity of the first Airplane.
 
     reset: Resets the simulation to the initial conditions.
     """
@@ -119,40 +119,42 @@ class MuJoCoModel:
     def apply_loads(
         self,
         forces_E: np.ndarray | Sequence[float | int],
-        moments_E_Cg: np.ndarray | Sequence[float | int],
+        moments_E_CgP1: np.ndarray | Sequence[float | int],
     ) -> None:
-        """Applies loads to the body.
+        """Applies loads to the first Airplane.
 
         **Notes:**
 
-        xfrc_applied[0:3] = forces_E: The current force applied to the body's CG (in
-        Earth axes) in Newtons.
+        xfrc_applied[0:3] = forces_E: The current force applied to the first Airplane's
+        CG (in Earth axes) in Newtons.
 
-        xfrc_applied[3:6] = moments_E_Cg: The current moment applied to the body's CG
-        (in Earth axes, relative to the CG) in Newton-meters.
+        xfrc_applied[3:6] = moments_E_CgP1: The current moment applied to the first
+        Airplane's CG (in Earth axes, relative to the first Airplane's CG) in Newton
+        meters.
 
         The loads will persist until the next call to apply_loads or until they are
         explicitly cleared.
 
         :param forces_E: A (3,) array-like object of numbers (int or float) representing
-            the forces (in Earth axes) to apply to the body at its CG. Can be a tuple,
-            list, or ndarray. Values are converted to floats internally. The units are
-            in Newtons.
-        :param moments_E_Cg: A (3,) array-like object of numbers (int or float)
-            representing the moments (in Earth axes, relative to the body's CG) to apply
-            to the body at its CG. Can be a tuple, list, or ndarray. Values are
-            converted to floats internally. The units are in Newton-meters.
+            the forces (in Earth axes) to apply to the first Airplane at the first
+            Airplane's CG. Can be a tuple, list, or ndarray. Values are converted to
+            floats internally. The units are in Newtons.
+        :param moments_E_CgP1: A (3,) array-like object of numbers (int or float)
+            representing the moments (in Earth axes, relative to the first Airplane's
+            CG) to apply to the first Airplane at the first Airplane's CG. Can be a
+            tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in Newton meters.
         :return: None
         """
         forces_E = _parameter_validation.threeD_number_vectorLike_return_float(
             forces_E, "forces_E"
         )
-        moments_E_Cg = _parameter_validation.threeD_number_vectorLike_return_float(
-            moments_E_Cg, "moments_E_Cg"
+        moments_E_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+            moments_E_CgP1, "moments_E_CgP1"
         )
 
         # Pack the force and moment into the 6-element xfrc_applied array.
-        self.data.xfrc_applied[self.body_id][:] = np.hstack([forces_E, moments_E_Cg])
+        self.data.xfrc_applied[self.body_id][:] = np.hstack([forces_E, moments_E_CgP1])
 
     # TEST: Add unit tests for this method.
     def step(self) -> None:
@@ -168,48 +170,51 @@ class MuJoCoModel:
     # TEST: Add unit tests for this method.
     def get_state(self) -> dict[str, np.ndarray | float]:
         """Extracts the current position, orientation, velocity, and angular velocity of
-        the body.
+        the first Airplane.
 
         **Notes:**
 
-        qpos[0:3] = position_E_E: The current position of the body's CG (in Earth
-        axes, relative to the Earth origin) in meters.
+        qpos[0:3] = position_E_E: The current position of the first Airplane's CG (in
+        Earth axes, relative to the Earth origin) in meters.
 
-        qvel[0:3] = velocity_E__E: The current velocity of the body's CG (in Earth
-        axes, observed from the Earth frame) in meters per second.
+        qvel[0:3] = velocity_E__E: The current velocity of the first Airplane's CG (in
+        Earth axes, observed from the Earth frame) in meters per second.
 
-        np.rad2deg(qvel[3:6]) = omegas_B__E: The current angular velocity of the body
-        axes (in body axes, observed from the Earth frame) in degrees per second.
+        np.rad2deg(qvel[3:6]) = omegas_BP1__E: The current angular velocity of the first
+        Airplane's body axes (in the first Airplane's body axes, observed from the Earth
+        frame) in degrees per second.
 
-        xmat = R_pas_B_to_E: The current orientation of the body as a passive
-        rotation matrix from body axes to Earth axes.
+        xmat = R_pas_BP1_to_E: The current orientation of the first Airplane as a
+        passive rotation matrix from the first Airplane's body axes to Earth axes.
 
         We define MuJoCo world coordinates to be identical to Ptera Software Earth axes.
 
         :return: A dictionary containing the following keys: ``position_E_E``, a (3,)
-            ndarray of floats representing the current position of the body's CG (in
-            Earth axes, relative to the Earth origin) in meters; ``R_pas_E_to_B``, a
-            (3,3) ndarray of floats representing the current orientation of the body as
-            a passive rotation matrix from Earth axes to body axes; ``velocity_E__E``, a
-            (3,) ndarray of floats representing the current velocity of the body's CG
-            (in Earth axes, observed from the Earth frame) in meters per second;
-            ``omegas_B__E``, a (3,) ndarray of floats representing the current angular
-            velocity of the body axes (in body axes, observed from the Earth frame) in
-            degrees per second; ``time``, a float representing the current simulation
-            time in seconds.
+            ndarray of floats representing the current position of the first Airplane's
+            CG (in Earth axes, relative to the Earth origin) in meters;
+            ``R_pas_E_to_BP1``, a (3,3) ndarray of floats representing the current
+            orientation of the first Airplane as a passive rotation matrix from Earth
+            axes to first Airplane's body axes; ``velocity_E__E``, a (3,) ndarray of
+            floats representing the current velocity of the first Airplane's CG (in
+            Earth axes, observed from the Earth frame) in meters per second;
+            ``omegas_BP1__E``, a (3,) ndarray of floats representing the current angular
+            velocity of the first Airplane's body axes (in the first Airplane's body
+            axes, observed from the Earth frame) in degrees per second; ``time``, a
+            float representing the current simulation time in seconds.
         """
-        # MuJoCo's xmat is R_pas_B_to_E: it transforms vectors from body axes to Earth
-        # axes. To get R_pas_E_to_B, we take the transpose.
-        R_pas_B_to_E = self.data.xmat[self.body_id].reshape(3, 3)
+        # MuJoCo's xmat is R_pas_BP1_to_E: it transforms vectors from the first
+        # Airplane's body axes to Earth axes. To get R_pas_E_to_BP1, we take the
+        # transpose.
+        R_pas_BP1_to_E = self.data.xmat[self.body_id].reshape(3, 3)
         # REFACTOR: Consider creating an invert_R_pas function in _transformations.py
         #  and calling it here.
-        R_pas_E_to_B = R_pas_B_to_E.T
+        R_pas_E_to_BP1 = R_pas_BP1_to_E.T
 
         return {
             "position_E_E": np.copy(self.data.qpos[0:3]),
-            "R_pas_E_to_B": np.copy(R_pas_E_to_B),
+            "R_pas_E_to_BP1": np.copy(R_pas_E_to_BP1),
             "velocity_E__E": np.copy(self.data.qvel[0:3]),
-            "omegas_B__E": np.rad2deg(np.copy(self.data.qvel[3:6])),
+            "omegas_BP1__E": np.rad2deg(np.copy(self.data.qvel[3:6])),
             "time": float(self.data.time),
         }
 

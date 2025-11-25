@@ -273,7 +273,17 @@ def draw(
         qInf__E = solver.operating_point.qInf__E
 
     # Get the Panel surfaces.
-    panel_surfaces = _get_panel_surfaces(airplanes)
+    if isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        panel_surfaces = _get_panel_surfaces_free_flight(
+            airplanes[0],
+            position_E_E=solver.stackPosition_E_E[-1, :],
+            R_pas_E_to_BP1=solver.stackR_pas_E_to_BP1[-1, :],
+        )
+    else:
+        panel_surfaces = _get_panel_surfaces(airplanes)
 
     # Plot the Panels either with scalar coloring or with a uniform color.
     if scalar_type in ("induced drag", "side force", "lift"):

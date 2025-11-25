@@ -44,7 +44,7 @@ A parallel class hierarchy has been created with "Coupled" prefixes to distingui
 
 ```
 CoupledOperatingPoint (extends OperatingPoint)
-    └─ Adds: `omegas_E_to_B__E` (angular speeds) and `angles_E_to_B_ixyz` (orientation)
+    └─ Adds: `omegas_E_to_B__E` (angular speeds) and `angles_E_to_B_izyx` (orientation)
 
 CoupledMovement (parallel to Movement)
     └─ Contains: AirplaneMovements + initial CoupledOperatingPoint
@@ -261,27 +261,22 @@ The coupled solver is now stable for prescribed motion steps and has been extens
    - Airplane appears to move in opposite direction from expected
    - Both likely visualization transformation issues since wake convects correctly in `draw()`
 
-6. **Initial Orientation Parameter Confusion**
-   - `airplane.angles_E_to_B_izyx` parameter is confusing and may not affect anything
-   - Currently forced to zero; unclear if it should exist at all
-   - Consider removing and handling all orientation offsets via OperatingPoint
-
-7. **Airplane Mesh Disappears in Animation**
+6. **Airplane Mesh Disappears in Animation**
    - After several tens of time steps in `animate_free_flight()`, Airplane mesh vanishes
    - May be rendering issue or coordinate transformation problem
 
 **📋 Future Issues (Post-Stability):**
 
-8. **No MuJoCo Model Visualization**
+7. **No MuJoCo Model Visualization**
    - Cannot easily verify MuJoCo XML setup is correct
    - Consider integration with MuJoCo's built-in visualizer
 
-9. **Airplane Direction Reversal**
+8. **Airplane Direction Reversal**
    - If Airplane switches direction, wake sheds from wrong edge
    - Detection exists but no recovery mechanism
    - Low priority for gliding simulations
 
-10. **MuJoCo Model Not Programmatically Generated**
+9. **MuJoCo Model Not Programmatically Generated**
     - MuJoCo XML created separately from CoupledUnsteadyProblem
     - Changes to problem don't automatically update MuJoCo model
     - Consider programmatic model generation from problem definition

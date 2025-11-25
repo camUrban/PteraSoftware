@@ -1,4 +1,5 @@
-"""This module contains functions to create Movements for use in tests."""
+"""This module contains functions to create Movements and CoupledMovements for use
+in tests."""
 
 import pterasoftware as ps
 
@@ -185,3 +186,220 @@ def make_movement_with_multiple_airplanes_fixture():
 
     # Return the Movement fixture.
     return movement_with_multiple_airplanes_fixture
+
+
+def make_basic_coupled_movement_fixture():
+    """This method makes a fixture that is a CoupledMovement with general-purpose
+    values for testing.
+
+    :return basic_coupled_movement_fixture: CoupledMovement
+        This is the CoupledMovement with general-purpose values for testing.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+    )
+
+    # Create the basic CoupledMovement.
+    basic_coupled_movement_fixture = ps.movements.movement.CoupledMovement(
+        airplane_movement=airplane_movement,
+        initial_coupled_operating_point=initial_coupled_operating_point,
+        delta_time=0.1,
+        prescribed_num_steps=5,
+        free_num_steps=5,
+    )
+
+    # Return the CoupledMovement fixture.
+    return basic_coupled_movement_fixture
+
+
+def make_static_coupled_movement_fixture():
+    """This method makes a fixture that is a CoupledMovement with all static
+    components.
+
+    :return static_coupled_movement_fixture: CoupledMovement
+        This is the CoupledMovement with no motion.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_static_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+    )
+
+    # Create the static CoupledMovement.
+    static_coupled_movement_fixture = ps.movements.movement.CoupledMovement(
+        airplane_movement=airplane_movement,
+        initial_coupled_operating_point=initial_coupled_operating_point,
+        delta_time=0.1,
+        prescribed_num_steps=3,
+        free_num_steps=3,
+    )
+
+    # Return the CoupledMovement fixture.
+    return static_coupled_movement_fixture
+
+
+def make_coupled_movement_with_angular_speed_fixture():
+    """This method makes a fixture that is a CoupledMovement with non zero angular
+    speed in its initial CoupledOperatingPoint.
+
+    :return coupled_movement_with_angular_speed_fixture: CoupledMovement
+        This is the CoupledMovement with non zero initial angular speed.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_with_angular_speed_coupled_operating_point_fixture()
+    )
+
+    # Create the CoupledMovement with angular speed.
+    coupled_movement_with_angular_speed_fixture = ps.movements.movement.CoupledMovement(
+        airplane_movement=airplane_movement,
+        initial_coupled_operating_point=initial_coupled_operating_point,
+        delta_time=0.1,
+        prescribed_num_steps=5,
+        free_num_steps=5,
+    )
+
+    # Return the CoupledMovement fixture.
+    return coupled_movement_with_angular_speed_fixture
+
+
+def make_coupled_movement_with_attitude_angles_fixture():
+    """This method makes a fixture that is a CoupledMovement with non zero attitude
+    angles in its initial CoupledOperatingPoint.
+
+    :return coupled_movement_with_attitude_angles_fixture: CoupledMovement
+        This is the CoupledMovement with non zero initial attitude angles.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_with_attitude_angles_coupled_operating_point_fixture()
+    )
+
+    # Create the CoupledMovement with attitude angles.
+    coupled_movement_with_attitude_angles_fixture = (
+        ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=5,
+            free_num_steps=5,
+        )
+    )
+
+    # Return the CoupledMovement fixture.
+    return coupled_movement_with_attitude_angles_fixture
+
+
+def make_full_coupled_movement_fixture():
+    """This method makes a fixture that is a CoupledMovement with all parameters set
+    to non zero values for comprehensive testing.
+
+    :return full_coupled_movement_fixture: CoupledMovement
+        This is the CoupledMovement with all parameters set to non zero values.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = (
+        airplane_movement_fixtures.make_multiple_periods_airplane_movement_fixture()
+    )
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_full_coupled_operating_point_fixture()
+    )
+
+    # Create the full CoupledMovement.
+    full_coupled_movement_fixture = ps.movements.movement.CoupledMovement(
+        airplane_movement=airplane_movement,
+        initial_coupled_operating_point=initial_coupled_operating_point,
+        delta_time=0.05,
+        prescribed_num_steps=10,
+        free_num_steps=15,
+    )
+
+    # Return the CoupledMovement fixture.
+    return full_coupled_movement_fixture
+
+
+def make_coupled_movement_with_custom_delta_time_fixture():
+    """This method makes a fixture that is a CoupledMovement with a custom delta time.
+
+    :return coupled_movement_with_custom_delta_time_fixture: CoupledMovement
+        This is the CoupledMovement with custom delta time.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+    )
+
+    # Create the CoupledMovement with custom delta time.
+    coupled_movement_with_custom_delta_time_fixture = (
+        ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.02,
+            prescribed_num_steps=5,
+            free_num_steps=5,
+        )
+    )
+
+    # Return the CoupledMovement fixture.
+    return coupled_movement_with_custom_delta_time_fixture
+
+
+def make_coupled_movement_with_more_prescribed_steps_fixture():
+    """This method makes a fixture that is a CoupledMovement with more prescribed
+    steps than free steps.
+
+    :return coupled_movement_with_more_prescribed_steps_fixture: CoupledMovement
+        This is the CoupledMovement with more prescribed steps.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+    )
+
+    # Create the CoupledMovement with more prescribed steps.
+    coupled_movement_with_more_prescribed_steps_fixture = (
+        ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=15,
+            free_num_steps=3,
+        )
+    )
+
+    # Return the CoupledMovement fixture.
+    return coupled_movement_with_more_prescribed_steps_fixture
+
+
+def make_coupled_movement_with_more_free_steps_fixture():
+    """This method makes a fixture that is a CoupledMovement with more free steps
+    than prescribed steps.
+
+    :return coupled_movement_with_more_free_steps_fixture: CoupledMovement
+        This is the CoupledMovement with more free steps.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movement = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    initial_coupled_operating_point = (
+        operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+    )
+
+    # Create the CoupledMovement with more free steps.
+    coupled_movement_with_more_free_steps_fixture = (
+        ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=3,
+            free_num_steps=15,
+        )
+    )
+
+    # Return the CoupledMovement fixture.
+    return coupled_movement_with_more_free_steps_fixture

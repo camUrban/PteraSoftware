@@ -1,7 +1,9 @@
-"""This module contains a class to test Movements."""
+"""This module contains classes to test Movements and CoupledMovements."""
 
 import math
 import unittest
+
+import numpy as np
 
 import pterasoftware as ps
 
@@ -132,7 +134,6 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
@@ -150,7 +151,6 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
@@ -276,7 +276,6 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
-                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,
@@ -305,7 +304,6 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "ten"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
-                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,
@@ -334,7 +332,6 @@ class TestMovement(unittest.TestCase):
         invalid_values = [0, -5, 2.5, "hundred"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
-                # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.movements.movement.Movement(
                         airplane_movements=airplane_movements,
@@ -1296,6 +1293,589 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
+
+
+class TestCoupledMovement(unittest.TestCase):
+    """This is a class with functions to test CoupledMovements."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all CoupledMovement tests."""
+        cls.basic_coupled_movement = (
+            movement_fixtures.make_basic_coupled_movement_fixture()
+        )
+        cls.static_coupled_movement = (
+            movement_fixtures.make_static_coupled_movement_fixture()
+        )
+        cls.coupled_movement_with_angular_speed = (
+            movement_fixtures.make_coupled_movement_with_angular_speed_fixture()
+        )
+        cls.coupled_movement_with_attitude_angles = (
+            movement_fixtures.make_coupled_movement_with_attitude_angles_fixture()
+        )
+        cls.full_coupled_movement = (
+            movement_fixtures.make_full_coupled_movement_fixture()
+        )
+        cls.coupled_movement_with_custom_delta_time = (
+            movement_fixtures.make_coupled_movement_with_custom_delta_time_fixture()
+        )
+        cls.coupled_movement_with_more_prescribed_steps = (
+            movement_fixtures.make_coupled_movement_with_more_prescribed_steps_fixture()
+        )
+        cls.coupled_movement_with_more_free_steps = (
+            movement_fixtures.make_coupled_movement_with_more_free_steps_fixture()
+        )
+
+    def test_initialization_valid_parameters(self):
+        """Test CoupledMovement initialization with valid parameters."""
+        coupled_movement = self.basic_coupled_movement
+        self.assertIsInstance(coupled_movement, ps.movements.movement.CoupledMovement)
+        self.assertIsInstance(
+            coupled_movement.airplane_movement,
+            ps.movements.airplane_movement.AirplaneMovement,
+        )
+        self.assertIsInstance(coupled_movement.coupled_operating_points, list)
+        self.assertEqual(len(coupled_movement.coupled_operating_points), 1)
+        self.assertIsInstance(
+            coupled_movement.coupled_operating_points[0],
+            ps.operating_point.CoupledOperatingPoint,
+        )
+        self.assertIsInstance(coupled_movement.delta_time, float)
+        self.assertGreater(coupled_movement.delta_time, 0.0)
+        self.assertIsInstance(coupled_movement.prescribed_num_steps, int)
+        self.assertGreater(coupled_movement.prescribed_num_steps, 0)
+        self.assertIsInstance(coupled_movement.free_num_steps, int)
+        self.assertGreater(coupled_movement.free_num_steps, 0)
+        self.assertIsInstance(coupled_movement.num_steps, int)
+        self.assertEqual(
+            coupled_movement.num_steps,
+            coupled_movement.prescribed_num_steps + coupled_movement.free_num_steps,
+        )
+
+    def test_airplane_movement_validation_not_airplane_movement(self):
+        """Test that airplane_movement must be an AirplaneMovement."""
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises(TypeError):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement="not an airplane movement",
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+    def test_initial_coupled_operating_point_validation_not_coupled_operating_point(
+        self,
+    ):
+        """Test that initial_coupled_operating_point must be a
+        CoupledOperatingPoint."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+
+        with self.assertRaises(TypeError):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point="not a coupled operating point",
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+    def test_initial_coupled_operating_point_validation_regular_operating_point(self):
+        """Test that initial_coupled_operating_point cannot be a regular
+        OperatingPoint."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        regular_operating_point = (
+            operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        with self.assertRaises(TypeError):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=regular_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+    def test_delta_time_validation_positive(self):
+        """Test that delta_time must be positive."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        # Test with positive delta_time works.
+        coupled_movement = ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.01,
+            prescribed_num_steps=5,
+            free_num_steps=5,
+        )
+        self.assertEqual(coupled_movement.delta_time, 0.01)
+
+    def test_delta_time_validation_zero(self):
+        """Test that delta_time cannot be zero."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.0,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+    def test_delta_time_validation_negative(self):
+        """Test that delta_time cannot be negative."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=-0.01,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+    def test_delta_time_converted_to_float(self):
+        """Test that delta_time is converted to float if provided as int."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        coupled_movement = ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=1,
+            prescribed_num_steps=5,
+            free_num_steps=5,
+        )
+        self.assertIsInstance(coupled_movement.delta_time, float)
+        self.assertEqual(coupled_movement.delta_time, 1.0)
+
+    def test_prescribed_num_steps_validation_positive(self):
+        """Test that prescribed_num_steps must be a positive integer."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        # Test with valid positive integer.
+        coupled_movement = ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=10,
+            free_num_steps=5,
+        )
+        self.assertEqual(coupled_movement.prescribed_num_steps, 10)
+
+    def test_prescribed_num_steps_validation_zero(self):
+        """Test that prescribed_num_steps cannot be zero."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=0,
+                free_num_steps=5,
+            )
+
+    def test_prescribed_num_steps_validation_negative(self):
+        """Test that prescribed_num_steps cannot be negative."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=-5,
+                free_num_steps=5,
+            )
+
+    def test_prescribed_num_steps_validation_not_integer(self):
+        """Test that prescribed_num_steps must be an integer."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        invalid_values = [5.5, "five", 3.0]
+        for invalid_value in invalid_values:
+            with self.subTest(invalid_value=invalid_value):
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.movements.movement.CoupledMovement(
+                        airplane_movement=airplane_movement,
+                        initial_coupled_operating_point=initial_coupled_operating_point,
+                        delta_time=0.1,
+                        prescribed_num_steps=invalid_value,
+                        free_num_steps=5,
+                    )
+
+    def test_free_num_steps_validation_positive(self):
+        """Test that free_num_steps must be a positive integer."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        # Test with valid positive integer.
+        coupled_movement = ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=5,
+            free_num_steps=10,
+        )
+        self.assertEqual(coupled_movement.free_num_steps, 10)
+
+    def test_free_num_steps_validation_zero(self):
+        """Test that free_num_steps cannot be zero."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=0,
+            )
+
+    def test_free_num_steps_validation_negative(self):
+        """Test that free_num_steps cannot be negative."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        with self.assertRaises((ValueError, TypeError)):
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=-5,
+            )
+
+    def test_free_num_steps_validation_not_integer(self):
+        """Test that free_num_steps must be an integer."""
+        airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        invalid_values = [5.5, "five", 3.0]
+        for invalid_value in invalid_values:
+            with self.subTest(invalid_value=invalid_value):
+
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.movements.movement.CoupledMovement(
+                        airplane_movement=airplane_movement,
+                        initial_coupled_operating_point=initial_coupled_operating_point,
+                        delta_time=0.1,
+                        prescribed_num_steps=5,
+                        free_num_steps=invalid_value,
+                    )
+
+    def test_num_steps_calculation(self):
+        """Test that num_steps is correctly calculated from prescribed and free steps."""
+        coupled_movement = self.basic_coupled_movement
+        expected_num_steps = (
+            coupled_movement.prescribed_num_steps + coupled_movement.free_num_steps
+        )
+        self.assertEqual(coupled_movement.num_steps, expected_num_steps)
+
+    def test_num_steps_with_more_prescribed_steps(self):
+        """Test num_steps when prescribed steps outnumber free steps."""
+        coupled_movement = self.coupled_movement_with_more_prescribed_steps
+        self.assertEqual(coupled_movement.prescribed_num_steps, 15)
+        self.assertEqual(coupled_movement.free_num_steps, 3)
+        self.assertEqual(coupled_movement.num_steps, 18)
+
+    def test_num_steps_with_more_free_steps(self):
+        """Test num_steps when free steps outnumber prescribed steps."""
+        coupled_movement = self.coupled_movement_with_more_free_steps
+        self.assertEqual(coupled_movement.prescribed_num_steps, 3)
+        self.assertEqual(coupled_movement.free_num_steps, 15)
+        self.assertEqual(coupled_movement.num_steps, 18)
+
+    def test_airplanes_generation(self):
+        """Test that airplanes are generated correctly."""
+        coupled_movement = self.basic_coupled_movement
+
+        # Check that airplanes attribute is a list of Airplanes.
+        self.assertIsInstance(coupled_movement.airplanes, list)
+        self.assertEqual(len(coupled_movement.airplanes), coupled_movement.num_steps)
+
+        # Check that each element is an Airplane.
+        for airplane in coupled_movement.airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+    def test_coupled_operating_points_initialization(self):
+        """Test that coupled_operating_points is initialized with the initial point."""
+        coupled_movement = self.basic_coupled_movement
+
+        # Check that coupled_operating_points starts with just the initial point.
+        self.assertIsInstance(coupled_movement.coupled_operating_points, list)
+        self.assertEqual(len(coupled_movement.coupled_operating_points), 1)
+        self.assertIsInstance(
+            coupled_movement.coupled_operating_points[0],
+            ps.operating_point.CoupledOperatingPoint,
+        )
+
+    def test_static_property_for_static_coupled_movement(self):
+        """Test that static property returns True for static CoupledMovement."""
+        coupled_movement = self.static_coupled_movement
+        self.assertTrue(coupled_movement.static)
+
+    def test_static_property_for_non_static_coupled_movement(self):
+        """Test that static property returns False for non-static CoupledMovement."""
+        coupled_movement = self.basic_coupled_movement
+        self.assertFalse(coupled_movement.static)
+
+    def test_max_period_for_static_coupled_movement(self):
+        """Test that max_period returns 0.0 for static CoupledMovement."""
+        coupled_movement = self.static_coupled_movement
+        self.assertEqual(coupled_movement.max_period, 0.0)
+
+    def test_max_period_for_non_static_coupled_movement(self):
+        """Test that max_period returns correct value for non-static CoupledMovement."""
+        coupled_movement = self.basic_coupled_movement
+        # The basic_coupled_movement uses basic_airplane_movement with period 2.0.
+        self.assertEqual(coupled_movement.max_period, 2.0)
+
+    def test_max_period_returns_airplane_movement_max_period(self):
+        """Test that max_period returns the AirplaneMovement's max_period."""
+        coupled_movement = self.full_coupled_movement
+        expected_max_period = coupled_movement.airplane_movement.max_period
+        self.assertEqual(coupled_movement.max_period, expected_max_period)
+
+    def test_custom_delta_time(self):
+        """Test that custom delta_time is used correctly."""
+        coupled_movement = self.coupled_movement_with_custom_delta_time
+        self.assertEqual(coupled_movement.delta_time, 0.02)
+
+    def test_coupled_movement_with_angular_speed(self):
+        """Test CoupledMovement with non zero angular speed in initial operating
+        point."""
+        coupled_movement = self.coupled_movement_with_angular_speed
+        initial_op = coupled_movement.coupled_operating_points[0]
+
+        # Check that the initial CoupledOperatingPoint has non zero angular speed.
+        self.assertIsInstance(initial_op, ps.operating_point.CoupledOperatingPoint)
+        # The fixture uses (0.5, 0.3, 0.1) for angular speed.
+        np.testing.assert_array_equal(initial_op.omegas_BP1__E, (0.5, 0.3, 0.1))
+
+    def test_coupled_movement_with_attitude_angles(self):
+        """Test CoupledMovement with non zero attitude angles in initial operating
+        point."""
+        coupled_movement = self.coupled_movement_with_attitude_angles
+        initial_op = coupled_movement.coupled_operating_points[0]
+
+        # Check that the initial CoupledOperatingPoint has non zero attitude angles.
+        self.assertIsInstance(initial_op, ps.operating_point.CoupledOperatingPoint)
+        # The fixture uses (15.0, 10.0, 5.0) for attitude angles.
+        np.testing.assert_array_equal(
+            initial_op.angles_E_to_BP1_izyx, (15.0, 10.0, 5.0)
+        )
+
+    def test_full_coupled_movement(self):
+        """Test CoupledMovement with all parameters set to non zero values."""
+        coupled_movement = self.full_coupled_movement
+        initial_op = coupled_movement.coupled_operating_points[0]
+
+        # Check delta_time.
+        self.assertEqual(coupled_movement.delta_time, 0.05)
+
+        # Check prescribed and free steps.
+        self.assertEqual(coupled_movement.prescribed_num_steps, 10)
+        self.assertEqual(coupled_movement.free_num_steps, 15)
+        self.assertEqual(coupled_movement.num_steps, 25)
+
+        # Check that the initial CoupledOperatingPoint has expected values.
+        self.assertEqual(initial_op.vCg__E, 15.0)
+        self.assertEqual(initial_op.alpha, 10.0)
+        self.assertEqual(initial_op.beta, 5.0)
+        self.assertEqual(initial_op.externalFX_W, 25.0)
+
+    def test_type_4_to_5_transition_raises_error(self):
+        """Test that a Wing transitioning from type 4 to type 5 symmetry raises
+        an error in CoupledMovement."""
+        # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
+        base_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a WingMovement with rotation that will cause the symmetry plane
+        # to become non-coincident (type 4->5 transition).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        )
+
+        # Create an AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create a CoupledOperatingPoint.
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        # Attempting to create a CoupledMovement should raise a ValueError.
+        with self.assertRaises(ValueError) as context:
+            ps.movements.movement.CoupledMovement(
+                airplane_movement=airplane_movement,
+                initial_coupled_operating_point=initial_coupled_operating_point,
+                delta_time=0.1,
+                prescribed_num_steps=5,
+                free_num_steps=5,
+            )
+
+        # Verify the error message mentions symmetry.
+        self.assertIn("symmetry", str(context.exception).lower())
+
+    def test_static_coupled_movement_with_symmetric_wing_succeeds(self):
+        """Test that a CoupledMovement with a symmetric Wing but no motion succeeds."""
+        # Create a type 4 Wing.
+        base_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+        # Create an Airplane with the base Wing first, so it processes symmetry.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+
+        # Now reference the Wing from the Airplane (after symmetry processing).
+        processed_wing = base_airplane.wings[0]
+
+        # Create static WingCrossSectionMovements using the actual WingCrossSections.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wcs,
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            )
+            for wcs in processed_wing.wing_cross_sections
+        ]
+
+        # Create a static WingMovement (no rotation or translation).
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=processed_wing,
+            wing_cross_section_movements=wcs_movements,
+        )
+
+        # Create a static AirplaneMovement.
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        # Create a CoupledOperatingPoint.
+        initial_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+
+        # Creating a CoupledMovement should succeed without raising an error.
+        coupled_movement = ps.movements.movement.CoupledMovement(
+            airplane_movement=airplane_movement,
+            initial_coupled_operating_point=initial_coupled_operating_point,
+            delta_time=0.1,
+            prescribed_num_steps=3,
+            free_num_steps=3,
+        )
+
+        # Verify the CoupledMovement was created successfully.
+        self.assertIsInstance(coupled_movement, ps.movements.movement.CoupledMovement)
 
 
 if __name__ == "__main__":

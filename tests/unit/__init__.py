@@ -20,7 +20,8 @@ This package contains the following modules:
 
     test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
 
-    test_movement.py: This module contains a class to test Movements.
+    test_movement.py: This module contains classes to test Movements and
+    CoupledMovements.
 
     test_movements_functions.py: This module contains a class to test movements
     functions.

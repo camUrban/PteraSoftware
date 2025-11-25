@@ -21,8 +21,8 @@ This package contains the following modules:
     horseshoe_vortex_fixtures.py: This module contains functions to create
     HorseshoeVortices for uses in tests.
 
-    movement_fixtures.py: This module contains functions to create Movements for use
-    in tests.
+    movement_fixtures.py: This module contains functions to create Movements and
+    CoupledMovements for use in tests.
 
     movements_functions_fixtures.py: This module contains functions to create
     fixtures for movements functions tests.

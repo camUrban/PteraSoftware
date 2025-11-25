@@ -9,6 +9,7 @@ from numba import njit
 
 from . import _panel
 from . import _transformations
+from . import coupled_unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
@@ -164,6 +165,7 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_GP1: np.ndarray,
     stackPanelMoments_GP1_CgP1: np.ndarray,
@@ -189,21 +191,42 @@ def process_solver_loads(
     ):
         assert solver.airplanes is not None
         these_airplanes = solver.airplanes
+
         assert solver.operating_point is not None
-        this_operating_point = solver.operating_point
+        qInf__E = solver.operating_point.qInf__E
+        T_pas_GP1_CgP1_to_W_CgP1 = solver.operating_point.T_pas_GP1_CgP1_to_W_CgP1
     elif isinstance(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         assert solver.current_airplanes is not None
         these_airplanes = solver.current_airplanes
+
         assert solver.current_operating_point is not None
-        this_operating_point = solver.current_operating_point
+        qInf__E = solver.current_operating_point.qInf__E
+        T_pas_GP1_CgP1_to_W_CgP1 = (
+            solver.current_operating_point.T_pas_GP1_CgP1_to_W_CgP1
+        )
+    elif isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        these_airplanes = [solver.current_airplane]
+
+        qInf__E = solver.current_coupled_operating_point.qInf__E
+        # Get the transformation matrix from current CoupledOperatingPoint. In this
+        # case, T_pas_G_Cg_to_W_Cg is identical to T_pas_GP1_CgP1_to_W_CgP1 because
+        # the CoupledUnsteadyRingVortexLatticeMethodSolver can only simulate a single
+        # Airplane.
+        T_pas_GP1_CgP1_to_W_CgP1 = (
+            solver.current_coupled_operating_point.T_pas_G_Cg_to_W_Cg
+        )
     else:
         raise ValueError(
             f"solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
-            f"a SteadyRingVortexLatticeMethodSolver, or an "
-            f"UnsteadyRingVortexLatticeMethodSolver."
+            f"a SteadyRingVortexLatticeMethodSolver, "
+            f"an UnsteadyRingVortexLatticeMethodSolver, or a "
+            f"CoupledUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if stackPanelForces_GP1.shape[0] != solver.num_panels:
@@ -219,9 +242,6 @@ def process_solver_loads(
             f"solver.num_panels ({solver.num_panels}), "
             f"got {stackPanelMoments_GP1_CgP1.shape[0]}."
         )
-
-    qInf__E = this_operating_point.qInf__E
-    T_pas_GP1_CgP1_to_W_CgP1 = this_operating_point.T_pas_GP1_CgP1_to_W_CgP1
 
     # Iterate through this solver's Panels.
     assert solver.panels is not None
@@ -242,9 +262,11 @@ def process_solver_loads(
         panel.forces_W = theseForces_W
         panel.moments_W_CgP1 = theseMoments_W_CgP1
 
+    num_airplanes = len(these_airplanes)
+
     # Initialize ndarrays to hold each Airplane's loads.
-    stackAirplaneForces_GP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
-    stackAirplaneMoments_GP1_CgP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
+    stackAirplaneForces_GP1 = np.zeros((num_airplanes, 3), dtype=float)
+    stackAirplaneMoments_GP1_CgP1 = np.zeros((num_airplanes, 3), dtype=float)
 
     # Iterate through each Airplane and find the total loads on each by summing up
     # the contributions from its Panels.
@@ -297,6 +319,7 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
     panel: _panel.Panel,
@@ -390,7 +413,10 @@ def update_ring_vortex_solvers_panel_attributes(
     # Check if this Panel is on the trailing edge. If so, calculate its streamline
     # seed point (in the first Airplane's geometry axes, relative to the first
     # Airplane's CG) and add it to the solver's ndarray of streamline seed points.
-    if panel.is_trailing_edge:
+    if panel.is_trailing_edge and not isinstance(
+        ring_vortex_solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
         assert ring_vortex_solver.stackSeedPoints_GP1_CgP1 is not None
         assert panel.Brpp_GP1_CgP1 is not None
         assert panel.Blpp_GP1_CgP1 is not None

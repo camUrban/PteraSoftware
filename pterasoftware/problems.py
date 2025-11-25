@@ -313,8 +313,8 @@ class CoupledUnsteadyProblem:
         # experiences at each time step.
         self.forces_W: list[np.ndarray] = []
         self.forceCoefficients_W: list[np.ndarray] = []
-        self.moments_W_CgP1: list[np.ndarray] = []
-        self.momentCoefficients_W_CgP1: list[np.ndarray] = []
+        self.moments_W_Cg: list[np.ndarray] = []
+        self.momentCoefficients_W_Cg: list[np.ndarray] = []
 
         # Get the list representing the Airplane at each time step.
         self.airplanes = coupled_movement.airplanes

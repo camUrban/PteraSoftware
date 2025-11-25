@@ -183,24 +183,24 @@ class MuJoCoModel:
         #  What does xmat[self.body_id].reshape(3, 3) actually represent? How do we
         #  incorporate both alpha and beta, and the orientation angles.
         R_mujoco = np.copy(self.data.xmat[self.body_id].reshape(3, 3))
-        R_pas_W_CgP1_to_GP1_CgP1 = (
+        R_pas_W_Cg_to_G_Cg = (
             np.asarray(
                 [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]], dtype=float
             )
             @ R_mujoco.T
         )
-        T_pas_W_CgP1_to_GP1_CgP1 = np.eye(4, dtype=float)
-        T_pas_W_CgP1_to_GP1_CgP1[:3, :3] = R_pas_W_CgP1_to_GP1_CgP1
-        T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+        T_pas_W_Cg_to_G_Cg = np.eye(4, dtype=float)
+        T_pas_W_Cg_to_G_Cg[:3, :3] = R_pas_W_Cg_to_G_Cg
+        T_pas_G_Cg_to_B_Cg = _transformations.generate_rot_T(
             angles=(0, 180, 0), passive=True, intrinsic=True, order="zyx"
         )
-        T_pas_W_CgP1_to_BP1_CgP1 = _transformations.compose_T_pas(
-            T_pas_W_CgP1_to_GP1_CgP1, T_pas_GP1_CgP1_to_BP1_CgP1
+        T_pas_W_Cg_to_B_Cg = _transformations.compose_T_pas(
+            T_pas_W_Cg_to_G_Cg, T_pas_G_Cg_to_B_Cg
         )
 
         return {
             "position_E_E": np.copy(self.data.qpos[0:3]),
-            "R_pas_E_to_B": T_pas_W_CgP1_to_BP1_CgP1[0:3, 0:3],
+            "R_pas_E_to_B": T_pas_W_Cg_to_B_Cg[0:3, 0:3],
             "velocity_E__E": np.copy(self.data.qvel[0:3]),
             "omegas_B__E": np.rad2deg(np.copy(self.data.qvel[3:6])),
             "time": self.data.time,

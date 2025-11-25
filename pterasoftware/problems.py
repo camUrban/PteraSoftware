@@ -240,74 +240,49 @@ class CoupledSteadyProblem:
 
     def __init__(
         self,
-        airplanes: list[geometry.airplane.Airplane],
-        coupled_operating_points: list[operating_point_mod.CoupledOperatingPoint],
+        airplane: geometry.airplane.Airplane,
+        coupled_operating_point: operating_point_mod.CoupledOperatingPoint,
     ) -> None:
         """The initialization method.
 
-        :param airplanes: The list of Airplanes for this CoupledSteadyProblem.
-        :param coupled_operating_points: The list of CoupledOperatingPoints for this
-            CoupledSteadyProblem. This must be the same length as airplanes.
+        :param airplane: The Airplane for this CoupledSteadyProblem.
+        :param coupled_operating_point: The CoupledOperatingPoint for this
+            CoupledSteadyProblem.
         :return: None
         """
-        if not isinstance(airplanes, list):
-            raise TypeError("airplanes must be a list.")
-        if len(airplanes) < 1:
-            raise ValueError("airplanes must have at least one element.")
-        for airplane in airplanes:
-            if not isinstance(airplane, geometry.airplane.Airplane):
-                raise TypeError("Every element in airplanes must be an Airplane.")
-        self.airplanes = airplanes
+        if not isinstance(airplane, geometry.airplane.Airplane):
+            raise TypeError("airplane must be an Airplane.")
+        self.airplane = airplane
 
-        if not isinstance(coupled_operating_points, list):
-            raise TypeError("coupled_operating_points must be a list.")
-        if len(coupled_operating_points) < 1:
-            raise ValueError("coupled_operating_points must have at least one element.")
-        for coupled_operating_point in coupled_operating_points:
-            if not isinstance(
-                coupled_operating_point, operating_point_mod.CoupledOperatingPoint
-            ):
-                raise TypeError(
-                    "Every element in coupled_operating_points must be a "
-                    "CoupledOperatingPoint."
+        if not isinstance(
+            coupled_operating_point, operating_point_mod.CoupledOperatingPoint
+        ):
+            raise TypeError("coupled_operating_point must be a CoupledOperatingPoint.")
+        self.coupled_operating_point = coupled_operating_point
+
+        # As CoupledSteadyProblems can only have one Airplane, they must have
+        # Cg_GP1_CgP1 set to zeros.
+        self.airplane.validate_first_airplane_constraints()
+
+        # Populate the GP1_CgP1 coordinates for the Airplane's Panels.
+        T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
+        for wing in airplane.wings:
+            _panels = wing.panels
+            assert _panels is not None
+
+            for panel in np.ravel(_panels):
+                panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, has_point=True
                 )
-        if len(coupled_operating_points) != len(airplanes):
-            raise ValueError(
-                "coupled_operating_points must have the same length as airplanes."
-            )
-        self.coupled_operating_points = coupled_operating_points
-
-        # REFACTOR: Not sure what to do about this. Perhaps we should say that the
-        #  Earth reference point is the reference point in the "wind tunnel" frame?
-        #  Or perhaps we should switch the Cg_E_CgP1 name to be Cg_F_CgP1 and define
-        #  a "formation axes"? Or better yet, disallow free flight simulations with
-        #  multiple Airplanes (at least for now).
-        # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
-        self.airplanes[0].validate_first_airplane_constraints()
-
-        # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the Panels'
-        # positions in the first Airplanes' geometry axes, relative to the first
-        # Airplanes' CG based on their locally defined positions.
-        for airplane_id, airplane in enumerate(self.airplanes):
-            T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
-
-            for wing in airplane.wings:
-                _panels = wing.panels
-                assert _panels is not None
-
-                for panel in np.ravel(_panels):
-                    panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
-                        T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, has_point=True
-                    )
-                    panel.Flpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
-                        T_pas_G_Cg_to_GP1_CgP1, panel.Flpp_G_Cg, has_point=True
-                    )
-                    panel.Blpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
-                        T_pas_G_Cg_to_GP1_CgP1, panel.Blpp_G_Cg, has_point=True
-                    )
-                    panel.Brpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
-                        T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
-                    )
+                panel.Flpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_GP1_CgP1, panel.Flpp_G_Cg, has_point=True
+                )
+                panel.Blpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_GP1_CgP1, panel.Blpp_G_Cg, has_point=True
+                )
+                panel.Brpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
+                )
 
 
 # TEST: Add unit tests for this class's initialization.
@@ -334,30 +309,23 @@ class CoupledUnsteadyProblem:
         self.num_steps = self.coupled_movement.num_steps
         self.delta_time = self.coupled_movement.delta_time
 
-        # Initialize empty lists of lists to hold the loads and load coefficients each
-        # Airplane experiences at each time step.
-        self.forces_W: list[list[np.ndarray]] = []
-        self.forceCoefficients_W: list[list[np.ndarray]] = []
-        self.moments_W_CgP1: list[list[np.ndarray]] = []
-        self.momentCoefficients_W_CgP1: list[list[np.ndarray]] = []
+        # Initialize empty lists to hold the loads and load coefficients the Airplane
+        # experiences at each time step.
+        self.forces_W: list[np.ndarray] = []
+        self.forceCoefficients_W: list[np.ndarray] = []
+        self.moments_W_CgP1: list[np.ndarray] = []
+        self.momentCoefficients_W_CgP1: list[np.ndarray] = []
 
-        # Initialize an empty list of lists to hold each time step's Airplanes. The
-        # first index identifies the AirplaneMovement and the second index identifies
-        # the time step.
+        # Get the list representing the Airplane at each time step.
         self.airplanes = coupled_movement.airplanes
-
-        # Get the first time step's Airplanes.
-        first_time_step_airplanes: list[geometry.airplane.Airplane] = []
-        for this_airplane_time_series in self.airplanes:
-            first_time_step_airplanes.append(this_airplane_time_series[0])
 
         # Initialize a list with the first time step's CoupledSteadyProblem. The
         # CoupledUnsteadyRingVortexLatticeMethodSolver will append each subsequent time
         # step's CoupledSteadyProblem to this list.
         self.coupled_steady_problems = [
             CoupledSteadyProblem(
-                airplanes=first_time_step_airplanes,
-                coupled_operating_points=self.coupled_movement.coupled_operating_points[
+                airplane=self.airplanes[0],
+                coupled_operating_point=self.coupled_movement.coupled_operating_points[
                     0
                 ],
             )

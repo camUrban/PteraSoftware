@@ -5,8 +5,8 @@
 OperatingPoint: A class used to contain the operating conditions of an aerodynamic
 problem.
 
-CoupledOperatingPoint: A class used to contain the operating conditions of one of the
-Airplanes in a free flight aerodynamic problem.
+CoupledOperatingPoint: A class used to contain the operating conditions at one of the
+time steps in a coupled aerodynamic problem.
 
 **Contains the following functions:**
 
@@ -213,24 +213,19 @@ class OperatingPoint:
 # REFACTOR: Add a section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds.
 # TEST: Add unit tests for this class's initialization.
 class CoupledOperatingPoint:
-    """A class used to contain the operating conditions of one of the Airplanes in a
-    free flight aerodynamic problem.
+    """A class used to contain the operating conditions at one of the time steps in a
+    coupled aerodynamic problem.
 
     **Notes:**
 
     CoupledUnsteadyProblems problems are initialized with a CoupledMovement object. This
-    CoupledMovement contains a list of AirplaneMovements and a list of
-    CoupledOperatingPoints. These lists must have the same length, as each
-    CoupledOperatingPoint in the list passed to CoupledMovement represents the initial
-    operating conditions experienced by the first Airplane of the corresponding
-    AirplaneMovement's list of Airplanes. During initialization, the
-    CoupledUnsteadyProblem will create a CoupledSteadyProblem, and pass it a list of
-    Airplanes (each of its CoupledMovement's AirplaneMovement's first Airplane) and its
-    CoupledMovement's list of CoupledOperatingPoints. This CoupledSteadyProblem will
-    thus represent the Airplanes and their operating conditions at the first time step.
-    During the simulation, a new CoupledSteadyProblem is created for each time step, and
-    it will contain the Airplane's associated with that time step along a new
-    CoupledOperatingPoint for each Airplane's current operating conditions.
+    CoupledMovement contains an AirplaneMovement and a CoupledOperatingPoint. During
+    initialization, the CoupledUnsteadyProblem will create a CoupledSteadyProblem, and
+    pass it an Airplane and a CoupledOperatingPoint. This CoupledSteadyProblem will thus
+    represent the Airplane and its operating conditions at the first time step. During
+    the simulation, a new CoupledSteadyProblem is created for each time step, and it
+    will contain the Airplane associated with that time step along with a new
+    CoupledOperatingPoint with the current operating conditions.
 
     **Contains the following methods:**
 

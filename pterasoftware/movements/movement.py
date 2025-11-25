@@ -653,36 +653,33 @@ class CoupledMovement:
 
     **Contains the following methods:**
 
-    max_period: The longest period of motion of CoupledMovement's sub AirplaneMovements,
-    of their sub WingMovements, and of their sub WingCrossSectionMovements.
+    max_period: The longest period of motion of CoupledMovement's AirplaneMovement, of
+    its WingMovement(s), and of their WingCrossSectionMovements.
 
-    static: Flags if CoupledMovement's sub AirplaneMovements, their sub WingMovements,
-    and their sub WingCrossSectionMovements all represent no motion.
+    static: Flags if CoupledMovement's AirplaneMovement, its WingMovement(s), and their
+    WingCrossSectionMovements all represent no motion.
     """
 
     def __init__(
         self,
-        airplane_movements: list[airplane_movement_mod.AirplaneMovement],
-        initial_coupled_operating_points: list[
-            operating_point_mod.CoupledOperatingPoint
-        ],
+        airplane_movement: airplane_movement_mod.AirplaneMovement,
+        initial_coupled_operating_point: operating_point_mod.CoupledOperatingPoint,
         delta_time: float | int,
         prescribed_num_steps: int,
         free_num_steps: int,
     ) -> None:
         """The initialization method.
 
-        Note: This method checks that all Wings maintain their symmetry type across all
-        time steps. See the WingMovement class documentation for more details on this
+        This method checks that all Wings maintain their symmetry type across all time
+        steps. See the WingMovement class documentation for more details on this
         requirement, and the Wing class documentation for more information on symmetry
         types.
 
-        :param airplane_movements: The list of AirplaneMovements characterizing the
-            internal motions (e.g. the motion due to flapping wings) for each airplane
-            we are simulating in free flight.
-        :param initial_coupled_operating_points: The list of CoupledOperatingPoints
-            representing the initial operating conditions of each Airplane. It must have
-            the same length as the AirplaneMovements.
+        :param airplane_movement: The AirplaneMovement characterizing the internal
+            motions (e.g. the motion due to flapping wings) of the airplane we are
+            simulating in free flight.
+        :param initial_coupled_operating_point: The CoupledOperatingPoint representing
+            the initial operating conditions of the airplane we are simulating.
         :param delta_time: The time, in seconds, between each time step. It must be a
             positive number (int or float). It will be converted internally to a float.
         :param prescribed_num_steps: The number of prescribed flight time steps to
@@ -691,39 +688,21 @@ class CoupledMovement:
             the prescribed time steps. It must be a positive int.
         :return: None
         """
-        if not isinstance(airplane_movements, list):
-            raise TypeError("airplane_movements must be a list.")
-        if len(airplane_movements) < 1:
-            raise ValueError("airplane_movements must have at least one element.")
-        for airplane_movement in airplane_movements:
-            if not isinstance(
-                airplane_movement, airplane_movement_mod.AirplaneMovement
-            ):
-                raise TypeError(
-                    "Every element in airplane_movements must be an AirplaneMovement."
-                )
-        self.airplane_movements = airplane_movements
+        if not isinstance(airplane_movement, airplane_movement_mod.AirplaneMovement):
+            raise TypeError("airplane_movement must be an AirplaneMovement.")
+        self.airplane_movement = airplane_movement
 
-        if not isinstance(initial_coupled_operating_points, list):
-            raise TypeError("initial_coupled_operating_points must be a list.")
-        if len(initial_coupled_operating_points) < 1:
-            raise ValueError(
-                "initial_coupled_operating_points must have at least one element."
+        if not isinstance(
+            initial_coupled_operating_point, operating_point_mod.CoupledOperatingPoint
+        ):
+            raise TypeError(
+                "initial_coupled_operating_point must be a CoupledOperatingPoint."
             )
-        for initial_coupled_operating_point in initial_coupled_operating_points:
-            if not isinstance(
-                initial_coupled_operating_point,
-                operating_point_mod.CoupledOperatingPoint,
-            ):
-                raise TypeError(
-                    "initial_coupled_operating_point must be a CoupledOperatingPoint."
-                )
-        if len(initial_coupled_operating_points) != len(self.airplane_movements):
-            raise ValueError(
-                "The number of initial_coupled_operating_points must equal the number "
-                "of airplane_movements."
-            )
-        self.initial_coupled_operating_points = initial_coupled_operating_points
+        # Create a list to hold each time step's CoupledOperatingPoint and add the
+        # initial CoupledOperatingPoint. The
+        # CoupledUnsteadyRingVortexLatticeMethodSolver will append each subsequent
+        # time step's CoupledOperatingPoint to this list.
+        self.coupled_operating_points = [initial_coupled_operating_point]
 
         self.delta_time = _parameter_validation.number_in_range_return_float(
             delta_time, "delta_time", min_val=0.0, min_inclusive=False
@@ -737,73 +716,51 @@ class CoupledMovement:
 
         self.num_steps = self.prescribed_num_steps + self.free_num_steps
 
-        # Generate a list of lists of Airplanes that are the Airplanes at each time
-        # step. The first index identifies the AirplaneMovement, and the second index
-        # identifies the time step.
-        self.airplanes = []
-        for airplane_movement in self.airplane_movements:
-            self.airplanes.append(
-                airplane_movement.generate_airplanes(
-                    num_steps=self.num_steps, delta_time=self.delta_time
-                )
-            )
+        # Generate a lists of Airplanes for each time step.
+        self.airplanes = airplane_movement.generate_airplanes(
+            num_steps=self.num_steps, delta_time=self.delta_time
+        )
 
         # Validate that all Wings maintain their symmetry type across all time steps.
-        for airplane_movement_id, airplane_list in enumerate(self.airplanes):
-            # Get this AirplaneMovement's base Airplane.
-            base_airplane = airplane_list[0]
+        # Start by getting the AirplaneMovement's base Airplane.
+        base_airplane = self.airplanes[0]
 
-            # Store the symmetry types of the base Wings.
-            base_wing_symmetry_types = []
-            for wing in base_airplane.wings:
-                base_wing_symmetry_types.append(wing.symmetry_type)
+        # Store the symmetry types of the base Wings.
+        base_wing_symmetry_types = []
+        for wing in base_airplane.wings:
+            base_wing_symmetry_types.append(wing.symmetry_type)
 
-            # Validate all subsequent time steps.
-            for step_id, airplane in enumerate(airplane_list):
-                # Check that Wings maintain their symmetry types.
-                for wing_id, wing in enumerate(airplane.wings):
-                    base_symmetry_type = base_wing_symmetry_types[wing_id]
-                    if wing.symmetry_type != base_symmetry_type:
-                        raise ValueError(
-                            f"Wing {wing_id} in AirplaneMovement "
-                            f"{airplane_movement_id} changed from type "
-                            f"{base_symmetry_type} symmetry at time step 0 to type "
-                            f"{wing.symmetry_type} symmetry at time step {step_id}. "
-                            f"Wings cannot undergo motion that changes their symmetry "
-                            f"type. This happens when a symmetric Wing moves such "
-                            f"that its symmetry plane is no longer coincident with "
-                            f"the wing axes' yz-plane or vice versa."
-                        )
-
-        # Create a list of lists to hold each time step's CoupledOperatingPoints and add
-        # the initial CoupledOperatingPoints. The
-        # CoupledUnsteadyRingVortexLatticeMethodSolver will append each subsequent time
-        # step's CoupledOperatingPoints to this list. The first index is the time step
-        # and the second index is the airplane this CoupledOperatingPoint corresponds
-        # to.
-        self.coupled_operating_points = [self.initial_coupled_operating_points]
+        # Validate all subsequent time steps.
+        for step_id, airplane in enumerate(self.airplanes):
+            # Check that Wings maintain their symmetry types.
+            for wing_id, wing in enumerate(airplane.wings):
+                base_symmetry_type = base_wing_symmetry_types[wing_id]
+                if wing.symmetry_type != base_symmetry_type:
+                    raise ValueError(
+                        f"Wing {wing_id} changed from type {base_symmetry_type} "
+                        f"symmetry at time step 0 to type {wing.symmetry_type} "
+                        f"symmetry at time step {step_id}. Wings cannot undergo "
+                        f"motion that changes their symmetry type. This happens when "
+                        f"a symmetric Wing moves such that its symmetry plane is no "
+                        f"longer coincident with the wing axes' yz-plane or vice versa."
+                    )
 
     # TEST: Add unit tests for this method.
     @property
     def max_period(self) -> float:
-        """The longest period of motion of CoupledMovement's sub AirplaneMovements, of
-        their sub WingMovements, and of their sub WingCrossSectionMovements.
+        """The longest period of motion of CoupledMovement's AirplaneMovement, of its
+        WingMovement(s), and of their WingCrossSectionMovements.
 
         :return: The longest period in seconds. If the all the motion is static, this
             will be 0.0.
         """
-        # Iterate through the AirplaneMovements and return the one with the largest max
-        # period.
-        airplane_movement_max_periods = []
-        for airplane_movement in self.airplane_movements:
-            airplane_movement_max_periods.append(airplane_movement.max_period)
-        return max(airplane_movement_max_periods)
+        return self.airplane_movement.max_period
 
     # TEST: Add unit tests for this method.
     @property
     def static(self) -> bool:
-        """Flags if CoupledMovement's sub AirplaneMovements, their sub WingMovements,
-        and their sub WingCrossSectionMovements all represent no motion.
+        """Flags if CoupledMovement's AirplaneMovement, its WingMovement(s), and their
+        WingCrossSectionMovements all represent no motion.
 
         :return: True if all the motion is static. False otherwise.
         """

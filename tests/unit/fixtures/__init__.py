@@ -28,7 +28,7 @@ This package contains the following modules:
     fixtures for movements functions tests.
 
     operating_point_fixtures.py: This module contains functions to create
-    OperatingPoints.
+    OperatingPoints and CoupledOperatingPoints for use in tests.
 
     operating_point_movement_fixtures.py: This module contains functions to create
     OperatingPointMovements for use in tests.

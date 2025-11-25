@@ -1,4 +1,4 @@
-"""This module contains a class to test OperatingPoints."""
+"""This module contains a class to test OperatingPoints and CoupledOperatingPoints."""
 
 import unittest
 import numpy as np
@@ -588,6 +588,556 @@ class TestOperatingPoint(unittest.TestCase):
         # Both should produce valid transformations
         self.assertEqual(op_low.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
         self.assertEqual(op_high.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
+
+
+class TestCoupledOperatingPoint(unittest.TestCase):
+    """This is a class with functions to test CoupledOperatingPoints."""
+
+    def setUp(self):
+        """Set up test fixtures for CoupledOperatingPoint tests."""
+        # Create fixtures for various CoupledOperatingPoint configurations.
+        self.basic_coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+        self.with_angular_speed_coupled_operating_point = (
+            operating_point_fixtures.make_with_angular_speed_coupled_operating_point_fixture()
+        )
+        self.with_attitude_angles_coupled_operating_point = (
+            operating_point_fixtures.make_with_attitude_angles_coupled_operating_point_fixture()
+        )
+        self.full_coupled_operating_point = (
+            operating_point_fixtures.make_full_coupled_operating_point_fixture()
+        )
+        self.boundary_attitude_angles_coupled_operating_point = (
+            operating_point_fixtures.make_boundary_attitude_angles_coupled_operating_point_fixture()
+        )
+        self.negative_angular_speed_coupled_operating_point = (
+            operating_point_fixtures.make_negative_angular_speed_coupled_operating_point_fixture()
+        )
+        self.negative_attitude_angles_coupled_operating_point = (
+            operating_point_fixtures.make_negative_attitude_angles_coupled_operating_point_fixture()
+        )
+        self.high_angular_speed_coupled_operating_point = (
+            operating_point_fixtures.make_high_angular_speed_coupled_operating_point_fixture()
+        )
+
+    def test_initialization_valid_parameters(self):
+        """Test CoupledOperatingPoint initialization with valid parameters."""
+        # Test basic CoupledOperatingPoint initialization.
+        self.assertIsInstance(
+            self.basic_coupled_operating_point, ps.operating_point.CoupledOperatingPoint
+        )
+
+        # Verify inherited attributes from OperatingPoint.
+        self.assertEqual(self.basic_coupled_operating_point.rho, 1.225)
+        self.assertEqual(self.basic_coupled_operating_point.vCg__E, 10.0)
+        self.assertEqual(self.basic_coupled_operating_point.alpha, 5.0)
+        self.assertEqual(self.basic_coupled_operating_point.beta, 0.0)
+        self.assertEqual(self.basic_coupled_operating_point.externalFX_W, 0.0)
+        self.assertEqual(self.basic_coupled_operating_point.nu, 15.06e-6)
+
+        # Verify CoupledOperatingPoint specific attributes.
+        npt.assert_array_equal(
+            self.basic_coupled_operating_point.omegas_BP1__E, [0.0, 0.0, 0.0]
+        )
+        npt.assert_array_equal(
+            self.basic_coupled_operating_point.angles_E_to_BP1_izyx, [0.0, 0.0, 0.0]
+        )
+
+    def test_is_subclass_of_operating_point(self):
+        """Test that CoupledOperatingPoint is a subclass of OperatingPoint."""
+        self.assertIsInstance(
+            self.basic_coupled_operating_point, ps.operating_point.OperatingPoint
+        )
+
+        # Verify that all OperatingPoint properties are available.
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "rho"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "vCg__E"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "alpha"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "beta"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "externalFX_W"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "nu"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "qInf__E"))
+        self.assertTrue(
+            hasattr(self.basic_coupled_operating_point, "T_pas_GP1_CgP1_to_W_CgP1")
+        )
+        self.assertTrue(
+            hasattr(self.basic_coupled_operating_point, "T_pas_W_CgP1_to_GP1_CgP1")
+        )
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "vInfHat_GP1__E"))
+        self.assertTrue(hasattr(self.basic_coupled_operating_point, "vInf_GP1__E"))
+
+    def test_initialization_with_defaults(self):
+        """Test that default values are applied correctly for inherited parameters."""
+        # Create CoupledOperatingPoint with minimal required parameters.
+        coupled_operating_point_default = ps.operating_point.CoupledOperatingPoint(
+            omegas_BP1__E=(0.0, 0.0, 0.0),
+            angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+        )
+
+        # Verify inherited default values from OperatingPoint.
+        self.assertEqual(coupled_operating_point_default.rho, 1.225)
+        self.assertEqual(coupled_operating_point_default.vCg__E, 10.0)
+        self.assertEqual(coupled_operating_point_default.alpha, 5.0)
+        self.assertEqual(coupled_operating_point_default.beta, 0.0)
+        self.assertEqual(coupled_operating_point_default.externalFX_W, 0.0)
+        self.assertEqual(coupled_operating_point_default.nu, 15.06e-6)
+
+        # Verify CoupledOperatingPoint specific attributes.
+        npt.assert_array_equal(
+            coupled_operating_point_default.omegas_BP1__E, [0.0, 0.0, 0.0]
+        )
+        npt.assert_array_equal(
+            coupled_operating_point_default.angles_E_to_BP1_izyx, [0.0, 0.0, 0.0]
+        )
+
+    def test_omegas_BP1__E_parameter_validation_valid(self):
+        """Test omegas_BP1__E parameter validation with valid values."""
+        # Test various valid omegas_BP1__E values.
+        valid_omegas_values = [
+            (0.0, 0.0, 0.0),
+            (1.0, 2.0, 3.0),
+            (-1.0, -2.0, -3.0),
+            (0.5, -0.5, 0.0),
+            [0.1, 0.2, 0.3],
+            np.array([0.4, 0.5, 0.6]),
+        ]
+
+        for omegas in valid_omegas_values:
+            with self.subTest(omegas=omegas):
+                coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
+                    omegas_BP1__E=omegas,
+                    angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+                )
+                npt.assert_array_almost_equal(
+                    coupled_operating_point.omegas_BP1__E, np.array(omegas, dtype=float)
+                )
+
+    def test_omegas_BP1__E_parameter_validation_invalid(self):
+        """Test omegas_BP1__E parameter validation with invalid values."""
+        # Test invalid omegas_BP1__E values.
+        invalid_omegas_values = [
+            (0.0, 0.0),  # Wrong length
+            (0.0, 0.0, 0.0, 0.0),  # Wrong length
+            "invalid",  # Wrong type
+            None,  # None type
+            (1.0, "invalid", 0.0),  # Mixed types
+        ]
+
+        for invalid_omegas in invalid_omegas_values:
+            with self.subTest(invalid_omegas=invalid_omegas):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.operating_point.CoupledOperatingPoint(
+                        omegas_BP1__E=invalid_omegas,
+                        angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+                    )
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_valid(self):
+        """Test angles_E_to_BP1_izyx parameter validation with valid values."""
+        # Test various valid angles_E_to_BP1_izyx values within (-180, 180].
+        valid_angles_values = [
+            (0.0, 0.0, 0.0),
+            (45.0, 30.0, 15.0),
+            (-45.0, -30.0, -15.0),
+            (180.0, 180.0, 180.0),
+            (-179.999, -179.999, -179.999),
+            [90.0, -90.0, 0.0],
+            np.array([10.0, 20.0, 30.0]),
+        ]
+
+        for angles in valid_angles_values:
+            with self.subTest(angles=angles):
+                coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
+                    omegas_BP1__E=(0.0, 0.0, 0.0),
+                    angles_E_to_BP1_izyx=angles,
+                )
+                npt.assert_array_almost_equal(
+                    coupled_operating_point.angles_E_to_BP1_izyx,
+                    np.array(angles, dtype=float),
+                )
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_invalid_range(self):
+        """Test angles_E_to_BP1_izyx parameter validation with values outside range."""
+        # Test angles outside the valid range (-180, 180].
+        invalid_angles_values = [
+            (180.1, 0.0, 0.0),  # First element > 180
+            (0.0, 180.1, 0.0),  # Second element > 180
+            (0.0, 0.0, 180.1),  # Third element > 180
+            (-180.0, 0.0, 0.0),  # First element <= -180
+            (0.0, -180.0, 0.0),  # Second element <= -180
+            (0.0, 0.0, -180.0),  # Third element <= -180
+            (-180.1, 0.0, 0.0),  # First element < -180
+            (200.0, 200.0, 200.0),  # All elements out of range
+        ]
+
+        for invalid_angles in invalid_angles_values:
+            with self.subTest(invalid_angles=invalid_angles):
+                with self.assertRaises(ValueError):
+                    ps.operating_point.CoupledOperatingPoint(
+                        omegas_BP1__E=(0.0, 0.0, 0.0),
+                        angles_E_to_BP1_izyx=invalid_angles,
+                    )
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_invalid_type(self):
+        """Test angles_E_to_BP1_izyx parameter validation with invalid types."""
+        # Test invalid types for angles_E_to_BP1_izyx.
+        invalid_angles_values = [
+            (0.0, 0.0),  # Wrong length
+            (0.0, 0.0, 0.0, 0.0),  # Wrong length
+            "invalid",  # Wrong type
+            None,  # None type
+            (1.0, "invalid", 0.0),  # Mixed types
+        ]
+
+        for invalid_angles in invalid_angles_values:
+            with self.subTest(invalid_angles=invalid_angles):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.operating_point.CoupledOperatingPoint(
+                        omegas_BP1__E=(0.0, 0.0, 0.0),
+                        angles_E_to_BP1_izyx=invalid_angles,
+                    )
+
+    def test_omegas_BP1__E_shape_and_type(self):
+        """Test omegas_BP1__E shape and type."""
+        omegas = self.basic_coupled_operating_point.omegas_BP1__E
+
+        # Should be a 3-element ndarray.
+        self.assertEqual(len(omegas), 3)
+        self.assertIsInstance(omegas, np.ndarray)
+        self.assertEqual(omegas.dtype, float)
+
+    def test_angles_E_to_BP1_izyx_shape_and_type(self):
+        """Test angles_E_to_BP1_izyx shape and type."""
+        angles = self.basic_coupled_operating_point.angles_E_to_BP1_izyx
+
+        # Should be a 3-element ndarray.
+        self.assertEqual(len(angles), 3)
+        self.assertIsInstance(angles, np.ndarray)
+        self.assertEqual(angles.dtype, float)
+
+    def test_inherited_qInf__E_calculation(self):
+        """Test that inherited qInf__E calculation works correctly."""
+        # Verify qInf__E = 0.5 * rho * vCg__E^2.
+        expected_qInf = (
+            0.5
+            * self.basic_coupled_operating_point.rho
+            * self.basic_coupled_operating_point.vCg__E**2
+        )
+        self.assertAlmostEqual(
+            self.basic_coupled_operating_point.qInf__E, expected_qInf, places=10
+        )
+
+        # Test with full configuration.
+        expected_qInf_full = (
+            0.5
+            * self.full_coupled_operating_point.rho
+            * self.full_coupled_operating_point.vCg__E**2
+        )
+        self.assertAlmostEqual(
+            self.full_coupled_operating_point.qInf__E, expected_qInf_full, places=10
+        )
+
+    def test_inherited_transformation_matrices(self):
+        """Test that inherited transformation matrices work correctly."""
+        # Test transformation matrices for all fixtures.
+        fixtures = [
+            self.basic_coupled_operating_point,
+            self.with_angular_speed_coupled_operating_point,
+            self.with_attitude_angles_coupled_operating_point,
+            self.full_coupled_operating_point,
+        ]
+
+        for coupled_operating_point in fixtures:
+            with self.subTest(coupled_operating_point=coupled_operating_point):
+                T_forward = coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1
+                T_inverse = coupled_operating_point.T_pas_W_CgP1_to_GP1_CgP1
+
+                # Verify shape is 4x4.
+                self.assertEqual(T_forward.shape, (4, 4))
+                self.assertEqual(T_inverse.shape, (4, 4))
+
+                # Verify they are inverses.
+                identity = T_forward @ T_inverse
+                npt.assert_allclose(identity, np.eye(4), atol=1e-14)
+
+    def test_inherited_vInf_properties(self):
+        """Test that inherited velocity properties work correctly."""
+        # Test velocity properties for all fixtures.
+        fixtures = [
+            self.basic_coupled_operating_point,
+            self.with_angular_speed_coupled_operating_point,
+            self.with_attitude_angles_coupled_operating_point,
+            self.full_coupled_operating_point,
+        ]
+
+        for coupled_operating_point in fixtures:
+            with self.subTest(coupled_operating_point=coupled_operating_point):
+                # Test vInfHat_GP1__E is a unit vector.
+                vInfHat = coupled_operating_point.vInfHat_GP1__E
+                self.assertEqual(len(vInfHat), 3)
+                npt.assert_allclose(np.linalg.norm(vInfHat), 1.0, atol=1e-14)
+
+                # Test vInf_GP1__E has magnitude equal to vCg__E.
+                vInf = coupled_operating_point.vInf_GP1__E
+                self.assertEqual(len(vInf), 3)
+                npt.assert_allclose(
+                    np.linalg.norm(vInf), coupled_operating_point.vCg__E, atol=1e-14
+                )
+
+    def test_with_angular_speed_values(self):
+        """Test CoupledOperatingPoint with non zero angular speed values."""
+        # Verify omegas_BP1__E values.
+        expected_omegas = np.array([0.5, 0.3, 0.1])
+        npt.assert_array_almost_equal(
+            self.with_angular_speed_coupled_operating_point.omegas_BP1__E,
+            expected_omegas,
+        )
+
+        # Verify angles_E_to_BP1_izyx values are still zero.
+        npt.assert_array_almost_equal(
+            self.with_angular_speed_coupled_operating_point.angles_E_to_BP1_izyx,
+            [0.0, 0.0, 0.0],
+        )
+
+    def test_with_attitude_angles_values(self):
+        """Test CoupledOperatingPoint with non zero attitude angle values."""
+        # Verify omegas_BP1__E values are still zero.
+        npt.assert_array_almost_equal(
+            self.with_attitude_angles_coupled_operating_point.omegas_BP1__E,
+            [0.0, 0.0, 0.0],
+        )
+
+        # Verify angles_E_to_BP1_izyx values.
+        expected_angles = np.array([15.0, 10.0, 5.0])
+        npt.assert_array_almost_equal(
+            self.with_attitude_angles_coupled_operating_point.angles_E_to_BP1_izyx,
+            expected_angles,
+        )
+
+    def test_full_coupled_operating_point_values(self):
+        """Test CoupledOperatingPoint with all parameters set to non zero values."""
+        # Verify all inherited parameters.
+        self.assertEqual(self.full_coupled_operating_point.rho, 1.225)
+        self.assertEqual(self.full_coupled_operating_point.vCg__E, 15.0)
+        self.assertEqual(self.full_coupled_operating_point.alpha, 10.0)
+        self.assertEqual(self.full_coupled_operating_point.beta, 5.0)
+        self.assertEqual(self.full_coupled_operating_point.externalFX_W, 25.0)
+        self.assertEqual(self.full_coupled_operating_point.nu, 18.0e-6)
+
+        # Verify CoupledOperatingPoint specific parameters.
+        expected_omegas = np.array([0.3, 0.2, 0.1])
+        expected_angles = np.array([20.0, -15.0, 10.0])
+        npt.assert_array_almost_equal(
+            self.full_coupled_operating_point.omegas_BP1__E, expected_omegas
+        )
+        npt.assert_array_almost_equal(
+            self.full_coupled_operating_point.angles_E_to_BP1_izyx, expected_angles
+        )
+
+    def test_boundary_attitude_angles_values(self):
+        """Test CoupledOperatingPoint with attitude angles at boundary values."""
+        # Verify angles at boundary.
+        expected_angles = np.array([180.0, 180.0, 180.0])
+        npt.assert_array_almost_equal(
+            self.boundary_attitude_angles_coupled_operating_point.angles_E_to_BP1_izyx,
+            expected_angles,
+        )
+
+        # Verify inherited properties still work correctly.
+        self.assertFalse(
+            np.any(
+                np.isnan(
+                    self.boundary_attitude_angles_coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1
+                )
+            )
+        )
+        self.assertFalse(
+            np.any(
+                np.isinf(
+                    self.boundary_attitude_angles_coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1
+                )
+            )
+        )
+
+    def test_negative_angular_speed_values(self):
+        """Test CoupledOperatingPoint with negative angular speed values."""
+        expected_omegas = np.array([-0.4, -0.2, -0.1])
+        npt.assert_array_almost_equal(
+            self.negative_angular_speed_coupled_operating_point.omegas_BP1__E,
+            expected_omegas,
+        )
+
+    def test_negative_attitude_angles_values(self):
+        """Test CoupledOperatingPoint with negative attitude angle values."""
+        expected_angles = np.array([-30.0, -20.0, -10.0])
+        npt.assert_array_almost_equal(
+            self.negative_attitude_angles_coupled_operating_point.angles_E_to_BP1_izyx,
+            expected_angles,
+        )
+
+    def test_high_angular_speed_values(self):
+        """Test CoupledOperatingPoint with high angular speed values."""
+        expected_omegas = np.array([5.0, 3.0, 2.0])
+        npt.assert_array_almost_equal(
+            self.high_angular_speed_coupled_operating_point.omegas_BP1__E,
+            expected_omegas,
+        )
+
+    def test_multiple_coupled_operating_points_independent(self):
+        """Test that multiple CoupledOperatingPoints are independent."""
+        # Create two CoupledOperatingPoints with different parameters.
+        coupled_operating_point_1 = ps.operating_point.CoupledOperatingPoint(
+            alpha=10.0,
+            vCg__E=20.0,
+            omegas_BP1__E=(1.0, 2.0, 3.0),
+            angles_E_to_BP1_izyx=(10.0, 20.0, 30.0),
+        )
+        coupled_operating_point_2 = ps.operating_point.CoupledOperatingPoint(
+            alpha=30.0,
+            vCg__E=50.0,
+            omegas_BP1__E=(4.0, 5.0, 6.0),
+            angles_E_to_BP1_izyx=(40.0, 50.0, 60.0),
+        )
+
+        # Verify they have different properties.
+        self.assertNotEqual(
+            coupled_operating_point_1.alpha, coupled_operating_point_2.alpha
+        )
+        self.assertNotEqual(
+            coupled_operating_point_1.vCg__E, coupled_operating_point_2.vCg__E
+        )
+        self.assertFalse(
+            np.allclose(
+                coupled_operating_point_1.omegas_BP1__E,
+                coupled_operating_point_2.omegas_BP1__E,
+            )
+        )
+        self.assertFalse(
+            np.allclose(
+                coupled_operating_point_1.angles_E_to_BP1_izyx,
+                coupled_operating_point_2.angles_E_to_BP1_izyx,
+            )
+        )
+
+    def test_comprehensive_coupled_operating_point_properties(self):
+        """Test all properties on various CoupledOperatingPoint fixtures."""
+        fixtures = [
+            (self.basic_coupled_operating_point, "basic"),
+            (self.with_angular_speed_coupled_operating_point, "with_angular_speed"),
+            (self.with_attitude_angles_coupled_operating_point, "with_attitude_angles"),
+            (self.full_coupled_operating_point, "full"),
+            (
+                self.boundary_attitude_angles_coupled_operating_point,
+                "boundary_attitude_angles",
+            ),
+            (
+                self.negative_angular_speed_coupled_operating_point,
+                "negative_angular_speed",
+            ),
+            (
+                self.negative_attitude_angles_coupled_operating_point,
+                "negative_attitude_angles",
+            ),
+            (self.high_angular_speed_coupled_operating_point, "high_angular_speed"),
+        ]
+
+        for coupled_operating_point, fixture_name in fixtures:
+            with self.subTest(fixture=fixture_name):
+                # Test inherited attributes exist and have correct types.
+                self.assertIsInstance(coupled_operating_point.rho, float)
+                self.assertIsInstance(coupled_operating_point.vCg__E, float)
+                self.assertIsInstance(coupled_operating_point.alpha, float)
+                self.assertIsInstance(coupled_operating_point.beta, float)
+                self.assertIsInstance(coupled_operating_point.externalFX_W, float)
+                self.assertIsInstance(coupled_operating_point.nu, float)
+
+                # Test inherited properties return correct types.
+                self.assertIsInstance(coupled_operating_point.qInf__E, float)
+                self.assertIsInstance(
+                    coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1, np.ndarray
+                )
+                self.assertIsInstance(
+                    coupled_operating_point.T_pas_W_CgP1_to_GP1_CgP1, np.ndarray
+                )
+                self.assertIsInstance(
+                    coupled_operating_point.vInfHat_GP1__E, np.ndarray
+                )
+                self.assertIsInstance(coupled_operating_point.vInf_GP1__E, np.ndarray)
+
+                # Test CoupledOperatingPoint specific attributes.
+                self.assertIsInstance(coupled_operating_point.omegas_BP1__E, np.ndarray)
+                self.assertIsInstance(
+                    coupled_operating_point.angles_E_to_BP1_izyx, np.ndarray
+                )
+                self.assertEqual(len(coupled_operating_point.omegas_BP1__E), 3)
+                self.assertEqual(len(coupled_operating_point.angles_E_to_BP1_izyx), 3)
+
+                # Test no NaN or Inf values in properties.
+                self.assertFalse(np.isnan(coupled_operating_point.qInf__E))
+                self.assertFalse(
+                    np.any(np.isnan(coupled_operating_point.T_pas_GP1_CgP1_to_W_CgP1))
+                )
+                self.assertFalse(
+                    np.any(np.isnan(coupled_operating_point.T_pas_W_CgP1_to_GP1_CgP1))
+                )
+                self.assertFalse(
+                    np.any(np.isnan(coupled_operating_point.vInfHat_GP1__E))
+                )
+                self.assertFalse(np.any(np.isnan(coupled_operating_point.vInf_GP1__E)))
+                self.assertFalse(
+                    np.any(np.isnan(coupled_operating_point.omegas_BP1__E))
+                )
+                self.assertFalse(
+                    np.any(np.isnan(coupled_operating_point.angles_E_to_BP1_izyx))
+                )
+
+    def test_edge_case_angle_boundaries(self):
+        """Test angle validation at boundary values for angles_E_to_BP1_izyx."""
+        # Test boundary values that should be valid.
+        valid_boundary_cases = [
+            {"angles_E_to_BP1_izyx": (180.0, 0.0, 0.0)},
+            {"angles_E_to_BP1_izyx": (0.0, 180.0, 0.0)},
+            {"angles_E_to_BP1_izyx": (0.0, 0.0, 180.0)},
+            {"angles_E_to_BP1_izyx": (-179.999, 0.0, 0.0)},
+            {"angles_E_to_BP1_izyx": (0.0, -179.999, 0.0)},
+            {"angles_E_to_BP1_izyx": (0.0, 0.0, -179.999)},
+            {"angles_E_to_BP1_izyx": (180.0, 180.0, 180.0)},
+        ]
+
+        for params in valid_boundary_cases:
+            with self.subTest(params=params):
+                coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
+                    omegas_BP1__E=(0.0, 0.0, 0.0),
+                    **params,
+                )
+                npt.assert_array_almost_equal(
+                    coupled_operating_point.angles_E_to_BP1_izyx,
+                    np.array(params["angles_E_to_BP1_izyx"]),
+                )
+
+    def test_omegas_BP1__E_conversion_to_float_array(self):
+        """Test that omegas_BP1__E is converted to a float array."""
+        # Test with integer values.
+        coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
+            omegas_BP1__E=(1, 2, 3),
+            angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+        )
+        self.assertEqual(coupled_operating_point.omegas_BP1__E.dtype, float)
+        npt.assert_array_equal(coupled_operating_point.omegas_BP1__E, [1.0, 2.0, 3.0])
+
+    def test_angles_E_to_BP1_izyx_conversion_to_float_array(self):
+        """Test that angles_E_to_BP1_izyx is converted to a float array."""
+        # Test with integer values.
+        coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
+            omegas_BP1__E=(0.0, 0.0, 0.0),
+            angles_E_to_BP1_izyx=(10, 20, 30),
+        )
+        self.assertEqual(coupled_operating_point.angles_E_to_BP1_izyx.dtype, float)
+        npt.assert_array_equal(
+            coupled_operating_point.angles_E_to_BP1_izyx, [10.0, 20.0, 30.0]
+        )
 
 
 if __name__ == "__main__":

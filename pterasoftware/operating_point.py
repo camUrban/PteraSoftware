@@ -211,7 +211,6 @@ class OperatingPoint:
 
 
 # REFACTOR: Add a section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds.
-# TEST: Add unit tests for this class's initialization.
 class CoupledOperatingPoint(OperatingPoint):
     """A subclass of OperatingPoint used to contain the operating conditions at one of
     the time steps in a coupled aerodynamic problem.

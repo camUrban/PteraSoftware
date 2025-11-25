@@ -10,6 +10,8 @@ draw: Draws a solver's Airplane(s).
 
 animate: Animates an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
 
+animate_free_flight: Animates a CoupledUnsteadyRingVortexLatticeMethodSolver's Airplane.
+
 plot_results_versus_time: Plots an UnsteadyRingVortexLatticeMethodSolver's loads and
 load coefficients as a function of time.
 
@@ -28,6 +30,8 @@ import webp
 
 from . import geometry
 from . import _parameter_validation
+from . import _transformations
+from . import coupled_unsteady_ring_vortex_lattice_method
 from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
@@ -98,6 +102,7 @@ def draw(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool_ = False,
@@ -141,12 +146,14 @@ def draw(
             steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
             steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
             unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
         ),
     ):
         raise TypeError(
             "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
-            "SteadyRingVortexLatticeMethodSolver, "
-            "or UnsteadyRingVortexLatticeMethodSolver."
+            "a SteadyRingVortexLatticeMethodSolver, "
+            "an UnsteadyRingVortexLatticeMethodSolver, "
+            "or a CoupledUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if scalar_type is not None:
@@ -168,22 +175,43 @@ def draw(
         raise RuntimeError(
             "solver must have run before drawing with show_streamlines set to True."
         )
-    if show_streamlines and len(solver.gridStreamlinePoints_GP1_CgP1) == 0:
-        raise RuntimeError(
-            "solver must have streamline points calculated before drawing with "
-            "show_streamlines set to True."
+    if show_streamlines and isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_streamlines can't be True when drawing a "
+            "CoupledUnsteadyRingVortexLatticeMethodSolver."
         )
+    if show_streamlines:
+        assert isinstance(
+            solver,
+            (
+                steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+                steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+                unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            ),
+        )
+        if len(solver.gridStreamlinePoints_GP1_CgP1) == 0:
+            raise RuntimeError(
+                "solver must have streamline points calculated before drawing with "
+                "show_streamlines set to True."
+            )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
         show_wake_vortices, "show_wake_vortices"
     )
     if show_wake_vortices and not isinstance(
         solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        ),
     ):
         raise ValueError(
             "show_wake_vortices can only be True when drawing an "
-            "UnsteadyRingVortexLatticeMethodSolver."
+            "UnsteadyRingVortexLatticeMethodSolver or a "
+            "CoupledUnsteadyRingVortexLatticeMethodSolver."
         )
     if show_wake_vortices and not solver.ran:
         raise RuntimeError(
@@ -212,12 +240,34 @@ def draw(
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 solver, draw_step
             )
-            plotter.add_mesh(
-                wake_ring_vortex_surfaces,
-                show_edges=True,
-                smooth_shading=False,
-                color=_wake_vortex_color,
+            if wake_ring_vortex_surfaces.n_points > 0:
+                plotter.add_mesh(
+                    wake_ring_vortex_surfaces,
+                    show_edges=True,
+                    smooth_shading=False,
+                    color=_wake_vortex_color,
+                )
+    elif isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        draw_step = solver.num_steps - 1
+
+        airplanes = [solver.current_airplane]
+        qInf__E = solver.current_coupled_operating_point.qInf__E
+
+        # If showing wake RingVortices, get their surfaces and plot them.
+        if show_wake_vortices:
+            wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces_free_flight(
+                solver, draw_step
             )
+            if wake_ring_vortex_surfaces.n_points > 0:
+                plotter.add_mesh(
+                    wake_ring_vortex_surfaces,
+                    show_edges=True,
+                    smooth_shading=False,
+                    color=_wake_vortex_color,
+                )
     else:
         airplanes = solver.airplanes
         qInf__E = solver.operating_point.qInf__E
@@ -271,7 +321,10 @@ def draw(
         )
 
     # If showing streamlines, plot them.
-    if show_streamlines:
+    if show_streamlines and not isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
         # Iterate through the spanwise positions in the solver's streamline point
         # ndarray.
         for spanwise_position in range(solver.gridStreamlinePoints_GP1_CgP1.shape[1]):
@@ -376,7 +429,7 @@ def animate(
     """
     if not isinstance(
         unsteady_solver,
-        (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,),
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
             "unsteady_solver must be an UnsteadyRingVortexLatticeMethodSolver."
@@ -581,12 +634,13 @@ def animate(
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
             )
-            plotter.add_mesh(
-                wake_ring_vortex_surfaces,
-                show_edges=True,
-                smooth_shading=False,
-                color=_wake_vortex_color,
-            )
+            if wake_ring_vortex_surfaces.n_points > 0:
+                plotter.add_mesh(
+                    wake_ring_vortex_surfaces,
+                    show_edges=True,
+                    smooth_shading=False,
+                    color=_wake_vortex_color,
+                )
 
         # Plot the Panels either with a uniform color or, if the current time step
         # has results, with scalar coloring.
@@ -639,6 +693,304 @@ def animate(
         # Convert the list of WebP Images to an WebP animation.
         webp.save_images(
             images, "Animate.webp", fps=actual_fps, lossless=False, quality=_quality
+        )
+
+    # Close all the Plotters.
+    pv.close_all()
+
+
+# TEST: Consider adding unit tests for this function.
+# TEST: Assess how comprehensive this function's integration tests are and update or
+#  extend them if needed.
+def animate_free_flight(
+    coupled_solver: coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    scalar_type: str | None = None,
+    show_wake_vortices: bool = False,
+    save: bool = False,
+    testing: bool = False,
+) -> None:
+    """Animates a CoupledUnsteadyRingVortexLatticeMethodSolver's Airplane.
+
+    :param coupled_solver: The CoupledUnsteadyRingVortexLatticeMethodSolver whose
+        Airplane will be animated.
+    :param scalar_type: Determines how to color the Panels. Setting this to None colors
+        the Panels uniformly. If the solver has been run, it can also be "induced drag",
+        "side force", or "lift", which respectively use each Panel's induced drag, side
+        force, and lift coefficient. The default is None.
+    :param show_wake_vortices: Set this to True to show any wake RingVortices. If True,
+        the solver must have already been run. Can be a bool or a numpy bool and will be
+        converted internally to a bool. The default is False.
+    :param save: Set this to True to save the image as a WebP. It can be a bool or a
+        numpy bool and will be converted internally to a bool. The default is False.
+    :param testing: Set this to True to start the animation after one second, which is
+        useful for running test suites. It can be a bool or a numpy bool and will be
+        converted internally to a bool. The default is False.
+    :return: None
+    """
+    if not isinstance(
+        coupled_solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise TypeError(
+            "coupled_solver must be a CoupledUnsteadyRingVortexLatticeMethodSolver."
+        )
+
+    if scalar_type is not None:
+        scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
+        if scalar_type not in ("induced drag", "side force", "lift"):
+            raise ValueError(
+                'scalar_type must be None, "induced drag", "side force", or "lift".'
+            )
+
+    show_wake_vortices = _parameter_validation.boolLike_return_bool(
+        show_wake_vortices, "show_wake_vortices"
+    )
+    save = _parameter_validation.boolLike_return_bool(save, "save")
+    testing = _parameter_validation.boolLike_return_bool(testing, "testing")
+
+    # Get the solver's CoupledSteadyProblems' Airplane at each time step.
+    airplanes = coupled_solver.coupled_unsteady_problem.airplanes
+
+    # Scale down the true-speed frames per second to at most 50 fps. This is the
+    # maximum speed at which some programs can render WebPs.
+    requested_fps = 1.0 / coupled_solver.delta_time
+    speed = 1.0
+    if requested_fps > 50.0:
+        speed = 50.0 / requested_fps
+    actual_fps = float(math.floor(requested_fps * speed))
+
+    # Create the Plotter and set it to use parallel projection (instead of perspective).
+    plotter = pv.Plotter(window_size=_window_size, lighting=None)
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
+
+    # Initialize values to hold the color map choice and its limits.
+    c_min = 0.0
+    c_max = 0.0
+    color_map: str = ""
+
+    # If saving the animation, add text that displays its speed.
+    if save:
+        plotter.add_text(
+            text="Speed: " + str(round(100 * speed)) + "%",
+            position=_text_speed_position,
+            font_size=_text_font_size,
+            viewport=True,
+            color=_text_color,
+        )
+
+    # Initialize variables to hold the CoupledSteadyProblems' scalars and their
+    # attributes.
+    all_scalars = np.empty(0, dtype=float)
+    min_scalar = 0.0
+    max_scalar = 0.0
+
+    # If coloring the Panels based on scalars, gather all the scalars across all the
+    # time steps and Airplanes. These will be used to set the color map limits.
+    if scalar_type is not None:
+        for step_id, airplane in enumerate(airplanes):
+            scalars_to_add = _get_scalars(
+                [airplane],
+                scalar_type,
+                coupled_solver.coupled_steady_problems[
+                    step_id
+                ].coupled_operating_point.qInf__E,
+            )
+            all_scalars = np.hstack((all_scalars, scalars_to_add))
+
+        # Choose the color map and set its limits based on if the min and max scalars
+        # across all time steps have the same sign (sequential color map) or if they
+        # have different signs (diverging color map).
+        if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
+            color_map = _sequential_color_map
+            c_min = max(
+                float(np.mean(all_scalars))
+                - _color_map_num_sig * float(np.std(all_scalars)),
+                float(np.min(all_scalars)),
+            )
+            c_max = min(
+                float(np.mean(all_scalars))
+                + _color_map_num_sig * float(np.std(all_scalars)),
+                float(np.max(all_scalars)),
+            )
+        else:
+            color_map = _diverging_color_map
+            c_min = -_color_map_num_sig * float(np.std(all_scalars))
+            c_max = _color_map_num_sig * float(np.std(all_scalars))
+
+        min_scalar = round(min(all_scalars), 2)
+        max_scalar = round(max(all_scalars), 2)
+
+    # Get the Panel surfaces of the first time step's Airplane in Earth axes,
+    # relative to the Earth origin.
+    panel_surfaces = _get_panel_surfaces_free_flight(
+        airplanes[0],
+        coupled_solver.stackPosition_E_E[0],
+        coupled_solver.stackR_pas_E_to_BP1[0],
+    )
+
+    # Plot the first time step's Airplanes' Panels either with scalar coloring or
+    # with a uniform color.
+    if scalar_type is not None:
+        these_scalars = _get_scalars(
+            [airplanes[0]],
+            scalar_type,
+            coupled_solver.coupled_steady_problems[0].coupled_operating_point.qInf__E,
+        )
+
+        _plot_scalars(
+            plotter,
+            these_scalars,
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            c_min,
+            c_max,
+            panel_surfaces,
+        )
+    else:
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=_panel_color,
+            smooth_shading=False,
+        )
+
+    # Set the Plotter's background color.
+    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
+
+    # If not testing, show the Plotter with the first time step, and print a message
+    # to the console on how to adjust the view and start the animation. If testing,
+    # show the Plotter with the first time step for 1 second, and start the animation
+    # with the current window view.
+    if not testing:
+        print(
+            'Orient the view, then press "q" to close the window and produce the '
+            "animation."
+        )
+        plotter.show(
+            title="Free Flight Animation - Rendering speed not to scale.",
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            auto_close=False,
+        )
+    else:
+        plotter.show(
+            title="Free Flight Animation - Rendering speed not to scale.",
+            cpos=(-1, -1, 1),
+            full_screen=False,
+            interactive=False,
+            auto_close=False,
+        )
+        time.sleep(1)
+
+    # Start a list to hold a WebP Image of each frame.
+    images = [
+        webp.Image.fromarray(
+            np.array(
+                plotter.screenshot(
+                    transparent_background=True,
+                    return_img=True,
+                )
+            )
+        )
+    ]
+
+    # Initialize a variable to keep track of the current time step.
+    current_step = 1
+
+    # Begin to iterate through the Airplanes from the subsequent time steps.
+    for airplane in airplanes[1:]:
+
+        # Clear the Plotter.
+        plotter.clear()
+
+        # Get the Panel surfaces of this time step's Airplane in Earth axes,
+        # relative to the Earth origin.
+        panel_surfaces = _get_panel_surfaces_free_flight(
+            airplane,
+            coupled_solver.stackPosition_E_E[current_step],
+            coupled_solver.stackR_pas_E_to_BP1[current_step],
+        )
+
+        # If saving the animation, add text that displays its speed.
+        if save:
+            plotter.add_text(
+                text="Speed: " + str(round(100 * speed)) + "%",
+                position=_text_speed_position,
+                font_size=_text_font_size,
+                viewport=True,
+                color=_text_color,
+            )
+
+        # If showing wake RingVortices, get their surfaces and plot them.
+        if show_wake_vortices:
+            wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces_free_flight(
+                coupled_solver, current_step
+            )
+            if wake_ring_vortex_surfaces.n_points > 0:
+                plotter.add_mesh(
+                    wake_ring_vortex_surfaces,
+                    show_edges=True,
+                    smooth_shading=False,
+                    color=_wake_vortex_color,
+                )
+
+        # Plot the Panels either with a uniform color or with scalar coloring.
+        if scalar_type is not None:
+            these_scalars = _get_scalars(
+                [airplane],
+                scalar_type,
+                coupled_solver.coupled_steady_problems[
+                    current_step
+                ].coupled_operating_point.qInf__E,
+            )
+
+            _plot_scalars(
+                plotter,
+                these_scalars,
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                c_min,
+                c_max,
+                panel_surfaces,
+            )
+        else:
+            plotter.add_mesh(
+                panel_surfaces,
+                show_edges=True,
+                color=_panel_color,
+                smooth_shading=False,
+            )
+
+        # If saving, append a WebP Image of this frame to the list of Images.
+        if save:
+            images.append(
+                webp.Image.fromarray(
+                    np.array(
+                        plotter.screenshot(
+                            filename=None,
+                            transparent_background=True,
+                            return_img=True,
+                        )
+                    )
+                )
+            )
+
+        # Increment the time step tracker.
+        current_step += 1
+
+    # If saving, save the list of Images as an animated WebP.
+    if save:
+        # Convert the list of WebP Images to an WebP animation.
+        webp.save_images(
+            images,
+            "AnimateFreeFlight.webp",
+            fps=actual_fps,
+            lossless=False,
+            quality=_quality,
         )
 
     # Close all the Plotters.
@@ -1215,6 +1567,119 @@ def print_results(
 
 
 # TEST: Consider adding unit tests for this function.
+def _get_panel_surfaces_free_flight(
+    airplane: geometry.airplane.Airplane,
+    position_E_E: np.ndarray,
+    R_pas_E_to_BP1: np.ndarray,
+) -> pv.PolyData:
+    """Returns a PolyData representation of the Wings' Panels' surfaces, in Earth axes,
+    relative to the Earth origin, for free flight visualization.
+
+    :param airplane: The Airplane whose Wings' Panels' surfaces will be returned.
+    :param position_E_E: A (3,) ndarray of floats representing the current position of
+        the Airplane's CG (in Earth axes, relative to the Earth origin). The units are
+        in meters.
+    :param R_pas_E_to_BP1: A (3,3) ndarray of floats representing the current
+        orientation of the Airplane, expressed as a passive rotation matrix from Earth
+        axes to the Airplane's body axes.
+    :return: The PolyData representation of the Airplane's Wings' Panels' surfaces (in
+        Earth axes, relative to the Earth origin).
+    """
+    # Initialize empty ndarrays to hold the Panels' vertices and faces.
+    stackVertices_GP1_CgP1 = np.empty((0, 3), dtype=float)
+    faces = np.empty(0, dtype=int)
+
+    # Initialize a variable to keep track of how many Panels have been added thus far.
+    panel_num = 0
+
+    # Increment through the Airplane's Wing(s).
+    for wing in airplane.wings:
+        _panels = wing.panels
+        assert _panels is not None
+
+        # Unravel this Wing's ndarray of Panels iterate through it.
+        panels = np.ravel(_panels)
+        for panel in panels:
+            # Arrange this Panel's vertices and faces into ndarrays in the
+            # proper form to represent PolyData surfaces.
+            vertices_GP1_CgP1 = np.vstack(
+                (
+                    panel.Flpp_GP1_CgP1,
+                    panel.Frpp_GP1_CgP1,
+                    panel.Brpp_GP1_CgP1,
+                    panel.Blpp_GP1_CgP1,
+                )
+            )
+            face_to_add = np.array(
+                [
+                    4,
+                    (panel_num * 4),
+                    (panel_num * 4) + 1,
+                    (panel_num * 4) + 2,
+                    (panel_num * 4) + 3,
+                ],
+                dtype=int,
+            )
+
+            # Add this Panel's vertices and faces to the ndarray of all vertices and
+            # faces.
+            stackVertices_GP1_CgP1 = np.vstack(
+                (stackVertices_GP1_CgP1, vertices_GP1_CgP1)
+            )
+            faces = np.hstack((faces, face_to_add))
+
+            # Update the number of Panels.
+            panel_num += 1
+
+    # Geometry axes point opposite to body axes (rotated 180 degrees about y-axis).
+    # Create the passive rotation transformation from the first Airplane's geometry
+    # axes, relative to the first Airplane's CG, to the first Airplane's body axes,
+    # relative to the first Airplane's CG.
+    T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+
+    # Create the passive rotation transformation from Earth axes, relative to the
+    # first Airplane's CG, to the first Airplane's body axes, relative to the first
+    # Airplane's CG. R_pas_E_to_BP1 is a (3, 3) matrix, so we need to embed it in a (
+    # 4, 4) homogeneous transformation matrix.
+    T_pas_E_CgP1_to_BP1_CgP1 = np.eye(4, dtype=float)
+    T_pas_E_CgP1_to_BP1_CgP1[:3, :3] = R_pas_E_to_BP1
+
+    # Invert to get the transformation from the first Airplane's body axes, relative
+    # to the first Airplane's CG, to Earth axes, relative to the first Airplane's CG.
+    T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(T_pas_E_CgP1_to_BP1_CgP1)
+
+    # Create the passive translation transformation from the Earth axes, relative to
+    # the first Airplane's CG, to Earth axes, relative to the Earth origin.
+    T_pas_E_CgP1_to_E_E = _transformations.generate_trans_T(
+        translations=position_E_E,
+        passive=True,
+    )
+
+    # Compose the transformations: GP1_CgP1 -> BP1_CgP1 -> E_CgP1 -> E_E.
+    # Note: For passive transformations, compose_T_pas takes them in path order.
+    T_pas_GP1_CgP1_to_E_E = _transformations.compose_T_pas(
+        T_pas_GP1_CgP1_to_BP1_CgP1,
+        T_pas_BP1_CgP1_to_E_CgP1,
+        T_pas_E_CgP1_to_E_E,
+    )
+
+    # Apply transformation to all vertices.
+    stackVertices_E_E = _transformations.apply_T_to_vectors(
+        T_pas_GP1_CgP1_to_E_E,
+        stackVertices_GP1_CgP1,
+        has_point=True,
+    )
+
+    # Return the Panels' surfaces.
+    return pv.PolyData(stackVertices_E_E, faces)
+
+
+# TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
     airplanes: list[geometry.airplane.Airplane],
 ) -> pv.PolyData:
@@ -1275,6 +1740,113 @@ def _get_panel_surfaces(
 
 
 # TEST: Consider adding unit tests for this function.
+def _get_wake_ring_vortex_surfaces_free_flight(
+    coupled_solver: coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    step: int,
+) -> pv.PolyData:
+    """Returns the PolyData representation of surfaces a
+    CoupledUnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time
+    step, in Earth axes, relative to the Earth origin.
+
+    :param coupled_solver: The CoupledUnsteadyRingVortexLatticeMethodSolver with the
+        wake RingVortices to process.
+    :param step: The time step number at which to process the wake RingVortices.
+    :return: The PolyData representation of the wake RingVortices.
+    """
+    position_E_E = coupled_solver.stackPosition_E_E[step]
+    R_pas_E_to_BP1 = coupled_solver.stackR_pas_E_to_BP1[step]
+
+    num_wake_ring_vortices = coupled_solver.list_num_wake_vortices[step]
+    stackFrwrvp_GP1_CgP1 = coupled_solver.listStackFrwrvp_GP1_CgP1[step]
+    stackFlwrvp_GP1_CgP1 = coupled_solver.listStackFlwrvp_GP1_CgP1[step]
+    stackBlwrvp_GP1_CgP1 = coupled_solver.listStackBlwrvp_GP1_CgP1[step]
+    stackBrwrvp_GP1_CgP1 = coupled_solver.listStackBrwrvp_GP1_CgP1[step]
+
+    # Initialize empty ndarrays to hold each wake RingVortex's vertices and face.
+    stackVertices_GP1_CgP1 = np.zeros((0, 3), dtype=float)
+    faces = np.zeros(0, dtype=int)
+
+    for wake_ring_vortex_num in range(num_wake_ring_vortices):
+        Frwrvp_GP1_CgP1 = stackFrwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Flwrvp_GP1_CgP1 = stackFlwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Blwrvp_GP1_CgP1 = stackBlwrvp_GP1_CgP1[wake_ring_vortex_num]
+        Brwrvp_GP1_CgP1 = stackBrwrvp_GP1_CgP1[wake_ring_vortex_num]
+
+        newVertices_GP1_CgP1 = np.vstack(
+            (
+                Flwrvp_GP1_CgP1,
+                Frwrvp_GP1_CgP1,
+                Brwrvp_GP1_CgP1,
+                Blwrvp_GP1_CgP1,
+            )
+        )
+        new_faces = np.array(
+            [
+                4,
+                (wake_ring_vortex_num * 4),
+                (wake_ring_vortex_num * 4) + 1,
+                (wake_ring_vortex_num * 4) + 2,
+                (wake_ring_vortex_num * 4) + 3,
+            ],
+            dtype=int,
+        )
+
+        # Stack this wake RingVortex's vertices and faces to the ndarrays of all wake
+        # RingVortices' vertices and faces.
+        stackVertices_GP1_CgP1 = np.vstack(
+            (stackVertices_GP1_CgP1, newVertices_GP1_CgP1)
+        )
+        faces = np.hstack((faces, new_faces))
+
+    # Geometry axes point opposite to body axes (rotated 180 degrees about y-axis).
+    # Create the passive rotation transformation from the first Airplane's geometry
+    # axes, relative to the first Airplane's CG, to the first Airplane's body axes,
+    # relative to the first Airplane's CG.
+    T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+
+    # Create the passive rotation transformation from Earth axes, relative to the
+    # first Airplane's CG, to the first Airplane's body axes, relative to the first
+    # Airplane's CG. R_pas_E_to_BP1 is a (3, 3) matrix, so we need to embed it in a (
+    # 4, 4) homogeneous transformation matrix.
+    T_pas_E_CgP1_to_BP1_CgP1 = np.eye(4, dtype=float)
+    T_pas_E_CgP1_to_BP1_CgP1[:3, :3] = R_pas_E_to_BP1
+
+    # Invert to get the transformation from the first Airplane's body axes, relative
+    # to the first Airplane's CG, to Earth axes, relative to the first Airplane's CG.
+    T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(T_pas_E_CgP1_to_BP1_CgP1)
+
+    # Create the passive translation transformation from the Earth axes, relative to
+    # the first Airplane's CG, to Earth axes, relative to the Earth origin.
+    T_pas_E_CgP1_to_E_E = _transformations.generate_trans_T(
+        translations=position_E_E,
+        passive=True,
+    )
+
+    # Compose the transformations: GP1_CgP1 -> BP1_CgP1 -> E_CgP1 -> E_E.
+    # Note: For passive transformations, compose_T_pas takes them in path order.
+    T_pas_GP1_CgP1_to_E_E = _transformations.compose_T_pas(
+        T_pas_GP1_CgP1_to_BP1_CgP1,
+        T_pas_BP1_CgP1_to_E_CgP1,
+        T_pas_E_CgP1_to_E_E,
+    )
+
+    # Apply transformation to all vertices.
+    stackVertices_E_E = _transformations.apply_T_to_vectors(
+        T_pas_GP1_CgP1_to_E_E,
+        stackVertices_GP1_CgP1,
+        has_point=True,
+    )
+
+    # Return the wake RingVortex surfaces.
+    return pv.PolyData(stackVertices_E_E, faces)
+
+
+# TEST: Consider adding unit tests for this function.
 def _get_wake_ring_vortex_surfaces(
     solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
@@ -1330,9 +1902,6 @@ def _get_wake_ring_vortex_surfaces(
         wake_ring_vortex_faces = np.hstack(
             (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
         )
-
-        # Increment the wake RingVortex counter.
-        wake_ring_vortex_num += 1
 
     # Return the wake RingVortex surfaces.
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)

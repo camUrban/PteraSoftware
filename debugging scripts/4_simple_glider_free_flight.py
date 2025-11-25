@@ -13,8 +13,11 @@ import matplotlib.pyplot as plt
 
 import pterasoftware as ps
 
+# noinspection PyProtectedMember
+import pterasoftware._transformations as _transformations
 
-def rotmat_to_quat_wxyz(R):
+
+def R_to_quat_wxyz(R):
     # R is 3x3 list/ndarray
     m00, m01, m02 = R[0]
     m10, m11, m12 = R[1]
@@ -62,10 +65,10 @@ script_logger.setLevel(logging.INFO)
 
 converged_prescribed_wake = True
 converged_num_chords = 13
-converged_num_chordwise_panels = 7
-wing_1_converged_num_spanwise_panels = 12
-wing_2_converged_num_spanwise_panels = 2
-wing_3_converged_num_spanwise_panels = 5
+converged_num_chordwise_panels = 6
+wing_1_converged_num_spanwise_panels = 30
+wing_2_converged_num_spanwise_panels = 6
+wing_3_converged_num_spanwise_panels = 12
 
 trim_vCg__E = 12.9
 trim_alpha = 3.3
@@ -83,10 +86,10 @@ this_weight = 420
 
 this_mass = this_weight / abs(this_g)
 
-R_act_E_to_B_0 = ps._transformations.generate_rot_T(
+R_act_E_to_B_0 = _transformations.generate_rot_T(
     angles=(0.0, trim_alpha, -trim_beta), passive=False, intrinsic=True, order="zyx"
 )[:3, :3]
-quat0w, quat0x, quat0y, quat0z = rotmat_to_quat_wxyz(R_act_E_to_B_0)
+quat0w, quat0x, quat0y, quat0z = R_to_quat_wxyz(R_act_E_to_B_0)
 
 mujoco_xml = f"""
 <mujoco model="{this_airplane_name}">
@@ -109,7 +112,7 @@ mujoco_xml = f"""
 
 # Create the MuJoCo model wrapper.
 simple_glider_mujoco_model = ps.mujoco_model.MuJoCoModel(
-    xml_string_or_path=mujoco_xml,
+    xml=mujoco_xml,
     body_name=this_airplane_name,
     delta_time=delta_time,
     initial_key_frame_name=this_initial_key_frame_name,
@@ -261,7 +264,7 @@ simple_glider_coupled_operating_point = ps.operating_point.CoupledOperatingPoint
 )
 
 simple_glider_coupled_movement = ps.movements.movement.CoupledMovement(
-    airplane_movements=[simple_glider_airplane_movement],
+    airplane_movement=simple_glider_airplane_movement,
     initial_coupled_operating_point=simple_glider_coupled_operating_point,
     delta_time=delta_time,
     prescribed_num_steps=converged_num_steps,
@@ -309,11 +312,11 @@ times = np.linspace(
     (free_num_steps + converged_num_steps - 1) * delta_time,
     (free_num_steps + converged_num_steps),
 )
-plt.plot(times, simple_glider_coupled_solver.stackCgP1_E_E[:, 0])
+plt.plot(times, simple_glider_coupled_solver.stackPosition_E_E[:, 0])
 plt.title("CgP1_X")
 plt.show()
 
-plt.plot(times, simple_glider_coupled_solver.stackCgP1_E_E[:, 2])
+plt.plot(times, simple_glider_coupled_solver.stackPosition_E_E[:, 2])
 plt.title("CgP1_Z")
 plt.show()
 

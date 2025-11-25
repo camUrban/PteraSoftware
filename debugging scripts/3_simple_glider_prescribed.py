@@ -5,10 +5,10 @@ import pterasoftware as ps
 
 converged_prescribed_wake = True
 converged_num_chords = 13
-converged_num_chordwise_panels = 7
-wing_1_converged_num_spanwise_panels = 12
-wing_2_converged_num_spanwise_panels = 2
-wing_3_converged_num_spanwise_panels = 5
+converged_num_chordwise_panels = 6
+wing_1_converged_num_spanwise_panels = 30
+wing_2_converged_num_spanwise_panels = 6
+wing_3_converged_num_spanwise_panels = 12
 
 trim_vCg__E = 12.9
 trim_alpha = 3.3

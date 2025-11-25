@@ -25,10 +25,9 @@ None
 1. We have no way of visualizing the MuJoCo model itself, so it's hard to know if we've set up the XML correctly.
 2. If the Airplane switches direction, then the wake will shed from the wrong edge. There isn't an easy way to fix this, but we check for this condition and terminate the simulation if it happens.
 3. The MuJoCo model isn't intrinsically connected to the CoupledUnsteadyProblem. Therefore, if we change something in the model it doesn't automatically update the MuJoCo model. Perhaps, instead of using creating the XML separately, we could build the MuJoCo model programmatically from the CoupledUnsteadyProblem.'
-4. I have no idea what I was thinking with the airplane.angles_E_to_B_izyx parameter. I don't think it affects anything right now, but I think we should just always assume this is zero, and that any offsets are based on angles set in the OperatingPoint. Right now, OperatingPoint has alpha and beta, but we'd also need to add yaw, pitch, and roll.
-5. When calling `ps.output.animate_free_flight`, the Airplane mesh disappears after several tens of time steps. It's almost like it's gone offscreen even though I've zoomed way out.
+4. When calling `ps.output.animate_free_flight`, the Airplane mesh disappears after several tens of time steps. It's almost like it's gone offscreen even though I've zoomed way out.
 
-## Fixed Issues
+## Fixed Issues (Chronological Order)
 1. I modified the simple glider Airplane, and the MuJoCo model, to:
     * Be based on an XFLR5 airplane that I know is statically stable in pitch and yaw
     * Use converged parameters
@@ -39,5 +38,10 @@ None
 4. I modified the coupled solver to iterate several time steps with prescribed motion. This is to prevent numerical issues relating to the large force spikes present when wake is first shed.
 5. I modified the draw method to work with the coupled solver.
 6. We were setting the initial orientation of the body axes in the MuJoCo model to be aligned with the Earth axes. This was incorrect because alpha wasn't 0.0. I fixed this by finding the correct initial rotation matrix, and then wrote a function to convert it into a quaternion.
-7. We weren't correctly using the rotation matrix from MuJoCo. This resulted in incorrect angles of attack, which caused incorrect vInf_GP1__E vectors. I've fixed this for cases with alpha > 0, beta = 0, and airplane.angles_E_to_B_izyx = (0, 0, 0), however, I think my solution is likely brittle.
-8. I forced the solver to always have airplane.angles_E_to_B_izyx = (0, 0, 0) to see if there were any issues related to that parameter. I don't think it matters (see #4 in "Future Issues"), but it is non-physical. We should revisit this once we've fixed the current problem, and come up with a better way of handling orientation offsets.
+7. We weren't correctly using the rotation matrix from MuJoCo. This resulted in incorrect angles of attack, which caused incorrect vInf_GP1__E vectors. I've fixed this for cases with alpha > 0 and beta = 0, and airplane.angles_E_to_B_izyx = (0, 0, 0), however, I think my solution is likely brittle.
+8. I forced the solver to always have airplane.angles_E_to_B_izyx = (0, 0, 0) to see if there were any issues related to that parameter. I don't think it matters, but it is non-physical. We should revisit this once we've fixed the current problem, and come up with a better way of handling orientation offsets.
+9. I modified PteraSoftware to remove the angles_E_to_B_izyx parameter from Airplane and instead have it be a parameter of CoupledOperatingPoint.
+10. I added type-hints to new code and checked them with mypy.
+11. I clarified that the coupled solver can only simulate a single airplane throughout the new code, and added validation checks for this condition.
+12. I fixed the issue with Wing's span property (bug originating in main branch)
+13. I fixed the issue with wake RingVortices being shed too far back from their Wing (bug originating in main branch)

@@ -5,10 +5,10 @@ import pterasoftware as ps
 
 converged_prescribed_wake = True
 converged_num_chords = 13
-converged_num_chordwise_panels = 7
-wing_1_converged_num_spanwise_panels = 12
-wing_2_converged_num_spanwise_panels = 2
-wing_3_converged_num_spanwise_panels = 5
+converged_num_chordwise_panels = 6
+wing_1_converged_num_spanwise_panels = 30
+wing_2_converged_num_spanwise_panels = 6
+wing_3_converged_num_spanwise_panels = 12
 
 simple_glider_airplane = ps.geometry.airplane.Airplane(
     wings=[
@@ -197,7 +197,7 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     alpha_bounds=(1.5, 6.0),
     beta_bounds=(0, 0),
     boundsExternalFX_W=(5, 10),
-    objective_cut_off=0.001,
+    objective_cut_off=0.01,
     num_calls=200,
 )
 

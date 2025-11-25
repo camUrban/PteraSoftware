@@ -1,8 +1,6 @@
 """This script is for finding the converged parameters for the simple glider."""
 
-from turtledemo.penrose import inflatedart
-
-import numpy as np
+# import numpy as np
 
 import pterasoftware as ps
 
@@ -194,15 +192,15 @@ ps.convergence.analyze_unsteady_convergence(
 
 # prescribed_wake = True
 # num_chords = 13
-# panel_aspect_ratio = 3
-# num_chordwise_panels = 7
+# panel_aspect_ratio = 1
+# num_chordwise_panels = 6
 # num_spanwise_panels:
 # Wing 1:
-#     WingCrossSection 1: 12
+#     WingCrossSection 1: 30
 #     WingCrossSection 2: None
 # Wing 2:
-#     WingCrossSection 1: 2
+#     WingCrossSection 1: 6
 #     WingCrossSection 2: None
 # Wing 3:
-#     WingCrossSection 1: 5
+#     WingCrossSection 1: 12
 #     WingCrossSection 2: None

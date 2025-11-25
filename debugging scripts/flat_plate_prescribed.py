@@ -1,8 +1,6 @@
 """This is a debugging script for running a prescribed unsteady simulation on a flat
 plate with one Panel."""
 
-import math
-
 import pterasoftware as ps
 
 trim_alpha = 5.0

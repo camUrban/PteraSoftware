@@ -475,24 +475,30 @@ def nD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
 
 
 # TEST: Consider adding unit tests for this function.
-def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarray:
-    """Validates a value is a (4,4) array-like object. It then returns it as a (4,4)
-    ndarray of floats.
+def m_by_n_number_arrayLike_return_float(
+    value: Any, name: str, m: int, n: int
+) -> np.ndarray:
+    """Validates a value is a (m,n) array-like object of ints or floats. It then returns
+    it as a (m,n) ndarray of floats.
 
     np.nan, np.inf, and -np.inf aren't valid values.
 
     :param value: The value to validate.
     :param name: The name of the value.
-    :return: The validated value as a ndarray of floats with the same shape as the input
-        value.
+    :param m: The desired number of rows. It must be a positive int.
+    :param n: The desired number of columns. It must be a positive int.
+    :return: The validated value as a (m,n) ndarray of floats.
     """
     try:
         validated_matrix = np.asarray(value, dtype=float)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
-    if validated_matrix.shape != (4, 4):
-        raise ValueError(f"{name} must be a 4x4 matrix.")
+    if validated_matrix.shape != (m, n):
+        raise ValueError(
+            f"{name} has shape {validated_matrix.shape} but it should "
+            f"have shape ({m},{n}) matrix."
+        )
 
     if not np.isfinite(validated_matrix).all():
         raise ValueError(f"{name} can't contain any nan, inf, or -inf elements.")

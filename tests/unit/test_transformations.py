@@ -1626,5 +1626,317 @@ class TestApplyTToVectors(unittest.TestCase):
         npt.assert_array_equal(result_zeros_array, zeros_array)
 
 
+class TestRToQuatWxyz(unittest.TestCase):
+    """This class contains methods for testing the R_to_quat_wxyz function."""
+
+    def test_identity_rotation(self):
+        """Tests that identity rotation matrix produces identity quaternion.
+
+        :return: None
+        """
+        R = np.eye(3, dtype=float)
+        q = _transformations.R_to_quat_wxyz(R)
+
+        # Identity quaternion is [1, 0, 0, 0]
+        expected_q = np.array([1.0, 0.0, 0.0, 0.0])
+        npt.assert_allclose(q, expected_q, atol=1e-14)
+
+    def test_90_degree_rotations_about_principal_axes(self):
+        """Tests 90 degree rotations about x, y, and z axes.
+
+        :return: None
+        """
+        sqrt2_over_2 = np.sqrt(2) / 2
+
+        # 90 degree rotation about x axis
+        R_x90 = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]], dtype=float
+        )
+        q_x90 = _transformations.R_to_quat_wxyz(R_x90)
+        expected_q_x90 = np.array([sqrt2_over_2, sqrt2_over_2, 0.0, 0.0])
+        npt.assert_allclose(q_x90, expected_q_x90, atol=1e-14)
+
+        # 90 degree rotation about y axis
+        R_y90 = np.array(
+            [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]], dtype=float
+        )
+        q_y90 = _transformations.R_to_quat_wxyz(R_y90)
+        expected_q_y90 = np.array([sqrt2_over_2, 0.0, sqrt2_over_2, 0.0])
+        npt.assert_allclose(q_y90, expected_q_y90, atol=1e-14)
+
+        # 90 degree rotation about z axis
+        R_z90 = np.array(
+            [[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=float
+        )
+        q_z90 = _transformations.R_to_quat_wxyz(R_z90)
+        expected_q_z90 = np.array([sqrt2_over_2, 0.0, 0.0, sqrt2_over_2])
+        npt.assert_allclose(q_z90, expected_q_z90, atol=1e-14)
+
+    def test_180_degree_rotations_about_principal_axes(self):
+        """Tests 180 degree rotations about x, y, and z axes.
+
+        :return: None
+        """
+        # 180 degree rotation about x axis
+        R_x180 = np.array(
+            [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]], dtype=float
+        )
+        q_x180 = _transformations.R_to_quat_wxyz(R_x180)
+        expected_q_x180 = np.array([0.0, 1.0, 0.0, 0.0])
+        npt.assert_allclose(q_x180, expected_q_x180, atol=1e-14)
+
+        # 180 degree rotation about y axis
+        R_y180 = np.array(
+            [[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]], dtype=float
+        )
+        q_y180 = _transformations.R_to_quat_wxyz(R_y180)
+        expected_q_y180 = np.array([0.0, 0.0, 1.0, 0.0])
+        npt.assert_allclose(q_y180, expected_q_y180, atol=1e-14)
+
+        # 180 degree rotation about z axis
+        R_z180 = np.array(
+            [[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]], dtype=float
+        )
+        q_z180 = _transformations.R_to_quat_wxyz(R_z180)
+        expected_q_z180 = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_allclose(q_z180, expected_q_z180, atol=1e-14)
+
+    def test_unit_quaternion_output(self):
+        """Tests that output quaternion is always a unit quaternion.
+
+        :return: None
+        """
+        test_angles = [
+            np.array([0.0, 0.0, 0.0]),
+            np.array([30.0, 0.0, 0.0]),
+            np.array([0.0, 45.0, 0.0]),
+            np.array([0.0, 0.0, 60.0]),
+            np.array([30.0, 45.0, 60.0]),
+            np.array([90.0, 0.0, 90.0]),
+            np.array([180.0, 0.0, 0.0]),
+            np.array([-45.0, -30.0, -60.0]),
+        ]
+
+        for angles in test_angles:
+            with self.subTest(angles=angles):
+                T = _transformations.generate_rot_T(angles, False, True, "xyz")
+                R = T[:3, :3]
+                q = _transformations.R_to_quat_wxyz(R)
+
+                # Check that quaternion has unit magnitude
+                q_mag = np.linalg.norm(q)
+                self.assertAlmostEqual(q_mag, 1.0, places=14)
+
+    def test_output_shape_and_type(self):
+        """Tests output shape and data type.
+
+        :return: None
+        """
+        R = np.eye(3, dtype=float)
+        q = _transformations.R_to_quat_wxyz(R)
+
+        self.assertEqual(q.shape, (4,))
+        self.assertEqual(q.dtype, np.float64)
+
+    def test_roundtrip_with_generate_rot_T(self):
+        """Tests that quaternion correctly represents the rotation by verifying
+        rotation of vectors.
+
+        :return: None
+        """
+        test_angles = [
+            np.array([30.0, 0.0, 0.0]),
+            np.array([0.0, 45.0, 0.0]),
+            np.array([0.0, 0.0, 60.0]),
+            np.array([20.0, 35.0, 50.0]),
+            np.array([-15.0, 25.0, -40.0]),
+        ]
+
+        test_vector = np.array([1.0, 2.0, 3.0])
+
+        for angles in test_angles:
+            with self.subTest(angles=angles):
+                # Get rotation matrix from generate_rot_T
+                T = _transformations.generate_rot_T(angles, False, True, "xyz")
+                R = T[:3, :3]
+
+                # Get quaternion
+                q = _transformations.R_to_quat_wxyz(R)
+                w, x, y, z = q
+
+                # Reconstruct rotation matrix from quaternion
+                R_reconstructed = np.array(
+                    [
+                        [
+                            1 - 2 * (y**2 + z**2),
+                            2 * (x * y - z * w),
+                            2 * (x * z + y * w),
+                        ],
+                        [
+                            2 * (x * y + z * w),
+                            1 - 2 * (x**2 + z**2),
+                            2 * (y * z - x * w),
+                        ],
+                        [
+                            2 * (x * z - y * w),
+                            2 * (y * z + x * w),
+                            1 - 2 * (x**2 + y**2),
+                        ],
+                    ],
+                    dtype=float,
+                )
+
+                # Both matrices should rotate the test vector the same way
+                v_rotated_original = R @ test_vector
+                v_rotated_reconstructed = R_reconstructed @ test_vector
+
+                npt.assert_allclose(
+                    v_rotated_original, v_rotated_reconstructed, atol=1e-14
+                )
+
+    def test_negative_90_degree_rotations(self):
+        """Tests negative 90 degree rotations about principal axes.
+
+        :return: None
+        """
+        sqrt2_over_2 = np.sqrt(2) / 2
+
+        # -90 degree rotation about x axis
+        R_xn90 = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]], dtype=float
+        )
+        q_xn90 = _transformations.R_to_quat_wxyz(R_xn90)
+        expected_q_xn90 = np.array([sqrt2_over_2, -sqrt2_over_2, 0.0, 0.0])
+        npt.assert_allclose(q_xn90, expected_q_xn90, atol=1e-14)
+
+        # -90 degree rotation about y axis
+        R_yn90 = np.array(
+            [[0.0, 0.0, -1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]], dtype=float
+        )
+        q_yn90 = _transformations.R_to_quat_wxyz(R_yn90)
+        expected_q_yn90 = np.array([sqrt2_over_2, 0.0, -sqrt2_over_2, 0.0])
+        npt.assert_allclose(q_yn90, expected_q_yn90, atol=1e-14)
+
+        # -90 degree rotation about z axis
+        R_zn90 = np.array(
+            [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=float
+        )
+        q_zn90 = _transformations.R_to_quat_wxyz(R_zn90)
+        expected_q_zn90 = np.array([sqrt2_over_2, 0.0, 0.0, -sqrt2_over_2])
+        npt.assert_allclose(q_zn90, expected_q_zn90, atol=1e-14)
+
+    def test_invalid_determinant_raises_error(self):
+        """Tests that non rotation matrices with determinant != 1 raise ValueError.
+
+        :return: None
+        """
+        # Reflection matrix (determinant = -1)
+        R_reflection = np.array(
+            [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]], dtype=float
+        )
+        with self.assertRaises(ValueError) as context:
+            _transformations.R_to_quat_wxyz(R_reflection)
+        self.assertIn("determinant", str(context.exception))
+
+        # Scaled matrix (determinant != 1)
+        R_scaled = 2.0 * np.eye(3, dtype=float)
+        with self.assertRaises(ValueError) as context:
+            _transformations.R_to_quat_wxyz(R_scaled)
+        self.assertIn("determinant", str(context.exception))
+
+    def test_non_orthogonal_matrix_raises_error(self):
+        """Tests that non orthogonal matrices raise ValueError.
+
+        :return: None
+        """
+        # A matrix that has determinant 1 but is not orthogonal
+        R_non_orthogonal = np.array(
+            [[1.0, 0.5, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], dtype=float
+        )
+        with self.assertRaises(ValueError) as context:
+            _transformations.R_to_quat_wxyz(R_non_orthogonal)
+        self.assertIn("orthogonal", str(context.exception))
+
+    def test_input_validation_shape(self):
+        """Tests that incorrectly shaped inputs raise errors.
+
+        :return: None
+        """
+        # Wrong shape: 4x4 matrix
+        with self.assertRaises(ValueError):
+            _transformations.R_to_quat_wxyz(np.eye(4, dtype=float))
+
+        # Wrong shape: 2x3 matrix
+        with self.assertRaises(ValueError):
+            _transformations.R_to_quat_wxyz(np.zeros((2, 3), dtype=float))
+
+        # Wrong shape: 1D array
+        with self.assertRaises(ValueError):
+            _transformations.R_to_quat_wxyz(np.array([1.0, 0.0, 0.0]))
+
+    def test_input_type_conversion(self):
+        """Tests that various input types are correctly converted.
+
+        :return: None
+        """
+        # Test with integer array
+        R_int = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=int)
+        q_int = _transformations.R_to_quat_wxyz(R_int)
+        expected_q = np.array([1.0, 0.0, 0.0, 0.0])
+        npt.assert_allclose(q_int, expected_q, atol=1e-14)
+
+        # Test with list input
+        R_list = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+        q_list = _transformations.R_to_quat_wxyz(R_list)
+        npt.assert_allclose(q_list, expected_q, atol=1e-14)
+
+        # Test with tuple input
+        R_tuple = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        q_tuple = _transformations.R_to_quat_wxyz(R_tuple)
+        npt.assert_allclose(q_tuple, expected_q, atol=1e-14)
+
+    def test_all_rotation_orders(self):
+        """Tests conversion for rotation matrices from all Tait Bryan orders.
+
+        :return: None
+        """
+        angles = np.array([25.0, 35.0, 45.0])
+        valid_orders = ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"]
+
+        for order in valid_orders:
+            with self.subTest(order=order):
+                T = _transformations.generate_rot_T(angles, False, True, order)
+                R = T[:3, :3]
+                q = _transformations.R_to_quat_wxyz(R)
+
+                # Verify unit quaternion
+                q_mag = np.linalg.norm(q)
+                self.assertAlmostEqual(q_mag, 1.0, places=14)
+
+                # Verify quaternion correctly represents the rotation
+                w, x, y, z = q
+                R_reconstructed = np.array(
+                    [
+                        [
+                            1 - 2 * (y**2 + z**2),
+                            2 * (x * y - z * w),
+                            2 * (x * z + y * w),
+                        ],
+                        [
+                            2 * (x * y + z * w),
+                            1 - 2 * (x**2 + z**2),
+                            2 * (y * z - x * w),
+                        ],
+                        [
+                            2 * (x * z - y * w),
+                            2 * (y * z + x * w),
+                            1 - 2 * (x**2 + y**2),
+                        ],
+                    ],
+                    dtype=float,
+                )
+                npt.assert_allclose(R, R_reconstructed, atol=1e-14)
+
+
 if __name__ == "__main__":
     unittest.main()

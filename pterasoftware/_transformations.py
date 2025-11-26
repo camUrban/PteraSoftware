@@ -306,8 +306,8 @@ def compose_T_pas(
     valid_T_pas_chain = []
     for T_pas_id, T_pas in enumerate(T_pas_chain):
         valid_T_pas_chain.append(
-            _parameter_validation.fourByFour_number_arrayLike_return_float(
-                T_pas, f"T_pas_chain[{T_pas_id}]"
+            _parameter_validation.m_by_n_number_arrayLike_return_float(
+                T_pas, f"T_pas_chain[{T_pas_id}]", 4, 4
             )
         )
     return _left_compose_T(valid_T_pas_chain)
@@ -357,8 +357,8 @@ def compose_T_act(
     valid_T_act_chain = []
     for T_act_id, T_act in enumerate(T_act_chain):
         valid_T_act_chain.append(
-            _parameter_validation.fourByFour_number_arrayLike_return_float(
-                T_act, f"T_act_chain[{T_act_id}]"
+            _parameter_validation.m_by_n_number_arrayLike_return_float(
+                T_act, f"T_act_chain[{T_act_id}]", 4, 4
             )
         )
     return _left_compose_T(valid_T_act_chain)
@@ -421,8 +421,8 @@ def invert_T_pas(T_pas: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
         from the target axes and reference point to the original axes and reference
         point.
     """
-    valid_T_pas = _parameter_validation.fourByFour_number_arrayLike_return_float(
-        T_pas, "T_pas"
+    valid_T_pas = _parameter_validation.m_by_n_number_arrayLike_return_float(
+        T_pas, "T_pas", 4, 4
     )
     return _invert_T_rigid(valid_T_pas)
 
@@ -449,8 +449,8 @@ def invert_T_act(T_act: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
     :return: A (4,4) ndarray of floats representing the active transform that exactly
         undoes T_act.
     """
-    valid_T_act = _parameter_validation.fourByFour_number_arrayLike_return_float(
-        T_act, "T_act"
+    valid_T_act = _parameter_validation.m_by_n_number_arrayLike_return_float(
+        T_act, "T_act", 4, 4
     )
     return _invert_T_rigid(valid_T_act)
 
@@ -471,8 +471,8 @@ def convert_T_pas_to_T_act(
     :return: A (4,4) ndarray of floats representing the converted active transformation
         matrix.
     """
-    valid_T_pas = _parameter_validation.fourByFour_number_arrayLike_return_float(
-        T_pas, "T_pas"
+    valid_T_pas = _parameter_validation.m_by_n_number_arrayLike_return_float(
+        T_pas, "T_pas", 4, 4
     )
     return np.linalg.inv(valid_T_pas)
 
@@ -493,8 +493,8 @@ def convert_T_act_to_T_pas(
     :return: A (4,4) ndarray of floats representing the converted passive transformation
         matrix.
     """
-    valid_T_act = _parameter_validation.fourByFour_number_arrayLike_return_float(
-        T_act, "T_act"
+    valid_T_act = _parameter_validation.m_by_n_number_arrayLike_return_float(
+        T_act, "T_act", 4, 4
     )
     return np.linalg.inv(valid_T_act)
 
@@ -527,7 +527,7 @@ def apply_T_to_vectors(
     :return: A ndarray of floats with same shape as ``vectors_A`` representing the
         transformed vector(s).
     """
-    T = _parameter_validation.fourByFour_number_arrayLike_return_float(T, "T")
+    T = _parameter_validation.m_by_n_number_arrayLike_return_float(T, "T", 4, 4)
     vectors_A = (
         _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
             vectors_A, "vectors_A"
@@ -540,3 +540,86 @@ def apply_T_to_vectors(
     return np.asarray(
         np.einsum("ij,...j->...i", T, vectorsHomog_A)[..., :3], dtype=float
     )
+
+
+def R_to_quat_wxyz(R: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndarray:
+    """Converts a rotation matrix to a unit quaternion.
+
+    **Citation:**
+
+    Equation adapted from: "Accurate Computation of Quaternions from Rotation Matrices"
+
+    Authors: Soheil Sarabandi and Federico Thomas
+
+    Date retrieved: 11/25/2025
+
+    :param R: A (3,3) array-like object of numbers (int or float) representing a
+        rotation matrix.
+    :return: A (4,) ndarray of floats representing the unit quaternion.
+    """
+    R = _parameter_validation.m_by_n_number_arrayLike_return_float(R, "R", 3, 3)
+
+    det_R = float(np.linalg.det(R))
+    if not np.allclose(det_R, 1.0):
+        raise ValueError(
+            f"R must be a proper rotation matrix (determinant = 1.0 and orthogonal), "
+            f"but it has a determinant of {det_R}."
+        )
+    if not np.allclose(R @ R.T, np.eye(3, dtype=float)):
+        raise ValueError(
+            f"R must be a proper rotation matrix (determinant = 1.0 and orthogonal), "
+            f"but it is not orthogonal."
+        )
+
+    r_11, r_12, r_13 = R[0]
+    r_21, r_22, r_23 = R[1]
+    r_31, r_32, r_33 = R[2]
+
+    eta: float = 1.0e-10
+
+    q_1: float
+    check_1 = r_11 + r_22 + r_33
+    if check_1 > eta:
+        q_1 = 0.5 * np.sqrt(1 + check_1)
+    else:
+        num_1 = (r_32 - r_23) ** 2 + (r_13 - r_31) ** 2 + (r_21 - r_12) ** 2
+        den_1 = 3 - check_1
+        q_1 = 0.5 * np.sqrt(num_1 / den_1)
+
+    q_2_abs: float
+    check_2 = r_11 - r_22 - r_33
+    if check_2 > eta:
+        q_2_abs = 0.5 * np.sqrt(1 + check_2)
+    else:
+        num_2 = (r_32 - r_23) ** 2 + (r_12 + r_21) ** 2 + (r_31 + r_13) ** 2
+        den_2 = 3 - check_2
+        q_2_abs = 0.5 * np.sqrt(num_2 / den_2)
+    q_2_sign = 1.0 if (r_32 - r_23) >= 0.0 else -1.0
+    q_2 = q_2_sign * q_2_abs
+
+    q_3_abs: float
+    check_3 = -r_11 + r_22 - r_33
+    if check_3 > eta:
+        q_3_abs = 0.5 * np.sqrt(1 + check_3)
+    else:
+        num_3 = (r_13 - r_31) ** 2 + (r_12 + r_21) ** 2 + (r_23 + r_32) ** 2
+        den_3 = 3 - check_3
+        q_3_abs = 0.5 * np.sqrt(num_3 / den_3)
+    q_3_sign = 1.0 if (r_13 - r_31) >= 0.0 else -1.0
+    q_3 = q_3_sign * q_3_abs
+
+    q_4_abs: float
+    check_4 = -r_11 - r_22 + r_33
+    if check_4 > eta:
+        q_4_abs = 0.5 * np.sqrt(1 + check_4)
+    else:
+        num_4 = (r_21 - r_12) ** 2 + (r_31 + r_13) ** 2 + (r_32 + r_23) ** 2
+        den_4 = 3 - check_4
+        q_4_abs = 0.5 * np.sqrt(num_4 / den_4)
+    q_4_sign = 1.0 if (r_21 - r_12) >= 0.0 else -1.0
+    q_4 = q_4_sign * q_4_abs
+
+    q = np.asarray((q_1, q_2, q_3, q_4), dtype=float)
+    q_mag = float(np.linalg.norm(q))
+
+    return q / q_mag

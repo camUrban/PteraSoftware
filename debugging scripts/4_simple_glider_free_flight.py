@@ -17,44 +17,6 @@ import pterasoftware as ps
 import pterasoftware._transformations as _transformations
 
 
-# REFACTOR: This function (and its use) is duplicated in flat_plate_free_flight.py.
-#  It should somehow be incorporated into the MuJoCoModel class or otherwise
-#  standardized and then tested with unit tests.
-def R_to_quat_wxyz(R):
-    # R is 3x3 list/ndarray
-    m00, m01, m02 = R[0]
-    m10, m11, m12 = R[1]
-    m20, m21, m22 = R[2]
-    t = m00 + m11 + m22
-    if t > 0.0:
-        s = math.sqrt(t + 1.0) * 2.0
-        qw = 0.25 * s
-        qx = (m21 - m12) / s
-        qy = (m02 - m20) / s
-        qz = (m10 - m01) / s
-    elif (m00 > m11) and (m00 > m22):
-        s = math.sqrt(1.0 + m00 - m11 - m22) * 2.0
-        qw = (m21 - m12) / s
-        qx = 0.25 * s
-        qy = (m01 + m10) / s
-        qz = (m02 + m20) / s
-    elif m11 > m22:
-        s = math.sqrt(1.0 + m11 - m00 - m22) * 2.0
-        qw = (m02 - m20) / s
-        qx = (m01 + m10) / s
-        qy = 0.25 * s
-        qz = (m12 + m21) / s
-    else:
-        s = math.sqrt(1.0 + m22 - m00 - m11) * 2.0
-        qw = (m10 - m01) / s
-        qx = (m02 + m20) / s
-        qy = (m12 + m21) / s
-        qz = 0.25 * s
-    # normalize to be safe
-    n = math.sqrt(qw * qw + qx * qx + qy * qy + qz * qz)
-    return qw / n, qx / n, qy / n, qz / n
-
-
 # Configure logging to display INFO messages.
 # Some libraries configure logging before we can, so we need to directly set the
 # root logger level and update any existing handlers.
@@ -92,7 +54,7 @@ this_mass = this_weight / abs(this_g)
 R_act_E_to_B_0 = _transformations.generate_rot_T(
     angles=(0.0, trim_alpha, trim_beta), passive=False, intrinsic=True, order="zyx"
 )[:3, :3]
-quat0w, quat0x, quat0y, quat0z = R_to_quat_wxyz(R_act_E_to_B_0)
+quat0w, quat0x, quat0y, quat0z = _transformations.R_to_quat_wxyz(R_act_E_to_B_0)
 
 mujoco_xml = f"""
 <mujoco model="{this_airplane_name}">

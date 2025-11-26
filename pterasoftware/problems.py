@@ -19,6 +19,7 @@ None
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import math
 
 import numpy as np
@@ -26,6 +27,7 @@ import numpy as np
 from . import geometry
 from . import movements
 
+from . import _mujoco_model
 from . import _parameter_validation
 from . import _transformations
 from . import operating_point as operating_point_mod
@@ -295,22 +297,40 @@ class CoupledUnsteadyProblem:
     None
     """
 
-    def __init__(self, coupled_movement: movements.movement.CoupledMovement) -> None:
+    def __init__(
+        self,
+        coupled_movement: movements.movement.CoupledMovement,
+        I_BP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+    ) -> None:
         """The initialization method.
 
         :param coupled_movement: The CoupledMovement that contains this
             CoupledUnsteadyProblem's CoupledOperatingPoints and AirplaneMovements.
+        :param I_BP1_CgP1: An array-like object of numbers (ints or floats) with shape
+            (3,3) for the inertia matrix of the airplane represented by
+            coupled_movement's AirplaneMovement. It is in the first Airplane's body
+            axes, relative to the first Airplane's CG. It can be a tuple, list, or
+            ndarray. Values will be converted internally to floats. Its units are in
+            # REFACTOR: Check these units.
+            Newton meter seconds squared.
         :return: None
         """
         if not isinstance(coupled_movement, movements.movement.CoupledMovement):
             raise TypeError("coupled_movement must be a CoupledMovement.")
         self.coupled_movement = coupled_movement
 
+        I_BP1_CgP1 = _parameter_validation.m_by_n_number_arrayLike_return_float(
+            I_BP1_CgP1, "I_BP1_CgP1", 3, 3
+        )
+        if not np.allclose(I_BP1_CgP1, I_BP1_CgP1.T):
+            raise ValueError("I_BP1_CgP1 must be symmetric.")
+        self.I_BP1_CgP1 = I_BP1_CgP1
+
         self.num_steps = self.coupled_movement.num_steps
         self.delta_time = self.coupled_movement.delta_time
 
-        # Initialize empty lists to hold the loads and load coefficients the Airplane
-        # experiences at each time step.
+        # Initialize empty lists to hold the loads and load coefficients experienced by
+        # each time step's Airplane.
         self.forces_W: list[np.ndarray] = []
         self.forceCoefficients_W: list[np.ndarray] = []
         self.moments_W_Cg: list[np.ndarray] = []
@@ -330,3 +350,7 @@ class CoupledUnsteadyProblem:
                 ],
             )
         ]
+
+        self.mujoco_model = _mujoco_model.MuJoCoModel(
+            coupled_movement=self.coupled_movement, I_BP1_CgP1=self.I_BP1_CgP1
+        )

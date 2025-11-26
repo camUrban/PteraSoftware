@@ -18,9 +18,6 @@ UnsteadyProblems.
 coupled_unsteady_ring_vortex_lattice_method.py Contains the
 CoupledUnsteadyRingVortexLatticeMethodSolver class.
 
-mujoco_model.py: Contains the class definition for interfacing with MuJoCo for free
-flight simulations.
-
 operating_point.py: Contains classes for the operating conditions of aerodynamic
 problems.
 
@@ -50,7 +47,6 @@ import pterasoftware.geometry
 import pterasoftware.movements
 import pterasoftware.convergence
 import pterasoftware.coupled_unsteady_ring_vortex_lattice_method
-import pterasoftware.mujoco_model
 import pterasoftware.operating_point
 import pterasoftware.output
 import pterasoftware.problems

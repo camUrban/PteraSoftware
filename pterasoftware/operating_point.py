@@ -23,6 +23,7 @@ from . import _parameter_validation
 from . import _transformations
 
 
+# DOCUMENT: Add the new methods to this class's docstring.
 class OperatingPoint:
     """A class used to contain the operating conditions of an aerodynamic problem.
 
@@ -121,6 +122,17 @@ class OperatingPoint:
             nu, "nu", min_val=0.0, min_inclusive=False
         )
 
+        self.T_pas_BP1_CgP1_to_GP1_CgP1 = _transformations.generate_rot_T(
+            angles=np.array([0.0, -180.0, 0.0]),
+            passive=True,
+            intrinsic=True,
+            order="xyz",
+        )
+
+        self.T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.invert_T_pas(
+            self.T_pas_BP1_CgP1_to_GP1_CgP1
+        )
+
     @property
     def qInf__E(self) -> float:
         """The freestream dynamic pressure experienced by the Airplane (observed in the
@@ -141,23 +153,9 @@ class OperatingPoint:
             from the first Airplane's geometry axes relative to the first Airplane's CG
             to wind axes relative to the first Airplane's CG.
         """
-        # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
-        # to down). This is equivalent to a 180-degree rotation about y.
-        T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-            angles=np.array([0.0, 180.0, 0.0]),
-            passive=True,
-            intrinsic=False,
-            order="xyz",
-        )
-
-        angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
-
-        T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
-            angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
-        )
 
         return _transformations.compose_T_pas(
-            T_pas_GP1_CgP1_to_BP1_CgP1, T_pas_BP1_CgP1_to_W_CgP1
+            self.T_pas_GP1_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_W_CgP1
         )
 
     @property
@@ -171,6 +169,22 @@ class OperatingPoint:
             geometry axes relative to the first Airplane's CG.
         """
         return _transformations.invert_T_pas(self.T_pas_GP1_CgP1_to_W_CgP1)
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_BP1_CgP1_to_W_CgP1(self) -> np.ndarray:
+        angles_BP1_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
+
+        return _transformations.generate_rot_T(
+            angles=angles_BP1_to_W_exyz, passive=True, intrinsic=False, order="xyz"
+        )
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_W_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        return _transformations.invert_T_pas(self.T_pas_BP1_CgP1_to_W_CgP1)
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:
@@ -211,6 +225,7 @@ class OperatingPoint:
 
 
 # REFACTOR: Add a section to ANGLE_VECTORS_AND_TRANSFORMATIONS.md about angular speeds.
+# DOCUMENT: Add this class's new methods to its docstring.
 class CoupledOperatingPoint(OperatingPoint):
     """A subclass of OperatingPoint used to contain the operating conditions at one of
     the time steps in a coupled aerodynamic problem.
@@ -248,6 +263,7 @@ class CoupledOperatingPoint(OperatingPoint):
         beta: float | int = 0.0,
         externalFX_W: float | int = 0.0,
         nu: float | int = 15.06e-6,
+        g_E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 9.80665),
     ) -> None:
         """The initialization method.
 
@@ -266,6 +282,11 @@ class CoupledOperatingPoint(OperatingPoint):
             axes: body axes point forward/right/down while geometry axes point
             aft/right/up. The units are degrees. All angles must lie in the range
             (-180.0, 180.0] degrees. The default is (0.0, 0.0, 0.0).
+        :param g_E: An array-like object of numbers (ints or floats), with shape (3,),
+            representing the direction of gravitational acceleration (in Earth axes).
+            Can be a tuple, list, or ndarray. Values are converted to floats internally.
+            The units are in meters per second per second. The default is (0.0, 0.0,
+            9.80665).
         :return: None
         """
         super().__init__(rho, vCg__E, alpha, beta, externalFX_W, nu)
@@ -305,3 +326,49 @@ class CoupledOperatingPoint(OperatingPoint):
             True,
         )
         self.angles_E_to_BP1_izyx = angles_E_to_BP1_izyx
+
+        self.g_E = _parameter_validation.threeD_number_vectorLike_return_float(
+            g_E, "g_E"
+        )
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_E_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        return _transformations.generate_rot_T(
+            angles=self.angles_E_to_BP1_izyx, passive=True, intrinsic=True, order="zyx"
+        )
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_BP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_BP1_CgP1)
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_E_CgP1_to_GP1_CgP1(self) -> np.ndarray:
+        return _transformations.compose_T_pas(
+            self.T_pas_E_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_GP1_CgP1
+        )
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_GP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_GP1_CgP1)
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_E_CgP1_to_W_CgP1(self) -> np.ndarray:
+        return _transformations.compose_T_pas(
+            self.T_pas_E_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_W_CgP1
+        )
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Fill out this method's docstring.
+    @property
+    def T_pas_W_CgP1_to_E_CgP1(self) -> np.ndarray:
+        return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_W_CgP1)

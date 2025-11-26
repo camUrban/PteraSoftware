@@ -1,15 +1,5 @@
 """Contains the class definition for interfacing with MuJoCo for free flight
-simulations.
-
-**Contains the following classes:**
-
-MuJoCoModel: A class that wraps MuJoCo models and data objects to provide a clean
-interface for free flight simulations.
-
-**Contains the following functions:**
-
-None
-"""
+simulations."""
 
 from __future__ import annotations
 
@@ -18,7 +8,9 @@ from collections.abc import Sequence
 import mujoco
 import numpy as np
 
+from . import movements
 from . import _parameter_validation
+from . import _transformations
 
 
 # TEST: Add unit tests for this class's initialization.
@@ -31,84 +23,126 @@ class MuJoCoModel:
 
     **Contains the following methods:**
 
-    apply_loads: Applies loads to the first Airplane.
+    apply_loads: Applies loads to the model.
 
     step: Advances the MuJoCo simulation by one time step.
 
     get_state: Extracts the current position, orientation, velocity, and angular
-    velocity of the first Airplane.
+    velocity from the model.
 
-    reset: Resets the simulation to the initial conditions.
+    reset: Resets the model's state to the initial conditions, time to zero seconds, and
+    removes any applied loads.
     """
 
     def __init__(
         self,
-        xml: str,
-        body_name: str,
-        initial_key_frame_name: str,
-        delta_time: float | int | None = None,
+        coupled_movement: movements.movement.CoupledMovement,
+        I_BP1_CgP1: np.ndarray,
     ) -> None:
         """The initialization method.
 
-        :param xml: A str that contains either the complete MJCF (MuJoCo XML) model
-            definition, or a file path to an XML file containing the model. If the str
-            ends with '.xml', it is treated as a file path. Otherwise, it is treated as
-            an XML.
-        :param body_name: The name of the body (as defined in the MJCF model) to which
-            aerodynamic loads will be applied. This body should typically have a
-            freejoint to allow 6-DOF motion.
-        :param initial_key_frame_name: The name of the initial condition key frame (as
-            defined in the MJCF model).
-        :param delta_time: A positive number (int or float) representing the time step
-            for the MuJoCo simulation or None. If None, the time step defined in the XML
-            model will be used. If not None, it will be converted internally to a float.
-            The units are seconds.
+        :param coupled_movement: The CoupledMovement this model is associated with.
+        :param I_BP1_CgP1: A (3,3) ndarray of floats representing the inertia matrix of
+            the airplane represented by coupled_movement's AirplaneMovement. It is in
+            the first Airplane's body axes, relative to the first Airplane's CG.
         :return: None
         """
-        xml = _parameter_validation.str_return_str(xml, "xml")
-        self.body_name = _parameter_validation.str_return_str(body_name, "body_name")
-        self.initial_key_frame_name = _parameter_validation.str_return_str(
-            initial_key_frame_name, "initial_key_frame_name"
+        start_key_frame_name: str = "start"
+
+        initial_airplane = coupled_movement.airplanes[0]
+        initial_coupled_operating_point = coupled_movement.coupled_operating_points[0]
+        delta_time = coupled_movement.delta_time
+
+        name = initial_airplane.name
+        weight = initial_airplane.weight
+        vCg__E = initial_coupled_operating_point.vCg__E
+        omegasRad_BP1__E = np.deg2rad(initial_coupled_operating_point.omegas_BP1__E)
+        g_E = initial_coupled_operating_point.g_E
+        T_pas_E_CgP1_to_BP1_CgP1 = (
+            initial_coupled_operating_point.T_pas_E_CgP1_to_BP1_CgP1
+        )
+        T_pas_W_CgP1_to_E_CgP1 = initial_coupled_operating_point.T_pas_W_CgP1_to_E_CgP1
+
+        # REFACTOR: Determine if we are double-counting the gravitational force on
+        #  the object by both setting gravity and mass in this class, and separately
+        #  applying weight in the coupled solver.
+        mass = weight / np.linalg.norm(g_E)
+        vCg_W__E = np.array([vCg__E, 0.0, 0.0], dtype=float)
+        omegaXRad_BP1__E, omegaYRad_BP1__E, omegaZRad_BP1__E = omegasRad_BP1__E[:]
+        gX_E, gY_E, gZ_E = g_E[:]
+        R_pas_E_to_BP1 = T_pas_E_CgP1_to_BP1_CgP1[:3, :3]
+
+        IXX_BP1_CgP1, IXY_BP1_CgP1, IXZ_BP1_CgP1 = I_BP1_CgP1[0]
+        IYX_BP1_CgP1, IYY_BP1_CgP1, IYZ_BP1_CgP1 = I_BP1_CgP1[1]
+        IZX_BP1_CgP1, IZY_BP1_CgP1, IZZ_BP1_CgP1 = I_BP1_CgP1[2]
+
+        IXY_BP1_CgP1 = (IXY_BP1_CgP1 + IYX_BP1_CgP1) / 2
+        IXZ_BP1_CgP1 = (IXZ_BP1_CgP1 + IZX_BP1_CgP1) / 2
+        IYZ_BP1_CgP1 = (IYZ_BP1_CgP1 + IZY_BP1_CgP1) / 2
+
+        # REFACTOR: Add section on quaternions to ANGLES_VECTORS_AND_TRANSFORMATIONS.md.
+        quat_E_to_BP1_wxyz = _transformations.R_to_quat_wxyz(R_pas_E_to_BP1)
+
+        quatW_E_to_BP1, quatX_E_to_BP1, quatY_E_to_BP1, quatZ_E_to_BP1 = (
+            quat_E_to_BP1_wxyz[:]
         )
 
-        # REFACTOR: Validate xml contents or file existence?
-        # Load the MuJoCo model from XML string or file path.
-        self.model: mujoco.MjModel
-        if xml.endswith(".xml"):
-            # noinspection PyArgumentList
-            self.model = mujoco.MjModel.from_xml_path(xml)
-        else:
-            # noinspection PyArgumentList
-            self.model = mujoco.MjModel.from_xml_string(xml)
+        vCg_E__E = _transformations.apply_T_to_vectors(
+            T_pas_W_CgP1_to_E_CgP1, vCg_W__E, has_point=False
+        )
 
-        # Set the time step if provided.
-        if delta_time is not None:
-            delta_time = _parameter_validation.number_in_range_return_float(
-                delta_time, "delta_time", min_val=0.0, min_inclusive=False
-            )
-            self.model.opt.timestep = delta_time
+        vCgX_E__E, vCgY_E__E, vCgZ_E__E = vCg_E__E[:]
+
+        gravity_str = f"{gX_E} {gY_E} {gZ_E}"
+        inertia_str = (
+            f"{IXX_BP1_CgP1} {IYY_BP1_CgP1} {IZZ_BP1_CgP1} {IXY_BP1_CgP1} "
+            f"{IXZ_BP1_CgP1} {IYZ_BP1_CgP1}"
+        )
+        qpos_str = (
+            f"0.0 0.0 0.0 {quatW_E_to_BP1} {quatX_E_to_BP1} {quatY_E_to_BP1} "
+            f"{quatZ_E_to_BP1}"
+        )
+        qvel_str = (
+            f"{vCgX_E__E} {vCgY_E__E} {vCgZ_E__E} {omegaXRad_BP1__E} "
+            f"{omegaYRad_BP1__E} {omegaZRad_BP1__E}"
+        )
+
+        self.xml_str = f"""
+        <mujoco model="{name}">
+          <option timestep="{delta_time}" integrator="RK4" gravity="{gravity_str}"/>
+
+          <worldbody>
+            <body name="{name}" pos="0.0 0.0 0.0" >
+              <freejoint/>
+              <inertial pos="0.0 0.0 0.0" mass="{mass}" fullinertia="{inertia_str}"/>
+            </body>
+          </worldbody>
+
+          <keyframe>
+            <key name="{start_key_frame_name}" qpos="{qpos_str}" qvel="{qvel_str}"/>
+          </keyframe>
+        </mujoco>
+        """
+
+        # Create the internal MuJoCo model object from the XML str.
+        # noinspection PyArgumentList
+        self.model = mujoco.MjModel.from_xml_string(self.xml_str)
+
+        # Set the internal model's time step to be the same as CoupledMovement's.
+        self.model.opt.timestep = delta_time
 
         # Create the MuJoCo data structure.
         self.data: mujoco.MjData = mujoco.MjData(self.model)
 
         # Get and store the body ID and the initial conditions key frame ID.
         self.body_id: int = mujoco.mj_name2id(
-            self.model, mujoco.mjtObj.mjOBJ_BODY, self.body_name
+            self.model, mujoco.mjtObj.mjOBJ_BODY, name
         )
         self.initial_key_frame_id: int = mujoco.mj_name2id(
-            self.model, mujoco.mjtObj.mjOBJ_KEY, self.initial_key_frame_name
+            self.model, mujoco.mjtObj.mjOBJ_KEY, start_key_frame_name
         )
 
-        if self.body_id == -1:
-            raise ValueError(
-                f"Body with name '{self.body_name}' not found in the MuJoCo model."
-            )
-        if self.initial_key_frame_id == -1:
-            raise ValueError(
-                f"Key frame with name '{self.initial_key_frame_name}' not found in "
-                f"the MuJoCo model."
-            )
-
+        # Set the internal model's state to the initial conditions.
         mujoco.mj_resetDataKeyframe(self.model, self.data, self.initial_key_frame_id)
 
         # Store initial state for reset functionality.
@@ -121,7 +155,7 @@ class MuJoCoModel:
         forces_E: np.ndarray | Sequence[float | int],
         moments_E_CgP1: np.ndarray | Sequence[float | int],
     ) -> None:
-        """Applies loads to the first Airplane.
+        """Applies loads to the model.
 
         **Notes:**
 
@@ -153,7 +187,7 @@ class MuJoCoModel:
             moments_E_CgP1, "moments_E_CgP1"
         )
 
-        # Pack the force and moment into the 6-element xfrc_applied array.
+        # Pack the force and moment into the model's 6-element xfrc_applied array.
         self.data.xfrc_applied[self.body_id][:] = np.hstack([forces_E, moments_E_CgP1])
 
     # TEST: Add unit tests for this method.
@@ -170,7 +204,7 @@ class MuJoCoModel:
     # TEST: Add unit tests for this method.
     def get_state(self) -> dict[str, np.ndarray | float]:
         """Extracts the current position, orientation, velocity, and angular velocity of
-        the first Airplane.
+        the model.
 
         **Notes:**
 
@@ -220,18 +254,19 @@ class MuJoCoModel:
 
     # TEST: Add unit tests for this method.
     def reset(self) -> None:
-        """Resets the simulation to the initial conditions.
+        """Resets the model's state to the initial conditions, time to zero seconds, and
+        removes any applied loads.
 
         :return: None
         """
-        # Reset the positions and velocities to their initial values.
+        # Reset the model's state to the initial conditions.
         self.data.qpos[:] = self._initial_qpos
         self.data.qvel[:] = self._initial_qvel
 
-        # Reset time to zero.
+        # Reset time to zero seconds.
         self.data.time = 0.0
 
-        # Reset applied forces.
+        # Remove any applied loads.
         self.data.xfrc_applied[:] = 0.0
 
         # Run forward kinematics to update dependent quantities.

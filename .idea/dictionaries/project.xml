@@ -36,6 +36,7 @@
       <w>blrvp</w>
       <w>blvrp</w>
       <w>blwrvp</w>
+      <w>bools</w>
       <w>bopp</w>
       <w>brbrvp</w>
       <w>brhvp</w>
@@ -137,6 +138,7 @@
       <w>hiddenimports</w>
       <w>hobiesmo</w>
       <w>hollom</w>
+      <w>homog</w>
       <w>homogs</w>
       <w>hooksconfig</w>
       <w>hookspath</w>
@@ -195,6 +197,7 @@
       <w>mklink</w>
       <w>monge</w>
       <w>mook</w>
+      <w>mujoco</w>
       <w>naca</w>
       <w>ndarray</w>
       <w>ndarrays</w>
@@ -310,10 +313,12 @@
       <w>worldbody</w>
       <w>wortmann</w>
       <w>wrvp</w>
+      <w>wxyz</w>
       <w>xatol</w>
       <w>xflr</w>
       <w>xfoil</w>
       <w>xfrc</w>
+      <w>xmat</w>
       <w>xsec</w>
       <w>xsecs</w>
       <w>xy'z</w>

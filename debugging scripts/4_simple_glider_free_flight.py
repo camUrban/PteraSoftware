@@ -6,15 +6,11 @@ aerodynamic solver with MuJoCo's rigid body dynamics to simulate free flight. Th
 the simplest possible test case for the coupled solver."""
 
 import logging
-import math
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import pterasoftware as ps
-
-# noinspection PyProtectedMember
-import pterasoftware._transformations as _transformations
 
 
 # Configure logging to display INFO messages.
@@ -51,36 +47,8 @@ this_weight = 420
 
 this_mass = this_weight / abs(this_g)
 
-R_act_E_to_B_0 = _transformations.generate_rot_T(
-    angles=(0.0, trim_alpha, trim_beta), passive=False, intrinsic=True, order="zyx"
-)[:3, :3]
-quat0w, quat0x, quat0y, quat0z = _transformations.R_to_quat_wxyz(R_act_E_to_B_0)
-
-mujoco_xml = f"""
-<mujoco model="{this_airplane_name}">
-  <option timestep="{delta_time:.6f}" integrator="RK4" gravity="0.0 0.0 0.0"/>
-
-  <worldbody>
-    <light pos="0.0 0.0 10.0"/>
-
-    <body name="{this_airplane_name}" pos="0.0 0.0 0.0" >
-      <freejoint/>
-      <inertial pos="0.0 0.0 0.0" mass="{this_mass:.6f}" fullinertia="155.614 398.513 508.699 0 -45.658 0"/>
-    </body>
-  </worldbody>
-  
-  <keyframe>
-    <key name="{this_initial_key_frame_name}" qpos="0.0 0.0 0.0 {quat0w:.6f} {quat0x:.6f} {quat0y:.6f} {quat0z:.6f}" qvel="{trim_vCg__E:.6f} 0.0 0.0 0.0 0.0 0.0" />
-  </keyframe>
-</mujoco>
-"""
-
-# Create the MuJoCo model wrapper.
-simple_glider_mujoco_model = ps.mujoco_model.MuJoCoModel(
-    xml=mujoco_xml,
-    body_name=this_airplane_name,
-    delta_time=delta_time,
-    initial_key_frame_name=this_initial_key_frame_name,
+I_BP1_CgP1 = np.array(
+    [[155.614, 0.0, -45.658], [0.0, 398.513, 0.0], [-45.658, 0.0, 508.699]], dtype=float
 )
 
 simple_glider_airplane = ps.geometry.airplane.Airplane(
@@ -240,14 +208,13 @@ del simple_glider_airplane_movement
 del simple_glider_coupled_operating_point
 
 simple_glider_coupled_unsteady_problem = ps.problems.CoupledUnsteadyProblem(
-    coupled_movement=simple_glider_coupled_movement,
+    coupled_movement=simple_glider_coupled_movement, I_BP1_CgP1=I_BP1_CgP1
 )
 
 del simple_glider_coupled_movement
 
 simple_glider_coupled_solver = ps.coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver(
     coupled_unsteady_problem=simple_glider_coupled_unsteady_problem,
-    mujoco_model=simple_glider_mujoco_model,
 )
 
 # Run the coupled simulation.

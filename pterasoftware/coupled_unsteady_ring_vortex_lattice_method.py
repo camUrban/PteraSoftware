@@ -26,7 +26,6 @@ from . import _functions
 from . import _transformations
 from . import geometry
 from . import problems
-from . import mujoco_model as mujoco_model_mod
 
 
 # TEST: Add unit tests for this class's initialization.
@@ -38,9 +37,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
     **Notes:**
 
     Currently, coupled simulations can only be run with a single airplane. However, this
-    class still liberally refers to things like "the first Airplane's geometry axes" or
-    uses variable suffixes like "GP1" and "CGP1". This is purely for consistency with
-    the rest of the codebase.
+    class still refers to things like "the first Airplane's geometry axes" or uses
+    variable suffixes like "GP1" and "CGP1". This is purely for consistency with the
+    rest of the codebase.
 
     **Contains the following methods:**
 
@@ -55,15 +54,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
     def __init__(
         self,
         coupled_unsteady_problem: problems.CoupledUnsteadyProblem,
-        mujoco_model: mujoco_model_mod.MuJoCoModel,
     ) -> None:
         """The initialization method.
 
         :param coupled_unsteady_problem: The CoupledUnsteadyProblem to be solved.
-        :param mujoco_model: The MuJoCoModel that wraps the MuJoCo model and data
-            structures. It provides the interface for applying aerodynamic loads to the
-            rigid body, stepping the MuJoCo simulation forward in time, and extracting
-            the body's state.
         :return: None
         """
         if not isinstance(coupled_unsteady_problem, problems.CoupledUnsteadyProblem):
@@ -74,9 +68,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             coupled_unsteady_problem
         )
 
-        if not isinstance(mujoco_model, mujoco_model_mod.MuJoCoModel):
-            raise TypeError("mujoco_model must be a MuJoCoModel.")
-        self.mujoco_model = mujoco_model
+        self.mujoco_model = self.coupled_unsteady_problem.mujoco_model
 
         self.num_steps = self.coupled_unsteady_problem.num_steps
         self.delta_time = self.coupled_unsteady_problem.delta_time

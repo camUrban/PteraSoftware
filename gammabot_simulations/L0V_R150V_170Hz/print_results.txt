@@ -1,0 +1,19 @@
+Simulating:100% |█████████████████████████████████████████████████| Elapsed: 00:18, Remaining: 00:00
+Orient the view, then press "q" to close the window and produce the animation.
+Airplane "GammaBot Airplane":
+  Final Cycle-Averaged Forces (in wind axes):
+    FX_W:      6.5227e-05 N     Drag:             -6.5227e-05 N
+    FY_W:      -0.00011824 N    Side Force:       -0.00011824 N
+    FZ_W:      -1.545e-06 N     Lift:             1.545e-06 N
+  Final Cycle-Averaged Moments (in wind axes, relative to the CG):
+    MX_W_Cg:   2.8e-08 Nm       Rolling Moment:   2.8e-08 Nm
+    MY_W_Cg:   -3e-09 Nm        Pitching Moment:  -3e-09 Nm
+    MZ_W_Cg:   1.604e-06 Nm     Yawing Moment:    1.604e-06 Nm
+  Final Cycle-Averaged Force Coefficients (in wind axes):
+    cFX_W:     2.398710794      CDi:              -2.398710794
+    cFY_W:     -4.348264447     CY:               -4.348264447
+    cFZ_W:     -0.056820431     CL:               0.056820431
+  Final Cycle-Averaged Moment Coefficients (in wind axes, relative to the CG):
+    cMX_W_Cg:  0.077484236      Cl:               0.077484236
+    cMY_W_Cg:  -0.027353361     Cm:               -0.027353361
+    cMZ_W_Cg:  4.431312229      Cn:               4.431312229

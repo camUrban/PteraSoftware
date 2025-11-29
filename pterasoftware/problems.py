@@ -311,8 +311,7 @@ class CoupledUnsteadyProblem:
             coupled_movement's AirplaneMovement. It is in the first Airplane's body
             axes, relative to the first Airplane's CG. It can be a tuple, list, or
             ndarray. Values will be converted internally to floats. Its units are in
-            # REFACTOR: Check these units.
-            Newton meter seconds squared.
+            kilogram square meters.
         :return: None
         """
         if not isinstance(coupled_movement, movements.movement.CoupledMovement):

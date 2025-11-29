@@ -241,6 +241,34 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Improved docstrings in `MuJoCoModel` with explicit `xfrc_applied` and state variable documentation
    - Standardized use of `np.rad2deg()` and `np.deg2rad()` instead of manual `* 180 / pi`
 
+19. **Double-Counting Gravity Bug Fix** (pterasoftware/_mujoco_model.py, pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - **Critical bug identified and fixed**: Gravity was being applied twice (once by MuJoCo and once by the coupled solver)
+   - Disabled gravity in MuJoCo model by setting `gravity_str = "0.0 0.0 0.0"` in XML generation
+   - Gravity is now applied solely by `_pass_loads_to_mujoco()` via the weight force term
+   - Added comment documenting this design decision in `_mujoco_model.py`
+
+20. **Force Transformation Simplification** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Simplified `_pass_loads_to_mujoco()` by using `CoupledOperatingPoint.T_pas_W_CgP1_to_E_CgP1` directly
+   - Removed redundant manual 3-step transformation chain (W→G→B→E)
+   - Cleaner code with same functionality
+
+21. **Improved Weight Force Calculation** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Weight force now computed using actual gravity direction: `weight * unitG_E`
+   - Previously hardcoded as `[0.0, 0.0, weight]` which assumed gravity in +z direction
+   - Now correctly handles arbitrary gravity directions from `CoupledOperatingPoint.g_E`
+
+22. **Debug Logging for Free Flight** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Added logging for `vCg__E`, `alpha`, `beta` at each time step
+   - Added logging for extracted Euler angles (`angleX`, `angleY`, `angleZ`)
+   - Aids in debugging free flight simulations
+
+23. **Documentation Fixes** (pterasoftware/problems.py)
+   - Fixed inertia tensor units in `CoupledUnsteadyProblem` docstring
+   - Changed from "Newton meter seconds squared" to "kilogram square meters"
+
+24. **Variable Naming Consistency** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Renamed `moments_E_Cg` to `moments_E_CgP1` for consistency with naming conventions
+
 ### ⚠️ In Progress / Known Issues
 
 **Current Status:**
@@ -438,7 +466,7 @@ All previously critical blockers have been resolved:
 ### Open Questions
 
 1. How to handle control surface actuation in free flight (coupled with controller)?
-2. Should gravity be included in CoupledOperatingPoint or handled entirely by MuJoCo?
+2. ~~Should gravity be included in CoupledOperatingPoint or handled entirely by MuJoCo?~~ **RESOLVED**: Gravity is disabled in MuJoCo and applied solely by the coupled solver via the weight force in `_pass_loads_to_mujoco()`. This prevents double-counting and gives explicit control over gravity direction.
 3. How to best visualize free flight trajectories?
 
 ## Debugging Insights and Lessons Learned

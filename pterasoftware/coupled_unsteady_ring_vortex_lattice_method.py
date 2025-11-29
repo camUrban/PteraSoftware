@@ -337,6 +337,17 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                     + "."
                 )
 
+                logging.debug(
+                    f"    currentVInf__E={self.current_coupled_operating_point.
+                    vCg__E} m/s"
+                )
+                logging.debug(
+                    f"    alpha={self.current_coupled_operating_point.alpha} deg"
+                )
+                logging.debug(
+                    f"    beta={self.current_coupled_operating_point.beta} deg"
+                )
+
                 # TODO: I think these steps are redundant, at least during the first
                 #  time step. Consider dropping them.
                 # Initialize attributes to hold aerodynamic data that pertain to the
@@ -1340,38 +1351,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             [self.current_coupled_operating_point.externalFX_W, 0.0, 0.0], dtype=float
         )
 
-        # Build transformation chain: W_CgP1 > GP1_CgP1 > BP1_CgP1 > E_CgP1.
-
-        # Step 1: W_CgP1 > GP1_CgP1
-        T_pas_W_CgP1_to_GP1_CgP1 = (
-            self.current_coupled_operating_point.T_pas_W_CgP1_to_GP1_CgP1
-        )
-
-        # Step 2: GP1_CgP1 > BP1_CgP1 (180-degree rotation about y-axis).
-        T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-            angles=np.array([0.0, 180.0, 0.0], dtype=float),
-            passive=True,
-            intrinsic=True,
-            order="xyz",
-        )
-
-        # Step 3: BP1_CgP1 > E_CgP1.
-        # First create E_CgP1 > BP1_CgP1, then invert it.
-        T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-            angles=self.current_coupled_operating_point.angles_E_to_BP1_izyx,
-            passive=True,
-            intrinsic=True,
-            order="zyx",
-        )
-        T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
-            T_pas_E_CgP1_to_BP1_CgP1
-        )
-
         # Compose the full transformation.
-        T_pas_W_CgP1_to_E_CgP1 = _transformations.compose_T_pas(
-            T_pas_W_CgP1_to_GP1_CgP1,
-            T_pas_GP1_CgP1_to_BP1_CgP1,
-            T_pas_BP1_CgP1_to_E_CgP1,
+        T_pas_W_CgP1_to_E_CgP1 = (
+            self.current_coupled_operating_point.T_pas_W_CgP1_to_E_CgP1
         )
 
         # Transform the force, which is a free vector, so has_point=False.
@@ -1379,16 +1361,19 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             T_pas_W_CgP1_to_E_CgP1, forces_W, has_point=False
         )
 
-        # Add the force from weight.
-        forces_E = forces_E + np.array(
-            [0.0, 0.0, self.current_airplane.weight], dtype=float
-        )
+        # Find the unit vector for the direction of gravitational acceleration (in
+        # Earth axes).
+        thisG_E = self.current_coupled_operating_point.g_E
+        thisUnitG_E = thisG_E / np.linalg.norm(thisG_E)
+
+        # Add the force from weight (in Earth axes).
+        forces_E = forces_E + self.current_airplane.weight * thisUnitG_E
 
         # Transform the moment (about the first Airplane's CG). Both W_CgP1 and
         # E_CgP1 are relative to the same point (first airplane's CG),
         # so the transformation only rotates axes. However, we use has_point=True to
         # match the existing codebase pattern for moments.
-        moments_E_Cg = _transformations.apply_T_to_vectors(
+        moments_E_CgP1 = _transformations.apply_T_to_vectors(
             T_pas_W_CgP1_to_E_CgP1, moments_W_CgP1, has_point=True
         )
 
@@ -1398,7 +1383,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             self._current_step
             >= self.coupled_unsteady_problem.coupled_movement.prescribed_num_steps
         ):
-            self.mujoco_model.apply_loads(forces_E, moments_E_Cg)
+            self.mujoco_model.apply_loads(forces_E, moments_E_CgP1)
 
     def _process_new_states_from_mujoco(self) -> None:
         """Processes the updated state from MuJoCo and creates a new
@@ -1468,6 +1453,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             angleZ = np.rad2deg(np.arctan2(R[0, 1], R[0, 0]))
         # Assemble the angles into the angles_E_to_BP1_izyx vector.
         angles_E_to_BP1_izyx = np.array([angleX, angleY, angleZ], dtype=float)
+
+        logging.debug(f"    next angleX: {angleX} deg")
+        logging.debug(f"    next angleY: {angleY} deg")
+        logging.debug(f"    next angleZ: {angleZ} deg")
 
         # Compute the speed (magnitude of velocity in Earth frame).
         vCg__E = float(np.linalg.norm(self._nextVelocity_E__E))

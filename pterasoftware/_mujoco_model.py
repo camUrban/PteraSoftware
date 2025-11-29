@@ -63,13 +63,9 @@ class MuJoCoModel:
         )
         T_pas_W_CgP1_to_E_CgP1 = initial_coupled_operating_point.T_pas_W_CgP1_to_E_CgP1
 
-        # REFACTOR: Determine if we are double-counting the gravitational force on
-        #  the object by both setting gravity and mass in this class, and separately
-        #  applying weight in the coupled solver.
         mass = weight / np.linalg.norm(g_E)
         vCg_W__E = np.array([vCg__E, 0.0, 0.0], dtype=float)
         omegaXRad_BP1__E, omegaYRad_BP1__E, omegaZRad_BP1__E = omegasRad_BP1__E[:]
-        gX_E, gY_E, gZ_E = g_E[:]
         R_pas_E_to_BP1 = T_pas_E_CgP1_to_BP1_CgP1[:3, :3]
 
         IXX_BP1_CgP1, IXY_BP1_CgP1, IXZ_BP1_CgP1 = I_BP1_CgP1[0]
@@ -93,7 +89,9 @@ class MuJoCoModel:
 
         vCgX_E__E, vCgY_E__E, vCgZ_E__E = vCg_E__E[:]
 
-        gravity_str = f"{gX_E} {gY_E} {gZ_E}"
+        # Gravity in the MuJoCo model is turned off as it is applied by the
+        # CoupledUnsteadyRingVortexLatticeMethodSolver.
+        gravity_str = f"0.0 0.0 0.0"
         inertia_str = (
             f"{IXX_BP1_CgP1} {IYY_BP1_CgP1} {IZZ_BP1_CgP1} {IXY_BP1_CgP1} "
             f"{IXZ_BP1_CgP1} {IYZ_BP1_CgP1}"

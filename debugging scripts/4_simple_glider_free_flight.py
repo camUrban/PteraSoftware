@@ -13,16 +13,19 @@ import matplotlib.pyplot as plt
 import pterasoftware as ps
 
 
-# Configure logging to display INFO messages.
+# Configure logging to display DEBUG messages.
 # Some libraries configure logging before we can, so we need to directly set the
 # root logger level and update any existing handlers.
-logging.root.setLevel(logging.INFO)
+logging.root.setLevel(logging.DEBUG)
 for handler in logging.root.handlers:
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     handler.setFormatter(logging.Formatter("[%(name)s] %(levelname)s: %(message)s"))
 
+# Silence matplotlib's noisy debug messages (especially font_manager).
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+
 script_logger = logging.getLogger("script")
-script_logger.setLevel(logging.INFO)
+script_logger.setLevel(logging.DEBUG)
 
 converged_prescribed_wake = True
 converged_num_chords = 13
@@ -232,12 +235,12 @@ script_logger.info(
 
 del simple_glider_coupled_unsteady_problem
 
-script_logger.info("Free flight simulation completed successfully.")
-
 simple_glider_coupled_solver.run(
-    logging_level="Warning",
+    logging_level="Debug",
     prescribed_wake=converged_prescribed_wake,
 )
+
+script_logger.info("Free flight simulation completed successfully.")
 
 times = np.linspace(
     0,

@@ -1516,7 +1516,7 @@ def print_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col2 = [str(np.round(val, 3)) for val in col2]
+        col2 = [f"{val:.4e}" for val in col2]
         col2 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col2)
@@ -1537,7 +1537,7 @@ def print_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col4 = [str(np.round(val, 3)) for val in col4]
+        col4 = [f"{val:.4e}" for val in col4]
         col4 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col4)

@@ -123,21 +123,21 @@ example_airplane = ps.geometry.airplane.Airplane(
 # main wing's root and tip WingCrossSections' WingCrossSectionMovements.
 
 # defintions for wing movement parameters
-dephase_x = 0.0
-period_x = 1.0
-amplitude_x = 2.0
-
-dephase_y = 0.0
-period_y = 1.0
-amplitude_y = 3.0
-
 # dephase_x = 0.0
 # period_x = 1.0
-# amplitude_x = 5.0
+# amplitude_x = 2.0
 
 # dephase_y = 0.0
 # period_y = 1.0
-# amplitude_y = 10.0
+# amplitude_y = 3.0
+
+dephase_x = 0.0
+period_x = 0.0
+amplitude_x = 0.0
+
+dephase_y = 0.0
+period_y = 0.0
+amplitude_y = 0.0
 
 dephase_z = 0.0
 period_z = 0.0
@@ -296,7 +296,7 @@ del airplane_movement
 del operating_point_movement
 
 # Define the UnsteadyProblem.
-example_problem = ps.problems.CoupledUnsteadyProblem(
+example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=movement,
 )
 

@@ -443,7 +443,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver():
 
                 # Check if the current time step is not the last step.
                 if self._current_step < self.num_steps - 1:
-                    self.coupled_unsteady_problem.initialize_next_problem()
+                    self.coupled_unsteady_problem.initialize_next_problem(
+                        self
+                    )
                     self._initialize_panel_vortex(self.coupled_unsteady_problem.get_steady_problem(step + 1), step + 1)
                     # Shed RingVortices into the wake.
                     logging.info("Shedding RingVortices into the wake.")
@@ -463,7 +465,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver():
             logging.info("Calculating streamlines.")
             _functions.calculate_streamlines(self)
 
-    def _initialize_panel_vortex(self, steady_problem: problems.SteadyProblem, steady_problem_id: int):
+    def _initialize_panel_vortex(self, steady_problem, steady_problem_id: int):
         """This method calculates the locations of the Airplanes' bound RingVortices'
         points, and then initializes the bound RingVortices.
 

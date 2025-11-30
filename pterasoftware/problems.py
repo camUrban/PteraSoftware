@@ -17,9 +17,9 @@ from . import movements
 from . import _parameter_validation
 from . import _transformations
 from . import operating_point as op
-from coupled_unsteady_ring_vortex_lattice_method import CoupledUnsteadyRingVortexLatticeMethodSolver
 from copy import deepcopy
 from scipy.integrate import quad
+from movements.single_step.single_step_movement import SingleStepMovement
 
 
 class SteadyProblem:
@@ -348,7 +348,7 @@ class CoupledUnsteadyProblem():
 class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def __init__(self, movement, only_final_results=False):
         super().__init__(movement, only_final_results)
-        self.prev_velocities = None
+        self.prev_velocities = []
         self.G = 1e8
         self.I_area = 1e-14
 
@@ -376,15 +376,21 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             * point_mass
         )
 
-    def calculate_wing_panel_accelerations(self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver, num_panels):
+    def calculate_wing_panel_accelerations(self, solver, num_panels):
         dt = self.movement.delta_time
-        if len(self._steady_problems) - len():
-            self.forces_per_timestep.append(solver.stackCpp_GP1_CgP1)
 
-        wing_panel_veloctiy = solver.calculate_solution_velocity()
-        return 
+        if len(self.prev_velocities) < 1:
+            # Set the flapping velocities to be zero for all points. Then, return the
+            # flapping velocities.
+            return np.zeros((num_panels, 3))
 
-    def initialize_next_problem(self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver):
+        curr_wing_panel_veloctiy = solver.calculate_solution_velocity(
+            solver.stackCpp_GP1_CgP1
+        )
+
+        return (curr_wing_panel_veloctiy - self.prev_velocities[-1]) / dt
+
+    def initialize_next_problem(self, solver):
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]
 
@@ -402,15 +408,15 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         chord_torsion_angles = np.zeros(int(num_spanwise_panels))
         torsion_matrix = np.zeros((num_chordwise_panels, num_spanwise_panels))
 
-        points = np.array(self.stackCpp_G_Cg)[:num_panels, :]
+        points = np.array(solver.stackCpp_GP1_CgP1)[:num_panels, :]
         x_values = points.reshape((num_chordwise_panels, num_spanwise_panels, 3))[
             :num_panels, :, 0
         ]
         panelAeroForces_G = np.stack(
-            [o.forces_G for o in np.ravel(wing.panels)]
+            [o.forces_W for o in np.ravel(wing.panels)]
         ).reshape((num_chordwise_panels, num_spanwise_panels, 3))
 
-        panelInertialForces = self.calculate_wing_panel_accelerations(solver, num_panels) * mass_matrix
+        panelInertialForces = self.calculate_wing_panel_accelerations(solver, num_panels).reshape(num_chordwise_panels, num_spanwise_panels, 3) * mass_matrix
         # Iterate over spanwise and chordwise panels to find cumulative torsion due to force on each mesh element
         # Force across spanwise panel is distinct
         for span_panel in range(num_spanwise_panels):
@@ -478,22 +484,24 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             wing=wing,
             airplane=airplane,
             deformation_matrices=span_torsion_angles * 180 / np.pi,
-            freestream_velocity=op.vInf_G__E,
+            op=solver.current_operating_point,
             num_chordwise_panels=num_chordwise_panels,
             num_spanwise_panels=num_spanwise_panels,
         )
 
         # self.last_torsion_angles = span_torsion_angles
-
-        self._steady_problems.append()
-
+        # TODO: add logic for when to append vs overwrite
+        if (True):
+            self.prev_velocities.append(
+                solver.calculate_solution_velocity(solver.stackCpp_GP1_CgP1)
+            )
 
     def create_new_wing(
         self,
         wing,
         airplane,
         deformation_matrices,
-        freestream_velocity,
+        op,
         num_chordwise_panels,
         num_spanwise_panels,
     ):
@@ -560,9 +568,9 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         )
 
         # Create new Airplane object from new Wing objects
-        these_wings = [this_wing]
+        these_wings = [this_wing] + airplane.wings[2:]
         this_airplane = geometry.airplane.Airplane(
-            name="Example Airplane",
+            name=airplane.name,
             wings=these_wings,
             Cg_E_CgP1=airplane.Cg_E_CgP1,
             angles_E_to_B_izyx=airplane.angles_E_to_B_izyx,
@@ -570,12 +578,13 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         )
         print("sup", airplane.wings, this_airplane.wings)
         # Redefine airplane at current timestep with newly created Airplane object
-        self.current_airplanes[0] = this_airplane
-        self.steady_problems[self._current_step] = SteadyProblem(
-            airplanes=self.current_airplanes, operating_point=self.current_operating_point
-        )
+        new_problem = SteadyProblem(
+            airplanes=[this_airplane],
+            operating_point=op,
+        ) 
+        self._steady_problems.append(new_problem)
 
-    
+
     def d_alpha_dy_air_static(self, y, tau_torsion, GI):
         return (tau_torsion * y) / GI
 

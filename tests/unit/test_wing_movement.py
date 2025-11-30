@@ -71,6 +71,9 @@ class TestWingMovement(unittest.TestCase):
         cls.mixed_custom_and_standard_spacing_wing_movement = (
             wing_movement_fixtures.make_mixed_custom_and_standard_spacing_wing_movement_fixture()
         )
+        cls.rotation_point_offset_wing_movement = (
+            wing_movement_fixtures.make_rotation_point_offset_wing_movement_fixture()
+        )
 
     def test_spacing_sine_for_Ler_Gs_Cgs(self):
         """Test that sine spacing actually produces sinusoidal motion for
@@ -613,3 +616,151 @@ class TestWingMovement(unittest.TestCase):
 
         # Assert that the generated angles match the expected custom wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
+
+    def test_rotation_point_offset_zero_matches_default(self):
+        """Test that zero rotation point offset produces identical results to default
+        behavior."""
+        num_steps = 50
+        delta_time = 0.02
+
+        # Create two WingMovements: one with explicit zero offset, one without.
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
+        wcs_movements = [
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
+            wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
+        ]
+
+        movement_default = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wcs_movements,
+            ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        )
+
+        movement_zero_offset = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=[
+                wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
+                wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
+            ],
+            ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+            rotationPointOffset_Gs_Ler=(0.0, 0.0, 0.0),
+        )
+
+        wings_default = movement_default.generate_wings(num_steps, delta_time)
+        wings_zero = movement_zero_offset.generate_wings(num_steps, delta_time)
+
+        for i in range(num_steps):
+            npt.assert_allclose(
+                wings_default[i].Ler_Gs_Cgs,
+                wings_zero[i].Ler_Gs_Cgs,
+                rtol=1e-10,
+                atol=1e-14,
+            )
+            npt.assert_allclose(
+                wings_default[i].angles_Gs_to_Wn_ixyz,
+                wings_zero[i].angles_Gs_to_Wn_ixyz,
+                rtol=1e-10,
+                atol=1e-14,
+            )
+
+    def test_rotation_point_offset_produces_position_adjustment(self):
+        """Test that non zero rotation point offset causes position changes when
+        angles oscillate."""
+        num_steps = 100
+        delta_time = 0.01
+        wings = self.rotation_point_offset_wing_movement.generate_wings(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # With rotation about a point offset in y (0.5m in y direction from Ler),
+        # z positions should vary when rotating about x axis.
+        # The offset is perpendicular to the rotation axis, so position changes occur.
+        z_positions = np.array([wing.Ler_Gs_Cgs[2] for wing in wings])
+        y_positions = np.array([wing.Ler_Gs_Cgs[1] for wing in wings])
+
+        # Verify that z positions are not all zero (they should oscillate).
+        self.assertFalse(np.allclose(z_positions, 0.0))
+
+        # For rotation about x axis with offset P = (0, 0.5, 0), the position
+        # adjustment is (I - R) @ P where R is the rotation matrix about x.
+        # The active rotation matrix for angle theta about x is:
+        # R = [[1, 0, 0], [0, cos(theta), -sin(theta)], [0, sin(theta), cos(theta)]]
+        # So (I - R) @ [0, 0.5, 0] = [0, 0.5*(1 - cos(theta)), -0.5*sin(theta)]
+        # Thus y_adj = 0.5*(1 - cos(theta)) and z_adj = -0.5*sin(theta)
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        angles_x_rad = np.deg2rad(10.0 * np.sin(2 * np.pi * times / 1.0))
+        expected_y = 0.5 * (1.0 - np.cos(angles_x_rad))
+        expected_z = -0.5 * np.sin(angles_x_rad)
+
+        npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
+
+    def test_rotation_point_offset_preserves_angles(self):
+        """Test that rotation point offset does not affect the Wing angles."""
+        num_steps = 50
+        delta_time = 0.02
+        wings = self.rotation_point_offset_wing_movement.generate_wings(
+            num_steps=num_steps,
+            delta_time=delta_time,
+        )
+
+        # Extract angles from generated Wings.
+        x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
+
+        # Calculate expected sine wave values.
+        times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
+        expected_x = 10.0 * np.sin(2 * np.pi * times / 1.0)
+
+        # Assert that angles are unaffected by rotation point offset.
+        npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
+
+    def test_rotation_point_offset_initialization(self):
+        """Test that rotationPointOffset_Gs_Ler is correctly initialized."""
+        base_wing = geometry_fixtures.make_type_1_wing_fixture()
+        wcs_movements = [
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
+            for _ in base_wing.wing_cross_sections
+        ]
+
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wcs_movements,
+            rotationPointOffset_Gs_Ler=(0.25, 0.1, -0.05),
+        )
+
+        npt.assert_array_equal(
+            wing_movement.rotationPointOffset_Gs_Ler, np.array([0.25, 0.1, -0.05])
+        )
+
+    def test_rotation_point_offset_validation_wrong_size(self):
+        """Test that invalid rotationPointOffset_Gs_Ler size raises error."""
+        base_wing = geometry_fixtures.make_type_1_wing_fixture()
+        wcs_movements = [
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
+            for _ in base_wing.wing_cross_sections
+        ]
+
+        with self.assertRaises(ValueError):
+            ps.movements.wing_movement.WingMovement(
+                base_wing=base_wing,
+                wing_cross_section_movements=wcs_movements,
+                rotationPointOffset_Gs_Ler=(0.1, 0.2),
+            )
+
+    def test_rotation_point_offset_validation_non_numeric(self):
+        """Test that non numeric rotationPointOffset_Gs_Ler raises error."""
+        base_wing = geometry_fixtures.make_type_1_wing_fixture()
+        wcs_movements = [
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
+            for _ in base_wing.wing_cross_sections
+        ]
+
+        with self.assertRaises(TypeError):
+            ps.movements.wing_movement.WingMovement(
+                base_wing=base_wing,
+                wing_cross_section_movements=wcs_movements,
+                rotationPointOffset_Gs_Ler=("a", "b", "c"),
+            )

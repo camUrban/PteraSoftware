@@ -15,7 +15,7 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-from .. import _parameter_validation, geometry
+from .. import _parameter_validation, _transformations, geometry
 from . import _functions
 from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
@@ -73,6 +73,11 @@ class WingMovement:
             "sine",
         ),
         phaseAngles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        rotationPointOffset_Gs_Ler: np.ndarray | Sequence[float | int] = (
+            0.0,
+            0.0,
+            0.0,
+        ),
     ) -> None:
         """The initialization method.
 
@@ -145,6 +150,14 @@ class WingMovement:
             internally. Each element must be 0.0 if the corresponding element in
             ampAngles_Gs_to_Wn_ixyz is 0.0 and non zero if not. The units are in
             degrees. The default is (0.0, 0.0, 0.0).
+        :param rotationPointOffset_Gs_Ler: An array-like object of 3 numbers (int or
+            float) representing the position of the rotation point for the Wing's
+            angular motion (in geometry axes after accounting for symmetry, relative to
+            the leading edge root point). Can be a tuple, list, or ndarray. Values are
+            converted to floats internally. This offset defines where the Wing rotates
+            about when angles_Gs_to_Wn_ixyz oscillates. When set to (0, 0, 0), rotation
+            occurs about the leading edge root point (default behavior). The units are
+            in meters. The default is (0.0, 0.0, 0.0).
         """
         if not isinstance(base_wing, geometry.wing.Wing):
             raise TypeError("base_wing must be a Wing.")
@@ -276,6 +289,13 @@ class WingMovement:
                 )
         self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
+        rotationPointOffset_Gs_Ler = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                rotationPointOffset_Gs_Ler, "rotationPointOffset_Gs_Ler"
+            )
+        )
+        self.rotationPointOffset_Gs_Ler = rotationPointOffset_Gs_Ler
+
     @property
     def all_periods(self) -> list[float]:
         """All unique non zero periods from this WingMovement and its
@@ -390,6 +410,30 @@ class WingMovement:
                 )
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
+
+        # If there is a non zero rotation point offset, adjust the positions to
+        # account for rotation about the offset point instead of the leading edge root.
+        if not np.allclose(self.rotationPointOffset_Gs_Ler, np.zeros(3, dtype=float)):
+            identity = np.eye(3, dtype=float)
+            for step in range(num_steps):
+                # TODO: Refactor this procedure for producing offset rotations to be a
+                #  function in _transformations.py.
+                # Get the active rotation matrix for this step's angles.
+                rot_T_act = _transformations.generate_rot_T(
+                    listAngles_Gs_to_Wn_ixyz[:, step],
+                    passive=False,
+                    intrinsic=True,
+                    order="xyz",
+                )
+                rot_R_act = rot_T_act[:3, :3]
+
+                # Compute the position adjustment due to the offset rotation point.
+                offsetRotationPointAdjustment_Gs = (
+                    identity - rot_R_act
+                ) @ self.rotationPointOffset_Gs_Ler
+
+                # Apply the position adjustment to the leading edge root.
+                listLer_Gs_Cgs[:, step] += offsetRotationPointAdjustment_Gs
 
         # Create an empty 2D ndarray that will hold each of the Wings's
         # WingCrossSection's vector of WingCrossSections representing its changing

@@ -1,18 +1,19 @@
 import numpy as np
 
-from _parameter_validation import (
+from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
     threeD_spacing_vectorLike_return_tuple,
     positive_number_return_float,
+    positive_int_return_int,
 )
 
-from _functions import (
+from .._functions import (
     oscillating_sinspaces, 
     oscillating_linspaces, 
     oscillating_customspaces
 )
 
-from geometry.airplane import Airplane
+from ... import geometry
 
 
 class SingleStepAirplaneMovement:
@@ -227,7 +228,12 @@ class SingleStepAirplaneMovement:
                 )
         self.phaseAngles_E_to_B_izyx = phaseAngles_E_to_B_izyx
 
-    def generate_next_airplane(self, base_airplane: Airplane, delta_time):
+        self.listCg_E_CgP1 = None
+        self.listAngles_E_to_B_izyx = None
+
+    def generate_next_airplane(
+        self, base_airplane, delta_time, num_steps, step
+    ):
         """Creates the Airplane at the next timestep
 
                 :param delta_time: number
@@ -240,120 +246,145 @@ class SingleStepAirplaneMovement:
 
                     This is the Airplanes associated with this AirplaneMovement and deformation.
         """
-        num_steps = 2
+        num_steps = positive_int_return_int(
+            num_steps, "num_steps"
+        )
         delta_time = positive_number_return_float(
             delta_time, "delta_time"
         )
-
         # Generate oscillating values for each dimension of Cg_E_CgP1.
-        listCg_E_CgP1 = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingCg_E_CgP1[dim]
-            if spacing == "sine":
-                listCg_E_CgP1[dim, :] = oscillating_sinspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=base_airplane.Cg_E_CgP1[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listCg_E_CgP1[dim, :] = oscillating_linspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=base_airplane.Cg_E_CgP1[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listCg_E_CgP1[dim, :] = oscillating_customspaces(
-                    amps=self.ampCg_E_CgP1[dim],
-                    periods=self.periodCg_E_CgP1[dim],
-                    phases=self.phaseCg_E_CgP1[dim],
-                    bases=base_airplane.Cg_E_CgP1[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listCg_E_CgP1 is None:
+            self._initialize_oscilating_dimensions(delta_time, num_steps, base_airplane)
 
         # Generate oscillating values for each dimension of angles_E_to_B_izyx.
-        listAngles_E_to_B_izyx = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingAngles_E_to_B_izyx[dim]
-            if spacing == "sine":
-                listAngles_E_to_B_izyx[dim, :] = oscillating_sinspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=base_airplane.angles_E_to_B_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listAngles_E_to_B_izyx[dim, :] = oscillating_linspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=base_airplane.angles_E_to_B_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listAngles_E_to_B_izyx[dim, :] = oscillating_customspaces(
-                    amps=self.ampAngles_E_to_B_izyx[dim],
-                    periods=self.periodAngles_E_to_B_izyx[dim],
-                    phases=self.phaseAngles_E_to_B_izyx[dim],
-                    bases=base_airplane.angles_E_to_B_izyx[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listAngles_E_to_B_izyx is None:
+            self._initialize_oscilating_angles(delta_time, num_steps, base_airplane)
 
-        # Create an empty 2D ndarray that will hold each of the Airplane's Wing's vector
-        # of Wings representing its changing state at each time step. The first index
-        # denotes a particular base Wing, and the second index denotes the time step.
-        wings = np.empty((len(self.wing_movements)), dtype=object)
+        wings = []
 
         # Iterate through the WingMovements.
         for wing_movement_id, wing_movement in enumerate(self.wing_movements):
 
-            # Generate this Wing's vector of Wings representing its changing state at
-            # each time step.
-            this_wings_list_of_wings = np.array(
-                wing_movement.generate_next_wing(delta_time=delta_time)
-            )
-
             # Add this vector the Airplane's 2D ndarray of Wings' Wings.
-            wings[wing_movement_id, :] = this_wings_list_of_wings
-
-        # Create an empty list to hold each time step's Airplane.
-        airplanes = []
+            wings.append(
+                wing_movement.generate_next_wing(
+                    base_wing=base_airplane.wings[wing_movement_id],
+                    delta_time=delta_time,
+                    num_steps=num_steps,
+                    step=step,
+                )
+            )
 
         # Get the non-changing Airplane attributes.
         this_name = base_airplane.name
         this_weight = base_airplane.weight
 
         # the 1 is for not the base step, but 1 step deep
-        thisCg_E_CgP1 = listCg_E_CgP1[:, 1]
-        theseAngles_E_to_B_izyx = listAngles_E_to_B_izyx[:, 1]
-        these_wings = list(wings[:, 1])
+        thisCg_E_CgP1 = self.listCg_E_CgP1[:, step]
+        theseAngles_E_to_B_izyx = self.listAngles_E_to_B_izyx[:, step]
 
         # Make a new Airplane for this time step.
-        this_airplane = Airplane(
-            wings=these_wings,
+        this_airplane = geometry.airplane.Airplane(
+            wings=wings,
             name=this_name,
             Cg_E_CgP1=thisCg_E_CgP1,
             angles_E_to_B_izyx=theseAngles_E_to_B_izyx,
             weight=this_weight,
         )
 
-        # Add this new Airplane to the list of Airplanes.
-        airplanes.append(this_airplane)
+        return this_airplane
 
-        return airplanes
+    def _initialize_oscilating_dimensions(self, delta_time, num_steps, base_airplane):
+        """Initializes the oscillating dimensions for Cg_E_CgP1 and angles_E_to_B_izyx.
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+        """
+        self.listCg_E_CgP1 = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingCg_E_CgP1[dim]
+            if spacing == "sine":
+                self.listCg_E_CgP1[dim, :] = oscillating_sinspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=base_airplane.Cg_E_CgP1[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listCg_E_CgP1[dim, :] = oscillating_linspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=base_airplane.Cg_E_CgP1[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listCg_E_CgP1[dim, :] = oscillating_customspaces(
+                    amps=self.ampCg_E_CgP1[dim],
+                    periods=self.periodCg_E_CgP1[dim],
+                    phases=self.phaseCg_E_CgP1[dim],
+                    bases=base_airplane.Cg_E_CgP1[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
+
+    def _initialize_oscilating_angles(self, delta_time, num_steps, base_airplane):
+        """Initializes the oscillating angles for angles_E_to_B_izyx.
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+        :param num_steps: int 
+            This is the number of time steps in this movement. It must be a positive
+            int.
+        :param base_airplane: Airplane
+
+            This is the base Airplane from which the AirplaneMovement will generate
+            its Airplanes.
+        """
+        self.listAngles_E_to_B_izyx = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingAngles_E_to_B_izyx[dim]
+            if spacing == "sine":
+                self.listAngles_E_to_B_izyx[dim, :] = oscillating_sinspaces(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listAngles_E_to_B_izyx[dim, :] = oscillating_linspaces(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listAngles_E_to_B_izyx[dim, :] = oscillating_customspaces(
+                    amps=self.ampAngles_E_to_B_izyx[dim],
+                    periods=self.periodAngles_E_to_B_izyx[dim],
+                    phases=self.phaseAngles_E_to_B_izyx[dim],
+                    bases=base_airplane.angles_E_to_B_izyx[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")

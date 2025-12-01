@@ -11,19 +11,20 @@ This module contains the following functions:
 import numpy as np
 
 
-from _parameter_validation import (
+from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
     threeD_spacing_vectorLike_return_tuple,
     positive_number_return_float,
+    positive_int_return_int,
 )
 
-from _functions import (
+from .._functions import (
     oscillating_sinspaces,
     oscillating_linspaces,
     oscillating_customspaces,
 )
 
-from geometry.wing_cross_section import WingCrossSection
+from ... import geometry
 
 
 class SingleStepWingCrossSectionMovement:
@@ -154,7 +155,6 @@ class SingleStepWingCrossSectionMovement:
             degrees.
         """
 
-
         ampLp_Wcsp_Lpp = threeD_number_vectorLike_return_float(
             ampLp_Wcsp_Lpp, "ampLp_Wcsp_Lpp"
         )
@@ -258,10 +258,16 @@ class SingleStepWingCrossSectionMovement:
                 )
         self.phaseAngles_Wcsp_to_Wcs_ixyz = phaseAngles_Wcsp_to_Wcs_ixyz
 
-    def generate_wing_cross_sections(
+        self.listLp_Wcsp_Lpp = None
+        self.listAngles_Wcsp_to_Wcs_ixyz = None
+
+    def generate_next_wing_cross_sections(
         self,
-        num_steps,
+        base_wing_cross_section,
         delta_time,
+        num_steps,
+        step,
+        base=False,
     ):
         """Creates the WingCrossSection at each time step, and returns them in a list.
 
@@ -281,107 +287,52 @@ class SingleStepWingCrossSectionMovement:
             This is the list of WingCrossSections associated with this
             WingCrossSectionMovement.
         """
-        num_steps = 2
+        num_steps = positive_int_return_int(
+            num_steps, "num_steps"
+        )
         delta_time = positive_number_return_float(
             delta_time, "delta_time"
         )
 
         # Generate oscillating values for each dimension of Lp_Wcsp_Lpp.
-        listLp_Wcsp_Lpp = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingLp_Wcsp_Lpp[dim]
-            if spacing == "sine":
-                listLp_Wcsp_Lpp[dim, :] = oscillating_sinspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listLp_Wcsp_Lpp[dim, :] = oscillating_linspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listLp_Wcsp_Lpp[dim, :] = oscillating_customspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listLp_Wcsp_Lpp is None:
+            self._initialize_oscillating_dimensions(
+                delta_time,
+                num_steps,
+                base_wing_cross_section,
+            )
 
         # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_ixyz.
-        listAngles_Wcsp_to_Wcs_ixyz = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingAngles_Wcsp_to_Wcs_ixyz[dim]
-            if spacing == "sine":
-                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = oscillating_sinspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = oscillating_linspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listAngles_Wcsp_to_Wcs_ixyz[dim, :] = (
-                    oscillating_customspaces(
-                        amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                        periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                        phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                        bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
-                        num_steps=num_steps,
-                        delta_time=delta_time,
-                        custom_function=spacing,
-                    )
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listAngles_Wcsp_to_Wcs_ixyz is None:
+            self._initialize_oscillating_angles(
+                delta_time,
+                num_steps,
+                base_wing_cross_section,
+            )
 
         # Create an empty list to hold each time step's WingCrossSection.
         wing_cross_sections = []
 
         # Get the non-changing WingCrossSectionAttributes.
-        this_airfoil = self.base_wing_cross_section.airfoil
-        this_num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
-        this_chord = self.base_wing_cross_section.chord
+        this_airfoil = base_wing_cross_section.airfoil
+        this_num_spanwise_panels = base_wing_cross_section.num_spanwise_panels
+        this_chord = base_wing_cross_section.chord
         this_control_surface_symmetry_type = (
-            self.base_wing_cross_section.control_surface_symmetry_type
+            base_wing_cross_section.control_surface_symmetry_type
         )
         this_control_surface_hinge_point = (
-            self.base_wing_cross_section.control_surface_hinge_point
+            base_wing_cross_section.control_surface_hinge_point
         )
         this_control_surface_deflection = (
-            self.base_wing_cross_section.control_surface_deflection
+            base_wing_cross_section.control_surface_deflection
         )
-        this_spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
+        this_spanwise_spacing = base_wing_cross_section.spanwise_spacing
 
-        # Iterate through the time steps.
-        thisLp_Wcsp_Lpp = listLp_Wcsp_Lpp[:, 1]
-        theseAngles_Wcsp_to_Wcs_ixyz = listAngles_Wcsp_to_Wcs_ixyz[:, 1]
-
+        offset = np.zeros(3) if base else np.random.random_sample(3) * 0.1
+        thisLp_Wcsp_Lpp = self.listLp_Wcsp_Lpp[:, step] + offset
+        theseAngles_Wcsp_to_Wcs_ixyz = self.listAngles_Wcsp_to_Wcs_ixyz[:, step] 
         # Make a new WingCrossSection for this time step.
-        this_wing_cross_section = WingCrossSection(
+        this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
             airfoil=this_airfoil,
             num_spanwise_panels=this_num_spanwise_panels,
             chord=this_chord,
@@ -397,3 +348,121 @@ class SingleStepWingCrossSectionMovement:
         wing_cross_sections.append(this_wing_cross_section)
 
         return wing_cross_sections
+
+    def _initialize_oscillating_dimensions(
+        self,
+        delta_time,
+        num_steps,
+        base_wing_cross_section,
+    ):
+        """Initializes the oscillating dimensions for the WingCrossSectionMovement.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+
+        :param base_wing_cross_section: WingCrossSection
+
+            This is the base WingCrossSection, from which the WingCrossSection at
+            each time step will be created.
+        """
+
+        # Generate oscillating values for each dimension of Lp_Wcsp_Lpp.
+        self.listLp_Wcsp_Lpp = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingLp_Wcsp_Lpp[dim]
+            if spacing == "sine":
+                self.listLp_Wcsp_Lpp[dim, :] = oscillating_sinspaces(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listLp_Wcsp_Lpp[dim, :] = oscillating_linspaces(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listLp_Wcsp_Lpp[dim, :] = oscillating_customspaces(
+                    amps=self.ampLp_Wcsp_Lpp[dim],
+                    periods=self.periodLp_Wcsp_Lpp[dim],
+                    phases=self.phaseLp_Wcsp_Lpp[dim],
+                    bases=base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
+
+    def _initialize_oscillating_angles(
+        self,
+        delta_time,
+        num_steps,
+        base_wing_cross_section,
+    ):
+        """Initializes the oscillating angles for the WingCrossSectionMovement.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+
+        :param base_wing_cross_section: WingCrossSection
+
+            This is the base WingCrossSection, from which the WingCrossSection at
+            each time step will be created.
+        """
+        self.listAngles_Wcsp_to_Wcs_ixyz = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingAngles_Wcsp_to_Wcs_ixyz[dim]
+            if spacing == "sine":
+                self.listAngles_Wcsp_to_Wcs_ixyz[dim, :] = oscillating_sinspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listAngles_Wcsp_to_Wcs_ixyz[dim, :] = oscillating_linspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listAngles_Wcsp_to_Wcs_ixyz[dim, :] = oscillating_customspaces(
+                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")

@@ -9,19 +9,20 @@ This module contains the following functions:
 
 import numpy as np
 
-from _parameter_validation import (
+from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
     threeD_spacing_vectorLike_return_tuple,
     positive_number_return_float,
+    positive_int_return_int,
 )
 
-from _functions import (
+from .._functions import (
     oscillating_sinspaces,
     oscillating_linspaces,
     oscillating_customspaces,
 )
 
-from geometry.wing import Wing
+from ... import geometry
 
 class SingleStepWingMovement:
     """This is a class used to contain the Wing movements.
@@ -263,7 +264,10 @@ class SingleStepWingMovement:
                 )
         self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
-    def generate_next_wing(self, base_wing: Wing, delta_time):
+        self.listLer_Gs_Cgs = None
+        self.listAngles_Gs_to_Wn_ixyz = None
+
+    def generate_next_wing(self, base_wing, delta_time, num_steps, step):
         """Creates the Wing at each time step, and returns them in a list.
 
         :param num_steps: int
@@ -281,80 +285,20 @@ class SingleStepWingMovement:
 
             This is the list of Wings associated with this WingMovement.
         """
-        num_steps = 2
+        num_steps = positive_int_return_int(
+            num_steps, "num_steps"
+        )
         delta_time = positive_number_return_float(
             delta_time, "delta_time"
         )
 
         # Generate oscillating values for each dimension of Ler_Gs_Cgs.
-        listLer_Gs_Cgs = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingLer_Gs_Cgs[dim]
-            if spacing == "sine":
-                listLer_Gs_Cgs[dim, :] = oscillating_sinspaces(
-                    amps=self.ampLer_Gs_Cgs[dim],
-                    periods=self.periodLer_Gs_Cgs[dim],
-                    phases=self.phaseLer_Gs_Cgs[dim],
-                    bases=base_wing.Ler_Gs_Cgs[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listLer_Gs_Cgs[dim, :] = oscillating_linspaces(
-                    amps=self.ampLer_Gs_Cgs[dim],
-                    periods=self.periodLer_Gs_Cgs[dim],
-                    phases=self.phaseLer_Gs_Cgs[dim],
-                    bases=base_wing.Ler_Gs_Cgs[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listLer_Gs_Cgs[dim, :] = oscillating_customspaces(
-                    amps=self.ampLer_Gs_Cgs[dim],
-                    periods=self.periodLer_Gs_Cgs[dim],
-                    phases=self.phaseLer_Gs_Cgs[dim],
-                    bases=base_wing.Ler_Gs_Cgs[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listLer_Gs_Cgs is None:
+            self._initialize_oscilating_dimensions(delta_time, num_steps, base_wing)
 
         # Generate oscillating values for each dimension of angles_Gs_to_Wn_ixyz.
-        listAngles_Gs_to_Wn_ixyz = np.zeros((3, num_steps), dtype=float)
-        for dim in range(3):
-            spacing = self.spacingAngles_Gs_to_Wn_ixyz[dim]
-            if spacing == "sine":
-                listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_sinspaces(
-                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
-                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
-                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
-                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif spacing == "uniform":
-                listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_linspaces(
-                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
-                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
-                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
-                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                )
-            elif callable(spacing):
-                listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_customspaces(
-                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
-                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
-                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
-                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
-                    num_steps=num_steps,
-                    delta_time=delta_time,
-                    custom_function=spacing,
-                )
-            else:
-                raise ValueError(f"Invalid spacing value: {spacing}")
+        if self.listAngles_Gs_to_Wn_ixyz is None:
+            self._initialize_oscilating_angles(delta_time, num_steps, base_wing)
 
         # Create an empty 2D ndarray that will hold each of the Wings's
         # WingCrossSection's vector of WingCrossSections representing its changing
@@ -374,7 +318,13 @@ class SingleStepWingMovement:
             # representing its changing state at each time step.
             this_wing_cross_sections_list_of_wing_cross_sections = np.array(
                 wing_cross_section_movement.generate_next_wing_cross_sections(
-                    delta_time=delta_time
+                    base_wing_cross_section=base_wing.wing_cross_sections[
+                        wing_cross_section_movement_id
+                    ],
+                    delta_time=delta_time,
+                    num_steps=num_steps,
+                    step=step,
+                    base=wing_cross_section_movement_id==0,
                 )
             )
 
@@ -383,9 +333,6 @@ class SingleStepWingMovement:
             wing_cross_sections[wing_cross_section_movement_id, :] = (
                 this_wing_cross_sections_list_of_wing_cross_sections
             )
-
-        # Create an empty list to hold each time step's Wing.
-        wings = []
 
         # Get the non-changing Wing attributes.
         this_name = base_wing.name
@@ -396,13 +343,13 @@ class SingleStepWingMovement:
         this_num_chordwise_panels = base_wing.num_chordwise_panels
         this_chordwise_spacing = base_wing.chordwise_spacing
 
-
-        thisLer_Gs_Cgs = listLer_Gs_Cgs[:, 1]
-        theseAngles_Gs_to_Wn_ixyz = listAngles_Gs_to_Wn_ixyz[:, 1]
-        these_wing_cross_sections = list(wing_cross_sections[:, 1])
+        thisLer_Gs_Cgs = self.listLer_Gs_Cgs[:, step]
+        theseAngles_Gs_to_Wn_ixyz = self.listAngles_Gs_to_Wn_ixyz[:, step]
+        these_wing_cross_sections = list(wing_cross_sections[:, step])
 
         # Make a new Wing for this time step.
-        this_wing = Wing(
+        print(min(theseAngles_Gs_to_Wn_ixyz))
+        this_wing = geometry.wing.Wing(
             wing_cross_sections=these_wing_cross_sections,
             name=this_name,
             Ler_Gs_Cgs=thisLer_Gs_Cgs,
@@ -415,7 +362,99 @@ class SingleStepWingMovement:
             chordwise_spacing=this_chordwise_spacing,
         )
 
-        # Add this new Wing to the list of Wings.
-        wings.append(this_wing)
+        return this_wing
 
-        return wings
+    def _initialize_oscilating_dimensions(self, delta_time, num_steps, base_wing):
+        """Initializes the oscillating dimensions for Ler_Gs_Cgs and
+        angles_Gs_to_Wn_ixyz.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds.
+
+        :param num_steps: int
+
+            This is the number of time steps in this movement. It must be a positive
+            int.
+        """
+        self.listLer_Gs_Cgs = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingLer_Gs_Cgs[dim]
+            if spacing == "sine":
+                self.listLer_Gs_Cgs[dim, :] = oscillating_sinspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=base_wing.Ler_Gs_Cgs[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listLer_Gs_Cgs[dim, :] = oscillating_linspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=base_wing.Ler_Gs_Cgs[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listLer_Gs_Cgs[dim, :] = oscillating_customspaces(
+                    amps=self.ampLer_Gs_Cgs[dim],
+                    periods=self.periodLer_Gs_Cgs[dim],
+                    phases=self.phaseLer_Gs_Cgs[dim],
+                    bases=base_wing.Ler_Gs_Cgs[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")
+
+    def _initialize_oscilating_angles(self, delta_time, num_steps, base_wing):
+        """Initializes the oscillating dimensions for angles_Gs_to_Wn_ixyz.
+
+        :param delta_time: number
+
+            This is the time between each time step. It must be a positive number (
+            int or float), and will be converted internally to a float. The units are
+            in seconds. 
+        :param num_steps: int
+            This is the number of time steps in this movement. It must be a positive
+            int.
+        """
+        self.listAngles_Gs_to_Wn_ixyz = np.zeros((3, num_steps), dtype=float)
+        for dim in range(3):
+            spacing = self.spacingAngles_Gs_to_Wn_ixyz[dim]
+            if spacing == "sine":
+                self.listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_sinspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif spacing == "uniform":
+                self.listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_linspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                )
+            elif callable(spacing):
+                self.listAngles_Gs_to_Wn_ixyz[dim, :] = oscillating_customspaces(
+                    amps=self.ampAngles_Gs_to_Wn_ixyz[dim],
+                    periods=self.periodAngles_Gs_to_Wn_ixyz[dim],
+                    phases=self.phaseAngles_Gs_to_Wn_ixyz[dim],
+                    bases=base_wing.angles_Gs_to_Wn_ixyz[dim],
+                    num_steps=num_steps,
+                    delta_time=delta_time,
+                    custom_function=spacing,
+                )
+            else:
+                raise ValueError(f"Invalid spacing value: {spacing}")

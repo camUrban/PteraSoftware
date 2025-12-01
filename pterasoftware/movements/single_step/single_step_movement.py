@@ -9,10 +9,13 @@ This module contains the following functions:
 
 import math
 
-from single_step_airplane_movement import SingleStepAirplaneMovement 
-from single_step_operating_point_movement import SingleStepOperatingPointMovement
+from .single_step_airplane_movement import SingleStepAirplaneMovement 
+from .single_step_operating_point_movement import SingleStepOperatingPointMovement
 
-import _parameter_validation
+from ..._parameter_validation import (
+    positive_number_return_float,
+    positive_int_return_int,
+)
 
 class SingleStepMovement:
     """This is a class used to contain an UnsteadyProblem's movement.
@@ -37,9 +40,7 @@ class SingleStepMovement:
         single_step_airplane_movements,
         single_step_operating_point_movement,
         delta_time=None,
-        num_cycles=None,
-        num_chords=None,
-        num_steps=None,
+        num_steps=40,
     ):
         """This is the initialization method.
 
@@ -121,7 +122,7 @@ class SingleStepMovement:
         self.operating_point_movement = single_step_operating_point_movement
 
         if delta_time is not None:
-            delta_time = _parameter_validation.positive_number_return_float(
+            delta_time = positive_number_return_float(
                 delta_time, "delta_time"
             )
         else:
@@ -150,22 +151,48 @@ class SingleStepMovement:
             delta_time = sum(delta_times) / len(delta_times)
         self.delta_time = delta_time
 
+    
+        num_steps = positive_int_return_int(
+            num_steps, "num_steps"
+        )
+        
         self.num_steps = num_steps
 
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
 
-    def generate_next_movement(self):
+    def generate_next_movement(self, base_airplanes, base_operating_point, step):
+        """Creates the Airplanes and OperatingPoint at the next time step.
+        :param base_airplanes: list of Airplanes
+
+            This is the list of Airplanes at the base time step.
+        :param base_operating_point: OperatingPoint
+
+            This is the OperatingPoint at the base time step.
+        :return: tuple (list of Airplanes, OperatingPoint)
+
+            This is a tuple where the first element is the list of Airplanes at the
+            next time step, and the second element is the OperatingPoint at the next
+            time step.
+        """
+
         airplanes = []
-        for airplane_movement in self.airplane_movements:
+        airplane_movement: SingleStepAirplaneMovement
+        for airplane_id, airplane_movement in enumerate(self.airplane_movements):
             airplanes.append(
                 airplane_movement.generate_next_airplane(
-                    num_steps=self.num_steps, delta_time=self.delta_time
+                    delta_time=self.delta_time,
+                    base_airplane=base_airplanes[airplane_id],
+                    num_steps=self.num_steps,
+                    step=step,
                 )
             )
 
         operating_point = self.operating_point_movement.generate_next_operating_point(
-            num_steps=self.num_steps, delta_time=self.delta_time
+            delta_time=self.delta_time,
+            base_operating_point=base_operating_point,
+            num_steps=self.num_steps,
+            step=step,
         )
         return airplanes, operating_point

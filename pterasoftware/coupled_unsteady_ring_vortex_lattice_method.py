@@ -1055,7 +1055,6 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver():
         # find the forces (in the first Airplane's geometry axes) on the Panels'
         # RingVortex's right LineVortex, front LineVortex, and left LineVortex using
         # the effective vortex strengths.
-        print("\nhi:", self._calculate_current_movement_velocities_at_right_leg_centers())
         rightLegForces_GP1 = (
             self.current_operating_point.rho
             * np.expand_dims(effective_right_vortex_line_strengths, axis=1)

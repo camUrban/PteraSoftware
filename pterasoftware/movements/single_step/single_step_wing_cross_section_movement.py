@@ -267,6 +267,7 @@ class SingleStepWingCrossSectionMovement:
         delta_time,
         num_steps,
         step,
+        deformation_matrix,
         base=False,
     ):
         """Creates the WingCrossSection at each time step, and returns them in a list.
@@ -328,9 +329,11 @@ class SingleStepWingCrossSectionMovement:
         )
         this_spanwise_spacing = base_wing_cross_section.spanwise_spacing
 
-        offset = np.zeros(3) if base else np.random.random_sample(3) * 0.1
-        thisLp_Wcsp_Lpp = self.listLp_Wcsp_Lpp[:, step] + offset
-        theseAngles_Wcsp_to_Wcs_ixyz = self.listAngles_Wcsp_to_Wcs_ixyz[:, step] 
+        thisLp_Wcsp_Lpp = self.listLp_Wcsp_Lpp[:, step] 
+        theseAngles_Wcsp_to_Wcs_ixyz = self.listAngles_Wcsp_to_Wcs_ixyz[
+            :, step
+        ] + np.array([0, deformation_matrix, 0])
+
         # Make a new WingCrossSection for this time step.
         this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
             airfoil=this_airfoil,

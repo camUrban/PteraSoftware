@@ -449,5 +449,5 @@ ps.output.animate(
     unsteady_solver=example_solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    save=False,
+    save=True,
 )

@@ -232,7 +232,7 @@ class SingleStepAirplaneMovement:
         self.listAngles_E_to_B_izyx = None
 
     def generate_next_airplane(
-        self, base_airplane, delta_time, num_steps, step
+        self, base_airplane, delta_time, num_steps, step, deformation_matrices
     ):
         """Creates the Airplane at the next timestep
 
@@ -272,6 +272,7 @@ class SingleStepAirplaneMovement:
                     delta_time=delta_time,
                     num_steps=num_steps,
                     step=step,
+                    deformation_matrices=deformation_matrices,
                 )
             )
 

@@ -162,7 +162,7 @@ class SingleStepMovement:
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
 
-    def generate_next_movement(self, base_airplanes, base_operating_point, step):
+    def generate_next_movement(self, base_airplanes, base_operating_point, step, deformation_matrices=None):
         """Creates the Airplanes and OperatingPoint at the next time step.
         :param base_airplanes: list of Airplanes
 
@@ -186,6 +186,7 @@ class SingleStepMovement:
                     base_airplane=base_airplanes[airplane_id],
                     num_steps=self.num_steps,
                     step=step,
+                    deformation_matrices=deformation_matrices,
                 )
             )
 

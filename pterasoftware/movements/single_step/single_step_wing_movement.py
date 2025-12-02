@@ -267,7 +267,7 @@ class SingleStepWingMovement:
         self.listLer_Gs_Cgs = None
         self.listAngles_Gs_to_Wn_ixyz = None
 
-    def generate_next_wing(self, base_wing, delta_time, num_steps, step):
+    def generate_next_wing(self, base_wing, delta_time, num_steps, step, deformation_matrices):
         """Creates the Wing at each time step, and returns them in a list.
 
         :param num_steps: int
@@ -291,6 +291,9 @@ class SingleStepWingMovement:
         delta_time = positive_number_return_float(
             delta_time, "delta_time"
         )
+        # Account for null deformation_matrices input.
+        if deformation_matrices is None:
+            deformation_matrices = np.zeros(len(self.wing_cross_section_movements))
 
         # Generate oscillating values for each dimension of Ler_Gs_Cgs.
         if self.listLer_Gs_Cgs is None:
@@ -324,7 +327,10 @@ class SingleStepWingMovement:
                     delta_time=delta_time,
                     num_steps=num_steps,
                     step=step,
-                    base=wing_cross_section_movement_id==0,
+                    base=wing_cross_section_movement_id == 0,
+                    deformation_matrix=deformation_matrices[
+                        wing_cross_section_movement_id
+                    ],
                 )
             )
 
@@ -348,7 +354,6 @@ class SingleStepWingMovement:
         these_wing_cross_sections = list(wing_cross_sections[:, step])
 
         # Make a new Wing for this time step.
-        print(min(theseAngles_Gs_to_Wn_ixyz))
         this_wing = geometry.wing.Wing(
             wing_cross_sections=these_wing_cross_sections,
             name=this_name,

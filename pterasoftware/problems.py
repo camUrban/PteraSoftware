@@ -437,6 +437,9 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         ).reshape((num_chordwise_panels, num_spanwise_panels, 3))
 
         panelInertialForces = self.calculate_wing_panel_accelerations(solver, num_panels).reshape(num_chordwise_panels, num_spanwise_panels, 3) * mass_matrix
+
+        print("\nMaximums", max(panelAeroForces_G.flatten()), max(panelInertialForces.flatten()))
+        print("\nMinimums", min(panelAeroForces_G.flatten()), min(panelInertialForces.flatten()))
         # Iterate over spanwise and chordwise panels to find cumulative torsion due to force on each mesh element
         # Force across spanwise panel is distinct
         for span_panel in range(num_spanwise_panels):
@@ -505,7 +508,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             self.prev_velocities.append(
                 solver.calculate_solution_velocity(solver.stackCpp_GP1_CgP1)
             )
-        span_torsion_angles = span_torsion_angles / max(abs(span_torsion_angles)) * 4
+        span_torsion_angles = span_torsion_angles / 12000
         return span_torsion_angles
 
     def d_alpha_dy_air_static(self, y, tau_torsion, GI):

@@ -32,6 +32,12 @@ class TestRingVortex(unittest.TestCase):
         )
         self.offset_ring_vortex = ring_vortex_fixtures.make_offset_ring_vortex_fixture()
         self.small_ring_vortex = ring_vortex_fixtures.make_small_ring_vortex_fixture()
+        self.large_strength_ring_vortex = (
+            ring_vortex_fixtures.make_large_strength_ring_vortex_fixture()
+        )
+        self.large_coordinate_ring_vortex = (
+            ring_vortex_fixtures.make_large_coordinate_ring_vortex_fixture()
+        )
 
     def test_initialization_valid_parameters(self):
         """Test RingVortex initialization with valid parameters."""
@@ -376,6 +382,96 @@ class TestRingVortex(unittest.TestCase):
             np.array([0.0, 0.5, 0.0], dtype=float) + expected_offset,
             decimal=10,
         )
+
+    def test_area_property_unit_square(self):
+        """Test that area property returns correct value for unit square."""
+        # For unit square RingVortex, area should be 1.0 square meter.
+        expected_area = 1.0
+        npt.assert_almost_equal(
+            self.unit_square_ring_vortex.area, expected_area, decimal=10
+        )
+
+    def test_area_property_rectangular(self):
+        """Test that area property returns correct value for rectangular vortex."""
+        # For rectangular RingVortex (2x1), area should be 2.0 square meters.
+        expected_area = 2.0
+        npt.assert_almost_equal(
+            self.rectangular_ring_vortex.area, expected_area, decimal=10
+        )
+
+    def test_area_property_basic(self):
+        """Test that area property returns correct value for basic vortex."""
+        # For basic RingVortex (1x1), area should be 1.0 square meter.
+        expected_area = 1.0
+        npt.assert_almost_equal(self.basic_ring_vortex.area, expected_area, decimal=10)
+
+    def test_area_property_small(self):
+        """Test that area property returns correct value for small vortex."""
+        # For small RingVortex (0.01x0.01), area should be 0.0001 square meters.
+        expected_area = 0.0001
+        npt.assert_almost_equal(self.small_ring_vortex.area, expected_area, decimal=10)
+
+    def test_area_property_positive(self):
+        """Test that area property is always positive."""
+        # All areas should be positive.
+        self.assertGreater(self.basic_ring_vortex.area, 0)
+        self.assertGreater(self.unit_square_ring_vortex.area, 0)
+        self.assertGreater(self.rectangular_ring_vortex.area, 0)
+        self.assertGreater(self.tilted_ring_vortex.area, 0)
+        self.assertGreater(self.small_ring_vortex.area, 0)
+        self.assertGreater(self.offset_ring_vortex.area, 0)
+
+    def test_line_vortex_legs_are_line_vortex_type(self):
+        """Test that LineVortex legs are of the correct type."""
+        # Verify all legs are LineVortex instances.
+        self.assertIsInstance(
+            self.basic_ring_vortex.front_leg, _aerodynamics._LineVortex
+        )
+        self.assertIsInstance(
+            self.basic_ring_vortex.left_leg, _aerodynamics._LineVortex
+        )
+        self.assertIsInstance(
+            self.basic_ring_vortex.back_leg, _aerodynamics._LineVortex
+        )
+        self.assertIsInstance(
+            self.basic_ring_vortex.right_leg, _aerodynamics._LineVortex
+        )
+
+    def test_large_strength_vortex(self):
+        """Test RingVortex with very large strength."""
+        # Verify the large strength RingVortex initializes correctly.
+        self.assertEqual(self.large_strength_ring_vortex.strength, 1e6)
+        self.assertEqual(self.large_strength_ring_vortex.front_leg.strength, 1e6)
+        self.assertEqual(self.large_strength_ring_vortex.left_leg.strength, 1e6)
+        self.assertEqual(self.large_strength_ring_vortex.back_leg.strength, 1e6)
+        self.assertEqual(self.large_strength_ring_vortex.right_leg.strength, 1e6)
+
+    def test_large_coordinate_vortex(self):
+        """Test RingVortex with very large coordinates."""
+        # Verify the large coordinate RingVortex initializes correctly.
+        expected_offset = np.array([1e6, 1e6, 1e6], dtype=float)
+        npt.assert_array_almost_equal(
+            self.large_coordinate_ring_vortex.Frrvp_GP1_CgP1,
+            np.array([0.0, 0.5, 0.0], dtype=float) + expected_offset,
+            decimal=4,
+        )
+
+        # Verify centroid is calculated correctly for large coordinates.
+        expected_centroid = np.array([0.5, 0.0, 0.0], dtype=float) + expected_offset
+        npt.assert_array_almost_equal(
+            self.large_coordinate_ring_vortex.Crvp_GP1_CgP1,
+            expected_centroid,
+            decimal=4,
+        )
+
+    def test_update_strength_to_large_value(self):
+        """Test updating strength to a very large value."""
+        self.basic_ring_vortex.update_strength(1e9)
+        self.assertEqual(self.basic_ring_vortex.strength, 1e9)
+        self.assertEqual(self.basic_ring_vortex.front_leg.strength, 1e9)
+        self.assertEqual(self.basic_ring_vortex.left_leg.strength, 1e9)
+        self.assertEqual(self.basic_ring_vortex.back_leg.strength, 1e9)
+        self.assertEqual(self.basic_ring_vortex.right_leg.strength, 1e9)
 
 
 if __name__ == "__main__":

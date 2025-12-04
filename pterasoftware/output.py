@@ -486,6 +486,7 @@ def animate(
     if requested_fps > 50.0:
         speed = 50.0 / requested_fps
     actual_fps = float(math.floor(requested_fps * speed))
+    # actual_fps = 30
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
@@ -591,6 +592,7 @@ def animate(
         plotter.show(
             title="Rendering speed not to scale.",
             cpos=(-1, -1, 1),
+            # cpos=(-0.25, 0, 0),
             full_screen=False,
             auto_close=False,
         )
@@ -598,6 +600,7 @@ def animate(
         plotter.show(
             title="Rendering speed not to scale.",
             cpos=(-1, -1, 1),
+            # cpos=(-0.25, 0, 0),
             full_screen=False,
             interactive=False,
             auto_close=False,

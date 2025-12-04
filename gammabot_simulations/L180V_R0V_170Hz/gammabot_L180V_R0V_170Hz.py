@@ -1,24 +1,33 @@
-# Import Python's math and copy packages.
-import copy
 from pathlib import Path
 
 import pterasoftware as ps
 from gammabot_simulations import dxf_to_csv
 
-gammabot_velocity = 0.9
-gammabot_alpha = 0.0
-gammabot_flapping_frequency = 170.0
-wing_spacing = 0.02172011
+fine_mesh = False
+
+velocity = 0.9
+alpha = 0.0
+flapping_frequency = 170.0
+wing_spacing = 0.02746
 
 # Left Wing
 phi_max_left = 18.59
+phi_v_shift_left = 1.23
 psi_max_left = 35.94
+psi_v_shift_left = 0.86
 delta_left = 29.28
 
 # Right Wing
 phi_max_right = 0.0
+phi_v_shift_right = 0.0
 psi_max_right = 0.0
+psi_v_shift_right = 0.0
 delta_right = 0.0
+
+x_offset = 1.215e-6
+y_offset = -0.00215
+
+flapping_period = 1.0 / flapping_frequency
 
 # TODO: Find the converged values for these parameters.
 # Set the number of flap cycles to run the simulation for. The converged result is X
@@ -27,41 +36,47 @@ delta_right = 0.0
 # WingCrossSections per Wing. The converged result is X spanwise sections. Set the
 # chordwise spacing scheme for the panels. This is set to uniform, as is standard for
 # UVLM simulations.
-num_flaps = 3
-num_chordwise_panels = 8
-num_spanwise_sections = 16
 prescribed_wake = True
 chordwise_spacing = "uniform"
 
-gammabot_flapping_period = 1.0 / gammabot_flapping_frequency
+if fine_mesh:
+    num_flaps = 3
+    num_chordwise_panels = 8
+    num_spanwise_sections = 16
+    delta_time = flapping_period / 40.0
+else:
+    num_flaps = 2
+    num_chordwise_panels = 4
+    num_spanwise_sections = 8
+    delta_time = flapping_period / 20.0
 
-gammabot_flapping_amplitude_angleX_left = phi_max_left
-gammabot_flapping_amplitude_angleY_left = psi_max_left
+flapping_amplitude_angleX_left = phi_max_left
+flapping_amplitude_angleY_left = psi_max_left
 
-gammabot_flapping_period_angleX_left = gammabot_flapping_period
-if gammabot_flapping_amplitude_angleX_left == 0.0:
-    gammabot_flapping_period_angleX_left = 0.0
-gammabot_flapping_period_angleY_left = gammabot_flapping_period
-if gammabot_flapping_amplitude_angleY_left == 0.0:
-    gammabot_flapping_period_angleY_left = 0.0
+flapping_period_angleX_left = flapping_period
+if flapping_amplitude_angleX_left == 0.0:
+    flapping_period_angleX_left = 0.0
+flapping_period_angleY_left = flapping_period
+if flapping_amplitude_angleY_left == 0.0:
+    flapping_period_angleY_left = 0.0
 
-gammabot_flapping_phase_angleY_left = 90.0 + delta_left
-if gammabot_flapping_amplitude_angleY_left == 0.0:
-    gammabot_flapping_phase_angleY_left = 0.0
+flapping_phase_angleY_left = 90.0 + delta_left
+if flapping_amplitude_angleY_left == 0.0:
+    flapping_phase_angleY_left = 0.0
 
-gammabot_flapping_amplitude_angleX_right = phi_max_right
-gammabot_flapping_amplitude_angleY_right = psi_max_right
+flapping_amplitude_angleX_right = phi_max_right
+flapping_amplitude_angleY_right = psi_max_right
 
-gammabot_flapping_period_angleX_right = gammabot_flapping_period
-if gammabot_flapping_amplitude_angleX_right == 0.0:
-    gammabot_flapping_period_angleX_right = 0.0
-gammabot_flapping_period_angleY_right = gammabot_flapping_period
-if gammabot_flapping_amplitude_angleY_right == 0.0:
-    gammabot_flapping_period_angleY_right = 0.0
+flapping_period_angleX_right = flapping_period
+if flapping_amplitude_angleX_right == 0.0:
+    flapping_period_angleX_right = 0.0
+flapping_period_angleY_right = flapping_period
+if flapping_amplitude_angleY_right == 0.0:
+    flapping_period_angleY_right = 0.0
 
-gammabot_flapping_phase_angleY_right = 90.0 + delta_right
-if gammabot_flapping_amplitude_angleY_right == 0.0:
-    gammabot_flapping_phase_angleY_right = 0.0
+flapping_phase_angleY_right = 90.0 + delta_right
+if flapping_amplitude_angleY_right == 0.0:
+    flapping_phase_angleY_right = 0.0
 
 num_wing_cross_sections = num_spanwise_sections + 1
 
@@ -70,8 +85,8 @@ wing_section_data = dxf_to_csv.process_dxf_to_wing_section_data(
     str(dxf_filepath), num_spanwise_sections
 )
 
-# Define an empty list to hold the WingCrossSections.
-gammabot_airplane_wing_cross_sections = []
+left_wing_cross_sections = []
+right_wing_cross_sections = []
 
 # Iterate through the wing section data to create the WingCrossSections.
 for i in range(num_wing_cross_sections):
@@ -80,7 +95,7 @@ for i in range(num_wing_cross_sections):
     else:
         this_num_spanwise_panels = None
 
-    this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+    left_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         Lp_Wcsp_Lpp=wing_section_data[i, :3],
         angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         chord=wing_section_data[i, 3],
@@ -88,63 +103,87 @@ for i in range(num_wing_cross_sections):
             name="naca0012",
         ),
         num_spanwise_panels=this_num_spanwise_panels,
-        control_surface_symmetry_type="symmetric",
+        control_surface_symmetry_type=None,
+        control_surface_hinge_point=0.75,
+        control_surface_deflection=0.0,
+    )
+    right_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        Lp_Wcsp_Lpp=wing_section_data[i, :3],
+        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        chord=wing_section_data[i, 3],
+        airfoil=ps.geometry.airfoil.Airfoil(
+            name="naca0012",
+        ),
+        num_spanwise_panels=this_num_spanwise_panels,
+        control_surface_symmetry_type=None,
         control_surface_hinge_point=0.75,
         control_surface_deflection=0.0,
     )
 
-    # Append this WingCrossSection to the list of WingCrossSections.
-    gammabot_airplane_wing_cross_sections.append(this_wing_cross_section)
+    # Append this WingCrossSection to the lists of WingCrossSections.
+    left_wing_cross_sections.append(left_wing_cross_section)
+    right_wing_cross_sections.append(right_wing_cross_section)
 
 # Define the GammaBot Airplane.
-gammabot_airplane = ps.geometry.airplane.Airplane(
+airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
-            wing_cross_sections=gammabot_airplane_wing_cross_sections,
+            wing_cross_sections=left_wing_cross_sections,
             Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
-            symmetric=True,
+            angles_Gs_to_Wn_ixyz=(phi_v_shift_left, psi_v_shift_left, 0.0),
+            symmetric=False,
+            mirror_only=False,
+            symmetryNormal_G=None,
+            symmetryPoint_G_Cg=None,
+            num_chordwise_panels=num_chordwise_panels,
+            chordwise_spacing=chordwise_spacing,
+        ),
+        ps.geometry.wing.Wing(
+            wing_cross_sections=right_wing_cross_sections,
+            Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
+            angles_Gs_to_Wn_ixyz=(phi_v_shift_right, psi_v_shift_right, 0.0),
+            symmetric=False,
+            mirror_only=True,
             symmetryNormal_G=(0, 1, 0),
             symmetryPoint_G_Cg=(0, 0, 0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
         ),
     ],
-    name="GammaBot Airplane",
+    name="GammaBot",
 )
 
-# Delete the extraneous pointer.
-del gammabot_airplane_wing_cross_sections
+# Delete the extraneous pointers.
+del left_wing_cross_sections
+del right_wing_cross_sections
 
-
-# Initialize an empty list to hold each WingCrossSectionMovement.
-gammabot_wing_cross_section_movements = []
-
-# Iterate through each of the WingCrossSections.
+left_wing_cross_section_movements = []
 for j in range(num_wing_cross_sections):
-    # Define the WingCrossSectionMovement for this WingCrossSections. The
-    # amplitude and period are both set to one because the true amplitude and period
-    # are already accounted for in the custom sweep function.
-    this_wing_cross_section_movement = (
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=gammabot_airplane.wings[0].wing_cross_sections[j]
-        )
+    movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[0].wing_cross_sections[j]
     )
+    left_wing_cross_section_movements.append(movement)
 
-    # Append this WingCrossSectionMovement to the list of WingCrossSectionMovements.
-    gammabot_wing_cross_section_movements.append(this_wing_cross_section_movement)
+right_wing_cross_section_movements = []
+for j in range(num_wing_cross_sections):
+    movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=airplane.wings[1].wing_cross_sections[j]
+    )
+    right_wing_cross_section_movements.append(movement)
 
 # Define the WingMovement that contains the WingCrossSectionMovements.
-gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=gammabot_airplane.wings[0],
-    wing_cross_section_movements=gammabot_wing_cross_section_movements,
+left_wing_movement = ps.movements.wing_movement.WingMovement(
+    base_wing=airplane.wings[0],
+    wing_cross_section_movements=left_wing_cross_section_movements,
+    rotationPointOffset_Gs_Ler=(x_offset, y_offset, 0.0),
     ampAngles_Gs_to_Wn_ixyz=(
-        gammabot_flapping_amplitude_angleX_left,
-        gammabot_flapping_amplitude_angleY_left,
+        flapping_amplitude_angleX_left,
+        flapping_amplitude_angleY_left,
         0.0,
     ),
     periodAngles_Gs_to_Wn_ixyz=(
-        gammabot_flapping_period_angleX_left,
-        gammabot_flapping_period_angleY_left,
+        flapping_period_angleX_left,
+        flapping_period_angleY_left,
         0.0,
     ),
     spacingAngles_Gs_to_Wn_ixyz=(
@@ -152,21 +191,22 @@ gammabot_main_wing_movement = ps.movements.wing_movement.WingMovement(
         "sine",
         "sine",
     ),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, gammabot_flapping_phase_angleY_left, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, flapping_phase_angleY_left, 0.0),
 )
 
-# Define the WingMovement for the mirrored Wing.
-gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=gammabot_airplane.wings[1],
-    wing_cross_section_movements=copy.deepcopy(gammabot_wing_cross_section_movements),
+# Define the WingMovement for the right Wing.
+right_wing_movement = ps.movements.wing_movement.WingMovement(
+    base_wing=airplane.wings[1],
+    wing_cross_section_movements=right_wing_cross_section_movements,
+    rotationPointOffset_Gs_Ler=(x_offset, y_offset, 0.0),
     ampAngles_Gs_to_Wn_ixyz=(
-        gammabot_flapping_amplitude_angleX_right,
-        gammabot_flapping_amplitude_angleY_right,
+        flapping_amplitude_angleX_right,
+        flapping_amplitude_angleY_right,
         0.0,
     ),
     periodAngles_Gs_to_Wn_ixyz=(
-        gammabot_flapping_period_angleX_right,
-        gammabot_flapping_period_angleY_right,
+        flapping_period_angleX_right,
+        flapping_period_angleY_right,
         0.0,
     ),
     spacingAngles_Gs_to_Wn_ixyz=(
@@ -174,88 +214,83 @@ gammabot_mirrored_wing_movement = ps.movements.wing_movement.WingMovement(
         "sine",
         "sine",
     ),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, gammabot_flapping_phase_angleY_right, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, flapping_phase_angleY_right, 0.0),
 )
 
-# Delete the extraneous pointer.
-del gammabot_wing_cross_section_movements
+# Delete the extraneous pointers.
+del left_wing_cross_section_movements
+del right_wing_cross_section_movements
 
 # Define the AirplaneMovement that contains the WingMovement.
-gammabot_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=gammabot_airplane,
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    base_airplane=airplane,
     wing_movements=[
-        gammabot_main_wing_movement,
-        gammabot_mirrored_wing_movement,
+        left_wing_movement,
+        right_wing_movement,
     ],
 )
 
 # Delete the extraneous pointers.
-del gammabot_airplane
-del gammabot_main_wing_movement
-del gammabot_mirrored_wing_movement
+del airplane
+del left_wing_movement
+del right_wing_movement
 
 # Define an OperatingPoint corresponding to the conditions of the GammaBot study.
-gammabot_operating_point = ps.operating_point.OperatingPoint(
-    vCg__E=gammabot_velocity, alpha=gammabot_alpha
-)
+operating_point = ps.operating_point.OperatingPoint(vCg__E=velocity, alpha=alpha)
 
 # Define an OperatingPointMovement that contains the OperatingPoint.
-gammabot_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=gammabot_operating_point,
-    )
+operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+    base_operating_point=operating_point,
 )
 
 # Delete the extraneous pointer.
-del gammabot_operating_point
+del operating_point
 
 # Define the overall Movement.
-gammabot_movement = ps.movements.movement.Movement(
-    airplane_movements=[gammabot_airplane_movement],
-    operating_point_movement=gammabot_operating_point_movement,
+movement = ps.movements.movement.Movement(
+    airplane_movements=[airplane_movement],
+    operating_point_movement=operating_point_movement,
     num_cycles=num_flaps,
-    delta_time=gammabot_flapping_period / 40.0,
+    delta_time=delta_time,
 )
 
 # Delete the extraneous pointers.
-del gammabot_airplane_movement
-del gammabot_operating_point_movement
+del airplane_movement
+del operating_point_movement
 
 # Define the GammaBot UnsteadyProblem.
-gammabot_problem = ps.problems.UnsteadyProblem(
-    movement=gammabot_movement,
+problem = ps.problems.UnsteadyProblem(
+    movement=movement,
 )
 
 # Delete the extraneous pointer.
-del gammabot_movement
+del movement
 
 # Define the GammaBot solver.
-gammabot_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=gammabot_problem,
-    )
+solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+    unsteady_problem=problem,
 )
 
-gammabot_solver.run(prescribed_wake=prescribed_wake)
+solver.run(prescribed_wake=prescribed_wake)
 
 ps.output.draw(
-    solver=gammabot_solver,
+    solver=solver,
     show_wake_vortices=True,
     scalar_type="induced drag",
     save=True,
 )
 
 ps.output.plot_results_versus_time(
-    unsteady_solver=gammabot_solver,
+    unsteady_solver=solver,
     show=True,
     save=True,
 )
 
 ps.output.animate(
-    unsteady_solver=gammabot_solver,
+    unsteady_solver=solver,
     show_wake_vortices=True,
     scalar_type="induced drag",
     save=True,
 )
 
-ps.output.print_results(solver=gammabot_solver)
+ps.output.print_results(solver=solver)

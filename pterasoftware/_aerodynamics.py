@@ -32,6 +32,8 @@ class RingVortex:
 
     **Contains the following methods:**
 
+    area: An estimate of this RingVortex's area.
+
     update_strength: Updates the strength of this RingVortex and of its four LineVortex
     legs.
 
@@ -111,6 +113,26 @@ class RingVortex:
         # Initialize a variable to hold the age of the RingVortex in seconds (in
         # simulation time).
         self.age: float = 0.0
+
+    @property
+    def area(self) -> float:
+        """An estimate of this RingVortex's area.
+
+        This is only an estimate because the surface defined by four line segments in
+        3-space is a hyperboloid, and there doesn't seem to be a closed-form equation
+        for the surface area of a hyperboloid between four points. Instead, we estimate
+        the area using the cross product of RingVortex's diagonal vectors, which should
+        be relatively accurate if the RingVortex can be approximated as a planar, convex
+        quadrilateral.
+
+        :return: An estimate of the RingVortex's area. The units are square meters.
+        """
+        firstDiagonal_GP1 = self.Frrvp_GP1_CgP1 - self.Blrvp_GP1_CgP1
+        secondDiagonal_GP1 = self.Flrvp_GP1_CgP1 - self.Brrvp_GP1_CgP1
+
+        return float(
+            np.linalg.norm(np.cross(firstDiagonal_GP1, secondDiagonal_GP1)) / 2.0
+        )
 
     def update_strength(self, strength: float) -> None:
         """Updates the strength of this RingVortex and of its four LineVortex legs.

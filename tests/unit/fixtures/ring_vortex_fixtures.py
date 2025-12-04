@@ -160,3 +160,43 @@ def make_small_ring_vortex_fixture():
     )
 
     return small_ring_vortex_fixture
+
+
+def make_large_strength_ring_vortex_fixture():
+    """This method makes a fixture that is a RingVortex with very large strength
+    for testing purposes.
+
+    :return large_strength_ring_vortex_fixture: RingVortex
+        This is the RingVortex forming a unit square with large strength of
+        1e6.
+    """
+    large_strength_ring_vortex_fixture = _aerodynamics.RingVortex(
+        Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
+        Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
+        Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
+        Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
+        strength=1e6,
+    )
+
+    return large_strength_ring_vortex_fixture
+
+
+def make_large_coordinate_ring_vortex_fixture():
+    """This method makes a fixture that is a RingVortex with very large
+    coordinates for testing purposes.
+
+    :return large_coordinate_ring_vortex_fixture: RingVortex
+        This is the RingVortex forming a unit square at very large coordinates
+        (offset by [1e6, 1e6, 1e6] in the first Airplane's geometry axes, relative
+        to the first Airplane's CG) with unit strength.
+    """
+    offset = np.array([1e6, 1e6, 1e6], dtype=float)
+    large_coordinate_ring_vortex_fixture = _aerodynamics.RingVortex(
+        Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float) + offset,
+        Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float) + offset,
+        Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float) + offset,
+        Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float) + offset,
+        strength=1.0,
+    )
+
+    return large_coordinate_ring_vortex_fixture

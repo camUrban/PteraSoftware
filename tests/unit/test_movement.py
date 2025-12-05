@@ -1040,7 +1040,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             initial_delta_time=initial_delta_time,
         )
 
-        # The optimization searches within [initial / sqrt(10, initial * sqrt(10)].
+        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
         self.assertGreaterEqual(
             optimized_delta_time, initial_delta_time / math.sqrt(10)
         )

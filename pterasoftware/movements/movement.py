@@ -455,8 +455,10 @@ def _compute_wake_area_mismatch(
                         bound_area = bound_rv.area
 
                         # Accumulate the absolute percent area difference.
-                        total_mismatch += abs(wake_area - bound_area) / bound_area
-                        num_comparisons += 1
+                        epsilon = 1e-12
+                        if abs(bound_area) > epsilon:
+                            total_mismatch += abs(wake_area - bound_area) / bound_area
+                            num_comparisons += 1
 
     if num_comparisons == 0:
         return 0.0

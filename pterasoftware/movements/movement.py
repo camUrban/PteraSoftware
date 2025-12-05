@@ -16,6 +16,7 @@ from __future__ import annotations
 import copy
 import math
 
+import numpy as np
 import scipy.optimize as sp_opt
 
 from . import airplane_movement as airplane_movement_mod
@@ -413,9 +414,9 @@ def _compute_wake_area_mismatch(
     bound RingVortex sizing. A lower value indicates better matching.
 
     The number of time steps checked is picked to capture the full range of differences
-    in areas for the wake and bound RingVortex child parent pairs. For static cases,
-    this is just a single time step. For non static cases, it is enough time steps to
-    cover one full maximum length period of motion.
+    in areas for the wake and bound RingVortex child parent pairs. At least 2 steps are
+    always used to ensure at least one comparison. For non static cases, enough time
+    steps are used to cover one full maximum length period of motion.
 
     :param delta_time: The delta_time value to test. It must be a positive float. Its
         units are in seconds.
@@ -443,11 +444,11 @@ def _compute_wake_area_mismatch(
         max_airplane_movement_period, operating_point_movement_copy.max_period
     )
 
-    # Calculate the number of steps to traverse the max period (or just a single step if
-    # there is no movement).
-    num_steps = 1
+    # Calculate the number of steps to traverse the max period. We need at least 2 steps
+    # to make one wake to bound comparison. For static cases, use exactly 2 steps.
+    num_steps = 2
     if max_period > 0.0:
-        num_steps = math.ceil(max_period / delta_time)
+        num_steps = max(2, math.ceil(max_period / delta_time))
 
     # Create a temporary Movement with the trial delta_time.
     temp_movement = Movement(
@@ -533,24 +534,29 @@ def _compute_wake_area_mismatch(
     return total_mismatch / num_comparisons
 
 
+# Set a seed for reproducibility in the dual annealing optimizer.
+_seed = 42
+
+
 def _optimize_delta_time(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
     initial_delta_time: float,
     mismatch_cutoff: float = 0.01,
 ) -> float:
-    """Finds an optimal delta_time using sp_opt.minimize_scalar.
+    """Finds an optimal delta_time by minimizing area mismatch.
 
     Optimizes delta_time to minimize the area mismatch between wake RingVortices and
     their parent bound trailing edge RingVortices. This produces better results at high
     Strouhal numbers where motion induced velocity is significant.
 
-    The search terminates early if the mismatch falls below the specified cutoff value.
-    Otherwise, it will return the locally minimum with an absolute convergence tolerance
-    of 0.001.
+    The function uses a two stage optimization approach: first attempting a local search
+    using minimize_scalar with the bounded method, and if that fails to find an
+    acceptable value, it performs a global search using dual annealing.
 
-    The optimization search is bounded within one order of magnitude, centered at the
-    specified starting value.
+    The search terminates early if the mismatch falls below the specified cutoff value.
+    If no acceptable value is found within the search bounds, the function logs a
+    critical error and returns the best value found.
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
@@ -560,12 +566,14 @@ def _optimize_delta_time(
         threshold. When the average area mismatch (which is an absolute percent error)
         falls below this value, the search terminates early. The default is 0.01.
     :return: The optimized delta_time value. Its units are in seconds.
-    :raises RuntimeError: If optimization fails to converge.
     """
-    lower_bound = initial_delta_time / math.sqrt(10)
-    upper_bound = initial_delta_time * math.sqrt(10)
+    lower_bound = initial_delta_time / 10
+    upper_bound = initial_delta_time * 2
+    bounds = [(lower_bound, upper_bound)]
 
-    movement_logger.info("Starting delta_time optimization.")
+    # Use 1% of initial_delta_time as the convergence tolerance. This ensures the
+    # tolerance scales appropriately for both small (ms) and large (s) time steps.
+    xatol = initial_delta_time * 0.01
 
     # Check initial estimate first before running optimizer.
     initial_mismatch = _compute_wake_area_mismatch(
@@ -588,9 +596,13 @@ def _optimize_delta_time(
 
     best_delta_time = initial_delta_time
     best_mismatch = initial_mismatch
+    iteration_count = 0
+    current_max_iter = 50  # Will be updated for each optimizer phase.
 
     def objective(dt: float) -> float:
-        nonlocal best_delta_time, best_mismatch
+        nonlocal best_delta_time, best_mismatch, iteration_count
+        iteration_count += 1
+
         mismatch = _compute_wake_area_mismatch(
             dt, airplane_movements, operating_point_movement
         )
@@ -598,9 +610,11 @@ def _optimize_delta_time(
         this_dt_str = str(round(dt, 6))
         this_mismatch_str = str(round(mismatch, 6))
 
-        this_state_msg = "\tState: delta_time=" + this_dt_str
-        this_obj_msg = "\t\tMismatch: " + this_mismatch_str
+        iter_msg = f"\tIteration {iteration_count}/{current_max_iter}:"
+        this_state_msg = f"\t\tdelta_time={this_dt_str}"
+        this_obj_msg = f"\t\tMismatch={this_mismatch_str}"
 
+        movement_logger.info(iter_msg)
         movement_logger.info(this_state_msg)
         movement_logger.info(this_obj_msg)
 
@@ -613,38 +627,79 @@ def _optimize_delta_time(
 
         return mismatch
 
+    def objective_array(dt_array: np.ndarray) -> float:
+        """Wrapper for dual_annealing which passes arrays."""
+        return objective(float(dt_array[0]))
+
+    movement_logger.info("Starting local search.")
     try:
-        result = sp_opt.minimize_scalar(
+        sp_opt.minimize_scalar(
             objective,
             bounds=(lower_bound, upper_bound),
             method="bounded",
-            options={"xatol": 0.001},
+            options={"xatol": xatol, "maxiter": 50},
         )
-
-        if not result.success:
-            raise RuntimeError("delta_time optimization failed to converge.")
-
-        optimized_delta_time = float(result.x)
     except StopIteration:
-        optimized_delta_time = best_delta_time
-        movement_logger.info("Acceptable value reached.")
-
-    # Warn if the optimized value is at one of the bounds.
-    bound_tolerance = 1e-6
-    if abs(optimized_delta_time - lower_bound) < bound_tolerance:
-        movement_logger.warning(
-            "Optimized delta_time is at the lower bound. A better value may exist "
-            "below the search range."
+        movement_logger.info("Acceptable value reached with local search.")
+        movement_logger.info(
+            f"Result: delta_time={best_delta_time:.6f}, mismatch={best_mismatch:.6f}"
         )
-    elif abs(optimized_delta_time - upper_bound) < bound_tolerance:
+        movement_logger.info("Optimization complete.")
+        return best_delta_time
+
+    movement_logger.warning(
+        "No acceptable value reached with local search. Starting global search."
+    )
+
+    # Reset iteration count for global search phase.
+    iteration_count = 0
+
+    try:
+        # Limit local search iterations so it doesn't get stuck refining poor minima.
+        minimizer_kwargs = {
+            "method": "L-BFGS-B",
+            "bounds": bounds,
+            "options": {"eps": xatol, "ftol": mismatch_cutoff, "maxiter": 10},
+        }
+        sp_opt.dual_annealing(
+            func=objective_array,
+            bounds=bounds,
+            x0=[initial_delta_time],
+            minimizer_kwargs=minimizer_kwargs,
+            maxfun=50,
+            seed=_seed,
+        )
+    except StopIteration:
+        movement_logger.info("Acceptable value reached with global search.")
+        movement_logger.info(
+            f"Result: delta_time={best_delta_time:.6f}, mismatch={best_mismatch:.6f}"
+        )
+        movement_logger.info("Optimization complete.")
+        return best_delta_time
+
+    # Evaluate the best mismatch found and respond with appropriate severity.
+    if best_mismatch > 0.5:
+        raise RuntimeError(
+            f"delta_time optimization failed. Best mismatch ({best_mismatch:.4f}) "
+            "exceeds 0.5. The geometry or motion parameters may be invalid."
+        )
+    elif best_mismatch > 0.25:
+        movement_logger.critical(
+            f"delta_time optimization found a poor value. Best mismatch "
+            f"({best_mismatch:.4f}) exceeds 0.25."
+        )
+    elif best_mismatch > 0.1:
         movement_logger.warning(
-            "Optimized delta_time is at the upper bound. A better value may exist "
-            "above the search range."
+            f"delta_time optimization found an acceptable but imperfect value. Best "
+            f"mismatch ({best_mismatch:.4f}) exceeds 0.1."
         )
 
+    movement_logger.info(
+        f"Result: delta_time={best_delta_time:.6f}, mismatch={best_mismatch:.6f}"
+    )
     movement_logger.info("Optimization complete.")
 
-    return optimized_delta_time
+    return best_delta_time
 
 
 # TEST: Add unit tests for this class's initialization.

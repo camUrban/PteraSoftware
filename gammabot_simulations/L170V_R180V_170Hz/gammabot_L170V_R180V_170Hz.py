@@ -43,13 +43,13 @@ if fine_mesh:
     num_flaps = 3
     num_chordwise_panels = 8
     num_spanwise_sections = 16
-    delta_time = flapping_period / 40.0
+    delta_time = 0.000130
 else:
     num_flaps = 2
     # num_flaps = 4
     num_chordwise_panels = 4
     num_spanwise_sections = 8
-    delta_time = flapping_period / 20.0
+    delta_time = 0.000272
     # delta_time = flapping_period / 30.0
 
 flapping_amplitude_angleX_left = phi_max_left

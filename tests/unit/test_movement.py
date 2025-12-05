@@ -877,7 +877,7 @@ class TestMovement(unittest.TestCase):
         )
 
         # Verify the optimized delta_time is within the search bounds.
-        # The optimization searches within [initial / sqrt(10, initial * sqrt(10)].
+        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
         self.assertGreaterEqual(
             movement_optimized.delta_time, initial_estimate / math.sqrt(10)
         )

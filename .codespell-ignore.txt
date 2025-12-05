@@ -2,3 +2,7 @@ sate
 datas
 ND
 Fo
+fRo
+Anc
+te
+myu

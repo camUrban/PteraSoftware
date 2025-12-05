@@ -1,5 +1,4 @@
 # Free Flight Development Tracking
-
 This document tracks the development progress and goals for the free flight simulation feature in Ptera Software. Free flight simulations couple aerodynamic analysis (via Ptera Software's UVLM solver) with rigid body dynamics (via MuJoCo) to enable fully dynamic flapping-wing flight simulations.
 
 ## Feature Branch

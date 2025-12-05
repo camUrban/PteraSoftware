@@ -21,7 +21,7 @@ import logging
 from typing import Any
 
 import numpy as np
-import scipy.optimize
+import scipy.optimize as sp_opt
 
 from . import _parameter_validation
 from . import movements
@@ -334,7 +334,7 @@ def analyze_steady_trim(
     trim_logger.info("Starting local search.")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
-        scipy.optimize.minimize(
+        sp_opt.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
@@ -359,7 +359,7 @@ def analyze_steady_trim(
             "method": "L-BFGS-B",
             "options": global_options,
         }
-        scipy.optimize.dual_annealing(
+        sp_opt.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,
@@ -684,7 +684,7 @@ def analyze_unsteady_trim(
     trim_logger.info("Starting local search.")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
-        scipy.optimize.minimize(
+        sp_opt.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
@@ -709,7 +709,7 @@ def analyze_unsteady_trim(
             "method": "L-BFGS-B",
             "options": global_options,
         }
-        scipy.optimize.dual_annealing(
+        sp_opt.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,

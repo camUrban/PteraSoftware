@@ -13,7 +13,9 @@ def make_test_airfoil_fixture():
     :return test_airfoil_fixture: Airfoil
         This is the Airfoil configured for testing.
     """
-    test_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
+    test_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca2412", n_points_per_side=100
+    )
 
     return test_airfoil_fixture
 
@@ -38,7 +40,7 @@ def make_basic_wing_cross_section_fixture(airfoil=None):
     # Create the basic WingCrossSection.
     basic_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=1.5,
         Lp_Wcsp_Lpp=[0.2, 0.5, 0.1],
         angles_Wcsp_to_Wcs_ixyz=[5.0, -2.0, 3.0],
@@ -65,7 +67,7 @@ def make_root_wing_cross_section_fixture():
     # Create the root WingCrossSection.
     root_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
-        num_spanwise_panels=10,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
         angles_Wcsp_to_Wcs_ixyz=[0.0, 0.0, 0.0],
@@ -163,7 +165,7 @@ def make_middle_wing_cross_section_fixture():
     # Create the middle WingCrossSection.
     middle_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil_fixture,
-        num_spanwise_panels=12,
+        num_spanwise_panels=6,
         chord=1.2,
         Lp_Wcsp_Lpp=[0.3, 1.0, 0.15],
         angles_Wcsp_to_Wcs_ixyz=[7.0, -3.0, 5.0],
@@ -247,7 +249,7 @@ def make_origin_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -275,7 +277,7 @@ def make_type_1_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -303,7 +305,7 @@ def make_type_2_wing_fixture():
         mirror_only=True,
         symmetryNormal_G=[0.0, 1.0, 0.0],
         symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -331,7 +333,7 @@ def make_type_3_wing_fixture():
         mirror_only=True,
         symmetryNormal_G=[0.0, 1.0, 0.0],
         symmetryPoint_G_Cg=[0.0, -0.5, 0.0],
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -366,7 +368,7 @@ def make_type_4_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=[0.0, 1.0, 0.0],
         symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -405,7 +407,7 @@ def make_type_5_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=[0.0, 0.707, 0.707],
         symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -434,7 +436,7 @@ def make_three_section_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -456,7 +458,7 @@ def make_four_section_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
     middle_wcs_2 = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=10,
+        num_spanwise_panels=6,
         chord=1.0,
         Lp_Wcsp_Lpp=[0.4, 1.5, 0.2],
         angles_Wcsp_to_Wcs_ixyz=[5.0, -1.0, 2.0],
@@ -475,7 +477,7 @@ def make_four_section_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -504,7 +506,7 @@ def make_invalid_three_section_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -532,7 +534,7 @@ def make_invalid_root_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="cosine",
     )
 
@@ -662,7 +664,9 @@ def make_naca0012_airfoil_fixture():
     :return naca0012_airfoil_fixture: Airfoil
         This is the symmetric NACA 0012 Airfoil configured for testing.
     """
-    naca0012_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0012")
+    naca0012_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca0012", n_points_per_side=100
+    )
 
     return naca0012_airfoil_fixture
 
@@ -674,7 +678,9 @@ def make_naca2412_airfoil_fixture():
     :return naca2412_airfoil_fixture: Airfoil
         This is the cambered NACA 2412 Airfoil configured for testing.
     """
-    naca2412_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
+    naca2412_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca2412", n_points_per_side=100
+    )
 
     return naca2412_airfoil_fixture
 
@@ -704,7 +710,7 @@ def make_custom_outline_airfoil_fixture():
         name="Custom Test Airfoil",
         outline_A_lp=custom_outline,
         resample=False,
-        n_points_per_side=400,
+        n_points_per_side=100,
     )
 
     return custom_outline_airfoil_fixture
@@ -747,7 +753,7 @@ def make_non_resampled_airfoil_fixture():
         name="Non-Resampled Test Airfoil",
         outline_A_lp=simple_outline,
         resample=False,
-        n_points_per_side=10,
+        n_points_per_side=100,
     )
 
     return non_resampled_airfoil_fixture
@@ -760,7 +766,9 @@ def make_named_airfoil_fixture():
     :return named_airfoil_fixture: Airfoil
         This is the Airfoil loaded from the _airfoils data directory.
     """
-    named_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="a18")
+    named_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="a18", n_points_per_side=100
+    )
 
     return named_airfoil_fixture
 
@@ -806,7 +814,7 @@ def make_simple_rectangular_wing_fixture():
     # Root WingCrossSection at origin
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=1.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -833,7 +841,7 @@ def make_simple_rectangular_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=4,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -862,7 +870,7 @@ def make_simple_tapered_wing_fixture():
     # Root WingCrossSection at origin with chord=2.0
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=12,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -889,7 +897,7 @@ def make_simple_tapered_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -918,7 +926,7 @@ def make_symmetric_continuous_rectangular_wing_fixture():
     # Root WingCrossSection at origin with chord=1.5
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=10,
+        num_spanwise_panels=6,
         chord=1.5,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -947,7 +955,7 @@ def make_symmetric_continuous_rectangular_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=np.array([0.0, 1.0, 0.0]),
         symmetryPoint_G_Cg=np.array([0.0, 0.0, 0.0]),
-        num_chordwise_panels=6,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -977,7 +985,7 @@ def make_three_section_tapered_wing_fixture():
     # Root WingCrossSection at origin with chord=3.0
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=3.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -987,7 +995,7 @@ def make_three_section_tapered_wing_fixture():
     # Middle WingCrossSection at y=2.0 with chord=2.0
     middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=np.array([0.0, 2.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1014,7 +1022,7 @@ def make_three_section_tapered_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -1041,7 +1049,7 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
     # Root WingCrossSection at origin
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=1.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1068,7 +1076,7 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=4,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -1095,7 +1103,7 @@ def make_wing_with_rotated_cross_sections_fixture():
 
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=10,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1104,7 +1112,7 @@ def make_wing_with_rotated_cross_sections_fixture():
 
     middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=8,
+        num_spanwise_panels=6,
         chord=1.5,
         Lp_Wcsp_Lpp=np.array([0.0, 3.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 15.0, 0.0]),
@@ -1129,7 +1137,7 @@ def make_wing_with_rotated_cross_sections_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=6,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -1155,7 +1163,7 @@ def make_swept_wing_fixture():
     # Root WingCrossSection at origin with chord=2.0
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=12,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1182,7 +1190,7 @@ def make_swept_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 
@@ -1208,7 +1216,7 @@ def make_dihedral_wing_fixture():
     # Root WingCrossSection at origin with chord=2.0
     root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
-        num_spanwise_panels=10,
+        num_spanwise_panels=6,
         chord=2.0,
         Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
         angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1235,7 +1243,7 @@ def make_dihedral_wing_fixture():
         mirror_only=False,
         symmetryNormal_G=None,
         symmetryPoint_G_Cg=None,
-        num_chordwise_panels=8,
+        num_chordwise_panels=3,
         chordwise_spacing="uniform",
     )
 

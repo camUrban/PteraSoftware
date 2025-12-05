@@ -30,13 +30,13 @@ class TestAirfoil(unittest.TestCase):
         # Test NACA 0012 initialization
         self.assertEqual(self.naca0012_airfoil.name, "naca0012")
         self.assertTrue(self.naca0012_airfoil.resample)
-        self.assertEqual(self.naca0012_airfoil.n_points_per_side, 400)
+        self.assertEqual(self.naca0012_airfoil.n_points_per_side, 100)
         self.assertIsNotNone(self.naca0012_airfoil.outline_A_lp)
 
         # Test NACA 2412 initialization
         self.assertEqual(self.naca2412_airfoil.name, "naca2412")
         self.assertTrue(self.naca2412_airfoil.resample)
-        self.assertEqual(self.naca2412_airfoil.n_points_per_side, 400)
+        self.assertEqual(self.naca2412_airfoil.n_points_per_side, 100)
         self.assertIsNotNone(self.naca2412_airfoil.outline_A_lp)
 
     def test_initialization_custom_outline(self):
@@ -208,7 +208,7 @@ class TestAirfoil(unittest.TestCase):
         # Test that the named airfoil loads correctly from the _airfoils directory
         self.assertEqual(self.named_airfoil.name, "a18")
         self.assertTrue(self.named_airfoil.resample)
-        self.assertEqual(self.named_airfoil.n_points_per_side, 400)
+        self.assertEqual(self.named_airfoil.n_points_per_side, 100)
         self.assertIsNotNone(self.named_airfoil.outline_A_lp)
 
         # Test that the outline has the correct shape and bounds

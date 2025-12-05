@@ -46,7 +46,7 @@ class TestWing(unittest.TestCase):
                 self.assertEqual(len(wing.angles_Gs_to_Wn_ixyz), 3)
                 self.assertIsInstance(wing.symmetric, bool)
                 self.assertIsInstance(wing.mirror_only, bool)
-                self.assertEqual(wing.num_chordwise_panels, 8)
+                self.assertEqual(wing.num_chordwise_panels, 3)
                 self.assertEqual(wing.chordwise_spacing, "cosine")
 
     def test_wing_cross_sections_validation(self):

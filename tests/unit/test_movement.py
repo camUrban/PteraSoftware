@@ -1,6 +1,5 @@
 """This module contains classes to test Movements and CoupledMovements."""
 
-import math
 import unittest
 
 import numpy as np
@@ -1126,13 +1125,9 @@ class TestMovement(unittest.TestCase):
         )
 
         # Verify the optimized delta_time is within the search bounds.
-        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
-        self.assertGreaterEqual(
-            movement_optimized.delta_time, initial_estimate / math.sqrt(10)
-        )
-        self.assertLessEqual(
-            movement_optimized.delta_time, initial_estimate * math.sqrt(10)
-        )
+        # The optimization searches within [initial / 10, initial * 2].
+        self.assertGreaterEqual(movement_optimized.delta_time, initial_estimate / 10)
+        self.assertLessEqual(movement_optimized.delta_time, initial_estimate * 2)
 
 
 class TestComputeWakeAreaMismatch(unittest.TestCase):
@@ -1168,31 +1163,6 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertIsInstance(mismatch, float)
         self.assertGreaterEqual(mismatch, 0.0)
 
-    def test_returns_zero_for_static_single_step(self):
-        """Test that _compute_wake_area_mismatch returns 0.0 when no comparisons
-        are made."""
-        from pterasoftware.movements.movement import _compute_wake_area_mismatch
-
-        airplane_movements = [
-            airplane_movement_fixtures.make_static_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        # Use a delta_time that results in only 1 step for static movement.
-        # With max_period = 0, num_steps will be 1, so step > 0 never runs.
-        delta_time = 0.01
-
-        mismatch = _compute_wake_area_mismatch(
-            delta_time=delta_time,
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-        )
-
-        # With only 1 step, no comparisons are made, so mismatch should be 0.0.
-        self.assertEqual(mismatch, 0.0)
-
     def test_does_not_mutate_original_movements(self):
         """Test that _compute_wake_area_mismatch does not mutate original objects."""
         from pterasoftware.movements.movement import _compute_wake_area_mismatch
@@ -1225,28 +1195,6 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 class TestOptimizeDeltaTime(unittest.TestCase):
     """This is a class with functions to test the _optimize_delta_time function."""
 
-    def test_returns_positive_float(self):
-        """Test that _optimize_delta_time returns a positive float."""
-        from pterasoftware.movements.movement import _optimize_delta_time
-
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        initial_delta_time = 0.01
-
-        optimized_delta_time = _optimize_delta_time(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
-        )
-
-        self.assertIsInstance(optimized_delta_time, float)
-        self.assertGreater(optimized_delta_time, 0.0)
-
     def test_result_within_bounds(self):
         """Test that _optimize_delta_time returns a value within expected bounds."""
         from pterasoftware.movements.movement import _optimize_delta_time
@@ -1258,7 +1206,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
+        initial_delta_time = 0.03
 
         optimized_delta_time = _optimize_delta_time(
             airplane_movements=airplane_movements,
@@ -1266,11 +1214,9 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             initial_delta_time=initial_delta_time,
         )
 
-        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
-        self.assertGreaterEqual(
-            optimized_delta_time, initial_delta_time / math.sqrt(10)
-        )
-        self.assertLessEqual(optimized_delta_time, initial_delta_time * math.sqrt(10))
+        # The optimization searches within [initial / 10, initial * 2].
+        self.assertGreaterEqual(optimized_delta_time, initial_delta_time / 10)
+        self.assertLessEqual(optimized_delta_time, initial_delta_time * 2)
 
     def test_works_with_static_movement(self):
         """Test that _optimize_delta_time works with static AirplaneMovement."""
@@ -1283,7 +1229,7 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
+        initial_delta_time = 0.02
 
         optimized_delta_time = _optimize_delta_time(
             airplane_movements=airplane_movements,

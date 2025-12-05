@@ -32,7 +32,7 @@ class TestWingCrossSection(unittest.TestCase):
             ps.geometry.wing_cross_section.WingCrossSection,
         )
         self.assertEqual(self.basic_wing_cross_section.airfoil, self.test_airfoil)
-        self.assertEqual(self.basic_wing_cross_section.num_spanwise_panels, 8)
+        self.assertEqual(self.basic_wing_cross_section.num_spanwise_panels, 6)
         self.assertEqual(self.basic_wing_cross_section.chord, 1.5)
         np.testing.assert_array_equal(
             self.basic_wing_cross_section.Lp_Wcsp_Lpp, np.array([0.2, 0.5, 0.1])

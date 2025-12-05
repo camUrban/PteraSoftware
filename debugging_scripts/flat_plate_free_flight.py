@@ -16,8 +16,9 @@ for handler in logging.root.handlers:
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(logging.Formatter("[%(name)s] %(levelname)s: %(message)s"))
 
-# Silence matplotlib's noisy debug messages (especially font_manager).
+# Silence matplotlib and numba's noisy debug messages.
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.getLogger("numba").setLevel(logging.WARNING)
 
 script_logger = logging.getLogger("script")
 script_logger.setLevel(logging.DEBUG)

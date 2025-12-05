@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import copy
 import math
+from typing import Any
 
 import numpy as np
 import scipy.optimize as sp_opt
@@ -656,7 +657,7 @@ def _optimize_delta_time(
 
     try:
         # Limit local search iterations so it doesn't get stuck refining poor minima.
-        minimizer_kwargs = {
+        minimizer_kwargs: Any = {
             "method": "L-BFGS-B",
             "bounds": bounds,
             "options": {"eps": xatol, "ftol": mismatch_cutoff, "maxiter": 10},

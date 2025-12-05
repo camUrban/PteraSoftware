@@ -338,8 +338,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 )
 
                 logging.debug(
-                    f"    currentVInf__E = {self.current_coupled_operating_point.
-                    vCg__E:.2e} m/s"
+                    f"""    currentVInf__E = {self.current_coupled_operating_point.
+                    vCg__E:.2e} m/s"""
                 )
                 logging.debug(
                     f"    alpha = {self.current_coupled_operating_point.alpha:.2f} deg"

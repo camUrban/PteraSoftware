@@ -517,13 +517,11 @@ def _optimize_delta_time(
         movement_logger.info("Optimization complete.")
         return initial_delta_time
 
-    iteration_count = 1
     best_delta_time = initial_delta_time
     best_mismatch = initial_mismatch
 
     def objective(dt: float) -> float:
-        nonlocal iteration_count, best_delta_time, best_mismatch
-        iteration_count += 1
+        nonlocal best_delta_time, best_mismatch
         mismatch = _compute_wake_area_mismatch(
             dt, airplane_movements, operating_point_movement
         )

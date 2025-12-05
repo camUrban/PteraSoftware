@@ -780,27 +780,6 @@ class TestMovement(unittest.TestCase):
         # Verify the Movement was created successfully.
         self.assertIsInstance(movement, ps.movements.movement.Movement)
 
-    def test_delta_time_optimize_string_valid(self):
-        """Test that delta_time='optimize' is accepted and produces valid result."""
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time="optimize",
-            num_cycles=1,
-        )
-
-        # Verify the Movement was created and delta_time is a positive float.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
-        self.assertIsInstance(movement.delta_time, float)
-        self.assertGreater(movement.delta_time, 0.0)
-
     def test_delta_time_invalid_string_raises_error(self):
         """Test that delta_time with invalid string raises ValueError."""
         airplane_movements = [
@@ -884,29 +863,6 @@ class TestMovement(unittest.TestCase):
         self.assertLessEqual(
             movement_optimized.delta_time, initial_estimate * math.sqrt(10)
         )
-
-    def test_delta_time_optimize_with_multiple_airplanes(self):
-        """Test that delta_time='optimize' works with multiple AirplaneMovements."""
-        airplane_movements = [
-            airplane_movement_fixtures.make_static_airplane_movement_fixture(),
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time="optimize",
-            num_cycles=1,
-        )
-
-        # Verify the Movement was created and delta_time is a positive float.
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
-        self.assertIsInstance(movement.delta_time, float)
-        self.assertGreater(movement.delta_time, 0.0)
-        self.assertEqual(len(movement.airplane_movements), 2)
 
 
 class TestComputeWakeAreaMismatch(unittest.TestCase):

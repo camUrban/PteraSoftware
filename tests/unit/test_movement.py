@@ -1,5 +1,6 @@
 """This module contains a class to test Movements."""
 
+import math
 import unittest
 
 import pterasoftware as ps
@@ -778,6 +779,294 @@ class TestMovement(unittest.TestCase):
 
         # Verify the Movement was created successfully.
         self.assertIsInstance(movement, ps.movements.movement.Movement)
+
+    def test_delta_time_optimize_string_valid(self):
+        """Test that delta_time='optimize' is accepted and produces valid result."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            delta_time="optimize",
+            num_cycles=1,
+        )
+
+        # Verify the Movement was created and delta_time is a positive float.
+        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement.delta_time, float)
+        self.assertGreater(movement.delta_time, 0.0)
+
+    def test_delta_time_invalid_string_raises_error(self):
+        """Test that delta_time with invalid string raises ValueError."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        invalid_strings = ["invalid", "auto", "OPTIMIZE", "Optimize", ""]
+        for invalid_string in invalid_strings:
+            with self.subTest(invalid_string=invalid_string):
+                with self.assertRaises(ValueError):
+                    ps.movements.movement.Movement(
+                        airplane_movements=airplane_movements,
+                        operating_point_movement=operating_point_movement,
+                        delta_time=invalid_string,
+                        num_cycles=1,
+                    )
+
+    def test_delta_time_optimize_for_static_movement(self):
+        """Test that delta_time='optimize' works for static Movement."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            delta_time="optimize",
+            num_chords=3,
+        )
+
+        # Verify the Movement was created and delta_time is a positive float.
+        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement.delta_time, float)
+        self.assertGreater(movement.delta_time, 0.0)
+        self.assertTrue(movement.static)
+
+    def test_delta_time_optimize_within_expected_bounds(self):
+        """Test that optimized delta_time is within the expected search bounds."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # First, create a Movement with automatic delta_time to get the initial
+        # estimate.
+        movement_auto = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_cycles=1,
+        )
+        initial_estimate = movement_auto.delta_time
+
+        # Now create a Movement with optimized delta_time.
+        # Need fresh fixtures since the previous ones may have been modified.
+        airplane_movements_opt = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement_opt = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+        movement_optimized = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements_opt,
+            operating_point_movement=operating_point_movement_opt,
+            delta_time="optimize",
+            num_cycles=1,
+        )
+
+        # Verify the optimized delta_time is within the search bounds.
+        # The optimization searches within [initial / sqrt(10, initial * sqrt(10)].
+        self.assertGreaterEqual(
+            movement_optimized.delta_time, initial_estimate / math.sqrt(10)
+        )
+        self.assertLessEqual(
+            movement_optimized.delta_time, initial_estimate * math.sqrt(10)
+        )
+
+    def test_delta_time_optimize_with_multiple_airplanes(self):
+        """Test that delta_time='optimize' works with multiple AirplaneMovements."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture(),
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            delta_time="optimize",
+            num_cycles=1,
+        )
+
+        # Verify the Movement was created and delta_time is a positive float.
+        self.assertIsInstance(movement, ps.movements.movement.Movement)
+        self.assertIsInstance(movement.delta_time, float)
+        self.assertGreater(movement.delta_time, 0.0)
+        self.assertEqual(len(movement.airplane_movements), 2)
+
+
+class TestComputeWakeAreaMismatch(unittest.TestCase):
+    """This is a class with functions to test the _compute_wake_area_mismatch
+    function."""
+
+    def test_returns_non_negative_value(self):
+        """Test that _compute_wake_area_mismatch returns a non-negative value."""
+        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Calculate the initial delta_time estimate.
+        c_ref = airplane_movements[0].base_airplane.c_ref
+        assert c_ref is not None
+        delta_time = (
+            c_ref
+            / airplane_movements[0].base_airplane.wings[0].num_chordwise_panels
+            / operating_point_movement.base_operating_point.vCg__E
+        )
+
+        mismatch = _compute_wake_area_mismatch(
+            delta_time=delta_time,
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
+
+        self.assertIsInstance(mismatch, float)
+        self.assertGreaterEqual(mismatch, 0.0)
+
+    def test_returns_zero_for_static_single_step(self):
+        """Test that _compute_wake_area_mismatch returns 0.0 when no comparisons
+        are made."""
+        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Use a delta_time that results in only 1 step for static movement.
+        # With max_period = 0, num_steps will be 1, so step > 0 never runs.
+        delta_time = 0.01
+
+        mismatch = _compute_wake_area_mismatch(
+            delta_time=delta_time,
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
+
+        # With only 1 step, no comparisons are made, so mismatch should be 0.0.
+        self.assertEqual(mismatch, 0.0)
+
+    def test_does_not_mutate_original_movements(self):
+        """Test that _compute_wake_area_mismatch does not mutate original objects."""
+        from pterasoftware.movements.movement import _compute_wake_area_mismatch
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Store reference to original base_airplane.
+        original_base_airplane = airplane_movements[0].base_airplane
+
+        delta_time = 0.01
+
+        _compute_wake_area_mismatch(
+            delta_time=delta_time,
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
+
+        # Verify the original base_airplane reference is unchanged.
+        self.assertIs(
+            airplane_movements[0].base_airplane,
+            original_base_airplane,
+        )
+
+
+class TestOptimizeDeltaTime(unittest.TestCase):
+    """This is a class with functions to test the _optimize_delta_time function."""
+
+    def test_returns_positive_float(self):
+        """Test that _optimize_delta_time returns a positive float."""
+        from pterasoftware.movements.movement import _optimize_delta_time
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        initial_delta_time = 0.01
+
+        optimized_delta_time = _optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=initial_delta_time,
+        )
+
+        self.assertIsInstance(optimized_delta_time, float)
+        self.assertGreater(optimized_delta_time, 0.0)
+
+    def test_result_within_bounds(self):
+        """Test that _optimize_delta_time returns a value within expected bounds."""
+        from pterasoftware.movements.movement import _optimize_delta_time
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        initial_delta_time = 0.01
+
+        optimized_delta_time = _optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=initial_delta_time,
+        )
+
+        # The optimization searches within [initial / sqrt(10, initial * sqrt(10)].
+        self.assertGreaterEqual(
+            optimized_delta_time, initial_delta_time / math.sqrt(10)
+        )
+        self.assertLessEqual(optimized_delta_time, initial_delta_time * math.sqrt(10))
+
+    def test_works_with_static_movement(self):
+        """Test that _optimize_delta_time works with static AirplaneMovement."""
+        from pterasoftware.movements.movement import _optimize_delta_time
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        initial_delta_time = 0.01
+
+        optimized_delta_time = _optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=initial_delta_time,
+        )
+
+        self.assertIsInstance(optimized_delta_time, float)
+        self.assertGreater(optimized_delta_time, 0.0)
 
 
 if __name__ == "__main__":

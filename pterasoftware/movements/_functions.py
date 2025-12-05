@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 import numpy as np
-from scipy import signal
+import scipy.signal as sp_sig
 
 from .. import _parameter_validation
 
@@ -149,7 +149,7 @@ def oscillating_linspaces(
     k = bases[..., None]
 
     # Calculate and return the values.
-    return np.asarray(a * signal.sawtooth((b * times + h), 0.5) + k)
+    return np.asarray(a * sp_sig.sawtooth((b * times + h), 0.5) + k)
 
 
 def oscillating_customspaces(

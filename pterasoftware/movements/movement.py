@@ -11,12 +11,21 @@ None
 
 from __future__ import annotations
 
+import copy
+import logging
 import math
+
+import scipy.optimize as sp_opt
 
 from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
+from .. import _aerodynamics
 from .. import _parameter_validation
+
+movement_logger = logging.getLogger("movements/movement")
+movement_logger.setLevel(logging.DEBUG)
+logging.basicConfig()
 
 
 class Movement:
@@ -36,7 +45,7 @@ class Movement:
         self,
         airplane_movements: list[airplane_movement_mod.AirplaneMovement],
         operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
-        delta_time: float | int | None = None,
+        delta_time: float | int | str | None = None,
         num_cycles: int | None = None,
         num_chords: int | None = None,
         num_steps: int | None = None,
@@ -52,14 +61,18 @@ class Movement:
             of the UnsteadyProblem's Airplanes.
         :param operating_point_movement: An OperatingPointMovement characterizing any
             changes to the UnsteadyProblem's operating conditions.
-        :param delta_time: The time between each time step. If set to None, Movement
-            will calculate a value such that RingVortices shed from the first Wing will
-            have roughly the same chord length as the RingVortices on the first Wing.
-            This is based on first base Airplane's reference chord length, its first
-            Wing's number of chordwise panels, and its base OperatingPoint's velocity.
-            If not None, delta_time must be a positive number (int or float). It will be
-            converted internally to a float. The units are in seconds. The default is
-            None.
+        :param delta_time: The time between each time step. Accepts the following: None
+            (default): Movement calculates a fast estimate based on freestream velocity
+            alone. This works well when forward velocity dominates, but may give poor
+            results at high Strouhal numbers where motion velocity is significant. The
+            estimate is based on the first base Airplane's reference chord length, its
+            first Wing's number of chordwise panels, and its base OperatingPoint's
+            velocity. "optimize": Movement runs an iterative optimization to find the
+            delta_time that minimizes the area mismatch between wake RingVortices and
+            their parent bound trailing edge RingVortices. This is slower but produces
+            better results at high Strouhal numbers. Positive number (int or float): Use
+            the specified value directly. All values are converted internally to floats.
+            The units are in seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if Movement isn't
             static. If num_steps is not None or if Movement is static, this must be
@@ -105,18 +118,24 @@ class Movement:
             )
         self.operating_point_movement = operating_point_movement
 
+        # Track whether optimization should run after the initial setup.
+        _should_optimize_delta_time: bool = False
+
+        if isinstance(delta_time, str):
+            if delta_time != "optimize":
+                raise ValueError('delta_time string must be "optimize".')
+            _should_optimize_delta_time = True
+            # Fall through to calculate initial estimate for optimization.
+            delta_time = None
+
         if delta_time is not None:
             delta_time = _parameter_validation.number_in_range_return_float(
                 delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
-
-            # FIXME: Automatic delta_time calculation gives very poor results if the
-            #  motion has a high Strouhal number (i.e. a large ratio of
-            #  flapping-motion to forward velocity). This is because the calculation
-            #  assumes that the forward velocity is dominant. A better approach is
-            #  needed.
-
+            # Calculate initial delta_time estimate based on freestream velocity.
+            # This works well when forward velocity dominates, but may give poor
+            # results at high Strouhal numbers where motion velocity is significant.
             delta_times = []
             for airplane_movement in self.airplane_movements:
                 # TODO: Consider making this also average across each Airplane's Wings.
@@ -135,6 +154,14 @@ class Movement:
 
             # Set the delta_time to be the average of the Airplanes' ideal delta times.
             delta_time = sum(delta_times) / len(delta_times)
+
+        # Run delta_time optimization if requested.
+        if _should_optimize_delta_time:
+            delta_time = _optimize_delta_time(
+                airplane_movements=self.airplane_movements,
+                operating_point_movement=self.operating_point_movement,
+                initial_delta_time=delta_time,
+            )
         self.delta_time: float = delta_time
 
         _static = self.static
@@ -302,3 +329,252 @@ class Movement:
             False otherwise.
         """
         return self.max_period == 0
+
+
+def _compute_wake_area_mismatch(
+    delta_time: float,
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+) -> float:
+    """Computes the average area mismatch between wake and bound RingVortices.
+
+    Creates a temporary Problem and solver, steps through some number of time
+    steps (geometry only, no aerodynamic solve), and computes the average area mismatch
+    at each step.
+
+    The area mismatch metric measures how well the wake RingVortex sizing matches the
+    bound RingVortex sizing. A lower value indicates better matching.
+
+    The number of time steps checked is picked to capture the full range of differences
+    in areas for the wake and bound RingVortex child parent pairs. For static cases,
+    this is just a single time step. For non static cases, it is enough time steps to
+    cover one full maximum length period of motion.
+
+    :param delta_time: The delta_time value to test. It must be a positive float. Its
+        units are in seconds.
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :return: The average area mismatch. The absolute percent error between the area of
+        shed wake RingVortices and the area of their parent bound RingVortices (at time
+        step where they were shed). Averaged across all time steps and all pairs of
+        child and parent RingVortices. A lower value indicates better matching.
+    """
+    from .. import problems
+    from .. import unsteady_ring_vortex_lattice_method
+
+    # Deep copy the movement objects to avoid mutating originals during optimization.
+    airplane_movements_copy = copy.deepcopy(airplane_movements)
+    operating_point_movement_copy = copy.deepcopy(operating_point_movement)
+
+    max_airplane_movement_period = 0.0
+    for airplane_movement in airplane_movements_copy:
+        max_airplane_movement_period = max(
+            airplane_movement.max_period, max_airplane_movement_period
+        )
+
+    max_period = max(
+        max_airplane_movement_period, operating_point_movement_copy.max_period
+    )
+
+    # Calculate the number of steps to traverse the max period (or just a single step if
+    # there is no movement).
+    num_steps = 1
+    if max_period > 0.0:
+        num_steps = math.ceil(max_period / delta_time)
+
+    # Create a temporary Movement with the trial delta_time.
+    temp_movement = Movement(
+        airplane_movements=airplane_movements_copy,
+        operating_point_movement=operating_point_movement_copy,
+        delta_time=delta_time,
+        num_steps=num_steps,
+    )
+
+    # Create an UnsteadyProblem and solver.
+    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+    temp_solver = (
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            temp_problem
+        )
+    )
+
+    # Accumulate area mismatch across all steps > 0.
+    total_mismatch = 0.0
+    num_comparisons = 0
+
+    # Step through the simulation using geometry only initialization.
+    for step in range(num_steps):
+        temp_solver.initialize_step_geometry(step)
+
+        # At step > 0, compare wake first row RingVortex areas (current step)
+        # to bound trailing edge RingVortex areas (previous step).
+        if step > 0:
+            # Get the current Airplanes (at step) for wake RingVortices.
+            current_airplanes = temp_solver.steady_problems[step].airplanes
+            # Get the previous Airplanes (at step - 1) for bound RingVortices.
+            previous_airplanes = temp_solver.steady_problems[step - 1].airplanes
+
+            for airplane_id, airplane in enumerate(current_airplanes):
+                previous_airplane = previous_airplanes[airplane_id]
+
+                for wing_id, wing in enumerate(airplane.wings):
+                    previous_wing = previous_airplane.wings[wing_id]
+
+                    # Get the wake RingVortices (first row, chordwise index 0).
+                    wake_ring_vortices = wing.wake_ring_vortices
+
+                    assert wake_ring_vortices is not None
+
+                    # First row of wake is at chordwise index 0.
+                    num_spanwise = wake_ring_vortices.shape[1]
+
+                    # Get the trailing edge bound RingVortices from previous step.
+                    previous_panels = previous_wing.panels
+                    if previous_panels is None:
+                        continue
+
+                    num_chordwise_panels = previous_wing.num_chordwise_panels
+                    trailing_edge_chordwise_index = num_chordwise_panels - 1
+
+                    for spanwise_id in range(num_spanwise):
+                        # Get wake RingVortex area (first row, current step).
+                        wake_rv: _aerodynamics.RingVortex = wake_ring_vortices[
+                            0, spanwise_id
+                        ]
+                        wake_area = wake_rv.area
+
+                        # Get bound trailing edge RingVortex area (previous step).
+                        trailing_edge_panel = previous_panels[
+                            trailing_edge_chordwise_index, spanwise_id
+                        ]
+                        _bound_rv = trailing_edge_panel.ring_vortex
+
+                        assert _bound_rv is not None
+                        bound_rv: _aerodynamics.RingVortex = _bound_rv
+
+                        bound_area = bound_rv.area
+
+                        # Accumulate the absolute percent area difference.
+                        total_mismatch += abs(wake_area - bound_area) / bound_area
+                        num_comparisons += 1
+
+    if num_comparisons == 0:
+        return 0.0
+
+    return total_mismatch / num_comparisons
+
+
+def _optimize_delta_time(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    initial_delta_time: float,
+    mismatch_cutoff: float = 0.01,
+) -> float:
+    """Finds an optimal delta_time using sp_opt.minimize_scalar.
+
+    Optimizes delta_time to minimize the area mismatch between wake RingVortices and
+    their parent bound trailing edge RingVortices. This produces better results at high
+    Strouhal numbers where motion induced velocity is significant.
+
+    The search terminates early if the mismatch falls below the specified cutoff
+    value. Otherwise, it will return the locally minimum with an absolute convergence
+    tolerance of 0.001.
+
+    The optimization search is bounded within one order of magnitude, centered at the
+    specified starting value.
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :param initial_delta_time: The initial estimate from the fast calculation. It must
+        be a positive float. Its units are in seconds.
+    :param mismatch_cutoff: A positive float for the optimization's convergence
+        threshold. When the average area mismatch (which is an absolute percent error)
+        falls below this value, the search terminates early. The default is 0.01.
+    :return: The optimized delta_time value. Its units are in seconds.
+    :raises RuntimeError: If optimization fails to converge.
+    """
+    lower_bound = initial_delta_time / math.sqrt(10)
+    upper_bound = initial_delta_time * math.sqrt(10)
+
+    movement_logger.info("Starting delta_time optimization.")
+
+    # Check initial estimate first before running optimizer.
+    initial_mismatch = _compute_wake_area_mismatch(
+        initial_delta_time, airplane_movements, operating_point_movement
+    )
+
+    dt_str = str(round(initial_delta_time, 6))
+    mismatch_str = str(round(initial_mismatch, 6))
+
+    state_msg = "\tState: delta_time=" + dt_str
+    obj_msg = "\t\tMismatch: " + mismatch_str
+
+    movement_logger.info(state_msg)
+    movement_logger.info(obj_msg)
+
+    if initial_mismatch < mismatch_cutoff:
+        movement_logger.info("Acceptable value reached.")
+        movement_logger.info("Optimization complete.")
+        return initial_delta_time
+
+    iteration_count = 1
+    best_delta_time = initial_delta_time
+    best_mismatch = initial_mismatch
+
+    def objective(dt: float) -> float:
+        nonlocal iteration_count, best_delta_time, best_mismatch
+        iteration_count += 1
+        mismatch = _compute_wake_area_mismatch(
+            dt, airplane_movements, operating_point_movement
+        )
+
+        this_dt_str = str(round(dt, 6))
+        this_mismatch_str = str(round(mismatch, 6))
+
+        this_state_msg = "\tState: delta_time=" + this_dt_str
+        this_obj_msg = "\t\tMismatch: " + this_mismatch_str
+
+        movement_logger.info(this_state_msg)
+        movement_logger.info(this_obj_msg)
+
+        if mismatch < best_mismatch:
+            best_mismatch = mismatch
+            best_delta_time = dt
+
+        if mismatch < mismatch_cutoff:
+            raise StopIteration
+
+        return mismatch
+
+    try:
+        result = sp_opt.minimize_scalar(
+            objective,
+            bounds=(lower_bound, upper_bound),
+            method="bounded",
+            options={"xatol": 0.001},
+        )
+
+        if not result.success:
+            raise RuntimeError("delta_time optimization failed to converge.")
+
+        optimized_delta_time = float(result.x)
+    except StopIteration:
+        optimized_delta_time = best_delta_time
+        movement_logger.info("Acceptable value reached.")
+
+    # Warn if the optimized value is at one of the bounds.
+    bound_tolerance = 1e-6
+    if abs(optimized_delta_time - lower_bound) < bound_tolerance:
+        movement_logger.warning(
+            "Optimized delta_time is at the lower bound. A better value may exist "
+            "below the search range."
+        )
+    elif abs(optimized_delta_time - upper_bound) < bound_tolerance:
+        movement_logger.warning(
+            "Optimized delta_time is at the upper bound. A better value may exist "
+            "above the search range."
+        )
+
+    movement_logger.info("Optimization complete.")
+
+    return optimized_delta_time

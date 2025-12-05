@@ -40,6 +40,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     run: Runs the solver on the UnsteadyProblem.
 
+    initialize_step_geometry: Initializes geometry for a specific step without solving.
+
     calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
     geometry axes, observed from the Earth frame) at one or more points (in the first
     Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
@@ -483,6 +485,40 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Mark that the solver has run.
         self.ran = True
+
+    def initialize_step_geometry(self, step: int) -> None:
+        """Initializes geometry for a specific step without solving.
+
+        Sets up bound RingVortices and wake RingVortices for the specified time step,
+        but does not solve the aerodynamic system. Use this for geometry only analysis
+        like delta_time optimization.
+
+        This method must be called sequentially for each step starting from 0, as wake
+        vortices at step N depend on the geometry from step N - 1.
+
+        :param step: The time step to initialize geometry for. It is zero indexed. It
+            must be a non negative int and be less than the total number of steps.
+        :return: None
+        """
+        step = _parameter_validation.int_in_range_return_int(
+            step, "step", 0, True, self.num_steps, False
+        )
+
+        # Initialize bound RingVortices for all steps on the first call.
+        if step == 0:
+            self._initialize_panel_vortices()
+
+        # Set the current step and related state.
+        self._current_step = step
+        current_problem: problems.SteadyProblem = self.steady_problems[step]
+        self.current_airplanes = current_problem.airplanes
+        self.current_operating_point = current_problem.operating_point
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
+
+        # Populate the wake for the next step (if not the last step).
+        if step < self.num_steps - 1:
+            self._populate_next_airplanes_wake_vortex_points()
+            self._populate_next_airplanes_wake_vortices()
 
     def _initialize_panel_vortices(self) -> None:
         """Calculates the locations of the bound RingVortex vertices, and then

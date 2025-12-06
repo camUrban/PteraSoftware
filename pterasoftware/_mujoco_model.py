@@ -55,18 +55,24 @@ class MuJoCoModel:
 
         name = initial_airplane.name
         weight = initial_airplane.weight
-        vCg__E = initial_coupled_operating_point.vCg__E
         omegasRad_BP1__E = np.deg2rad(initial_coupled_operating_point.omegas_BP1__E)
         g_E = initial_coupled_operating_point.g_E
-        T_pas_E_CgP1_to_BP1_CgP1 = (
-            initial_coupled_operating_point.T_pas_E_CgP1_to_BP1_CgP1
+        T_pas_BP1_CgP1_to_E_CgP1 = (
+            initial_coupled_operating_point.T_pas_BP1_CgP1_to_E_CgP1
         )
-        T_pas_W_CgP1_to_E_CgP1 = initial_coupled_operating_point.T_pas_W_CgP1_to_E_CgP1
+        vCg_E__E = initial_coupled_operating_point.vCg_E__E
 
         mass = weight / np.linalg.norm(g_E)
-        vCg_W__E = np.array([vCg__E, 0.0, 0.0], dtype=float)
         omegaXRad_BP1__E, omegaYRad_BP1__E, omegaZRad_BP1__E = omegasRad_BP1__E[:]
-        R_pas_E_to_BP1 = T_pas_E_CgP1_to_BP1_CgP1[:3, :3]
+
+        R_pas_BP1_to_E = T_pas_BP1_CgP1_to_E_CgP1[:3, :3]
+
+        R_act_BP1_to_E = np.linalg.inv(R_pas_BP1_to_E)
+
+        R_act_E_to_BP1 = R_act_BP1_to_E.T
+
+        # REFACTOR: Add section on quaternions to ANGLES_VECTORS_AND_TRANSFORMATIONS.md.
+        quat_act_E_to_BP1_wxyz = _transformations.R_to_quat_wxyz(R_act_E_to_BP1)
 
         IXX_BP1_CgP1, IXY_BP1_CgP1, IXZ_BP1_CgP1 = I_BP1_CgP1[0]
         IYX_BP1_CgP1, IYY_BP1_CgP1, IYZ_BP1_CgP1 = I_BP1_CgP1[1]
@@ -76,16 +82,12 @@ class MuJoCoModel:
         IXZ_BP1_CgP1 = (IXZ_BP1_CgP1 + IZX_BP1_CgP1) / 2
         IYZ_BP1_CgP1 = (IYZ_BP1_CgP1 + IZY_BP1_CgP1) / 2
 
-        # REFACTOR: Add section on quaternions to ANGLES_VECTORS_AND_TRANSFORMATIONS.md.
-        quat_E_to_BP1_wxyz = _transformations.R_to_quat_wxyz(R_pas_E_to_BP1)
-
-        quatW_E_to_BP1, quatX_E_to_BP1, quatY_E_to_BP1, quatZ_E_to_BP1 = (
-            quat_E_to_BP1_wxyz[:]
-        )
-
-        vCg_E__E = _transformations.apply_T_to_vectors(
-            T_pas_W_CgP1_to_E_CgP1, vCg_W__E, has_point=False
-        )
+        (
+            quatW_act_E_to_BP1,
+            quatX_act_E_to_BP1,
+            quatY_act_E_to_BP1,
+            quatZ_act_E_to_BP1,
+        ) = quat_act_E_to_BP1_wxyz[:]
 
         vCgX_E__E, vCgY_E__E, vCgZ_E__E = vCg_E__E[:]
 
@@ -97,8 +99,8 @@ class MuJoCoModel:
             f"{IXZ_BP1_CgP1} {IYZ_BP1_CgP1}"
         )
         qpos_str = (
-            f"0.0 0.0 0.0 {quatW_E_to_BP1} {quatX_E_to_BP1} {quatY_E_to_BP1} "
-            f"{quatZ_E_to_BP1}"
+            f"0.0 0.0 0.0 {quatW_act_E_to_BP1} {quatX_act_E_to_BP1} {quatY_act_E_to_BP1} "
+            f"{quatZ_act_E_to_BP1}"
         )
         qvel_str = (
             f"{vCgX_E__E} {vCgY_E__E} {vCgZ_E__E} {omegaXRad_BP1__E} "

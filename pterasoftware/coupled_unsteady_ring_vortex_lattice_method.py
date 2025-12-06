@@ -338,14 +338,18 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 )
 
                 logging.debug(
-                    f"""    currentVInf__E = {self.current_coupled_operating_point.
-                    vCg__E:.2e} m/s"""
+                    f"    speed = {self.current_coupled_operating_point.vCg__E:.2e} m/s"
                 )
                 logging.debug(
                     f"    alpha = {self.current_coupled_operating_point.alpha:.2f} deg"
                 )
                 logging.debug(
                     f"    beta = {self.current_coupled_operating_point.beta:.2f} deg"
+                )
+                _vCg_E__E = self.current_coupled_operating_point.vCg_E__E
+                logging.debug(
+                    f"    vCg_E__E = [{_vCg_E__E[0]:.2e}, {_vCg_E__E[1]:.2e}, "
+                    f"{_vCg_E__E[2]:.2e}] m/s"
                 )
 
                 # TODO: I think these steps are redundant, at least during the first
@@ -1457,6 +1461,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         logging.debug(f"    next angleX = {angleX:.2f} deg")
         logging.debug(f"    next angleY = {angleY:.2f} deg")
         logging.debug(f"    next angleZ = {angleZ:.2f} deg")
+        logging.debug(
+            f"    next vCg_E__E = [{self._nextVelocity_E__E[0]:.2e}, "
+            f"{self._nextVelocity_E__E[1]:.2e}, {self._nextVelocity_E__E[2]:.2e}] m/s"
+        )
 
         # Compute the speed (magnitude of velocity in Earth frame).
         vCg__E = float(np.linalg.norm(self._nextVelocity_E__E))

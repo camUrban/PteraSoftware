@@ -372,3 +372,38 @@ class CoupledOperatingPoint(OperatingPoint):
     @property
     def T_pas_W_CgP1_to_E_CgP1(self) -> np.ndarray:
         return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_W_CgP1)
+
+    # TEST: Add unit tests for this method.
+    # DOCUMENT: Double check this method's docstring.
+    @property
+    def vCg_E__E(self) -> np.ndarray:
+        """The velocity of the Airplane's CG (in Earth axes, observed from the Earth
+        frame).
+
+        **Notes:**
+
+        This property computes the velocity vector in Earth axes from the speed
+        (vCg__E), aerodynamic angles (alpha, beta), and body orientation
+        (angles_E_to_BP1_izyx).
+
+        By definition, the Wind +x axis is aligned with the velocity direction.
+        Therefore, velocity in Wind axes is simply [vCg__E, 0, 0]. To express this
+        velocity in Earth axes, we apply the passive transformation T_pas_W_to_E.
+
+        The transformation chain is: W -> B (via alpha, beta) -> E (via
+        angles_E_to_BP1_izyx). This means the velocity direction in Earth axes depends
+        on both the aerodynamic angles AND the body orientation.
+
+        For level flight (velocity horizontal in Earth axes), the user must ensure that
+        angles_E_to_BP1_izyx is consistent with the desired alpha and beta. For example,
+        if flying North with positive alpha and zero beta, then angles_E_to_BP1_izyx
+        should be approximately [0, alpha, 0] so that the body is pitched up while the
+        velocity remains horizontal.
+
+        :return: A (3,) ndarray of floats representing the velocity of the Airplane's CG
+            (in Earth axes, observed from the Earth frame) in meters per second.
+        """
+        vCg_W__E = np.array([self.vCg__E, 0.0, 0.0], dtype=float)
+        return _transformations.apply_T_to_vectors(
+            self.T_pas_W_CgP1_to_E_CgP1, vCg_W__E, has_point=False
+        )

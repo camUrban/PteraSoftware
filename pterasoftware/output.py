@@ -833,7 +833,85 @@ def animate_free_flight(
         min_scalar = round(min(all_scalars), 2)
         max_scalar = round(max(all_scalars), 2)
 
-    # Get the Panel surfaces of the first time step's Airplane in Earth axes,
+    # Compute a camera position that can see the entire trajectory. Find the midpoint
+    # and extent of the trajectory, then position the camera far enough back to see it
+    # all.
+    initialPosition_E_E = coupled_solver.stackPosition_E_E[0]
+    finalPosition_E_E = coupled_solver.stackPosition_E_E[-1]
+    trajectoryMidpoint_E_E = (initialPosition_E_E + finalPosition_E_E) / 2.0
+    trajectory_extent = float(np.linalg.norm(finalPosition_E_E - initialPosition_E_E))
+
+    # Add some padding to ensure we can see the whole airplane and wake at each end.
+    padding = float(max(10.0, trajectory_extent * 0.5))
+    camera_distance = trajectory_extent + padding
+
+    # Position the camera along the direction (-1, -1, 1) (in PyVista axes) from the
+    # trajectory midpoint.
+    cameraDirection_V = np.array([-1.0, -1.0, 1.0])
+    cameraDirection_V = cameraDirection_V / np.linalg.norm(cameraDirection_V)
+
+    # Transform from Earth axes to PyVista axes. Earth axes have +Z pointing down, but
+    # PyVista expects +Z pointing up. A 180 degree rotation about the Y axis flips both
+    # X and Z, giving a right handed system with Z up.
+    T_pas_E_to_V = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+    focalPoint_V_E = _transformations.apply_T_to_vectors(
+        T_pas_E_to_V,
+        trajectoryMidpoint_E_E,
+        has_point=True,
+    )
+
+    cameraPosition_V_E = focalPoint_V_E + camera_distance * cameraDirection_V
+    viewUp_V = (0.0, 0.0, 1.0)
+    cpos = [tuple(cameraPosition_V_E), tuple(focalPoint_V_E), viewUp_V]
+
+    # For parallel projection, set the parallel_scale to control the viewport size.
+    parallel_scale = camera_distance * 0.6
+
+    # To compute the correct camera clipping range, we need to show PyVista the full
+    # extent of the geometry (first and last frames). Add meshes at both positions,
+    # set the camera, compute the clipping range, then clear and restart with just
+    # the first frame.
+    first_panel_surfaces = _get_panel_surfaces_free_flight(
+        airplanes[0],
+        coupled_solver.stackPosition_E_E[0],
+        coupled_solver.stackR_pas_E_to_BP1[0],
+    )
+    last_step = len(airplanes) - 1
+    last_panel_surfaces = _get_panel_surfaces_free_flight(
+        airplanes[last_step],
+        coupled_solver.stackPosition_E_E[last_step],
+        coupled_solver.stackR_pas_E_to_BP1[last_step],
+    )
+
+    # Add both first and last frame meshes to compute clipping range.
+    plotter.add_mesh(first_panel_surfaces, show_edges=True, color=_panel_color)
+    plotter.add_mesh(last_panel_surfaces, show_edges=True, color=_panel_color)
+
+    # Add wake at last frame if showing wake (this extends the geometry bounds).
+    if show_wake_vortices:
+        wake_surfaces = _get_wake_ring_vortex_surfaces_free_flight(
+            coupled_solver, last_step
+        )
+        if wake_surfaces.n_points > 0:
+            plotter.add_mesh(wake_surfaces, show_edges=True, color=_wake_vortex_color)
+
+    # Set camera and compute clipping range.
+    plotter.camera.position = cpos[0]
+    plotter.camera.focal_point = cpos[1]
+    plotter.camera.up = cpos[2]
+    plotter.camera.parallel_scale = parallel_scale
+    plotter.reset_camera_clipping_range()
+    stored_clipping_range = plotter.camera.clipping_range
+
+    # Clear the plotter and set up the first frame properly.
+    plotter.clear()
+
+    # Get the Panel surfaces of the first time step's Airplane in PyVista axes,
     # relative to the Earth origin.
     panel_surfaces = _get_panel_surfaces_free_flight(
         airplanes[0],
@@ -883,19 +961,28 @@ def animate_free_flight(
         )
         plotter.show(
             title="Free Flight Animation - Rendering speed not to scale.",
-            cpos=(-1, -1, 1),
+            cpos=cpos,
             full_screen=False,
             auto_close=False,
         )
     else:
         plotter.show(
             title="Free Flight Animation - Rendering speed not to scale.",
-            cpos=(-1, -1, 1),
+            cpos=cpos,
             full_screen=False,
             interactive=False,
             auto_close=False,
         )
-        time.sleep(1)
+
+    # Apply the pre-computed clipping range to ensure all geometry throughout the
+    # animation is visible. The clipping range defines the near and far planes -
+    # objects outside this range won't be rendered.
+    plotter.camera.position = cpos[0]
+    plotter.camera.focal_point = cpos[1]
+    plotter.camera.up = cpos[2]
+    plotter.camera.parallel_scale = parallel_scale
+    plotter.camera.clipping_range = stored_clipping_range
+    time.sleep(1)
 
     # Start a list to hold a WebP Image of each frame.
     images = [
@@ -1585,8 +1672,8 @@ def _get_panel_surfaces_free_flight(
     position_E_E: np.ndarray,
     R_pas_E_to_BP1: np.ndarray,
 ) -> pv.PolyData:
-    """Returns a PolyData representation of the Wings' Panels' surfaces, in Earth axes,
-    relative to the Earth origin, for free flight visualization.
+    """Returns a PolyData representation of the Wings' Panels' surfaces, in PyVista
+    axes, relative to the Earth origin, for free flight visualization.
 
     :param airplane: The Airplane whose Wings' Panels' surfaces will be returned.
     :param position_E_E: A (3,) ndarray of floats representing the current position of
@@ -1596,7 +1683,7 @@ def _get_panel_surfaces_free_flight(
         orientation of the Airplane, expressed as a passive rotation matrix from Earth
         axes to the Airplane's body axes.
     :return: The PolyData representation of the Airplane's Wings' Panels' surfaces (in
-        Earth axes, relative to the Earth origin).
+        PyVista axes, relative to the Earth origin).
     """
     # Initialize empty ndarrays to hold the Panels' vertices and faces.
     stackVertices_GP1_CgP1 = np.empty((0, 3), dtype=float)
@@ -1668,8 +1755,14 @@ def _get_panel_surfaces_free_flight(
 
     # Create the passive translation transformation from the Earth axes, relative to
     # the first Airplane's CG, to Earth axes, relative to the Earth origin.
+    #
+    # For generate_trans_T with passive=True, the translations parameter should be the
+    # position of the final reference point (the Earth origin) relative to the initial
+    # reference point (the first Airplane's CG). Since position_E_E is the position of
+    # the first Airplane's CG relative to Earth origin, the position of the Earth origin
+    # relative to the first Airplane's CG is -position_E_E.
     T_pas_E_CgP1_to_E_E = _transformations.generate_trans_T(
-        translations=position_E_E,
+        translations=-position_E_E,
         passive=True,
     )
 
@@ -1688,8 +1781,24 @@ def _get_panel_surfaces_free_flight(
         has_point=True,
     )
 
+    # REFACTOR: Add section to AXES_POINTS_AND_FRAMES.md about PyVista axes.
+    # Transform from Earth axes to PyVista axes. Earth axes have +Z pointing down, but
+    # PyVista expects +Z pointing up. A 180 degree rotation about the Y axis flips both
+    # X and Z, giving a right handed system with Z up.
+    T_pas_E_to_V = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+    stackVertices_V_E = _transformations.apply_T_to_vectors(
+        T_pas_E_to_V,
+        stackVertices_E_E,
+        has_point=True,
+    )
+
     # Return the Panels' surfaces.
-    return pv.PolyData(stackVertices_E_E, faces)
+    return pv.PolyData(stackVertices_V_E, faces)
 
 
 # TEST: Consider adding unit tests for this function.
@@ -1759,12 +1868,13 @@ def _get_wake_ring_vortex_surfaces_free_flight(
 ) -> pv.PolyData:
     """Returns the PolyData representation of surfaces a
     CoupledUnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time
-    step, in Earth axes, relative to the Earth origin.
+    step, in PyVista axes, relative to the Earth origin.
 
     :param coupled_solver: The CoupledUnsteadyRingVortexLatticeMethodSolver with the
         wake RingVortices to process.
     :param step: The time step number at which to process the wake RingVortices.
-    :return: The PolyData representation of the wake RingVortices.
+    :return: The PolyData representation of the wake RingVortices, in PyVista axes,
+        relative to the Earth origin.
     """
     position_E_E = coupled_solver.stackPosition_E_E[step]
     R_pas_E_to_BP1 = coupled_solver.stackR_pas_E_to_BP1[step]
@@ -1835,8 +1945,14 @@ def _get_wake_ring_vortex_surfaces_free_flight(
 
     # Create the passive translation transformation from the Earth axes, relative to
     # the first Airplane's CG, to Earth axes, relative to the Earth origin.
+    #
+    # For generate_trans_T with passive=True, the translations parameter should be the
+    # position of the final reference point (the Earth origin) relative to the initial
+    # reference point (the first Airplane's CG). Since position_E_E is the position of
+    # the first Airplane's CG relative to the Earth origin, the position of the Earth
+    # origin relative to the first Airplane's CG is -position_E_E.
     T_pas_E_CgP1_to_E_E = _transformations.generate_trans_T(
-        translations=position_E_E,
+        translations=-position_E_E,
         passive=True,
     )
 
@@ -1855,8 +1971,23 @@ def _get_wake_ring_vortex_surfaces_free_flight(
         has_point=True,
     )
 
+    # Transform from Earth axes to PyVista's viewing convention. Earth axes have +Z
+    # pointing down, but PyVista expects +Z pointing up. A 180-degree rotation about
+    # the Y-axis flips both X and Z, giving a right-handed system with Z up.
+    T_pas_E_to_V = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+    stackVertices_V_E = _transformations.apply_T_to_vectors(
+        T_pas_E_to_V,
+        stackVertices_E_E,
+        has_point=True,
+    )
+
     # Return the wake RingVortex surfaces.
-    return pv.PolyData(stackVertices_E_E, faces)
+    return pv.PolyData(stackVertices_V_E, faces)
 
 
 # TEST: Consider adding unit tests for this function.

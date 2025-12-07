@@ -20,3 +20,4 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" black .
 
 ## Miscellaneous Guidelines
 - Import Ptera Software using the following pattern: ```import pterasoftware as ps```
+- Use `np.deg2rad` and `np.rad2deg` for angle conversions instead of `np.radians` and `np.degrees` or manual conversions.

@@ -99,7 +99,7 @@ def generate_rot_T(
     intrinsic = _parameter_validation.boolLike_return_bool(intrinsic, "intrinsic")
     order = _parameter_validation.rotation_order_return_str(order, "order")
 
-    angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
+    angleX_rad, angleY_rad, angleZ_rad = np.deg2rad(angles)
 
     x_R_act = np.array(
         [

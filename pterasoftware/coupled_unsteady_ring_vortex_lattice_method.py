@@ -222,6 +222,13 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # REFACTOR: Before starting the loop, we should reset mujoco_model to the
         #  initial state, as defined by the CoupledOperatingPoint.
 
+        # Store the initial state (before any MuJoCo time steps) for visualization.
+        # This ensures that stackPosition_E_E[i] and stackR_pas_E_to_BP1[i] contain
+        # the state at the beginning of time step i, matching airplanes[i].
+        initial_state = self.mujoco_model.get_state()
+        self.stackPosition_E_E[0] = cast(np.ndarray, initial_state["position_E_E"])
+        self.stackR_pas_E_to_BP1[0] = cast(np.ndarray, initial_state["R_pas_E_to_BP1"])
+
         # Get the number of spanwise Panels and the total number of Wing Panels for
         # this CoupledUnsteadyProblem's Airplane.
         _num_wing_panels = self.coupled_steady_problems[0].airplane.num_panels
@@ -1416,9 +1423,18 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         self._nextVelocity_E__E = cast(np.ndarray, state["velocity_E__E"])
         self._nextOmegas_BP1__E = cast(np.ndarray, state["omegas_BP1__E"])
 
-        # Store the state in history ndarrays for visualization.
-        self.stackPosition_E_E[self._current_step] = self._nextPosition_E_E.copy()
-        self.stackR_pas_E_to_BP1[self._current_step] = self._nextR_pas_E_to_BP1.copy()
+        # Store the state in history ndarrays for visualization. The state after MuJoCo
+        # steps belongs to the next time step (current_step + 1), since this is the
+        # state at the beginning of that time step. We only store if there is a next
+        # time step. The initial state (for time step 0) is stored at the start of the
+        # run method.
+        if self._current_step < self.num_steps - 1:
+            self.stackPosition_E_E[self._current_step + 1] = (
+                self._nextPosition_E_E.copy()
+            )
+            self.stackR_pas_E_to_BP1[self._current_step + 1] = (
+                self._nextR_pas_E_to_BP1.copy()
+            )
 
         # REFACTOR: This method of extracting Euler angles from a rotation matrix should
         #  be converted into a function _transformations.py and then checked with unit

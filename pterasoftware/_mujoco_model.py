@@ -145,6 +145,11 @@ class MuJoCoModel:
         # Set the internal model's state to the initial conditions.
         mujoco.mj_resetDataKeyframe(self.model, self.data, self.initial_key_frame_id)
 
+        # Run forward kinematics to compute derived quantities (xmat, xpos, etc.)
+        # from the initial qpos/qvel. Without this, xmat would be zeros until the
+        # first call to mj_step.
+        mujoco.mj_forward(self.model, self.data)
+
         # Store initial state for reset functionality.
         self._initial_qpos: np.ndarray = np.copy(self.data.qpos)
         self._initial_qvel: np.ndarray = np.copy(self.data.qvel)

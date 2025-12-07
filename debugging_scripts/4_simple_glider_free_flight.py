@@ -43,7 +43,7 @@ trim_externalFX_W = 6.5
 delta_time = 0.012920
 converged_num_steps = 78
 
-free_num_steps = 20
+free_num_steps = 10
 this_g = -9.80665
 this_airplane_name = "Simple Glider"
 this_initial_key_frame_name = "Start"
@@ -193,10 +193,15 @@ simple_glider_airplane_movement = ps.movements.airplane_movement.AirplaneMovemen
 
 del simple_glider_airplane
 
+# FIXME: Determine what the correct initial angles_E_to_BP1_izyx value should be such
+#  that the initial velocity vector is in the EX direction. I think this is correct, but
+#  the airplane seems laterally unstable, even though it should definitely be laterally
+#  stable.
 simple_glider_coupled_operating_point = ps.operating_point.CoupledOperatingPoint(
     vCg__E=trim_vCg__E,
     alpha=trim_alpha,
     beta=trim_beta,
+    angles_E_to_BP1_izyx=(0.0, trim_alpha, -trim_beta),
     externalFX_W=trim_externalFX_W,
 )
 
@@ -249,22 +254,29 @@ times = np.linspace(
     (free_num_steps + converged_num_steps),
 )
 plt.plot(times, simple_glider_coupled_solver.stackPosition_E_E[:, 0])
-plt.title("CgP1_X")
+plt.title("CgP1X_E_E")
+plt.show()
+
+plt.plot(times, simple_glider_coupled_solver.stackPosition_E_E[:, 1])
+plt.title("CgP1Y_E_E")
 plt.show()
 
 plt.plot(times, simple_glider_coupled_solver.stackPosition_E_E[:, 2])
-plt.title("CgP1_Z")
+plt.title("CgP1Z_E_E")
 plt.show()
 
 ps.output.animate_free_flight(
     coupled_solver=simple_glider_coupled_solver,
     scalar_type="lift",
     show_wake_vortices=True,
+    save=False,
+    testing=True,
 )
 
 ps.output.draw(
     solver=simple_glider_coupled_solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    save=True,
+    save=False,
+    testing=True,
 )

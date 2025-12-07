@@ -7,27 +7,26 @@ This document tracks the development progress and goals for the free flight simu
 
 ## Current Status Summary
 
-**🟢 DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional**
+**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional**
 
 **What Works:**
-- ✅ Complete coupled solver infrastructure implemented and functional
-- ✅ MuJoCo integration with proper load passing and state extraction
-- ✅ Prescribed motion steps work correctly and match baseline simulations
-- ✅ Solver runs through full coupling loop without crashing (300+ steps tested)
-- ✅ Comprehensive debugging infrastructure with systematic test progression
-- ✅ Free flight visualization tools (animate_free_flight, draw support)
-- ✅ Converged, trimmed, stable test case (simple glider validated with XFLR5)
-- ✅ MuJoCo rotation matrix convention understood and properly transformed
-- ✅ Euler angle extraction from rotation matrix (with gimbal lock handling)
-- ✅ Rotational velocity terms properly implemented with body-to-geometry transformation
+- Complete coupled solver infrastructure implemented and functional
+- MuJoCo integration with proper load passing and state extraction
+- Prescribed motion steps work correctly and match baseline simulations
+- Solver runs through full coupling loop without crashing (300+ steps tested)
+- Comprehensive debugging infrastructure with systematic test progression
+- Free flight visualization tools (animate_free_flight, draw support)
+- Converged, trimmed, stable test case (simple glider validated with XFLR5)
+- MuJoCo rotation matrix convention understood and properly transformed
+- Euler angle extraction from rotation matrix (with gimbal lock handling)
+- Rotational velocity terms properly implemented with body-to-geometry transformation
 
 **What Needs Testing/Validation:**
-- ⚠️ Full 6-DOF dynamics need validation against known solutions
-- ⚠️ Non-zero sideslip (beta) cases need testing
-- ⚠️ Animation coordinate transformations may still have issues
+- Full 6-DOF dynamics need validation against known solutions
+- Non-zero sideslip (beta) cases need testing
 
 **Immediate Focus:**
-Validating the complete 6-DOF free flight simulation against known solutions and debugging any remaining coordinate transformation issues in visualization.
+Validating the complete 6-DOF free flight simulation against known solutions.
 
 ## Overview
 
@@ -95,13 +94,17 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
 
 ## Implementation Status
 
-### ✅ Completed
+### Completed
 
 1. **Class Structure** (pterasoftware/operating_point.py, pterasoftware/problems.py, pterasoftware/movements/movement.py)
-   - CoupledOperatingPoint class with angular velocity support
+   - CoupledOperatingPoint class refactored as subclass of OperatingPoint
+   - Renamed parameters for consistency: `omegas_B__E` → `omegas_BP1__E`, `angles_E_to_B_izyx` → `angles_E_to_BP1_izyx`
+   - Added `g_E` parameter for gravity direction
+   - Added transformation matrix properties: `T_pas_E_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_E_CgP1`, `T_pas_E_CgP1_to_GP1_CgP1`, `T_pas_GP1_CgP1_to_E_CgP1`, `T_pas_E_CgP1_to_W_CgP1`, `T_pas_W_CgP1_to_E_CgP1`
+   - Added `vCg_E__E` property for velocity in Earth axes
    - CoupledMovement class for free flight motion definition
    - CoupledSteadyProblem class for time step characterization
-   - CoupledUnsteadyProblem class for overall problem definition
+   - CoupledUnsteadyProblem class for overall problem definition (now takes `I_BP1_CgP1` inertia matrix and creates MuJoCoModel internally)
 
 2. **Solver Framework** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
    - CoupledUnsteadyRingVortexLatticeMethodSolver class created
@@ -110,15 +113,18 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Per-time-step geometric reinitialization implemented
    - All standard UVLM calculation methods copied and functional
 
-3. **MuJoCo Interface** (pterasoftware/mujoco_model.py)
+3. **MuJoCo Interface** (pterasoftware/_mujoco_model.py)
    - MuJoCoModel class created to wrap MuJoCo model and data structures
-   - Support for loading models from XML strings or file paths
-   - Methods for applying loads: `apply_loads(forces_E, moments_E_Cg)`
+   - Refactored to accept `CoupledMovement` and `I_BP1_CgP1` inertia matrix directly
+   - Generates MuJoCo XML internally from CoupledMovement parameters
+   - Initial state (position, orientation, velocity, angular velocity) set from `CoupledOperatingPoint`
+   - Methods for applying loads: `apply_loads(forces_E, moments_E_CgP1)`
    - Methods for advancing simulation: `step()`
-   - Methods for extracting state: `get_state()` returns `position_E_E`, `R_pas_E_to_B`, `velocity_E__E`, `omegas_B__E`, time
+   - Methods for extracting state: `get_state()` returns `position_E_E`, `R_pas_E_to_BP1`, `velocity_E__E`, `omegas_BP1__E`, time
    - Methods for resetting: `reset()`
    - Proper parameter validation and error handling
    - Follows Ptera Software coordinate system naming conventions
+   - Gravity disabled in MuJoCo model (applied by coupled solver instead)
 
 4. **Package Integration** (`pterasoftware/__init__.py`)
    - Coupled solver module imported and exposed
@@ -145,10 +151,10 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - `_process_new_states_from_mujoco()` method implemented
    - Receives updated state from MuJoCo (position, orientation, velocity, angular velocity)
    - Computes speed and freestream velocity from vehicle motion (assuming still air)
-   - Transforms freestream velocity: E > BP1 > body axes for alpha/beta computation
+   - Transforms freestream velocity: E > BP1 for alpha/beta computation
    - Calculates angle of attack (alpha) and sideslip angle (beta) from body-axes freestream
    - Creates new CoupledOperatingPoint with updated aerodynamic state
-   - Stores intermediate state (_next_position_E_E, _next_R_pas_E_to_B, etc.) for next method
+   - Stores intermediate state (_next_position_E_E, _next_R_pas_E_to_BP1, etc.) for next method
    - Comprehensive docstring with transformation chain documentation
 
 9. **Creating Next Time Step's Problem** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
@@ -201,8 +207,12 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Optional trajectory path visualization
    - Helper functions: `_get_panel_surfaces_free_flight()`, `_get_wake_ring_vortex_surfaces_free_flight()`
    - Updated `draw()` to support CoupledUnsteadyRingVortexLatticeMethodSolver
+   - Fixed coordinate transformation from Earth axes to PyVista viewing convention (180-degree Y rotation)
+   - Fixed camera positioning to see entire trajectory (trajectory-based midpoint and extent calculation)
+   - Fixed camera clipping range by pre-computing with first and last frame geometry
 
-14. **Debugging Infrastructure** (`debugging scripts/`)
+14. **Debugging Infrastructure** (`debugging_scripts/`)
+   - Directory renamed from `debugging scripts` to `debugging_scripts`
    - Systematic debugging case progression created:
      - `1_simple_glider_convergence.py`: Convergence study
      - `2_simple_glider_trim.py`: Trim analysis
@@ -211,7 +221,6 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Single-panel flat plate debugging cases:
      - `flat_plate_prescribed.py`: 1-Panel prescribed motion baseline
      - `flat_plate_free_flight.py`: 1-Panel free flight for isolation testing
-   - DEBUGGING_LOG.md tracks active issues, likely culprits, and resolved problems
    - XFLR5 model (`simple_glider.xfl`) for validation with known stable configuration
    - Simple glider design verified: converged, trimmed, statically stable in pitch/yaw, realistic inertia
 
@@ -268,13 +277,61 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
 24. **Variable Naming Consistency** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
    - Renamed `moments_E_Cg` to `moments_E_CgP1` for consistency with naming conventions
 
-### ⚠️ In Progress / Known Issues
+25. **Quaternion Conversion Function** (pterasoftware/_transformations.py)
+   - Added `R_to_quat_wxyz()` function for converting rotation matrices to unit quaternions
+   - Based on "Accurate Computation of Quaternions from Rotation Matrices" by Sarabandi and Thomas
+   - Validates input is a proper rotation matrix (determinant = 1.0 and orthogonal)
+   - Added comprehensive unit tests for various rotation cases
+
+26. **WingMovement Rotation Point Offset** (pterasoftware/movements/wing_movement.py)
+   - Added `rotationPointOffset_Gs_Ler` parameter to `WingMovement`
+   - Allows specification of a custom rotation point for wing angular motion
+   - When non-zero, wing rotates about the offset point instead of the leading edge root
+   - Added comprehensive unit tests verifying position adjustments and angle preservation
+
+27. **Improved delta_time Optimization** (pterasoftware/movements/movement.py)
+   - Changed from local-only search to two-stage local/global search (minimize_scalar + dual_annealing)
+   - Added reproducibility via random seed
+   - Changed search bounds from [initial/sqrt(10), initial*sqrt(10)] to [initial/10, initial*2]
+   - Improved convergence tolerance scaling (1% of initial_delta_time)
+   - Enhanced logging with iteration counts and clearer status messages
+   - Added severity-based error handling for poor optimization results
+
+28. **MuJoCo Conventions Documentation** (docs/MUJOCO_CONVENTIONS.md)
+   - Created definitive reference for MuJoCo state variable interpretations
+   - Documents `qpos`, `qvel`, `xmat`, `xfrc_applied` mappings to Ptera Software conventions
+   - Clarifies that `qvel[3:6]` (angular velocity) is in body axes, NOT Earth axes
+   - Clarifies that `xmat` is `R_pas_B_to_E` (transforms from body to Earth axes)
+   - Includes common pitfalls and verification methods
+
+29. **Unit Tests for Coupled Classes**
+   - Added comprehensive unit tests for `CoupledOperatingPoint` (tests/unit/test_operating_point.py)
+     - Tests initialization, parameter validation, inheritance from OperatingPoint
+     - Tests transformation matrix properties and velocity calculations
+   - Added comprehensive unit tests for `CoupledMovement` (tests/unit/test_movement.py)
+     - Tests initialization, parameter validation, num_steps calculation
+     - Tests airplanes generation and static/max_period properties
+   - Added unit tests for `R_to_quat_wxyz` (tests/unit/test_transformations.py)
+     - Tests identity, 90°, 180° rotations about principal axes
+     - Tests unit quaternion output and roundtrip with `generate_rot_T`
+   - Added unit tests for WingMovement rotation point offset (tests/unit/test_wing_movement.py)
+     - Tests zero offset matches default behavior
+     - Tests position adjustment and angle preservation
+
+30. **Documentation Refactoring**
+   - Refactored CLAUDE.md into multiple shorter files using progressive disclosure strategy
+   - Created docs/CODE_STYLE.md for code formatting guidelines
+   - Created docs/TYPE_HINT_AND_DOCSTRING_STYLE.md for type hint and docstring conventions
+   - Created docs/RUNNING_TESTS_AND_TYPE_CHECKS.md for test execution instructions
+   - Created docs/WRITING_STYLE.md for comment and documentation writing guidelines
+
+### In Progress / Known Issues
 
 **Current Status:**
 
 The core 6-DOF dynamics infrastructure is now complete. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms) have been resolved. The focus shifts to validation and testing.
 
-**⚠️ Needs Validation/Testing:**
+**Needs Validation/Testing:**
 
 1. **Full 6-DOF Dynamics Validation** (HIGH PRIORITY)
    - Rotational velocity terms are now enabled but need validation against known solutions
@@ -292,50 +349,38 @@ The core 6-DOF dynamics infrastructure is now complete. All previously critical 
    - Alternatively, consider storing wake in solver instead of Wing for coupled simulations
    - Lower priority since visualization fixes suggest current approach may work
 
-**🔍 Lower Priority Issues:**
+**Future Issues (Post-Validation):**
 
-4. **Animation Coordinate Issues**
-   - Airplane appears rotated 180° about body y-axis in `animate_free_flight()`
-   - Airplane appears to move in opposite direction from expected
-   - Both likely visualization transformation issues since wake convects correctly in `draw()`
-
-5. **Airplane Mesh Disappears in Animation**
-   - After several tens of time steps in `animate_free_flight()`, Airplane mesh vanishes
-   - May be rendering issue or coordinate transformation problem
-
-**📋 Future Issues (Post-Validation):**
-
-6. **No MuJoCo Model Visualization**
+4. **No MuJoCo Model Visualization**
    - Cannot easily verify MuJoCo XML setup is correct
    - Consider integration with MuJoCo's built-in visualizer
 
-7. **Airplane Direction Reversal**
+5. **Airplane Direction Reversal**
    - If Airplane switches direction, wake sheds from wrong edge
-   - Detection exists but no recovery mechanism
+   - We could try and detect and warn if this occurs but fixing it would be a larger undertaking
    - Low priority for gliding simulations
 
-8. **MuJoCo Model Not Programmatically Generated**
+6. **MuJoCo Model Not Programmatically Generated**
     - MuJoCo XML created separately from CoupledUnsteadyProblem
     - Changes to problem don't automatically update MuJoCo model
     - Consider programmatic model generation from problem definition
 
-9. **Utility Functions Need Extraction** (REFACTOR)
-   - `R_to_quat_wxyz` function duplicated in debugging scripts; should be in `_transformations.py`
+7. **Utility Functions Need Extraction** (REFACTOR)
+   - ~~`R_to_quat_wxyz` function duplicated in debugging scripts~~ (now in `_transformations.py`)
    - Euler angle extraction from rotation matrix should be in `_transformations.py`
    - Alpha/beta extraction from velocity vector should be in `_transformations.py`
    - Body-to-geometry axes transformation should have dedicated function
 
-### ❌ Not Yet Started
+### Not Yet Started
 
 1. **Coordinate Transformation Utilities**
-   - ✅ Transformation of forces/moments to MuJoCo's expected frames (completed in `_pass_loads_to_mujoco()`)
-   - ✅ Transformation of MuJoCo state to compute alpha/beta (completed in `_process_new_states_from_mujoco()`)
-   - ✅ Extraction of Euler angles from rotation matrix (completed in `_create_next_coupled_steady_problem()`)
-   - ⚠️ Wake coordinate transformation (might need, requires investigation)
+   - Transformation of forces/moments to MuJoCo's expected frames (completed in `_pass_loads_to_mujoco()`)
+   - Transformation of MuJoCo state to compute alpha/beta (completed in `_process_new_states_from_mujoco()`)
+   - Extraction of Euler angles from rotation matrix (completed in `_create_next_coupled_steady_problem()`)
 
 2. **Testing Infrastructure**
-   - Unit tests for CoupledOperatingPoint
-   - Unit tests for CoupledMovement
+   - Unit tests for CoupledOperatingPoint (completed)
+   - Unit tests for CoupledMovement (completed)
    - Unit tests for CoupledSteadyProblem
    - Unit tests for CoupledUnsteadyProblem
    - Integration tests for coupled solver
@@ -355,11 +400,9 @@ The core 6-DOF dynamics infrastructure is now complete. All previously critical 
 
 ### Coordinate System Handling
 
-- All solver computations use the first Airplane's geometry axes and CG (GP1_CgP1)
-- Forces and moments calculated in GP1_CgP1, then transformed to wind axes for output
-- MuJoCo uses Earth axes (E) and Earth frame (E), corresponding to MuJoCo's "world coordinates"
-- Earth origin point (E) defined as the initial CG position (documented in AXES_POINTS_AND_FRAMES.md)
-- MuJoCo interface requires transformation from GP1_CgP1 (Ptera Software) to E (MuJoCo)
+- All solver computations use the first Airplane's geometry axes and CG (_GP1_CgP1)
+- Forces and moments calculated in GP1_CgP1, then transformed to _W_CgP1 for output
+- See MUJOCO_CONVENTIONS.md for detailed MuJoCo variable interpretations
 
 ### Time Stepping
 
@@ -381,35 +424,36 @@ The core 6-DOF dynamics infrastructure is now complete. All previously critical 
 
 All previously critical blockers have been resolved:
 
-1. ✅ **MuJoCo Rotation Matrix Convention** (COMPLETED)
+1. **MuJoCo Rotation Matrix Convention** (COMPLETED)
    - Clarified that MuJoCo's `xmat` is `R_pas_B_to_E`
-   - Implemented proper transformation: `R_pas_E_to_B = R_pas_B_to_E.T`
+   - Implemented proper transformation
    - Removed empirical transformation logic
 
-2. ✅ **Euler Angle Extraction** (COMPLETED)
+2. **Euler Angle Extraction** (COMPLETED)
    - Implemented proper extraction for izyx sequence with gimbal lock handling
    - Verified formulas against rotation matrix structure
 
-3. ✅ **Rotational Velocity Terms** (COMPLETED)
+3. **Rotational Velocity Terms** (COMPLETED)
    - Re-enabled omega cross r terms in `_calculate_freestream_wing_influences()`
    - Added proper body-to-geometry coordinate transformation for angular velocity
    - Documented physics and sign conventions in code comments
 
 **Priority 2: Validation and Verification (CURRENT FOCUS)**
 
-4. ✅ **Create Simple Free Flight Test Case** (COMPLETED)
-   - ✅ Implemented simple gliding wing test case (`debugging scripts/4_simple_glider_free_flight.py`)
-   - ✅ Set up MuJoCo model with converged, trimmed, stable configuration
-   - ✅ Verified solver runs through complete coupling loop (300 steps)
-   - ✅ Created systematic debugging progression (convergence → trim → prescribed → free)
-   - ✅ Created single-panel flat plate isolation tests
+4. **Create Simple Free Flight Test Case** (COMPLETED)
+   - Implemented simple gliding wing test case (`debugging scripts/4_simple_glider_free_flight.py`)
+   - Set up MuJoCo model with converged, trimmed, stable configuration
+   - Verified solver runs through complete coupling loop (300 steps)
+   - Created systematic debugging progression (convergence → trim → prescribed → free)
+   - Created single-panel flat plate isolation tests
 
-5. ✅ **Develop Visualization for Free Flight Trajectories** (PARTIALLY COMPLETED)
-   - ✅ Implemented `animate_free_flight()` function with trajectory support
-   - ✅ Updated `draw()` to work with coupled solver
-   - ✅ Basic plotting for debugging (position over time)
-   - ⚠️ Animation has coordinate transformation issues (lower priority)
-   - 🔲 Still need: comprehensive time-series plots (forces, moments, alpha, beta, omegas)
+5. **Develop Visualization for Free Flight Trajectories** (COMPLETED)
+   - Implemented `animate_free_flight()` function with trajectory support
+   - Updated `draw()` to work with coupled solver
+   - Basic plotting for debugging (position over time)
+   - Fixed coordinate transformation from Earth axes to PyVista viewing convention
+   - Fixed camera positioning and clipping range for full trajectory visibility
+   - Still need: comprehensive time-series plots (forces, moments, alpha, beta, omegas)
 
 6. **Validate Full 6-DOF Dynamics** (IN PROGRESS)
    - Verify force/moment calculations produce physically sensible results
@@ -437,10 +481,10 @@ All previously critical blockers have been resolved:
 - `pterasoftware/problems.py` - CoupledSteadyProblem, CoupledUnsteadyProblem
 - `pterasoftware/movements/movement.py` - CoupledMovement class
 - `pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py` - Main solver
-- `pterasoftware/mujoco_model.py` - MuJoCoModel class for MuJoCo interface
+- `pterasoftware/_mujoco_model.py` - MuJoCoModel class for MuJoCo interface
+- `pterasoftware/_transformations.py` - Coordinate transformations including `R_to_quat_wxyz`
 
 ### Reference Materials
-- `gammabot_simulations/GammaBot.py` - Example of standard (non-free-flight) unsteady simulation
 - `mujoco_examples/` - MuJoCo tutorials and examples
 - `docs/AXES_POINTS_AND_FRAMES.md` - Coordinate system documentation
 - `docs/ANGLE_VECTORS_AND_TRANSFORMATIONS.md` - Transformation documentation
@@ -462,11 +506,8 @@ All previously critical blockers have been resolved:
 - **`CoupledUnsteadyRingVortexLatticeMethodSolver.run()`**:
   - TODO: Initialization steps at start of time loop may be redundant, consider optimizing
 
-### Open Questions
-
-1. How to handle control surface actuation in free flight (coupled with controller)?
-2. ~~Should gravity be included in CoupledOperatingPoint or handled entirely by MuJoCo?~~ **RESOLVED**: Gravity is disabled in MuJoCo and applied solely by the coupled solver via the weight force in `_pass_loads_to_mujoco()`. This prevents double-counting and gives explicit control over gravity direction.
-3. How to best visualize free flight trajectories?
+- **`ouput._get_panel_surfaces_free_flight()`**:
+  - REFACTOR: Add section to AXES_POINTS_AND_FRAMES.md about PyVista axes.
 
 ## Debugging Insights and Lessons Learned
 
@@ -513,7 +554,7 @@ All previously critical blockers have been resolved:
 
 The coordinate transformation issues identified during debugging have now been resolved:
 
-**✅ Resolved Issues:**
+**Resolved Issues:**
 - MuJoCo's `xmat` is `R_pas_B_to_E`; we take the transpose to get `R_pas_E_to_B`
 - Euler angle extraction uses the izyx sequence with proper gimbal lock handling
 - Rotational velocity cross products now use the correct body-to-geometry transformation

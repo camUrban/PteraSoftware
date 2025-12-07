@@ -506,7 +506,7 @@ All previously critical blockers have been resolved:
 - **`CoupledUnsteadyRingVortexLatticeMethodSolver.run()`**:
   - TODO: Initialization steps at start of time loop may be redundant, consider optimizing
 
-- **`ouput._get_panel_surfaces_free_flight()`**:
+- **`output._get_panel_surfaces_free_flight()`**:
   - REFACTOR: Add section to AXES_POINTS_AND_FRAMES.md about PyVista axes.
 
 ## Debugging Insights and Lessons Learned

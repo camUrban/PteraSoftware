@@ -125,16 +125,16 @@ class UnsteadyProblem:
         # the final time step's forces and moments, which, assuming convergence, will be
         # the most accurate. For UnsteadyProblems with cyclic movement, (e.g. flapping
         # wings) we are typically interested in the forces and moments averaged over the
-        # last cycle simulated. Therefore, determine which time step will be the first
-        # with relevant results based on if the Movement is static or cyclic.
-        _movement_max_period = self.movement.max_period
+        # last cycle simulated. Use the LCM of all motion periods to ensure we average
+        # over a complete cycle of all motions.
+        _movement_lcm_period = self.movement.lcm_period
         self.first_averaging_step: int
-        if _movement_max_period == 0:
+        if _movement_lcm_period == 0:
             self.first_averaging_step = self.num_steps - 1
         else:
             self.first_averaging_step = max(
                 0,
-                math.floor(self.num_steps - (_movement_max_period / self.delta_time)),
+                math.floor(self.num_steps - (_movement_lcm_period / self.delta_time)),
             )
 
         # If we only wants to calculate forces and moments for the final cycle (for a

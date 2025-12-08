@@ -245,10 +245,11 @@ class Movement:
                 num_steps = math.ceil(wake_length / distance_per_time_step)
             else:
                 # Set the number of time steps such that the simulation runs for some
-                # number of cycles of the motion with the maximum period.
+                # number of cycles of all motions. Use the LCM of all periods to ensure
+                # each motion completes an integer number of cycles.
                 assert self.num_cycles is not None
                 num_steps = math.ceil(
-                    self.num_cycles * self.max_period / self.delta_time
+                    self.num_cycles * self.lcm_period / self.delta_time
                 )
         self.num_steps: int = num_steps
 
@@ -296,11 +297,73 @@ class Movement:
             num_steps=self.num_steps, delta_time=self.delta_time
         )
 
+    @staticmethod
+    def _lcm(a: float, b: float) -> float:
+        """Calculate the least common multiple of two numbers.
+
+        :param a: First number (period in seconds)
+        :param b: Second number (period in seconds)
+        :return: LCM of a and b. Returns 0.0 if either input is 0.0.
+        """
+        if a == 0.0 or b == 0.0:
+            return 0.0
+        # Convert to integers (periods are typically whole multiples of delta_time)
+        # Use sufficiently large multiplier to preserve precision
+        multiplier = 1000000
+        a_int = int(round(a * multiplier))
+        b_int = int(round(b * multiplier))
+        lcm_int = abs(a_int * b_int) // math.gcd(a_int, b_int)
+        return lcm_int / multiplier
+
+    @staticmethod
+    def _lcm_multiple(periods: list[float]) -> float:
+        """Calculate the least common multiple of multiple periods.
+
+        :param periods: List of periods in seconds
+        :return: LCM of all periods. Returns 0.0 if all periods are 0.0.
+        """
+        if not periods or all(p == 0.0 for p in periods):
+            return 0.0
+        # Filter out zero periods and calculate LCM
+        non_zero_periods = [p for p in periods if p != 0.0]
+        if not non_zero_periods:
+            return 0.0
+        result = non_zero_periods[0]
+        for period in non_zero_periods[1:]:
+            result = Movement._lcm(result, period)
+        return result
+
+    @property
+    def lcm_period(self) -> float:
+        """The least common multiple of all motion periods of Movement's sub movement
+        objects, the motion(s) of its sub sub movement object(s), and the motions of
+        its sub sub sub movement objects.
+
+        Using the LCM ensures that when cycle-averaging forces and moments, we capture
+        a complete cycle of all motions, not just the longest one. For example, if one
+        motion has a period of 2s and another has a period of 3s, the LCM is 6s, which
+        contains exactly 3 cycles of the first motion and 2 cycles of the second.
+
+        :return: The LCM period in seconds. If all the motion is static, this will be
+            0.0.
+        """
+        # Collect all periods from AirplaneMovements
+        all_periods = []
+        for airplane_movement in self.airplane_movements:
+            all_periods.append(airplane_movement.max_period)
+        # Add the OperatingPointMovement period
+        all_periods.append(self.operating_point_movement.max_period)
+
+        return self._lcm_multiple(all_periods)
+
     @property
     def max_period(self) -> float:
         """The longest period of motion of Movement's sub movement objects, the
         motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
         movement objects.
+
+        Note: For cycle-averaging calculations, lcm_period should be used instead of
+        max_period to ensure all motions complete an integer number of cycles.
 
         :return: The longest period in seconds. If all the motion is static, this will
             be 0.0.

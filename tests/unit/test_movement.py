@@ -375,6 +375,180 @@ class TestMovement(unittest.TestCase):
         # LCM of identical periods should equal that period.
         self.assertEqual(movement.lcm_period, 2.0)
 
+    def test_lcm_period_with_multiple_wings_same_airplane(self):
+        """Test that lcm_period collects all periods, not just max from each
+        AirplaneMovement.
+
+        This test creates a single Airplane with two Wings having different periods
+        (3.0 s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
+        max_period from the AirplaneMovement, lcm_period would incorrectly return 4.0 s
+        instead of 12.0 s.
+        """
+        # Create two Wings for the same Airplane.
+        base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
+        base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
+
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing_1, base_wing_2],
+            name="Test Airplane",
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+
+        # Wing_1: tip WingCrossSectionMovement has period 3.0 s.
+        wcs_movements_wing_1 = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_1.wing_cross_sections[0],
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_1.wing_cross_sections[1],
+                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ),
+        ]
+
+        wing_movement_1 = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing_1,
+            wing_cross_section_movements=wcs_movements_wing_1,
+        )
+
+        # Wing_2: tip WingCrossSectionMovement has period 4.0 s.
+        wcs_movements_wing_2 = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_2.wing_cross_sections[0],
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_2.wing_cross_sections[1],
+                periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ),
+        ]
+
+        wing_movement_2 = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing_2,
+            wing_cross_section_movements=wcs_movements_wing_2,
+        )
+
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement_1, wing_movement_2],
+        )
+
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=[airplane_movement],
+            operating_point_movement=operating_point_movement,
+            num_cycles=1,
+        )
+
+        # The max_period should be 4.0 (the max of 3.0 and 4.0).
+        self.assertEqual(movement.max_period, 4.0)
+
+        # The lcm_period should be LCM(3.0, 4.0) = 12.0, Not 4.0. This test will Fail if
+        # lcm_period only uses max_period from each AirplaneMovement instead of
+        # collecting all individual periods.
+        self.assertEqual(movement.lcm_period, 12.0)
+
+    def test_lcm_period_with_multiple_cross_sections_same_wing(self):
+        """Test that lcm_period collects all periods from WingCrossSectionMovements.
+
+        This test creates a single Wing with three WingCrossSections having different
+        periods (root static, middle 3.0 s, tip 4.0 s). The correct LCM is 12.0 s. If
+        the implementation only uses max_period from each WingMovement, lcm_period
+        would incorrectly return 4.0 s instead of 12.0 s.
+        """
+        # Create a Wing with three WingCrossSections.
+        test_airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+
+        root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil,
+            num_spanwise_panels=4,
+            chord=2.0,
+            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        )
+
+        middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil,
+            num_spanwise_panels=4,
+            chord=1.5,
+            Lp_Wcsp_Lpp=(0.0, 1.5, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        )
+
+        tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil,
+            num_spanwise_panels=None,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 1.5, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        )
+
+        base_wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+            name="Test Wing",
+        )
+
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[base_wing],
+            name="Test Airplane",
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+
+        # Root WingCrossSectionMovement must be static.
+        # Middle has period 3.0 s, tip has period 4.0 s.
+        wcs_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing.wing_cross_sections[0],
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing.wing_cross_sections[1],
+                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing.wing_cross_sections[2],
+                periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ),
+        ]
+
+        wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wcs_movements,
+        )
+
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[wing_movement],
+        )
+
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=[airplane_movement],
+            operating_point_movement=operating_point_movement,
+            num_cycles=1,
+        )
+
+        # The max_period should be 4.0 (the max of 3.0 and 4.0).
+        self.assertEqual(movement.max_period, 4.0)
+
+        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail if
+        # lcm_period only uses max_period from each WingMovement instead of collecting
+        # all individual periods from WingCrossSectionMovements.
+        self.assertEqual(movement.lcm_period, 12.0)
+
     def test_lcm_period_with_multiple_airplanes(self):
         """Test that lcm_period calculates LCM correctly with multiple periods."""
         # Create AirplaneMovements with different periods

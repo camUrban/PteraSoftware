@@ -412,3 +412,21 @@ class WingCrossSectionMovement:
                 np.max(self.periodAngles_Wcsp_to_Wcs_ixyz),
             )
         )
+
+    @property
+    def all_periods(self) -> list[float]:
+        """All unique non-zero periods from this WingCrossSectionMovement.
+
+        :return: A list of all unique non-zero periods in seconds. If the motion is
+            static, this will be an empty list.
+        """
+        periods = []
+        # Collect all periods from positional motion
+        for period in self.periodLp_Wcsp_Lpp:
+            if period > 0.0:
+                periods.append(float(period))
+        # Collect all periods from angular motion
+        for period in self.periodAngles_Wcsp_to_Wcs_ixyz:
+            if period > 0.0:
+                periods.append(float(period))
+        return periods

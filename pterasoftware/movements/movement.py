@@ -37,6 +37,9 @@ class Movement:
     motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
     movement objects.
 
+    lcm_period: The least common multiple of all motion periods, ensuring all motions
+    complete an integer number of cycles when cycle-averaging forces and moments.
+
     static: Flags if Movement's sub movement objects, its sub sub movement object(s),
     and its sub sub sub movement objects all represent no motion.
     """
@@ -350,7 +353,7 @@ class Movement:
         # Collect all periods from AirplaneMovements
         all_periods = []
         for airplane_movement in self.airplane_movements:
-            all_periods.append(airplane_movement.max_period)
+            all_periods.extend(airplane_movement.all_periods)
         # Add the OperatingPointMovement period
         all_periods.append(self.operating_point_movement.max_period)
 

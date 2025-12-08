@@ -7,6 +7,7 @@ import pterasoftware as ps
 
 from tests.unit.fixtures import movement_fixtures
 from tests.unit.fixtures import airplane_movement_fixtures
+from tests.unit.fixtures import wing_cross_section_movement_fixtures
 from tests.unit.fixtures import operating_point_fixtures
 from tests.unit.fixtures import geometry_fixtures
 
@@ -378,55 +379,88 @@ class TestMovement(unittest.TestCase):
     def test_lcm_period_with_multiple_airplanes(self):
         """Test that lcm_period calculates LCM correctly with multiple periods."""
         # Create AirplaneMovements with different periods
-        # Period 2.0
-        airplane_movement_1 = airplane_movement_fixtures.make_basic_airplane_movement_fixture()
 
-        # Create a second airplane movement with period 3.0
-        # We'll need to create custom fixtures for this
-        import pterasoftware as ps
-        from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
+        base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
+        base_airplane_1 = ps.geometry.airplane.Airplane(
+            wings=[base_wing_1],
+            name="Test Airplane 1",
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
 
-        # Create a wing movement with period 3.0
-        base_wing = geometry_fixtures.make_basic_wing_fixture()
-        base_airplane = ps.geometry.airplane.Airplane(
-            wings=[base_wing],
+        # Make WingCrossSectionMovements for the first Airplane's Wing's root and
+        # tip WingCrossSections. The root WingCrossSectionMovement must be static.
+        # The tip WingCrossSectionMovement will have a period of 2.0 s.
+        wcs_movements_1 = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_1.wing_cross_sections[0],
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_1.wing_cross_sections[1],
+                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
+            ),
+        ]
+
+        wing_movement_1 = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing_1,
+            wing_cross_section_movements=wcs_movements_1,
+        )
+
+        airplane_movement_1 = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane_1,
+            wing_movements=[wing_movement_1],
+        )
+
+        base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
+        base_airplane_2 = ps.geometry.airplane.Airplane(
+            wings=[base_wing_2],
             name="Test Airplane 2",
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
-        wcs_movements = [
+        # Make WingCrossSectionMovements for the second Airplane's Wing's root and
+        # tip WingCrossSections. The root WingCrossSectionMovement must be static.
+        # The tip WingCrossSectionMovement will have a period of 3.0 s.
+        wcs_movements_2 = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
-                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),  # Period of 3.0
+                base_wing_cross_section=base_wing_2.wing_cross_sections[0],
+                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ),
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=base_wing_2.wing_cross_sections[1],
+                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            )
-            for wcs in base_wing.wing_cross_sections
+            ),
         ]
 
-        wing_movement = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing,
-            wing_cross_section_movements=wcs_movements,
+        wing_movement_2 = ps.movements.wing_movement.WingMovement(
+            base_wing=base_wing_2,
+            wing_cross_section_movements=wcs_movements_2,
         )
 
         airplane_movement_2 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=[wing_movement],
+            base_airplane=base_airplane_2,
+            wing_movements=[wing_movement_2],
         )
 
         operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Create Movement with both airplane movements (periods 2.0 and 3.0)
+        # Create Movement with both AirplaneMovements (periods 2.0 and 3.0).
         movement = ps.movements.movement.Movement(
             airplane_movements=[airplane_movement_1, airplane_movement_2],
             operating_point_movement=operating_point_movement,
             num_cycles=1,
         )
 
-        # LCM of 2.0 and 3.0 should be 6.0
+        # The LCM of 2.0 and 3.0 should be 6.0.
         self.assertEqual(movement.lcm_period, 6.0)
-        # max_period should still be 3.0
+
+        # The max_period should still be 3.0.
         self.assertEqual(movement.max_period, 3.0)
 
     def test_airplanes_generation(self):

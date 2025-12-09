@@ -130,6 +130,42 @@ class TestSteadyProblem(unittest.TestCase):
                         operating_point=invalid,
                     )
 
+    def test_reynolds_numbers_returns_correct_list_length(self):
+        """Test that reynolds_numbers returns a list with one element per Airplane."""
+        # Single airplane problem should return list with one element.
+        self.assertIsInstance(self.basic_steady_problem.reynolds_numbers, list)
+        self.assertEqual(len(self.basic_steady_problem.reynolds_numbers), 1)
+
+        # Multi-airplane problem should return list with two elements.
+        self.assertIsInstance(self.multi_airplane_steady_problem.reynolds_numbers, list)
+        self.assertEqual(len(self.multi_airplane_steady_problem.reynolds_numbers), 2)
+
+    def test_reynolds_numbers_calculation_accuracy(self):
+        """Test that reynolds_numbers calculates Re = (V * L) / nu correctly."""
+        # Get the values used in calculation.
+        v = self.basic_steady_problem.operating_point.vCg__E
+        nu = self.basic_steady_problem.operating_point.nu
+        c_ref = self.basic_steady_problem.airplanes[0].c_ref
+
+        # Calculate expected Reynolds number.
+        expected_re = (v * c_ref) / nu
+
+        # Check the calculated value matches.
+        calculated_re = self.basic_steady_problem.reynolds_numbers[0]
+        self.assertAlmostEqual(calculated_re, expected_re, places=6)
+
+    def test_reynolds_numbers_multiple_airplanes(self):
+        """Test reynolds_numbers with multiple Airplanes with different c_ref."""
+        # Get operating point values.
+        v = self.multi_airplane_steady_problem.operating_point.vCg__E
+        nu = self.multi_airplane_steady_problem.operating_point.nu
+
+        # Check each airplane's Reynolds number.
+        for i, airplane in enumerate(self.multi_airplane_steady_problem.airplanes):
+            expected_re = (v * airplane.c_ref) / nu
+            calculated_re = self.multi_airplane_steady_problem.reynolds_numbers[i]
+            self.assertAlmostEqual(calculated_re, expected_re, places=6)
+
 
 class TestUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test UnsteadyProblems."""

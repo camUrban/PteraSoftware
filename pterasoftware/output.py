@@ -1183,6 +1183,11 @@ def print_results(
 
         print(f'Airplane "{airplane.name}":')
 
+        # Display Reynolds number for steady solvers
+        if solver_type == "steady":
+            re = solver._steady_problem.reynolds_numbers[airplane_num]
+            print(f"{pad}Reynolds Number: {re:.2e}")
+
         for i in range(len(col1)):
             if i == 0:
                 print(title1)

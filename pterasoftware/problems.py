@@ -105,6 +105,7 @@ class SteadyProblem:
         reynolds_list = []
         for airplane in self.airplanes:
             c_ref = airplane.c_ref
+            assert c_ref is not None, "Airplane c_ref must be set to calculate Re"
             re = (v * c_ref) / nu
             reynolds_list.append(re)
 

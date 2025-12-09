@@ -1185,6 +1185,13 @@ def print_results(
 
         # Display Reynolds number for steady solvers
         if solver_type == "steady":
+            assert isinstance(
+                solver,
+                (
+                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+                    steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+                ),
+            )
             re = solver._steady_problem.reynolds_numbers[airplane_num]
             print(f"{pad}Reynolds Number: {re:.2e}")
 

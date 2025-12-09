@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import cast
 
 import numpy as np
@@ -157,28 +156,6 @@ def calculate_streamlines(
                 np.expand_dims(newRowStackStreamlinePoints_GP1_CgP1, axis=0),
             )
         )
-
-
-# TEST: Consider adding unit tests for this function.
-def convert_logging_level_name_to_value(name: str) -> int:
-    """Takes in a str, checks that it represents a valid logging level, and converts it
-    to the int representation of that level.
-
-    :param name: The string representation of the logging level. The options are
-        "Debug", "Info", "Warning", "Error", and "Critical".
-    :return: The int that can used to set the appropriate logging level.
-    """
-    logging_levels = {
-        "Debug": logging.DEBUG,
-        "Info": logging.INFO,
-        "Warning": logging.WARNING,
-        "Error": logging.ERROR,
-        "Critical": logging.CRITICAL,
-    }
-    try:
-        return logging_levels[name]
-    except KeyError:
-        raise ValueError(f"{name} is not a valid value of name.")
 
 
 # TEST: Consider adding unit tests for this function.

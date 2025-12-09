@@ -33,36 +33,31 @@ class TestConvertLoggingLevelNameToValue(unittest.TestCase):
     def test_debug_level(self):
         """Should convert 'Debug' to logging.DEBUG."""
         self.assertEqual(
-            _logging.convert_logging_level_name_to_value("Debug"),
-            logging.DEBUG
+            _logging.convert_logging_level_name_to_value("Debug"), logging.DEBUG
         )
 
     def test_info_level(self):
         """Should convert 'Info' to logging.INFO."""
         self.assertEqual(
-            _logging.convert_logging_level_name_to_value("Info"),
-            logging.INFO
+            _logging.convert_logging_level_name_to_value("Info"), logging.INFO
         )
 
     def test_warning_level(self):
         """Should convert 'Warning' to logging.WARNING."""
         self.assertEqual(
-            _logging.convert_logging_level_name_to_value("Warning"),
-            logging.WARNING
+            _logging.convert_logging_level_name_to_value("Warning"), logging.WARNING
         )
 
     def test_error_level(self):
         """Should convert 'Error' to logging.ERROR."""
         self.assertEqual(
-            _logging.convert_logging_level_name_to_value("Error"),
-            logging.ERROR
+            _logging.convert_logging_level_name_to_value("Error"), logging.ERROR
         )
 
     def test_critical_level(self):
         """Should convert 'Critical' to logging.CRITICAL."""
         self.assertEqual(
-            _logging.convert_logging_level_name_to_value("Critical"),
-            logging.CRITICAL
+            _logging.convert_logging_level_name_to_value("Critical"), logging.CRITICAL
         )
 
     def test_invalid_level_raises_value_error(self):

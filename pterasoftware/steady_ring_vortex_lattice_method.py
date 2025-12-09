@@ -13,16 +13,18 @@ None
 from __future__ import annotations
 
 from collections.abc import Sequence
-import logging
 from typing import cast
 
 import numpy as np
 
 from . import _aerodynamics, operating_point, geometry
 from . import _functions
+from . import _logging
 from . import _panel
 from . import _parameter_validation
 from . import problems
+
+_logger = _logging.get_logger("steady_ring_vortex_lattice_method")
 
 
 # TEST: Consider adding unit tests for this function.
@@ -143,42 +145,42 @@ class SteadyRingVortexLatticeMethodSolver:
         logging_level = _parameter_validation.str_return_str(
             logging_level, "logging_level"
         )
-        logging_level_value = _functions.convert_logging_level_name_to_value(
-            logging_level
+        # Configure logging for this run
+        _logging.ensure_logging_configured(
+            _logging.convert_logging_level_name_to_value(logging_level)
         )
-        logging.basicConfig(level=logging_level_value)
 
         # Initialize the Panels' RingVortices and HorseshoeVortices.
-        logging.info("Initializing Panels' RingVortices and HorseshoeVortices.")
+        _logger.info("Initializing Panels' RingVortices and HorseshoeVortices.")
         self._initialize_panel_vortices()
 
         # Collapse the geometry matrices into 1D ndarrays of attributes.
-        logging.info("Collapsing geometry.")
+        _logger.info("Collapsing geometry.")
         self._collapse_geometry()
 
         # Find the matrix of Wing Wing influence coefficients associated with this
         # SteadyProblem's geometry.
-        logging.info("Calculating the Wing Wing influences.")
+        _logger.info("Calculating the Wing Wing influences.")
         self._calculate_wing_wing_influences()
 
         # Find the normal fluid speed (observed from the Earth frame) at every
         # collocation point due solely to the freestream.
-        logging.info("Calculating the freestream Wing influences.")
+        _logger.info("Calculating the freestream Wing influences.")
         _functions.calculate_steady_freestream_wing_influences(steady_solver=self)
 
         # Solve for each Panel's RingVortex's and HorseshoeVortex's strength.
-        logging.info("Calculating RingVortex and HorseshoeVortex strengths.")
+        _logger.info("Calculating RingVortex and HorseshoeVortex strengths.")
         self._calculate_vortex_strengths()
 
         # Solve for the forces (in the first Airplane's geometry axes) and moments (
         # in the first Airplane's geometry axes, relative to the first Airplane's CG)
         # on each Panel.
-        logging.info("Calculating forces and moments.")
+        _logger.info("Calculating forces and moments.")
         self._calculate_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges.
-        logging.info("Calculating streamlines.")
+        _logger.info("Calculating streamlines.")
         _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.

@@ -12,7 +12,6 @@ None
 from __future__ import annotations
 
 import copy
-import logging
 import math
 
 import scipy.optimize as sp_opt
@@ -21,11 +20,10 @@ from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
 from .. import _aerodynamics
+from .. import _logging
 from .. import _parameter_validation
 
-movement_logger = logging.getLogger("movements/movement")
-movement_logger.setLevel(logging.DEBUG)
-logging.basicConfig()
+movement_logger = _logging.get_logger("movements.movement")
 
 
 class Movement:

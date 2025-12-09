@@ -17,12 +17,12 @@ varying the base operating conditions until the net loads are sufficient low.
 from __future__ import annotations
 
 from collections.abc import Sequence
-import logging
 from typing import Any
 
 import numpy as np
 import scipy.optimize as sp_opt
 
+from . import _logging
 from . import _parameter_validation
 from . import movements
 from . import problems
@@ -30,9 +30,7 @@ from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
 
-trim_logger = logging.getLogger("trim")
-trim_logger.setLevel(logging.DEBUG)
-logging.basicConfig()
+trim_logger = _logging.get_logger("trim")
 
 # Set a seed for reproducibility in the dual annealing optimizer.
 _seed = 42

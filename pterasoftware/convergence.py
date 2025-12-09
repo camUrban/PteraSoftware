@@ -16,11 +16,11 @@ solved using the UnsteadyRingVortexLatticeMethodSolver.
 
 from __future__ import annotations
 
-import logging
 import time
 
 import numpy as np
 
+from . import _logging
 from . import _parameter_validation
 from . import geometry
 from . import movements
@@ -29,9 +29,7 @@ from . import steady_horseshoe_vortex_lattice_method
 from . import steady_ring_vortex_lattice_method
 from . import unsteady_ring_vortex_lattice_method
 
-convergence_logger = logging.getLogger("convergence")
-convergence_logger.setLevel(logging.INFO)
-logging.basicConfig()
+convergence_logger = _logging.get_logger("convergence")
 
 
 # TEST: Consider adding unit tests for this function.

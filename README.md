@@ -326,16 +326,21 @@ docstrings formatted using docformatter.
   workflow in Ptera Software for controls systems identification for flapping-wing
   vehicles.
 
-## Credits
+## Contributors
 
-Here is a list of all the people that helped me created Ptera Software in no 
-particular order. Specific citations can be found in the source code's docstrings 
-where applicable.
+Thank you so much to all the people that have contributed to Ptera Software! Here is a list of all the people that have contributed code:
+
+* Cameron Urban (@camUrban)
+* Peter Sharpe (@peterdsharpe)
+* Zach Tait (@Zach10a)
+* Jonah Jaffe (@JonahJ27)
+* Venkata Akhil Mettu (@AKHIL-149)
+
+### Supporters
+
+Here is a list of all the other people that helped me created Ptera Software, in no particular order.
 
 * Suhas Kodali
-* Peter Sharpe
-* Zach Tait
-* Jonah Jaffe
 * Ramesh Agarwal
 * E. Farrell Helbling
 * Raphael Zufferey

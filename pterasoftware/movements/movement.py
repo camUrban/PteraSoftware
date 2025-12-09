@@ -33,12 +33,12 @@ class Movement:
 
     **Contains the following methods:**
 
+    lcm_period: The least common multiple of all motion periods, ensuring all motions
+    complete an integer number of cycles when cycle averaging forces and moments.
+
     max_period: The longest period of motion of Movement's sub movement objects, the
     motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
     movement objects.
-
-    lcm_period: The least common multiple of all motion periods, ensuring all motions
-    complete an integer number of cycles when cycle-averaging forces and moments.
 
     static: Flags if Movement's sub movement objects, its sub sub movement object(s),
     and its sub sub sub movement objects all represent no motion.
@@ -302,7 +302,7 @@ class Movement:
 
     @staticmethod
     def _lcm(a: float, b: float) -> float:
-        """Calculate the least common multiple of two numbers.
+        """Calculates the least common multiple of two numbers.
 
         :param a: First number (period in seconds)
         :param b: Second number (period in seconds)
@@ -320,7 +320,7 @@ class Movement:
 
     @staticmethod
     def _lcm_multiple(periods: list[float]) -> float:
-        """Calculate the least common multiple of multiple periods.
+        """Calculates the least common multiple of multiple periods.
 
         :param periods: List of periods in seconds
         :return: LCM of all periods. Returns 0.0 if all periods are 0.0.
@@ -338,14 +338,13 @@ class Movement:
 
     @property
     def lcm_period(self) -> float:
-        """The least common multiple of all motion periods of Movement's sub movement
-        objects, the motion(s) of its sub sub movement object(s), and the motions of
-        its sub sub sub movement objects.
+        """The least common multiple of all motion periods, ensuring all motions
+        complete an integer number of cycles when cycle averaging forces and moments.
 
-        Using the LCM ensures that when cycle-averaging forces and moments, we capture
-        a complete cycle of all motions, not just the longest one. For example, if one
-        motion has a period of 2s and another has a period of 3s, the LCM is 6s, which
-        contains exactly 3 cycles of the first motion and 2 cycles of the second.
+        Using the LCM ensures that when cycle-averaging forces and moments, we capture a
+        complete cycle of all motions, not just the longest one. For example, if one
+        motion has a period of 2.0 s and another has a period of 3.0 s, the LCM is 6.0,
+        which contains exactly 3 cycles of the first motion and 2 cycles of the second.
 
         :return: The LCM period in seconds. If all the motion is static, this will be
             0.0.
@@ -354,6 +353,7 @@ class Movement:
         all_periods = []
         for airplane_movement in self.airplane_movements:
             all_periods.extend(airplane_movement.all_periods)
+
         # Add the OperatingPointMovement period
         all_periods.append(self.operating_point_movement.max_period)
 

@@ -27,6 +27,9 @@ class AirplaneMovement:
 
     **Contains the following methods:**
 
+    all_periods: All unique non zero periods from this AirplaneMovement, its
+    WingMovement(s), and their WingCrossSectionMovements.
+
     generate_airplanes: Creates the Airplane at each time step, and returns them in a
     list.
 
@@ -156,6 +159,26 @@ class AirplaneMovement:
                 )
         self.phaseCg_GP1_CgP1 = phaseCg_GP1_CgP1
 
+    @property
+    def all_periods(self) -> list[float]:
+        """All unique non zero periods from this AirplaneMovement, its WingMovement(s),
+        and their WingCrossSectionMovements.
+
+        :return: A list of all unique non zero periods in seconds. If all motion is
+            static, this will be an empty list.
+        """
+        periods = []
+
+        # Collect all periods from WingMovement(s).
+        for wing_movement in self.wing_movements:
+            periods.extend(wing_movement.all_periods)
+
+        # Collect all periods from AirplaneMovement's own motion.
+        for period in self.periodCg_GP1_CgP1:
+            if period > 0.0:
+                periods.append(float(period))
+        return periods
+
     def generate_airplanes(
         self, num_steps: int, delta_time: float | int
     ) -> list[geometry.airplane.Airplane]:
@@ -274,21 +297,3 @@ class AirplaneMovement:
                 np.max(self.periodCg_GP1_CgP1),
             )
         )
-
-    @property
-    def all_periods(self) -> list[float]:
-        """All unique non-zero periods from this AirplaneMovement, its WingMovements,
-        and their WingCrossSectionMovements.
-
-        :return: A list of all unique non-zero periods in seconds. If all motion is
-            static, this will be an empty list.
-        """
-        periods = []
-        # Collect all periods from WingMovements
-        for wing_movement in self.wing_movements:
-            periods.extend(wing_movement.all_periods)
-        # Collect all periods from AirplaneMovement's own motion
-        for period in self.periodCg_GP1_CgP1:
-            if period > 0.0:
-                periods.append(float(period))
-        return periods

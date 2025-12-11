@@ -35,7 +35,7 @@ UnsteadyRingVortexLatticeMethodSolver class.
 
 **Contains the following functions:**
 
-setup_logging: Configures logging for the pterasoftware package that is compatible with
+set_up_logging: Configures logging for the pterasoftware package that is compatible with
 TQDM progress bars.
 """
 

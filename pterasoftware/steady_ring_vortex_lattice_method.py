@@ -63,6 +63,7 @@ class SteadyRingVortexLatticeMethodSolver:
         self.operating_point: operating_point.OperatingPoint = (
             self._steady_problem.operating_point
         )
+        self.reynolds_numbers = self._steady_problem.reynolds_numbers
         self.num_airplanes = len(self.airplanes)
         self.num_panels = 0
         airplane: geometry.airplane.Airplane

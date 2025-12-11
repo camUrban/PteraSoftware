@@ -4,7 +4,9 @@ Note: Most of the tests in this case do not currently test against an expected
 result. Instead, they test that the functions in output.py don't throw any errors.
 """
 
+import io
 import unittest
+from contextlib import redirect_stdout
 
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
@@ -73,7 +75,7 @@ class TestOutput(unittest.TestCase):
 
 
 class TestPrintResults(unittest.TestCase):
-    """Tests for the print_results() function."""
+    """Tests the print_results() function."""
 
     @classmethod
     def setUpClass(cls):
@@ -96,30 +98,24 @@ class TestPrintResults(unittest.TestCase):
 
         :return: None
         """
-        import io
-        import sys
-
-        # Capture stdout
+        # Capture stdout using redirect_stdout context manager.
         captured_output = io.StringIO()
-        sys.stdout = captured_output
-
-        try:
+        with redirect_stdout(captured_output):
             ps.output.print_results(solver=self.steady_solver)
-            output = captured_output.getvalue()
 
-            # Verify Reynolds number is in the output
-            self.assertIn("Reynolds Number:", output)
-            # Verify scientific notation format (e.g., "1.23e+05" or "1.23e+06")
-            self.assertRegex(output, r"Reynolds Number:\s+\d+\.\d{2}e[+-]\d{2}")
-        finally:
-            sys.stdout = sys.__stdout__
+        output = captured_output.getvalue()
+
+        # Verify Reynolds number is in the output.
+        self.assertIn("Reynolds Number:", output)
+        # Verify scientific notation format (e.g., "1.23e+05" or "1.23e+06").
+        self.assertRegex(output, r"Reynolds Number:\s+\d+\.\d{2}e[+-]\d{2}")
 
     def test_print_results_steady_solver_runs_without_error(self):
         """Test that print_results() runs without error for steady solver.
 
         :return: None
         """
-        # This test ensures no exceptions are raised
+        # This test ensures no exceptions are raised.
         ps.output.print_results(solver=self.steady_solver)
 
     def test_print_results_unsteady_solver_runs_without_error(self):
@@ -127,5 +123,5 @@ class TestPrintResults(unittest.TestCase):
 
         :return: None
         """
-        # This test ensures no exceptions are raised
+        # This test ensures no exceptions are raised.
         ps.output.print_results(solver=self.unsteady_solver)

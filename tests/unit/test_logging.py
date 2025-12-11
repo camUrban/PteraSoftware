@@ -80,6 +80,53 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         handler = _logging.TqdmLoggingHandler(stream=stream)
         self.assertEqual(handler.stream, stream)
 
+    def test_handler_emits_formatted_log_record(self):
+        """TqdmLoggingHandler should emit formatted log records."""
+        stream = io.StringIO()
+        handler = _logging.TqdmLoggingHandler(stream=stream)
+        handler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+
+        # Create and emit a log record
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
+        )
+        handler.emit(record)
+
+        # Verify the message was written
+        output = stream.getvalue()
+        self.assertIn("INFO - Test message", output)
+
+    def test_handler_flush_works(self):
+        """TqdmLoggingHandler should flush the stream when flush() is called."""
+        stream = io.StringIO()
+        handler = _logging.TqdmLoggingHandler(stream=stream)
+        handler.setFormatter(logging.Formatter("%(message)s"))
+
+        # Emit a log record
+        record = logging.LogRecord(
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test",
+            args=(),
+            exc_info=None,
+        )
+        handler.emit(record)
+
+        # Call flush explicitly
+        handler.flush()
+
+        # Verify stream was flushed (content should be available)
+        output = stream.getvalue()
+        self.assertIn("Test", output)
+
 
 class TestSetupLogging(unittest.TestCase):
     """Tests for the setup_logging function."""

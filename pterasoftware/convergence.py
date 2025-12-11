@@ -460,7 +460,7 @@ def analyze_steady_convergence(
 
             # Run the steady solver and time how long it takes to execute.
             iter_start = time.time()
-            this_solver.run(logging_level="Critical")
+            this_solver.run()
             iter_stop = time.time()
             this_iter_time = iter_stop - iter_start
 
@@ -1441,7 +1441,6 @@ def analyze_unsteady_convergence(
 
                     iter_start = time.time()
                     this_solver.run(
-                        logging_level="Critical",
                         prescribed_wake=wake,
                         calculate_streamlines=False,
                     )

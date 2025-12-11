@@ -32,8 +32,8 @@ class WingMovement:
 
     generate_wings: Creates the Wing at each time step, and returns them in a list.
 
-    max_period: The longest period of WingMovement's own motion and that of its
-    sub movement objects.
+    max_period: The longest period of WingMovement's own motion and that of its sub
+    movement objects.
 
     **Notes:**
 

@@ -334,7 +334,7 @@ Thank you so much to all the people that have contributed to Ptera Software! Her
 * Peter Sharpe (@peterdsharpe)
 * Zach Tait (@Zach10a)
 * Jonah Jaffe (@JonahJ27)
-* Venkata Akhil Mettu (@AKHIL-149)
+* Akhil Mettu (@AKHIL-149)
 
 ### Supporters
 

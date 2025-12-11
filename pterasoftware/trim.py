@@ -623,7 +623,7 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_solver.run(logging_level="Critical", prescribed_wake=True)
+        this_solver.run(prescribed_wake=True)
 
         finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
         assert finalForceCoefficients_W is not None

@@ -143,9 +143,7 @@ example_solver = (
 del example_problem
 
 # Run the solver.
-example_solver.run(
-    logging_level="Warning",
-)
+example_solver.run()
 
 # Call this function from the output module to print the results.
 ps.output.print_results(example_solver)

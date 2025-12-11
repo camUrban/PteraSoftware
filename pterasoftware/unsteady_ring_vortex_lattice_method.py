@@ -13,7 +13,6 @@ None
 from __future__ import annotations
 
 from collections.abc import Sequence
-import logging
 from typing import cast
 
 import numpy as np
@@ -176,16 +175,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def run(
         self,
-        logging_level: str = "Warning",
         prescribed_wake: bool | np.bool_ = True,
         calculate_streamlines: bool | np.bool_ = True,
     ) -> None:
         """Runs the solver on the UnsteadyProblem.
 
-        :param logging_level: Determines the detail of information that the solver's
-            logger will output while running. The options are, in order of detail and
-            severity, "Debug", "Info", "Warning", "Error", "Critical". The default is
-            "Warning".
         :param prescribed_wake: Set this to True to solve using a prescribed wake model.
             Set to False to use a free-wake, which may be more accurate but will make
             the fun method significantly slower. Can be a bool or a numpy bool and will
@@ -196,15 +190,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             is True.
         :return: None
         """
-        logging_level = _parameter_validation.str_return_str(
-            logging_level, "logging_level"
-        )
-        logging_level_value = _logging.convert_logging_level_name_to_value(
-            logging_level
-        )
-        # Configure logging for this run
-        _logging.ensure_logging_configured(logging_level_value)
-
         self._prescribed_wake = _parameter_validation.boolLike_return_bool(
             prescribed_wake, "prescribed_wake"
         )
@@ -306,15 +291,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
 
-        # Show progress bar by default, disable only when logging at DEBUG level
-        # to avoid cluttering verbose debug output.
         with tqdm(
             total=approx_total_time,
             unit="",
             unit_scale=True,
             ncols=100,
             desc="Simulating",
-            disable=logging_level_value == logging.DEBUG,
+            disable=False,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
             "Remaining: {remaining}",
         ) as bar:

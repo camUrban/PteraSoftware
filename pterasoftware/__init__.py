@@ -32,6 +32,11 @@ UnsteadyProblems.
 
 unsteady_ring_vortex_lattice_method.py: Contains the
 UnsteadyRingVortexLatticeMethodSolver class.
+
+**Contains the following functions:**
+
+setup_logging: Configures logging for the pterasoftware package that is compatible with
+TQDM progress bars.
 """
 
 import pterasoftware.geometry
@@ -44,3 +49,5 @@ import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method
+
+from pterasoftware._logging import setup_logging

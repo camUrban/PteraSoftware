@@ -33,7 +33,6 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         """
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
             prescribed_wake=True,
-            logging_level="Critical",
         )
 
         ps.output.animate(

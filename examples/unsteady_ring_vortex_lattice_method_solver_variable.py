@@ -325,7 +325,6 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    logging_level="Warning",
     prescribed_wake=True,
 )
 

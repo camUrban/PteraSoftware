@@ -133,23 +133,11 @@ class SteadyRingVortexLatticeMethodSolver:
 
         self.ran = False
 
-    def run(self, logging_level: str = "Warning") -> None:
+    def run(self) -> None:
         """Runs the solver on the SteadyProblem.
 
-        :param logging_level: Determines the detail of information that the solver's
-            logger will output while running. The options are, in order of detail and
-            severity, "Debug", "Info", "Warning", "Error", "Critical". The default is
-            "Warning".
         :return: None
         """
-        logging_level = _parameter_validation.str_return_str(
-            logging_level, "logging_level"
-        )
-        # Configure logging for this run
-        _logging.ensure_logging_configured(
-            _logging.convert_logging_level_name_to_value(logging_level)
-        )
-
         # Initialize the Panels' RingVortices and HorseshoeVortices.
         _logger.info("Initializing Panels' RingVortices and HorseshoeVortices.")
         self._initialize_panel_vortices()

@@ -26,7 +26,7 @@ out of them.
    python -O -m PyInstaller --noconfirm "pterasoftware.spec"
    ```
    
-   We run `python` with the first level optimise flag `-O` to slim down some now
+   We run `python` with the first level optimize flag `-O` to slim down some now
    unnecessary debug code. *Do not use second
    level optimisation `-OO`, as this removes some docstrings that break dependencies.*
 

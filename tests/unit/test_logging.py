@@ -104,7 +104,7 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         handler = _logging._TqdmLoggingHandler(stream=stream)
         handler.setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 
-        # Create and emit a log record
+        # Create and emit a log record.
         record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -116,7 +116,7 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         )
         handler.emit(record)
 
-        # Verify the message was written
+        # Verify the message was written.
         output = stream.getvalue()
         self.assertIn("INFO - Test message", output)
 
@@ -126,7 +126,7 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         handler = _logging._TqdmLoggingHandler(stream=stream)
         handler.setFormatter(logging.Formatter("%(message)s"))
 
-        # Emit a log record
+        # Emit a log record.
         record = logging.LogRecord(
             name="test",
             level=logging.INFO,
@@ -138,66 +138,66 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         )
         handler.emit(record)
 
-        # Call flush explicitly
+        # Call flush explicitly.
         handler.flush()
 
-        # Verify stream was flushed (content should be available)
+        # Verify stream was flushed (content should be available).
         output = stream.getvalue()
         self.assertIn("Test", output)
 
 
 class TestSetupLogging(unittest.TestCase):
-    """Tests for the setup_logging function."""
+    """Tests for the set_up_logging function."""
 
     def setUp(self):
         """Reset logging configuration before each test."""
-        # Clear any handlers from the package logger
+        # Clear any handlers from the package logger.
         pkg_logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         pkg_logger.handlers.clear()
 
     def test_returns_package_logger(self):
-        """setup_logging should return the package-level logger."""
+        """set_up_logging should return the package-level logger."""
         logger = _logging.set_up_logging()
         self.assertEqual(logger.name, _logging.PACKAGE_LOGGER_NAME)
 
     def test_accepts_int_level(self):
-        """setup_logging should accept integer log levels."""
+        """set_up_logging should accept integer log levels."""
         logger = _logging.set_up_logging(level=logging.DEBUG)
         self.assertEqual(logger.level, logging.DEBUG)
 
     def test_accepts_string_level(self):
-        """setup_logging should accept string log levels."""
+        """set_up_logging should accept string log levels."""
         logger = _logging.set_up_logging(level="Info")
         self.assertEqual(logger.level, logging.INFO)
 
     def test_clears_existing_handlers(self):
-        """setup_logging should clear existing handlers to avoid duplicates."""
+        """set_up_logging should clear existing handlers to avoid duplicates."""
         _logging.set_up_logging()
         _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertEqual(len(logger.handlers), 1)
 
     def test_uses_tqdm_handler_by_default(self):
-        """setup_logging should use _TqdmLoggingHandler when no handler is provided."""
+        """set_up_logging should use _TqdmLoggingHandler when no handler is provided."""
         _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
 
     def test_uses_custom_handler_when_provided(self):
-        """setup_logging should use the provided handler instead of the default."""
+        """set_up_logging should use the provided handler instead of the default."""
         custom_handler = logging.StreamHandler()
         _logging.set_up_logging(handler=custom_handler)
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIs(logger.handlers[0], custom_handler)
 
     def test_invalid_level_type_raises_type_error(self):
-        """setup_logging should raise TypeError for invalid level types."""
+        """set_up_logging should raise TypeError for invalid level types."""
         with self.assertRaises(TypeError) as context:
             _logging.set_up_logging(level=3.14)
         self.assertIn("level must be an int or a str", str(context.exception))
 
     def test_invalid_handler_type_raises_type_error(self):
-        """setup_logging should raise TypeError for invalid handler types."""
+        """set_up_logging should raise TypeError for invalid handler types."""
         with self.assertRaises(TypeError) as context:
             _logging.set_up_logging(handler="not a handler")
         self.assertIn(
@@ -205,7 +205,7 @@ class TestSetupLogging(unittest.TestCase):
         )
 
     def test_invalid_format_string_type_raises_type_error(self):
-        """setup_logging should raise TypeError for invalid format_string types."""
+        """set_up_logging should raise TypeError for invalid format_string types."""
         with self.assertRaises(TypeError) as context:
             _logging.set_up_logging(format_string=123)
         self.assertIn("format_string must be a str or None", str(context.exception))
@@ -224,7 +224,7 @@ class TestLoggerHierarchy(unittest.TestCase):
         _logging.set_up_logging(level=logging.DEBUG)
         child_logger = _logging.get_logger("test_child")
 
-        # Child should be able to log at DEBUG level
+        # Child should be able to log at DEBUG level.
         self.assertTrue(child_logger.isEnabledFor(logging.DEBUG))
 
     def test_child_logger_messages_go_to_package_handler(self):

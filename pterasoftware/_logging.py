@@ -82,29 +82,35 @@ def set_up_logging(
     level: int | str = logging.WARNING,
     handler: logging.Handler | None = None,
     format_string: str | None = None,
-    use_tqdm_handler: bool = True,
 ) -> logging.Logger:
     """Configures logging for the pterasoftware package that is compatible with TQDM
     progress bars.
 
-    This function sets up the package level logger with consistent formatting and
-    optionally uses a TQDM compatible handler to prevent progress bar interference.
+    This function sets up the package level logger with consistent formatting and uses a
+    TQDM compatible handler to prevent progress bar interference.
 
     :param level: The logging level. Can be an int (e.g., logging.DEBUG) or a string
-        (e.g., "Debug", "Info", "Warning", "Error", "Critical"). The default is
-        logging.WARNING.
-    :param handler: A custom logging handler. If None, a _TqdmLoggingHandler or
-        StreamHandler will be created based on use_tqdm_handler.
+        (either "debug", "info", "warning", "error", or "critical", case insensitive).
+        The default is logging.WARNING.
+    :param handler: A custom logging handler. If None, a _TqdmLoggingHandler will be
+        created.
     :param format_string: Custom format string for log messages. If None, uses a
         sensible default.
-    :param use_tqdm_handler: Determines whether to use _TqdmLoggingHandler to prevent
-        interference with progress bars. If False, uses standard StreamHandler behavior.
-        The default is True.
     :return: The configured package level logger.
     """
-    # Convert string level to an int if needed.
+    # Validate level.
     if isinstance(level, str):
         level = _convert_logging_level_name_to_value(level)
+    elif not isinstance(level, int):
+        raise TypeError("level must be an int or a str.")
+
+    # Validate handler.
+    if handler is not None and not isinstance(handler, logging.Handler):
+        raise TypeError("handler must be a logging.Handler or None.")
+
+    # Validate format_string.
+    if format_string is not None and not isinstance(format_string, str):
+        raise TypeError("format_string must be a str or None.")
 
     # Get the package level logger.
     logger = logging.getLogger(PACKAGE_LOGGER_NAME)
@@ -117,10 +123,7 @@ def set_up_logging(
 
     # Create handler if not provided.
     if handler is None:
-        if use_tqdm_handler:
-            handler = _TqdmLoggingHandler()
-        else:
-            handler = logging.StreamHandler(sys.stderr)
+        handler = _TqdmLoggingHandler()
 
     # Set up formatting.
     if format_string is None:
@@ -143,17 +146,17 @@ def _convert_logging_level_name_to_value(name: str) -> int:
     """Converts a logging level name string to its integer value.
 
     :param name: The string representation of the logging level. The options are
-        "Debug", "Info", "Warning", "Error", and "Critical".
+        "debug", "info", "warning", "error", and "critical" (case insensitive).
     :return: The int that can be used to set the appropriate logging level.
     """
     logging_levels = {
-        "Debug": logging.DEBUG,
-        "Info": logging.INFO,
-        "Warning": logging.WARNING,
-        "Error": logging.ERROR,
-        "Critical": logging.CRITICAL,
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
     }
     try:
-        return logging_levels[name]
+        return logging_levels[name.lower()]
     except KeyError:
         raise ValueError(f"{name} is not a valid value of name.")

@@ -26,7 +26,7 @@ class TestOutput(unittest.TestCase):
         cls.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
-        cls.unsteady_solver.run()
+        cls.unsteady_solver.run(show_progress=False)
 
     def test_plot_results_versus_time_does_not_throw(self):
         """This method tests that the plot_results_versus_time method doesn't throw
@@ -91,7 +91,7 @@ class TestPrintResults(unittest.TestCase):
         cls.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
-        cls.unsteady_solver.run()
+        cls.unsteady_solver.run(show_progress=False)
 
     def test_print_results_steady_solver_displays_reynolds_number(self):
         """Test that Reynolds number is displayed for steady solvers.

@@ -65,6 +65,24 @@ class TestConvertLoggingLevelNameToValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _logging._convert_logging_level_name_to_value("InvalidLevel")
 
+    def test_case_insensitive_lowercase(self):
+        """Should accept lowercase level names."""
+        self.assertEqual(
+            _logging._convert_logging_level_name_to_value("debug"), logging.DEBUG
+        )
+
+    def test_case_insensitive_uppercase(self):
+        """Should accept uppercase level names."""
+        self.assertEqual(
+            _logging._convert_logging_level_name_to_value("WARNING"), logging.WARNING
+        )
+
+    def test_case_insensitive_mixed_case(self):
+        """Should accept mixed case level names."""
+        self.assertEqual(
+            _logging._convert_logging_level_name_to_value("CrItIcAl"), logging.CRITICAL
+        )
+
 
 class TestTqdmLoggingHandler(unittest.TestCase):
     """Tests for the _TqdmLoggingHandler class."""
@@ -160,17 +178,37 @@ class TestSetupLogging(unittest.TestCase):
         self.assertEqual(len(logger.handlers), 1)
 
     def test_uses_tqdm_handler_by_default(self):
-        """setup_logging should use _TqdmLoggingHandler by default."""
+        """setup_logging should use _TqdmLoggingHandler when no handler is provided."""
         _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
 
-    def test_uses_stream_handler_when_tqdm_disabled(self):
-        """setup_logging should use StreamHandler when use_tqdm_handler=False."""
-        _logging.set_up_logging(use_tqdm_handler=False)
+    def test_uses_custom_handler_when_provided(self):
+        """setup_logging should use the provided handler instead of the default."""
+        custom_handler = logging.StreamHandler()
+        _logging.set_up_logging(handler=custom_handler)
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
-        self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
-        self.assertNotIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
+        self.assertIs(logger.handlers[0], custom_handler)
+
+    def test_invalid_level_type_raises_type_error(self):
+        """setup_logging should raise TypeError for invalid level types."""
+        with self.assertRaises(TypeError) as context:
+            _logging.set_up_logging(level=3.14)
+        self.assertIn("level must be an int or a str", str(context.exception))
+
+    def test_invalid_handler_type_raises_type_error(self):
+        """setup_logging should raise TypeError for invalid handler types."""
+        with self.assertRaises(TypeError) as context:
+            _logging.set_up_logging(handler="not a handler")
+        self.assertIn(
+            "handler must be a logging.Handler or None", str(context.exception)
+        )
+
+    def test_invalid_format_string_type_raises_type_error(self):
+        """setup_logging should raise TypeError for invalid format_string types."""
+        with self.assertRaises(TypeError) as context:
+            _logging.set_up_logging(format_string=123)
+        self.assertIn("format_string must be a str or None", str(context.exception))
 
 
 class TestLoggerHierarchy(unittest.TestCase):

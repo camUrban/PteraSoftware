@@ -177,6 +177,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self,
         prescribed_wake: bool | np.bool_ = True,
         calculate_streamlines: bool | np.bool_ = True,
+        show_progress: bool | np.bool_ = True,
     ) -> None:
         """Runs the solver on the UnsteadyProblem.
 
@@ -188,6 +189,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             emanating from the back of the wing after running the solver. It can be a
             bool or a numpy bool and will be converted internally to a bool. The default
             is True.
+        :param show_progress: Set this to True to show the TQDM progress bar. For
+            showing the progress bar and displaying log statements, set up logging using
+            the setup_logging function. It can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is True.
         :return: None
         """
         self._prescribed_wake = _parameter_validation.boolLike_return_bool(
@@ -195,6 +200,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         calculate_streamlines = _parameter_validation.boolLike_return_bool(
             calculate_streamlines, "calculate_streamlines"
+        )
+        show_progress = _parameter_validation.boolLike_return_bool(
+            show_progress, "show_progress"
         )
 
         # The following loop iterates through the time steps to populate currently
@@ -297,12 +305,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             unit_scale=True,
             ncols=100,
             desc="Simulating",
-            disable=False,
+            disable=not show_progress,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
             "Remaining: {remaining}",
         ) as bar:
             # Initialize all the Airplanes' bound RingVortices.
-            _logger.info("Initializing all Airplanes' bound RingVortices.")
+            _logger.debug("Initializing all Airplanes' bound RingVortices.")
             self._initialize_panel_vortices()
 
             # Update the progress bar based on the initialization step's predicted
@@ -322,7 +330,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_airplanes = current_problem.airplanes
                 self.current_operating_point = current_problem.operating_point
                 self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
-                _logger.info(
+                _logger.debug(
                     "Beginning time step "
                     + str(self._current_step)
                     + " out of "
@@ -422,52 +430,52 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
                 # Collapse the geometry matrices into 1D ndarrays of attributes.
-                _logger.info("Collapsing the geometry.")
+                _logger.debug("Collapsing the geometry.")
                 self._collapse_geometry()
 
                 # Find the matrix of Wing Wing influence coefficients associated with
                 # the Airplanes' geometries at this time step.
-                _logger.info("Calculating the Wing Wing influences.")
+                _logger.debug("Calculating the Wing Wing influences.")
                 self._calculate_wing_wing_influences()
 
                 # Find the normal velocity (in the first Airplane's geometry axes,
                 # observed from the Earth frame) at every collocation point due
                 # solely to the freestream.
-                _logger.info("Calculating the freestream Wing influences.")
+                _logger.debug("Calculating the freestream Wing influences.")
                 self._calculate_freestream_wing_influences()
 
                 # Find the normal velocity (in the first Airplane's geometry axes,
                 # observed from the Earth frame) at every collocation point due
                 # solely to the wake RingVortices.
-                _logger.info("Calculating the wake Wing influences.")
+                _logger.debug("Calculating the wake Wing influences.")
                 self._calculate_wake_wing_influences()
 
                 # Solve for each bound RingVortex's strength.
-                _logger.info("Calculating bound RingVortex strengths.")
+                _logger.debug("Calculating bound RingVortex strengths.")
                 self._calculate_vortex_strengths()
 
                 # Solve for the forces (in the first Airplane's geometry axes) and
                 # moments (in the first Airplane's geometry axes, relative to the
                 # first Airplane's CG) on each Panel.
                 if self._current_step >= self.first_results_step:
-                    _logger.info("Calculating forces and moments.")
+                    _logger.debug("Calculating forces and moments.")
                     self._calculate_loads()
 
                 # Shed RingVortices into the wake.
-                _logger.info("Shedding RingVortices into the wake.")
+                _logger.debug("Shedding RingVortices into the wake.")
                 self._populate_next_airplanes_wake()
 
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
                 bar.update(n=float(approx_times[step + 1]))
 
-            _logger.info("Calculating averaged or final forces and moments.")
+            _logger.debug("Calculating averaged or final forces and moments.")
             self._finalize_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges, if requested.
         if calculate_streamlines:
-            _logger.info("Calculating streamlines.")
+            _logger.debug("Calculating streamlines.")
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.

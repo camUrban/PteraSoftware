@@ -4,6 +4,10 @@ minutes to run. It will display the convergence progress and results in the cons
 
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the convergence function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane and AirplaneMovement
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
@@ -125,6 +129,7 @@ ps.convergence.analyze_unsteady_convergence(
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 5),
     convergence_criteria=1.0,
+    show_solver_progress=True,
 )
 
 # Check the console that the convergence analysis found that the solution converged

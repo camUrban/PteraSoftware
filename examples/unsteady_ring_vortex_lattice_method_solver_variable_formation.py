@@ -316,6 +316,7 @@ del unsteady_problem
 # Run the UnsteadyRingVortexLatticeMethodSolver.
 solver.run(
     prescribed_wake=True,
+    show_progress=True,
 )
 
 # Now that we have run the solver, we can create an animation of the results.

@@ -3,6 +3,11 @@ unsteady simulation."""
 
 import pterasoftware as ps
 
+
+# Configure logging to display info level messages. This is important for seeing the
+# output from the trim function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane. We must specify a weight (in Newtons) for the Airplane. We will
 # later find a trim condition where the weight is exactly balanced by lift.
 trim_airplane = ps.geometry.airplane.Airplane(
@@ -133,4 +138,5 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     boundsExternalFX_W=(5, 15),
     objective_cut_off=0.01,
     num_calls=100,
+    show_solver_progress=True,
 )

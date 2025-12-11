@@ -96,7 +96,7 @@ class TestTqdmLoggingHandler(unittest.TestCase):
             args=(),
             exc_info=None,
         )
-        handler._emit(record)
+        handler.emit(record)
 
         # Verify the message was written
         output = stream.getvalue()
@@ -118,7 +118,7 @@ class TestTqdmLoggingHandler(unittest.TestCase):
             args=(),
             exc_info=None,
         )
-        handler._emit(record)
+        handler.emit(record)
 
         # Call flush explicitly
         handler.flush()
@@ -139,35 +139,35 @@ class TestSetupLogging(unittest.TestCase):
 
     def test_returns_package_logger(self):
         """setup_logging should return the package-level logger."""
-        logger = _logging.setup_logging()
+        logger = _logging.set_up_logging()
         self.assertEqual(logger.name, _logging.PACKAGE_LOGGER_NAME)
 
     def test_accepts_int_level(self):
         """setup_logging should accept integer log levels."""
-        logger = _logging.setup_logging(level=logging.DEBUG)
+        logger = _logging.set_up_logging(level=logging.DEBUG)
         self.assertEqual(logger.level, logging.DEBUG)
 
     def test_accepts_string_level(self):
         """setup_logging should accept string log levels."""
-        logger = _logging.setup_logging(level="Info")
+        logger = _logging.set_up_logging(level="Info")
         self.assertEqual(logger.level, logging.INFO)
 
     def test_clears_existing_handlers(self):
         """setup_logging should clear existing handlers to avoid duplicates."""
-        _logging.setup_logging()
-        _logging.setup_logging()
+        _logging.set_up_logging()
+        _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertEqual(len(logger.handlers), 1)
 
     def test_uses_tqdm_handler_by_default(self):
         """setup_logging should use _TqdmLoggingHandler by default."""
-        _logging.setup_logging()
+        _logging.set_up_logging()
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
 
     def test_uses_stream_handler_when_tqdm_disabled(self):
         """setup_logging should use StreamHandler when use_tqdm_handler=False."""
-        _logging.setup_logging(use_tqdm_handler=False)
+        _logging.set_up_logging(use_tqdm_handler=False)
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIsInstance(logger.handlers[0], logging.StreamHandler)
         self.assertNotIsInstance(logger.handlers[0], _logging._TqdmLoggingHandler)
@@ -183,7 +183,7 @@ class TestLoggerHierarchy(unittest.TestCase):
 
     def test_child_logger_inherits_from_package_logger(self):
         """Child loggers should inherit settings from package logger."""
-        _logging.setup_logging(level=logging.DEBUG)
+        _logging.set_up_logging(level=logging.DEBUG)
         child_logger = _logging.get_logger("test_child")
 
         # Child should be able to log at DEBUG level
@@ -195,7 +195,7 @@ class TestLoggerHierarchy(unittest.TestCase):
         handler = logging.StreamHandler(stream)
         handler.setFormatter(logging.Formatter("%(name)s - %(message)s"))
 
-        _logging.setup_logging(level=logging.INFO, handler=handler)
+        _logging.set_up_logging(level=logging.INFO, handler=handler)
         child_logger = _logging.get_logger("test_module")
 
         child_logger.info("Test message")

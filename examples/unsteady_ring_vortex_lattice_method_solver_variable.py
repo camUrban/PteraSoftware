@@ -326,6 +326,7 @@ del example_problem
 # Run the solver.
 example_solver.run(
     prescribed_wake=True,
+    show_progress=True,
 )
 
 # Call the animate function on the solver. This produces a GIF of the wake being

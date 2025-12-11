@@ -396,6 +396,7 @@ def analyze_unsteady_trim(
     boundsExternalFX_W: tuple[float | int, float | int],
     objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
+    show_solver_progress: bool | np.bool_ = True,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
     operating conditions until the net loads are sufficient low.
@@ -451,6 +452,10 @@ def analyze_unsteady_trim(
         evaluations allowed during optimization. This limit applies separately to the
         local search and global search stages. Higher values allow for more thorough
         searching but increase computation time. The default is 100.
+    :param show_solver_progress: Set this to True to show the TQDM progress bar during
+        each run of the unsteady solver. For showing progress bars and displaying log
+        statements, set up logging using the setup_logging function. It can be a bool or
+        a numpy bool and will be converted internally to a bool. The default is True.
     :return: A tuple of four floats representing the trimmed parameters found. In order,
         they are: vCg__E (in meters per second), alpha (in degrees), beta (in degrees),
         and externalFX_W (in Newtons). If no trim condition was found, it will instead
@@ -519,6 +524,11 @@ def analyze_unsteady_trim(
     # Validate the num_calls parameter.
     num_calls = _parameter_validation.int_in_range_return_int(
         num_calls, "num_calls", min_val=1, min_inclusive=True
+    )
+
+    # Validate the show_solver_progress parameter.
+    show_solver_progress = _parameter_validation.boolLike_return_bool(
+        show_solver_progress, "show_solver_progress"
     )
 
     base_operating_point = (
@@ -623,7 +633,7 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_solver.run(prescribed_wake=True)
+        this_solver.run(prescribed_wake=True, show_progress=show_solver_progress)
 
         finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
         assert finalForceCoefficients_W is not None

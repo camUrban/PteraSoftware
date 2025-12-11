@@ -720,6 +720,7 @@ def analyze_unsteady_convergence(
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
     convergence_criteria: float | int = 5.0,
+    show_solver_progress: bool | np.bool_ = True,
 ) -> tuple[bool, int, int, int] | tuple[None, None, None, None]:
     """Finds the converged parameters of an UnsteadyProblem solved using the
     UnsteadyRingVortexLatticeMethodSolver.
@@ -815,6 +816,10 @@ def analyze_unsteady_convergence(
         this function's docstring for more details on how it affects the solver. In
         short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
         convergence. Values are converted to floats internally. The default is 5.0.
+    :param show_solver_progress: Set this to True to show the TQDM progress bar during
+        each run of the unsteady solver. For showing progress bars and displaying log
+        statements, set up logging using the setup_logging function. It can be a bool or
+        a numpy bool and will be converted internally to a bool. The default is True.
     :return: A tuple of one bool and three ints. In order, they are the converged wake
         state (prescribed=True and free=False), the converged wake length (in number of
         cycles for non static geometries and number of chords for static geometries),
@@ -907,6 +912,11 @@ def analyze_unsteady_convergence(
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
         convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
+    )
+
+    # Validate the show_solver_progress parameter.
+    show_solver_progress = _parameter_validation.boolLike_return_bool(
+        show_solver_progress, "show_solver_progress"
     )
 
     convergence_logger.info("Beginning convergence analysis...")
@@ -1443,6 +1453,7 @@ def analyze_unsteady_convergence(
                     this_solver.run(
                         prescribed_wake=wake,
                         calculate_streamlines=False,
+                        show_progress=show_solver_progress,
                     )
                     iter_stop = time.time()
                     this_iter_time = iter_stop - iter_start

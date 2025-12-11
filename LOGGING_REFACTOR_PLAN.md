@@ -11,7 +11,7 @@ Refactor the logging system to follow Python best practices: libraries should no
 Add to `pterasoftware/__init__.py`:
 
 ```python
-from pterasoftware._logging import setup_logging
+from pterasoftware._logging import set_up_logging
 ```
 
 Update the module docstring to document this function.
@@ -63,11 +63,13 @@ In `examples/steady_horseshoe_vortex_lattice_method_solver.py`, change:
 ```python
 # Before
 from pterasoftware import _logging
-_logging.setup_logging(level="Debug")
+
+_logging.set_up_logging(level="Debug")
 
 # After
 import pterasoftware as ps
-ps.setup_logging(level="Debug")
+
+ps.set_up_logging(level="Debug")
 ```
 
 ## Design Rationale

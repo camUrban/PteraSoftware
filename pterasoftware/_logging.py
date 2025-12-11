@@ -1,4 +1,4 @@
-"""Contains the centralized logging configuration for pterasoftware."""
+"""Contains the centralized logging configuration for the pterasoftware package."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from typing import TextIO
 from tqdm import tqdm
 
 
-# Package-level logger. All module loggers should be children of this logger.
+# Package level logger. All module loggers should be children of this logger.
 PACKAGE_LOGGER_NAME = "pterasoftware"
 
 
@@ -37,7 +37,7 @@ class _TqdmLoggingHandler(logging.Handler):
         super().__init__()
         self.stream = stream or sys.stderr
 
-    def _emit(self, record: logging.LogRecord) -> None:
+    def emit(self, record: logging.LogRecord) -> None:
         """Emits a log record using tqdm.write().
 
         :param record: The log record to emit.
@@ -78,7 +78,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(f"{PACKAGE_LOGGER_NAME}.{name}")
 
 
-def setup_logging(
+def set_up_logging(
     level: int | str = logging.WARNING,
     handler: logging.Handler | None = None,
     format_string: str | None = None,
@@ -87,8 +87,8 @@ def setup_logging(
     """Configures logging for the pterasoftware package that is compatible with TQDM
     progress bars.
 
-    This function sets up the package-level logger with consistent formatting and
-    optionally uses a TQDM-compatible handler to prevent progress bar interference.
+    This function sets up the package level logger with consistent formatting and
+    optionally uses a TQDM compatible handler to prevent progress bar interference.
 
     :param level: The logging level. Can be an int (e.g., logging.DEBUG) or a string
         (e.g., "Debug", "Info", "Warning", "Error", "Critical"). The default is
@@ -106,23 +106,23 @@ def setup_logging(
     if isinstance(level, str):
         level = _convert_logging_level_name_to_value(level)
 
-    # Get the package-level logger
+    # Get the package level logger.
     logger = logging.getLogger(PACKAGE_LOGGER_NAME)
 
-    # Clear any existing handlers to avoid duplicates
+    # Clear any existing handlers to avoid duplicates.
     logger.handlers.clear()
 
-    # Set the level
+    # Set the level.
     logger.setLevel(level)
 
-    # Create handler if not provided
+    # Create handler if not provided.
     if handler is None:
         if use_tqdm_handler:
             handler = _TqdmLoggingHandler()
         else:
             handler = logging.StreamHandler(sys.stderr)
 
-    # Set up formatting
+    # Set up formatting.
     if format_string is None:
         format_string = "%(levelname)s - %(name)s - %(message)s"
 
@@ -130,10 +130,10 @@ def setup_logging(
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    # Add handler to logger
+    # Add handler to logger.
     logger.addHandler(handler)
 
-    # Prevent propagation to root logger to avoid duplicate messages
+    # Prevent propagation to root logger to avoid duplicate messages.
     logger.propagate = False
 
     return logger

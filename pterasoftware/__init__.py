@@ -50,4 +50,4 @@ import pterasoftware.steady_ring_vortex_lattice_method
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method
 
-from pterasoftware._logging import setup_logging
+from pterasoftware._logging import set_up_logging

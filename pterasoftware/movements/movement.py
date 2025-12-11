@@ -404,9 +404,9 @@ def _compute_wake_area_mismatch(
 ) -> float:
     """Computes the average area mismatch between wake and bound RingVortices.
 
-    Creates a temporary Problem and solver, steps through some number of time
-    steps (geometry only, no aerodynamic solve), and computes the average area mismatch
-    at each step.
+    Creates a temporary Problem and solver, steps through some number of time steps
+    (geometry only, no aerodynamic solve), and computes the average area mismatch at
+    each step.
 
     The area mismatch metric measures how well the wake RingVortex sizing matches the
     bound RingVortex sizing. A lower value indicates better matching.
@@ -544,9 +544,9 @@ def _optimize_delta_time(
     their parent bound trailing edge RingVortices. This produces better results at high
     Strouhal numbers where motion induced velocity is significant.
 
-    The search terminates early if the mismatch falls below the specified cutoff
-    value. Otherwise, it will return the locally minimum with an absolute convergence
-    tolerance of 0.001.
+    The search terminates early if the mismatch falls below the specified cutoff value.
+    Otherwise, it will return the locally minimum with an absolute convergence tolerance
+    of 0.001.
 
     The optimization search is bounded within one order of magnitude, centered at the
     specified starting value.

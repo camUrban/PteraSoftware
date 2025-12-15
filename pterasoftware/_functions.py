@@ -441,7 +441,8 @@ def numba_1d_explicit_cross(
 
     **Citation:**
 
-    Adapted from: https://stackoverflow.com/a/66757029/13240504
+    Adapted from:
+    https://stackoverflow.com/a/66757029/13240504
 
     Author: Jérôme Richard
 

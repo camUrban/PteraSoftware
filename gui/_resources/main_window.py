@@ -18,9 +18,9 @@ from PySide6.QtCore import (
     QPoint,
     QRect,
     QSize,
+    Qt,
     QTime,
     QUrl,
-    Qt,
 )
 from PySide6.QtGui import (
     QAction,

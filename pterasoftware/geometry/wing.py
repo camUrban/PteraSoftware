@@ -16,11 +16,9 @@ from collections.abc import Sequence
 import numpy as np
 import pyvista as pv
 
+from .. import _panel, _parameter_validation, _transformations
 from . import _meshing
 from . import wing_cross_section as wing_cross_section_mod
-from .. import _panel
-from .. import _parameter_validation
-from .. import _transformations
 
 
 class Wing:

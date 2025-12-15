@@ -14,8 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from . import _parameter_validation
-from . import _transformations
+from . import _parameter_validation, _transformations
 
 
 class OperatingPoint:

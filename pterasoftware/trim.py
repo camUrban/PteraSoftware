@@ -22,13 +22,15 @@ from typing import Any
 import numpy as np
 import scipy.optimize as sp_opt
 
-from . import _logging
-from . import _parameter_validation
-from . import movements
-from . import problems
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    _logging,
+    _parameter_validation,
+    movements,
+    problems,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+)
 
 trim_logger = _logging.get_logger("trim")
 

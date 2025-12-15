@@ -17,11 +17,7 @@ import math
 
 import numpy as np
 
-from . import geometry
-from . import movements
-
-from . import _parameter_validation
-from . import _transformations
+from . import _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
 
 

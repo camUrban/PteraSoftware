@@ -11,19 +11,18 @@ None
 
 from __future__ import annotations
 
+import time
 from collections.abc import Sequence
 from typing import Any, cast
 
 import numpy as np
 import pyvista as pv
-import time
 import webp
 
+from .. import _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
-from .. import _parameter_validation
-from .. import _transformations
 
 
 class Airplane:

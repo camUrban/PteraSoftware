@@ -1,12 +1,12 @@
 """This module contains a class to test HorseshoeVortices."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
 from pterasoftware import _aerodynamics
-
 from tests.unit.fixtures import horseshoe_vortex_fixtures
 
 

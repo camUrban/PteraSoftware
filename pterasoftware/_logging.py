@@ -8,7 +8,6 @@ from typing import TextIO
 
 from tqdm import tqdm
 
-
 # Package level logger. All module loggers should be children of this logger.
 PACKAGE_LOGGER_NAME = "pterasoftware"
 

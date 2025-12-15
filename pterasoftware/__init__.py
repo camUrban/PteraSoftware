@@ -39,9 +39,9 @@ set_up_logging: Configures logging for the pterasoftware package that is compati
 TQDM progress bars.
 """
 
+import pterasoftware.convergence
 import pterasoftware.geometry
 import pterasoftware.movements
-import pterasoftware.convergence
 import pterasoftware.operating_point
 import pterasoftware.output
 import pterasoftware.problems
@@ -49,5 +49,4 @@ import pterasoftware.steady_horseshoe_vortex_lattice_method
 import pterasoftware.steady_ring_vortex_lattice_method
 import pterasoftware.trim
 import pterasoftware.unsteady_ring_vortex_lattice_method
-
 from pterasoftware._logging import set_up_logging

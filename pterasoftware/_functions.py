@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import numpy as np
 from numba import njit
 
@@ -42,10 +40,7 @@ def cosspace(
     amp = (maximum - minimum) / 2
 
     # Space the points by applying cosine to the output of linspace and return them.
-    return cast(
-        np.ndarray,
-        mean + amp * np.cos(np.linspace(np.pi, 0, n_points, endpoint=endpoint)),
-    )
+    return mean + amp * np.cos(np.linspace(np.pi, 0, n_points, endpoint=endpoint))
 
 
 # TEST: Consider adding unit tests for this function.

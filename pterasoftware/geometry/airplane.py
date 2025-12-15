@@ -228,14 +228,8 @@ class Airplane:
 
                 # Stack this Panel's vertices and faces with the array of all
                 # vertices and faces.
-                panel_vertices = cast(
-                    np.ndarray[tuple[int, int], Any],
-                    np.vstack((panel_vertices, panel_vertices_to_add)),
-                )
-                panel_faces = cast(
-                    np.ndarray[tuple[int], Any],
-                    np.hstack((panel_faces, panel_face_to_add)),
-                )
+                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
                 # Update the number of previous Panels.
                 panel_num += 1
@@ -502,14 +496,8 @@ class Airplane:
 
                     # Stack this Panel's vertices and faces with the array of all
                     # vertices and faces.
-                    panel_vertices = cast(
-                        np.ndarray[tuple[int, int], Any],
-                        np.vstack((panel_vertices, panel_vertices_to_add)),
-                    )
-                    panel_faces = cast(
-                        np.ndarray[tuple[int], Any],
-                        np.hstack((panel_faces, panel_face_to_add)),
-                    )
+                    panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
+                    panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
                     # Update the number of previous Panels.
                     panel_num += 1

@@ -2,8 +2,7 @@
 
 import pterasoftware as ps
 
-from . import airplane_movement_fixtures
-from . import operating_point_fixtures
+from . import airplane_movement_fixtures, operating_point_fixtures
 
 
 def make_static_movement_fixture():

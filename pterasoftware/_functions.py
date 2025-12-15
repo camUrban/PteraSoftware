@@ -5,11 +5,13 @@ from __future__ import annotations
 import numpy as np
 from numba import njit
 
-from . import _panel
-from . import _transformations
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    _panel,
+    _transformations,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+)
 
 
 # TEST: Consider adding unit tests for this function.

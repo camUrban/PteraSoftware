@@ -1,6 +1,7 @@
 """This module contains functions to create geometry objects for use in tests."""
 
 import numpy as np
+
 import pterasoftware as ps
 
 # noinspection PyProtectedMember

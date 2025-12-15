@@ -4,11 +4,12 @@ import math
 import unittest
 
 import pterasoftware as ps
-
-from tests.unit.fixtures import movement_fixtures
-from tests.unit.fixtures import airplane_movement_fixtures
-from tests.unit.fixtures import operating_point_fixtures
-from tests.unit.fixtures import geometry_fixtures
+from tests.unit.fixtures import (
+    airplane_movement_fixtures,
+    geometry_fixtures,
+    movement_fixtures,
+    operating_point_fixtures,
+)
 
 
 class TestMovement(unittest.TestCase):

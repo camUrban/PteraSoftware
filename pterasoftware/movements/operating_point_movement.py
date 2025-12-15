@@ -15,10 +15,9 @@ from collections.abc import Callable
 
 import numpy as np
 
-from . import _functions
-
-from .. import operating_point as operating_point_mod
 from .. import _parameter_validation
+from .. import operating_point as operating_point_mod
+from . import _functions
 
 
 class OperatingPointMovement:

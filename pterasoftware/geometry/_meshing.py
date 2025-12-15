@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from .. import _functions, _panel, _transformations
 from . import airfoil as airfoil_mod
-from . import wing_cross_section as wing_cross_section_mod
 from . import wing as wing_mod
-from .. import _functions
-from .. import _panel
-from .. import _transformations
+from . import wing_cross_section as wing_cross_section_mod
 
 
 def mesh_wing(wing: wing_mod.Wing) -> None:

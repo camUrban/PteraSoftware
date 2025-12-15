@@ -16,10 +16,8 @@ from collections.abc import Sequence
 import numpy as np
 import pyvista as pv
 
+from .. import _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
-from .. import _parameter_validation
-from .. import _transformations
-from .._transformations import apply_T_to_vectors
 
 
 class WingCrossSection:
@@ -310,10 +308,10 @@ class WingCrossSection:
             ]
         )
 
-        airfoilOutline_Wcs_lp = apply_T_to_vectors(
+        airfoilOutline_Wcs_lp = _transformations.apply_T_to_vectors(
             airfoilScalingMatrix, airfoilNonScaledOutline_Wcs_lp, has_point=True
         )
-        airfoilMcl_Wcs_lp = apply_T_to_vectors(
+        airfoilMcl_Wcs_lp = _transformations.apply_T_to_vectors(
             airfoilScalingMatrix, airfoilNonScaledMcl_Wcs_lp, has_point=True
         )
 

@@ -11,15 +11,13 @@ None
 
 from __future__ import annotations
 
-from collections.abc import Sequence, Callable
+from collections.abc import Callable, Sequence
 
 import numpy as np
 
+from .. import _parameter_validation, geometry
 from . import _functions
 from . import wing_movement as wing_movement_mod
-
-from .. import _parameter_validation
-from .. import geometry
 
 
 class AirplaneMovement:

@@ -1,10 +1,10 @@
 """This module contains functions to create AirplaneMovements for use in tests."""
 
 import numpy as np
+
 import pterasoftware as ps
 
-from . import geometry_fixtures
-from . import wing_movement_fixtures
+from . import geometry_fixtures, wing_movement_fixtures
 
 
 def make_static_airplane_movement_fixture():

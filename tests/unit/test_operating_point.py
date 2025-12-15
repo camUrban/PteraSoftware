@@ -1,6 +1,7 @@
 """This module contains a class to test OperatingPoints."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 

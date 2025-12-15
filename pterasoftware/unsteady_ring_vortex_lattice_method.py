@@ -18,15 +18,17 @@ from typing import cast
 import numpy as np
 from tqdm import tqdm
 
-from . import geometry
-from . import movements
-from . import _aerodynamics
-from . import _functions
-from . import _logging
-from . import _panel
-from . import _parameter_validation
-from . import operating_point
-from . import problems
+from . import (
+    _aerodynamics,
+    _functions,
+    _logging,
+    _panel,
+    _parameter_validation,
+    geometry,
+    movements,
+    operating_point,
+    problems,
+)
 
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 

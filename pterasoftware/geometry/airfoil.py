@@ -19,9 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-from .. import _functions
-from .. import _parameter_validation
-from .. import _transformations
+from .. import _functions, _parameter_validation, _transformations
 
 # Create a token object for bypassing outline_A_lp parameter validation in Airfoil's
 # __init__ method.

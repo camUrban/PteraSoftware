@@ -17,12 +17,16 @@ from typing import cast
 
 import numpy as np
 
-from . import _aerodynamics, geometry, operating_point
-from . import _functions
-from . import _logging
-from . import _panel
-from . import _parameter_validation
-from . import problems
+from . import (
+    _aerodynamics,
+    _functions,
+    _logging,
+    _panel,
+    _parameter_validation,
+    geometry,
+    operating_point,
+    problems,
+)
 
 _logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
 

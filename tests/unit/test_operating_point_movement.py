@@ -1,14 +1,16 @@
 """This module contains a class to test OperatingPointMovements."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
-
-from tests.unit.fixtures import operating_point_movement_fixtures
-from tests.unit.fixtures import operating_point_fixtures
+from tests.unit.fixtures import (
+    operating_point_fixtures,
+    operating_point_movement_fixtures,
+)
 
 
 class TestOperatingPointMovement(unittest.TestCase):

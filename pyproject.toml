@@ -5,9 +5,18 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.isort]
+profile = "black"
+
 [tool.black]
 target-version = ['py313']
 include = '\.pyi?$'
 
-[tool.isort]
-profile = "black"
+[tool.codespell]
+ignore-words = ".codespell-ignore.txt"
+skip = "docs/_build/*,*.dat"
+
+[tool.docformatter]
+black = true
+recursive = true
+force-wrap = true

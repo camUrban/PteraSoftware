@@ -15,8 +15,8 @@ def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
 
     Homogeneous coordinates extend 3D vectors to 4D by adding a fourth component. For
     vectors relative to a reference point (has_point=True), such as position vectors,
-    the fourth component is 1.0. For free vectors (has_point=False), such as velocity
-    or force vectors, the fourth component is 0.0. This allows (4,4) transformation
+    the fourth component is 1.0. For free vectors (has_point=False), such as velocity or
+    force vectors, the fourth component is 0.0. This allows (4,4) transformation
     matrices to handle both translations and rotations in a unified framework.
 
     This function handles both single vectors and arrays of vectors efficiently.
@@ -57,6 +57,7 @@ def generate_rot_T(
     defined by the variables ``order`` and ``intrinsic``). Then:
 
     | ``T_pas_A_to_B=generate_rot_T(angles,True,intrinsic,order)``
+
     | ``r_B=apply_T_to_vectors(T_pas_A_to_B,r_A,has_point=False)``
 
     **Active Use-Case:**
@@ -67,6 +68,7 @@ def generate_rot_T(
     with angles given by ``angles`` and the sequence defined by ``order``. Then:
 
     | ``rot_T_act=generate_rot_T(angles,False,intrinsic,order)``
+
     | ``rPrime_A=apply_T_to_vectors(rot_T_act,r_A,has_point=False)``
 
     :param angles: An array-like object of 3 numbers representing the rotation angles,
@@ -160,6 +162,7 @@ def generate_trans_T(
     ``translations`` (in "A" axes, relative to the point a). Then:
 
     | ``T_pas_A_a_to_A_b=generate_trans_T(translations,True)``
+
     | ``c_A_b=apply_T_to_vectors(T_pas_A_a_to_A_b,c_A_a,has_point=True)``
 
     **Active Use-Case:**
@@ -169,6 +172,7 @@ def generate_trans_T(
     "cPrime", which is point "c" offset by `translations` (in "A" axes). Then:
 
     | ``translate_T_act=generate_trans_T(translations,False)``
+
     | ``cPrime_A_a=apply_T_to_vectors(translate_T_act,c_A_a,has_point=True)``
 
     :param translations: An array-like object of 3 numbers representing the
@@ -213,6 +217,7 @@ def generate_reflect_T(
     plane. Then:
 
     | ``T_pas_A_a_to_B_b=generate_reflect_T(plane_point_A_a,plane_normal_A,True)``
+
     | ``c_B_b=apply_T_to_vectors(T_pas_A_a_to_B_b,c_A_a,has_point=True)``
 
     **Active Use-Case:**
@@ -223,6 +228,7 @@ def generate_reflect_T(
     ``plane_normal_A``. Then:
 
     | ``reflect_T_act=generate_reflect_T(plane_point_A_a,plane_normal_A,False)``
+
     | ``c_A_a=apply_T_to_vectors(reflect_T_act,c_A_a,has_point=True)``
 
     **Notes:**
@@ -235,10 +241,10 @@ def generate_reflect_T(
         the reflection plane (in "A" axes, relative to the "a" point). Can be a tuple,
         list, or ndarray. Values are converted to floats internally. The units are in
         meters.
-    :param plane_normal_A: An array-like object of 3 numbers representing a vector
-        (in "A" axes) normal to the reflection plane. Can be a tuple, list, or ndarray.
-        It must have a non zero magnitude, and will be normalized to a unit vector.
-        Values are converted to floats internally.
+    :param plane_normal_A: An array-like object of 3 numbers representing a vector (in
+        "A" axes) normal to the reflection plane. Can be a tuple, list, or ndarray. It
+        must have a non zero magnitude, and will be normalized to a unit vector. Values
+        are converted to floats internally.
     :param passive: Set this to True to return a matrix that changes reference point and
         axes of a vector in homogeneous coordinates to a reference point and axes
         reflected about the specified plane (``cHomog_B_b=T_reflect@cHomog_A_a``). Set
@@ -338,8 +344,11 @@ def compose_T_act(
     rotation"), either pre-rotate the components before building the translation:
 
     | ``R=rot_T_act[:3,:3]``
+
     | ``tPrime_A=R@t_A``
+
     | ``transBodyFixed_T_act=generate_trans_T(tPrime_A,False)``
+
     | ``T_act=compose_T_act(rot_T_act,transBodyFixed_T_act)``
 
     or, pass the translation before the rotation:
@@ -372,12 +381,12 @@ def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
     A valid rigid homogeneous transform can be broken down into two components:
 
     | ``R=valid_T[:3,:3]``
+
     | ``t=valid_T[:3,3]``
 
-    This function uses these components to return the inverse of ``valid_T``::
+    This function uses these components to return the inverse of ``valid_T``:
 
-        [ R.T    -R.T @ t ]
-        [  0          1   ]
+    | ``[[R.T,-R.T@t];[0,1]]``
 
     :param valid_T: A (4,4) ndarray of floats representing a valid, rigid homogeneous
         transform.
@@ -399,12 +408,13 @@ def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
 def invert_T_pas(T_pas: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndarray:
     """Inverts a passive homogeneous transform.
 
-    A passive transform maps components of the same physical quantity between an
-    initial axis system and reference point and a target axis system and reference
-    point. For example, if ``T_pas_A_a_to_B_b`` maps components from "A" axes
-    (relative to point "a") to "B" axes (relative to point "b"), then:
+    A passive transform maps components of the same physical quantity between an initial
+    axis system and reference point and a target axis system and reference point. For
+    example, if ``T_pas_A_a_to_B_b`` maps components from "A" axes (relative to point
+    "a") to "B" axes (relative to point "b"), then:
 
     | ``T_pas_B_b_to_A_a=invert_T_pas(T_pas_A_a_to_B_b)``
+
     | ``rHomog_A_a=T_pas_B_b_to_A_a@rHomog_B_b``
 
     **Notes:**

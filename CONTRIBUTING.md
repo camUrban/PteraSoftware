@@ -128,7 +128,7 @@ Once you understand the process, here's how to implement it:
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
      codespell --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
-     docformatter --black --in-place pterasoftware -r
+     docformatter --black --in-place --force-wrap pterasoftware -r
      black .
      mypy pterasoftware
      python -m unittest discover -s tests

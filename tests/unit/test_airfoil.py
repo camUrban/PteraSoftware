@@ -175,6 +175,14 @@ class TestAirfoil(unittest.TestCase):
         modified_outline = modified_airfoil.outline_A_lp
         self.assertFalse(np.allclose(original_outline, modified_outline))
 
+    def test_add_control_surface_zero_deflection_returns_self(self):
+        """Verify that zero deflection returns the same Airfoil instance (optimization)."""
+        result = self.naca0012_airfoil.add_control_surface(
+            deflection=0.0,
+            hinge_point=0.75,
+        )
+        self.assertIs(result, self.naca0012_airfoil)
+
     def test_parameter_validation_invalid_inputs(self):
         """Test that invalid parameters raise appropriate errors."""
         # Test outlines with x-values significantly less than 0.0.

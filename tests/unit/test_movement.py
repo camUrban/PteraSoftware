@@ -443,10 +443,15 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
+        # property is calculated from the Movement parameters (periods), not from the
+        # generated Airplanes, so we only need to generate one Airplane to test the
+        # period calculation logic.
         movement = ps.movements.movement.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
-            num_cycles=1,
+            delta_time=0.1,
+            num_steps=1,
         )
 
         # The max_period should be 4.0 (the max of 3.0 and 4.0).
@@ -537,10 +542,15 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
+        # property is calculated from the Movement parameters (periods), not from the
+        # generated Airplanes, so we only need to generate one Airplane to test the
+        # period calculation logic.
         movement = ps.movements.movement.Movement(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
-            num_cycles=1,
+            delta_time=0.1,
+            num_steps=1,
         )
 
         # The max_period should be 4.0 (the max of 3.0 and 4.0).
@@ -625,11 +635,15 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Create Movement with both AirplaneMovements (periods 2.0 and 3.0).
+        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
+        # property is calculated from the Movement parameters (periods), not from the
+        # generated Airplanes, so we only need to generate one Airplane to test the
+        # period calculation logic.
         movement = ps.movements.movement.Movement(
             airplane_movements=[airplane_movement_1, airplane_movement_2],
             operating_point_movement=operating_point_movement,
-            num_cycles=1,
+            delta_time=0.1,
+            num_steps=1,
         )
 
         # The LCM of 2.0 and 3.0 should be 6.0.

@@ -63,6 +63,8 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             self.thrust_ans + thrust_delta,
         )
 
+        ps.set_up_logging(level="Info")
+
         trim_conditions = ps.trim.analyze_steady_trim(
             problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",

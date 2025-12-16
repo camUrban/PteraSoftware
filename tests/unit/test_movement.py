@@ -2,6 +2,7 @@
 
 import math
 import unittest
+from unittest.mock import patch
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -1096,8 +1097,13 @@ class TestMovement(unittest.TestCase):
         self.assertGreater(movement.delta_time, 0.0)
         self.assertTrue(movement.static)
 
-    def test_delta_time_optimize_within_expected_bounds(self):
-        """Test that optimized delta_time is within the expected search bounds."""
+    def test_delta_time_optimize_calls_optimizer(self):
+        """Test that delta_time='optimize' correctly calls the optimizer and uses the
+        result.
+
+        This test uses mocking to avoid running the expensive optimization. The actual
+        optimization behavior is tested in TestOptimizeDeltaTime.
+        """
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
@@ -1105,38 +1111,26 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # First, create a Movement with automatic delta_time to get the initial
-        # estimate.
-        movement_auto = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_cycles=1,
-        )
-        initial_estimate = movement_auto.delta_time
+        # Mock _optimize_delta_time to return a known value instantly.
+        fake_optimized_delta_time = 0.0123456789
 
-        # Now create a Movement with optimized delta_time.
-        # Need fresh fixtures since the previous ones may have been modified.
-        airplane_movements_opt = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement_opt = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        movement_optimized = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements_opt,
-            operating_point_movement=operating_point_movement_opt,
-            delta_time="optimize",
-            num_cycles=1,
-        )
+        with patch(
+            "pterasoftware.movements.movement._optimize_delta_time"
+        ) as mock_optimize:
+            mock_optimize.return_value = fake_optimized_delta_time
 
-        # Verify the optimized delta_time is within the search bounds.
-        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
-        self.assertGreaterEqual(
-            movement_optimized.delta_time, initial_estimate / math.sqrt(10)
-        )
-        self.assertLessEqual(
-            movement_optimized.delta_time, initial_estimate * math.sqrt(10)
-        )
+            movement = ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                delta_time="optimize",
+                num_cycles=1,
+            )
+
+            # Verify the optimizer was called exactly once.
+            mock_optimize.assert_called_once()
+
+            # Verify the Movement used the optimizer's return value.
+            self.assertEqual(movement.delta_time, fake_optimized_delta_time)
 
 
 class TestComputeWakeAreaMismatch(unittest.TestCase):
@@ -1229,8 +1223,9 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 class TestOptimizeDeltaTime(unittest.TestCase):
     """This is a class with functions to test the _optimize_delta_time function."""
 
-    def test_returns_positive_float(self):
-        """Test that _optimize_delta_time returns a positive float."""
+    def test_returns_positive_float_within_bounds(self):
+        """Test that _optimize_delta_time returns a positive float within expected
+        bounds."""
         from pterasoftware.movements.movement import _optimize_delta_time
 
         airplane_movements = [
@@ -1250,25 +1245,6 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
-
-    def test_result_within_bounds(self):
-        """Test that _optimize_delta_time returns a value within expected bounds."""
-        from pterasoftware.movements.movement import _optimize_delta_time
-
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        initial_delta_time = 0.01
-
-        optimized_delta_time = _optimize_delta_time(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
-        )
 
         # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
         self.assertGreaterEqual(

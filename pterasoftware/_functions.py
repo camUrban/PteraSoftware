@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from numba import njit
 
 from . import (
     _panel,
     _transformations,
-    steady_horseshoe_vortex_lattice_method,
-    steady_ring_vortex_lattice_method,
-    unsteady_ring_vortex_lattice_method,
 )
+
+if TYPE_CHECKING:
+    from . import (
+        steady_horseshoe_vortex_lattice_method,
+        steady_ring_vortex_lattice_method,
+        unsteady_ring_vortex_lattice_method,
+    )
 
 
 # TEST: Consider adding unit tests for this function.
@@ -177,6 +183,14 @@ def process_solver_loads(
         CG) on each of the solver's Panels. The units are in Newton-meters.
     :return: None
     """
+    # Local imports for isinstance() checks (avoids loading all solvers at module
+    # level).
+    from . import (
+        steady_horseshoe_vortex_lattice_method,
+        steady_ring_vortex_lattice_method,
+        unsteady_ring_vortex_lattice_method,
+    )
+
     if isinstance(
         solver,
         (

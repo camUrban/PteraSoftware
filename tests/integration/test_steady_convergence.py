@@ -24,6 +24,8 @@ class TestSteadyConvergence(unittest.TestCase):
 
         :return: None
         """
+        ps.set_up_logging(level="Info")
+
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
@@ -47,6 +49,8 @@ class TestSteadyConvergence(unittest.TestCase):
 
         :return: None
         """
+        ps.set_up_logging(level="Info")
+
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",

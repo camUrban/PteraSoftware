@@ -24,8 +24,6 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         :return: None
         """
-        ps.set_up_logging(level="Info")
-
         converged_parameters = ps.convergence.analyze_unsteady_convergence(
             ref_problem=self.unsteady_validation_problem,
             prescribed_wake=True,

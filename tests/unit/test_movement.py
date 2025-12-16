@@ -116,12 +116,13 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with positive delta_time works.
+        # Test with positive delta_time works. Use num_steps=1 to speed up the test;
+        # we only need to verify delta_time is accepted, not generate many airplanes.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             delta_time=0.01,
-            num_chords=10,
+            num_steps=1,
         )
         self.assertEqual(movement.delta_time, 0.01)
 
@@ -266,13 +267,14 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer.
+        # Test with valid positive integer. Use num_cycles=1 to speed up the test;
+        # the validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            num_cycles=5,
+            num_cycles=1,
         )
-        self.assertEqual(movement.num_cycles, 5)
+        self.assertEqual(movement.num_cycles, 1)
 
         # Test with invalid values.
         invalid_values = [0, -5, 2.5, "three"]
@@ -295,13 +297,14 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer.
+        # Test with valid positive integer. Use num_chords=1 to speed up the test;
+        # the validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            num_chords=15,
+            num_chords=1,
         )
-        self.assertEqual(movement.num_chords, 15)
+        self.assertEqual(movement.num_chords, 1)
 
         # Test with invalid values.
         invalid_values = [0, -5, 2.5, "ten"]
@@ -324,13 +327,14 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer.
+        # Test with valid positive integer. Use num_steps=1 to speed up the test;
+        # the validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            num_steps=200,
+            num_steps=1,
         )
-        self.assertEqual(movement.num_steps, 200)
+        self.assertEqual(movement.num_steps, 1)
 
         # Test with invalid values.
         invalid_values = [0, -5, 2.5, "hundred"]
@@ -688,10 +692,12 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # Use num_cycles=1 to speed up the test while still testing auto-calculation.
+        # The auto-calculation logic doesn't depend on the specific value of num_cycles.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            num_cycles=3,
+            num_cycles=1,
         )
 
         # Check that delta_time was calculated and is positive.
@@ -769,10 +775,12 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
+        # Use num_chords=1 to speed up the test while still testing auto-calculation.
+        # The averaging logic doesn't depend on the specific value of num_chords.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            num_chords=10,
+            num_chords=1,
         )
 
         # Check that delta_time was calculated.
@@ -1133,11 +1141,13 @@ class TestMovement(unittest.TestCase):
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
+            # only time spent is generating airplanes after getting the delta_time.
             movement = ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time="optimize",
-                num_cycles=1,
+                num_steps=1,
             )
 
             # Verify the optimizer was called exactly once.

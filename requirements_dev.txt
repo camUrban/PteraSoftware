@@ -3,6 +3,7 @@ build
 codecov
 codespell
 docformatter
+isort
 mypy
 pre-commit
 PyInstaller

@@ -106,6 +106,7 @@ Once you understand the process, here's how to implement it:
      python -m pip install --upgrade pip setuptools wheel
      pip install -r requirements.txt # Install dependencies for running simulations
      pip install -r requirements_dev.txt # Install dependencies for development (e.g. black, codespell, etc.)
+     pre-commit install # Install git hooks for automatic code formatting checks
      deactivate
      ```  
 
@@ -127,9 +128,7 @@ Once you understand the process, here's how to implement it:
    - Run automated checks locally before pushing:  
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
-     codespell --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
-     docformatter --black --in-place --force-wrap pterasoftware -r
-     black .
+     pre-commit run --all-files
      mypy pterasoftware
      python -m unittest discover -s tests
      ```  

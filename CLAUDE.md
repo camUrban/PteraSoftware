@@ -52,13 +52,13 @@ Requires Python 3.11, but active development is done in 3.13
 - `gui/`: Directory with GUI source code
 - `pterasoftware/`: Main package with modular solver architecture
   - `geometry/`: Package with aircraft geometry classes
-    - `_airfoils/` Directory containing data files with airfoil coordinates
+    - `_airfoils/`: Directory containing data files with airfoil coordinates
     - `_meshing.py`: Wing mesh generation
     - `airfoil.py`: Airfoil class with coordinate generation
     - `airplane.py`: Airplane class with coordinate transformations
     - `wing.py`: Wing class with symmetry processing
     - `wing_cross_section.py`: WingCrossSection class with validation
-  - `movements/` Package with movement classes (definitions for time-dependent motion)
+  - `movements/`: Package with movement classes (definitions for time-dependent motion)
     - `_functions.py`: Movement utility functions
     - `airplane_movement.py`: Airplane motion definitions
     - `movement.py`: Core Movement class
@@ -70,11 +70,11 @@ Requires Python 3.11, but active development is done in 3.13
   - `_logging.py`: Contains function for setting up logging
   - `_panel.py`: Panel class for discretized mesh elements
   - `_parameter_validation.py`: Input validation functions
-  - `_transformations.py` Coordinate transformations and rotations
+  - `_transformations.py`: Coordinate transformations and rotations
   - `convergence.py`: Convergence analysis tools
-  - `operating_point.py` OperatingPoint and CoupledOperatingPoint classes
+  - `operating_point.py`: OperatingPoint and CoupledOperatingPoint classes
   - `output.py`: Visualization and results processing
-  - `problems.py` SteadyProblem and UnsteadyProblem classes
+  - `problems.py`: SteadyProblem and UnsteadyProblem classes
   - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
   - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
   - `trim.py`: Trim analysis functionality

@@ -4,7 +4,7 @@ Guidelines for developers and Claude when writing code.
 ## Code Formatting
 - Follow existing code style (black) and conventions
 - Maintain consistent indentation and spacing
-- When initializing numpy arrays (e.g., using np.zeros, np.ones, np.empty, etc.), always specify the dtype parameter (e.g., dtype=float, dtype=int, dtype=object, etc.)
+- When initializing numpy arrays (e.g., using `np.zeros`, `np.ones`, `np.empty`, etc.), always specify the `dtype` parameter (e.g., `dtype=float`, `dtype=int`, `dtype=object`, etc.)
 
 ## Variable Naming
 - Use descriptive variable names that clearly indicate their purpose  

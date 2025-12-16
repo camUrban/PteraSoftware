@@ -16,7 +16,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
-Requires Python 3.11, but active development is done in 3.13  
+Requires Python 3.11, but active development is done in 3.13
 
 ### Key Runtime Dependencies
 - **NumPy/SciPy**: Core numerical computations

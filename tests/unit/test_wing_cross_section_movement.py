@@ -1,12 +1,12 @@
 """This module contains a class to test WingCrossSectionMovements."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 from scipy import signal
 
 import pterasoftware as ps
-
 from tests.unit.fixtures import wing_cross_section_movement_fixtures
 
 

@@ -8,9 +8,7 @@ from collections.abc import Sequence
 import mujoco
 import numpy as np
 
-from . import movements
-from . import _parameter_validation
-from . import _transformations
+from . import _parameter_validation, _transformations, movements
 
 
 # TEST: Add unit tests for this class's initialization.

@@ -20,13 +20,10 @@ from typing import Any
 import numpy as np
 import scipy.optimize as sp_opt
 
+from .. import _aerodynamics, _logging, _parameter_validation
+from .. import operating_point as operating_point_mod
 from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
-
-from .. import _aerodynamics
-from .. import _logging
-from .. import _parameter_validation
-from .. import operating_point as operating_point_mod
 
 movement_logger = _logging.get_logger("movements.movement")
 
@@ -428,8 +425,7 @@ def _compute_wake_area_mismatch(
         step where they were shed). Averaged across all time steps and all pairs of
         child and parent RingVortices. A lower value indicates better matching.
     """
-    from .. import problems
-    from .. import unsteady_ring_vortex_lattice_method
+    from .. import problems, unsteady_ring_vortex_lattice_method
 
     # Deep copy the movement objects to avoid mutating originals during optimization.
     airplane_movements_copy = copy.deepcopy(airplane_movements)

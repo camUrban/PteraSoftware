@@ -23,18 +23,20 @@ from __future__ import annotations
 import math
 import time
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pyvista as pv
 import webp
 
-from . import geometry
-from . import _parameter_validation
-from . import _transformations
-from . import coupled_unsteady_ring_vortex_lattice_method
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    _parameter_validation,
+    _transformations,
+    coupled_unsteady_ring_vortex_lattice_method,
+    geometry,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+)
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"

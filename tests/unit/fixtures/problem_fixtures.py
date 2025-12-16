@@ -2,9 +2,7 @@
 
 import pterasoftware as ps
 
-from . import geometry_fixtures
-from . import movement_fixtures
-from . import operating_point_fixtures
+from . import geometry_fixtures, movement_fixtures, operating_point_fixtures
 
 
 def make_basic_steady_problem_fixture():

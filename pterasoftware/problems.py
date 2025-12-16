@@ -19,17 +19,18 @@ None
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import math
+from collections.abc import Sequence
 
 import numpy as np
 
-from . import geometry
-from . import movements
-
-from . import _mujoco_model
-from . import _parameter_validation
-from . import _transformations
+from . import (
+    _mujoco_model,
+    _parameter_validation,
+    _transformations,
+    geometry,
+    movements,
+)
 from . import operating_point as operating_point_mod
 
 

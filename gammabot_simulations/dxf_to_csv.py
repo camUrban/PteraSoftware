@@ -5,6 +5,7 @@ file. It then plots the outline using matplotlib.
 """
 
 import csv
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate as sp_interp

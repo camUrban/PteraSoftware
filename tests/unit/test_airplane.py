@@ -1,6 +1,7 @@
 """This module contains a class to test Airplanes."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 

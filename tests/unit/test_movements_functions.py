@@ -1,13 +1,13 @@
 """This module contains a class to test movements functions."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 from scipy import signal
 
 # noinspection PyProtectedMember
 from pterasoftware.movements import _functions
-
 from tests.unit.fixtures import movements_functions_fixtures
 
 

@@ -1,12 +1,12 @@
 """This module contains a class to test aerodynamics functions."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
 from pterasoftware import _aerodynamics
-
 from tests.unit.fixtures import aerodynamics_functions_fixtures
 
 

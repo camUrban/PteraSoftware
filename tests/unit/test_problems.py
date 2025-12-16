@@ -1,13 +1,15 @@
 """This module contains a class to test SteadyProblems and UnsteadyProblems."""
 
-import unittest
 import math
+import unittest
 
 import pterasoftware as ps
-from tests.unit.fixtures import geometry_fixtures
-from tests.unit.fixtures import operating_point_fixtures
-from tests.unit.fixtures import movement_fixtures
-from tests.unit.fixtures import problem_fixtures
+from tests.unit.fixtures import (
+    geometry_fixtures,
+    movement_fixtures,
+    operating_point_fixtures,
+    problem_fixtures,
+)
 
 
 class TestSteadyProblem(unittest.TestCase):

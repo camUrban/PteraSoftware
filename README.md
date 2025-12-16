@@ -277,6 +277,7 @@ Additionally, these packages are useful for continued development of the softwar
 * codecov
 * codespell
 * docformatter
+* isort
 * mypy
 * pre-commit
 * PyInstaller

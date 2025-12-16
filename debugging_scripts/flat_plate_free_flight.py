@@ -3,8 +3,8 @@ flat plate with one Panel."""
 
 import logging
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import pterasoftware as ps
 

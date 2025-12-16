@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import numpy as np
 from numba import njit
 
-from . import _panel
-from . import _transformations
-from . import coupled_unsteady_ring_vortex_lattice_method
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    _panel,
+    _transformations,
+    coupled_unsteady_ring_vortex_lattice_method,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+)
 
 
 # TEST: Consider adding unit tests for this function.
@@ -43,10 +43,7 @@ def cosspace(
     amp = (maximum - minimum) / 2
 
     # Space the points by applying cosine to the output of linspace and return them.
-    return cast(
-        np.ndarray,
-        mean + amp * np.cos(np.linspace(np.pi, 0, n_points, endpoint=endpoint)),
-    )
+    return mean + amp * np.cos(np.linspace(np.pi, 0, n_points, endpoint=endpoint))
 
 
 # TEST: Consider adding unit tests for this function.
@@ -464,7 +461,8 @@ def numba_1d_explicit_cross(
 
     **Citation:**
 
-    Adapted from: https://stackoverflow.com/a/66757029/13240504
+    Adapted from:
+    https://stackoverflow.com/a/66757029/13240504
 
     Author: Jérôme Richard
 

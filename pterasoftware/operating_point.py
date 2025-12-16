@@ -19,8 +19,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from . import _parameter_validation
-from . import _transformations
+from . import _parameter_validation, _transformations
 
 
 # DOCUMENT: Add the new methods to this class's docstring.

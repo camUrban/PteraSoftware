@@ -12,20 +12,23 @@ None
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import logging
+from collections.abc import Sequence
 from typing import cast
 
 import numpy as np
 from tqdm import tqdm
 
-from . import _aerodynamics, operating_point
-from . import _parameter_validation
-from . import _panel
-from . import _functions
-from . import _transformations
-from . import geometry
-from . import problems
+from . import (
+    _aerodynamics,
+    _functions,
+    _panel,
+    _parameter_validation,
+    _transformations,
+    geometry,
+    operating_point,
+    problems,
+)
 
 
 # TEST: Add unit tests for this class's initialization.

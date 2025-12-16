@@ -1,6 +1,7 @@
 """This module contains a class to test WingCrossSections."""
 
 import unittest
+
 import numpy as np
 
 import pterasoftware as ps

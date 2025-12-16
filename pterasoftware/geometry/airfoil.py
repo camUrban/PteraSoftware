@@ -19,9 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as sp_interp
 
-from .. import _functions
-from .. import _parameter_validation
-from .. import _transformations
+from .. import _functions, _parameter_validation, _transformations
 
 # Create a token object for bypassing outline_A_lp parameter validation in Airfoil's
 # __init__ method.
@@ -72,10 +70,10 @@ class Airfoil:
         :param outline_A_lp: An array-like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
-            the airfoils directory, leave this as None, which is the default. Can be
-            a tuple, list, or ndarray. Values are converted to floats internally.
-            Make sure all x component values are in the range [0.0, 1.0]. The default
-            value is None.
+            the airfoils directory, leave this as None, which is the default. Can be a
+            tuple, list, or ndarray. Values are converted to floats internally. Make
+            sure all x component values are in the range [0.0, 1.0]. The default value
+            is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
             from the airfoils directory. I highly recommended setting this to True. Can

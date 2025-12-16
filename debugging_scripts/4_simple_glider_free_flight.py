@@ -7,11 +7,10 @@ the simplest possible test case for the coupled solver."""
 
 import logging
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import pterasoftware as ps
-
 
 # Configure logging to display DEBUG messages.
 # Some libraries configure logging before we can, so we need to directly set the

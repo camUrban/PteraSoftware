@@ -112,8 +112,8 @@ Once you understand the process, here's how to implement it:
 
 3. **Create a new branch**
    - Branch from main for each change.  
-   - Use descriptive branch names, such as feature/add-new-plot or 
-   bugfix/fix-units.  
+   - Use descriptive branch names, such as `feature/add-new-plot` or 
+   `bugfix/fix-units`.  
    ```shell
    git checkout main
    git branch <branch-name>

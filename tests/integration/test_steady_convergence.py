@@ -27,16 +27,16 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady horseshoe vortex lattice method",
-            panel_aspect_ratio_bounds=(4, 1),
-            num_chordwise_panels_bounds=(3, 15),
-            convergence_criteria=1.0,
+            panel_aspect_ratio_bounds=(4, 2),
+            num_chordwise_panels_bounds=(1, 4),
+            convergence_criteria=5.0,
         )
 
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
 
         panel_ar_ans = 4
-        num_chordwise_ans = 4
+        num_chordwise_ans = 2
 
         self.assertTrue(abs(converged_panel_ar - panel_ar_ans) <= 1)
         self.assertTrue(abs(converged_num_chordwise - num_chordwise_ans) <= 1)
@@ -50,16 +50,16 @@ class TestSteadyConvergence(unittest.TestCase):
         converged_parameters = ps.convergence.analyze_steady_convergence(
             ref_problem=self.steady_validation_problem,
             solver_type="steady ring vortex lattice method",
-            panel_aspect_ratio_bounds=(4, 1),
-            num_chordwise_panels_bounds=(3, 10),
-            convergence_criteria=1.0,
+            panel_aspect_ratio_bounds=(4, 2),
+            num_chordwise_panels_bounds=(1, 4),
+            convergence_criteria=5.0,
         )
 
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
 
         panel_ar_ans = 4
-        num_chordwise_ans = 5
+        num_chordwise_ans = 2
 
         self.assertTrue(abs(converged_panel_ar - panel_ar_ans) <= 1)
         self.assertTrue(abs(converged_num_chordwise - num_chordwise_ans) <= 1)

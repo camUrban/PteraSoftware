@@ -30,7 +30,13 @@ This package contains the following modules:
     test_operating_point_movement.py: This module contains a class to test
     OperatingPointMovements.
 
+    test_package_init.py: This module contains tests for the pterasoftware package
+    __init__.py.
+
     test_panel.py: This module contains a class to test Panels.
+
+    test_parameter_validation.py: This module contains a class to test parameter
+    validation functions.
 
     test_problems.py: This module contains a class to test SteadyProblems and
     UnsteadyProblems.
@@ -59,7 +65,9 @@ import tests.unit.test_movement
 import tests.unit.test_movements_functions
 import tests.unit.test_operating_point
 import tests.unit.test_operating_point_movement
+import tests.unit.test_package_init
 import tests.unit.test_panel
+import tests.unit.test_parameter_validation
 import tests.unit.test_problems
 import tests.unit.test_ring_vortex
 import tests.unit.test_transformations

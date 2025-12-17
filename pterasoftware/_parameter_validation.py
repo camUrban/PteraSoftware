@@ -8,7 +8,6 @@ from typing import Any, cast
 import numpy as np
 
 
-# TEST: Consider adding unit tests for this function.
 def str_return_str(value: Any, name: str) -> str:
     """Validates that a value is a str and returns it as a str.
 
@@ -21,7 +20,6 @@ def str_return_str(value: Any, name: str) -> str:
     return value
 
 
-# TEST: Consider adding unit tests for this function.
 def boolLike_return_bool(value: Any, name: str) -> bool:
     """Validates that a value is a bool or a numpy bool and returns it as a bool.
 
@@ -38,7 +36,6 @@ def boolLike_return_bool(value: Any, name: str) -> bool:
         )
 
 
-# TEST: Consider adding unit tests for this function.
 def int_in_range_return_int(
     value: Any,
     name: str,
@@ -107,7 +104,6 @@ def int_in_range_return_int(
     return int(value)
 
 
-# TEST: Consider adding unit tests for this function.
 def number_in_range_return_float(
     value: Any,
     name: str,
@@ -179,7 +175,6 @@ def number_in_range_return_float(
     return float(value)
 
 
-# TEST: Consider adding unit tests for this function.
 def arrayLike_of_numbers_in_range_return_float(
     value: Any,
     name: str,
@@ -264,7 +259,6 @@ def arrayLike_of_numbers_in_range_return_float(
     return validated_value
 
 
-# TEST: Consider adding unit tests for this function.
 def arrayLike_of_twoD_number_vectorLikes_return_float(
     value: Any,
     name: str,
@@ -298,7 +292,6 @@ def arrayLike_of_twoD_number_vectorLikes_return_float(
     return validated_vectors
 
 
-# TEST: Consider adding unit tests for this function.
 def threeD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
     """Validates a value is a 3D vector-like object (array-like object with shape (3,)),
     and returns it as a (3,) ndarray of floats.
@@ -324,7 +317,6 @@ def threeD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
     return validated_vector
 
 
-# TEST: Consider adding unit tests for this function.
 def arrayLike_of_threeD_number_vectorLikes_return_float(
     value: Any, name: str
 ) -> np.ndarray:
@@ -357,7 +349,6 @@ def arrayLike_of_threeD_number_vectorLikes_return_float(
     return validated_vectors
 
 
-# TEST: Consider adding unit tests for this function.
 def threeD_number_vectorLike_return_float_unit_vector(
     value: Any, name: str
 ) -> np.ndarray:
@@ -391,7 +382,6 @@ def threeD_number_vectorLike_return_float_unit_vector(
     return validated_vector
 
 
-# TEST: Consider adding unit tests for this function.
 def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
     str | Callable[[np.ndarray], np.ndarray],
     str | Callable[[np.ndarray], np.ndarray],
@@ -448,7 +438,6 @@ def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
     )
 
 
-# TEST: Consider adding unit tests for this function.
 def nD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
     """Validates a value is an ND vector-like object (array-like object with shape (N,))
     of numbers, and returns it as an (N,) ndarray of floats.
@@ -474,7 +463,6 @@ def nD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
     return validated_vector
 
 
-# TEST: Consider adding unit tests for this function.
 def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarray:
     """Validates a value is a (4,4) array-like object. It then returns it as a (4,4)
     ndarray of floats.
@@ -500,7 +488,6 @@ def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarra
     return validated_matrix
 
 
-# TEST: Consider adding unit tests for this function.
 def non_empty_list_return_list(value: Any, name: str) -> list[Any]:
     """Validates a value is a non empty list and returns it.
 
@@ -517,7 +504,6 @@ def non_empty_list_return_list(value: Any, name: str) -> list[Any]:
     return value
 
 
-# TEST: Consider adding unit tests for this function.
 def rotation_order_return_str(value: Any, name: str) -> str:
     """Validates a value is a str representing a Tait-Bryan rotation sequence, and
     returns it as a str.

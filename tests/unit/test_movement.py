@@ -1252,6 +1252,8 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         bounds."""
         from pterasoftware.movements.movement import _optimize_delta_time
 
+        ps.set_up_logging(level="Info")
+
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
@@ -1261,10 +1263,12 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         initial_delta_time = 0.01
 
+        # Run with an abnormally high mismatch_cutoff to speed up test.
         optimized_delta_time = _optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
+            mismatch_cutoff=0.35,
         )
 
         self.assertIsInstance(optimized_delta_time, float)

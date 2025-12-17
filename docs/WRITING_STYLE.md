@@ -21,7 +21,7 @@ For Claude, use the following command. For developers, see the `CONTRIBUTING.md`
 cd ${WORKSPACE} && ".venv/Scripts/codespell.exe" --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
 ```
 
-## Formatting Docstrings with Docformatter
+## Formatting Docstrings with docformatter
 For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
@@ -38,7 +38,7 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pt
 - When referring to axes, coordinates, or planes, use  lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, docstrings, or documentation.
 - Always use straight single and double quotes, not curly ones.
-- In .md files, use "…" instead of "...". In all other files, use "...".
+- In markdown files, use "…" instead of "...". In all other files, use "...".
 - Always end *.py file with an empty line.
 - Preserve existing comment structure and detail level.
 - Write comments as complete sentences ending with a period.

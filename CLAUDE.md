@@ -16,7 +16,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
-Requires Python 3.11, but active development is done in 3.13  
+Requires Python 3.11, but active development is done in 3.13
 
 ### Key Runtime Dependencies
 - **MuJoCo**: Physics engine for coupled free flight simulations
@@ -57,30 +57,31 @@ Requires Python 3.11, but active development is done in 3.13
 - `mujoco_examples/`: Directory with MuJoCo tutorials and example scripts
 - `pterasoftware/`: Main package with modular solver architecture
   - `geometry/`: Package with aircraft geometry classes
-    - `_airfoils/` Directory containing data files with airfoil coordinates
+    - `_airfoils/`: Directory containing data files with airfoil coordinates
     - `_meshing.py`: Wing mesh generation
     - `airfoil.py`: Airfoil class with coordinate generation
     - `airplane.py`: Airplane class with coordinate transformations
     - `wing.py`: Wing class with symmetry processing
     - `wing_cross_section.py`: WingCrossSection class with validation
-  - `movements/` Package with movement classes (definitions for time-dependent motion)
+  - `movements/`: Package with movement classes (definitions for time-dependent motion)
     - `_functions.py`: Movement utility functions
     - `airplane_movement.py`: Airplane motion definitions
-    - `movement.py`: Core Movement and CoupledMovement classes
+    - `movement.py`: Core Movement class
     - `operating_point_movement.py`: Operating condition changes
     - `wing_cross_section_movement.py`: Wing cross section motion
     - `wing_movement.py`: Wing flapping motion
   - `_aerodynamics.py`: Vortex elements and velocity calculations
   - `_functions.py`: Shared utility functions
+  - `_logging.py`: Contains function for setting up logging
   - `_mujoco_model.py`: MuJoCoModel class for coupled simulations
   - `_panel.py`: Panel class for discretized mesh elements
   - `_parameter_validation.py`: Input validation functions
-  - `_transformations.py` Coordinate transformations and rotations
+  - `_transformations.py`: Coordinate transformations and rotations
   - `convergence.py`: Convergence analysis tools
   - `coupled_unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver for coupled simulations
-  - `operating_point.py` OperatingPoint and CoupledOperatingPoint classes
+  - `operating_point.py`: OperatingPoint and CoupledOperatingPoint classes
   - `output.py`: Visualization and results processing
-  - `problems.py` SteadyProblem, UnsteadyProblem, and CoupledUnsteadyProblem classes
+  - `problems.py`: SteadyProblem, UnsteadyProblem, and CoupledUnsteadyProblem classes
   - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
   - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
   - `trim.py`: Trim analysis functionality

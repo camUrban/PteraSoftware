@@ -140,6 +140,11 @@ class Airfoil:
         deflection = _parameter_validation.number_in_range_return_float(
             deflection, "deflection", -5.0, True, 5.0, True
         )
+
+        # Early return optimization: no modification needed for zero deflection.
+        if deflection == 0.0:
+            return self
+
         hinge_point = _parameter_validation.number_in_range_return_float(
             hinge_point, "hinge_point", 0.0, False, 1.0, False
         )

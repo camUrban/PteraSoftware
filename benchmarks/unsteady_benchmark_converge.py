@@ -3,6 +3,8 @@ unsteady_benchmark_timed.py. Avoid committing any changes to this file."""
 
 import pterasoftware as ps
 
+ps.set_up_logging(level="Info")
+
 flapping_frequency = 1
 num_chordwise_panels = 5
 num_spanwise_panels = 20
@@ -141,6 +143,14 @@ ps.convergence.analyze_unsteady_convergence(
 
 # Converged result:
 # Wake type: free
-# Wake length: 2 cycles
+# Cycles: 2
 # Panel aspect ratio: 4
 # Chordwise Panels: 5
+# Spanwise Panels:
+# 	Unsteady Benchmark Airplane:
+# 		Main Wing:
+# 			WingCrossSection 1: 6
+# 			WingCrossSection 2: None
+# 		Reflected Main Wing:
+# 			WingCrossSection 1: 6
+# 			WingCrossSection 2: None

@@ -1,6 +1,5 @@
 """This module contains classes to test Movements and CoupledMovements."""
 
-import math
 import unittest
 from unittest.mock import patch
 
@@ -1244,11 +1243,9 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
 
-        # The optimization searches within [initial / sqrt(10), initial * sqrt(10)].
-        self.assertGreaterEqual(
-            optimized_delta_time, initial_delta_time / math.sqrt(10)
-        )
-        self.assertLessEqual(optimized_delta_time, initial_delta_time * math.sqrt(10))
+        # The optimization searches within [initial / 10.0, initial * 2.0].
+        self.assertGreaterEqual(optimized_delta_time, initial_delta_time / 10.0)
+        self.assertLessEqual(optimized_delta_time, initial_delta_time * 2.0)
 
     def test_works_with_static_movement(self):
         """Test that _optimize_delta_time works with static AirplaneMovement."""

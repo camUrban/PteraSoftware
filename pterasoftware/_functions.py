@@ -188,10 +188,10 @@ def process_solver_loads(
     # Local imports for isinstance() checks (avoids loading all solvers at module
     # level).
     from . import (
+        coupled_unsteady_ring_vortex_lattice_method,
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
-        coupled_unsteady_ring_vortex_lattice_method,
     )
 
     if isinstance(

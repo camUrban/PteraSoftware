@@ -22,6 +22,7 @@ from tqdm import tqdm
 from . import (
     _aerodynamics,
     _functions,
+    _logging,
     _panel,
     _parameter_validation,
     _transformations,
@@ -29,6 +30,8 @@ from . import (
     operating_point,
     problems,
 )
+
+_logger = _logging.get_logger("coupled_unsteady_ring_vortex_lattice_method")
 
 
 # TEST: Add unit tests for this class's initialization.
@@ -195,31 +198,26 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
     def run(
         self,
-        logging_level: str = "Warning",
         prescribed_wake: bool | np.bool_ = True,
+        show_progress: bool | np.bool_ = True,
     ) -> None:
         """Runs the solver on the CoupledUnsteadyProblem.
 
-        :param logging_level: Determines the detail of information that the solver's
-            logger will output while running. The options are, in order of detail and
-            severity, "Debug", "Info", "Warning", "Error", "Critical". The default is
-            "Warning".
         :param prescribed_wake: Set this to True to solve using a prescribed wake model.
             Set to False to use a free-wake, which may be more accurate but will make
             the fun method significantly slower. Can be a bool or a numpy bool and will
             be converted internally to a bool. The default is True.
+        :param show_progress: Set this to True to show the TQDM progress bar. For
+            showing the progress bar and displaying log statements, set up logging using
+            the setup_logging function. It can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is True.
         :return: None
         """
-        logging_level = _parameter_validation.str_return_str(
-            logging_level, "logging_level"
-        )
-        logging_level_value = _functions.convert_logging_level_name_to_value(
-            logging_level
-        )
-        logging.basicConfig(level=logging_level_value)
-
         self._prescribed_wake = _parameter_validation.boolLike_return_bool(
             prescribed_wake, "prescribed_wake"
+        )
+        show_progress = _parameter_validation.boolLike_return_bool(
+            show_progress, "show_progress"
         )
 
         # REFACTOR: Before starting the loop, we should reset mujoco_model to the
@@ -318,7 +316,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             unit_scale=True,
             ncols=100,
             desc="Simulating",
-            disable=logging_level_value != logging.WARNING,
+            disable=not show_progress,
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
             "Remaining: {remaining}",
         ) as bar:

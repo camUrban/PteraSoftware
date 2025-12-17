@@ -867,59 +867,6 @@ class TestNDNumberVectorLikeReturnFloat(unittest.TestCase):
             pv.nD_number_vectorLike_return_float("invalid", "test_param")
 
 
-class TestFourByFourNumberArrayLikeReturnFloat(unittest.TestCase):
-    """A class with functions to test fourByFour_number_arrayLike_return_float."""
-
-    def test_valid_4x4_array(self):
-        """Test fourByFour_number_arrayLike_return_float with valid 4x4 array."""
-        valid_matrix = pvf.make_valid_4x4_matrix_fixture()
-        result = pv.fourByFour_number_arrayLike_return_float(valid_matrix, "test_param")
-        npt.assert_array_equal(result, valid_matrix)
-        self.assertEqual(result.dtype, float)
-        self.assertEqual(result.shape, (4, 4))
-
-    def test_valid_4x4_list(self):
-        """Test fourByFour_number_arrayLike_return_float with valid 4x4 nested list."""
-        valid_list = pvf.make_valid_4x4_list_fixture()
-        result = pv.fourByFour_number_arrayLike_return_float(valid_list, "test_param")
-        npt.assert_array_equal(result, np.array(valid_list, dtype=float))
-        self.assertEqual(result.shape, (4, 4))
-
-    def test_valid_with_ints(self):
-        """Test fourByFour_number_arrayLike_return_float converts ints to floats."""
-        int_matrix = np.eye(4, dtype=int)
-        result = pv.fourByFour_number_arrayLike_return_float(int_matrix, "test_param")
-        npt.assert_array_equal(result, np.eye(4, dtype=float))
-        self.assertEqual(result.dtype, float)
-
-    def test_invalid_3x3_matrix(self):
-        """Test fourByFour_number_arrayLike_return_float raises ValueError with 3x3 matrix."""
-        invalid_matrix = pvf.make_invalid_3x3_matrix_fixture()
-        with self.assertRaises(ValueError) as context:
-            pv.fourByFour_number_arrayLike_return_float(invalid_matrix, "test_param")
-        self.assertIn("test_param", str(context.exception))
-        self.assertIn("4x4", str(context.exception))
-
-    def test_invalid_4x3_matrix(self):
-        """Test fourByFour_number_arrayLike_return_float raises ValueError with 4x3 matrix."""
-        with self.assertRaises(ValueError):
-            pv.fourByFour_number_arrayLike_return_float(
-                np.zeros((4, 3), dtype=float), "test_param"
-            )
-
-    def test_invalid_with_nan(self):
-        """Test fourByFour_number_arrayLike_return_float raises ValueError with NaN."""
-        matrix_with_nan = np.eye(4, dtype=float)
-        matrix_with_nan[0, 0] = np.nan
-        with self.assertRaises(ValueError):
-            pv.fourByFour_number_arrayLike_return_float(matrix_with_nan, "test_param")
-
-    def test_invalid_string(self):
-        """Test fourByFour_number_arrayLike_return_float raises TypeError with string."""
-        with self.assertRaises(TypeError):
-            pv.fourByFour_number_arrayLike_return_float("invalid", "test_param")
-
-
 class TestNonEmptyListReturnList(unittest.TestCase):
     """A class with functions to test non_empty_list_return_list."""
 

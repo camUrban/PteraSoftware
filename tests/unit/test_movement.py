@@ -1252,8 +1252,6 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         bounds."""
         from pterasoftware.movements.movement import _optimize_delta_time
 
-        ps.set_up_logging(level="Info")
-
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]

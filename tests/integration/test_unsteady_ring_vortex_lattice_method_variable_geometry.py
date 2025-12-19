@@ -49,3 +49,24 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
             show=False,
             save=False,
         )
+
+    def test_method_katz_does_not_throw(self):
+        """This method tests that the UnsteadyRingVortexLatticeMethodSolver with the
+        Katz force calculation method does not throw any errors on variable geometry.
+
+        :return: None
+        """
+        self.unsteady_ring_vortex_lattice_method_validation_solver.run(
+            prescribed_wake=True,
+            show_progress=False,
+            force_method="Katz",
+        )
+
+        # Verify that forces were calculated.
+        this_airplane = (
+            self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplanes[
+                0
+            ]
+        )
+        self.assertIsNotNone(this_airplane.forceCoefficients_W)
+        self.assertIsNotNone(this_airplane.momentCoefficients_W_CgP1)

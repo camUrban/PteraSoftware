@@ -453,9 +453,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
             # Calculate the pressure coefficient at each collocation point using the
             # steady Bernoulli equation.
-            stackPressureCoefficients = 1.0 - (
-                stackVelocityMagnitudes / vInfMagnitude
-            ) ** 2
+            stackPressureCoefficients = (
+                1.0 - (stackVelocityMagnitudes / vInfMagnitude) ** 2
+            )
 
             # Calculate the force (in the first Airplane's geometry axes) on each
             # Panel from pressure integration.

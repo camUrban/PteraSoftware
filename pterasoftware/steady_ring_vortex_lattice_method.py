@@ -543,10 +543,18 @@ class SteadyRingVortexLatticeMethodSolver:
 
             # Initialize three 1D ndarrays to hold the effective strength of the Panels'
             # RingVortices' LineVortices.
-            effective_right_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-            effective_front_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-            effective_left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-            effective_back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+            effective_right_line_vortex_strengths = np.zeros(
+                self.num_panels, dtype=float
+            )
+            effective_front_line_vortex_strengths = np.zeros(
+                self.num_panels, dtype=float
+            )
+            effective_left_line_vortex_strengths = np.zeros(
+                self.num_panels, dtype=float
+            )
+            effective_back_line_vortex_strengths = np.zeros(
+                self.num_panels, dtype=float
+            )
 
             # Iterate through the Airplanes' Wings.
             for airplane in self.airplanes:
@@ -569,9 +577,9 @@ class SteadyRingVortexLatticeMethodSolver:
                         if panel.is_right_edge:
                             # Set the effective right LineVortex strength to this Panel's
                             # RingVortex's strength.
-                            effective_right_line_vortex_strengths[global_panel_position] = (
-                                self._vortex_strengths[global_panel_position]
-                            )
+                            effective_right_line_vortex_strengths[
+                                global_panel_position
+                            ] = self._vortex_strengths[global_panel_position]
                         else:
                             panel_to_right: _panel.Panel = _panels[
                                 _local_chordwise_position,
@@ -584,7 +592,9 @@ class SteadyRingVortexLatticeMethodSolver:
                             # Set the effective right LineVortex strength to 1/2 the
                             # difference between this Panel's RingVortex's strength,
                             # and the RingVortex's strength of the Panel to the right.
-                            effective_right_line_vortex_strengths[global_panel_position] = (
+                            effective_right_line_vortex_strengths[
+                                global_panel_position
+                            ] = (
                                 self._vortex_strengths[global_panel_position]
                                 - _ring_vortex_to_right.strength
                             ) / 2
@@ -592,9 +602,9 @@ class SteadyRingVortexLatticeMethodSolver:
                         if panel.is_leading_edge:
                             # Set the effective front LineVortex strength to this Panel's
                             # RingVortex's strength.
-                            effective_front_line_vortex_strengths[global_panel_position] = (
-                                self._vortex_strengths[global_panel_position]
-                            )
+                            effective_front_line_vortex_strengths[
+                                global_panel_position
+                            ] = self._vortex_strengths[global_panel_position]
                         else:
                             panel_to_front: _panel.Panel = _panels[
                                 _local_chordwise_position - 1,
@@ -607,7 +617,9 @@ class SteadyRingVortexLatticeMethodSolver:
                             # Set the effective front LineVortex strength to 1/2 the
                             # difference between this Panel's RingVortex's strength,
                             # and the RingVortex's strength of the Panel in front of it.
-                            effective_front_line_vortex_strengths[global_panel_position] = (
+                            effective_front_line_vortex_strengths[
+                                global_panel_position
+                            ] = (
                                 self._vortex_strengths[global_panel_position]
                                 - _ring_vortex_to_front.strength
                             ) / 2
@@ -615,9 +627,9 @@ class SteadyRingVortexLatticeMethodSolver:
                         if panel.is_left_edge:
                             # Set the effective left LineVortex strength to this Panel's
                             # RingVortex's strength.
-                            effective_left_line_vortex_strengths[global_panel_position] = (
-                                self._vortex_strengths[global_panel_position]
-                            )
+                            effective_left_line_vortex_strengths[
+                                global_panel_position
+                            ] = self._vortex_strengths[global_panel_position]
                         else:
                             panel_to_left: _panel.Panel = _panels[
                                 _local_chordwise_position,
@@ -630,7 +642,9 @@ class SteadyRingVortexLatticeMethodSolver:
                             # Set the effective left LineVortex strength to 1/2 the
                             # difference between this Panel's RingVortex's strength,
                             # and the RingVortex's strength of the Panel to the left.
-                            effective_left_line_vortex_strengths[global_panel_position] = (
+                            effective_left_line_vortex_strengths[
+                                global_panel_position
+                            ] = (
                                 self._vortex_strengths[global_panel_position]
                                 - _ring_vortex_to_left.strength
                             ) / 2
@@ -639,9 +653,9 @@ class SteadyRingVortexLatticeMethodSolver:
                             # Set the effective back LineVortex strength to zero, as it
                             # is perfectly canceled by the wake HorseshoeVortex's finite
                             # leg LineVortex.
-                            effective_back_line_vortex_strengths[global_panel_position] = (
-                                0.0
-                            )
+                            effective_back_line_vortex_strengths[
+                                global_panel_position
+                            ] = 0.0
                         else:
                             panel_to_back: _panel.Panel = _panels[
                                 _local_chordwise_position + 1,
@@ -654,7 +668,9 @@ class SteadyRingVortexLatticeMethodSolver:
                             # Set the effective back LineVortex strength to 1/2 the
                             # difference between this Panel's RingVortex's strength,
                             # and the RingVortex's strength of the Panel to the back.
-                            effective_back_line_vortex_strengths[global_panel_position] = (
+                            effective_back_line_vortex_strengths[
+                                global_panel_position
+                            ] = (
                                 self._vortex_strengths[global_panel_position]
                                 - _ring_vortex_to_back.strength
                             ) / 2
@@ -665,17 +681,25 @@ class SteadyRingVortexLatticeMethodSolver:
             # Calculate the velocity (in the first Airplane's geometry axes, observed
             # from the Earth frame) at the center of every Panels' RingVortex's right
             # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
-            stackVelocityRightLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-                stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1
+            stackVelocityRightLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(
+                    stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1
+                )
             )
-            stackVelocityFrontLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-                stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1
+            stackVelocityFrontLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(
+                    stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1
+                )
             )
-            stackVelocityLeftLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-                stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1
+            stackVelocityLeftLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(
+                    stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1
+                )
             )
-            stackVelocityBackLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-                stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1
+            stackVelocityBackLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(
+                    stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1
+                )
             )
 
             # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,

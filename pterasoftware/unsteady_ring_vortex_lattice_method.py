@@ -173,6 +173,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty((0, 3), dtype=float)
 
+        self._force_method: str = "Joukowski"
+
         self.ran = False
 
     def run(
@@ -180,6 +182,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         prescribed_wake: bool | np.bool_ = True,
         calculate_streamlines: bool | np.bool_ = True,
         show_progress: bool | np.bool_ = True,
+        force_method: str = "Joukowski",
     ) -> None:
         """Runs the solver on the UnsteadyProblem.
 
@@ -195,6 +198,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             showing the progress bar and displaying log statements, set up logging using
             the setup_logging function. It can be a bool or a numpy bool and will be
             converted internally to a bool. The default is True.
+        :param force_method: Determines the method used to calculate aerodynamic forces
+            on each Panel. The options are "Joukowski" or "Katz". The Joukowski method
+            uses the Kutta-Joukowski theorem applied to line vortex segments. The Katz
+            method integrates pressure coefficients over panel surfaces. Both methods
+            should produce similar results, but may differ slightly in magnitude. The
+            default is "Joukowski".
         :return: None
         """
         self._prescribed_wake = _parameter_validation.boolLike_return_bool(
@@ -205,6 +214,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         show_progress = _parameter_validation.boolLike_return_bool(
             show_progress, "show_progress"
+        )
+        self._force_method = _parameter_validation.force_method_return_str(
+            force_method, "force_method"
         )
 
         # The following loop iterates through the time steps to populate currently
@@ -1033,209 +1045,259 @@ class UnsteadyRingVortexLatticeMethodSolver:
         between two Panels, and (2) including the effects each Panel's back LineVortex
         with its own effective strength.
 
+        **References:**
+
+        Katz, J. & Plotkin, A. (2001). Low Speed Aerodynamics (2nd Ed.). Cambridge
+        University Press. Chapters 9-11.
+
+        Nguyen, A. T., Kim, J.-K., Han, J.-S., & Han, J.-H. (2016). Extended unsteady
+        vortex-lattice method for insect flapping wings. Journal of Aircraft, 53(6),
+        1709-1718.
+
         :return: None
         """
-        # Initialize a variable to hold the global Panel position as we iterate
-        # through them.
-        global_panel_position = 0
+        if self._force_method == "Joukowski":
+            # Initialize a variable to hold the global Panel position as we iterate
+            # through them.
+            global_panel_position = 0
 
-        # Initialize three 1D ndarrays to hold the effective strength of the Panels'
-        # RingVortices' LineVortices.
-        effective_right_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-        effective_front_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-        effective_left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
-        effective_back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+            # Initialize three 1D ndarrays to hold the effective strength of the Panels'
+            # RingVortices' LineVortices.
+            effective_right_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+            effective_front_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+            effective_left_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
+            effective_back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
-        # Iterate through the Airplanes' Wings.
-        for airplane in self.current_airplanes:
-            for wing in airplane.wings:
-                _panels = wing.panels
-                assert _panels is not None
+            # Iterate through the Airplanes' Wings.
+            for airplane in self.current_airplanes:
+                for wing in airplane.wings:
+                    _panels = wing.panels
+                    assert _panels is not None
 
-                # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
-                panels = np.ravel(_panels)
+                    # Convert this Wing's 2D ndarray of Panels into a 1D ndarray.
+                    panels = np.ravel(_panels)
 
-                # Iterate through this Wing's 1D ndarray of Panels.
-                panel: _panel.Panel
-                for panel in panels:
-                    _local_chordwise_position = panel.local_chordwise_position
-                    assert _local_chordwise_position is not None
+                    # Iterate through this Wing's 1D ndarray of Panels.
+                    panel: _panel.Panel
+                    for panel in panels:
+                        _local_chordwise_position = panel.local_chordwise_position
+                        assert _local_chordwise_position is not None
 
-                    _local_spanwise_position = panel.local_spanwise_position
-                    assert _local_spanwise_position is not None
+                        _local_spanwise_position = panel.local_spanwise_position
+                        assert _local_spanwise_position is not None
 
-                    if panel.is_right_edge:
-                        # Set the effective right LineVortex strength to this Panel's
-                        # RingVortex's strength.
-                        effective_right_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                        )
-                    else:
-                        panel_to_right: _panel.Panel = _panels[
-                            _local_chordwise_position,
-                            _local_spanwise_position + 1,
-                        ]
-
-                        ring_vortex_to_right = panel_to_right.ring_vortex
-                        assert ring_vortex_to_right is not None
-
-                        # Set the effective right LineVortex strength to 1/2 the
-                        # difference between this Panel's RingVortex's strength,
-                        # and the RingVortex's strength of the Panel to the right.
-                        effective_right_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                            - ring_vortex_to_right.strength
-                        ) / 2
-
-                    if panel.is_leading_edge:
-                        # Set the effective front LineVortex strength to this Panel's
-                        # RingVortex's strength.
-                        effective_front_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                        )
-                    else:
-                        panel_to_front: _panel.Panel = _panels[
-                            _local_chordwise_position - 1,
-                            _local_spanwise_position,
-                        ]
-
-                        ring_vortex_to_front = panel_to_front.ring_vortex
-                        assert ring_vortex_to_front is not None
-
-                        # Set the effective front LineVortex strength to 1/2 the
-                        # difference between this Panel's RingVortex's strength,
-                        # and the RingVortex's strength of the Panel in front of it.
-                        effective_front_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                            - ring_vortex_to_front.strength
-                        ) / 2
-
-                    if panel.is_left_edge:
-                        # Set the effective left LineVortex strength to this Panel's
-                        # RingVortex's strength.
-                        effective_left_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                        )
-                    else:
-                        panel_to_left: _panel.Panel = _panels[
-                            _local_chordwise_position,
-                            _local_spanwise_position - 1,
-                        ]
-
-                        ring_vortex_to_left = panel_to_left.ring_vortex
-                        assert ring_vortex_to_left is not None
-
-                        # Set the effective left LineVortex strength to 1/2 the
-                        # difference between this Panel's RingVortex's strength,
-                        # and the RingVortex's strength of the Panel to the left.
-                        effective_left_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                            - ring_vortex_to_left.strength
-                        ) / 2
-
-                    if panel.is_trailing_edge:
-                        if self._current_step == 0:
-                            # Set the effective back LineVortex strength to this
-                            # Panel's RingVortex's strength, as, for the first time
-                            # step, there isn't a wake RingVortex to cancel it out.
-                            effective_back_line_vortex_strengths[
-                                global_panel_position
-                            ] = self._current_bound_vortex_strengths[
-                                global_panel_position
-                            ]
-                        else:
-                            # Set the effective back LineVortex strength to the
-                            # difference between this Panel's RingVortex's strength and
-                            # its strength at the last time step. This models the effect
-                            # of the Panel's back LineVortex being partially cancelled
-                            # out by the front LineVortex of the wake RingVortex
-                            # immediately to this Panel's rear. This works because that
-                            # wake RingVortex has the same strength this Panel's
-                            # RingVortex had last time step.
-                            effective_back_line_vortex_strengths[
-                                global_panel_position
-                            ] = (
-                                self._current_bound_vortex_strengths[
-                                    global_panel_position
-                                ]
-                                - self._last_bound_vortex_strengths[
-                                    global_panel_position
-                                ]
+                        if panel.is_right_edge:
+                            # Set the effective right LineVortex strength to this Panel's
+                            # RingVortex's strength.
+                            effective_right_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
                             )
-                    else:
-                        panel_to_back: _panel.Panel = _panels[
-                            _local_chordwise_position + 1,
-                            _local_spanwise_position,
-                        ]
+                        else:
+                            panel_to_right: _panel.Panel = _panels[
+                                _local_chordwise_position,
+                                _local_spanwise_position + 1,
+                            ]
 
-                        _ring_vortex_to_back = panel_to_back.ring_vortex
-                        assert _ring_vortex_to_back is not None
+                            ring_vortex_to_right = panel_to_right.ring_vortex
+                            assert ring_vortex_to_right is not None
 
-                        # Set the effective back LineVortex strength to 1/2 the
-                        # difference between this Panel's RingVortex's strength,
-                        # and the RingVortex's strength of the Panel to the back.
-                        effective_back_line_vortex_strengths[global_panel_position] = (
-                            self._current_bound_vortex_strengths[global_panel_position]
-                            - _ring_vortex_to_back.strength
-                        ) / 2
+                            # Set the effective right LineVortex strength to 1/2 the
+                            # difference between this Panel's RingVortex's strength,
+                            # and the RingVortex's strength of the Panel to the right.
+                            effective_right_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                                - ring_vortex_to_right.strength
+                            ) / 2
 
-                    # Increment the global Panel position variable.
-                    global_panel_position += 1
+                        if panel.is_leading_edge:
+                            # Set the effective front LineVortex strength to this Panel's
+                            # RingVortex's strength.
+                            effective_front_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                            )
+                        else:
+                            panel_to_front: _panel.Panel = _panels[
+                                _local_chordwise_position - 1,
+                                _local_spanwise_position,
+                            ]
 
-        # Calculate the velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at the center of every Panels' RingVortex's right
-        # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
-        stackVelocityRightLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1)
-            + self._calculate_current_movement_velocities_at_right_leg_centers()
-        )
-        stackVelocityFrontLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1)
-            + self._calculate_current_movement_velocities_at_front_leg_centers()
-        )
-        stackVelocityLeftLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1)
-            + self._calculate_current_movement_velocities_at_left_leg_centers()
-        )
-        stackVelocityBackLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1)
-            + self._calculate_current_movement_velocities_at_back_leg_centers()
-        )
+                            ring_vortex_to_front = panel_to_front.ring_vortex
+                            assert ring_vortex_to_front is not None
 
-        # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
-        # find the forces (in the first Airplane's geometry axes) on the Panels'
-        # RingVortex's right LineVortex, front LineVortex, left LineVortex, and back
-        # LineVortex using the effective vortex strengths.
-        rightLegForces_GP1 = (
-            self.current_operating_point.rho
-            * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
-            * _functions.numba_1d_explicit_cross(
-                stackVelocityRightLineVortexCenters_GP1__E, self.stackRbrv_GP1
+                            # Set the effective front LineVortex strength to 1/2 the
+                            # difference between this Panel's RingVortex's strength,
+                            # and the RingVortex's strength of the Panel in front of it.
+                            effective_front_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                                - ring_vortex_to_front.strength
+                            ) / 2
+
+                        if panel.is_left_edge:
+                            # Set the effective left LineVortex strength to this Panel's
+                            # RingVortex's strength.
+                            effective_left_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                            )
+                        else:
+                            panel_to_left: _panel.Panel = _panels[
+                                _local_chordwise_position,
+                                _local_spanwise_position - 1,
+                            ]
+
+                            ring_vortex_to_left = panel_to_left.ring_vortex
+                            assert ring_vortex_to_left is not None
+
+                            # Set the effective left LineVortex strength to 1/2 the
+                            # difference between this Panel's RingVortex's strength,
+                            # and the RingVortex's strength of the Panel to the left.
+                            effective_left_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                                - ring_vortex_to_left.strength
+                            ) / 2
+
+                        if panel.is_trailing_edge:
+                            if self._current_step == 0:
+                                # Set the effective back LineVortex strength to this
+                                # Panel's RingVortex's strength, as, for the first time
+                                # step, there isn't a wake RingVortex to cancel it out.
+                                effective_back_line_vortex_strengths[
+                                    global_panel_position
+                                ] = self._current_bound_vortex_strengths[
+                                    global_panel_position
+                                ]
+                            else:
+                                # Set the effective back LineVortex strength to the
+                                # difference between this Panel's RingVortex's strength and
+                                # its strength at the last time step. This models the effect
+                                # of the Panel's back LineVortex being partially cancelled
+                                # out by the front LineVortex of the wake RingVortex
+                                # immediately to this Panel's rear. This works because that
+                                # wake RingVortex has the same strength this Panel's
+                                # RingVortex had last time step.
+                                effective_back_line_vortex_strengths[
+                                    global_panel_position
+                                ] = (
+                                    self._current_bound_vortex_strengths[
+                                        global_panel_position
+                                    ]
+                                    - self._last_bound_vortex_strengths[
+                                        global_panel_position
+                                    ]
+                                )
+                        else:
+                            panel_to_back: _panel.Panel = _panels[
+                                _local_chordwise_position + 1,
+                                _local_spanwise_position,
+                            ]
+
+                            _ring_vortex_to_back = panel_to_back.ring_vortex
+                            assert _ring_vortex_to_back is not None
+
+                            # Set the effective back LineVortex strength to 1/2 the
+                            # difference between this Panel's RingVortex's strength,
+                            # and the RingVortex's strength of the Panel to the back.
+                            effective_back_line_vortex_strengths[global_panel_position] = (
+                                self._current_bound_vortex_strengths[global_panel_position]
+                                - _ring_vortex_to_back.strength
+                            ) / 2
+
+                        # Increment the global Panel position variable.
+                        global_panel_position += 1
+
+            # Calculate the velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at the center of every Panels' RingVortex's right
+            # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
+            stackVelocityRightLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1)
+                + self._calculate_current_movement_velocities_at_right_leg_centers()
             )
-        )
-        frontLegForces_GP1 = (
-            self.current_operating_point.rho
-            * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
-            * _functions.numba_1d_explicit_cross(
-                stackVelocityFrontLineVortexCenters_GP1__E, self.stackFbrv_GP1
+            stackVelocityFrontLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1)
+                + self._calculate_current_movement_velocities_at_front_leg_centers()
             )
-        )
-        leftLegForces_GP1 = (
-            self.current_operating_point.rho
-            * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
-            * _functions.numba_1d_explicit_cross(
-                stackVelocityLeftLineVortexCenters_GP1__E, self.stackLbrv_GP1
+            stackVelocityLeftLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1)
+                + self._calculate_current_movement_velocities_at_left_leg_centers()
             )
-        )
-        backLegForces_GP1 = (
-            self.current_operating_point.rho
-            * np.expand_dims(effective_back_line_vortex_strengths, axis=1)
-            * np.cross(
-                stackVelocityBackLineVortexCenters_GP1__E,
-                self.stackBbrv_GP1,
-                axis=-1,
+            stackVelocityBackLineVortexCenters_GP1__E = (
+                self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1)
+                + self._calculate_current_movement_velocities_at_back_leg_centers()
             )
-        )
+
+            # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
+            # find the forces (in the first Airplane's geometry axes) on the Panels'
+            # RingVortex's right LineVortex, front LineVortex, left LineVortex, and back
+            # LineVortex using the effective vortex strengths.
+            rightLegForces_GP1 = (
+                self.current_operating_point.rho
+                * np.expand_dims(effective_right_line_vortex_strengths, axis=1)
+                * _functions.numba_1d_explicit_cross(
+                    stackVelocityRightLineVortexCenters_GP1__E, self.stackRbrv_GP1
+                )
+            )
+            frontLegForces_GP1 = (
+                self.current_operating_point.rho
+                * np.expand_dims(effective_front_line_vortex_strengths, axis=1)
+                * _functions.numba_1d_explicit_cross(
+                    stackVelocityFrontLineVortexCenters_GP1__E, self.stackFbrv_GP1
+                )
+            )
+            leftLegForces_GP1 = (
+                self.current_operating_point.rho
+                * np.expand_dims(effective_left_line_vortex_strengths, axis=1)
+                * _functions.numba_1d_explicit_cross(
+                    stackVelocityLeftLineVortexCenters_GP1__E, self.stackLbrv_GP1
+                )
+            )
+            backLegForces_GP1 = (
+                self.current_operating_point.rho
+                * np.expand_dims(effective_back_line_vortex_strengths, axis=1)
+                * np.cross(
+                    stackVelocityBackLineVortexCenters_GP1__E,
+                    self.stackBbrv_GP1,
+                    axis=-1,
+                )
+            )
+
+            steady_forces_GP1 = (
+                rightLegForces_GP1
+                + frontLegForces_GP1
+                + leftLegForces_GP1
+                + backLegForces_GP1
+            )
+
+        elif self._force_method == "Katz":
+            # Calculate the velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at every Panel's collocation point.
+            stackVelocityCollocationPoints_GP1__E = (
+                self.calculate_solution_velocity(
+                    stackP_GP1_CgP1=self.stackCpp_GP1_CgP1
+                )
+                + self._calculate_current_movement_velocities_at_collocation_points()
+            )
+
+            # Calculate the magnitude of velocity at each collocation point.
+            stackVelocityMagnitudes = np.linalg.norm(
+                stackVelocityCollocationPoints_GP1__E, axis=1
+            )
+
+            # Calculate the freestream velocity magnitude.
+            vInfMagnitude = np.linalg.norm(self.current_operating_point.vInf_GP1__E)
+
+            # Calculate the pressure coefficient at each collocation point using the
+            # steady Bernoulli equation.
+            stackPressureCoefficients = 1.0 - (
+                stackVelocityMagnitudes / vInfMagnitude
+            ) ** 2
+
+            # Calculate the steady force (in the first Airplane's geometry axes) on
+            # each Panel from pressure integration.
+            steady_forces_GP1 = (
+                -np.expand_dims(stackPressureCoefficients, axis=1)
+                * self.current_operating_point.qInf__E
+                * np.expand_dims(self.panel_areas, axis=1)
+                * self.stackUnitNormals_GP1
+            )
 
         # The unsteady force calculation below includes a negative sign to account for a
         # sign convention mismatch between Ptera Software and the reference literature.
@@ -1265,29 +1327,38 @@ class UnsteadyRingVortexLatticeMethodSolver:
             / self.delta_time
         )
 
-        forces_GP1 = (
-            rightLegForces_GP1
-            + frontLegForces_GP1
-            + leftLegForces_GP1
-            + backLegForces_GP1
-            + unsteady_forces_GP1
-        )
+        forces_GP1 = steady_forces_GP1 + unsteady_forces_GP1
 
-        # Find the moments (in the first Airplane's geometry axes, relative to the
-        # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
-        # front LineVortex, left LineVortex, and back LineVortex.
-        rightLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpr_GP1_CgP1, rightLegForces_GP1
-        )
-        frontLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpf_GP1_CgP1, frontLegForces_GP1
-        )
-        leftLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpl_GP1_CgP1, leftLegForces_GP1
-        )
-        backLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self.stackCblvpb_GP1_CgP1, backLegForces_GP1
-        )
+        if self._force_method == "Joukowski":
+            # Find the moments (in the first Airplane's geometry axes, relative to the
+            # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
+            # front LineVortex, left LineVortex, and back LineVortex.
+            rightLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+                self.stackCblvpr_GP1_CgP1, rightLegForces_GP1
+            )
+            frontLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+                self.stackCblvpf_GP1_CgP1, frontLegForces_GP1
+            )
+            leftLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+                self.stackCblvpl_GP1_CgP1, leftLegForces_GP1
+            )
+            backLegMoments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+                self.stackCblvpb_GP1_CgP1, backLegForces_GP1
+            )
+
+            steady_moments_GP1_CgP1 = (
+                rightLegMoments_GP1_CgP1
+                + frontLegMoments_GP1_CgP1
+                + leftLegMoments_GP1_CgP1
+                + backLegMoments_GP1_CgP1
+            )
+
+        elif self._force_method == "Katz":
+            # Calculate the moment (in the first Airplane's geometry axes, relative
+            # to the first Airplane's CG) due to the steady force on each Panel.
+            steady_moments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
+                self.stackCpp_GP1_CgP1, steady_forces_GP1
+            )
 
         # The unsteady moment is calculated at the collocation point because the
         # unsteady force acts on the bound RingVortex, whose center is at the
@@ -1299,13 +1370,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.stackCpp_GP1_CgP1, unsteady_forces_GP1
         )
 
-        moments_GP1_CgP1 = (
-            rightLegMoments_GP1_CgP1
-            + frontLegMoments_GP1_CgP1
-            + leftLegMoments_GP1_CgP1
-            + backLegMoments_GP1_CgP1
-            + unsteady_moments_GP1_CgP1
-        )
+        moments_GP1_CgP1 = steady_moments_GP1_CgP1 + unsteady_moments_GP1_CgP1
 
         # TODO: Transform forces_GP1 and moments_GP1_CgP1 to each Airplane's local
         #  geometry axes before passing to process_solver_loads.

@@ -1024,5 +1024,62 @@ class TestRotationOrderReturnStr(unittest.TestCase):
             pv.rotation_order_return_str(None, "test_param")
 
 
+class TestForceMethodReturnStr(unittest.TestCase):
+    """A class with functions to test force_method_return_str."""
+
+    def test_valid_joukowski(self):
+        """Test force_method_return_str with valid input Joukowski."""
+        result = pv.force_method_return_str("Joukowski", "force_method")
+        self.assertEqual(result, "Joukowski")
+        self.assertIsInstance(result, str)
+
+    def test_valid_katz(self):
+        """Test force_method_return_str with valid input Katz."""
+        result = pv.force_method_return_str("Katz", "force_method")
+        self.assertEqual(result, "Katz")
+        self.assertIsInstance(result, str)
+
+    def test_invalid_string(self):
+        """Test force_method_return_str raises ValueError with invalid string."""
+        with self.assertRaises(ValueError) as context:
+            pv.force_method_return_str("Invalid", "force_method")
+        self.assertIn("must be one of", str(context.exception))
+        self.assertIn("Invalid", str(context.exception))
+
+    def test_invalid_type_int(self):
+        """Test force_method_return_str raises TypeError with integer input."""
+        with self.assertRaises(TypeError) as context:
+            pv.force_method_return_str(123, "force_method")
+        self.assertIn("must be a str", str(context.exception))
+
+    def test_invalid_type_float(self):
+        """Test force_method_return_str raises TypeError with float input."""
+        with self.assertRaises(TypeError) as context:
+            pv.force_method_return_str(1.23, "force_method")
+        self.assertIn("must be a str", str(context.exception))
+
+    def test_invalid_type_none(self):
+        """Test force_method_return_str raises TypeError with None input."""
+        with self.assertRaises(TypeError) as context:
+            pv.force_method_return_str(None, "force_method")
+        self.assertIn("must be a str", str(context.exception))
+
+    def test_case_sensitive(self):
+        """Test force_method_return_str is case sensitive."""
+        with self.assertRaises(ValueError) as context:
+            pv.force_method_return_str("joukowski", "force_method")
+        self.assertIn("must be one of", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            pv.force_method_return_str("katz", "force_method")
+        self.assertIn("must be one of", str(context.exception))
+
+    def test_empty_string(self):
+        """Test force_method_return_str raises ValueError with empty string."""
+        with self.assertRaises(ValueError) as context:
+            pv.force_method_return_str("", "force_method")
+        self.assertIn("must be one of", str(context.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

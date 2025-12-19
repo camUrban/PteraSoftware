@@ -20,6 +20,27 @@ def str_return_str(value: Any, name: str) -> str:
     return value
 
 
+def force_method_return_str(value: Any, name: str) -> str:
+    """Validates that a value is a valid force calculation method string.
+
+    The valid force calculation methods are "Joukowski" and "Katz". The Joukowski method
+    uses the Kutta-Joukowski theorem applied to line vortex segments. The Katz method
+    integrates pressure coefficients over panel surfaces.
+
+    :param value: The value to validate.
+    :param name: The name of the value.
+    :return: The validated value.
+    """
+    if not isinstance(value, str):
+        raise TypeError(f"{name} must be a str.")
+
+    valid_methods = ["Joukowski", "Katz"]
+    if value not in valid_methods:
+        raise ValueError(f"{name} must be one of {valid_methods}, but got '{value}'.")
+
+    return value
+
+
 def boolLike_return_bool(value: Any, name: str) -> bool:
     """Validates that a value is a bool or a numpy bool and returns it as a bool.
 

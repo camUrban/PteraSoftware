@@ -111,13 +111,24 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
+        self._force_method: str = "Joukowski"
+
         self.ran = False
 
-    def run(self) -> None:
+    def run(self, force_method: str = "Joukowski") -> None:
         """Runs the solver on the SteadyProblem.
 
+        :param force_method: Determines the method used to calculate aerodynamic forces
+            on each Panel. The options are "Joukowski" or "Katz". The Joukowski method
+            uses the Kutta-Joukowski theorem applied to line vortex segments. The Katz
+            method integrates pressure coefficients over panel surfaces. Both methods
+            should produce similar results, but may differ slightly in magnitude. The
+            default is "Joukowski".
         :return: None
         """
+        self._force_method = _parameter_validation.force_method_return_str(
+            force_method, "force_method"
+        )
         # Initialize the Panels' HorseshoeVortices.
         _logger.debug("Initializing the Panels' HorseshoeVortices.")
         self._initialize_panel_vortices()
@@ -394,26 +405,66 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         This method assumes that the correct strengths for the HorseshoeVortices have
         already been calculated and set.
 
+        **References:**
+
+        Katz, J. & Plotkin, A. (2001). Low Speed Aerodynamics (2nd Ed.). Cambridge
+        University Press. Chapters 9-11.
+
+        Nguyen, A. T., Kim, J.-K., Han, J.-S., & Han, J.-H. (2016). Extended unsteady
+        vortex-lattice method for insect flapping wings. Journal of Aircraft, 53(6),
+        1709-1718.
+
         :return: None
         """
-        # Calculate the velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at the center of every Panel's HorseshoeVortex's
-        # finite leg.
-        stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1
-        )
-
-        # Calculate the force (in the first Airplane's geometry axes) on each Panel's
-        # HorseshoeVortex's finite leg using the Kutta-Joukowski theorem.
-        forces_GP1 = (
-            self.operating_point.rho
-            * np.expand_dims(self._vortex_strengths, axis=1)
-            * np.cross(
-                stackVelocityBoundVortexCenters_GP1__E,
-                self._stackBoundVortexVectors_GP1,
-                axis=-1,
+        if self._force_method == "Joukowski":
+            # Calculate the velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at the center of every Panel's HorseshoeVortex's
+            # finite leg.
+            stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1
             )
-        )
+
+            # Calculate the force (in the first Airplane's geometry axes) on each
+            # Panel's HorseshoeVortex's finite leg using the Kutta-Joukowski theorem.
+            forces_GP1 = (
+                self.operating_point.rho
+                * np.expand_dims(self._vortex_strengths, axis=1)
+                * np.cross(
+                    stackVelocityBoundVortexCenters_GP1__E,
+                    self._stackBoundVortexVectors_GP1,
+                    axis=-1,
+                )
+            )
+
+        elif self._force_method == "Katz":
+            # Calculate the velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at every Panel's collocation point.
+            stackVelocityCollocationPoints_GP1__E = self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self._stackCpp_GP1_CgP1
+            )
+
+            # Calculate the magnitude of velocity at each collocation point.
+            stackVelocityMagnitudes = np.linalg.norm(
+                stackVelocityCollocationPoints_GP1__E, axis=1
+            )
+
+            # Calculate the freestream velocity magnitude.
+            vInfMagnitude = np.linalg.norm(self.operating_point.vInf_GP1__E)
+
+            # Calculate the pressure coefficient at each collocation point using the
+            # steady Bernoulli equation.
+            stackPressureCoefficients = 1.0 - (
+                stackVelocityMagnitudes / vInfMagnitude
+            ) ** 2
+
+            # Calculate the force (in the first Airplane's geometry axes) on each
+            # Panel from pressure integration.
+            forces_GP1 = (
+                -np.expand_dims(stackPressureCoefficients, axis=1)
+                * self.operating_point.qInf__E
+                * np.expand_dims(self._panel_areas, axis=1)
+                * self.stackUnitNormals_GP1
+            )
 
         # TODO: Determine if we get any performance gains by switching to the
         #  functions.numba1d_explicit_cross function here.

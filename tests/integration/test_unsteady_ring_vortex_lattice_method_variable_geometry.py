@@ -63,10 +63,8 @@ class TestUnsteadyRingVortexLatticeMethodVariableGeometry(unittest.TestCase):
         )
 
         # Verify that forces were calculated.
-        this_airplane = (
-            self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplanes[
-                0
-            ]
-        )
+        this_airplane = self.unsteady_ring_vortex_lattice_method_validation_solver.current_airplanes[
+            0
+        ]
         self.assertIsNotNone(this_airplane.forceCoefficients_W)
         self.assertIsNotNone(this_airplane.momentCoefficients_W_CgP1)

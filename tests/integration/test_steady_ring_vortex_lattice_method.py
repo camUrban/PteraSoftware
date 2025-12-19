@@ -97,11 +97,9 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
                 0
             ].forceCoefficients_W[2]
         )
-        c_m_katz = (
-            self.steady_ring_vortex_lattice_method_validation_solver.airplanes[
-                0
-            ].momentCoefficients_W_CgP1[1]
-        )
+        c_m_katz = self.steady_ring_vortex_lattice_method_validation_solver.airplanes[
+            0
+        ].momentCoefficients_W_CgP1[1]
 
         # Verify that the Katz method produces physically reasonable results.
         # Lift should be positive for positive angle of attack.

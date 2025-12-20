@@ -1329,7 +1329,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Calculate the steady force (in the first Airplane's geometry axes) on
             # each Panel from pressure integration.
             steady_forces_GP1 = (
-                np.expand_dims(stackPressureCoefficients, axis=1)
+                -np.expand_dims(stackPressureCoefficients, axis=1)
                 * self.current_operating_point.qInf__E
                 * np.expand_dims(self.panel_areas, axis=1)
                 * self.stackUnitNormals_GP1

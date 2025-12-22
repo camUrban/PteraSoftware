@@ -403,7 +403,7 @@ movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
     delta_time=0.03,
-    num_cycles=2,
+    num_cycles=4,
     num_chords=None,
     num_steps=None,
 )
@@ -420,7 +420,7 @@ del airplane_movement
 del operating_point_movement
 
 # Define the UnsteadyProblem.
-example_problem = ps.problems.AeroelasticUnsteadyProblem(
+example_problem = ps.problems.BetterAeroelasticUnsteadyProblem(
     movement=movement,
     single_step_movement=single_step_movement,
 )

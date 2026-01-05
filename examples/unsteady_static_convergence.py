@@ -4,6 +4,10 @@ progress and results in the console."""
 
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the convergence function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane and AirplaneMovement
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[

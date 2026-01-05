@@ -4,6 +4,10 @@ convergence progress and results in the console."""
 
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the convergence function.
+ps.set_up_logging(level="Info")
+
 # Create two Airplanes. Read through the solver and formation examples for
 # more details on creating these Airplanes.
 leading_airplane = ps.geometry.airplane.Airplane(
@@ -136,7 +140,7 @@ trailing_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Airplane",
-    Cg_E_CgP1=(-20, 5, 0),
+    Cg_GP1_CgP1=(-20, 5, 0),
 )
 
 # Create an OperatingPoint.

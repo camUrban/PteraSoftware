@@ -6,7 +6,9 @@
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
 ![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
+![python](https://img.shields.io/pypi/pyversions/pterasoftware)
 ![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
+![types](https://img.shields.io/pypi/types/pterasoftware)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
 
 ***
@@ -59,7 +61,7 @@ understanding of biological flight.
     * Wings can be defined as a collection of two or more wing cross sections of any
       dimensions and positions.
     * Wing cross sections can be specified to match the mean camber line of an airfoil.
-    * The package comes with a massive database of airfoil to chose from.
+    * The package comes with a massive database of airfoils to choose from.
     * Wings are automatically discretized into panels with customizable sizes and
       spacings.
 3. Customizable Aircraft Motion
@@ -88,9 +90,10 @@ understanding of biological flight.
 
 ## Installation and Use
 
-First things first, you will need a copy of Python 3.13, which you can download from the
-official Python website. At this time, I do not recommend using a version from the 
-Anaconda distribution as it could introduce compatibility issues with PyPI.
+First things first, you will need a copy of Python (3.11, 3.12, or 3.13), which you can 
+download from the official Python website. At this time, I do not recommend using a 
+version from the Anaconda distribution as it could introduce compatibility issues with 
+PyPI.
 
 There are two ways to use Ptera Software. The first is by downloading GitHub release,
 which will provide you your own copy of the source code, in which you can get a feel
@@ -174,9 +177,8 @@ custom aircraft creation. We welcome contributions if you'd like to extend it!
 Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that
 walks through getting Ptera Software up and running. It includes every step, from 
 downloading Python for the first time to setting up your IDE to running the software. 
-Please note that the video demonstrates installation with Python 3.8, but for Ptera 
-Software version 3.2.0 and later, you should use Python 3.13. If you still run into 
-problems, feel free to open an issue for guidance.
+Please note that the video demonstrates installation with Python 3.8, but you should use
+Python 3.11, 3.12, or 3.13 for the current version of Ptera Software.
 
 ## Example Code
 
@@ -257,27 +259,31 @@ examples of the output you can expect to receive from each of them.
 
 Here are the requirements necessary to run Ptera Software:
 
-* matplotlib >= 3.10.6, < 4.0.0
-* numpy >= 2.2.6, < 2.3.0
-* pyvista >= 0.46.3, < 1.0.0
-* scipy >= 1.16.1, < 2.0.0
-* numba >= 0.61.2, < 1.0.0
-* cmocean >= 4.0.3, < 5.0.0
-* tqdm >= 4.67.1, < 5.0.0
+* cmocean >= 3.1.3, < 5.0.0
+* matplotlib >= 3.9.3, < 4.0.0
+* numba >= 0.61.0, < 1.0.0
+* numpy >= 2.1.0, < 3.0.0
+* PySide6 >= 6.8.1, < 7.0.0
+* pyvista >= 0.45.0, < 1.0.0
+* scipy >= 1.15.0, < 2.0.0
+* tqdm >= 4.66.3, < 5.0.0
 * webp >= 0.4.0, < 1.0.0
-* PySide6 >= 6.9.2, < 7.0.0
 
 Additionally, these packages are useful for continued development of the software:
 
-* codecov >= 2.1.13, < 3.0.0
-* black >= 25.1.0, < 26.0.0
-* codespell >= 2.4.1, < 3.0.0
-* pre-commit >= 4.3.0, < 5.0.0
-* build >= 1.3.0, < 2.0.0
-* twine >= 6.1.0, < 7.0.0
-* PyInstaller >= 6.15.0, < 7.0.0
-* setuptools >= 80.9.0, < 81.0.0
-* wheel >= 0.45.1, < 0.46.0
+* black
+* build
+* codecov
+* codespell
+* docformatter
+* isort
+* mypy
+* pre-commit
+* PyInstaller
+* scipy-stubs
+* setuptools
+* twine
+* wheel
 
 ## Validation
 
@@ -291,7 +297,6 @@ As I said before, the primary goal of this project is to increase the open-sourc
 community's understanding and appreciation for unsteady aerodynamics in general and
 flapping-wing flight in particular. This will only happen through your participation.
 Feel free to request features, report bugs or security issues, and provide suggestions.
-No comment is too big or small!
 
 Before contributing, make sure to read through the
 [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to best help out.
@@ -308,9 +313,9 @@ contribute and don't know where to start, this is for you!
 ### Style and Documentation
 
 * Maintain the repository's A CodeFactor Rating.
-* We should fill in any of the "Properly document this..." TODO statements.
-* We should ensure that all files be at least 30% comment lines.
-* We should continue to ensure that all source code is formatted using Black.
+* We should continue to ensure that all source code is formatted using Black and all 
+docstrings formatted using docformatter.
+* Classes, functions, and methods should use type hints.
 
 ### Features
 
@@ -322,44 +327,27 @@ contribute and don't know where to start, this is for you!
   workflow in Ptera Software for controls systems identification for flapping-wing
   vehicles.
 
-## Credits
+## Contributors
 
-Here is a list of all the people and packages that helped me created Ptera Software in
-no particular order. Specific citations can be found in the source code's docstrings
-where applicable.
+Thank you so much to all the people that have contributed to Ptera Software! Here is a list of all the people that have contributed code:
+
+* Cameron Urban (@camUrban)
+* Peter Sharpe (@peterdsharpe)
+* Zach Tait (@Zach10a)
+* Jonah Jaffe (@JonahJ27)
+* Akhil Mettu (@AKHIL-149)
+
+### Supporters
+
+Here is a list of all the other people that helped me created Ptera Software, in no particular order.
 
 * Suhas Kodali
-* Peter Sharpe
-* Zach Tait
-* Jonah Jaffe
 * Ramesh Agarwal
 * E. Farrell Helbling
 * Raphael Zufferey
 * Joseph Katz
 * Allen Plotkin
 * Austin Stover
-* AeroSandbox
-* Black
-* Codecov
-* NumPy
-* SciPy
-* PyVista
-* MatPlotLib
-* Numba
-* Pre-Commit
-* SetupTools
-* GitIgnore
-* Shields.io
-* PyPI
-* Wheel
-* Twine
-* SemVer
-* GitFlow
-* GitHub Flow
-* Cmocean
-* Tqdm
-* WebP
-* Build
 
 ## Notes
 

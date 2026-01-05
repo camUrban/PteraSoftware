@@ -34,7 +34,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
         """
         self.unsteady_ring_vortex_lattice_method_validation_solver.run(
             prescribed_wake=True,
-            logging_level="Critical",
+            show_progress=False,
         )
 
         ps.output.animate(

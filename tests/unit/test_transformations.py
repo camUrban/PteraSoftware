@@ -565,7 +565,7 @@ class TestGenerateReflectT(unittest.TestCase):
         npt.assert_allclose(reflected_plane_point, plane_test_point, atol=1e-14)
 
     def test_zero_length_normal_error(self):
-        """Tests error handling for zero-length normal vectors.
+        """Tests error handling for zero length normal vectors.
 
         :return: None
         """
@@ -576,7 +576,7 @@ class TestGenerateReflectT(unittest.TestCase):
             _transformations.generate_reflect_T(plane_point, zero_normal, False)
 
         self.assertIn(
-            "plane_normal_A must have a non-zero length.", str(context.exception)
+            "plane_normal_A must have a non zero length.", str(context.exception)
         )
 
     def test_transformation_properties(self):
@@ -848,7 +848,7 @@ class TestComposeTPas(unittest.TestCase):
         b_A_a = [1.0, 2.0, 0.5]
 
         # Given:
-        # The orientation of B axes relative to A axes using an intrinsic z-y'-x"
+        # The orientation of B axes relative to A axes using an intrinsic zy'x"
         # rotation
         angles_A_to_B_izyx = [0.0, 0.0, 90.0]
 

@@ -1,6 +1,7 @@
 """This module contains a class to test Airfoils."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 
@@ -173,6 +174,14 @@ class TestAirfoil(unittest.TestCase):
         original_outline = self.naca0012_airfoil.outline_A_lp
         modified_outline = modified_airfoil.outline_A_lp
         self.assertFalse(np.allclose(original_outline, modified_outline))
+
+    def test_add_control_surface_zero_deflection_returns_self(self):
+        """Verify that zero deflection returns the same Airfoil instance (optimization)."""
+        result = self.naca0012_airfoil.add_control_surface(
+            deflection=0.0,
+            hinge_point=0.75,
+        )
+        self.assertIs(result, self.naca0012_airfoil)
 
     def test_parameter_validation_invalid_inputs(self):
         """Test that invalid parameters raise appropriate errors."""

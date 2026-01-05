@@ -10,13 +10,13 @@ Angle vectors contain three scalar angles. These angles can either represent the
 
 For both active and passive angle vectors, Ptera Software only uses Tait-Bryan rotation sequences. Below are the acceptable sequence IDs and names, which we use for variable naming and for describing angle vectors in text.
 
-* ixyz: intrinsic x-y'-z"  
+* ixyz: intrinsic xy'z"  
 * ixzy: intrinsic x-z'-y"  
 * iyxz: intrinsic y-x'-z"  
 * iyzx: intrinsic y-z'-x"  
 * izxy: intrinsic z-x'-y"  
-* izyx: intrinsic z-y'-x"  
-* exyz: extrinsic x-y-z  
+* izyx: intrinsic zy'x"  
+* exyz: extrinsic xyz  
 * exzy: extrinsic x-z-y  
 * eyxz: extrinsic y-x-z  
 * eyzx: extrinsic y-z-x  
@@ -43,22 +43,22 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 #### Local reference examples
 
 * Variables: angles\_E\_to\_B\_izyx  
-* Text: …angles describing the orientation of the body axes relative to the Earth axes using an intrinsic z-y'-x" sequence…
+* Text: …angles describing the orientation of the body axes relative to the Earth axes using an intrinsic zy'x" sequence…
 
 #### Wing-local reference examples
 
 * Variables: angles\_Wcs1\_to\_Wn\_izyx  
-* Text: …angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic z-y'-x" sequence…
+* Text: …angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic zy'x" sequence…
 
 #### Airplane-local reference examples
 
 * Variables: angles\_Wn2\_to\_G\_izyx  
-* Text: …angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic z-y'-x" sequence…
+* Text: …angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic zy'x" sequence…
 
 #### Non-local reference examples
 
 * Variables: angles\_BP1\_to\_E\_exyz  
-* Text: …angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic x-y-z sequence…
+* Text: …angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic xyz sequence…
 
 ## Active Angle Vectors
 Active angle vectors give instructions for rotating a vector within its current axis system. Therefore, they don't require information about the particular axes, only the type or rotation and the sequence.
@@ -76,14 +76,14 @@ Active angle vectors give instructions for rotating a vector within its current 
 ### Active Angle Vector Examples
 
 * Variables: angles\_act\_izyx  
-* Text: …angles for rotation using an intrinsic z-y'-x" sequence…
+* Text: …angles for rotation using an intrinsic zy'x" sequence…
 
 ## Implementation Notes
 
 1. Angle wrapping: All angles should be wrapped to the range (-180, 180\] for consistency  
 2. Singularities: Different sequences experience gimbal lock at particular points  
 3. Units: All angles are in degrees unless explicitly noted otherwise  
-4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. z-y'-x" is the same as x-y-z)
+4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. zy'x" is the same as xyz)
 
 # Rotation and Transformation Matrices
 

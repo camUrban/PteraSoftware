@@ -1,20 +1,19 @@
 """This script opens the GUI to demonstrate Ptera Software analyzing example models.
 It is in development and will be able to run custom models in the future"""
 
+import importlib
 import os
 import sys
 import time
-import importlib
 
 # Add the gui directory to the Python path so ui_resources can be imported.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QMainWindow, QApplication, QSplashScreen, QDialog
-
 from _resources.main_window import Ui_MainWindowDesign
 from _resources.textdialog import Ui_TextAboutDialog
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication, QDialog, QMainWindow, QSplashScreen
 
 # Get the project root directory (parent of the gui directory).
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,9 +28,7 @@ class TextAboutDialog(QDialog):
 
 
 def _read_file(file_path: str) -> str:
-    from PySide6.QtCore import QFile
-    from PySide6.QtCore import QTextStream
-    from PySide6.QtCore import QIODevice
+    from PySide6.QtCore import QFile, QIODevice, QTextStream
 
     file = QFile(file_path)
     # noinspection PyUnresolvedReferences

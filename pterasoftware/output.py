@@ -1,20 +1,22 @@
-"""This module contains useful functions for visualizing geometry and results.
+"""Contains functions for visualizing geometry and results.
 
-This module contains the following classes:
-    None
+**Contains the following classes:**
 
-This module contains the following functions:
-    draw: Draw a solver's Airplane(s).
+None
 
-    animate: Animate an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
+**Contains the following functions:**
 
-    plot_results_versus_time: This function takes in an
-    UnsteadyRingVortexLatticeMethodSolver, and plots the loads and load coefficients
-    as a function of time.
+draw: Draws a solver's Airplane(s).
 
-    print_results: This function prints the load and load coefficients calculated by
-    a solver.
+animate: Animates an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
+
+plot_results_versus_time: Plots an UnsteadyRingVortexLatticeMethodSolver's loads and
+load coefficients as a function of time.
+
+print_results: Prints a solver's load and load coefficients.
 """
+
+from __future__ import annotations
 
 import math
 import time
@@ -24,12 +26,14 @@ import numpy as np
 import pyvista as pv
 import webp
 
-from . import geometry
-from . import _parameter_validation
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
-from . import coupled_unsteady_ring_vortex_lattice_method
+from . import (
+    _parameter_validation,
+    geometry,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+    coupled_unsteady_ring_vortex_lattice_method,
+)
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -40,7 +44,7 @@ _streamline_color = "orchid"
 _plotter_background_color = "black"
 _figure_background_color = "None"
 _text_color = "#818181"
-_quality = 75
+_quality = 75.0
 _window_size = [1024, 768]
 
 # For the figure lines, use the "Prism" qualitative color map from
@@ -99,55 +103,40 @@ def draw(
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
         | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
-    scalar_type=None,
-    show_streamlines: bool = False,
-    show_wake_vortices: bool = False,
-    save: bool = False,
-    testing: bool = False,
-):
-    """Draw a solver's Airplane(s).
+    scalar_type: str | None = None,
+    show_streamlines: bool | np.bool_ = False,
+    show_wake_vortices: bool | np.bool_ = False,
+    save: bool | np.bool_ = False,
+    testing: bool | np.bool_ = False,
+) -> None:
+    """Draws a solver's Airplane(s).
 
-    Citation:
-        Adapted from:         vlm3.draw in AeroSandbox
-        Author:               Peter Sharpe
-        Date of Retrieval:    03/28/2020
+    **Citation:**
 
-    :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
-    SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
+    Adapted from: vlm3.draw in AeroSandbox
 
-        This is the solver whose Airplane(s) will be plotted.
+    Author: Peter Sharpe
 
-    :param scalar_type: str or None, optional
+    Date of retrieval: 03/28/2020
 
-        This variable determines how to color the Panels. Setting this to None colors
-        the Panels uniformly. It can also be "induced drag", "side force", or "lift",
-        which respectively use each Panel's induced drag, side force, and lift
-        coefficient. The default value is None.
-
-    :param show_streamlines: boolLike, optional
-
-        Set this to True to show the streamlines emanating from the back of the
-        Wings. It can be a boolean or a NumPy boolean and will be converted
-        internally to a boolean. The default value is False.
-
-    :param show_wake_vortices: boolLike, optional
-
-        Set this to True to show any wake RingVortices. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default
-        value is False.
-
-    :param save: boolLike, optional
-
-        Set this to True to save the image as a WebP. It can be a boolean or a NumPy
-        boolean and will be converted internally to a boolean. The default value is
-        False.
-
-    :param testing: boolLike, optional
-
-        Set this to True to close the image after 1 second, which is useful for
-        running test suites. It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean. The default value is False.
-
+    :param solver: The solver whose Airplane(s) will be plotted.
+    :param scalar_type: Determines how to color the Panels. Setting this to None colors
+        the Panels uniformly. If the solver has been run, it can also be "induced drag",
+        "side force", or "lift", which respectively use each Panel's induced drag, side
+        force, and lift coefficient. The default is None.
+    :param show_streamlines: Set this to True to show the streamlines emanating from the
+        back of the Wings. If True, the solver's streamlines must have already been
+        calculated. Can be a bool or a numpy bool and will be converted internally to a
+        bool. The default is False.
+    :param show_wake_vortices: Set this to True to show any wake RingVortices. If True,
+        the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
+        already been run. Can be a bool or a numpy bool and will be converted internally
+        to a bool. The default is False.
+    :param save: Set this to True to save the image as a WebP. It can be a bool or a
+        numpy bool and will be converted internally to a bool. The default is False.
+    :param testing: Set this to True to close the image after one second, which is
+        useful for running test suites. It can be a bool or a numpy bool and will be
+        converted internally to a bool. The default is False.
     :return: None
     """
     if not isinstance(
@@ -166,9 +155,12 @@ def draw(
         )
 
     if scalar_type is not None:
-        scalar_type = _parameter_validation.string_return_string(
-            scalar_type, "scalar_type"
-        )
+        if not solver.ran:
+            raise RuntimeError(
+                "solver must have run before drawing with scalar_type not None."
+            )
+
+        scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
                 'scalar_type must be None, "induced drag", "side force", or "lift".'
@@ -177,15 +169,38 @@ def draw(
     show_streamlines = _parameter_validation.boolLike_return_bool(
         show_streamlines, "show_streamlines"
     )
+    if show_streamlines and not solver.ran:
+        raise RuntimeError(
+            "solver must have run before drawing with show_streamlines set to True."
+        )
+    if show_streamlines and len(solver.gridStreamlinePoints_GP1_CgP1) == 0:
+        raise RuntimeError(
+            "solver must have streamline points calculated before drawing with "
+            "show_streamlines set to True."
+        )
+
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
         show_wake_vortices, "show_wake_vortices"
     )
+    if show_wake_vortices and not isinstance(
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_wake_vortices can only be True when drawing an "
+            "UnsteadyRingVortexLatticeMethodSolver."
+        )
+    if show_wake_vortices and not solver.ran:
+        raise RuntimeError(
+            "solver must have run before drawing with show_wake_vortices set to True."
+        )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
-    plotter.enable_parallel_projection()
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # Get the solver's geometry.
     if isinstance(
@@ -295,7 +310,7 @@ def draw(
                     )
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window.
         # When the user closes the window, the Plotter still exists. Therefore,
@@ -316,15 +331,19 @@ def draw(
         )
         time.sleep(1)
 
-    # If saving, take a screenshot, convert it to an Image, and save it as a WebP.
+    # If saving, take a screenshot, convert it to a ndarray, convert that to an Image,
+    # and save it as a WebP.
     if save:
         image = webp.Image.fromarray(
-            plotter.screenshot(
-                filename=None,
-                transparent_background=True,
-                return_img=True,
+            np.array(
+                plotter.screenshot(
+                    filename=None,
+                    transparent_background=True,
+                    return_img=True,
+                )
             )
         )
+
         webp.save_image(
             img=image, file_path="Draw.webp", lossless=False, quality=_quality
         )
@@ -337,46 +356,29 @@ def draw(
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 def animate(
-    unsteady_solver: 
-    (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver 
+    unsteady_solver: (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver 
      | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
-    scalar_type=None,
-    show_wake_vortices: bool = False,
-    save: bool = False,
-    testing: bool = False,
-):
-    """Animate an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
+    scalar_type: str | None = None,
+    show_wake_vortices: bool | np.bool_ = False,
+    save: bool | np.bool_ = False,
+    testing: bool | np.bool_ = False,
+) -> None:
+    """Animates an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
 
-    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-
-        This is the UnsteadyRingVortexLatticeMethodSolver whose Airplane(s) will be
-        animated.
-
-    :param scalar_type: str or None, optional
-
-        This variable determines how to color the Panels. Setting this to None colors
-        the Panels uniformly. It can also be "induced drag", "side force", or "lift",
-        which respectively use each Panel's induced drag, side force, and lift
-        coefficient. The default value is None.
-
-    :param show_wake_vortices: boolLike, optional
-
-        Set this to True to show any wake RingVortices. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default
-        value is False.
-
-    :param save: boolLike, optional
-
-        Set this to True to save the image as a WebP. It can be a boolean or a NumPy
-        boolean and will be converted internally to a boolean. The default value is
-        False.
-
-    :param testing: boolLike, optional
-
-        Set this to True to close the image after 1 second, which is useful for
-        running test suites. It can be a boolean or a NumPy boolean and will be
-        converted internally to a boolean. The default value is False.
-
+    :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver whose Airplane(s)
+        will be animated.
+    :param scalar_type: Determines how to color the Panels. Setting this to None colors
+        the Panels uniformly. If the solver has been run, it can also be "induced drag",
+        "side force", or "lift", which respectively use each Panel's induced drag, side
+        force, and lift coefficient. The default is None.
+    :param show_wake_vortices: Set this to True to show any wake RingVortices. If True,
+        the solver must have already been run. Can be a bool or a numpy bool and will be
+        converted internally to a bool. The default is False.
+    :param save: Set this to True to save the image as a WebP. It can be a bool or a
+        numpy bool and will be converted internally to a bool. The default is False.
+    :param testing: Set this to True to start the animation after one second, which is
+        useful for running test suites. It can be a bool or a numpy bool and will be
+        converted internally to a bool. The default is False.
     :return: None
     """
     if not isinstance(
@@ -391,9 +393,13 @@ def animate(
         )
 
     if scalar_type is not None:
-        scalar_type = _parameter_validation.string_return_string(
-            scalar_type, "scalar_type"
-        )
+        if not unsteady_solver.ran:
+            raise RuntimeError(
+                "unsteady_solver must have run before animating with scalar_type not "
+                "None."
+            )
+
+        scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
                 'scalar_type must be None, "induced drag", "side force", or "lift".'
@@ -402,6 +408,12 @@ def animate(
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
         show_wake_vortices, "show_wake_vortices"
     )
+    if show_wake_vortices and not unsteady_solver.ran:
+        raise RuntimeError(
+            "unsteady_solver must have run before animating with show_wake_vortices set"
+            " to True."
+        )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
@@ -416,20 +428,20 @@ def animate(
 
     # Scale down the true-speed frames per second to at most 50 fps. This is the
     # maximum speed at which some programs can render WebPs.
-    requested_fps = 1 / unsteady_solver.delta_time
-    speed = 1
-    if requested_fps > 50:
-        speed = 50 / requested_fps
-    actual_fps = math.floor(requested_fps * speed)
+    requested_fps = 1.0 / unsteady_solver.delta_time
+    speed = 1.0
+    if requested_fps > 50.0:
+        speed = 50.0 / requested_fps
+    actual_fps = float(math.floor(requested_fps * speed))
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
-    plotter.enable_parallel_projection()
+    plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # Initialize values to hold the color map choice and its limits.
-    c_min = 0
-    c_max = 0
-    color_map = None
+    c_min = 0.0
+    c_max = 0.0
+    color_map: str = ""
 
     # If saving the animation, add text that displays its speed.
     if save:
@@ -443,8 +455,8 @@ def animate(
 
     # Initialize variables to hold the SteadyProblems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=float)
-    min_scalar = None
-    max_scalar = None
+    min_scalar = 0.0
+    max_scalar = 0.0
 
     # If coloring the Panels based on scalars, gather all the scalars across all the
     # time steps and Airplanes. These will be used to set the color map limits.
@@ -512,7 +524,7 @@ def animate(
         )
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)
+    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
     # If not testing, show the Plotter with the first time step, and print a message
     # to the console on how to adjust the view and start the animation. If testing,
@@ -539,12 +551,15 @@ def animate(
         )
         time.sleep(1)
 
-    # Start a list to hold a WebP Image of each frame.
+    # Start a list to hold a WebP Image of each frame. To start, take a screenshot,
+    # convert it to a ndarray, and convert that to an Image.
     images = [
         webp.Image.fromarray(
-            plotter.screenshot(
-                transparent_background=True,
-                return_img=True,
+            np.array(
+                plotter.screenshot(
+                    transparent_background=True,
+                    return_img=True,
+                )
             )
         )
     ]
@@ -611,14 +626,17 @@ def animate(
                 smooth_shading=False,
             )
 
-        # If saving, append a WebP Image of this frame to the list of Images.
+        # If saving, append a WebP Image of this frame to the list of Images. To do
+        # so, take a screenshot, convert it to a ndarray, and convert that to an Image.
         if save:
             images.append(
                 webp.Image.fromarray(
-                    plotter.screenshot(
-                        filename=None,
-                        transparent_background=True,
-                        return_img=True,
+                    np.array(
+                        plotter.screenshot(
+                            filename=None,
+                            transparent_background=True,
+                            return_img=True,
+                        )
                     )
                 )
             )
@@ -642,28 +660,19 @@ def animate(
 #  extend them if needed.
 def plot_results_versus_time(
     unsteady_solver: (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver 
-                      | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
-    show: bool = True,
-    save: bool = False,
-):
-    """This function takes in an UnsteadyRingVortexLatticeMethodSolver, and plots the
-    loads and load coefficients as a function of time.
+     | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
+    show: bool | np.bool_ = True,
+    save: bool | np.bool_ = False,
+) -> None:
+    """Plots an UnsteadyRingVortexLatticeMethodSolver's loads and load coefficients as a
+    function of time.
 
-    :param unsteady_solver: UnsteadyRingVortexLatticeMethodSolver
-
-        This is the UnsteadyRingVortexLatticeMethodSolver whose loads will be plotted.
-
-    :param show: boolLike, optional
-
-        Set this to True to show the plots. It can be a boolean or a NumPy boolean
-        and will be converted internally to a boolean. The default is True.
-
-    :param save: boolLike, Optional
-
-        Set this to True to save the plots as PNGs. It can be a boolean or a
-        NumPy boolean and will be converted internally to a boolean. The default is
-        True.
-
+    :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver whose loads and
+        load coefficients will be plotted.
+    :param show: Set this to True to show the plots. It can be a bool or a numpy bool
+        and will be converted internally to a bool. The default is True.
+    :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
+        bool and will be converted internally to a bool. The default is False.
     :return: None
     """
     if not isinstance(
@@ -678,6 +687,11 @@ def plot_results_versus_time(
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
     save = _parameter_validation.boolLike_return_bool(save, "save")
+
+    if not unsteady_solver.ran:
+        raise RuntimeError(
+            "unsteady_solver must have run before plotting results versus time."
+        )
 
     first_results_step = unsteady_solver.first_results_step
 
@@ -978,14 +992,10 @@ def print_results(
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
         | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
-):
-    """This function prints the load and load coefficients calculated by a solver.
+) -> None:
+    """Prints a solver's load and load coefficients.
 
-    :param solver: SteadyHorseshoeVortexLatticeMethodSolver or
-    SteadyRingVortexLatticeMethodSolver or UnsteadyRingVortexLatticeMethodSolver
-
-        This is the solver with the results to be printed.
-
+    :param solver: The solver whose load and load coefficients will be printed.
     :return: None
     """
     if isinstance(
@@ -1011,8 +1021,13 @@ def print_results(
             solver_type = "variable geometry unsteady"
     else:
         raise TypeError(
-            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, a SteadyRingVortexLatticeMethodSolver, or an UnsteadyRingVortexLatticeMethodSolver."
+            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
+            "a SteadyRingVortexLatticeMethodSolver, or an "
+            "UnsteadyRingVortexLatticeMethodSolver."
         )
+
+    if not solver.ran:
+        raise RuntimeError("solver must have run before printing results.")
 
     padding_spaces = 2
 
@@ -1053,14 +1068,14 @@ def print_results(
     pad = " " * padding_spaces
 
     for airplane_num, airplane in enumerate(these_airplanes):
-        title1 = None
-        title2 = None
-        title3 = None
-        title4 = None
-        these_forces_W = None
-        these_moments_W_CgP1 = None
-        these_forceCoefficients_W = None
-        these_momentCoefficients_W_CgP1 = None
+        title1: str = ""
+        title2: str = ""
+        title3: str = ""
+        title4: str = ""
+        these_forces_W: np.ndarray = np.empty(0, dtype=float)
+        these_moments_W_CgP1: np.ndarray = np.empty(0, dtype=float)
+        these_forceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
+        these_momentCoefficients_W_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         match solver_type:
             case "steady":
@@ -1068,15 +1083,40 @@ def print_results(
                 title2 = f"{pad}Moments (in wind axes, relative to the CG):"
                 title3 = f"{pad}Force Coefficients (in wind axes):"
                 title4 = f"{pad}Moment Coefficients (in wind axes, relative to the CG):"
-                these_forces_W = airplane.forces_W
-                these_moments_W_CgP1 = airplane.moments_W_CgP1
-                these_forceCoefficients_W = airplane.forceCoefficients_W
-                these_momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+
+                _forces_W = airplane.forces_W
+                assert _forces_W is not None
+
+                these_forces_W = _forces_W
+
+                _moments_W_CgP1 = airplane.moments_W_CgP1
+                assert _moments_W_CgP1 is not None
+
+                these_moments_W_CgP1 = _moments_W_CgP1
+
+                _forceCoefficients_W = airplane.forceCoefficients_W
+                assert _forceCoefficients_W is not None
+
+                these_forceCoefficients_W = _forceCoefficients_W
+
+                _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+                assert _momentCoefficients_W_CgP1 is not None
+
+                these_momentCoefficients_W_CgP1 = _momentCoefficients_W_CgP1
+
             case "static geometry unsteady":
+                assert isinstance(
+                    solver,
+                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                )
+
                 title1 = f"{pad}Final Forces (in wind axes):"
                 title2 = f"{pad}Final Moments (in wind axes, relative to the CG):"
                 title3 = f"{pad}Final Force Coefficients (in wind axes):"
-                title4 = f"{pad}Final Moment Coefficients (in wind axes, relative to the CG):"
+                title4 = (
+                    f"{pad}Final Moment Coefficients (in wind axes, relative to "
+                    f"the CG):"
+                )
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
                     airplane_num
@@ -1088,10 +1128,21 @@ def print_results(
                     solver.unsteady_problem.finalMomentCoefficients_W_CgP1[airplane_num]
                 )
             case "variable geometry unsteady":
+                assert isinstance(
+                    solver,
+                    unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+                )
+
                 title1 = f"{pad}Final Cycle-Averaged Forces (in wind axes):"
-                title2 = f"{pad}Final Cycle-Averaged Moments (in wind axes, relative to the CG):"
+                title2 = (
+                    f"{pad}Final Cycle-Averaged Moments (in wind axes, relative "
+                    f"to the CG):"
+                )
                 title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in wind axes):"
-                title4 = f"{pad}Final Cycle-Averaged Moment Coefficients (in wind axes, relative to the CG):"
+                title4 = (
+                    f"{pad}Final Cycle-Averaged Moment Coefficients (in wind "
+                    f"axes, relative to the CG):"
+                )
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
                     airplane_num
@@ -1150,6 +1201,18 @@ def print_results(
 
         print(f'Airplane "{airplane.name}":')
 
+        # Display the Reynolds number for steady solvers.
+        if solver_type == "steady":
+            assert isinstance(
+                solver,
+                (
+                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+                    steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+                ),
+            )
+            re = solver.reynolds_numbers[airplane_num]
+            print(f"{pad}Reynolds Number: {re:.2e}")
+
         for i in range(len(col1)):
             if i == 0:
                 print(title1)
@@ -1172,17 +1235,13 @@ def print_results(
 # TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
     airplanes: list[geometry.airplane.Airplane],
-):
-    """This function returns a PolyData representation of the Wings' Panels' surfaces
-    associated with all the Airplanes in a list of Airplanes.
+) -> pv.PolyData:
+    """Returns a PolyData representation of the Wings' Panels' surfaces associated with
+    all the Airplanes in a list of Airplanes.
 
-    :param airplanes: list of Airplanes
-
-        This is a list of Airplanes whose Wings' Panels' surfaces will be returned.
-
-    :return: pv.PolyData
-
-        This is a PolyData representation of the Airplanes' Wings' Panels' surfaces.
+    :param airplanes: The list of Airplanes whose Wings' Panels' surfaces will be
+        returned.
+    :return: A PolyData representation of the Airplanes' Wings' Panels' surfaces.
     """
     # Initialize empty ndarrays to hold the Panels' vertices and faces.
     panel_vertices = np.empty((0, 3), dtype=float)
@@ -1194,8 +1253,11 @@ def _get_panel_surfaces(
     # Increment through the Airplanes' Wing(s).
     for airplane in airplanes:
         for wing in airplane.wings:
+            _panels = wing.panels
+            assert _panels is not None
+
             # Unravel this Wing's ndarray of Panels iterate through it.
-            panels = np.ravel(wing.panels)
+            panels = np.ravel(_panels)
             for panel in panels:
                 # Arrange this Panel's vertices and faces into ndarrays in the
                 # proper form to represent PolyData surfaces.
@@ -1235,22 +1297,14 @@ def _get_wake_ring_vortex_surfaces(
     solver: (unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
              | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver),
     step: int,
-):
-    """This function returns the PolyData representation of surfaces an
+) -> pv.PolyData:
+    """Returns the PolyData representation of the surfaces of an
     UnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time step.
 
-    :param solver: UnsteadyRingVortexLatticeMethodSolver
-
-        This is the UnsteadyRingVortexLatticeMethodSolver with the wake RingVortices
+    :param solver: The UnsteadyRingVortexLatticeMethodSolver with the wake RingVortices
         to process.
-
-    :param step: int
-
-        This is the time step number at which to process the wake RingVortices.
-
-    :return: PolyData
-
-        This is the PolyData representation of the wake RingVortices.
+    :param step: The time step at which to process the wake RingVortices.
+    :return: The PolyData representation of the wake RingVortices.
     """
     num_wake_ring_vortices = solver.list_num_wake_vortices[step]
     stackFrwrvp_GP1_CgP1 = solver.listStackFrwrvp_GP1_CgP1[step]
@@ -1308,39 +1362,29 @@ def _get_scalars(
     airplanes: list[geometry.airplane.Airplane],
     scalar_type: str,
     qInf__E: float,
-):
-    """This function gets the coefficient values from a SteadyProblem's Airplanes'
-    Wings' Panels.
+) -> np.ndarray:
+    """Returns the load coefficient values from a SteadyProblem's Airplanes' Wings'
+    Panels.
 
-    :param airplanes: list of Airplanes
-
-        This is the list of Airplanes with the scalars to return.
-
-    :param scalar_type: str
-
-        This variable determines how which load coefficient to return as scalars. It
-        can be "induced drag", "side force", or "lift", which respectively use each
-        Panel's induced drag, side force, and lift coefficient.
-
-    :param qInf__E: float
-
-        This is the freestream dynamic pressure experienced by this SteadyProblem's
-        Airplane(s) (observed in the Earth frame).
-
-    :return scalars: (N,) ndarray of floats
-
-        This is the (N,) ndarray of floats for the N Panels' load coefficients.
+    :param airplanes: The list of Airplanes with the scalars to return.
+    :param scalar_type: Determines which load coefficient to return as scalars. Can be
+        "induced drag", "side force", or "lift", which respectively use each Panel's
+        induced drag, side force, and lift coefficient.
+    :param qInf__E: The current freestream dynamic pressure experienced by this
+        SteadyProblem's Airplane(s) (observed in the Earth frame). The units are in
+        Pascals.
+    :return: A (N,) ndarray of floats representing the N Panels' load coefficients.
     """
     scalars = np.empty(0, dtype=float)
 
     # Iterate through the Airplanes' Wings.
-    this_airplane: geometry.airplane.Airplane
-    for this_airplane in airplanes:
-        this_wing: geometry.wing.Wing
-        for this_wing in this_airplane.wings:
+    for airplane in airplanes:
+        for wing in airplane.wings:
+            _panels = wing.panels
+            assert _panels is not None
 
             # Unravel this Wing's ndarray of Panels iterate through them.
-            these_panels = np.ravel(this_wing.panels)
+            these_panels = np.ravel(_panels)
             for this_panel in these_panels:
 
                 # Stack this Panel's scalars.
@@ -1372,7 +1416,7 @@ def _get_scalars(
 # TEST: Consider adding unit tests for this function.
 def _plot_scalars(
     plotter: pv.Plotter,
-    these_scalars,
+    these_scalars: np.ndarray,
     scalar_type: str,
     min_scalar: float,
     max_scalar: float,
@@ -1380,48 +1424,22 @@ def _plot_scalars(
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
-):
-    """This function plots a scalar bar, the surfaces of a set of Panels with a
-    particular set of scalars, and labels for the minimum and maximum scalar values.
+) -> None:
+    """Plots a scalar bar, the surfaces of a set of Panels with particular scalars, and
+    labels for the minimum and maximum scalar values.
 
-    :param plotter: pyvista.Plotter
-
-        The Plotter used for visualization.
-
-    :param these_scalars: (N,) ndarray of floats
-
-        This is the ndarray of floats for each of the N Panels' coefficient values.
-
-    :param scalar_type: str
-
-        This variable determines how which load coefficient to return as scalars. It
-        can be "induced drag", "side force", or "lift", which respectively use each
-        Panel's induced drag, side force, and lift coefficient.
-
-    :param min_scalar: float
-
-        Minimum scalar value, which is displayed as text on the Plotter.
-
-    :param max_scalar: float
-
-        Maximum scalar value, which is displayed as text on the Plotter.
-
-    :param color_map: str
-
-        Name of the color map to use for scalar visualization.
-
-    :param c_min: float
-
-        Lower bound for the color map scaling.
-
-    :param c_max: float
-
-        Upper bound for the color map scaling.
-
-    :param panel_surfaces: pyvista.PolyData
-
-        PolyData representing the Panels' surfaces.
-
+    :param plotter: The Plotter used for visualization.
+    :param these_scalars: A (N,) ndarray of floats representing the N Panels' load
+        coefficients.
+    :param scalar_type: Which load coefficient is represented by the scalars. Can be
+        "induced drag", "side force", or "lift".
+    :param min_scalar: Minimum scalar value, which is displayed as text on the Plotter.
+    :param max_scalar: Maximum scalar value, which is displayed as text on the Plotter.
+    :param color_map: Name of the color map to use for scalar visualization. Check the
+        pyvista.add_mesh documentation for the list of acceptable values.
+    :param c_min: Lower bound for the color map scaling.
+    :param c_max: Upper bound for the color map scaling.
+    :param panel_surfaces: PolyData representing the Panels' surfaces.
     :return: None
     """
     scalar_bar_args = dict(
@@ -1438,11 +1456,11 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        cmap=color_map,
+        cmap=color_map,  # type: ignore[arg-type]
         clim=[c_min, c_max],
         scalars=these_scalars,
         smooth_shading=False,
-        scalar_bar_args=scalar_bar_args,
+        scalar_bar_args=scalar_bar_args,  # type: ignore[arg-type]
     )
     plotter.add_text(
         text="Max: " + str(max_scalar),

@@ -1,5 +1,5 @@
 """This is script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a non-static
+UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a non static
 Movement."""
 
 # First, import the software's main package. Note that if you wished to import this
@@ -107,8 +107,7 @@ example_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Example Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0.0,
     s_ref=None,
     c_ref=None,
@@ -144,7 +143,7 @@ main_wing_tip_wing_cross_section_movement = (
 )
 
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
-# symmetry plane offset non-coincident with the Wing's axes yz-plane. Therefore,
+# symmetry plane offset non coincident with the Wing's axes yz plane. Therefore,
 # that Wing had type 5 symmetry (see the Wing class documentation for more details on
 # symmetry types). Therefore, it was actually split into two Wings, the with the
 # second Wing being a reflected version of the first. Therefore, we need to define a
@@ -177,7 +176,7 @@ reflected_main_wing_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the v-tail's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the v tail's root and tip WingCrossSections' WingCrossSectionMovements.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
@@ -206,7 +205,7 @@ v_tail_tip_wing_cross_section_movement = (
 )
 
 # Now define the main wing's WingMovement, the reflected main wing's WingMovement and
-# the v-tail's WingMovement.
+# the v tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
@@ -267,14 +266,10 @@ del v_tail_tip_wing_cross_section_movement
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement, v_tail_movement],
-    ampCg_E_CgP1=(0.0, 0.0, 0.0),
-    periodCg_E_CgP1=(0.0, 0.0, 0.0),
-    spacingCg_E_CgP1=("sine", "sine", "sine"),
-    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
-    ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-    phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+    phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 # Delete the extraneous pointers to the WingMovements.
@@ -330,8 +325,8 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    logging_level="Warning",
     prescribed_wake=True,
+    show_progress=True,
 )
 
 # Call the animate function on the solver. This produces a GIF of the wake being

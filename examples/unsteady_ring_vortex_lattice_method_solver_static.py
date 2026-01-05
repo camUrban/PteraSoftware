@@ -106,8 +106,7 @@ example_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Example Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0.0,
     s_ref=None,
     c_ref=None,
@@ -142,7 +141,7 @@ main_wing_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the v-tail's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the v tail's root and tip WingCrossSections' WingCrossSectionMovements.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -170,7 +169,7 @@ v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the main wing's WingMovement and the v-tail's WingMovement.
+# Now define the main wing's WingMovement and the v tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
@@ -214,14 +213,10 @@ del v_tail_tip_wing_cross_section_movement
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, v_tail_movement],
-    ampCg_E_CgP1=(0.0, 0.0, 0.0),
-    periodCg_E_CgP1=(0.0, 0.0, 0.0),
-    spacingCg_E_CgP1=("sine", "sine", "sine"),
-    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
-    ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-    phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+    phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 # Delete the extraneous pointers to the WingMovements.
@@ -280,8 +275,8 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    logging_level="Warning",
     prescribed_wake=True,
+    show_progress=True,
 )
 
 # Call the draw function on the solver. Press "q" to close the plotter after it draws

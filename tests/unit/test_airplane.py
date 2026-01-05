@@ -1,6 +1,7 @@
 """This module contains a class to test Airplanes."""
 
 import unittest
+
 import numpy as np
 import numpy.testing as npt
 
@@ -36,10 +37,7 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(len(self.basic_airplane.wings), 1)
         self.assertEqual(self.basic_airplane.name, "Basic Test Airplane")
         npt.assert_array_equal(
-            self.basic_airplane.Cg_E_CgP1, np.array([1.0, 0.5, -0.2])
-        )
-        npt.assert_array_equal(
-            self.basic_airplane.angles_E_to_B_izyx, np.array([10.0, -5.0, 15.0])
+            self.basic_airplane.Cg_GP1_CgP1, np.array([1.0, 0.5, -0.2])
         )
         self.assertEqual(self.basic_airplane.weight, 1000.0)
 
@@ -51,10 +49,12 @@ class TestAirplane(unittest.TestCase):
 
         # Test non-list raises error
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings="not a list")
 
         # Test non-Wing objects raise error
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=["not a wing"])
 
         # Test mixed valid and invalid Wings
@@ -71,13 +71,15 @@ class TestAirplane(unittest.TestCase):
 
         # Test invalid name types
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=123)
 
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=None)
 
-    def test_Cg_E_CgP1_parameter_validation(self):
-        """Test Cg_E_CgP1 parameter validation."""
+    def test_Cg_GP1_CgP1_parameter_validation(self):
+        """Test Cg_GP1_CgP1 parameter validation."""
         # Test valid 3D vectors
         valid_positions = [
             [0.0, 0.0, 0.0],
@@ -89,9 +91,9 @@ class TestAirplane(unittest.TestCase):
         for position in valid_positions:
             with self.subTest(position=position):
                 airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], Cg_E_CgP1=position
+                    wings=[self.test_wing_type_1], Cg_GP1_CgP1=position
                 )
-                npt.assert_array_equal(airplane.Cg_E_CgP1, position)
+                npt.assert_array_equal(airplane.Cg_GP1_CgP1, position)
 
         # Test invalid positions
         invalid_positions = [
@@ -106,40 +108,7 @@ class TestAirplane(unittest.TestCase):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.airplane.Airplane(
-                        wings=[self.test_wing_type_1], Cg_E_CgP1=invalid_position
-                    )
-
-    def test_angles_E_to_B_izyx_parameter_validation(self):
-        """Test angles_E_to_B_izyx parameter validation."""
-        # Test valid angle vectors (within range (-180, 180])
-        valid_angles = [
-            [0.0, 0.0, 0.0],
-            [45.0, -30.0, 90.0],
-            [179.9, -179.9, 180.0],
-            np.array([15.0, -45.0, 60.0]),
-            (-90.0, 45.0, -120.0),
-        ]
-
-        for angles in valid_angles:
-            with self.subTest(angles=angles):
-                airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], angles_E_to_B_izyx=angles
-                )
-                npt.assert_array_equal(airplane.angles_E_to_B_izyx, angles)
-
-        # Test angles outside valid range
-        invalid_angles = [
-            [180.1, 0.0, 0.0],  # Greater than 180
-            [0.0, -180.1, 0.0],  # Less than -180
-            [200.0, 0.0, 0.0],  # Much greater than 180
-            [0.0, 0.0, -200.0],  # Much less than -180
-        ]
-
-        for invalid_angle in invalid_angles:
-            with self.subTest(invalid_angle=invalid_angle):
-                with self.assertRaises(ValueError):
-                    ps.geometry.airplane.Airplane(
-                        wings=[self.test_wing_type_1], angles_E_to_B_izyx=invalid_angle
+                        wings=[self.test_wing_type_1], Cg_GP1_CgP1=invalid_position
                     )
 
     def test_weight_parameter_validation(self):
@@ -166,6 +135,7 @@ class TestAirplane(unittest.TestCase):
 
         # Test invalid weight types
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], weight="heavy")
 
     def test_reference_dimensions_default_behavior(self):
@@ -194,6 +164,7 @@ class TestAirplane(unittest.TestCase):
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], c_ref=0.0)
 
         with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], b_ref="large")
 
     def test_num_panels_calculation(self):
@@ -220,7 +191,7 @@ class TestAirplane(unittest.TestCase):
 
     def test_validate_first_airplane_constraints_valid(self):
         """Test validate_first_airplane_constraints with valid first Airplane."""
-        # First Airplane should pass validation (Cg_E_CgP1 is all zeros)
+        # First Airplane should pass validation (Cg_GP1_CgP1 is all zeros)
         try:
             self.first_airplane.validate_first_airplane_constraints()
         except Exception as e:
@@ -228,7 +199,7 @@ class TestAirplane(unittest.TestCase):
 
     def test_validate_first_airplane_constraints_invalid(self):
         """Test validate_first_airplane_constraints with invalid Airplane."""
-        # Basic Airplane should fail validation (Cg_E_CgP1 is not all zeros)
+        # Basic Airplane should fail validation (Cg_GP1_CgP1 is not all zeros)
         with self.assertRaises(ValueError):
             self.basic_airplane.validate_first_airplane_constraints()
 
@@ -430,8 +401,7 @@ class TestAirplane(unittest.TestCase):
                 self.assertIsInstance(airplane.wings, list)
                 self.assertGreater(len(airplane.wings), 0)
                 self.assertIsInstance(airplane.name, str)
-                self.assertEqual(len(airplane.Cg_E_CgP1), 3)
-                self.assertEqual(len(airplane.angles_E_to_B_izyx), 3)
+                self.assertEqual(len(airplane.Cg_GP1_CgP1), 3)
                 self.assertGreaterEqual(airplane.weight, 0.0)
 
                 # Test reference dimensions
@@ -441,22 +411,6 @@ class TestAirplane(unittest.TestCase):
 
                 # Test calculated properties
                 self.assertGreaterEqual(airplane.num_panels, 0)
-
-    def test_edge_case_angle_boundaries(self):
-        """Test angle validation at boundary values."""
-        # Test boundary values that should be valid
-        valid_boundary_angles = [
-            [180.0, 0.0, 0.0],  # Exactly 180 should be valid
-            [0.0, -179.999, 0.0],  # Just above -180 should be valid
-            [-179.999, 179.999, 180.0],  # Multiple boundary values
-        ]
-
-        for angles in valid_boundary_angles:
-            with self.subTest(angles=angles):
-                airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], angles_E_to_B_izyx=angles
-                )
-                npt.assert_allclose(airplane.angles_E_to_B_izyx, angles, atol=1e-10)
 
     def test_airplane_with_various_wing_combinations(self):
         """Test Airplane with various combinations of Wing types."""

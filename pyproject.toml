@@ -1,10 +1,22 @@
 [build-system]
 requires = [
-    "setuptools>=80.9.0",
-    "wheel>=0.45.1"
+    "setuptools",
+    "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+profile = "black"
 
 [tool.black]
 target-version = ['py313']
 include = '\.pyi?$'
+
+[tool.codespell]
+ignore-words = ".codespell-ignore.txt"
+skip = "docs/_build/*,*.dat"
+
+[tool.docformatter]
+black = true
+recursive = true
+force-wrap = true

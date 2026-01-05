@@ -106,8 +106,7 @@ example_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Example Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0.0,
     s_ref=None,
     c_ref=None,
@@ -144,9 +143,7 @@ example_solver = (
 del example_problem
 
 # Run the solver.
-example_solver.run(
-    logging_level="Warning",
-)
+example_solver.run()
 
 # Call this function from the output module to print the results.
 ps.output.print_results(example_solver)

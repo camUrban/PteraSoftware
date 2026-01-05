@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>Zach</w>
       <w>aero</w>
       <w>aeroelastic</w>
       <w>aerosandbox</w>
@@ -67,6 +68,7 @@
       <w>darkgray</w>
       <w>davissm</w>
       <w>dbln</w>
+      <w>defs</w>
       <w>desktopicon</w>
       <w>dfvlr</w>
       <w>dicke</w>
@@ -133,6 +135,7 @@
       <w>hsnlf</w>
       <w>hstab</w>
       <w>hstack</w>
+      <w>icacls</w>
       <w>ignoreversion</w>
       <w>iiic</w>
       <w>ixyz</w>
@@ -144,6 +147,7 @@
       <w>izyx</w>
       <w>izyxs</w>
       <w>jaffe</w>
+      <w>joong</w>
       <w>joukowski</w>
       <w>jérôme</w>
       <w>karman</w>
@@ -153,6 +157,7 @@
       <w>koller</w>
       <w>kutta</w>
       <w>lachassgne</w>
+      <w>lanz</w>
       <w>lbrv</w>
       <w>legacysolvers</w>
       <w>leishman</w>
@@ -172,6 +177,7 @@
       <w>maxfun</w>
       <w>maxiter</w>
       <w>maxtime</w>
+      <w>mettu</w>
       <w>midspan</w>
       <w>miley</w>
       <w>mklink</w>
@@ -192,9 +198,11 @@
       <w>ornithopter</w>
       <w>pathex</w>
       <w>pchip</w>
+      <w>peterdsharpe</w>
       <w>pfalz</w>
       <w>plotkin</w>
       <w>postinstall</w>
+      <w>powershell</w>
       <w>prandtl</w>
       <w>prange</w>
       <w>preidikman</w>
@@ -226,8 +234,10 @@
       <w>royer</w>
       <w>rutan</w>
       <w>savart</w>
+      <w>schütte</w>
       <w>scipy</w>
       <w>semispan</w>
+      <w>seob</w>
       <w>sexualized</w>
       <w>shyy</w>
       <w>sideslip</w>
@@ -271,13 +281,17 @@
       <w>wikipedia</w>
       <w>wortmann</w>
       <w>wrvp</w>
+      <w>xatol</w>
       <w>xflr</w>
       <w>xfoil</w>
       <w>xsec</w>
       <w>xsecs</w>
+      <w>xy'z</w>
+      <w>xz'y</w>
       <w>ycoord</w>
       <w>zipfiles</w>
       <w>zufferey</w>
+      <w>zy'x</w>
     </words>
   </dictionary>
 </component>

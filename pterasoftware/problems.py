@@ -1,51 +1,50 @@
-"""This module contains the class definitions for different types of problems.
+"""Contains the SteadyProblem and UnsteadyProblem classes.
 
-This module contains the following classes:
-    SteadyProblem: This is a class for steady aerodynamics problems.
-    UnsteadyProblem: This is a class for unsteady aerodynamics problems.
+**Contains the following classes:**
 
-This module contains the following functions:
-    None
+SteadyProblem: A class used to contain steady aerodynamics problems.
+
+UnsteadyProblem: A class used to contain unsteady aerodynamics problems.
+
+**Contains the following functions:**
+
+None
 """
+
+from __future__ import annotations
 
 import math
 
 import numpy as np
 
 
-from . import geometry
-from . import movements
-from . import _parameter_validation
-from . import _transformations
-from . import operating_point as op
+
 from copy import deepcopy
 from scipy.integrate import quad
 from .movements.single_step.single_step_movement import SingleStepMovement
+from . import _parameter_validation, _transformations, geometry, movements
+from . import operating_point as operating_point_mod
 
 
 class SteadyProblem:
-    """This is a class for steady aerodynamics problems.
+    """A class used to contain steady aerodynamics problems.
 
-    This class contains the following public methods:
-        None
+    **Contains the following methods:**
 
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    reynolds_numbers: A list of Reynolds numbers, one for each Airplane in the
+    SteadyProblem.
     """
 
-    def __init__(self, airplanes, operating_point):
-        """This is the initialization method.
+    def __init__(
+        self,
+        airplanes: list[geometry.airplane.Airplane],
+        operating_point: operating_point_mod.OperatingPoint,
+    ) -> None:
+        """The initialization method.
 
-        :param airplanes: list of Airplanes
-
-            This is the list of the Airplanes for this SteadyProblem.
-
-        :param operating_point: OperatingPoint
-
-            This is the OperatingPoint for this SteadyProblem.
+        :param airplanes: The list of the Airplanes for this SteadyProblem.
+        :param operating_point: The OperatingPoint for this SteadyProblem.
+        :return: None
         """
         if not isinstance(airplanes, list):
             raise TypeError("airplanes must be a list.")
@@ -55,30 +54,25 @@ class SteadyProblem:
             if not isinstance(airplane, geometry.airplane.Airplane):
                 raise TypeError("Every element in airplanes must be an Airplane.")
         self.airplanes = airplanes
-        if not isinstance(operating_point, op.OperatingPoint):
+        if not isinstance(operating_point, operating_point_mod.OperatingPoint):
             raise TypeError("operating_point must be an OperatingPoint.")
         self.operating_point = operating_point
 
-        # Validate that the first Airplane has Cg_E_CgP1 set to zeros
+        # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
         self.airplanes[0].validate_first_airplane_constraints()
 
-        # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the
-        # Panels' positions in the first Airplanes' geometry axes, relative to the
-        # first Airplanes' CG based on their locally defined positions.
+        # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the Panels'
+        # positions in the first Airplanes' geometry axes, relative to the first
+        # Airplanes' CG based on their locally defined positions.
         for airplane_id, airplane in enumerate(self.airplanes):
-            if airplane_id == 0:
-                # First Airplane: use identity transformation (G_Cg == GP1_CgP1)
-                T_pas_G_Cg_to_GP1_CgP1 = np.eye(4, dtype=float)
-            else:
-                # Other Airplanes: compute the passive transformation matrix from
-                # this Airplane's local geometry axes, relative to its CG,
-                # to the first Airplanes' geometry axes, relative to the first
-                # Airplane's CG.
-                T_pas_G_Cg_to_GP1_CgP1 = airplane.compute_T_pas_G_Cg_to_GP1_CgP1(
-                    first_airplane=self.airplanes[0]
-                )
+            # Compute the passive transformation matrix from this Airplane's local
+            # geometry axes, relative to its CG, to the first Airplanes' geometry axes,
+            # relative to the first Airplane's CG.
+            T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
 
             for wing in airplane.wings:
+                assert wing.panels is not None
+
                 for panel in np.ravel(wing.panels):
                     panel.Frpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
                         T_pas_G_Cg_to_GP1_CgP1, panel.Frpp_G_Cg, has_point=True
@@ -93,34 +87,60 @@ class SteadyProblem:
                         T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
                     )
 
+    @property
+    def reynolds_numbers(self) -> list[float]:
+        """A list of Reynolds numbers, one for each Airplane in the SteadyProblem.
+
+        **Notes:**
+
+        The Reynolds number is calculated as: Re = (V x L) / nu, where V is the
+        freestream speed, observed from the Earth frame (vCg__E from OperatingPoint,
+        m/s), L is the characteristic length (c_ref from Airplane, m), and nu is the
+        kinematic viscosity (nu from OperatingPoint, m^2/s).
+
+        These Reynolds numbers only consider the freestream speed, not any apparent
+        velocity due to prescribed motion, so be careful interpreting it for cases where
+        this SteadyProblem corresponds to one time step in an UnsteadyProblem.
+
+        :return: A list of Reynolds numbers, one for each Airplane.
+        """
+        v = self.operating_point.vCg__E
+        nu = self.operating_point.nu
+
+        reynolds_list = []
+        for airplane in self.airplanes:
+            c_ref = airplane.c_ref
+            assert c_ref is not None, "Airplane c_ref must be set to calculate Re"
+            re = (v * c_ref) / nu
+            reynolds_list.append(re)
+
+        return reynolds_list
+
 
 class UnsteadyProblem:
-    """This is a class for unsteady aerodynamics problems.
+    """A class used to contain unsteady aerodynamics problems.
 
-    This class contains the following public methods:
-        None
+    **Contains the following methods:**
 
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    None
     """
 
-    def __init__(self, movement, only_final_results=False):
-        """This is the initialization method.
+    def __init__(
+        self,
+        movement: movements.movement.Movement,
+        only_final_results: bool | np.bool_ = False,
+    ) -> None:
+        """The initialization method.
 
-        :param movement: Movement
-
-            This is the Movement that contains this UnsteadyProblem's
+        :param movement: The Movement that contains this UnsteadyProblem's
             OperatingPointMovement and AirplaneMovements.
-
-        :param only_final_results: boolLike, optional
-
-            If set to True, the Solver will only calculate forces, moments,
-            and pressures for the final complete cycle (of the Movement's
-            sub-Movement with the longest period), which increases simulation speed.
-            The default value is False.
+        :param only_final_results: Determines whether the Solver will only calculate
+            loads for the final time step (for static Movements) or (for non static
+            Movements) for will only calculate loads for the time steps in the final
+            complete motion cycle (of the Movement's sub Movement with the longest
+            period), which increases simulation speed. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :return: None
         """
         if not isinstance(movement, movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
@@ -129,60 +149,61 @@ class UnsteadyProblem:
             only_final_results, "only_final_results"
         )
 
-        self.num_steps = self.movement.num_steps
-        self.delta_time = self.movement.delta_time
+        self.num_steps: int = self.movement.num_steps
+        self.delta_time: float = self.movement.delta_time
 
-        # For UnsteadyProblems with a static Movement, users are typically interested
-        # in the final time step's forces and moments, which, assuming convergence,
-        # will be the most accurate. For UnsteadyProblems with cyclic movement,
-        # (e.g. flapping wings) users are typically interested in the forces and
-        # moments averaged over the last cycle simulated. Therefore, determine which
-        # time step will be the first with relevant results based on if the Movement
-        # is static or cyclic.
-        _movement_max_period = self.movement.max_period
-        if _movement_max_period == 0:
+        # For UnsteadyProblems with a static Movement, we are typically interested in
+        # the final time step's forces and moments, which, assuming convergence, will be
+        # the most accurate. For UnsteadyProblems with cyclic movement, (e.g. flapping
+        # wings) we are typically interested in the forces and moments averaged over the
+        # last cycle simulated. Use the LCM of all motion periods to ensure we average
+        # over a complete cycle of all motions.
+        _movement_lcm_period = self.movement.lcm_period
+        self.first_averaging_step: int
+        if _movement_lcm_period == 0:
             self.first_averaging_step = self.num_steps - 1
         else:
             self.first_averaging_step = max(
                 0,
-                math.floor(self.num_steps - (_movement_max_period / self.delta_time)),
+                math.floor(self.num_steps - (_movement_lcm_period / self.delta_time)),
             )
 
-        # If the user only wants to calculate forces and moments for the final cycle
-        # (for a cyclic Movement) or for the final time step (for a static Movement)
-        # set the first step to calculate results to the first averaging step.
-        # Otherwise, set it to the zero, which is the first time step.
+        # If we only wants to calculate forces and moments for the final cycle (for a
+        # cyclic Movement) or for the final time step (for a static Movement) set the
+        # first step to calculate results to the first averaging step. Otherwise, set it
+        # to the zero, which is the first time step.
+        self.first_results_step: int
         if self.only_final_results:
             self.first_results_step = self.first_averaging_step
         else:
             self.first_results_step = 0
 
         # Initialize empty lists to hold the final loads and load coefficients each
-        # Airplane experiences. These will only be populated if this
-        # UnsteadyProblem's Movement is static.
-        self.finalForces_W = []
-        self.finalForceCoefficients_W = []
-        self.finalMoments_W_CgP1 = []
-        self.finalMomentCoefficients_W_CgP1 = []
+        # Airplane experiences. These will only be populated if this UnsteadyProblem's
+        # Movement is static.
+        self.finalForces_W: list[np.ndarray] = []
+        self.finalForceCoefficients_W: list[np.ndarray] = []
+        self.finalMoments_W_CgP1: list[np.ndarray] = []
+        self.finalMomentCoefficients_W_CgP1: list[np.ndarray] = []
 
         # Initialize empty lists to hold the final cycle-averaged loads and load
-        # coefficients each Airplane experiences. These will only be populated if
-        # this UnsteadyProblem's Movement is cyclic.
-        self.finalMeanForces_W = []
-        self.finalMeanForceCoefficients_W = []
-        self.finalMeanMoments_W_CgP1 = []
-        self.finalMeanMomentCoefficients_W_CgP1 = []
+        # coefficients each Airplane experiences. These will only be populated if this
+        # UnsteadyProblem's Movement is cyclic.
+        self.finalMeanForces_W: list[np.ndarray] = []
+        self.finalMeanForceCoefficients_W: list[np.ndarray] = []
+        self.finalMeanMoments_W_CgP1: list[np.ndarray] = []
+        self.finalMeanMomentCoefficients_W_CgP1: list[np.ndarray] = []
 
         # Initialize empty lists to hold the final cycle-root-mean-squared loads and
         # load coefficients each airplane object experiences. These will only be
         # populated for variable geometry problems.
-        self.finalRmsForces_W = []
-        self.finalRmsForceCoefficients_W = []
-        self.finalRmsMoments_W_CgP1 = []
-        self.finalRmsMomentCoefficients_W_CgP1 = []
+        self.finalRmsForces_W: list[np.ndarray] = []
+        self.finalRmsForceCoefficients_W: list[np.ndarray] = []
+        self.finalRmsMoments_W_CgP1: list[np.ndarray] = []
+        self.finalRmsMomentCoefficients_W_CgP1: list[np.ndarray] = []
 
         # Initialize an empty list to hold the SteadyProblems.
-        self.steady_problems = []
+        self.steady_problems: list[SteadyProblem] = []
 
         # Iterate through the UnsteadyProblem's time steps.
         for step_id in range(self.num_steps):

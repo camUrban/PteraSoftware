@@ -4,7 +4,9 @@ Note: Most of the tests in this case do not currently test against an expected
 result. Instead, they test that the functions in output.py don't throw any errors.
 """
 
+import io
 import unittest
+from contextlib import redirect_stdout
 
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
@@ -13,17 +15,18 @@ from tests.integration.fixtures import solver_fixtures
 class TestOutput(unittest.TestCase):
     """This is a class with functions to test the output module."""
 
-    def setUp(self):
-        """This method is automatically called before each testing method to set up
-        the fixtures.
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all tests in this class.
 
         :return: None
         """
 
         # Set up the constructing fixtures.
-        self.unsteady_solver = (
+        cls.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
+        cls.unsteady_solver.run(show_progress=False)
 
     def test_plot_results_versus_time_does_not_throw(self):
         """This method tests that the plot_results_versus_time method doesn't throw
@@ -69,3 +72,56 @@ class TestOutput(unittest.TestCase):
             show_streamlines=False,
             testing=True,
         )
+
+
+class TestPrintResults(unittest.TestCase):
+    """Tests the print_results() function."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up solvers for testing print_results().
+
+        :return: None
+        """
+        cls.steady_solver = (
+            solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
+        )
+        cls.steady_solver.run()
+
+        cls.unsteady_solver = (
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
+        )
+        cls.unsteady_solver.run(show_progress=False)
+
+    def test_print_results_steady_solver_displays_reynolds_number(self):
+        """Test that Reynolds number is displayed for steady solvers.
+
+        :return: None
+        """
+        # Capture stdout using redirect_stdout context manager.
+        captured_output = io.StringIO()
+        with redirect_stdout(captured_output):
+            ps.output.print_results(solver=self.steady_solver)
+
+        output = captured_output.getvalue()
+
+        # Verify Reynolds number is in the output.
+        self.assertIn("Reynolds Number:", output)
+        # Verify scientific notation format (e.g., "1.23e+05" or "1.23e+06").
+        self.assertRegex(output, r"Reynolds Number:\s+\d+\.\d{2}e[+-]\d{2}")
+
+    def test_print_results_steady_solver_runs_without_error(self):
+        """Test that print_results() runs without error for steady solver.
+
+        :return: None
+        """
+        # This test ensures no exceptions are raised.
+        ps.output.print_results(solver=self.steady_solver)
+
+    def test_print_results_unsteady_solver_runs_without_error(self):
+        """Test that print_results() runs without error for unsteady solver.
+
+        :return: None
+        """
+        # This test ensures no exceptions are raised.
+        ps.output.print_results(solver=self.unsteady_solver)

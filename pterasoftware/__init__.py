@@ -1,52 +1,92 @@
-"""This package contains all the source code for the Ptera Software.
+"""Contains the source code for Ptera Software.
 
-This package contains the following subpackages:
-    geometry: This package contains the geometry classes.
+**Contains the following subpackages:**
 
-    movements: This package contains the movement classes.
+geometry: Contains the geometry classes.
 
-This package contains the following directories:
-    None
+movements: Contains the movement classes.
 
-This package contains the following modules:
-    __init__.py: This module is this package's initialization script.
+**Contains the following directories:**
 
-    convergence.py: This module contains functions for analyzing the convergence of
-    SteadyProblems and UnsteadyProblems.
+None
 
-    operating_point.py: This module contains the class definition for a Problem's
-    operating point.
+**Contains the following modules:**
 
-    output.py: This module contains useful functions for visualizing geometry and
-    results.
+convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
+UnsteadyProblems.
 
-    problems.py: This module contains the class definitions for different types of
-    problems.
+unsteady_ring_vortex_lattice_method.py: Contains the
+CoupledUnsteadyRingVortexLatticeMethodSolver class.
 
-    steady_horseshoe_vortex_lattice_method.py: This module contains the class
-    definition of this package's steady horseshoe vortex lattice solver.
+operating_point.py: Contains the OperatingPoint class.
 
-    steady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's steady ring vortex lattice solver.
+output.py: Contains functions for visualizing geometry and results.
 
-    trim.py: This module contains functions to analyze the trim conditions of
-    SteadyProblems and UnsteadyProblems.
+problems.py: Contains the SteadyProblem and UnsteadyProblem classes.
 
-    unsteady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's unsteady ring vortex lattice solver.
-    
-    coupled_unsteady_ring_vortex_lattice_method.py: This module contains the class definition
-    of this package's unsteady ring vortex lattice solver.
+steady_horseshoe_vortex_lattice_method.py: Contains the
+SteadyHorseshoeVortexLatticeMethodSolver class.
+
+steady_ring_vortex_lattice_method.py: Contains the SteadyRingVortexLatticeMethodSolver
+class.
+
+trim.py: Contains functions to analyze the trim conditions of SteadyProblems and
+UnsteadyProblems.
+
+unsteady_ring_vortex_lattice_method.py: Contains the
+UnsteadyRingVortexLatticeMethodSolver class.
+
+**Contains the following functions:**
+
+set_up_logging: Configures logging for the pterasoftware package that is compatible with
+TQDM progress bars.
 """
 
+# Eager imports: core modules always needed to define simulations.
 import pterasoftware.geometry
 import pterasoftware.movements
-import pterasoftware.convergence
 import pterasoftware.operating_point
-import pterasoftware.output
 import pterasoftware.problems
-import pterasoftware.steady_horseshoe_vortex_lattice_method
-import pterasoftware.steady_ring_vortex_lattice_method
-import pterasoftware.trim
-import pterasoftware.unsteady_ring_vortex_lattice_method
-import pterasoftware.coupled_unsteady_ring_vortex_lattice_method
+
+# Lazy imports configuration: modules loaded on first access.
+_LAZY_MODULES = {
+    "convergence": "pterasoftware.convergence",
+    "output": "pterasoftware.output",
+    "steady_horseshoe_vortex_lattice_method": "pterasoftware.steady_horseshoe_vortex_lattice_method",
+    "steady_ring_vortex_lattice_method": "pterasoftware.steady_ring_vortex_lattice_method",
+    "trim": "pterasoftware.trim",
+    "unsteady_ring_vortex_lattice_method": "pterasoftware.unsteady_ring_vortex_lattice_method",
+    "coupled_unsteady_ring_vortex_lattice_method": "pterasoftware.coupled_unsteady_ring_vortex_lattice_method",
+}
+
+# Lazy callable imports: functions that need special handling.
+_LAZY_CALLABLES = {
+    "set_up_logging": ("pterasoftware._logging", "set_up_logging"),
+}
+
+
+def __getattr__(name: str):
+    if name in _LAZY_MODULES:
+        import importlib
+
+        module = importlib.import_module(_LAZY_MODULES[name])
+        globals()[name] = module
+        return module
+    if name in _LAZY_CALLABLES:
+        import importlib
+
+        module_path, attr_name = _LAZY_CALLABLES[name]
+        module = importlib.import_module(module_path)
+        attr = getattr(module, attr_name)
+        globals()[name] = attr
+        return attr
+    raise AttributeError(f"module 'pterasoftware' has no attribute {name!r}")
+
+
+def __dir__():
+    # Include lazy modules in dir() for discoverability.
+    return (
+        list(globals().keys())
+        + list(_LAZY_MODULES.keys())
+        + list(_LAZY_CALLABLES.keys())
+    )

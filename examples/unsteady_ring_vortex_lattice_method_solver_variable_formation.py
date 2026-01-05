@@ -1,6 +1,6 @@
 """This is script is an example of how to run Ptera Software's
 UnsteadyRingVortexLatticeMethodSolver on three Airplanes, flying in formation,
-each with custom geometry and non-static motion."""
+each with custom geometry and non static motion."""
 
 import pterasoftware as ps
 
@@ -43,8 +43,7 @@ lead_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Lead Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 # Now define the lead Airplane's AirplaneMovement.
@@ -134,8 +133,7 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Right Airplane",
-    Cg_E_CgP1=(x_spacing, y_spacing, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(x_spacing, y_spacing, 0.0),
 )
 
 # Create the trailing right Airplane's AirplaneMovement.
@@ -219,8 +217,7 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Left Airplane",
-    Cg_E_CgP1=(x_spacing, -y_spacing, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(x_spacing, -y_spacing, 0.0),
 )
 
 # Create the trailing left Airplane's AirplaneMovement.
@@ -319,6 +316,7 @@ del unsteady_problem
 # Run the UnsteadyRingVortexLatticeMethodSolver.
 solver.run(
     prescribed_wake=True,
+    show_progress=True,
 )
 
 # Now that we have run the solver, we can create an animation of the results.

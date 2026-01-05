@@ -1,38 +1,38 @@
-"""This module contains functions to analyze the trim conditions of SteadyProblems and
+"""Contains functions to analyze the trim conditions of SteadyProblems and
 UnsteadyProblems.
 
-This module contains the following classes:
-    None
+**Contains the following classes:**
 
-This module contains the following functions:
-    analyze_steady_trim: This function attempts to calculate a trim condition of a
-    SteadyProblem by varying the OperatingPoint's vCg__E, alpha, beta,
-    and externalFX_W parameters until the net loads are sufficient low. If a trim
-    condition can be found, it returns the trimmed OperatingPoint parameters.
+None
 
-    analyze_unsteady_trim: This function attempts to calculate a trim condition of an
-    UnsteadyProblem by varying the OperatingPointMovement's base OperatingPoint's
-    vCg__E, alpha, beta, and externalFX_W parameters until the net final loads are
-    sufficient low. If a trim condition can be found, it returns the trimmed base
-    OperatingPoint parameters.
+**Contains the following functions:**
+
+analyze_steady_trim: Attempts to calculate a trim condition of a SteadyProblem by
+varying the operating conditions until the net loads are sufficient low.
+
+analyze_unsteady_trim: Attempts to calculate a trim condition of an UnsteadyProblem by
+varying the base operating conditions until the net loads are sufficient low.
 """
 
-import logging
-from typing import Sequence, Any
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
-import scipy.optimize
+import scipy.optimize as sp_opt
 
-from . import _parameter_validation
-from . import movements
-from . import problems
-from . import steady_horseshoe_vortex_lattice_method
-from . import steady_ring_vortex_lattice_method
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    _logging,
+    _parameter_validation,
+    movements,
+    problems,
+    steady_horseshoe_vortex_lattice_method,
+    steady_ring_vortex_lattice_method,
+    unsteady_ring_vortex_lattice_method,
+)
 
-trim_logger = logging.getLogger("trim")
-trim_logger.setLevel(logging.DEBUG)
-logging.basicConfig()
+trim_logger = _logging.get_logger("trim")
 
 # Set a seed for reproducibility in the dual annealing optimizer.
 _seed = 42
@@ -46,92 +46,71 @@ _seed = 42
 def analyze_steady_trim(
     problem: problems.SteadyProblem,
     solver_type: str,
-    boundsVCg__E: tuple[float, float],
-    alpha_bounds: tuple[float, float],
-    beta_bounds: tuple[float, float],
-    boundsExternalFX_W: tuple[float, float],
-    objective_cut_off: float = 0.01,
+    boundsVCg__E: tuple[float | int, float | int],
+    alpha_bounds: tuple[float | int, float | int],
+    beta_bounds: tuple[float | int, float | int],
+    boundsExternalFX_W: tuple[float | int, float | int],
+    objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
-    """This function attempts to calculate a trim condition of a SteadyProblem by
-    varying the OperatingPoint's vCg__E, alpha, beta, and externalFX_W parameters
-    until the net loads are sufficient low. If a trim condition can be found,
-    it returns the trimmed OperatingPoint parameters.
+    """Attempts to calculate a trim condition of a SteadyProblem by varying the
+    operating conditions until the net loads are sufficient low.
+
+    **Procedure:**
 
     Trim is found by minimizing an objective function that combines the net load
-    coefficients' magnitudes. The function uses a two-stage optimization approach:
-    first attempting a local search using L-BFGS-B, and if that fails to converge,
-    it performs a global search using dual annealing.
+    coefficients' magnitudes.
 
-    The optimization process varies four parameters (vCg__E, alpha, beta,
-    and externalFX_W) within their specified bounds. At each iteration, a steady
-    solver is run to compute aerodynamic loads. These loads are combined with the
-    external loads to compute a net load coefficient.
+    The optimization process varies four parameters (vCg__E, alpha, beta, and
+    externalFX_W) within their specified bounds. At each iteration, a steady solver is
+    run to compute aerodynamic loads. These loads are combined with the external loads
+    to compute a net load coefficient.
+
+    The function uses a two-stage optimization approach: first attempting a local search
+    using L-BFGS-B, and if that fails to converge, it performs a global search using
+    dual annealing.
 
     The search terminates early if the objective function falls below the specified
-    cutoff value. If no trim condition is found within the maximum number of
-    function calls, the function returns None values and logs a critical error.
+    cutoff value. If no trim condition is found within the maximum number of function
+    calls, the function returns None values and logs a critical error.
 
-    :param problem: SteadyProblem
-
-        This is the SteadyProblem whose trim condition will be found. The
-        SteadyProblem must contain exactly one Airplane. The problem's OperatingPoint
-        will be modified during the trim search.
-
-    :param solver_type: str
-
-        This parameter determines what type of steady solver will be used to analyze
-        the SteadyProblem. The options are "steady horseshoe vortex lattice method"
-        and "steady ring vortex lattice method".
-
-    :param boundsVCg__E: tuple of two positive numbers
-
-        This parameter is a tuple of two positive numbers (ints or floats) in
-        ascending order. It determines the range of speeds of the Airplane's CG (in
-        the Earth frame) to search, in units of meters per second. The
-        SteadyProblem's OperatingPoint's initial vCg__E must be within these bounds.
-
-    :param alpha_bounds: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of angles of attack to search, in units of degrees.
-        The SteadyProblem's OperatingPoint's initial alpha must be within these bounds.
-
-    :param beta_bounds: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of sideslip angles to search, in units of degrees.
-        The SteadyProblem's OperatingPoint's initial beta must be within these bounds.
-
-    :param boundsExternalFX_W: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of external forces (in the wind axes' x-direction) to
-        search, in units of Newtons. The SteadyProblem's OperatingPoint's initial
-        externalFX_W must be within these bounds.
-
-    :param objective_cut_off: positive number, optional
-
-        This parameter must be a positive number (int or float), and it determines
-        the convergence threshold for the trim search. When the objective function
-        falls below this value, the search terminates successfully. Lower values
-        result in tighter trim conditions but may require more iterations. The
-        default value is 0.01.
-
-    :param num_calls: positive int, optional
-
-        This parameter must be a positive int, and it determines the maximum number
-        of objective function evaluations allowed during optimization. This limit
-        applies separately to the local search and global search stages. Higher
-        values allow for more thorough searching but increase computation time. The
-        default value is 100.
-
-    :return: tuple of four floats or tuple of four Nones
-
-        This function returns a tuple of four floats representing the trimmed
-        parameters found. In order, they are: vCg__E (in meters per second),
-        alpha (in degrees), beta (in degrees), and externalFX_W (in Newtons). If no
-        trim condition was found, it will instead return a tuple of four Nones.
+    :param problem: The SteadyProblem whose trim condition will be found. It must
+        contain exactly one Airplane. The problem's OperatingPoint will be modified
+        during the trim search.
+    :param solver_type: Determines what type of steady solver will be used to analyze
+        the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
+        "steady ring vortex lattice method".
+    :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
+        order, determining the range of speeds of the Airplane's CG (in the Earth frame)
+        to search. The SteadyProblem's OperatingPoint's initial vCg__E must be within
+        these bounds. Values are converted to floats internally. The units are in meters
+        per second.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
+        determining the range of angles of attack to search. The SteadyProblem's
+        OperatingPoint's initial alpha must be within these bounds. Values are converted
+        to floats internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
+        determining the range of sideslip angles to search. The SteadyProblem's
+        OperatingPoint's initial beta must be within these bounds. Values are converted
+        to floats internally. The units are in degrees.
+    :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
+        order, determining the range of external forces (in the wind axes' x direction)
+        to search. The SteadyProblem's OperatingPoint's initial externalFX_W must be
+        within these bounds. Values are converted to floats internally. The units are in
+        Newtons.
+    :param objective_cut_off: A positive number (int or float) for the trim search's
+        convergence threshold. When the objective function falls below this value, the
+        search terminates successfully. Lower values result in tighter trim conditions
+        but may require more iterations. Values are converted to floats internally. The
+        default is 0.01.
+    :param num_calls: A positive int for the maximum number of objective function
+        evaluations allowed during optimization. This limit applies separately to the
+        local search and global search stages. Higher values allow for more thorough
+        searching but increase computation time. The default is 100.
+    :return: A tuple of four floats representing the trimmed parameters found. In order,
+        they are: vCg__E (in meters per second), alpha (in degrees), beta (in degrees),
+        and externalFX_W (in Newtons). If no trim condition was found, it will instead
+        return a tuple of four Nones.
     """
     # Validate the problem parameter.
     if not isinstance(problem, problems.SteadyProblem):
@@ -198,12 +177,14 @@ def analyze_steady_trim(
         )
 
     # Validate the objective_cut_off parameter.
-    objective_cut_off = _parameter_validation.positive_number_return_float(
-        objective_cut_off, "objective_cut_off"
+    objective_cut_off = _parameter_validation.number_in_range_return_float(
+        objective_cut_off, "objective_cut_off", min_val=0.0, min_inclusive=False
     )
 
     # Validate the num_calls parameter.
-    num_calls = _parameter_validation.positive_int_return_int(num_calls, "num_calls")
+    num_calls = _parameter_validation.int_in_range_return_int(
+        num_calls, "num_calls", min_val=1, min_inclusive=True
+    )
 
     # Get the SteadyProblem's OperatingPoint's initial parameter values and check
     # that the ones that will vary to find a trim condition are within the specified
@@ -237,27 +218,22 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    def objective_function(arguments: tuple[float, float, float, float]) -> float:
+    def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
 
-        This function evaluates the trim quality by running a steady solver and
-        computing the average magnitude of net load coefficients. It updates the
-        outer scope's current_arguments list to communicate the last evaluated state
-        back to the optimizer.
+        Evaluates the trim quality by running a steady solver and computing the average
+        magnitude of the net load coefficients. It then updates the outer scope's
+        current_arguments list to communicate the last evaluated state back to the
+        optimizer.
 
-        If the objective falls below the cutoff threshold, this function raises
-        StopIteration to signal successful trim convergence.
+        If the objective falls below the cutoff threshold, it raises StopIteration to
+        signal successful trim convergence.
 
-        :param arguments: array-like of four numbers
-
-            The OperatingPoint parameters to evaluate: [vCg__E, alpha, beta,
-            externalFX_W].
-
-        :return: float
-
-            The trim objective value, computed as the average of the magnitude of the
-            net load coefficients.
+        :param arguments: A (4,) ndarray of floats with the OperatingPoint parameters to
+            evaluate: vCg__E, alpha, beta, externalFX_W.
+        :return: The trim objective value, computed as the average magnitude of the net
+            load coefficients.
         """
         vCg__E, alpha, beta, externalFX_W = arguments
 
@@ -269,20 +245,26 @@ def analyze_steady_trim(
         problem.operating_point.beta = beta
 
         qInf__E = problem.operating_point.qInf__E
+
         s_ref = problem.airplanes[0].s_ref
+        assert s_ref is not None
 
         # To my knowledge, there isn't a standard way to define "external" force
         # coefficients. However, simply checking trim against forces and moments in
         # Newtons and Newton meters isn't a good solution because, for example,
         # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non-dimensionalize with reference area,
+        # flying microrobot. I'm choosing to non dimensionalize with reference area,
         # as that is what is used for aerodynamic force coefficients. If we later
         # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non-dimensionalize using different
+        # approach, as moment coefficients non dimensionalize using different
         # dimensions.
-        externalForces_W = np.array([externalFX_W, 0, weight])
+        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
+        solver: (
+            steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+            | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        )
         if solver_type == "steady horseshoe vortex lattice method":
             solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                 steady_problem=problem
@@ -298,10 +280,15 @@ def analyze_steady_trim(
 
         airplane = solver.airplanes[0]
 
-        netForceCoefficient_W = np.linalg.norm(
-            airplane.forceCoefficients_W + externalForceCoefficients_W
+        assert airplane.forceCoefficients_W is not None
+        assert airplane.momentCoefficients_W_CgP1 is not None
+
+        netForceCoefficient_W = float(
+            np.linalg.norm(airplane.forceCoefficients_W + externalForceCoefficients_W)
         )
-        netMomentCoefficient_W_CgP1 = np.linalg.norm(airplane.momentCoefficients_W_CgP1)
+        netMomentCoefficient_W_CgP1 = float(
+            np.linalg.norm(airplane.momentCoefficients_W_CgP1)
+        )
 
         objective = (netForceCoefficient_W + netMomentCoefficient_W_CgP1) / 2
 
@@ -334,7 +321,9 @@ def analyze_steady_trim(
 
         return objective
 
-    initial_guess = np.array([baseVCg__E, base_alpha, base_beta, baseExternalFX_W])
+    initial_guess = np.array(
+        [baseVCg__E, base_alpha, base_beta, baseExternalFX_W], dtype=float
+    )
     bounds: Sequence[tuple[float, float]] = [
         (boundsVCg__E[0], boundsVCg__E[1]),
         (alpha_bounds[0], alpha_bounds[1]),
@@ -344,13 +333,13 @@ def analyze_steady_trim(
 
     trim_logger.info("Starting local search.")
     try:
-        options: Any = {"maxfun": num_calls, "eps": 0.01}
-        scipy.optimize.minimize(
+        local_options: Any = {"maxfun": num_calls, "eps": 0.01}
+        sp_opt.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
             method="L-BFGS-B",
-            options=options,
+            options=local_options,
         )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
@@ -365,12 +354,12 @@ def analyze_steady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
-        options: Any = {"maxfun": num_calls, "eps": 0.01}
+        global_options: Any = {"maxfun": num_calls, "eps": 0.01}
         minimizer_kwargs: Any = {
             "method": "L-BFGS-B",
-            "options": options,
+            "options": global_options,
         }
-        scipy.optimize.dual_annealing(
+        sp_opt.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,
@@ -403,90 +392,76 @@ def analyze_steady_trim(
 #  also be great but less important.
 def analyze_unsteady_trim(
     problem: problems.UnsteadyProblem,
-    boundsVCg__E: tuple[float, float],
-    alpha_bounds: tuple[float, float],
-    beta_bounds: tuple[float, float],
-    boundsExternalFX_W: tuple[float, float],
-    objective_cut_off: float = 0.01,
+    boundsVCg__E: tuple[float | int, float | int],
+    alpha_bounds: tuple[float | int, float | int],
+    beta_bounds: tuple[float | int, float | int],
+    boundsExternalFX_W: tuple[float | int, float | int],
+    objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
+    show_solver_progress: bool | np.bool_ = True,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
-    """This function attempts to calculate a trim condition of an UnsteadyProblem by
-    varying the OperatingPointMovement's base OperatingPoint's vCg__E, alpha, beta,
-    and externalFX_W parameters until the net final loads are sufficient low. If a
-    trim condition can be found, it returns the trimmed base OperatingPoint parameters.
+    """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
+    operating conditions until the net loads are sufficient low.
 
-    Trim is found by minimizing an objective function that combines the net final
-    load coefficients' magnitudes. For variable geometry cases, the final load
-    coefficients are the RMS values from the final motion cycle. For static geometry
-    cases, they are the load coefficients at the final time step. The function uses a
-    two-stage optimization approach: first attempting a local search using L-BFGS-B,
-    and if that fails to converge, it performs a global search using dual annealing.
+    **Procedure:**
 
-    The optimization process varies four of the base OperatingPoint's parameters (
-    vCg__E, alpha, beta, externalFX_W) within their specified bounds. At each
+    Trim is found by minimizing an objective function that combines the net final load
+    coefficients' magnitudes. For problems with non static geometry, the final load
+    coefficients are the RMS values from the final motion cycle. For problems with
+    static geometry, they are the load coefficients at the final time step.
+
+    The optimization process varies four of the base OperatingPoint's parameters
+    (vCg__E, alpha, beta, externalFX_W) within their specified bounds. At each
     iteration, an UnsteadyRingVortexLatticeMethodSolver is run to compute aerodynamic
     loads. These loads are combined with the external loads to compute a net load
     coefficient.
+
+    The function uses a two-stage optimization approach: first attempting a local search
+    using L-BFGS-B, and if that fails to converge, it performs a global search using
+    dual annealing.
 
     The search terminates early if the objective function falls below the specified
     cutoff value. If no trim condition is found within the maximum number of function
     calls, the function returns None values and logs a critical error.
 
-    :param problem: UnsteadyProblem
-
-        This is the UnsteadyProblem whose trim condition will be found. The
+    :param problem: The UnsteadyProblem whose trim condition will be found. The
         UnsteadyProblem's Movement must contain exactly one AirplaneMovement. The
-        problem's OperatingPointMovement's base OperatingPoint will be modified
-        during the trim search.
-
-    :param boundsVCg__E: tuple of two positive numbers
-
-        This parameter is a tuple of two positive numbers (ints or floats) in
-        ascending order. It determines the range of base speeds of the Airplane's CG
-        (in the Earth frame) to search, in units of meters per second. The base
-        OperatingPoint's initial vCg__E must be within these bounds.
-
-    :param alpha_bounds: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of angles of attack to search, in units of degrees.
-        The base OperatingPoint's initial alpha must be within these bounds.
-
-    :param beta_bounds: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of sideslip angles to search, in units of degrees.
-        The base OperatingPoint's initial beta must be within these bounds.
-
-    :param boundsExternalFX_W: tuple of two numbers
-
-        This parameter is a tuple of two numbers (ints or floats) in ascending order.
-        It determines the range of external forces (in the wind axes' x-direction) to
-        search, in units of Newtons. The base OperatingPoint's initial
-        externalFX_W must be within these bounds.
-
-    :param objective_cut_off: positive number, optional
-
-        This parameter must be a positive number (int or float), and it determines
-        the convergence threshold for the trim search. When the objective function
-        falls below this value, the search terminates successfully. Lower values
-        result in tighter trim conditions but may require more iterations. The
-        default value is 0.01.
-
-    :param num_calls: positive int, optional
-
-        This parameter must be a positive int, and it determines the maximum number
-        of objective function evaluations allowed during optimization. This limit
-        applies separately to the local search and global search stages. Higher
-        values allow for more thorough searching but increase computation time. The
-        default value is 100.
-
-    :return: tuple of four floats or tuple of four Nones
-
-        This function returns a tuple of four floats representing the trimmed
-        parameters found. In order, they are: vCg__E (in meters per second),
-        alpha (in degrees), beta (in degrees), and externalFX_W (in Newtons). If no
-        trim condition was found, it will instead return a tuple of four Nones.
+        problem's OperatingPointMovement's base OperatingPoint will be modified during
+        the trim search.
+    :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
+        order, determining the range of base speeds of the Airplane's CG (in the Earth
+        frame) to search. The base OperatingPoint's initial vCg__E must be within these
+        bounds. Values are converted to floats internally. The units are in meters per
+        second.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
+        determining the range of angles of attack to search. The base OperatingPoint's
+        initial alpha must be within these bounds. Values are converted to floats
+        internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
+        determining the range of sideslip angles to search. The base OperatingPoint's
+        initial beta must be within these bounds. Values are converted to floats
+        internally. The units are in degrees.
+    :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
+        order, determining the range of external forces (in the wind axes' x direction)
+        to search. The base OperatingPoint's initial externalFX_W must be within these
+        bounds. Values are converted to floats internally. The units are in Newtons.
+    :param objective_cut_off: A positive number (int or float) for the trim search's
+        convergence threshold. When the objective function falls below this value, the
+        search terminates successfully. Lower values result in tighter trim conditions
+        but may require more iterations. Values are converted to floats internally. The
+        default is 0.01.
+    :param num_calls: A positive int for the maximum number of objective function
+        evaluations allowed during optimization. This limit applies separately to the
+        local search and global search stages. Higher values allow for more thorough
+        searching but increase computation time. The default is 100.
+    :param show_solver_progress: Set this to True to show the TQDM progress bar during
+        each run of the unsteady solver. For showing progress bars and displaying log
+        statements, set up logging using the setup_logging function. It can be a bool or
+        a numpy bool and will be converted internally to a bool. The default is True.
+    :return: A tuple of four floats representing the trimmed parameters found. In order,
+        they are: vCg__E (in meters per second), alpha (in degrees), beta (in degrees),
+        and externalFX_W (in Newtons). If no trim condition was found, it will instead
+        return a tuple of four Nones.
     """
     # Validate the problem parameter.
     if not isinstance(problem, problems.UnsteadyProblem):
@@ -544,12 +519,19 @@ def analyze_unsteady_trim(
         )
 
     # Validate the objective_cut_off parameter.
-    objective_cut_off = _parameter_validation.positive_number_return_float(
-        objective_cut_off, "objective_cut_off"
+    objective_cut_off = _parameter_validation.number_in_range_return_float(
+        objective_cut_off, "objective_cut_off", min_val=0.0, min_inclusive=False
     )
 
     # Validate the num_calls parameter.
-    num_calls = _parameter_validation.positive_int_return_int(num_calls, "num_calls")
+    num_calls = _parameter_validation.int_in_range_return_int(
+        num_calls, "num_calls", min_val=1, min_inclusive=True
+    )
+
+    # Validate the show_solver_progress parameter.
+    show_solver_progress = _parameter_validation.boolLike_return_bool(
+        show_solver_progress, "show_solver_progress"
+    )
 
     base_operating_point = (
         problem.movement.operating_point_movement.base_operating_point
@@ -588,27 +570,22 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
-    def objective_function(arguments: tuple[float, float, float, float]) -> float:
+    def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
 
-        This function evaluates the trim quality by running an
-        UnsteadyRingVortexLatticeMethodSolver and computing the average magnitude of
-        net load coefficients. It updates the outer scope's current_arguments list to
-        communicate the last evaluated state back to the optimizer.
+        Evaluates the trim quality by running an UnsteadyRingVortexLatticeMethodSolver
+        and computing the average magnitude of the net load coefficients. It then
+        updates the outer scope's current_arguments list to communicate the last
+        evaluated state back to the optimizer.
 
-        If the objective falls below the cutoff threshold, this function raises
-        StopIteration to signal successful trim convergence.
+        If the objective falls below the cutoff threshold, it raises StopIteration to
+        signal successful trim convergence.
 
-        :param arguments: array-like of four numbers
-
-            The base OperatingPoint parameters to evaluate: [vCg__E, alpha, beta,
-            externalFX_W].
-
-        :return: float
-
-            The trim objective value, computed as the average of the magnitude of the
-            net load coefficients.
+        :param arguments: A (4,) ndarray of floats with the base OperatingPoint
+            parameters to evaluate: vCg__E, alpha, beta, externalFX_W.
+        :return: The trim objective value, computed as the average magnitude of the net
+            load coefficients.
         """
         vCg__E, alpha, beta, externalFX_W = arguments
 
@@ -620,18 +597,20 @@ def analyze_unsteady_trim(
         base_operating_point.beta = beta
 
         qInf__E = base_operating_point.qInf__E
+
         s_ref = problem.movement.airplane_movements[0].base_airplane.s_ref
+        assert s_ref is not None
 
         # To my knowledge, there isn't a standard way to define "external" force
         # coefficients. However, simply checking trim against forces and moments in
         # Newtons and Newton meters isn't a good solution because, for example,
         # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non-dimensionalize with reference area,
+        # flying microrobot. I'm choosing to non dimensionalize with reference area,
         # as that is what is used for aerodynamic force coefficients. If we later
         # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non-dimensionalize using different
+        # approach, as moment coefficients non dimensionalize using different
         # dimensions.
-        externalForces_W = np.array([externalFX_W, 0, weight])
+        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         this_operating_point_movement = (
@@ -656,17 +635,20 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_solver.run(logging_level="Critical", prescribed_wake=True)
+        this_solver.run(prescribed_wake=True, show_progress=show_solver_progress)
 
         finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
+        assert finalForceCoefficients_W is not None
+
         finalMomentCoefficients_W_Cg = (
             this_solver.unsteady_problem.finalMomentCoefficients_W_CgP1
         )
+        assert finalMomentCoefficients_W_Cg is not None
 
-        netForceCoefficients_W = np.linalg.norm(
-            finalForceCoefficients_W + externalForceCoefficients_W
+        netForceCoefficients_W = float(
+            np.linalg.norm(finalForceCoefficients_W + externalForceCoefficients_W)
         )
-        netMomentCoefficients_W_Cg = np.linalg.norm(finalMomentCoefficients_W_Cg)
+        netMomentCoefficients_W_Cg = float(np.linalg.norm(finalMomentCoefficients_W_Cg))
 
         objective = (netForceCoefficients_W + netMomentCoefficients_W_Cg) / 2
 
@@ -699,7 +681,9 @@ def analyze_unsteady_trim(
 
         return objective
 
-    initial_guess = np.array([baseVCg__E, base_alpha, base_beta, baseExternalFX_W])
+    initial_guess = np.array(
+        [baseVCg__E, base_alpha, base_beta, baseExternalFX_W], dtype=float
+    )
     bounds: Sequence[tuple[float, float]] = [
         (boundsVCg__E[0], boundsVCg__E[1]),
         (alpha_bounds[0], alpha_bounds[1]),
@@ -709,13 +693,13 @@ def analyze_unsteady_trim(
 
     trim_logger.info("Starting local search.")
     try:
-        options: Any = {"maxfun": num_calls, "eps": 0.01}
-        scipy.optimize.minimize(
+        local_options: Any = {"maxfun": num_calls, "eps": 0.01}
+        sp_opt.minimize(
             fun=objective_function,
             x0=initial_guess,
             bounds=bounds,
             method="L-BFGS-B",
-            options=options,
+            options=local_options,
         )
     except StopIteration:
         trim_logger.info("Acceptable value reached with local search.")
@@ -730,12 +714,12 @@ def analyze_unsteady_trim(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
-        options: Any = {"maxfun": num_calls, "eps": 0.01}
+        global_options: Any = {"maxfun": num_calls, "eps": 0.01}
         minimizer_kwargs: Any = {
             "method": "L-BFGS-B",
-            "options": options,
+            "options": global_options,
         }
-        scipy.optimize.dual_annealing(
+        sp_opt.dual_annealing(
             func=objective_function,
             bounds=bounds,
             x0=initial_guess,

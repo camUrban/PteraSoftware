@@ -62,6 +62,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver():
         self._current_step = None
 
         self.steady_problems = []
+        
 
         self.current_airplanes = None
         self.current_operating_point = None

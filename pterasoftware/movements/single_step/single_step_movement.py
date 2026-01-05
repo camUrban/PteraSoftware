@@ -13,8 +13,8 @@ from .single_step_airplane_movement import SingleStepAirplaneMovement
 from .single_step_operating_point_movement import SingleStepOperatingPointMovement
 
 from ..._parameter_validation import (
-    positive_number_return_float,
-    positive_int_return_int,
+    number_in_range_return_float,
+    int_in_range_return_int,
 )
 
 class SingleStepMovement:
@@ -122,8 +122,8 @@ class SingleStepMovement:
         self.operating_point_movement = single_step_operating_point_movement
 
         if delta_time is not None:
-            delta_time = positive_number_return_float(
-                delta_time, "delta_time"
+            delta_time = number_in_range_return_float(
+                delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
 
@@ -151,11 +151,8 @@ class SingleStepMovement:
             delta_time = sum(delta_times) / len(delta_times)
         self.delta_time = delta_time
 
-    
-        num_steps = positive_int_return_int(
-            num_steps, "num_steps"
-        )
-        
+        num_steps = int_in_range_return_int(num_steps, "num_steps", min_val=1, min_inclusive=True)
+
         self.num_steps = num_steps
 
         # Generate a list of lists of Airplanes that are the steps through each

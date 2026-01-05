@@ -16,10 +16,8 @@ from .._functions import (
 
 from ...operating_point import OperatingPoint
 from ..._parameter_validation import (
-    non_negative_number_return_float,
     number_in_range_return_float,
-    positive_number_return_float,
-    positive_int_return_int,
+    int_in_range_return_int,
 )
 
 
@@ -94,12 +92,12 @@ class SingleStepOperatingPointMovement:
             is 0.0 and non-zero if not. The units are in degrees.
         """
 
-        self.ampVCg__E = non_negative_number_return_float(
-            ampVCg__E, "ampVCg__E"
+        self.ampVCg__E = number_in_range_return_float(
+            ampVCg__E, "ampVCg__E", min_val=0.0, min_inclusive=True
         )
 
-        periodVCg__E = non_negative_number_return_float(
-            periodVCg__E, "periodVCg__E"
+        periodVCg__E = number_in_range_return_float(
+            periodVCg__E, "periodVCg__E", min_val=0.0, min_inclusive=True
         )
         if self.ampVCg__E == 0 and periodVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
@@ -144,11 +142,11 @@ class SingleStepOperatingPointMovement:
             This is the list of OperatingPoints associated with this
             OperatingPointMovement.
         """
-        num_steps = positive_int_return_int(
-            num_steps, "num_steps"
+        num_steps = int_in_range_return_int(
+            num_steps, "num_steps", min_val=1, min_inclusive=True
         )
-        delta_time = positive_number_return_float(
-            delta_time, "delta_time"
+        delta_time = number_in_range_return_float(
+            delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
 
         if self.listVCg__E is None:

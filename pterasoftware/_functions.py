@@ -192,6 +192,7 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
+        coupled_unsteady_ring_vortex_lattice_method,
     )
 
     if isinstance(

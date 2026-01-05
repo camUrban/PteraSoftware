@@ -12,8 +12,8 @@ import numpy as np
 from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
     threeD_spacing_vectorLike_return_tuple,
-    positive_number_return_float,
-    positive_int_return_int,
+    int_in_range_return_int,
+    number_in_range_return_float,
 )
 
 from .._functions import (
@@ -285,11 +285,11 @@ class SingleStepWingMovement:
 
             This is the list of Wings associated with this WingMovement.
         """
-        num_steps = positive_int_return_int(
-            num_steps, "num_steps"
+        num_steps = int_in_range_return_int(
+            num_steps, "num_steps", min_val=1, min_inclusive=True
         )
-        delta_time = positive_number_return_float(
-            delta_time, "delta_time"
+        delta_time = number_in_range_return_float(
+            delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
         # Account for null deformation_matrices input.
         if deformation_matrices is None:

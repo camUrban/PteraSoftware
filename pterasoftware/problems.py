@@ -576,7 +576,7 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.wing_density = 0.012  # per unit height kg/m^2
         self.moment_scaling_factor = 1e-2
         self.spring_constant = 1e-1
-        self.aero_scaling = 1.0
+        self.aero_scaling = 0.0
         self.new_integrand = False
 
         # self.wing_density = 0.012  # per unit height kg/m^2

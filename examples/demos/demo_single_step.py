@@ -107,8 +107,7 @@ example_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Example Airplane",
-    Cg_E_CgP1=(0.0, 0.0, 0.0),
-    angles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0.0,
     c_ref=None,
     b_ref=None,
@@ -342,31 +341,24 @@ del v_tail_tip_wing_cross_section_movement
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement, v_tail_movement],
-    ampCg_E_CgP1=(0.0, 0.0, 0.0),
-    periodCg_E_CgP1=(0.0, 0.0, 0.0),
-    spacingCg_E_CgP1=("sine", "sine", "sine"),
-    phaseCg_E_CgP1=(0.0, 0.0, 0.0),
-    ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-    spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-    phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+    ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+    phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
 )
 
 single_step_airplane_movement = (
     ps.movements.single_step.single_step_airplane_movement.SingleStepAirplaneMovement(
+        
         single_step_wing_movements=[
             single_step_main_wing_movement,
             single_step_reflected_main_wing_movement,
             single_step_v_tail_movement,
         ],
-        ampCg_E_CgP1=(0.0, 0.0, 0.0),
-        periodCg_E_CgP1=(0.0, 0.0, 0.0),
-        spacingCg_E_CgP1=("sine", "sine", "sine"),
-        phaseCg_E_CgP1=(0.0, 0.0, 0.0),
-        ampAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-        periodAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
-        spacingAngles_E_to_B_izyx=("sine", "sine", "sine"),
-        phaseAngles_E_to_B_izyx=(0.0, 0.0, 0.0),
+        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
     )
 )
 
@@ -438,7 +430,6 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    logging_level="Warning",
     prescribed_wake=True,
 )
 

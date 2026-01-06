@@ -87,7 +87,13 @@ via the command prompt in your fork's directory. You may also want to run:
 pip install -r requirements_dev.txt
 ```
 
-if you plan on making significant changes to the software.
+if you plan on making significant changes to the software. If you are using an IDE other than PyCharm, you may also need to run:
+
+```shell
+pip install --editable .
+```
+
+to avoid import errors.
 
 Finally, open the "examples" folder, which contains several heavily commented scripts that demonstrate different features and simulations. Read through each example, and then run them to admire their pretty output!
 

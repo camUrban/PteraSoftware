@@ -82,8 +82,17 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         self.num_airplanes: int = len(first_steady_problem.airplanes)
 
         num_panels = 0
+        panel_count = 0
+        self.slep_point_indices = []
         for airplane in first_steady_problem.airplanes:
             num_panels += airplane.num_panels
+            for wing in airplane.wings:
+                for wing_cross_section in wing.wing_cross_sections:
+                    self.slep_point_indices.append(panel_count)
+                    if wing_cross_section.num_spanwise_panels is not None:
+                        panel_count += wing_cross_section.num_spanwise_panels 
+        self.slep_point_indices = np.array(self.slep_point_indices, dtype=int)
+
         self.num_panels: int = num_panels
 
         # Initialize attributes to hold aerodynamic data that pertain to the simulation.
@@ -132,6 +141,21 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         self._lastStackCblvpf_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self._lastStackCblvpl_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self._lastStackCblvpb_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+
+        # The current time step's center bound LineVortex points for the right,
+        # front, left, and back legs (in the first Airplane's geometry axes,
+        # relative to the local strip leading edge point).
+        self.stackCblvpr_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpf_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpl_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        self.stackCblvpb_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+
+        # The colocation panel points and the front left panel point (in the first Airplane's
+        # geometry axes, relative to the local strip leading edge point and the first
+        # Airplane's CG respectively).
+        self.stackCpp_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        self.stackFlpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # Right, front, left, and back bound RingVortex vectors (in the first
         # Airplane's geometry axes).
@@ -400,6 +424,14 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 self._lastStackCblvpb_GP1_CgP1 = np.zeros(
                     (self.num_panels, 3), dtype=float
                 )
+
+                self.stackCblvpr_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpf_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpl_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCblvpb_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackCpp_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.moments_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
+                self.stackFlpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
                 self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
                 self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
@@ -1316,6 +1348,40 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         #  geometry axes before passing to process_solver_loads.
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
+        # TODO: Remove the duplicated code below by refactoring
+        self._update_bound_vortex_positions_relative_to_slep_points()
+
+        rightLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
+            self.stackCblvpr_GP1_Slep, rightLegForces_GP1
+        )
+        frontLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
+            self.stackCblvpf_GP1_Slep, frontLegForces_GP1
+        )
+        leftLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
+            self.stackCblvpl_GP1_Slep, leftLegForces_GP1
+        )
+        backLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
+            self.stackCblvpb_GP1_Slep, backLegForces_GP1
+        )
+
+        # The unsteady moment is calculated at the collocation point because the
+        # unsteady force acts on the bound RingVortex, whose center is at the
+        # collocation point, not at the Panel's centroid.
+
+        # Find the moments (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG) due to the unsteady component of the force on each Panel.
+        unsteady_moments_GP1_Slep = _functions.numba_1d_explicit_cross(
+            self.stackCpp_GP1_Slep, unsteady_forces_GP1
+        )
+
+        self.moments_GP1_Slep = (
+            rightLegMoments_GP1_Slep
+            + frontLegMoments_GP1_Slep
+            + leftLegMoments_GP1_Slep
+            + backLegMoments_GP1_Slep
+            + unsteady_moments_GP1_Slep
+        )
+
     def _populate_next_airplanes_wake(self) -> None:
         """Updates the next time step's Airplanes' wakes.
 
@@ -1960,3 +2026,30 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                         )
                     )
                 )
+
+    def _update_bound_vortex_positions_relative_to_slep_points(self) -> None:
+        """Updates the bound RingVortex position variables to be relative to the
+        Airplane's SLEP points.
+
+        :return: None
+        """
+        # Find the bound RingVortex leg center positions relative to the SLEP points.
+        for panel_num, panel in enumerate(self.panels):
+            self.stackFlpp_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
+        slep_points = self.stackFlpp_GP1_CgP1[self.slep_point_indices]
+        slep_map = np.searchsorted(self.slep_point_indices, np.arange(self.num_panels), side="right") - 1
+        stack_leading_edge_points = np.array([
+            slep_points[i] for i in slep_map
+        ])  
+        self.stackCblvpr_GP1_Slep = self.stackCblvpr_GP1_CgP1 - stack_leading_edge_points
+        self.stackCblvpf_GP1_Slep = self.stackCblvpf_GP1_CgP1 - stack_leading_edge_points
+        self.stackCblvpl_GP1_Slep = self.stackCblvpl_GP1_CgP1 - stack_leading_edge_points
+        self.stackCblvpb_GP1_Slep = self.stackCblvpb_GP1_CgP1 - stack_leading_edge_points
+
+        # Find the collocation point positions relative to the SLEP points.
+        slep_points = self.stackCpp_GP1_CgP1[self.slep_point_indices]
+        slep_map = np.searchsorted(self.slep_point_indices, np.arange(self.num_panels), side="right") - 1
+        stack_leading_edge_points = np.array([
+            slep_points[i] for i in slep_map
+        ])  
+        self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - stack_leading_edge_points

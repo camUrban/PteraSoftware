@@ -67,9 +67,10 @@ class Airfoil:
             to lower-case and stripped of leading and trailing whitespace) unless you
             are passing in your own array of points using outline_A_lp. Note that
             NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils with
-            thickness above 30% are not supported, and the first two digits must either
-            both be zero (symmetric) or both be non zero (cambered). The default is
-            "NACA0012".
+            thickness above 30% are not supported, the first two digits must either both
+            be zero (symmetric) or both be non zero (cambered), and for cambered
+            airfoils the position of maximum camber must be greater than or equal to the
+            maximum camber plus half the maximum thickness. The default is "NACA0012".
         :param outline_A_lp: An array like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
@@ -549,8 +550,10 @@ class Airfoil:
         sanitized_name = self.name.lower().strip()
 
         # Check if the sanitized Airfoil's name matches a name for a NACA 4 series
-        # airfoil (NACA0000 is not valid, thickness must be at most 30%, and first two
-        # digits must both be zero or both be non zero). If so, generate it.
+        # airfoil (NACA0000 is not valid, thickness must be at most 30%, first two
+        # digits must both be zero or both be non zero, and for cambered airfoils the
+        # position of maximum camber must be at least the maximum camber plus half the
+        # maximum thickness). If so, generate it.
         if "naca" in sanitized_name:
             naca_number = sanitized_name.split("naca")[1]
             if naca_number.isdigit():
@@ -577,6 +580,19 @@ class Airfoil:
                             "parameters: the first two digits must either both be "
                             "zero (symmetric) or both be non zero (cambered)."
                         )
+
+                    # Reject cambered airfoils where the position of maximum camber is
+                    # too close to the leading edge relative to the camber and
+                    # thickness. This prevents geometric issues near the leading edge.
+                    if max_camber > 0:
+                        if camber_loc < max_camber + thickness / 2:
+                            raise ValueError(
+                                "NACA 4 series airfoils must have the position of "
+                                "maximum camber (second digit x 10%) greater than "
+                                "or equal to the maximum camber (first digit x 1%) "
+                                "plus half the maximum thickness (last two digits "
+                                "x 0.5%)."
+                            )
 
                     # Set the number of points per side.
                     n_points_per_side = 400
@@ -719,9 +735,11 @@ class Airfoil:
         # throw an error.
         except FileNotFoundError:
             raise ValueError(
-                "name didn't match a valid NACA 4 series pattern (4 digits, not "
-                "0000, thickness at most 30%, first two digits must both be zero or "
-                "both be non zero) nor was it found in the airfoils database."
+                "name didn't match a valid NACA 4 series pattern (4 digits, not 0000, "
+                "thickness at most 30%, first two digits must both be zero or both be "
+                "non zero, and for cambered airfoils the position of maximum camber "
+                "must be at least the maximum camber plus half the maximum thickness) "
+                "nor was it found in the airfoils database."
             )
 
     def _resample_outline(self, n_points_per_side: int) -> None:

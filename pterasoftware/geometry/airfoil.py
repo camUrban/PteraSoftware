@@ -66,8 +66,10 @@ class Airfoil:
             the airfoils directory, or to a valid NACA 4 series airfoil (once converted
             to lower-case and stripped of leading and trailing whitespace) unless you
             are passing in your own array of points using outline_A_lp. Note that
-            NACA0000 isn't a valid NACA 4 series airfoil, and NACA 4 series airfoils
-            with thickness above 40% are not supported. The default is "NACA0012".
+            NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils with
+            thickness above 30% are not supported, and the first two digits must either
+            both be zero (symmetric) or both be non zero (cambered). The default is
+            "NACA0012".
         :param outline_A_lp: An array like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
@@ -547,8 +549,8 @@ class Airfoil:
         sanitized_name = self.name.lower().strip()
 
         # Check if the sanitized Airfoil's name matches a name for a NACA 4 series
-        # airfoil (NACA0000 is not valid, and thickness must be at most 40%). If so,
-        # generate it.
+        # airfoil (NACA0000 is not valid, thickness must be at most 30%, and first two
+        # digits must both be zero or both be non zero). If so, generate it.
         if "naca" in sanitized_name:
             naca_number = sanitized_name.split("naca")[1]
             if naca_number.isdigit():
@@ -559,11 +561,21 @@ class Airfoil:
                     camber_loc = int(naca_number[1]) * 0.1
                     thickness = int(naca_number[2:]) * 0.01
 
-                    # Validate that the thickness is at most 40%.
-                    if thickness > 0.40:
+                    # Validate that the thickness is at most 30%.
+                    if thickness > 0.30:
                         raise ValueError(
-                            "NACA 4 series airfoils with thickness above 40% are not "
+                            "NACA 4 series airfoils with thickness above 30% are not "
                             "supported."
+                        )
+
+                    # Reject inconsistent camber parameters. The first two digits
+                    # must either both be zero (symmetric) or both be non zero
+                    # (cambered).
+                    if (max_camber > 0) != (camber_loc > 0):
+                        raise ValueError(
+                            "NACA 4 series airfoils must have consistent camber "
+                            "parameters: the first two digits must either both be "
+                            "zero (symmetric) or both be non zero (cambered)."
                         )
 
                     # Set the number of points per side.
@@ -708,8 +720,8 @@ class Airfoil:
         except FileNotFoundError:
             raise ValueError(
                 "name didn't match a valid NACA 4 series pattern (4 digits, not "
-                "0000, thickness at most 40%) nor was it found in the airfoils "
-                "database."
+                "0000, thickness at most 30%, first two digits must both be zero or "
+                "both be non zero) nor was it found in the airfoils database."
             )
 
     def _resample_outline(self, n_points_per_side: int) -> None:

@@ -63,10 +63,11 @@ class Airfoil:
         """The initialization method.
 
         :param name: The name of the Airfoil. It should correspond to the name of a file
-            the airfoils directory, or to a valid NACA 4-series airfoil (once converted
+            the airfoils directory, or to a valid NACA 4 series airfoil (once converted
             to lower-case and stripped of leading and trailing whitespace) unless you
             are passing in your own array of points using outline_A_lp. Note that
-            NACA0000 isn't a valid NACA series airfoil. The default is "NACA0012".
+            NACA0000 isn't a valid NACA 4 series airfoil, and NACA 4 series airfoils
+            with thickness above 40% are not supported. The default is "NACA0012".
         :param outline_A_lp: An array like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
@@ -534,9 +535,9 @@ class Airfoil:
         """Populates a variable with the points of the Airfoil's outline (in airfoil
         axes, relative to the leading point).
 
-        The points are generated if the Airfoil is a NACA 4-series airfoil, or loaded
+        The points are generated if the Airfoil is a NACA 4 series airfoil, or loaded
         from the "airfoils" directory inside "pterasoftware", which is a database of dat
-        files containing Airfoil points). NACA 4-series airfoil generation is an
+        files containing Airfoil points). NACA 4 series airfoil generation is an
         adaptation of:
         https://en.wikipedia.org/wiki/NACA_airfoil#Equation_for_a_cambered_4-digit_NACA_airfoil.
 
@@ -545,8 +546,9 @@ class Airfoil:
         # Sanitize the name input.
         sanitized_name = self.name.lower().strip()
 
-        # Check if the sanitized Airfoil's name matches a name for a NACA 4-series
-        # airfoil (NACA0000 is not a valid NACA 4-series airfoil). If so, generate it.
+        # Check if the sanitized Airfoil's name matches a name for a NACA 4 series
+        # airfoil (NACA0000 is not valid, and thickness must be at most 40%). If so,
+        # generate it.
         if "naca" in sanitized_name:
             naca_number = sanitized_name.split("naca")[1]
             if naca_number.isdigit():
@@ -556,6 +558,13 @@ class Airfoil:
                     max_camber = int(naca_number[0]) * 0.01
                     camber_loc = int(naca_number[1]) * 0.1
                     thickness = int(naca_number[2:]) * 0.01
+
+                    # Validate that the thickness is at most 40%.
+                    if thickness > 0.40:
+                        raise ValueError(
+                            "NACA 4 series airfoils with thickness above 40% are not "
+                            "supported."
+                        )
 
                     # Set the number of points per side.
                     n_points_per_side = 400
@@ -694,12 +703,13 @@ class Airfoil:
             self.outline_A_lp = np.reshape(outline1D_A_lp, (-1, 2))
             return
 
-        # If the Airfoil was not a NACA 4-series and was not found in the database,
+        # If the Airfoil was not a NACA 4 series and was not found in the database,
         # throw an error.
         except FileNotFoundError:
             raise ValueError(
-                "name didn't match a valid NACA 4-series pattern nor was it found in "
-                "the airfoils database."
+                "name didn't match a valid NACA 4 series pattern (4 digits, not "
+                "0000, thickness at most 40%) nor was it found in the airfoils "
+                "database."
             )
 
     def _resample_outline(self, n_points_per_side: int) -> None:

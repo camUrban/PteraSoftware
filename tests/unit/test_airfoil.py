@@ -201,9 +201,9 @@ class TestAirfoil(unittest.TestCase):
 
     def test_naca_4_series_validation(self):
         """Test validation of NACA 4 series airfoil parameters."""
-        # Test that NACA 4 series airfoils with thickness above 40% raise a ValueError.
+        # Test that NACA 4 series airfoils with thickness above 30% raise a ValueError.
         with self.assertRaises(ValueError):
-            ps.geometry.airfoil.Airfoil(name="NACA0041")
+            ps.geometry.airfoil.Airfoil(name="NACA0031")
 
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="NACA2499")
@@ -212,9 +212,33 @@ class TestAirfoil(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="NACA0000")
 
-        # Test that NACA 4 series at exactly 40% thickness is valid.
-        airfoil_40_percent = ps.geometry.airfoil.Airfoil(name="NACA0040")
-        self.assertIsNotNone(airfoil_40_percent.outline_A_lp)
+        # Test that NACA 4 series at exactly 30% thickness is valid.
+        airfoil_30_percent = ps.geometry.airfoil.Airfoil(name="NACA0030")
+        self.assertIsNotNone(airfoil_30_percent.outline_A_lp)
+
+        # Test that airfoils with inconsistent camber parameters (first two digits must
+        # both be zero or both be non zero) raise a ValueError.
+        # Case 1: Camber without camber location (e.g., NACA1012, NACA9012).
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA1012")
+
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA9012")
+
+        # Case 2: Camber location without camber (e.g., NACA0112, NACA0912).
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA0112")
+
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA0912")
+
+        # Test that symmetric airfoils (both first digits are 0) are valid.
+        airfoil_symmetric = ps.geometry.airfoil.Airfoil(name="NACA0012")
+        self.assertIsNotNone(airfoil_symmetric.outline_A_lp)
+
+        # Test that cambered airfoils (both first digits are non zero) are valid.
+        airfoil_cambered = ps.geometry.airfoil.Airfoil(name="NACA2412")
+        self.assertIsNotNone(airfoil_cambered.outline_A_lp)
 
     def test_naca_airfoil_thickness(self):
         """Test that the generated NACA0012 and NACA2412 Airfoils have approximately

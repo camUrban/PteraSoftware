@@ -199,6 +199,23 @@ class TestAirfoil(unittest.TestCase):
                 name="Invalid2", outline_A_lp=invalid_outline2, resample=False
             )
 
+    def test_naca_4_series_validation(self):
+        """Test validation of NACA 4 series airfoil parameters."""
+        # Test that NACA 4 series airfoils with thickness above 40% raise a ValueError.
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA0041")
+
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA2499")
+
+        # Test that NACA0000 (zero thickness) raises a ValueError.
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA0000")
+
+        # Test that NACA 4 series at exactly 40% thickness is valid.
+        airfoil_40_percent = ps.geometry.airfoil.Airfoil(name="NACA0040")
+        self.assertIsNotNone(airfoil_40_percent.outline_A_lp)
+
     def test_naca_airfoil_thickness(self):
         """Test that the generated NACA0012 and NACA2412 Airfoils have approximately
         the correct maximum thickness."""

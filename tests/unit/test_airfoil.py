@@ -240,6 +240,29 @@ class TestAirfoil(unittest.TestCase):
         airfoil_cambered = ps.geometry.airfoil.Airfoil(name="NACA2412")
         self.assertIsNotNone(airfoil_cambered.outline_A_lp)
 
+        # Test that airfoils with position of maximum camber too close to the leading
+        # edge relative to camber and thickness raise a ValueError. The constraint is:
+        # camber_loc >= max_camber + thickness / 2.
+        # NACA9130: camber_loc=0.1, max_camber=0.09, thickness=0.30
+        # 0.1 < 0.09 + 0.15 = 0.24, so this should fail.
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA9130")
+
+        # NACA5115: camber_loc=0.1, max_camber=0.05, thickness=0.15
+        # 0.1 < 0.05 + 0.075 = 0.125, so this should fail.
+        with self.assertRaises(ValueError):
+            ps.geometry.airfoil.Airfoil(name="NACA5115")
+
+        # NACA4212: camber_loc=0.2, max_camber=0.04, thickness=0.12
+        # 0.2 >= 0.04 + 0.06 = 0.10, so this should pass.
+        airfoil_valid_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA4212")
+        self.assertIsNotNone(airfoil_valid_camber_pos.outline_A_lp)
+
+        # NACA2110: camber_loc=0.1, max_camber=0.02, thickness=0.10
+        # 0.1 >= 0.02 + 0.05 = 0.07, so this should pass.
+        airfoil_boundary_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA2110")
+        self.assertIsNotNone(airfoil_boundary_camber_pos.outline_A_lp)
+
     def test_naca_airfoil_thickness(self):
         """Test that the generated NACA0012 and NACA2412 Airfoils have approximately
         the correct maximum thickness."""

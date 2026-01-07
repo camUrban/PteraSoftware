@@ -67,7 +67,7 @@ class Airfoil:
             to lower-case and stripped of leading and trailing whitespace) unless you
             are passing in your own array of points using outline_A_lp. Note that
             NACA0000 isn't a valid NACA series airfoil. The default is "NACA0012".
-        :param outline_A_lp: An array-like object of numbers (int or float) with shape
+        :param outline_A_lp: An array like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
             axes, relative to the leading point). If you wish to load coordinates from
             the airfoils directory, leave this as None, which is the default. Can be a
@@ -358,7 +358,7 @@ class Airfoil:
         """Returns a ndarray of points along the mean camber line (MCL), resampled from
         the mcl_A_outline attribute. It is used to discretize the MCL for meshing.
 
-        :param mcl_fractions: A (N,) array-like object of floats representing normalized
+        :param mcl_fractions: A (N,) array like object of floats representing normalized
             distances along the MCL (from the leading to the trailing edge) at which to
             return the resampled MCL points. Can be a tuple, list, or ndarray. The first
             value must be 0.0, the last must be 1.0, and the remaining must be in the
@@ -406,16 +406,27 @@ class Airfoil:
             mcl_distances_cumulative / mcl_distances_cumulative[-1]
         )
 
-        # Create interpolated functions for MCL's components as a function of
-        # fractional distances along the MCL.
+        # Remove duplicate distance values (which occur when consecutive MCL points are
+        # coincident). PchipInterpolator requires strictly increasing x values.
+        _, unique_indices = np.unique(
+            mcl_distances_cumulative_normalized, return_index=True
+        )
+        unique_indices = np.sort(unique_indices)
+        mcl_distances_cumulative_normalized = mcl_distances_cumulative_normalized[
+            unique_indices
+        ]
+        mcl_unique = self.mcl_A_lp[unique_indices]
+
+        # Create interpolated functions for MCL's components as a function of fractional
+        # distances along the MCL.
         mclX_func = sp_interp.PchipInterpolator(
             x=mcl_distances_cumulative_normalized,
-            y=self.mcl_A_lp[:, 0],
+            y=mcl_unique[:, 0],
             extrapolate=False,
         )
         mclY_func = sp_interp.PchipInterpolator(
             x=mcl_distances_cumulative_normalized,
-            y=self.mcl_A_lp[:, 1],
+            y=mcl_unique[:, 1],
             extrapolate=False,
         )
 
@@ -473,6 +484,20 @@ class Airfoil:
         flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
         lowerOutline_A_lp = self._lower_outline()
 
+        # Remove duplicate x values from both outlines. Some airfoil files have multiple
+        # points at the same x value (especially at the leading edge), which causes
+        # PchipInterpolator to fail. We keep the first occurrence of each unique
+        # x value.
+        _, upper_unique_indices = np.unique(
+            flippedUpperOutline_A_lp[:, 0], return_index=True
+        )
+        upper_unique_indices = np.sort(upper_unique_indices)
+        flippedUpperOutline_A_lp = flippedUpperOutline_A_lp[upper_unique_indices]
+
+        _, lower_unique_indices = np.unique(lowerOutline_A_lp[:, 0], return_index=True)
+        lower_unique_indices = np.sort(lower_unique_indices)
+        lowerOutline_A_lp = lowerOutline_A_lp[lower_unique_indices]
+
         cosine_spaced_chord_fractions = _functions.cosspace(
             0.0, 1.0, self.n_points_per_side
         )
@@ -500,7 +525,7 @@ class Airfoil:
             ]
         )
 
-        # Resample the MCL points using cosine-spaced distances along the MCL.
+        # Resample the MCL points using cosine spaced distances along the MCL.
         self.mcl_A_lp = self.get_resampled_mcl(
             mcl_fractions=cosine_spaced_chord_fractions
         )
@@ -645,12 +670,17 @@ class Airfoil:
             # Read the text from the airfoil file.
             raw_text = airfoil_file.read_text()
 
-            # Trim the text at the return characters.
-            trimmed_text = raw_text[raw_text.find("\n") :]
+            # Split into lines, skip the header (first line), and filter out any comment
+            # lines (starting with #).
+            lines = raw_text.split("\n")[1:]
+            data_lines = [
+                line for line in lines if line.strip() and not line.startswith("#")
+            ]
+            trimmed_text = "\n".join(data_lines)
 
-            # Input the coordinates into a 1D array. This represents the upper and
-            # lower points of the Airfoil's outline (in airfoil axes, relative to the
-            # leading point).
+            # Input the coordinates into a 1D array. This represents the upper and lower
+            # points of the Airfoil's outline (in airfoil axes, relative to the leading
+            # point).
             outline1D_A_lp = np.fromstring(trimmed_text, sep="\n")
 
             # Check to make sure the number of elements in the array is even.
@@ -674,7 +704,7 @@ class Airfoil:
 
     def _resample_outline(self, n_points_per_side: int) -> None:
         """Returns a resampled version of the points on the Airfoil's outline (in
-        airfoil axes, relative to the leading point) with cosine-spaced points on the
+        airfoil axes, relative to the leading point) with cosine spaced points on the
         upper and lower surfaces.
 
         The number of points defining the final Airfoil's outline is (n_points_per_side
@@ -714,6 +744,18 @@ class Airfoil:
             flippedUpperOutline_distances_cumulative
             / flippedUpperOutline_distances_cumulative[-1]
         )
+
+        # Remove duplicate distance values (which occur when consecutive points are
+        # coincident). PchipInterpolator requires strictly increasing x values.
+        _, upper_unique_indices = np.unique(
+            flippedUpperOutline_distances_cumulative_normalized, return_index=True
+        )
+        upper_unique_indices = np.sort(upper_unique_indices)
+        flippedUpperOutline_distances_cumulative_normalized = (
+            flippedUpperOutline_distances_cumulative_normalized[upper_unique_indices]
+        )
+        flippedUpperOutlineX_A_lp = flippedUpperOutlineX_A_lp[upper_unique_indices]
+        flippedUpperOutlineY_A_lp = flippedUpperOutlineY_A_lp[upper_unique_indices]
 
         # Create interpolated functions for the x and y components of points on the
         # upper outline as a function of distance along upper outline.
@@ -757,6 +799,18 @@ class Airfoil:
             lowerOutline_distances_cumulative / lowerOutline_distances_cumulative[-1]
         )
 
+        # Remove duplicate distance values (which occur when consecutive points are
+        # coincident). PchipInterpolator requires strictly increasing x values.
+        _, lower_unique_indices = np.unique(
+            lowerOutline_distances_cumulative_normalized, return_index=True
+        )
+        lower_unique_indices = np.sort(lower_unique_indices)
+        lowerOutline_distances_cumulative_normalized = (
+            lowerOutline_distances_cumulative_normalized[lower_unique_indices]
+        )
+        lowerOutlineX_A_lp = lowerOutlineX_A_lp[lower_unique_indices]
+        lowerOutlineY_A_lp = lowerOutlineY_A_lp[lower_unique_indices]
+
         # Create interpolated functions for the x and y components of points on the
         # lower outline as a function of distance along the lower outline.
         lowerX_func = sp_interp.PchipInterpolator(
@@ -770,13 +824,13 @@ class Airfoil:
             extrapolate=False,
         )
 
-        # Generate a cosine-spaced list of normalized distances from 0.0 to 1.0.
+        # Generate a cosine spaced list of normalized distances from 0.0 to 1.0.
         cosine_spaced_normalized_distances = _functions.cosspace(
             0.0, 1.0, n_points_per_side
         )
 
         # Find the x and y components of the upper and lower outline points at each
-        # of the resampled cosine-spaced normalized distances.
+        # of the resampled cosine spaced normalized distances.
         upperResampledOutlineX_A_lp = np.flipud(
             upperX_func(cosine_spaced_normalized_distances)
         )

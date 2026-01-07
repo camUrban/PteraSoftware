@@ -44,3 +44,9 @@ These files contain multiple aerodynamic elements (slat, main element, flap) sep
 These files represent shapes that are not traditional airfoils (e.g., cowlings, nacelles) and have only a single surface rather than upper and lower surfaces.
 
 - naca1.dat
+
+### Blunt Trailing Edges
+
+These files have blunt trailing edges where the outline wraps around, causing x-coordinates to not be strictly monotonic from leading edge to trailing edge. This breaks the interpolation that assumes x always increases along each surface.
+
+- cap21c.dat

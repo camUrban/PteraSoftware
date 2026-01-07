@@ -45,7 +45,7 @@ With your help, I hope we will increase the open-source community's interest and
     * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
     * Wings can be defined as a collection of two or more wing cross sections of any dimensions and positions.
     * Wing cross sections can be specified to match the mean camber line of an airfoil.
-    * The package comes with a massive database of airfoils to choose from.
+    * The package comes with a massive database of airfoils to choose from, courtesy of the [UIUC Airfoil Coordinates Database](https://m-selig.ae.illinois.edu/ads/coord_database.html).
     * Wings are automatically discretized into panels with customizable sizes and spacings.
 3. Customizable Aircraft Motion
     * The relative motion of wings and wing cross sections can be defined using any time-dependent functions of sweep, pitch, and heave angles.

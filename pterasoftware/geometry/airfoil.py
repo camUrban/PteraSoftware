@@ -524,19 +524,25 @@ class Airfoil:
         lower_unique_indices = np.sort(lower_unique_indices)
         lowerOutline_A_lp = lowerOutline_A_lp[lower_unique_indices]
 
+        # Determine the valid x range that both outlines cover. Use the maximum of
+        # the minimum x values and minimum of the maximum x values to ensure we only
+        # interpolate within the data range (avoiding extrapolation errors).
+        x_min = max(flippedUpperOutline_A_lp[0, 0], lowerOutline_A_lp[0, 0])
+        x_max = min(flippedUpperOutline_A_lp[-1, 0], lowerOutline_A_lp[-1, 0])
+
         cosine_spaced_chord_fractions = _functions.cosspace(
-            0.0, 1.0, self.n_points_per_side
+            x_min, x_max, self.n_points_per_side
         )
 
         upper_func = sp_interp.PchipInterpolator(
             x=flippedUpperOutline_A_lp[:, 0],
             y=flippedUpperOutline_A_lp[:, 1],
-            extrapolate=True,
+            extrapolate=False,
         )
         lower_func = sp_interp.PchipInterpolator(
             x=lowerOutline_A_lp[:, 0],
             y=lowerOutline_A_lp[:, 1],
-            extrapolate=True,
+            extrapolate=False,
         )
 
         flippedUpperOutlineY_A_lp = upper_func(cosine_spaced_chord_fractions)
@@ -551,10 +557,10 @@ class Airfoil:
             ]
         )
 
-        # Resample the MCL points using cosine spaced distances along the MCL.
-        self.mcl_A_lp = self.get_resampled_mcl(
-            mcl_fractions=cosine_spaced_chord_fractions
-        )
+        # Resample the MCL points using cosine spaced distances along the MCL. The
+        # fractions here represent normalized arc length (0.0 to 1.0).
+        normalized_mcl_fractions = _functions.cosspace(0.0, 1.0, self.n_points_per_side)
+        self.mcl_A_lp = self.get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
 
     def _populate_outline(self) -> None:
         """Populates a variable with the points of the Airfoil's outline (in airfoil

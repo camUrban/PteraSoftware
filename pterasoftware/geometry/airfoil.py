@@ -1152,7 +1152,7 @@ class Airfoil:
 
         outline_chord_fractions = np.linspace(
             outlineLpX_A_lp,
-            max(outlineUpperTpX_A_lp, outlineUpperTpY_A_lp),
+            max(outlineUpperTpX_A_lp, outlineLowerTpX_A_lp),
             2 * max(n_upper_points, n_lower_points),
         )
 
@@ -1161,12 +1161,12 @@ class Airfoil:
         upperY_func = sp_interp.PchipInterpolator(
             x=flippedUpperOutline_A_lp[:, 0],
             y=flippedUpperOutline_A_lp[:, 1],
-            extrapolate=True,
+            extrapolate=False,
         )
         lowerY_func = sp_interp.PchipInterpolator(
             x=lowerOutline_A_lp[:, 0],
             y=lowerOutline_A_lp[:, 1],
-            extrapolate=True,
+            extrapolate=False,
         )
 
         upperMinusLowerOutlineY = upperY_func(outline_chord_fractions) - lowerY_func(

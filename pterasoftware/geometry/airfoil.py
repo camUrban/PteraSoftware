@@ -137,7 +137,9 @@ class Airfoil:
         new_airfoil.resample = self.resample
         new_airfoil.n_points_per_side = self.n_points_per_side
         new_airfoil.outline_A_lp = np.copy(self.outline_A_lp)
-        new_airfoil.mcl_A_lp = np.copy(self.mcl_A_lp) if self.mcl_A_lp is not None else None
+        new_airfoil.mcl_A_lp = (
+            np.copy(self.mcl_A_lp) if self.mcl_A_lp is not None else None
+        )
         return new_airfoil
 
     # TODO: In the future, if adding control surfaces becomes more important,
@@ -457,26 +459,6 @@ class Airfoil:
         )
 
         return np.column_stack([mclX_func(mcl_fractions), mclY_func(mcl_fractions)])
-
-    def _get_mclY(self, chord_fraction: float | int) -> float:
-        """Returns the y component of the Airfoil's MCL (in airfoil axes, relative to
-        the leading point) at a given fraction along the chord.
-
-        :param chord_fraction: A number (int or float) representing the fraction along
-            the chord, from leading to trailing point, at which to return the y
-            component of the MCL (in airfoil axes, relative to the leading point). It
-            should be in the range [0.0, 1.0].
-        :return: The y component of the MCL (in airfoil axes, relative to the leading
-            point) at the requested fraction along the chord.
-        """
-        assert self.mcl_A_lp is not None
-        mclY_func = sp_interp.PchipInterpolator(
-            x=self.mcl_A_lp[:, 0],
-            y=self.mcl_A_lp[:, 1],
-            extrapolate=False,
-        )
-
-        return float(mclY_func(chord_fraction))
 
     def _lp_index(self) -> int:
         """Returns the index of the leading point in the outline_A_lp attribute.

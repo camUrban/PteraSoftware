@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 import time
 from collections.abc import Sequence
 from typing import Any, cast
@@ -20,7 +21,6 @@ import pyvista as pv
 import webp
 
 from .. import _parameter_validation, _transformations
-from . import airfoil as airfoil_mod
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
@@ -710,12 +710,7 @@ class Airplane:
             for wing_cross_section in wing.wing_cross_sections:
                 airfoil = wing_cross_section.airfoil
 
-                reflected_airfoil = airfoil_mod.Airfoil(
-                    name=airfoil.name,
-                    outline_A_lp=np.copy(airfoil.outline_A_lp),
-                    resample=airfoil.resample,
-                    n_points_per_side=airfoil.n_points_per_side,
-                )
+                reflected_airfoil = copy.deepcopy(airfoil)
 
                 if wing_cross_section.control_surface_symmetry_type == "asymmetric":
                     reflected_control_surface_deflection = (

@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 import importlib.resources
 from collections.abc import Sequence
 from typing import Any, cast
@@ -30,6 +31,8 @@ class Airfoil:
     """A class used to contain the Airfoil of a WingCrossSection.
 
     **Contains the following methods:**
+
+    __deepcopy__: Returns an independent deep copy of this Airfoil.
 
     add_control_surface: Returns a version of the Airfoil with a control surface added
     at a given point.
@@ -117,6 +120,25 @@ class Airfoil:
         # axes, relative to the leading point). It will be set by _populate_mcl.
         self.mcl_A_lp: np.ndarray | None = None
         self._populate_mcl()
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Airfoil:
+        """Returns an independent deep copy of this Airfoil.
+
+        This method is optimized for performance by directly copying numpy arrays
+        using np.copy() and sharing immutable attributes (name, resample,
+        n_points_per_side) without copying.
+
+        :param memo: A dictionary used by the copy module to track already-copied
+            objects and avoid infinite recursion with circular references.
+        :return: A new Airfoil instance with copied data.
+        """
+        new_airfoil = Airfoil.__new__(Airfoil)
+        new_airfoil.name = self.name
+        new_airfoil.resample = self.resample
+        new_airfoil.n_points_per_side = self.n_points_per_side
+        new_airfoil.outline_A_lp = np.copy(self.outline_A_lp)
+        new_airfoil.mcl_A_lp = np.copy(self.mcl_A_lp) if self.mcl_A_lp is not None else None
+        return new_airfoil
 
     # TODO: In the future, if adding control surfaces becomes more important,
     #  we may want to rework this method. Using this method we need to artificially

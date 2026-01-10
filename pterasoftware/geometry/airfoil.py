@@ -458,6 +458,14 @@ class Airfoil:
             extrapolate=False,
         )
 
+        # Clamp mcl_fractions to the valid interpolation range to avoid NaN from
+        # floating point precision issues at the boundaries.
+        mcl_fractions = np.clip(
+            mcl_fractions,
+            mcl_distances_cumulative_normalized[0],
+            mcl_distances_cumulative_normalized[-1],
+        )
+
         return np.column_stack([mclX_func(mcl_fractions), mclY_func(mcl_fractions)])
 
     def _lp_index(self) -> int:
@@ -514,6 +522,13 @@ class Airfoil:
 
         cosine_spaced_chord_fractions = _functions.cosspace(
             x_min, x_max, self.n_points_per_side
+        )
+
+        # Clamp the cosine spaced fractions to ensure they're within the valid
+        # interpolation range for both surfaces. This is necessary because cosspace
+        # can produce slightly different floating point values than the input bounds.
+        cosine_spaced_chord_fractions = np.clip(
+            cosine_spaced_chord_fractions, x_min, x_max
         )
 
         upper_func = sp_interp.PchipInterpolator(
@@ -879,20 +894,25 @@ class Airfoil:
             0.0, 1.0, n_points_per_side
         )
 
+        # Clamp to valid interpolation ranges for both surfaces to avoid NaN from
+        # floating point precision issues at the boundaries.
+        upper_clamped_distances = np.clip(
+            cosine_spaced_normalized_distances,
+            flippedUpperOutline_distances_cumulative_normalized[0],
+            flippedUpperOutline_distances_cumulative_normalized[-1],
+        )
+        lower_clamped_distances = np.clip(
+            cosine_spaced_normalized_distances,
+            lowerOutline_distances_cumulative_normalized[0],
+            lowerOutline_distances_cumulative_normalized[-1],
+        )
+
         # Find the x and y components of the upper and lower outline points at each
         # of the resampled cosine spaced normalized distances.
-        upperResampledOutlineX_A_lp = np.flipud(
-            upperX_func(cosine_spaced_normalized_distances)
-        )
-        lowerResampledOutlineX_A_lp = lowerX_func(cosine_spaced_normalized_distances)[
-            1:
-        ]
-        upperResampledOutlineY_A_lp = np.flipud(
-            upperY_func(cosine_spaced_normalized_distances)
-        )
-        lowerResampledOutlineY_A_lp = lowerY_func(cosine_spaced_normalized_distances)[
-            1:
-        ]
+        upperResampledOutlineX_A_lp = np.flipud(upperX_func(upper_clamped_distances))
+        lowerResampledOutlineX_A_lp = lowerX_func(lower_clamped_distances)[1:]
+        upperResampledOutlineY_A_lp = np.flipud(upperY_func(upper_clamped_distances))
+        lowerResampledOutlineY_A_lp = lowerY_func(lower_clamped_distances)[1:]
 
         resampledOutlineX_A_lp = np.hstack(
             (upperResampledOutlineX_A_lp, lowerResampledOutlineX_A_lp)
@@ -1151,8 +1171,21 @@ class Airfoil:
             extrapolate=False,
         )
 
-        upperMinusLowerOutlineY = upperY_func(outline_chord_fractions) - lowerY_func(
-            outline_chord_fractions
+        # Clamp to valid interpolation ranges for both surfaces to avoid NaN from
+        # floating point precision issues at the boundaries.
+        upper_clamped_fractions = np.clip(
+            outline_chord_fractions,
+            flippedUpperOutline_A_lp[0, 0],
+            flippedUpperOutline_A_lp[-1, 0],
+        )
+        lower_clamped_fractions = np.clip(
+            outline_chord_fractions,
+            lowerOutline_A_lp[0, 0],
+            lowerOutline_A_lp[-1, 0],
+        )
+
+        upperMinusLowerOutlineY = upperY_func(upper_clamped_fractions) - lowerY_func(
+            lower_clamped_fractions
         )
 
         if not np.all(upperMinusLowerOutlineY[1:-1] >= 0.0):

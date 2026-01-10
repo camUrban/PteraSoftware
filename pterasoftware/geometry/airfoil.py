@@ -11,7 +11,6 @@ None
 
 from __future__ import annotations
 
-import copy
 import importlib.resources
 from collections.abc import Sequence
 from typing import Any, cast
@@ -124,9 +123,9 @@ class Airfoil:
     def __deepcopy__(self, memo: dict[int, Any]) -> Airfoil:
         """Returns an independent deep copy of this Airfoil.
 
-        This method is optimized for performance by directly copying numpy arrays
-        using np.copy() and sharing immutable attributes (name, resample,
-        n_points_per_side) without copying.
+        This method is optimized for performance by directly copying numpy arrays using
+        np.copy() and sharing immutable attributes (name, resample, n_points_per_side)
+        without copying.
 
         :param memo: A dictionary used by the copy module to track already-copied
             objects and avoid infinite recursion with circular references.
@@ -443,7 +442,7 @@ class Airfoil:
         mcl_distances_cumulative_normalized = mcl_distances_cumulative_normalized[
             unique_indices
         ]
-        mcl_unique = self.mcl_A_lp[unique_indices]
+        mcl_unique: np.ndarray = self.mcl_A_lp[unique_indices]
 
         # Create interpolated functions for MCL's components as a function of fractional
         # distances along the MCL.

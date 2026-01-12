@@ -8,6 +8,11 @@ This file documents airfoils that have been removed from the database and the re
 
 Ptera Software generates NACA 4-series airfoil coordinates programmatically using the standard equations, so storing these in the database is redundant. The programmatic generation also ensures consistent point density and spacing.
 
+- n0009sm.dat
+- n0012.dat
+- n2414.dat
+- n2415.dat
+- n6409.dat
 - naca0006.dat
 - naca0008.dat
 - naca0010.dat
@@ -35,9 +40,13 @@ Ptera Software generates NACA 4-series airfoil coordinates programmatically usin
 
 ### Multi-Element Airfoils
 
-These files contain multiple aerodynamic elements (slat, main element, flap) separated by comment lines. Ptera Software expects single-element airfoils.
+These files contain multiple aerodynamic elements (slat, main element, flap), or are themselves only elements of an airfoil. Ptera Software expects single-element airfoils.
 
 - 30p-30n.dat
+- R1145MSM.dat
+- R1145MSF.dat
+- ua79sfm.dat
+- ua79sff.dat
 
 ### Non-Standard Shapes
 
@@ -45,8 +54,20 @@ These files represent shapes that are not traditional airfoils (e.g., cowlings, 
 
 - naca1.dat
 
-### Blunt Trailing Edges
+### Inward Trailing Edges
 
-These files have blunt trailing edges where the outline wraps around, causing x-coordinates to not be strictly monotonic from leading edge to trailing edge. This breaks the interpolation that assumes x always increases along each surface.
+These files have trailing edges where the outline wraps around, causing x-coordinates to not be strictly monotonic from leading edge to trailing edge. This breaks the interpolation that assumes x always increases along each surface.
 
 - cap21c.dat
+
+### Deflected Control Surfaces
+
+These airfoils have deflected control surfaces (flaps, ailerons). Ptera Software requires the given outline to represent the airfoil without any control surface deflection.
+
+- s1221-4deg-flap.dat
+
+### "Extended" Airfoils
+
+These airfoils are explicitly labeled as "extended" versions of other airfoils, and have a normalized chord length much greater than 1.0.
+
+- e664ex.dat

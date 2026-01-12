@@ -75,7 +75,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
 
    This helps avoid duplicated effort and ensures that contributions align with the current design direction.
 
-3. **Set up your local environment**
+2. **Set up your local environment**
    - Fork the repository on GitHub to your own account.  
    - Clone your fork to your local machine:  
      ```shell
@@ -97,7 +97,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
      deactivate
      ```  
 
-4. **Create a new branch**
+3. **Create a new branch**
    - Branch from main for each change.  
    - Use descriptive branch names, such as `feature/add-new-plot` or `bugfix/fix-units`.  
    ```shell
@@ -108,7 +108,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    git push origin <branch-name>
    ```  
 
-5. **Make your changes**  
+4. **Make your changes**  
    - Commit frequently with clear, descriptive messages.  
    - Follow the code style and standards described in the [pull request template](.github/pull_request_template.md).  
    - Run automated checks locally before pushing:  
@@ -132,23 +132,23 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    
    If you’re unsure whether a change falls into this category, feel free to ask in the issue or PR thread before investing significant effort.
 
-6. **Push your changes and open a pull request**  
+5. **Push your changes and open a pull request**  
    - Push your branch to your fork:  
      ```shell
      git push origin <branch-name>
      ```  
    - Open a pull request (PR) from your branch to the main branch of the upstream repository.  
-   - You can open the PR as a draft to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
+   - You can open the PR as a **Draft** to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
    - In the PR description, follow the [pull request template](.github/pull_request_template.md) and link any related issues.
 
-7. **Keeping your branch up to date**  
+6. **Keeping your branch up to date**  
    - If main changes before your PR is merged, sync your branch to avoid merge conflicts:  
      ```shell
      git fetch upstream
      git merge upstream/main # Or git rebase upstream/main
      ```  
 
-8. **Review and approval process**  
+7. **Review and approval process**  
    - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  
    - Once approved, it will be merged into main and included in the next release.

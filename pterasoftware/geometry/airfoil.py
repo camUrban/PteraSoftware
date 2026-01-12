@@ -149,8 +149,8 @@ class Airfoil:
     #  the upper and lower outlines to intersect. This is because they each rotate
     #  about points on their respective outlines. Instead, it would be better to have
     #  everything rotate about the MCL's hinge point, however, this causes
-    #  self-intersections for the upper and lower outlines, so we'd need that we'd
-    #  need to write some logic to remove those.
+    #  self-intersections for the upper and lower outlines, so we'd need to write some
+    #  logic to remove those.
     def add_control_surface(
         self, deflection: float | int, hinge_point: float | int
     ) -> Airfoil:

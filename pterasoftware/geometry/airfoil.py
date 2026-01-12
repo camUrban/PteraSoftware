@@ -104,6 +104,8 @@ class Airfoil:
                 self.outline_A_lp = cast(np.ndarray, outline_A_lp)
         else:
             self._populate_outline()
+            # Validate database-loaded and NACA-generated airfoils as well.
+            self.outline_A_lp = self._validate_outline(self.outline_A_lp)
 
         self.resample = _parameter_validation.boolLike_return_bool(resample, "resample")
 
@@ -562,6 +564,21 @@ class Airfoil:
         # fractions here represent normalized arc length (0.0 to 1.0).
         normalized_mcl_fractions = _functions.cosspace(0.0, 1.0, self.n_points_per_side)
         self.mcl_A_lp = self.get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
+
+        # Normalize the MCL so that x spans from 0.0 to 1.0. This corrects for slight
+        # variations in the outline data where upper and lower surfaces may not extend
+        # to exactly x=0.0 and x=1.0. We translate the leading edge to the origin and
+        # scale the x-coordinates only (not y) to put the trailing edge at x=1.0. We
+        # intentionally do NOT rotate to put the trailing edge on the x-axis, because
+        # that would remove control surface deflection effects from the MCL.
+
+        # Step 1: Translate so leading edge is at origin.
+        self.mcl_A_lp[:, 0] -= self.mcl_A_lp[0, 0]
+        self.mcl_A_lp[:, 1] -= self.mcl_A_lp[0, 1]
+
+        # Step 2: Scale x only so trailing edge is at x=1.0.
+        x_scale_factor = 1.0 / self.mcl_A_lp[-1, 0]
+        self.mcl_A_lp[:, 0] *= x_scale_factor
 
     def _populate_outline(self) -> None:
         """Populates a variable with the points of the Airfoil's outline (in airfoil

@@ -1,8 +1,6 @@
 # Contributing Guidelines
 
-We are excited that you are interested in contributing to **Ptera Software**! This 
-guide will help you get started. If you have any questions not answered here, please 
-[open an issue](https://github.com/camUrban/PteraSoftware/issues) and we will respond.  
+We are excited that you are interested in contributing to **Ptera Software**! This guide will help you get started. If you have any questions not answered here, please [open an issue](https://github.com/camUrban/PteraSoftware/issues) and we will respond.  
 
 ---
 
@@ -22,37 +20,28 @@ Please review the following documents before making contributions:
 There are three main ways you can contribute:  
 
 1. [**Report a bug**](#reporting-a-bug)  
-   - Identify and document issues that prevent Ptera Software from working as 
-   expected.  
+   - Identify and document issues that prevent Ptera Software from working as expected.  
    - This includes errors, crashes, incorrect outputs, or unexpected behavior.  
 
 2. [**Request a feature**](#requesting-a-feature)  
-   - Suggest new features, improvements to existing functionality, or usability 
-   changes.  
+   - Suggest new features, improvements to existing functionality, or usability changes.  
    - This can be small quality-of-life improvements or larger feature proposals.  
 
 3. [**Contribute code**](#contributing-code)  
-   - Submit changes that add new features, fix bugs, improve performance, or enhance 
-   documentation.  
+   - Submit changes that add new features, fix bugs, improve performance, or enhance documentation.  
    - Code contributions can address your own ideas or work on existing open issues.  
-   - If you find an issue labeled `help wanted` or `good first issue` that you want to 
-   work on, **comment on the issue to claim it** before starting work. This prevents 
-   duplicate efforts.  
+   - If you find an issue labeled `help wanted` or `good first issue` that you want to work on, **comment on the issue to claim it** before starting work. This prevents duplicate efforts.  
 
 ---
 
 ### Reporting a Bug
 
-**If the bug is a security vulnerability, do not post it as a public issue**. Follow 
-the [security policy](SECURITY.md) instead.  
+**If the bug is a security vulnerability, do not post it as a public issue**. Follow the [security policy](SECURITY.md) instead.  
 
 For all other bugs:  
-1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to check 
-   if it's already been reported.  
-   - If it exists, you can comment or add an emoji reaction to indicate that you are 
-   also affected.  
-2. If it has not been reported, open a new issue using the 
-   [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).  
+1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to check if it's already been reported.  
+   - If it exists, you can comment or add an emoji reaction to indicate that you are also affected.  
+2. If it has not been reported, open a new issue using the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).  
 3. Add the `bug` and `help wanted` labels and any other relevant labels.  
 
 ---
@@ -60,35 +49,33 @@ For all other bugs:
 ### Requesting a Feature
 
 For feature requests or enhancements:  
-1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to avoid 
-   duplicates.  
+1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to avoid duplicates.  
    - If it exists, comment or react to indicate interest.  
-2. If it has not been requested, open a new issue using the 
-   [feature request template](.github/ISSUE_TEMPLATE/feature_request.md).  
+2. If it has not been requested, open a new issue using the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md).  
 3. Add the `feature` and `help wanted` labels plus any others that apply.  
 
 ---
 
 ### Contributing Code
 
-Ptera Software now uses the GitHub Flow to manage code contributions. If this is new to 
-you, it's a good idea to read through 
-[this guide](https://docs.github.com/en/get-started/using-github/github-flow) first. 
-Once you understand the process, here's how to implement it:
+Ptera Software now uses the GitHub Flow to manage code contributions. If this is new to you, it's a good idea to read through [this guide](https://docs.github.com/en/get-started/using-github/github-flow) first. Once you understand the process, here's how to implement it:
 
 1. **Choose what to work on**
    - Look for issues labeled `help wanted` or `good first issue`.  
-     - If you want to work on one, check that no one else has already commented 
-     claiming it. If unclaimed, comment on the issue to claim it.  
-     - If you want to work on a claimed issue that hasn't been updated in a while, 
-     write a comment asking if the user who originally claimed it is still actively 
-     working on it.
-   - If you have your own idea, search the issues to ensure it hasn't already been 
-   proposed.  
-     - If you can't find anything, open a new issue describing your change and state 
-     that you will be implementing it.  
+     - If you want to work on one, check that no one else has already commented claiming it. If unclaimed, comment on the issue to claim it and a maintainer will then "assign" the issue to you. 
+     - If you want to work on a claimed issue that hasn't been updated in a while, write a comment asking if the user who originally claimed it is still actively working on it.
+   - If you have your own idea, search the issues to ensure it hasn't already been proposed.  
+     - If you can't find anything, open a new issue describing your change and state that you will be implementing it.
 
-2. **Set up your local environment**
+   #### Coordination on In-Progress and Draft Work
+
+   Some issues and pull requests may represent work that is actively under design or refinement.
+
+   If a pull request exists, or if an issue has been assigned to or claimed by someone else, please do **not** start parallel implementation work without first checking in via a comment. A short message like "Are you still actively working on this?" or "Is this a good time to help with X?” is usually sufficient.
+
+   This helps avoid duplicated effort and ensures that contributions align with the current design direction.
+
+3. **Set up your local environment**
    - Fork the repository on GitHub to your own account.  
    - Clone your fork to your local machine:  
      ```shell
@@ -110,10 +97,9 @@ Once you understand the process, here's how to implement it:
      deactivate
      ```  
 
-3. **Create a new branch**
+4. **Create a new branch**
    - Branch from main for each change.  
-   - Use descriptive branch names, such as `feature/add-new-plot` or 
-   `bugfix/fix-units`.  
+   - Use descriptive branch names, such as `feature/add-new-plot` or `bugfix/fix-units`.  
    ```shell
    git checkout main
    git branch <branch-name>
@@ -122,7 +108,7 @@ Once you understand the process, here's how to implement it:
    git push origin <branch-name>
    ```  
 
-4. **Make your changes**  
+5. **Make your changes**  
    - Commit frequently with clear, descriptive messages.  
    - Follow the code style and standards described in the [pull request template](.github/pull_request_template.md).  
    - Run automated checks locally before pushing:  
@@ -131,25 +117,38 @@ Once you understand the process, here's how to implement it:
      pre-commit run --all-files
      mypy pterasoftware
      python -m unittest discover -s tests
-     ```  
+     ```
 
-5. **Push your changes and open a pull request**  
+   #### Core Modeling Contributions
+
+   Some parts of Ptera Software, such as the UVLM formulation, wake evolution, force and moment integration, and related aerodynamic models, are closely tied to underlying theoretical assumptions and numerical constraints.
+
+   Contributions in these areas are very welcome, but they typically require coordination and shared understanding of the relevant aerodynamics. When opening a PR that touches core modeling logic, please:
+
+   - Clearly describe the physical assumptions being made.
+   - Note the regime in which the change is expected to be valid.
+   - Include references, derivations, or reasoning where appropriate.
+   - Add tests that validate the behavior against known physical expectations (e.g., symmetry, limiting cases, conservation behavior).
+   
+   If you’re unsure whether a change falls into this category, feel free to ask in the issue or PR thread before investing significant effort.
+
+6. **Push your changes and open a pull request**  
    - Push your branch to your fork:  
      ```shell
      git push origin <branch-name>
      ```  
    - Open a pull request (PR) from your branch to the main branch of the upstream repository.  
-   - You can open the PR as a **Draft** to get feedback early before the work is complete.  
+   - You can open the PR as a draft to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
    - In the PR description, follow the [pull request template](.github/pull_request_template.md) and link any related issues.
 
-6. **Keeping your branch up to date**  
+7. **Keeping your branch up to date**  
    - If main changes before your PR is merged, sync your branch to avoid merge conflicts:  
      ```shell
      git fetch upstream
      git merge upstream/main # Or git rebase upstream/main
      ```  
 
-7. **Review and approval process**  
+8. **Review and approval process**  
    - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  
    - Once approved, it will be merged into main and included in the next release.

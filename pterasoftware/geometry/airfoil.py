@@ -305,12 +305,17 @@ class Airfoil:
         outlineYMin_A_lp = float(np.min(outlineY_A_lp))
         outlineYMax_A_lp = float(np.max(outlineY_A_lp))
         outlineYRange_A_lp = outlineYMax_A_lp - outlineYMin_A_lp
-        y_padding = 0.1 * outlineYRange_A_lp
+        y_padding = 0.75 * outlineYRange_A_lp
+
+        outlineXMin_A_lp = float(np.min(outlineX_A_lp))
+        outlineXMax_A_lp = float(np.max(outlineX_A_lp))
+        outlineXRange_A_lp = outlineXMax_A_lp - outlineXMin_A_lp
+        x_padding = 0.05 * outlineXRange_A_lp
 
         plt.plot(outlineX_A_lp, outlineY_A_lp, "b-")
         plt.plot(mclX_A_lp, mclY_A_lp, "r-")
 
-        plt.xlim(0.0, 1.0)
+        plt.xlim(outlineXMin_A_lp - x_padding, outlineXMax_A_lp + x_padding)
         plt.ylim(outlineYMin_A_lp - y_padding, outlineYMax_A_lp + y_padding)
 
         plt.xlabel("x (airfoil axes)")

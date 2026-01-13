@@ -777,9 +777,8 @@ class Airfoil:
         may not be the true aerodynamic leading edge. After rotating the chord onto the
         x axis, a different point may become the minimum x. The iteration continues
         until the leading point is stable (i.e., the same point remains at minimum x
-        after rotation). Outlines with chord angles exceeding 15 degrees are rejected
-        as they indicate unexpected data orientation rather than implicit angle of
-        attack.
+        after rotation). Outlines with chord angles exceeding 15 degrees are rejected as
+        they indicate unexpected data orientation rather than implicit angle of attack.
 
         :return: None
         """

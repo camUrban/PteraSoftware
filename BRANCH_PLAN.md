@@ -12,15 +12,13 @@ cd experimental && PYTHONPATH="$PWD/.." ../.venv/Scripts/python.exe validate_nac
 
 **NACA 4-Series: 2260/2260 passed (100%)**
 
-**Database Airfoils: 1570/1609 passed (39 failed)**
+**Database Airfoils: 1601/1609 passed (8 failed)**
 | Error                                      | Count |
 |--------------------------------------------|-------|
-| Upper TE y < Lower TE y (inverted TE)      | 31    |
 | Self-intersection (upper y < lower y)      | 8     |
 
-The 39 database failures are truly invalid airfoils:
-- 31 have inverted trailing edges (as6093, as6096, as6098, dsma523a, etc.)
-- 8 have self-intersecting outlines (e340, e378, fx38153, fx62k131, fx63147, etc.)
+The 8 database failures are genuinely invalid airfoils with self-intersecting outlines:
+- e340, e378, fx38153, fx62k131, fx63147, fx72150b, fx72ls160, mh150
 
 ---
 
@@ -95,10 +93,18 @@ Transform to canonical form using iterative approach:
 2. **Rotate** chord line (LE to average TE) onto x axis
 3. **Check convergence**: If minimum x point changed, repeat from step 1
 4. **Scale** to unit chord
+5. **Clamp** x coordinates to [0.0, 1.0] and extrapolate TE to x=1.0
+6. **Remove** duplicate interior points
+7. **Correct small TE inversions** (≤0.1% chord) by averaging upper/lower TE y-values
 
 The iterative approach handles airfoils with implicit angle of attack, where the initial
 minimum x point is not the true aerodynamic leading edge. After rotation, a different
 point may become minimum x; iteration continues until the leading point is stable.
+
+The TE inversion correction handles floating-point precision issues and minor data quality
+problems that may cause the upper TE y to be slightly below the lower TE y after
+normalization. Inversions ≤0.1% chord are corrected by averaging; larger inversions
+indicate genuinely malformed data and are caught by `_validate_outline_final()`.
 
 ### Phase 3: `_validate_outline_final()` (Implemented)
 Verify normalization succeeded:
@@ -138,9 +144,16 @@ Verify normalization succeeded:
 1. **Reflected Airfoil resampling** - Added `__deepcopy__` to `Airfoil` class to prevent double-resampling when creating reflected wings
 2. **Outline interpolation** - Fixed extrapolation errors by:
    - Interpolating only within overlapping x-range of upper/lower outlines
-   - Disabling extrapolation in `PchipInterpolator`
    - Clamping interpolation inputs with `np.clip` to avoid NaN at boundaries
 3. **MCL normalization** - Normalized mean camber line x-values to span [0.0, 1.0]
+
+### Replaced PChip with Linear Interpolation (Complete)
+Replaced all `scipy.interpolate.PchipInterpolator` (cubic) with `np.interp` (linear):
+- **`get_resampled_mcl()`** - Simplified to direct `np.interp` calls
+- **`_resample_outline()`** - Replaced upper/lower PchipInterpolator with `np.interp`
+- **`_populate_mcl()`** - Replaced PchipInterpolator with `np.interp`
+- **Removed `scipy.interpolate` import** - No longer needed
+- **Removed redundant code** - Duplicate removal and clamping operations that were only needed for PchipInterpolator
 
 ### Cleanup
 - Removed unused `_get_mclY` method from `Airfoil`
@@ -154,17 +167,23 @@ Removed 12 invalid airfoils with non-monotonic or discontinuous outlines:
 - e664ex, n0009sm, n0012, n2414, n2415, n6409
 - r1145msf, r1145msm, s1221-4deg-flap, ua79sff, ua79sfm
 
+### Small TE Inversion Correction (Complete)
+Added automatic correction for small trailing edge inversions in `_normalize_outline()`:
+- After all geometric transformations, checks if lower TE y > upper TE y
+- If inversion is ≤0.1% chord (1e-3), averages the y-values to create a closed TE
+- Larger inversions are left for `_validate_outline_final()` to reject
+- This fixes 31 database airfoils that had floating-point precision or minor data quality issues
+
 ### Validation Tooling
 Added experimental scripts:
 - `validate_airfoil_database.py` - Validates all database airfoils
 - `validate_naca4_airfoils.py` - Validates generated NACA 4-series airfoils
+- `analyze_failing_airfoils.py` - Detailed analysis of failing airfoils with plots
 
 ---
 
 ## Next Steps
 
-1. Get rid of all PChip interpolation in airfoil code and replace with piecewise linear interpolation.
-2. Consider if it would be useful to add debug-level logging messages. Note: It may be that these would clog up output, and aren't a good idea. However, if you determine that they would be useful, add them using the patterns established in other parts of the codebase.
-3. Document the any changes to acceptable airfoil outlines in the docstrings within `airfoil.py`.
-4. Create a script in experimental to more closely analyze the failing database airfoils to manually check if they are malformed.
-5. Update unit tests to match new validation behavior
+1. Consider if it would be useful to add debug-level logging messages. Note: It may be that these would clog up output, and aren't a good idea. However, if you determine that they would be useful, add them using the patterns established in other parts of the codebase.
+2. Document any changes to acceptable airfoil outlines in the docstrings within `airfoil.py`.
+3. Update unit tests to match new validation behavior

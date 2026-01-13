@@ -1,5 +1,6 @@
 """This module contains a class to test Airfoils."""
 
+import importlib.resources
 import unittest
 
 import numpy as np
@@ -185,14 +186,16 @@ class TestAirfoil(unittest.TestCase):
 
     def test_parameter_validation_invalid_inputs(self):
         """Test that invalid parameters raise appropriate errors."""
-        # Test outlines with x-values significantly less than 0.0.
+        # Test outlines with insufficient points in upper portion. These outlines have
+        # only 4 points total, and the point ordering places only 1 point in the upper
+        # portion (the leading point itself), which fails the requirement for at least
+        # 3 unique points in each portion.
         invalid_outline = np.array([[-0.1, 0.0], [0.5, 0.1], [1.0, 0.0], [0.5, -0.1]])
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(
                 name="Invalid", outline_A_lp=invalid_outline, resample=False
             )
 
-        # Test outlines with x-values significantly greater than 1.0.
         invalid_outline2 = np.array([[0.0, 0.0], [0.5, 0.1], [1.1, 0.0], [0.5, -0.1]])
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(
@@ -300,6 +303,332 @@ class TestAirfoil(unittest.TestCase):
         self.assertIsNotNone(self.named_airfoil.mcl_A_lp)
         self.assertEqual(len(self.named_airfoil.mcl_A_lp.shape), 2)
         self.assertEqual(self.named_airfoil.mcl_A_lp.shape[1], 2)
+
+
+    def test_excessive_rotation_rejection(self):
+        """Test that outlines with excessive rotation (>15 degrees) are rejected."""
+        # Create a valid airfoil outline
+        valid_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.75, 0.06],
+                [0.50, 0.08],
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.75, -0.06],
+                [1.00, 0.00],
+            ]
+        )
+
+        # Rotate the outline by 20 degrees (exceeds 15 degree limit)
+        angle_rad = np.radians(20.0)
+        cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
+        rotation_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
+        rotated_outline = (rotation_matrix @ valid_outline.T).T
+
+        with self.assertRaises(ValueError) as context:
+            ps.geometry.airfoil.Airfoil(
+                name="Excessively Rotated",
+                outline_A_lp=rotated_outline,
+                resample=False,
+            )
+        self.assertIn("excessive rotation", str(context.exception).lower())
+
+    def test_minor_rotation_correction(self):
+        """Test that minor rotation offsets (<15 degrees) are auto-corrected."""
+        # Create a valid airfoil outline
+        valid_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.75, 0.06],
+                [0.50, 0.08],
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.75, -0.06],
+                [1.00, 0.00],
+            ]
+        )
+
+        # Rotate the outline by 10 degrees (within 15 degree limit)
+        angle_rad = np.radians(10.0)
+        cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
+        rotation_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
+        rotated_outline = (rotation_matrix @ valid_outline.T).T
+
+        # Should succeed and normalize the rotation
+        airfoil = ps.geometry.airfoil.Airfoil(
+            name="Minor Rotation",
+            outline_A_lp=rotated_outline,
+            resample=False,
+        )
+
+        # After normalization, leading point should be at ~[0, 0]
+        lp_index = int(np.argmin(airfoil.outline_A_lp[:, 0]))
+        lp = airfoil.outline_A_lp[lp_index, :]
+        npt.assert_allclose(lp, [0.0, 0.0], atol=1e-6)
+
+        # Trailing edge should be at ~x=1.0
+        self.assertAlmostEqual(airfoil.outline_A_lp[0, 0], 1.0, places=5)
+        self.assertAlmostEqual(airfoil.outline_A_lp[-1, 0], 1.0, places=5)
+
+    def test_auto_normalization_translation_and_scale(self):
+        """Test that outlines are auto-normalized for position and scale."""
+        # Create an outline that is translated and scaled (not at origin, chord != 1)
+        # This is a simple diamond-like airfoil shape scaled by 2x and translated
+        base_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.75, 0.06],
+                [0.50, 0.08],
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.75, -0.06],
+                [1.00, 0.00],
+            ]
+        )
+
+        # Scale by 2x and translate by (5, 3)
+        scaled_translated = base_outline * 2.0 + np.array([5.0, 3.0])
+
+        airfoil = ps.geometry.airfoil.Airfoil(
+            name="Scaled and Translated",
+            outline_A_lp=scaled_translated,
+            resample=False,
+        )
+
+        # After normalization, leading point should be at ~[0, 0]
+        lp_index = int(np.argmin(airfoil.outline_A_lp[:, 0]))
+        lp = airfoil.outline_A_lp[lp_index, :]
+        npt.assert_allclose(lp, [0.0, 0.0], atol=1e-6)
+
+        # Trailing edge should be at ~x=1.0 (unit chord)
+        self.assertAlmostEqual(airfoil.outline_A_lp[0, 0], 1.0, places=5)
+        self.assertAlmostEqual(airfoil.outline_A_lp[-1, 0], 1.0, places=5)
+
+        # x values should be in [0, 1]
+        self.assertTrue(np.all(airfoil.outline_A_lp[:, 0] >= 0.0 - 1e-9))
+        self.assertTrue(np.all(airfoil.outline_A_lp[:, 0] <= 1.0 + 1e-9))
+
+    def test_self_intersection_rejection(self):
+        """Test that self-intersecting outlines are rejected."""
+        # Create an outline where upper surface crosses below lower surface
+        # This is a "twisted" airfoil that would self-intersect
+        self_intersecting_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.75, 0.06],
+                [0.50, -0.05],  # Upper surface goes below y=0
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, 0.05],  # Lower surface goes above y=0
+                [0.75, -0.06],
+                [1.00, 0.00],
+            ]
+        )
+
+        with self.assertRaises(ValueError) as context:
+            ps.geometry.airfoil.Airfoil(
+                name="Self Intersecting",
+                outline_A_lp=self_intersecting_outline,
+                resample=False,
+            )
+        # The error should mention self-intersection or upper/lower y values
+        error_msg = str(context.exception).lower()
+        self.assertTrue(
+            "upper" in error_msg or "lower" in error_msg or "intersect" in error_msg
+        )
+
+    def test_open_trailing_edge_support(self):
+        """Test that open (blunt) trailing edges are supported."""
+        # Create an outline with an open trailing edge (upper TE y != lower TE y)
+        open_te_outline = np.array(
+            [
+                [1.00, 0.01],  # Upper TE slightly above centerline
+                [0.75, 0.06],
+                [0.50, 0.08],
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.75, -0.06],
+                [1.00, -0.01],  # Lower TE slightly below centerline
+            ]
+        )
+
+        # Should succeed - open trailing edges are allowed
+        airfoil = ps.geometry.airfoil.Airfoil(
+            name="Open TE",
+            outline_A_lp=open_te_outline,
+            resample=False,
+        )
+
+        # Verify airfoil was created successfully
+        self.assertIsNotNone(airfoil.outline_A_lp)
+        self.assertIsNotNone(airfoil.mcl_A_lp)
+
+        # Upper TE y should be >= lower TE y
+        upper_te_y = airfoil.outline_A_lp[0, 1]
+        lower_te_y = airfoil.outline_A_lp[-1, 1]
+        self.assertGreaterEqual(upper_te_y, lower_te_y)
+
+    def test_upper_x_non_increasing_validation(self):
+        """Test that upper outline must have non-increasing x values."""
+        # Create an outline where upper portion has increasing x (invalid)
+        invalid_upper_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.50, 0.06],  # x decreases (OK)
+                [0.60, 0.08],  # x increases (invalid for upper portion)
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.75, -0.06],
+                [1.00, 0.00],
+            ]
+        )
+
+        with self.assertRaises(ValueError) as context:
+            ps.geometry.airfoil.Airfoil(
+                name="Invalid Upper",
+                outline_A_lp=invalid_upper_outline,
+                resample=False,
+            )
+        self.assertIn("upper", str(context.exception).lower())
+
+    def test_lower_x_non_decreasing_validation(self):
+        """Test that lower outline must have non-decreasing x values."""
+        # Create an outline where lower portion has decreasing x (invalid)
+        invalid_lower_outline = np.array(
+            [
+                [1.00, 0.00],
+                [0.75, 0.06],
+                [0.50, 0.08],
+                [0.25, 0.06],
+                [0.00, 0.00],
+                [0.25, -0.06],
+                [0.50, -0.08],
+                [0.40, -0.06],  # x decreases (invalid for lower portion)
+                [1.00, 0.00],
+            ]
+        )
+
+        with self.assertRaises(ValueError) as context:
+            ps.geometry.airfoil.Airfoil(
+                name="Invalid Lower",
+                outline_A_lp=invalid_lower_outline,
+                resample=False,
+            )
+        self.assertIn("lower", str(context.exception).lower())
+
+    def test_minimum_points_validation(self):
+        """Test that outline must have at least 5 points."""
+        # Create an outline with only 4 points
+        too_few_points = np.array(
+            [
+                [1.00, 0.00],
+                [0.50, 0.05],
+                [0.00, 0.00],
+                [0.50, -0.05],
+            ]
+        )
+
+        with self.assertRaises(ValueError) as context:
+            ps.geometry.airfoil.Airfoil(
+                name="Too Few Points",
+                outline_A_lp=too_few_points,
+                resample=False,
+            )
+        # Should fail for either "at least five points" or "at least three unique points"
+        error_msg = str(context.exception).lower()
+        self.assertTrue("five" in error_msg or "three" in error_msg or "unique" in error_msg)
+
+    def test_all_valid_naca4_airfoils_load(self):
+        """Test that all valid NACA 4 series airfoils load without errors.
+
+        NACA 4 series constraints:
+        1. Cannot be "0000" (zero thickness)
+        2. Thickness (last two digits) must be <= 30%
+        3. First two digits must either both be zero (symmetric) or both be
+           non zero (cambered)
+        4. For cambered airfoils: camber_loc >= max_camber + thickness/2
+        """
+        failed_airfoils = []
+
+        for first_digit in range(10):  # 0-9: max camber (%)
+            for second_digit in range(10):  # 0-9: camber location (x10%)
+                for thickness in range(1, 31):  # 01-30: thickness (%)
+                    # Constraint: First two digits must both be zero or both be non-zero
+                    max_camber = first_digit * 0.01
+                    camber_loc = second_digit * 0.1
+                    if (max_camber > 0) != (camber_loc > 0):
+                        continue
+
+                    # Constraint: For cambered airfoils, camber_loc >= max_camber + thickness/2
+                    if max_camber > 0:
+                        thickness_fraction = thickness * 0.01
+                        if camber_loc < max_camber + thickness_fraction / 2:
+                            continue
+
+                    # Build the NACA name and try to load
+                    name = f"NACA{first_digit}{second_digit}{thickness:02d}"
+                    try:
+                        airfoil = ps.geometry.airfoil.Airfoil(name=name)
+                        # Basic sanity checks
+                        self.assertIsNotNone(airfoil.outline_A_lp)
+                        self.assertIsNotNone(airfoil.mcl_A_lp)
+                    except Exception as e:
+                        failed_airfoils.append((name, str(e)))
+
+        # Report all failures at once for easier debugging
+        if failed_airfoils:
+            failure_msg = "\n".join(
+                [f"  {name}: {error}" for name, error in failed_airfoils]
+            )
+            self.fail(
+                f"{len(failed_airfoils)} NACA 4 series airfoils failed:\n{failure_msg}"
+            )
+
+    def test_all_database_airfoils_load(self):
+        """Test that all airfoils in the database load without errors."""
+        # Get all airfoil names from the database
+        airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
+            "_airfoils"
+        )
+        airfoil_names = []
+        for item in airfoils_dir.iterdir():
+            if item.name.endswith(".dat"):
+                airfoil_names.append(item.name[:-4])  # Remove .dat extension
+
+        self.assertGreater(
+            len(airfoil_names), 0, "No airfoils found in database"
+        )
+
+        failed_airfoils = []
+        for name in sorted(airfoil_names):
+            try:
+                airfoil = ps.geometry.airfoil.Airfoil(name=name)
+                # Basic sanity checks
+                self.assertIsNotNone(airfoil.outline_A_lp)
+                self.assertIsNotNone(airfoil.mcl_A_lp)
+            except Exception as e:
+                failed_airfoils.append((name, str(e)))
+
+        # Report all failures at once for easier debugging
+        if failed_airfoils:
+            failure_msg = "\n".join(
+                [f"  {name}: {error}" for name, error in failed_airfoils]
+            )
+            self.fail(
+                f"{len(failed_airfoils)} database airfoils failed:\n{failure_msg}"
+            )
 
 
 if __name__ == "__main__":

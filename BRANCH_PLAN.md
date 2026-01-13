@@ -182,4 +182,19 @@ Added experimental scripts:
 
 ## Next Steps
 
-1. Update unit tests to match new validation behavior
+All steps completed.
+
+### Completed: Unit Test Updates
+Added comprehensive tests for new validation behavior:
+- `test_excessive_rotation_rejection` - Verifies >15 degree rotation is rejected
+- `test_minor_rotation_correction` - Verifies <15 degree rotation is auto-corrected
+- `test_auto_normalization_translation_and_scale` - Verifies position/scale normalization
+- `test_self_intersection_rejection` - Verifies self-intersecting outlines are rejected
+- `test_open_trailing_edge_support` - Verifies open/blunt TE airfoils are accepted
+- `test_upper_x_non_increasing_validation` - Verifies upper x monotonicity check
+- `test_lower_x_non_decreasing_validation` - Verifies lower x monotonicity check
+- `test_minimum_points_validation` - Verifies minimum point count check
+- `test_all_valid_naca4_airfoils_load` - Comprehensive test of all 2260 valid NACA 4-series
+- `test_all_database_airfoils_load` - Comprehensive test of all database airfoils
+
+All 26 airfoil unit tests pass.

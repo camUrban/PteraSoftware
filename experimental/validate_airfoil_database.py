@@ -55,9 +55,7 @@ def validate_all_airfoils(verbose: bool = False) -> None:
 
         print("FAILURE SUMMARY BY ERROR TYPE:")
         print("=" * 80)
-        for error, names in sorted(
-            errors_by_type.items(), key=lambda x: -len(x[1])
-        ):
+        for error, names in sorted(errors_by_type.items(), key=lambda x: -len(x[1])):
             print(f"\n{error}")
             print(f"  Count: {len(names)}")
             if verbose:

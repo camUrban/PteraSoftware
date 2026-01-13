@@ -660,11 +660,22 @@ class Airfoil:
         try:
 
             # Get the path to the _airfoils data directory.
-            airfoil_file = (
-                importlib.resources.files("pterasoftware.geometry")
-                .joinpath("_airfoils")
-                .joinpath(sanitized_name + ".dat")
+            airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
+                "_airfoils"
             )
+
+            # Find the file with a case-insensitive match. This is necessary because
+            # some filesystems (e.g., Linux) are case-sensitive while others (e.g.,
+            # Windows) are not.
+            target_name = sanitized_name + ".dat"
+            airfoil_file = None
+            for item in airfoils_dir.iterdir():
+                if item.name.lower() == target_name:
+                    airfoil_file = item
+                    break
+
+            if airfoil_file is None:
+                raise FileNotFoundError(f"Airfoil '{sanitized_name}' not found.")
 
             # Read the text from the airfoil file.
             raw_text = airfoil_file.read_text()

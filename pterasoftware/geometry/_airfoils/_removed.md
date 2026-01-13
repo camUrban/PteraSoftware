@@ -68,6 +68,19 @@ These airfoils have deflected control surfaces (flaps, ailerons). Ptera Software
 
 ### "Extended" Airfoils
 
-These airfoils are explicitly labeled as "extended" versions of other airfoils, and have a normalized chord length much greater than 1.0.
+These airfoils are explicitly labeled as "extended" versions of other airfoils, and therefore it isn't clear what value to use for their normalized chord length.
 
 - e664ex.dat
+
+### Self-Intersecting Airfoils
+
+These airfoils have upper and lower surfaces that intersect or cross at some interior points, indicating issues with the coordinates.
+
+- e340.dat
+- e378.dat
+- fx38153.dat
+- fx62k131.dat
+- fx63147.dat
+- fx72150b.dat
+- fx72ls160.dat
+- mh150.dat

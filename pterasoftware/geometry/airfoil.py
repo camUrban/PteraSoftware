@@ -17,7 +17,6 @@ from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.interpolate as sp_interp
 
 from .. import _functions, _parameter_validation, _transformations
 
@@ -445,39 +444,15 @@ class Airfoil:
             mcl_distances_cumulative / mcl_distances_cumulative[-1]
         )
 
-        # Remove duplicate distance values (which occur when consecutive MCL points are
-        # coincident). PchipInterpolator requires strictly increasing x values.
-        _, unique_indices = np.unique(
-            mcl_distances_cumulative_normalized, return_index=True
+        # Use linear interpolation to resample the MCL.
+        mclX_resampled = np.interp(
+            mcl_fractions, mcl_distances_cumulative_normalized, self.mcl_A_lp[:, 0]
         )
-        unique_indices = np.sort(unique_indices)
-        mcl_distances_cumulative_normalized = mcl_distances_cumulative_normalized[
-            unique_indices
-        ]
-        mcl_unique: np.ndarray = self.mcl_A_lp[unique_indices]
-
-        # Create interpolated functions for MCL's components as a function of fractional
-        # distances along the MCL.
-        mclX_func = sp_interp.PchipInterpolator(
-            x=mcl_distances_cumulative_normalized,
-            y=mcl_unique[:, 0],
-            extrapolate=False,
-        )
-        mclY_func = sp_interp.PchipInterpolator(
-            x=mcl_distances_cumulative_normalized,
-            y=mcl_unique[:, 1],
-            extrapolate=False,
+        mclY_resampled = np.interp(
+            mcl_fractions, mcl_distances_cumulative_normalized, self.mcl_A_lp[:, 1]
         )
 
-        # Clamp mcl_fractions to the valid interpolation range to avoid NaN from
-        # floating point precision issues at the boundaries.
-        mcl_fractions = np.clip(
-            mcl_fractions,
-            mcl_distances_cumulative_normalized[0],
-            mcl_distances_cumulative_normalized[-1],
-        )
-
-        return np.column_stack([mclX_func(mcl_fractions), mclY_func(mcl_fractions)])
+        return np.column_stack([mclX_resampled, mclY_resampled])
 
     def _lp_index(self) -> int:
         """Returns the index of the leading point in the outline_A_lp attribute.
@@ -888,6 +863,21 @@ class Airfoil:
             [self.outline_A_lp[0:1], unique_interior, self.outline_A_lp[-1:]]
         )
 
+        # Correct small trailing edge inversions. After normalization, floating-point
+        # precision or minor data quality issues may cause the upper TE y to be
+        # slightly below the lower TE y. If the inversion is small (<=0.1% chord),
+        # correct it by averaging the y-values to create a closed trailing edge.
+        # Larger inversions indicate genuinely malformed data and are left for
+        # _validate_outline_final() to catch.
+        upperTpY_A_lp = self.outline_A_lp[0, 1]
+        lowerTpY_A_lp = self.outline_A_lp[-1, 1]
+        if lowerTpY_A_lp > upperTpY_A_lp:
+            te_inversion = lowerTpY_A_lp - upperTpY_A_lp
+            if te_inversion <= 1e-3:
+                avg_te_y = (upperTpY_A_lp + lowerTpY_A_lp) / 2
+                self.outline_A_lp[0, 1] = avg_te_y
+                self.outline_A_lp[-1, 1] = avg_te_y
+
     def _validate_outline_final(self) -> None:
         """Verifies that outline normalization succeeded and checks for self
         intersection.
@@ -1030,31 +1020,6 @@ class Airfoil:
             / flippedUpperOutline_distances_cumulative[-1]
         )
 
-        # Remove duplicate distance values (which occur when consecutive points are
-        # coincident). PchipInterpolator requires strictly increasing x values.
-        _, upper_unique_indices = np.unique(
-            flippedUpperOutline_distances_cumulative_normalized, return_index=True
-        )
-        upper_unique_indices = np.sort(upper_unique_indices)
-        flippedUpperOutline_distances_cumulative_normalized = (
-            flippedUpperOutline_distances_cumulative_normalized[upper_unique_indices]
-        )
-        flippedUpperOutlineX_A_lp = flippedUpperOutlineX_A_lp[upper_unique_indices]
-        flippedUpperOutlineY_A_lp = flippedUpperOutlineY_A_lp[upper_unique_indices]
-
-        # Create interpolated functions for the x and y components of points on the
-        # upper outline as a function of distance along upper outline.
-        upperX_func = sp_interp.PchipInterpolator(
-            x=flippedUpperOutline_distances_cumulative_normalized,
-            y=flippedUpperOutlineX_A_lp,
-            extrapolate=False,
-        )
-        upperY_func = sp_interp.PchipInterpolator(
-            x=flippedUpperOutline_distances_cumulative_normalized,
-            y=flippedUpperOutlineY_A_lp,
-            extrapolate=False,
-        )
-
         # Get the lower outline points. This contains the leading point.
         lowerOutline_A_lp = self._lower_outline()
 
@@ -1084,55 +1049,37 @@ class Airfoil:
             lowerOutline_distances_cumulative / lowerOutline_distances_cumulative[-1]
         )
 
-        # Remove duplicate distance values (which occur when consecutive points are
-        # coincident). PchipInterpolator requires strictly increasing x values.
-        _, lower_unique_indices = np.unique(
-            lowerOutline_distances_cumulative_normalized, return_index=True
-        )
-        lower_unique_indices = np.sort(lower_unique_indices)
-        lowerOutline_distances_cumulative_normalized = (
-            lowerOutline_distances_cumulative_normalized[lower_unique_indices]
-        )
-        lowerOutlineX_A_lp = lowerOutlineX_A_lp[lower_unique_indices]
-        lowerOutlineY_A_lp = lowerOutlineY_A_lp[lower_unique_indices]
-
-        # Create interpolated functions for the x and y components of points on the
-        # lower outline as a function of distance along the lower outline.
-        lowerX_func = sp_interp.PchipInterpolator(
-            x=lowerOutline_distances_cumulative_normalized,
-            y=lowerOutlineX_A_lp,
-            extrapolate=False,
-        )
-        lowerY_func = sp_interp.PchipInterpolator(
-            x=lowerOutline_distances_cumulative_normalized,
-            y=lowerOutlineY_A_lp,
-            extrapolate=False,
-        )
-
         # Generate a cosine spaced list of normalized distances from 0.0 to 1.0.
         cosine_spaced_normalized_distances = _functions.cosspace(
             0.0, 1.0, n_points_per_side
         )
 
-        # Clamp to valid interpolation ranges for both surfaces to avoid NaN from
-        # floating point precision issues at the boundaries.
-        upper_clamped_distances = np.clip(
-            cosine_spaced_normalized_distances,
-            flippedUpperOutline_distances_cumulative_normalized[0],
-            flippedUpperOutline_distances_cumulative_normalized[-1],
+        # Use linear interpolation to find the x and y components of the upper and
+        # lower outline points at each of the resampled cosine spaced distances.
+        upperResampledOutlineX_A_lp = np.flipud(
+            np.interp(
+                cosine_spaced_normalized_distances,
+                flippedUpperOutline_distances_cumulative_normalized,
+                flippedUpperOutlineX_A_lp,
+            )
         )
-        lower_clamped_distances = np.clip(
-            cosine_spaced_normalized_distances,
-            lowerOutline_distances_cumulative_normalized[0],
-            lowerOutline_distances_cumulative_normalized[-1],
+        upperResampledOutlineY_A_lp = np.flipud(
+            np.interp(
+                cosine_spaced_normalized_distances,
+                flippedUpperOutline_distances_cumulative_normalized,
+                flippedUpperOutlineY_A_lp,
+            )
         )
-
-        # Find the x and y components of the upper and lower outline points at each
-        # of the resampled cosine spaced normalized distances.
-        upperResampledOutlineX_A_lp = np.flipud(upperX_func(upper_clamped_distances))
-        lowerResampledOutlineX_A_lp = lowerX_func(lower_clamped_distances)[1:]
-        upperResampledOutlineY_A_lp = np.flipud(upperY_func(upper_clamped_distances))
-        lowerResampledOutlineY_A_lp = lowerY_func(lower_clamped_distances)[1:]
+        lowerResampledOutlineX_A_lp = np.interp(
+            cosine_spaced_normalized_distances,
+            lowerOutline_distances_cumulative_normalized,
+            lowerOutlineX_A_lp,
+        )[1:]
+        lowerResampledOutlineY_A_lp = np.interp(
+            cosine_spaced_normalized_distances,
+            lowerOutline_distances_cumulative_normalized,
+            lowerOutlineY_A_lp,
+        )[1:]
 
         resampledOutlineX_A_lp = np.hstack(
             (upperResampledOutlineX_A_lp, lowerResampledOutlineX_A_lp)
@@ -1157,50 +1104,23 @@ class Airfoil:
         flippedUpperOutline_A_lp = np.flipud(self._upper_outline())
         lowerOutline_A_lp = self._lower_outline()
 
-        # Remove duplicate x values from both outlines. Some airfoil files have multiple
-        # points at the same x value (especially at the leading edge), which causes
-        # PchipInterpolator to fail. We keep the first occurrence of each unique
-        # x value.
-        _, upper_unique_indices = np.unique(
-            flippedUpperOutline_A_lp[:, 0], return_index=True
-        )
-        upper_unique_indices = np.sort(upper_unique_indices)
-        flippedUpperOutline_A_lp = flippedUpperOutline_A_lp[upper_unique_indices]
-
-        _, lower_unique_indices = np.unique(lowerOutline_A_lp[:, 0], return_index=True)
-        lower_unique_indices = np.sort(lower_unique_indices)
-        lowerOutline_A_lp = lowerOutline_A_lp[lower_unique_indices]
-
-        # Determine the valid x range that both outlines cover. Use the maximum of
-        # the minimum x values and minimum of the maximum x values to ensure we only
-        # interpolate within the data range (avoiding extrapolation errors).
-        x_min = max(flippedUpperOutline_A_lp[0, 0], lowerOutline_A_lp[0, 0])
-        x_max = min(flippedUpperOutline_A_lp[-1, 0], lowerOutline_A_lp[-1, 0])
-
+        # Generate cosine spaced x fractions from 0.0 to 1.0.
         cosine_spaced_chord_fractions = _functions.cosspace(
-            x_min, x_max, self.n_points_per_side
+            0.0, 1.0, self.n_points_per_side
         )
 
-        # Clamp the cosine spaced fractions to ensure they're within the valid
-        # interpolation range for both surfaces. This is necessary because cosspace
-        # can produce slightly different floating point values than the input bounds.
-        cosine_spaced_chord_fractions = np.clip(
-            cosine_spaced_chord_fractions, x_min, x_max
+        # Use linear interpolation to find the y values of the upper and lower
+        # outlines at the cosine spaced x positions.
+        flippedUpperOutlineY_A_lp = np.interp(
+            cosine_spaced_chord_fractions,
+            flippedUpperOutline_A_lp[:, 0],
+            flippedUpperOutline_A_lp[:, 1],
         )
-
-        upper_func = sp_interp.PchipInterpolator(
-            x=flippedUpperOutline_A_lp[:, 0],
-            y=flippedUpperOutline_A_lp[:, 1],
-            extrapolate=False,
+        lowerOutlineY_A_lp = np.interp(
+            cosine_spaced_chord_fractions,
+            lowerOutline_A_lp[:, 0],
+            lowerOutline_A_lp[:, 1],
         )
-        lower_func = sp_interp.PchipInterpolator(
-            x=lowerOutline_A_lp[:, 0],
-            y=lowerOutline_A_lp[:, 1],
-            extrapolate=False,
-        )
-
-        flippedUpperOutlineY_A_lp = upper_func(cosine_spaced_chord_fractions)
-        lowerOutlineY_A_lp = lower_func(cosine_spaced_chord_fractions)
 
         # Calculate the approximate MCL points (in airfoil axes, relative to the
         # leading point) and set the class attribute.

@@ -73,12 +73,21 @@ class Airfoil:
             airfoils the position of maximum camber must be greater than or equal to the
             maximum camber plus half the maximum thickness. The default is "NACA0012".
         :param outline_A_lp: An array like object of numbers (int or float) with shape
-            (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
-            axes, relative to the leading point). If you wish to load coordinates from
-            the airfoils directory, leave this as None, which is the default. Can be a
-            tuple, list, or ndarray. Values are converted to floats internally. Make
-            sure all x component values are in the range [0.0, 1.0]. The default value
-            is None.
+            (N,2) representing the 2D points making up the Airfoil's outline. If you
+            wish to load coordinates from the airfoils directory, leave this as None,
+            which is the default. Can be a tuple, list, or ndarray. Values are converted
+            to floats internally. The outline is automatically normalized to canonical
+            form (leading point at origin, chord on x-axis, unit chord length), so
+            position and scale do not need to match this. Minor rotation offsets (less
+            than 15 degrees, such as implicit angle of attack in airfoil data) are also
+            corrected; larger rotations will raise a ValueError. The topology must be
+            correct: points must be ordered from upper trailing point to leading point
+            to lower trailing point. Also, after correcting for rotation, the upper
+            portion's x values must be non increasing, the lower portion's x values must
+            be non decreasing. Finally, both portions must have at least 3 unique
+            points, and the outline must not self-intersect (upper y must be strictly
+            greater than lower y at all interior x positions). Open and blunt trailing
+            edges are supported. The default value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
             from the airfoils directory. I highly recommended setting this to True. Can
@@ -764,10 +773,13 @@ class Airfoil:
         chord line on the x axis, and unit chord length.
 
         Uses an iterative approach to find the true leading point. If the airfoil data
-        has an implicit angle of attack, the initial minimum x point may not be the true
-        aerodynamic leading edge. After rotating the chord onto the x axis, a different
-        point may become the minimum x. The iteration continues until the leading point
-        is stable (i.e., the same point remains at minimum x after rotation).
+        has an implicit angle of attack (up to 15 degrees), the initial minimum x point
+        may not be the true aerodynamic leading edge. After rotating the chord onto the
+        x axis, a different point may become the minimum x. The iteration continues
+        until the leading point is stable (i.e., the same point remains at minimum x
+        after rotation). Outlines with chord angles exceeding 15 degrees are rejected
+        as they indicate unexpected data orientation rather than implicit angle of
+        attack.
 
         :return: None
         """
@@ -790,6 +802,19 @@ class Airfoil:
 
             # Calculate the angle the chord makes with the x axis.
             chord_angle = np.arctan2(te_A_lp[1], te_A_lp[0])
+
+            # Check for excessive rotation on the first iteration. Minor rotation
+            # offsets (implicit angle of attack) are acceptable, but large rotations
+            # indicate the outline data is not in the expected orientation.
+            max_rotation_rad = np.deg2rad(15.0)
+            if iteration == 0 and np.abs(chord_angle) > max_rotation_rad:
+                raise ValueError(
+                    f"The Airfoil's outline has excessive rotation "
+                    f"({np.rad2deg(chord_angle):.1f} degrees). The chord line must be "
+                    f"within 15 degrees of the x-axis. Minor rotation offsets (such as "
+                    f"implicit angle of attack) are corrected automatically, but the "
+                    f"outline data appears to be in an unexpected orientation."
+                )
 
             # TODO: Create a 2D rotation matrix function in _transformations.py,
             #  validate it, and use it here. Also, update the rotation matrix variable

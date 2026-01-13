@@ -163,9 +163,7 @@ Replaced all `scipy.interpolate.PchipInterpolator` (cubic) with `np.interp` (lin
 - Fixed duplicate removal to only remove interior duplicates, preserving first/last points for closed trailing edges
 
 ### Database Changes
-Removed 12 invalid airfoils with non-monotonic or discontinuous outlines:
-- e664ex, n0009sm, n0012, n2414, n2415, n6409
-- r1145msf, r1145msm, s1221-4deg-flap, ua79sff, ua79sfm
+Removed several invalid airfoils
 
 ### Small TE Inversion Correction (Complete)
 Added automatic correction for small trailing edge inversions in `_normalize_outline()`:
@@ -184,6 +182,4 @@ Added experimental scripts:
 
 ## Next Steps
 
-1. Consider if it would be useful to add debug-level logging messages. Note: It may be that these would clog up output, and aren't a good idea. However, if you determine that they would be useful, add them using the patterns established in other parts of the codebase.
-2. Document any changes to acceptable airfoil outlines in the docstrings within `airfoil.py`.
-3. Update unit tests to match new validation behavior
+1. Update unit tests to match new validation behavior

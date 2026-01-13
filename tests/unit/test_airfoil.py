@@ -304,7 +304,6 @@ class TestAirfoil(unittest.TestCase):
         self.assertEqual(len(self.named_airfoil.mcl_A_lp.shape), 2)
         self.assertEqual(self.named_airfoil.mcl_A_lp.shape[1], 2)
 
-
     def test_excessive_rotation_rejection(self):
         """Test that outlines with excessive rotation (>15 degrees) are rejected."""
         # Create a valid airfoil outline
@@ -548,7 +547,9 @@ class TestAirfoil(unittest.TestCase):
             )
         # Should fail for either "at least five points" or "at least three unique points"
         error_msg = str(context.exception).lower()
-        self.assertTrue("five" in error_msg or "three" in error_msg or "unique" in error_msg)
+        self.assertTrue(
+            "five" in error_msg or "three" in error_msg or "unique" in error_msg
+        )
 
     def test_all_valid_naca4_airfoils_load(self):
         """Test that all valid NACA 4 series airfoils load without errors.
@@ -607,9 +608,7 @@ class TestAirfoil(unittest.TestCase):
             if item.name.endswith(".dat"):
                 airfoil_names.append(item.name[:-4])  # Remove .dat extension
 
-        self.assertGreater(
-            len(airfoil_names), 0, "No airfoils found in database"
-        )
+        self.assertGreater(len(airfoil_names), 0, "No airfoils found in database")
 
         failed_airfoils = []
         for name in sorted(airfoil_names):

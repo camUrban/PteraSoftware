@@ -77,7 +77,7 @@ class Airfoil:
             wish to load coordinates from the airfoils directory, leave this as None,
             which is the default. Can be a tuple, list, or ndarray. Values are converted
             to floats internally. The outline is automatically normalized to canonical
-            form (leading point at origin, chord on x-axis, unit chord length), so
+            form (leading point at origin, chord on x axis, unit chord length), so
             position and scale do not need to match this. Minor rotation offsets (less
             than 15 degrees, such as implicit angle of attack in airfoil data) are also
             corrected; larger rotations will raise a ValueError. The topology must be
@@ -85,7 +85,7 @@ class Airfoil:
             to lower trailing point. Also, after correcting for rotation, the upper
             portion's x values must be non increasing, the lower portion's x values must
             be non decreasing. Finally, both portions must have at least 3 unique
-            points, and the outline must not self-intersect (upper y must be strictly
+            points, and the outline must not self intersect (upper y must be strictly
             greater than lower y at all interior x positions). Open and blunt trailing
             edges are supported. The default value is None.
         :param resample: Determines whether to resample the points defining the
@@ -142,7 +142,7 @@ class Airfoil:
         np.copy() and sharing immutable attributes (name, resample, n_points_per_side)
         without copying.
 
-        :param memo: A dictionary used by the copy module to track already-copied
+        :param memo: A dictionary used by the copy module to track already copied
             objects and avoid infinite recursion with circular references.
         :return: A new Airfoil instance with copied data.
         """
@@ -162,7 +162,7 @@ class Airfoil:
     #  the upper and lower outlines to intersect. This is because they each rotate
     #  about points on their respective outlines. Instead, it would be better to have
     #  everything rotate about the MCL's hinge point, however, this causes
-    #  self-intersections for the upper and lower outlines, so we'd need to write some
+    #  self intersections for the upper and lower outlines, so we'd need to write some
     #  logic to remove those.
     def add_control_surface(
         self, deflection: float | int, hinge_point: float | int
@@ -706,8 +706,10 @@ class Airfoil:
 
     @staticmethod
     def _validate_outline_preliminary(outline_A_lp: Any) -> np.ndarray:
-        """Validates the topology of a user's provided outline_A_lp. Only checks for
-        unfixable issues; normalization will handle position and scale.
+        """Validates the basic structure of a user's provided outline_A_lp. Only checks
+        for issues that cannot be fixed by normalization. Orientation dependent checks
+        (like x monotonicity) are deferred to _validate_outline_final() since they must
+        be performed after rotation correction.
 
         :param outline_A_lp: The input to validate (can be any type initially).
         :return: The validated version of outline_A_lp as a (N,2) ndarray of floats.
@@ -745,25 +747,6 @@ class Airfoil:
             raise ValueError(
                 "The lower portion of the Airfoil's outline must contain at least "
                 "three unique points (including the outline's leading point)."
-            )
-
-        lowerOutlineDiffX_A = np.diff(lowerOutline_A_lp[:, 0])
-        upperOutlineDiffX_A = np.diff(upperOutline_A_lp[:, 0])
-
-        # Check that the upper outline is non increasing in x and that the lower
-        # outline is non decreasing in x (in airfoil axes). Adjacent points may have
-        # the same x value.
-        if not np.all(upperOutlineDiffX_A <= 0.0):
-            raise ValueError(
-                "Every point in the Airfoil's outline's upper portion must have "
-                "an x value less than or equal to the point before it (in airfoil "
-                "axes)."
-            )
-        if not np.all(lowerOutlineDiffX_A >= 0.0):
-            raise ValueError(
-                "Every point in the Airfoil's outline's lower portion must have "
-                "an x value greater than or equal to the point before it (in airfoil "
-                "axes)."
             )
 
         return validated_outline_A_lp
@@ -810,7 +793,7 @@ class Airfoil:
                 raise ValueError(
                     f"The Airfoil's outline has excessive rotation "
                     f"({np.rad2deg(chord_angle):.1f} degrees). The chord line must be "
-                    f"within 15 degrees of the x-axis. Minor rotation offsets (such as "
+                    f"within 15 degrees of the x axis. Minor rotation offsets (such as "
                     f"implicit angle of attack) are corrected automatically, but the "
                     f"outline data appears to be in an unexpected orientation."
                 )
@@ -890,7 +873,7 @@ class Airfoil:
         # Correct small trailing edge inversions. After normalization, floating-point
         # precision or minor data quality issues may cause the upper TE y to be
         # slightly below the lower TE y. If the inversion is small (<=0.1% chord),
-        # correct it by averaging the y-values to create a closed trailing edge.
+        # correct it by averaging the y values to create a closed trailing edge.
         # Larger inversions indicate genuinely malformed data and are left for
         # _validate_outline_final() to catch.
         upperTpY_A_lp = self.outline_A_lp[0, 1]
@@ -903,8 +886,8 @@ class Airfoil:
                 self.outline_A_lp[-1, 1] = avg_te_y
 
     def _validate_outline_final(self) -> None:
-        """Verifies that outline normalization succeeded and checks for self
-        intersection.
+        """Verifies that outline normalization succeeded, checks x monotonicity, and
+        checks for self intersection.
 
         :return: None
         """
@@ -953,9 +936,32 @@ class Airfoil:
                 "greater than or equal to the lower outline's trailing point y value."
             )
 
-        # Check for self intersection using linear interpolation.
+        # Check x monotonicity. These checks are performed here (after normalization)
+        # rather than in preliminary validation because airfoils with implicit angle of
+        # attack may not have monotonic x values until after rotation correction.
         upperOutline_A_lp = self._upper_outline()
         lowerOutline_A_lp = self._lower_outline()
+
+        upperOutlineDiffX_A = np.diff(upperOutline_A_lp[:, 0])
+        lowerOutlineDiffX_A = np.diff(lowerOutline_A_lp[:, 0])
+
+        # Check that the upper outline is non increasing in x and that the lower
+        # outline is non decreasing in x (in airfoil axes). Adjacent points may have
+        # the same x value.
+        if not np.all(upperOutlineDiffX_A <= 0.0):
+            raise ValueError(
+                "Every point in the Airfoil's outline's upper portion must have "
+                "an x value less than or equal to the point before it (in airfoil "
+                "axes)."
+            )
+        if not np.all(lowerOutlineDiffX_A >= 0.0):
+            raise ValueError(
+                "Every point in the Airfoil's outline's lower portion must have "
+                "an x value greater than or equal to the point before it (in airfoil "
+                "axes)."
+            )
+
+        # Check for self intersection using linear interpolation.
 
         # Flip upper outline so it goes from LE to TE.
         flippedUpperOutline_A_lp = np.flipud(upperOutline_A_lp)
@@ -1163,8 +1169,8 @@ class Airfoil:
         # Normalize the MCL so that x spans from 0.0 to 1.0. This corrects for slight
         # variations in the outline data where upper and lower surfaces may not extend
         # to exactly x=0.0 and x=1.0. We translate the leading edge to the origin and
-        # scale the x-coordinates only (not y) to put the trailing edge at x=1.0. We
-        # intentionally do NOT rotate to put the trailing edge on the x-axis, because
+        # scale the x values only (not y) to put the trailing edge at x=1.0. We
+        # intentionally do NOT rotate to put the trailing edge on the x axis, because
         # that would remove control surface deflection effects from the MCL.
 
         # Step 1: Translate so leading edge is at origin.

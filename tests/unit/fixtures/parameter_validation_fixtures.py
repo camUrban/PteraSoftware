@@ -101,7 +101,7 @@ def make_valid_tuple_fixture():
 
     :return: A tuple of floats.
     """
-    return (1.0, 2.0, 3.0)
+    return 1.0, 2.0, 3.0
 
 
 def make_valid_nested_list_fixture():
@@ -134,7 +134,7 @@ def make_valid_3d_tuple_fixture():
 
     :return: A tuple with 3 elements.
     """
-    return (1.0, 2.0, 3.0)
+    return 1.0, 2.0, 3.0
 
 
 def make_valid_unit_vector_fixture():
@@ -188,7 +188,7 @@ def make_valid_spacing_vector_all_strings_fixture():
 
     :return: A tuple with 3 string elements.
     """
-    return ("sine", "uniform", "sine")
+    return "sine", "uniform", "sine"
 
 
 def make_valid_spacing_vector_all_callables_fixture():
@@ -200,7 +200,7 @@ def make_valid_spacing_vector_all_callables_fixture():
     def custom_spacing(x):
         return np.sin(x)
 
-    return (custom_spacing, custom_spacing, custom_spacing)
+    return custom_spacing, custom_spacing, custom_spacing
 
 
 def make_valid_spacing_vector_mixed_fixture():
@@ -212,7 +212,7 @@ def make_valid_spacing_vector_mixed_fixture():
     def custom_spacing(x):
         return np.sin(x)
 
-    return ("sine", custom_spacing, "uniform")
+    return "sine", custom_spacing, "uniform"
 
 
 # Valid 4x4 matrix fixtures.
@@ -382,7 +382,7 @@ def make_invalid_spacing_string_fixture():
 
     :return: A tuple with an invalid spacing string.
     """
-    return ("sine", "invalid", "uniform")
+    return "sine", "invalid", "uniform"
 
 
 def make_invalid_spacing_type_fixture():
@@ -390,7 +390,7 @@ def make_invalid_spacing_type_fixture():
 
     :return: A tuple with an invalid type (int).
     """
-    return ("sine", 123, "uniform")
+    return "sine", 123, "uniform"
 
 
 def make_scalar_fixture():

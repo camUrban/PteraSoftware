@@ -1,6 +1,4 @@
-SC(2)-0714 Supercritical airfoil (coordinates from Raymer w/ one correction)
-These coordinates are actual model coordinates, not coordinates as designed.
-From NASA TP-2890 
+SC(2)-0714 | Supercritical airfoil (coordinates from Raymer w/ one correction). These coordinates are actual model coordinates, not coordinates as designed. Ref: NASA TP-2890
 1.000  -.0104
 0.99    -.0071
 0.98    -.0039

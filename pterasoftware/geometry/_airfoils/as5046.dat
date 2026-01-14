@@ -1,4 +1,4 @@
-AS5046 (16%)
+AS5046 (16%) | Ref: http://www.krnet.org/as504x/ [original link: http://amber.aae.uiuc.edu/~ashok/kr2/airfoils/tests/]
 1.0000 .00134  
 .99804 .00200      
 .99260 .00372    
@@ -80,4 +80,3 @@ AS5046 (16%)
 .99065 -.00052 
 .99763 -.00101 
 1.0000 -.00134
-http://amber.aae.uiuc.edu/~ashok/kr2/airfoils/tests/

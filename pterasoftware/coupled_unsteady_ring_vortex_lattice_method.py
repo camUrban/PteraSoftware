@@ -154,8 +154,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # geometry axes, relative to the local strip leading edge point and the first
         # Airplane's CG respectively).
         self.stackCpp_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        # Leading edge of the panel points
+        self.stack_Flpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self.stackFlpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
+        self.stack_leading_edge_points: np.ndarray = np.empty(0, dtype=float)
 
         # Right, front, left, and back bound RingVortex vectors (in the first
         # Airplane's geometry axes).
@@ -2038,18 +2040,13 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             self.stackFlpp_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
         slep_points = self.stackFlpp_GP1_CgP1[self.slep_point_indices]
         slep_map = np.searchsorted(self.slep_point_indices, np.arange(self.num_panels), side="right") - 1
-        stack_leading_edge_points = np.array([
+        self.stack_leading_edge_points = np.array([
             slep_points[i] for i in slep_map
         ])  
-        self.stackCblvpr_GP1_Slep = self.stackCblvpr_GP1_CgP1 - stack_leading_edge_points
-        self.stackCblvpf_GP1_Slep = self.stackCblvpf_GP1_CgP1 - stack_leading_edge_points
-        self.stackCblvpl_GP1_Slep = self.stackCblvpl_GP1_CgP1 - stack_leading_edge_points
-        self.stackCblvpb_GP1_Slep = self.stackCblvpb_GP1_CgP1 - stack_leading_edge_points
+        self.stackCblvpr_GP1_Slep = self.stackCblvpr_GP1_CgP1 - self.stack_leading_edge_points
+        self.stackCblvpf_GP1_Slep = self.stackCblvpf_GP1_CgP1 - self.stack_leading_edge_points
+        self.stackCblvpl_GP1_Slep = self.stackCblvpl_GP1_CgP1 - self.stack_leading_edge_points
+        self.stackCblvpb_GP1_Slep = self.stackCblvpb_GP1_CgP1 - self.stack_leading_edge_points
 
         # Find the collocation point positions relative to the SLEP points.
-        slep_points = self.stackCpp_GP1_CgP1[self.slep_point_indices]
-        slep_map = np.searchsorted(self.slep_point_indices, np.arange(self.num_panels), side="right") - 1
-        stack_leading_edge_points = np.array([
-            slep_points[i] for i in slep_map
-        ])  
-        self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - stack_leading_edge_points
+        self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - self.stack_leading_edge_points

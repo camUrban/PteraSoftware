@@ -18,9 +18,9 @@ import math
 import numpy as np
 
 
-
 from copy import deepcopy
-from scipy.integrate import quad
+from scipy.integrate import quad, solve_ivp
+import matplotlib.pyplot as plt
 from .movements.single_step.single_step_movement import SingleStepMovement
 from . import _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
@@ -571,19 +571,31 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         )
         self.positions = []
         self.net_deformation = None
+        self.angluar_velocities = None
 
         # Tunable Parameters
-        self.wing_density = 0.012  # per unit height kg/m^2
-        self.moment_scaling_factor = 1e-2
-        self.spring_constant = 1e-1
+        self.wing_density = 0.12  # per unit height kg/m^2
+        self.moment_scaling_factor = 1.0
+        self.spring_constant = 2.0
+        self.damping_constant = 1.0
         self.aero_scaling = 0.0
-        self.new_integrand = False
+        self.numerical_integration = True # use numerical integration or closed form solution
+        self.damping_eps = 1e-3  # critical damping tolerance
 
         # self.wing_density = 0.012  # per unit height kg/m^2
         # self.moment_scaling_factor = 5
         # self.spring_constant = 1
         # self.aero_scaling = 0.0
         # self.new_integrand = True
+
+        self.per_step_data = []
+        self.net_data = []
+        self.angluar_velocity_data = []
+        self.per_step_inertial = []
+        self.per_step_aero = []
+        self.per_step_spring = []
+        self.base_wing_positions = None
+        self.flap_points = []
 
         self.integration_method = getattr(self, "integration_method", "substep")  # "substep" or "newmark"
         self.max_delta_theta_per_substep = getattr(self, "max_delta_theta_per_substep", 0.005)
@@ -600,15 +612,18 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         dt = self.movement.delta_time
         return (self.positions[-1] - 2 * self.positions[-2] + self.positions[-3]) / (dt * dt)
 
+    def calculate_mass_matrix(self, wing):
+        areas = np.array([[panel.area for panel in row] for row in wing.panels])
+        return (
+            np.repeat(areas[:, :, None], 3, axis=2)
+            * self.wing_density
+        )
+
     def initialize_next_problem(self, solver):
-        if self.new_integrand:
-            deformation_matrices = self.calculate_wing_deformation_new(
-                solver, len(self._steady_problems)
-            )
-        else:
-            deformation_matrices = self.calculate_wing_deformation(
-                solver, len(self._steady_problems)
-            )
+
+        deformation_matrices = self.calculate_wing_deformation(
+            solver, len(self._steady_problems)
+        )
         self.curr_airplanes, self.curr_operating_point = (
             self.single_step_movement.generate_next_movement(
                 base_airplanes=self.curr_airplanes,
@@ -624,331 +639,6 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             )
         )
 
-    def calculate_wing_deformation_new(self, solver, step):
-        """
-        Improved torsional-strip update — minimal but correct structural reference axis,
-        inertial moment calculation using panel accelerations, and twist measured as
-        chord angle. Returns self.net_deformation (same shape as before).
-        """
-
-        curr_problem: SteadyProblem = self._steady_problems[-1]
-        airplane = curr_problem.airplanes[0]
-        wing: geometry.wing.Wing = airplane.wings[0]
-
-        # panel counts
-        nc = wing.num_chordwise_panels
-        ns = wing.num_spanwise_panels
-
-        # Gather arrays (vectorized)
-        aeroMoments = np.array([[p.moments_GP1_CgP1 for p in row] for row in wing.panels])  # (nc,ns,3)
-        # append current collocation positions to self.positions (same as you did)
-        self.positions.append(np.array([[p.Cpp_GP1_CgP1 for p in row] for row in wing.panels]))  # (nc,ns,3)
-        areas = np.array([[p.area for p in row] for row in wing.panels])  # (nc,ns)
-
-        # --- Build structural reference axis points (undeformed mid-chord) ----------
-        undeformed_wing = self.steady_problems[-1].airplanes[0].wings[0]
-        # we'll compute LE and TE from panel corner properties for each undeformed panel
-        span_axis_points = np.zeros((ns, 3))
-        span_y = np.zeros(ns)
-        for i in range(ns):
-            LE_pts = []
-            TE_pts = []
-            for j in range(nc):
-                p = undeformed_wing.panels[j][i]
-                LE = np.asarray(p.Flpp_GP1_CgP1)               # front-left point
-                TE = np.asarray(p.Brpp_GP1_CgP1) + np.asarray(p.rightLeg_GP1)  # back-right + rightLeg -> TE approx
-                LE_pts.append(LE)
-                TE_pts.append(TE)
-            LE_mean = np.mean(LE_pts, axis=0)
-            TE_mean = np.mean(TE_pts, axis=0)
-            span_axis_points[i, :] = 0.5 * (LE_mean + TE_mean)  # mid-chord
-            span_y[i] = np.mean([pt[1] for pt in LE_pts])
-
-        # approximate dy
-        dy = np.mean(np.diff(span_y)) if ns > 1 else 1.0
-        dt = float(self.movement.delta_time)
-
-        # --- Panel accelerations & inertial forces --------------------------------
-        panel_accels = self.calculate_wing_panel_accelerations()  # (nc,ns,3)
-        panel_masses = areas * self.wing_density                     # (nc,ns)
-        F_inertial = panel_accels * panel_masses[:, :, np.newaxis]   # (nc,ns,3)
-
-        # --- reference points expanded to panel shape -----------------------------
-        ref_points = np.repeat(span_axis_points[np.newaxis, :, :], nc, axis=0)  # (nc,ns,3)
-
-        # --- inertial moment per panel: r x F (vector) ---------------------------
-        curr_pos = self.positions[-1]  # (nc,ns,3)
-        r = curr_pos - ref_points      # vector from structural axis to panel CG
-        panel_inertial_moments = np.cross(r, F_inertial, axis=2)  # (nc,ns,3)
-
-        # --- Choose the correct moment component for torsion ---------------------
-        # GP1: +y is span direction. Torsion about span axis => use the y-component (index 1).
-        aero_M_y = aeroMoments[:, :, 1]          # (nc,ns)
-        inertial_M_y = panel_inertial_moments[:, :, 1]  # (nc,ns)
-
-        # sum chordwise to get per-span driving moment
-        M_aero_span = np.sum(aero_M_y, axis=0)      # (ns,)
-        M_inertial_span = np.sum(inertial_M_y, axis=0)  # (ns,)
-        M_net = M_aero_span - M_inertial_span          # (ns,)
-
-        # --- Rotational inertia about span axis per strip -----------------------
-        r_perp_sq = np.sum(r[..., [0, 2]] ** 2, axis=2)  # (nc,ns) using x,z dist
-        I_theta = np.sum(panel_masses * r_perp_sq, axis=0)  # (ns,)
-
-        # --- Compute twist angle per span station from chord orientation -------
-        # use undeformed LE/TE to get theta_ref if not already set
-        if not hasattr(self, "_theta_ref") or self._theta_ref is None:
-            self._theta_ref = np.zeros(ns)
-            for i in range(ns):
-                p_le = np.asarray(undeformed_wing.panels[0][i].Flpp_GP1_CgP1)
-                p_te = np.asarray(undeformed_wing.panels[-1][i].Brpp_GP1_CgP1) + np.asarray(undeformed_wing.panels[-1][i].rightLeg_GP1)
-                v0 = p_te[[0, 2]] - p_le[[0, 2]]  # projected into x-z
-                self._theta_ref[i] = np.arctan2(v0[1], v0[0])
-        theta_ref = self._theta_ref
-
-        # initialize dynamic state if missing
-        if not hasattr(self, "_theta"):
-            self._theta = theta_ref.copy()
-            self._theta_dot = np.zeros_like(self._theta)
-
-        # measure current chord-based theta (from current geometry)
-        current_theta = np.zeros(ns)
-        for i in range(ns):
-            # define LE/TE from current panels if corner data available, otherwise use Cpp proxies
-            try:
-                p_le = np.asarray(wing.panels[0][i].Flpp_GP1_CgP1)
-                p_te = np.asarray(wing.panels[-1][i].Brpp_GP1_CgP1) + np.asarray(wing.panels[-1][i].rightLeg_GP1)
-            except Exception:
-                p_le = curr_pos[0, i]
-                p_te = curr_pos[-1, i]
-            v = p_te[[0, 2]] - p_le[[0, 2]]
-            current_theta[i] = np.arctan2(v[1], v[0])
-
-        # structural parameters (tunable on self)
-        GJ = getattr(self, "GJ", 1e4)                 # torsional rigidity
-        c_theta = getattr(self, "c_theta", 1e2)       # damping
-        k_theta = getattr(self, "k_theta", 0.0)       # optional torsion spring per station (N·m/rad)
-
-        # --- discrete laplacian (spanwise torsion coupling) ---------------------
-        lap = np.zeros(ns)
-        if ns > 1:
-            lap[1:-1] = (self._theta[2:] - 2.0 * self._theta[1:-1] + self._theta[0:-2]) / (dy * dy)
-            # boundaries: mirror (free-tip) or use clamped flags
-            if getattr(self, "root_clamped", False):
-                lap[0] = (self._theta[1] - 2.0 * self._theta[0] + theta_ref[0]) / (dy * dy)
-            else:
-                lap[0] = (self._theta[1] - 2.0 * self._theta[0] + self._theta[1]) / (dy * dy)
-            if getattr(self, "tip_clamped", False):
-                lap[-1] = (theta_ref[-1] - 2.0 * self._theta[-1] + self._theta[-2]) / (dy * dy)
-            else:
-                lap[-1] = (self._theta[-2] - 2.0 * self._theta[-1] + self._theta[-2]) / (dy * dy)
-
-        # --- equation: I*theta_ddot + c*theta_dot + k_theta*(theta-theta_ref) - GJ*lap = M_net
-        eps = 1e-12
-        I_safe = np.where(I_theta > eps, I_theta, eps)
-        torque_spring = k_theta * (self._theta - theta_ref)
-        theta_ddot = (M_net - torque_spring + GJ * lap - c_theta * self._theta_dot) / I_safe
-
-        # ---------- SUBSTEPPING + CLIPPING (explicit, conservative) ----------
-        if getattr(self, "integration_method", "substep") == "substep":
-            # discover / ensure arrays
-            dt = float(self.movement.delta_time)
-            max_delta = float(self.max_delta_theta_per_substep)
-            max_theta_abs = float(self.max_theta_abs)
-            under_relax = float(self.theta_under_relax)
-            max_substeps_limit = int(self.max_integration_substeps)
-            c_theta = float(getattr(self, "c_theta", c_theta))
-            k_theta = np.asarray(getattr(self, "k_theta", k_theta))
-
-            # initial theta_ddot (from earlier formula)
-            # if you computed theta_ddot earlier as array use it, otherwise compute quickly:
-            theta_ddot_curr = (M_net - k_theta * (self._theta - theta_ref) + GJ * lap - c_theta * self._theta_dot) / I_safe
-
-            # heuristic estimate of delta per macro step
-            delta_est = np.abs(theta_ddot_curr) * (dt * dt)
-            required_substeps = np.ceil(np.maximum(1.0, delta_est / (max_delta + 1e-12))).astype(int)
-            substeps = int(min(max(required_substeps.max(), 1), max_substeps_limit))
-            dt_sub = dt / float(substeps)
-
-            theta_local = self._theta.copy()
-            theta_dot_local = self._theta_dot.copy()
-
-            for s in range(substeps):
-                # recompute lap using theta_local
-                if ns > 1:
-                    lap_local = np.zeros(ns)
-                    lap_local[1:-1] = (theta_local[2:] - 2.0 * theta_local[1:-1] + theta_local[0:-2]) / (dy * dy)
-                    if getattr(self, "root_clamped", False):
-                        lap_local[0] = (theta_local[1] - 2.0 * theta_local[0] + theta_ref[0]) / (dy * dy)
-                    else:
-                        lap_local[0] = (theta_local[1] - 2.0 * theta_local[0] + theta_local[1]) / (dy * dy)
-                    if getattr(self, "tip_clamped", False):
-                        lap_local[-1] = (theta_ref[-1] - 2.0 * theta_local[-1] + theta_local[-2]) / (dy * dy)
-                    else:
-                        lap_local[-1] = (theta_local[-2] - 2.0 * theta_local[-1] + theta_local[-2]) / (dy * dy)
-                else:
-                    lap_local = np.zeros_like(theta_local)
-
-                torque_spring_local = k_theta * (theta_local - theta_ref)
-                theta_ddot_local = (M_net - torque_spring_local + GJ * lap_local - c_theta * theta_dot_local) / I_safe
-
-                # semi-implicit Euler for substep
-                theta_dot_new_local = theta_dot_local + dt_sub * theta_ddot_local
-                theta_new_local = theta_local + dt_sub * theta_dot_new_local
-
-                # limit per-substep delta
-                delta = theta_new_local - theta_local
-                too_big = np.abs(delta) > max_delta
-                if np.any(too_big):
-                    delta[too_big] = np.sign(delta[too_big]) * max_delta
-
-                # under-relaxation
-                delta *= under_relax
-
-                theta_local = theta_local + delta
-                # update local angular velocity consistent with delta
-                theta_dot_local = np.where(dt_sub > 0.0, delta / dt_sub, theta_dot_new_local)
-
-                # absolute clipping
-                theta_local = np.clip(theta_local, -max_theta_abs, max_theta_abs)
-                clipped = (np.abs(theta_local) >= max_theta_abs - 1e-15)
-                if np.any(clipped):
-                    theta_dot_local[clipped] = 0.0
-
-            # accept
-            theta_new = theta_local
-            theta_dot_new = theta_dot_local
-
-            # update object
-            self._theta = theta_new
-            self._theta_dot = theta_dot_new
-
-        # ---------- NEWMARK-BETA (implicit solver) ----------
-        if getattr(self, "integration_method", "substep") == "newmark":
-            dt = float(self.movement.delta_time)
-            beta = float(self.newmark_beta)
-            gamma = float(self.newmark_gamma)
-            # diagonal mass and damping
-            M_diag = I_safe.copy()                # shape (ns,)
-            C_diag = (getattr(self, "c_theta", c_theta) * np.ones(ns)).copy()
-            # build discrete second-derivative operator L_matrix (size ns x ns)
-            # L_matrix @ theta = (theta_{i+1} - 2 theta_i + theta_{i-1}) / dy^2
-            L = np.zeros((ns, ns))
-            if ns == 1:
-                L[0, 0] = 0.0
-            else:
-                invdy2 = 1.0 / (dy * dy)
-                for i in range(ns):
-                    if i == 0:
-                        if getattr(self, "root_clamped", False):
-                            # clamped: second derivative uses theta_ref later
-                            L[i, i] = -2.0 * invdy2
-                            L[i, i + 1] = 1.0 * invdy2
-                        else:
-                            L[i, i] = -2.0 * invdy2
-                            L[i, i + 1] = 2.0 * invdy2  # mirrored
-                    elif i == ns - 1:
-                        if getattr(self, "tip_clamped", False):
-                            L[i, i - 1] = 1.0 * invdy2
-                            L[i, i] = -2.0 * invdy2
-                        else:
-                            L[i, i - 1] = 2.0 * invdy2
-                            L[i, i] = -2.0 * invdy2
-                    else:
-                        L[i, i - 1] = 1.0 * invdy2
-                        L[i, i] = -2.0 * invdy2
-                        L[i, i + 1] = 1.0 * invdy2
-
-            # static stiffness matrix: K_static = diag(k_theta) - GJ * L
-            k_theta_arr = np.asarray(getattr(self, "k_theta", k_theta * np.ones(ns)))
-            K_static = np.diag(k_theta_arr) - GJ * L  # shape (ns, ns)
-
-            # Effective matrices for Newmark
-            # K_eff = M/(beta dt^2) + C*(gamma/(beta dt)) + K_static
-            M_over = np.diag(M_diag / (beta * dt * dt))
-            C_term = np.diag(C_diag * (gamma / (beta * dt)))
-            K_eff = M_over + C_term + K_static
-
-            # right-hand side: F_eff = F_{n+1} + M * a_hat + C * v_hat
-            # where F_{n+1} = M_net + k_theta * theta_ref (note k_theta*theta_ref moves to RHS)
-            F_ext = M_net + k_theta_arr * theta_ref
-
-            # compute acceleration / velocity predictors from current state
-            # assume self._theta_ddot exists or compute current accel:
-            if not hasattr(self, "_theta_ddot"):
-                # compute current theta_ddot using original formula (elementwise)
-                torque_spring = k_theta_arr * (self._theta - theta_ref)
-                self._theta_ddot = (M_net - torque_spring + GJ * lap - C_diag * self._theta_dot) / np.where(M_diag > 1e-12, M_diag, 1e-12)
-
-            a_n = self._theta_ddot
-            v_n = self._theta_dot
-            u_n = self._theta
-
-            a_hat = ( (1.0/(beta*dt*dt)) * u_n +
-                    (1.0/(beta*dt)) * v_n +
-                    (1.0/(2.0*beta) - 1.0) * a_n )
-            v_hat = ( (gamma/(beta*dt)) * u_n +
-                    (gamma/beta - 1.0) * v_n +
-                    dt * (gamma/(2.0*beta) - 1.0) * a_n )
-
-            F_eff = F_ext + M_diag * a_hat + C_diag * v_hat
-
-            # Handle Dirichlet BCs (clamped nodes) by modifying K_eff and F_eff:
-            # for clamped nodes, we enforce theta = theta_ref (Dirichlet)
-            clamp_nodes = []
-            if getattr(self, "root_clamped", False):
-                clamp_nodes.append(0)
-            if getattr(self, "tip_clamped", False):
-                clamp_nodes.append(ns - 1)
-            # implement simple row/col replacement for clamp nodes
-            for node in clamp_nodes:
-                K_eff[node, :] = 0.0
-                K_eff[node, node] = 1.0
-                F_eff[node] = theta_ref[node]
-
-            # Solve linear system for theta_{n+1}
-            theta_new = np.linalg.solve(K_eff, F_eff)
-
-            # compute acceleration and velocity at n+1
-            a_new = (1.0 / (beta * dt * dt)) * (theta_new - u_n) - (1.0 / (beta * dt)) * v_n - (1.0 / (2.0 * beta) - 1.0) * a_n
-            v_new = v_n + dt * ( (1.0 - gamma) * a_n + gamma * a_new )
-
-            # update state
-            self._theta = theta_new
-            self._theta_dot = v_new
-            self._theta_ddot = a_new
-
-            # absolute clipping as a final guard
-            self._theta = np.clip(self._theta, -self.max_theta_abs, self.max_theta_abs)
-            self._theta_dot[np.abs(self._theta) >= self.max_theta_abs - 1e-15] = 0.0
-
-        # --- convert theta_new to net_deformation (backwards-compatible) ----------
-        # small-angle vertical displacement approx at half-chord
-        half_chords = np.zeros(ns)
-        for i in range(ns):
-            p_le = np.asarray(undeformed_wing.panels[0][i].Flpp_GP1_CgP1)
-            p_te = np.asarray(undeformed_wing.panels[-1][i].Brpp_GP1_CgP1) + np.asarray(undeformed_wing.panels[-1][i].rightLeg_GP1)
-            half_chords[i] = 0.5 * abs(p_te[0] - p_le[0])
-
-        delta_theta = theta_new - theta_ref
-        step_deformation = np.zeros((ns, 3))
-        # put small-angle z (vertical) displacement into index 1 as your original code did
-        step_deformation[:, 1] = half_chords * delta_theta * self.moment_scaling_factor
-
-        step_deformation_full = np.insert(step_deformation, 0, np.zeros(3), axis=0)
-        if self.net_deformation is None:
-            self.net_deformation = np.zeros((ns + 1, 3))
-        self.net_deformation += step_deformation_full
-
-        self.net_deformation[:, 1] = np.clip(
-            self.net_deformation[:, 1], -90, 90)
-
-        if step % 10 == 3:
-            print("Net deformation: ", self.net_deformation)
-            print("step deformation: ", step_deformation_full)
-
-        return self.net_deformation
-
     def calculate_wing_deformation(self, solver, step):
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]
@@ -960,58 +650,223 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         num_spanwise_panels = wing.num_spanwise_panels
         num_panels = num_chordwise_panels * num_spanwise_panels
 
-        aeroMoments_GP1_CgP1 = np.array(
-            [[panel.moments_GP1_CgP1 for panel in row] for row in wing.panels]
+        aeroMoments_GP1_Slep = np.array(solver.moments_GP1_Slep[:num_panels]).reshape(
+            num_chordwise_panels, num_spanwise_panels, 3
         ) * self.aero_scaling
+
         self.positions.append(np.array(
             [[panel.Cpp_GP1_CgP1 for panel in row] for row in wing.panels]
         ))
-        areas = np.array(
-            [[panel.area for panel in row] for row in wing.panels]
-        )
+
+        mass_matrix = self.calculate_mass_matrix(wing)
 
         inertial_forces = (
             self.calculate_wing_panel_accelerations()
-            * np.repeat(areas[:, :, None], 3, axis=2)
-            * self.wing_density
+            * mass_matrix
         )
-        inertial_moments = np.cross(
-            self.positions[-1] - self.positions[0],
-            inertial_forces,
-            axis=2
-        )
-        total_moments = aeroMoments_GP1_CgP1 - inertial_moments
 
+        inertial_moments = np.cross(
+            self.positions[-1] - solver.stack_leading_edge_points[:num_panels].reshape((num_chordwise_panels, num_spanwise_panels, 3)), inertial_forces, axis=2
+        )
+
+        undeforemed_wing = self.steady_problems[step].airplanes[0].wings[0]
+        undeformed_postions = np.array(
+            [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeforemed_wing.panels]
+        )
+
+        thetas, self.angluar_velocities, spring_moments = self.calculate_spring_moments(num_spanwise_panels, wing, mass_matrix)
+        if self.base_wing_positions is None:
+            self.base_wing_positions = np.array(undeformed_postions)
+
+        self.flap_points.append(np.array(undeformed_postions) - self.base_wing_positions)
+        self.per_step_inertial.append(inertial_moments.copy())
+        self.per_step_aero.append(aeroMoments_GP1_Slep.copy())
+        self.per_step_spring.append(spring_moments.copy())
+
+        total_moments = aeroMoments_GP1_Slep - inertial_moments #+ spring_moments
         deformation_moments = total_moments[:, :, 2]  # Z-axis moments
 
         if self.net_deformation is None:
             self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
+            self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
 
-        undeforemed_wing = self.steady_problems[-1].airplanes[0].wings[0]
-        undeformed_postions = np.array(
-            [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeforemed_wing.panels]
-        )
         step_deformation = np.array(
             [
                 np.array(
                     [
                         0,
-                        np.sum(deformation_moments[:, i]) * self.moment_scaling_factor
-                        - self.spring_constant
-                        * np.sum(
-                            self.positions[-1][:, i, 2] - undeformed_postions[:, i, 2]
-                        ),
+                        (np.sum(deformation_moments[:, i]) - self.net_deformation[i + 1][1] * self.spring_constant) * self.moment_scaling_factor,
                         0,
                     ]
                 )
                 for i in range(num_spanwise_panels)
             ]
         )
+
         step_deformation = np.insert(step_deformation, 0, np.array([0,0,0]), axis=0)
-        self.net_deformation -= step_deformation
+        if step > 5:
+            self.net_deformation += step_deformation
+
+        self.per_step_data.append(step_deformation)
+        self.net_data.append(self.net_deformation.copy())
+        self.angluar_velocity_data.append(self.angluar_velocities.copy())
 
         if step % 10  == 3:
-            print("Net deformation: ", self.net_deformation)
-            print("step deformation: ", step_deformation)
+            # print("Net deformation: ", self.net_deformation)
+            # print("step deformation: ", step_deformation)
+            aeroMoments_GP1_Slep = np.array(solver.moments_GP1_Slep[:num_panels]).reshape(num_chordwise_panels, num_spanwise_panels, 3)
+
+            print("Aero Moments Slep", self.net_deformation)
+
+        if step == self.num_steps - 1:
+            zero_curve = np.zeros((1, np.array(self.per_step_inertial).shape[0]))
+            print(np.array(self.per_step_inertial).shape)
+            print(np.array(self.per_step_aero).shape)
+            print(np.array(self.per_step_spring).shape)
+            print(np.array(self.per_step_data).shape)
+            print(np.array(self.net_data).shape)
+            plot_curves(np.array(self.per_step_data)[:, :, 1].T.tolist(), "Per Step Deformation")
+            plot_curves(np.array(self.net_data)[:, :, 1].T.tolist(), "Net Deformation")
+            plot_curves(np.vstack((zero_curve, np.array(self.per_step_inertial)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Inertial Moments")
+            plot_curves(np.vstack((zero_curve, np.array(self.per_step_aero)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Aero Moments")
+            plot_curves(np.vstack((zero_curve, np.array(self.per_step_spring)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Spring Moments")
+            plot_curves(
+                np.vstack(
+                    (
+                        zero_curve,
+                        np.array(self.flap_points)[:, :, :, 2].sum(axis=1).T,
+                    )
+                ).tolist(),
+                "Flap Points Z",
+            )
 
         return self.net_deformation
+
+    def calculate_spring_moments(self, num_spanwise_panels, wing, mass_matrix):
+        spring_moments = np.zeros((num_spanwise_panels, 3))
+        thetas = np.zeros(num_spanwise_panels)
+        omegas = np.zeros(num_spanwise_panels)
+
+        for span_panel in range(num_spanwise_panels):
+            if span_panel == 0:
+                theta0 = 0.0
+                omega0 = 0.0
+            else:
+                theta0 = self.net_deformation[span_panel][1] / self.moment_scaling_factor
+                omega0 = self.angluar_velocities[span_panel][1]  # TODO: compute from previous deformation steps
+
+            dt = self.movement.delta_time
+
+            theta, omega, moment = self.calculate_torsional_spring_moment(
+                dt,
+                # 1/2 * M * L^2
+                I=mass_matrix[:, span_panel, :].sum() * (wing.panels[0][span_panel].chord_length ** 2) / 2,
+                theta0=theta0,
+                omega0=omega0,
+            )
+
+            thetas[span_panel] = theta[-1]
+            omegas[span_panel] = omega[-1]
+            spring_moments[span_panel] = np.array([0, moment[-1], 0])
+
+        return thetas, omegas, spring_moments
+
+    def calculate_torsional_spring_moment(self, dt, I, theta0, omega0, num_steps=50):
+        k = self.spring_constant
+        c = self.damping_constant
+
+        t = np.linspace(0, dt, num_steps)
+
+        if self.numerical_integration:
+            # ---- Numerical integration ----
+            def ode(_, y):
+                theta, omega = y
+                return [
+                    omega,
+                    (-c * omega - k * theta) / I
+                ]
+
+            sol = solve_ivp(
+                ode,
+                (t[0], t[-1]),
+                [theta0, omega0],
+                t_eval=t,
+                rtol=1e-9,
+                atol=1e-12
+            )
+
+            theta = sol.y[0]
+            omega = sol.y[1]
+
+        else:
+            # ---- Closed-form (robust) ----
+            omega_n = np.sqrt(k / I)
+            zeta = c / (2 * np.sqrt(k * I))
+
+            if zeta < 1.0 - self.damping_eps:
+                # ---- Underdamped ----
+                omega_d = omega_n * np.sqrt(1 - zeta**2)
+
+                A = theta0
+                B = (omega0 + zeta * omega_n * theta0) / omega_d
+
+                exp_term = np.exp(-zeta * omega_n * t)
+
+                theta = exp_term * (
+                    A * np.cos(omega_d * t) +
+                    B * np.sin(omega_d * t)
+                )
+
+                omega = exp_term * (
+                    -zeta * omega_n * (A * np.cos(omega_d * t) + B * np.sin(omega_d * t))
+                    - A * omega_d * np.sin(omega_d * t)
+                    + B * omega_d * np.cos(omega_d * t)
+                )
+
+            elif zeta > 1.0 + self.damping_eps:
+                # ---- Overdamped ----
+                s = np.sqrt(zeta**2 - 1)
+                r1 = -omega_n * (zeta - s)
+                r2 = -omega_n * (zeta + s)
+
+                A = (omega0 - r2 * theta0) / (r1 - r2)
+                B = theta0 - A
+
+                theta = A * np.exp(r1 * t) + B * np.exp(r2 * t)
+                omega = A * r1 * np.exp(r1 * t) + B * r2 * np.exp(r2 * t)
+
+            else:
+                # ---- Critically damped (limit form) ----
+                A = theta0
+                B = omega0 + omega_n * theta0
+
+                exp_term = np.exp(-omega_n * t)
+
+                theta = (A + B * t) * exp_term
+                omega = (B - omega_n * (A + B * t)) * exp_term
+
+        # ---- Spring-damper moment ----
+        moment = -k * theta - c * omega
+
+        return theta, omega, moment
+
+
+def plot_curves(data, title, flap_cycle=None):
+    """
+    data: list of lists
+          each inner list is a curve
+    """
+    plt.figure(figsize=(12, 6), dpi=200)
+
+    for i, curve in enumerate(data):
+        x = range(len(curve))
+        plt.plot(x, curve, label=f"Curve {i}")
+    if flap_cycle is not None:
+        plt.plot(range(len(flap_cycle)), flap_cycle, label=f"Flap Cycle", color="black")
+    plt.xlabel("Step")
+    plt.ylabel("Value")
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f"{title.replace(' ', '_')}.png")
+    plt.show()

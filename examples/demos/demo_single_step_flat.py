@@ -17,7 +17,7 @@ import pterasoftware as ps
 
 # offsets for the spacing
 num_spanwise_panels = 1
-Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.1)
+Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
 
 # Wing cross section initialization
 cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
@@ -81,7 +81,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                 ps.geometry.wing_cross_section.WingCrossSection(
                     num_spanwise_panels=None,
                     chord=1.0,
-                    Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
+                    Lp_Wcsp_Lpp=(0.5, 2.0, 0.0),
                     angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                     control_surface_symmetry_type="symmetric",
                     control_surface_hinge_point=0.75,
@@ -254,7 +254,7 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(130.0, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
 
 single_step_main_wing_movement = (
@@ -267,7 +267,7 @@ single_step_main_wing_movement = (
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(130.0, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -281,7 +281,7 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(130.0, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
 
 single_step_reflected_main_wing_movement = (
@@ -294,7 +294,7 @@ single_step_reflected_main_wing_movement = (
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(130.0, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
 )
 
@@ -394,7 +394,7 @@ del example_operating_point
 movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
-    delta_time=0.03,
+    delta_time=0.06,
     num_cycles=3,
     num_chords=None,
     num_steps=None,

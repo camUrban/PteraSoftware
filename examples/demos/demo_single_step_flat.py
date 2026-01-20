@@ -241,9 +241,10 @@ single_step_v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-
+dephase = 169.0
 # Now define the main wing's WingMovement, the reflected main wing's WingMovement and
 # the v-tail's WingMovement.
+# TODO: refactor to reduce redundancy with single step wing movement
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=main_movements_list,
@@ -254,7 +255,7 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
 )
 
 single_step_main_wing_movement = (
@@ -267,7 +268,7 @@ single_step_main_wing_movement = (
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
     )
 )
 
@@ -281,7 +282,7 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
 )
 
 single_step_reflected_main_wing_movement = (
@@ -294,7 +295,7 @@ single_step_reflected_main_wing_movement = (
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
     )
 )
 
@@ -394,7 +395,7 @@ del example_operating_point
 movement = ps.movements.movement.Movement(
     airplane_movements=[airplane_movement],
     operating_point_movement=operating_point_movement,
-    delta_time=0.06,
+    delta_time=0.03,
     num_cycles=3,
     num_chords=None,
     num_steps=None,

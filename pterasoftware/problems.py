@@ -16,6 +16,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import scipy.signal as sp_sig
 
 
 from copy import deepcopy
@@ -559,6 +560,7 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self,
         single_step_movement: SingleStepMovement,
         movement,
+        custom_spacing_second_derivative=None,
         only_final_results=False,
     ):
         # TODO: fix this constructor to properly inherit from CoupledUnsteadyProblem
@@ -574,11 +576,11 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.angluar_velocities = None
 
         # Tunable Parameters
-        self.wing_density = 0.12  # per unit height kg/m^2
-        self.moment_scaling_factor = 1.0
-        self.spring_constant = 2.0
-        self.damping_constant = 1.0
-        self.aero_scaling = 0.0
+        self.wing_density = 0.024  # per unit height kg/m^2
+        self.moment_scaling_factor = 1
+        self.spring_constant = 0
+        self.damping_constant = 1
+        self.aero_scaling = 3.0gi
         self.numerical_integration = True # use numerical integration or closed form solution
         self.damping_eps = 1e-3  # critical damping tolerance
 
@@ -597,14 +599,8 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.base_wing_positions = None
         self.flap_points = []
 
-        self.integration_method = getattr(self, "integration_method", "substep")  # "substep" or "newmark"
-        self.max_delta_theta_per_substep = getattr(self, "max_delta_theta_per_substep", 0.005)
-        self.max_theta_abs = getattr(self, "max_theta_abs", np.deg2rad(30.0))
-        self.max_integration_substeps = getattr(self, "max_integration_substeps", 200)
-        self.theta_under_relax = getattr(self, "theta_under_relax", 1.0)
-        # Newmark params
-        self.newmark_beta = getattr(self, "newmark_beta", 0.25)
-        self.newmark_gamma = getattr(self, "newmark_gamma", 0.5)
+        # For custom spacing defined in movement.
+        self.custom_spacing_second_derivative = custom_spacing_second_derivative
 
     def calculate_wing_panel_accelerations(self):
         if len(self.positions) <= 2:
@@ -649,6 +645,9 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         num_chordwise_panels = wing.num_chordwise_panels
         num_spanwise_panels = wing.num_spanwise_panels
         num_panels = num_chordwise_panels * num_spanwise_panels
+        if self.net_deformation is None:
+            self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
+            self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
 
         aeroMoments_GP1_Slep = np.array(solver.moments_GP1_Slep[:num_panels]).reshape(
             num_chordwise_panels, num_spanwise_panels, 3
@@ -674,7 +673,14 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeforemed_wing.panels]
         )
 
-        thetas, self.angluar_velocities, spring_moments = self.calculate_spring_moments(num_spanwise_panels, wing, mass_matrix)
+        thetas, omegas, spring_moments = self.calculate_spring_moments(
+            num_spanwise_panels=num_spanwise_panels,
+            wing=wing,
+            mass_matrix=mass_matrix,
+            aero_moments=aeroMoments_GP1_Slep,
+            step=step,
+        )
+        self.angluar_velocities[:, 1] = omegas
         if self.base_wing_positions is None:
             self.base_wing_positions = np.array(undeformed_postions)
 
@@ -686,16 +692,13 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         total_moments = aeroMoments_GP1_Slep - inertial_moments #+ spring_moments
         deformation_moments = total_moments[:, :, 2]  # Z-axis moments
 
-        if self.net_deformation is None:
-            self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
-            self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
-
         step_deformation = np.array(
             [
                 np.array(
                     [
                         0,
-                        (np.sum(deformation_moments[:, i]) - self.net_deformation[i + 1][1] * self.spring_constant) * self.moment_scaling_factor,
+                        # (np.sum(deformation_moments[:, i]) - self.net_deformation[i + 1][1] * self.spring_constant) * self.moment_scaling_factor,
+                        thetas[i + 1] * self.moment_scaling_factor,
                         0,
                     ]
                 )
@@ -705,7 +708,7 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
         step_deformation = np.insert(step_deformation, 0, np.array([0,0,0]), axis=0)
         if step > 5:
-            self.net_deformation += step_deformation
+            self.net_deformation = step_deformation
 
         self.per_step_data.append(step_deformation)
         self.net_data.append(self.net_deformation.copy())
@@ -716,7 +719,8 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             # print("step deformation: ", step_deformation)
             aeroMoments_GP1_Slep = np.array(solver.moments_GP1_Slep[:num_panels]).reshape(num_chordwise_panels, num_spanwise_panels, 3)
 
-            print("Aero Moments Slep", self.net_deformation)
+            # print("Aero Moments Slep", self.net_deformation[:, 1])
+            print("Thetas: ", thetas)
 
         if step == self.num_steps - 1:
             zero_curve = np.zeros((1, np.array(self.per_step_inertial).shape[0]))
@@ -729,7 +733,7 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             plot_curves(np.array(self.net_data)[:, :, 1].T.tolist(), "Net Deformation")
             plot_curves(np.vstack((zero_curve, np.array(self.per_step_inertial)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Inertial Moments")
             plot_curves(np.vstack((zero_curve, np.array(self.per_step_aero)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Aero Moments")
-            plot_curves(np.vstack((zero_curve, np.array(self.per_step_spring)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Spring Moments")
+            plot_curves(np.vstack((zero_curve, np.array(self.per_step_spring)[:, :, 2].sum(axis=1).T)).tolist(), "Per Step Spring Moments")
             plot_curves(
                 np.vstack(
                     (
@@ -742,113 +746,219 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
         return self.net_deformation
 
-    def calculate_spring_moments(self, num_spanwise_panels, wing, mass_matrix):
+    def calculate_spring_moments(self, num_spanwise_panels, wing, mass_matrix, aero_moments, step):
         spring_moments = np.zeros((num_spanwise_panels, 3))
-        thetas = np.zeros(num_spanwise_panels)
-        omegas = np.zeros(num_spanwise_panels)
-
+        thetas = np.zeros(num_spanwise_panels + 1)
+        omegas = np.zeros(num_spanwise_panels + 1)
+        d = 0.0 # distance from flapping axis to panel centroid
         for span_panel in range(num_spanwise_panels):
+            aero_span_moment = np.sum(aero_moments[:, span_panel, 2])
             if span_panel == 0:
                 theta0 = 0.0
                 omega0 = 0.0
             else:
-                theta0 = self.net_deformation[span_panel][1] / self.moment_scaling_factor
-                omega0 = self.angluar_velocities[span_panel][1]  # TODO: compute from previous deformation steps
+                theta0 = self.net_deformation[span_panel][1] 
+                omega0 = self.angluar_velocities[span_panel][1]  
 
             dt = self.movement.delta_time
-
+            mass = mass_matrix[:, span_panel, :].sum()
+            # Equation for rotational inertia of rectangular prism about flapping axis
+            # Considers two factors, the first is the rotational inertial of a rectangular
+            # prism about its centroid, the second is the parallel axis theorem to
+            # account for distance from flapping axis to the panel centroid
+            L = (
+                wing.wing_cross_sections[span_panel].chord
+                + wing.wing_cross_sections[span_panel + 1].chord
+            ) / 2
+            W = np.linalg.norm(wing.panels[0][span_panel].frontLeg_G)
+            d += W / 2
+            span_I = 1/12 * mass * (L ** 2 + W ** 2)  + mass * (d ** 2) 
+            # span_I = d * mass * L
             theta, omega, moment = self.calculate_torsional_spring_moment(
                 dt,
                 # 1/2 * M * L^2
-                I=mass_matrix[:, span_panel, :].sum() * (wing.panels[0][span_panel].chord_length ** 2) / 2,
+                # I=mass * (wing.wing_cross_sections[span_panel].chord ** 2) / 2,
+                # I= 4/3 * mass * (L ** 2),
+                I=span_I,
                 theta0=theta0,
                 omega0=omega0,
+                aero_span_moment=aero_span_moment,
+                step=step,
+                span_I=span_I,
             )
-
-            thetas[span_panel] = theta[-1]
-            omegas[span_panel] = omega[-1]
-            spring_moments[span_panel] = np.array([0, moment[-1], 0])
+            d += W / 2
+            print("Theta", theta, "Omega", omega, "Moment", moment)
+            thetas[span_panel + 1] = theta
+            omegas[span_panel + 1] = omega
+            spring_moments[span_panel] = np.array([0, moment, 0])
 
         return thetas, omegas, spring_moments
 
-    def calculate_torsional_spring_moment(self, dt, I, theta0, omega0, num_steps=50):
+    def calculate_torsional_spring_moment(
+        self, dt, I, theta0, omega0, aero_span_moment, step, span_I, num_steps=2, 
+    ):
         k = self.spring_constant
         c = self.damping_constant
 
-        t = np.linspace(0, dt, num_steps)
+        t = np.linspace(dt * (step - 1), dt * step, num_steps)
 
         if self.numerical_integration:
-            # ---- Numerical integration ----
-            def ode(_, y):
-                theta, omega = y
-                return [
-                    omega,
-                    (-c * omega - k * theta) / I
-                ]
-
-            sol = solve_ivp(
-                ode,
-                (t[0], t[-1]),
-                [theta0, omega0],
-                t_eval=t,
-                rtol=1e-9,
-                atol=1e-12
-            )
-
-            theta = sol.y[0]
-            omega = sol.y[1]
+            # ---- Forced numerical integration ----
+            theta, omega = self.spring_numerical_ode(t, k, c, I, theta0, omega0, aero_span_moment, self.generate_inertial_torque_function(span_I))
 
         else:
-            # ---- Closed-form (robust) ----
-            omega_n = np.sqrt(k / I)
-            zeta = c / (2 * np.sqrt(k * I))
+            # ---- Closed-form with constant torque ----
+            const_tau = aero_span_moment + self.generate_inertial_torque_function(span_I)(t[0])
+            theta, omega = self.closed_form_spring_ode(
+                t, k, c, I, theta0, omega0, const_tau=const_tau
+            )
 
-            if zeta < 1.0 - self.damping_eps:
-                # ---- Underdamped ----
-                omega_d = omega_n * np.sqrt(1 - zeta**2)
+        # ---- Internal spring-damper moment ----
+        spring_moment = -k * theta - c * omega
 
-                A = theta0
-                B = (omega0 + zeta * omega_n * theta0) / omega_d
+        # ---- Net moment (optional, depending on sign convention) ----
+        # net_moment = spring_moment + tau(t)
 
-                exp_term = np.exp(-zeta * omega_n * t)
+        return theta, omega, spring_moment
 
-                theta = exp_term * (
-                    A * np.cos(omega_d * t) +
-                    B * np.sin(omega_d * t)
-                )
-
-                omega = exp_term * (
-                    -zeta * omega_n * (A * np.cos(omega_d * t) + B * np.sin(omega_d * t))
-                    - A * omega_d * np.sin(omega_d * t)
-                    + B * omega_d * np.cos(omega_d * t)
-                )
-
-            elif zeta > 1.0 + self.damping_eps:
-                # ---- Overdamped ----
-                s = np.sqrt(zeta**2 - 1)
-                r1 = -omega_n * (zeta - s)
-                r2 = -omega_n * (zeta + s)
-
-                A = (omega0 - r2 * theta0) / (r1 - r2)
-                B = theta0 - A
-
-                theta = A * np.exp(r1 * t) + B * np.exp(r2 * t)
-                omega = A * r1 * np.exp(r1 * t) + B * r2 * np.exp(r2 * t)
-
+    def generate_inertial_torque_function(self, span_I):
+        """
+        Docstring for generate_inertial_torque_function
+        
+        :param span_I: float
+            The rotational inertia of the wing span section about alpha (the flapping axis).
+        """
+        spacing = (
+            self.single_step_movement.airplane_movements[0]
+            .wing_movements[0]
+            .spacingAngles_Gs_to_Wn_ixyz[0]
+        )
+        wing_movement = self.single_step_movement.airplane_movements[0].wing_movements[0]
+        amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+        b = 2 * np.pi / wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
+        h = np.deg2rad(wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
+        if spacing == "sine":
+            torque_func = lambda time: -1 * (b ** 2) * np.sin(b * time + h) * amp * span_I
+        elif spacing == "uniform":
+            raise ValueError("Sawtooth function (uniform spacing) is not differentiable, cannot be used for inertial torque function.")
+        elif callable(spacing):
+            if self.custom_spacing_second_derivative is not None:
+                torque_func = lambda time: self.custom_spacing_second_derivative(time) * span_I
             else:
-                # ---- Critically damped (limit form) ----
-                A = theta0
-                B = omega0 + omega_n * theta0
+                raise ValueError("Custom spacing function provided without second derivative function for inertial torque calculation.")
 
-                exp_term = np.exp(-omega_n * t)
+        return torque_func 
 
-                theta = (A + B * t) * exp_term
-                omega = (B - omega_n * (A + B * t)) * exp_term
+    def spring_numerical_ode(self, t, k, c, I, theta0, omega0, aero_torque, inertial_torque_func):
+        """ Numerical solution to the spring-damper ODE with arbitrary torque input.
+        t: numpy.ndarray    
+            Time array.
+        k: float
+            Spring constant.
+        c: float
+            Damping constant.
+        I: float
+            Rotational inertia.
+        theta0: float
+            Initial angular displacement.
+        omega0: float
+            Initial angular velocity."""
+        def tau(time):
+            return aero_torque + inertial_torque_func(time) 
+        def ode(time, y):
+            theta, omega = y
+            return [omega, (tau(time) - c * omega - k * theta) / I]
 
-        # ---- Spring-damper moment ----
-        moment = -k * theta - c * omega
+        sol = solve_ivp(
+            ode, (t[0], t[-1]), [theta0, omega0], t_eval=t, rtol=1e-9, atol=1e-12
+        )
 
-        return theta, omega, moment
+        theta = sol.y[0][-1]
+        omega = sol.y[1][-1]
+
+        return theta, omega
+
+    def closed_form_spring_ode(
+        self,
+        t,
+        k,
+        c,
+        I,
+        theta0,
+        omega0,
+        const_tau=0.0,
+    ):
+        """ Closed-form solution to the spring-damper ODE with constant torque input. 
+        t: numpy.ndarray    
+            Time array.
+        k: float
+            Spring constant.
+        c: float
+            Damping constant.
+        I: float
+            Rotational inertia.
+        theta0: float
+            Initial angular displacement.
+        omega0: float
+            Initial angular velocity.
+        const_tau: float, optional
+            Constant torque input. Default is 0.0.
+        """
+        # equilibrium shift
+        theta_eq = const_tau / k
+
+        theta0s = theta0 - theta_eq
+        omega0s = omega0
+
+        omega_n = np.sqrt(k / I)
+        zeta = c / (2 * np.sqrt(k * I))
+
+        # ---- Underdamped ----
+        if zeta < 1.0 - self.damping_eps:
+            omega_d = omega_n * np.sqrt(1 - zeta**2)
+
+            A = theta0s
+            B = (omega0s + zeta * omega_n * theta0s) / omega_d
+
+            exp_term = np.exp(-zeta * omega_n * t)
+
+            phi = exp_term * (
+                A * np.cos(omega_d * t) +
+                B * np.sin(omega_d * t)
+            )
+
+            omega = exp_term * (
+                -zeta * omega_n * (A * np.cos(omega_d * t) + B * np.sin(omega_d * t))
+                - A * omega_d * np.sin(omega_d * t)
+                + B * omega_d * np.cos(omega_d * t)
+            )
+
+        elif zeta > 1.0 + self.damping_eps:
+            # ---- Overdamped ----
+            s = np.sqrt(zeta**2 - 1)
+            r1 = -omega_n * (zeta - s)
+            r2 = -omega_n * (zeta + s)
+
+            A = (omega0s - r2 * theta0s) / (r1 - r2)
+            B = theta0s - A
+
+            phi = A * np.exp(r1 * t) + B * np.exp(r2 * t)
+            omega = A * r1 * np.exp(r1 * t) + B * r2 * np.exp(r2 * t)
+
+        else:
+            # ---- Critically damped (limit form) ----
+            A = theta0s
+            B = omega0s + omega_n * theta0s
+
+            exp_term = np.exp(-omega_n * t)
+
+            phi = (A + B * t) * exp_term
+            omega = (B - omega_n * (A + B * t)) * exp_term
+
+        # shift back to physical angle
+        theta = phi + theta_eq
+
+        return theta[-1], omega[-1]
 
 
 def plot_curves(data, title, flap_cycle=None):

@@ -580,7 +580,7 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.moment_scaling_factor = 1
         self.spring_constant = 0
         self.damping_constant = 1
-        self.aero_scaling = 3.0gi
+        self.aero_scaling = 3.0
         self.numerical_integration = True # use numerical integration or closed form solution
         self.damping_eps = 1e-3  # critical damping tolerance
 

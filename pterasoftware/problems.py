@@ -576,11 +576,11 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.angluar_velocities = None
 
         # Tunable Parameters
-        self.wing_density = 0.024  # per unit height kg/m^2
-        self.moment_scaling_factor = 1
-        self.spring_constant = 0
-        self.damping_constant = 1
-        self.aero_scaling = 3.0
+        self.wing_density = 12  # per unit height kg/m^2
+        self.moment_scaling_factor = 3.0
+        self.spring_constant = 0.1
+        self.damping_constant = 0.1
+        self.aero_scaling = 0.0
         self.numerical_integration = True # use numerical integration or closed form solution
         self.damping_eps = 1e-3  # critical damping tolerance
 

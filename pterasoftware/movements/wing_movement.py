@@ -475,11 +475,42 @@ class WingMovement:
         this_num_chordwise_panels = self.base_wing.num_chordwise_panels
         this_chordwise_spacing = self.base_wing.chordwise_spacing
 
+        # Check if there is any offset rotation.
+        offset_rotation = not np.allclose(
+            self.rotationPointOffset_Gs_Ler, np.zeros(3, dtype=float)
+        )
+
+        # Initialize an identity matrix.
+        identity = np.eye(3, dtype=float)
+
         # Iterate through the time steps.
         for step in range(num_steps):
             thisLer_Gs_Cgs = listLer_Gs_Cgs[:, step]
             theseAngles_Gs_to_Wn_ixyz = listAngles_Gs_to_Wn_ixyz[:, step]
             these_wing_cross_sections = list(wing_cross_sections[:, step])
+
+            # If there is a non zero rotation point offset, adjust the positions to
+            # account for rotation about the offset point instead of the leading edge
+            # root.
+            if offset_rotation:
+                # TODO: Refactor this procedure for producing offset rotations to be a
+                #  function in _transformations.py.
+                # Get the active rotation matrix for this step's angles.
+                rot_T_act = _transformations.generate_rot_T(
+                    theseAngles_Gs_to_Wn_ixyz,
+                    passive=False,
+                    intrinsic=True,
+                    order="xyz",
+                )
+                rot_R_act = rot_T_act[:3, :3]
+
+                # Compute the position adjustment due to the offset rotation point.
+                offsetRotationPointAdjustment_Gs = (
+                    identity - rot_R_act
+                ) @ self.rotationPointOffset_Gs_Ler
+
+                # Apply the position adjustment to the leading edge root.
+                thisLer_Gs_Cgs += offsetRotationPointAdjustment_Gs
 
             # Make a new Wing for this time step.
             this_wing = geometry.wing.Wing(

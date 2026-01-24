@@ -343,8 +343,9 @@ class TestRingVortex(unittest.TestCase):
         ring_vortex.Brrvp_GP1_CgP1 = np.array([-1.0, 1.0, 0.0], dtype=float)
         self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
 
-    def test_leg_position_updates_on_corner_change(self):
-        """Test that LineVortex leg positions are updated when corners change."""
+    def test_leg_position_updates_on_front_right_corner_change(self):
+        """Test that LineVortex leg positions are updated when front right corner
+        changes."""
         # Create a fresh fixture.
         ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
 
@@ -365,6 +366,84 @@ class TestRingVortex(unittest.TestCase):
         # Verify that right leg end point is updated.
         npt.assert_array_equal(
             ring_vortex.right_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_front_left_corner_change(self):
+        """Test that LineVortex leg positions are updated when front left corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.front_leg
+        _ = ring_vortex.left_leg
+
+        # Change front left corner.
+        new_corner = np.array([0.25, -0.75, 0.1], dtype=float)
+        ring_vortex.Flrvp_GP1_CgP1 = new_corner
+
+        # Verify that front leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.front_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that left leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.left_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_back_left_corner_change(self):
+        """Test that LineVortex leg positions are updated when back left corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.left_leg
+        _ = ring_vortex.back_leg
+
+        # Change back left corner.
+        new_corner = np.array([1.25, -0.75, 0.1], dtype=float)
+        ring_vortex.Blrvp_GP1_CgP1 = new_corner
+
+        # Verify that left leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.left_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that back leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.back_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_back_right_corner_change(self):
+        """Test that LineVortex leg positions are updated when back right corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.back_leg
+        _ = ring_vortex.right_leg
+
+        # Change back right corner.
+        new_corner = np.array([1.25, 0.75, 0.1], dtype=float)
+        ring_vortex.Brrvp_GP1_CgP1 = new_corner
+
+        # Verify that back leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.back_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that right leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.right_leg.Slvp_GP1_CgP1,
             new_corner,
         )
 

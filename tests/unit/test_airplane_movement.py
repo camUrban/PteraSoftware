@@ -871,34 +871,21 @@ class TestAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
 
     def test_fallback_when_period_not_aligned(self):
         """Test that fallback to standard generation works when period not aligned."""
-        # Create an AirplaneMovement with a period that doesn't align with delta_time.
+        # Create an AirplaneMovement with a wing movement that has period = 1.0.
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
-
-        # Use period = 0.07 which doesn't align cleanly with delta_time = 0.01.
+        wing_movements = [
+            wing_movement_fixtures.make_sine_spacing_Ler_wing_movement_fixture()
+        ]
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
-            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
-            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
-            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
-        # Modify to add non aligned period via wing movement.
-        wing_movements_misaligned = [
-            wing_movement_fixtures.make_sine_spacing_Ler_wing_movement_fixture()
-        ]
-        airplane_movement_misaligned = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements_misaligned,
-        )
-
-        # Should still work (fallback to standard).
+        # Should still work (fallback to standard generation).
         num_steps = 30
         delta_time = 0.007  # Doesn't align with period = 1.0.
 
-        airplanes = airplane_movement_misaligned.generate_airplanes(
+        airplanes = airplane_movement.generate_airplanes(
             num_steps=num_steps, delta_time=delta_time
         )
 

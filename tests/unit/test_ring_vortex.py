@@ -330,18 +330,23 @@ class TestRingVortex(unittest.TestCase):
         # Change front left corner.
         ring_vortex.Flrvp_GP1_CgP1 = np.array([0.5, -1.0, 0.0], dtype=float)
         self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
 
         # Reset and test back left corner.
         ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
         initial_centroid = ring_vortex.Crvp_GP1_CgP1.copy()
+        initial_area = ring_vortex.area
         ring_vortex.Blrvp_GP1_CgP1 = np.array([-1.0, -1.0, 0.0], dtype=float)
         self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
 
         # Reset and test back right corner.
         ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
         initial_centroid = ring_vortex.Crvp_GP1_CgP1.copy()
+        initial_area = ring_vortex.area
         ring_vortex.Brrvp_GP1_CgP1 = np.array([-1.0, 1.0, 0.0], dtype=float)
         self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
 
     def test_leg_position_updates_on_front_right_corner_change(self):
         """Test that LineVortex leg positions are updated when front right corner

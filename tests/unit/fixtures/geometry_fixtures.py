@@ -1241,3 +1241,136 @@ def make_dihedral_wing_fixture():
     )
 
     return dihedral_wing_fixture
+
+
+def make_wing_with_2_chordwise_panels():
+    """This method makes a fixture that is a Wing with 2 chordwise panels for
+    testing panel shape comparison in geometry matching.
+
+    :return wing_with_2_chordwise_panels: Wing
+        This is the Wing with 2 chordwise panels.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=4,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 1.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create Wing with 2 chordwise panels
+    wing_with_2_chordwise_panels = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Wing with 2 Chordwise Panels",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=2,
+        chordwise_spacing="uniform",
+    )
+
+    return wing_with_2_chordwise_panels
+
+
+def make_wing_with_3_chordwise_panels():
+    """This method makes a fixture that is a Wing with 3 chordwise panels for
+    testing panel shape comparison in geometry matching.
+
+    This Wing has the same spanwise panels as make_wing_with_2_chordwise_panels
+    but different chordwise panels, resulting in a different panel grid shape.
+
+    :return wing_with_3_chordwise_panels: Wing
+        This is the Wing with 3 chordwise panels.
+    """
+    # Create WingCrossSections for the wing.
+    test_airfoil = make_test_airfoil_fixture()
+
+    # Root WingCrossSection
+    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=4,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 0.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing="uniform",
+    )
+
+    # Tip WingCrossSection
+    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=np.array([0.0, 1.0, 0.0]),
+        angles_Wcsp_to_Wcs_ixyz=np.array([0.0, 0.0, 0.0]),
+        spanwise_spacing=None,
+    )
+
+    # Create Wing with 3 chordwise panels
+    wing_with_3_chordwise_panels = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wcs, tip_wcs],
+        name="Wing with 3 Chordwise Panels",
+        Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
+        angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
+        symmetric=False,
+        mirror_only=False,
+        symmetryNormal_G=None,
+        symmetryPoint_G_Cg=None,
+        num_chordwise_panels=3,
+        chordwise_spacing="uniform",
+    )
+
+    return wing_with_3_chordwise_panels
+
+
+def make_2_chordwise_panels_airplane_fixture():
+    """This method makes a fixture that is an Airplane with a Wing that has
+    2 chordwise panels.
+
+    :return: Airplane with a Wing that has 2 chordwise panels.
+    """
+    wing = make_wing_with_2_chordwise_panels()
+
+    airplane = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Airplane with 2 Chordwise Panels",
+        Cg_GP1_CgP1=[0.0, 0.0, 0.0],
+        weight=1000.0,
+    )
+
+    return airplane
+
+
+def make_3_chordwise_panels_airplane_fixture():
+    """This method makes a fixture that is an Airplane with a Wing that has
+    3 chordwise panels.
+
+    :return: Airplane with a Wing that has 3 chordwise panels.
+    """
+    wing = make_wing_with_3_chordwise_panels()
+
+    airplane = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Airplane with 3 Chordwise Panels",
+        Cg_GP1_CgP1=[0.0, 0.0, 0.0],
+        weight=1000.0,
+    )
+
+    return airplane

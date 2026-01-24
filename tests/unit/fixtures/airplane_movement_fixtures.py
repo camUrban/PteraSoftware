@@ -335,3 +335,87 @@ def make_periodic_geometry_airplane_movement_fixture():
 
     # Return the AirplaneMovement fixture.
     return periodic_geometry_airplane_movement_fixture
+
+
+def make_angles_only_airplane_movement_fixture():
+    """This method makes a fixture that is an AirplaneMovement where only Wing angles
+    move (no position movement).
+
+    This is useful for testing geometry matching code that compares Wing angles
+    separately from Wing positions.
+
+    :return angles_only_airplane_movement_fixture: AirplaneMovement
+        This is the AirplaneMovement with only Wing angle movement.
+    """
+    # Initialize the constructing fixtures.
+    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    wing_movements = [wing_movement_fixtures.make_angles_only_wing_movement_fixture()]
+
+    # Create the angles-only AirplaneMovement.
+    angles_only_airplane_movement_fixture = (
+        ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+    )
+
+    # Return the AirplaneMovement fixture.
+    return angles_only_airplane_movement_fixture
+
+
+def make_2_chordwise_panels_airplane_movement_fixture():
+    """This method makes a fixture that is an AirplaneMovement with a Wing that has
+    2 chordwise panels.
+
+    This is useful for testing panel shape comparison in geometry matching.
+
+    :return: AirplaneMovement with a Wing that has 2 chordwise panels.
+    """
+    # Initialize the constructing fixtures.
+    base_airplane = geometry_fixtures.make_2_chordwise_panels_airplane_fixture()
+    wing_movements = [
+        wing_movement_fixtures.make_2_chordwise_panels_wing_movement_fixture()
+    ]
+
+    # Create the AirplaneMovement.
+    fixture = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=wing_movements,
+        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    )
+
+    return fixture
+
+
+def make_3_chordwise_panels_airplane_movement_fixture():
+    """This method makes a fixture that is an AirplaneMovement with a Wing that has
+    3 chordwise panels.
+
+    This is useful for testing panel shape comparison in geometry matching.
+
+    :return: AirplaneMovement with a Wing that has 3 chordwise panels.
+    """
+    # Initialize the constructing fixtures.
+    base_airplane = geometry_fixtures.make_3_chordwise_panels_airplane_fixture()
+    wing_movements = [
+        wing_movement_fixtures.make_3_chordwise_panels_wing_movement_fixture()
+    ]
+
+    # Create the AirplaneMovement.
+    fixture = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=wing_movements,
+        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    )
+
+    return fixture

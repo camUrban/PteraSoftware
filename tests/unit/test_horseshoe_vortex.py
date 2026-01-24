@@ -228,58 +228,6 @@ class TestHorseshoeVortex(unittest.TestCase):
             self.basic_horseshoe_vortex.Blhvp_GP1_CgP1,
         )
 
-    def test_update_strength_method(self):
-        """Test the update_strength method."""
-        # Get initial strength.
-        initial_strength = self.basic_horseshoe_vortex.strength
-
-        # Update to new strength.
-        new_strength = 5.0
-        self.basic_horseshoe_vortex.update_strength(new_strength)
-
-        # Verify HorseshoeVortex strength was updated.
-        self.assertEqual(self.basic_horseshoe_vortex.strength, new_strength)
-        self.assertNotEqual(self.basic_horseshoe_vortex.strength, initial_strength)
-
-        # Verify all leg strengths were updated.
-        self.assertEqual(self.basic_horseshoe_vortex.right_leg.strength, new_strength)
-        self.assertEqual(self.basic_horseshoe_vortex.finite_leg.strength, new_strength)
-        self.assertEqual(self.basic_horseshoe_vortex.left_leg.strength, new_strength)
-
-    def test_update_strength_to_zero(self):
-        """Test updating strength to zero."""
-        self.basic_horseshoe_vortex.update_strength(0.0)
-        self.assertEqual(self.basic_horseshoe_vortex.strength, 0.0)
-        self.assertEqual(self.basic_horseshoe_vortex.right_leg.strength, 0.0)
-        self.assertEqual(self.basic_horseshoe_vortex.finite_leg.strength, 0.0)
-        self.assertEqual(self.basic_horseshoe_vortex.left_leg.strength, 0.0)
-
-    def test_update_strength_to_negative(self):
-        """Test updating strength to negative value."""
-        self.basic_horseshoe_vortex.update_strength(-3.5)
-        self.assertEqual(self.basic_horseshoe_vortex.strength, -3.5)
-        self.assertEqual(self.basic_horseshoe_vortex.right_leg.strength, -3.5)
-        self.assertEqual(self.basic_horseshoe_vortex.finite_leg.strength, -3.5)
-        self.assertEqual(self.basic_horseshoe_vortex.left_leg.strength, -3.5)
-
-    def test_none_strength_handling(self):
-        """Test that None strength is handled correctly."""
-        horseshoe_vortex = _aerodynamics.HorseshoeVortex(
-            Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-            Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-            leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
-            left_right_leg_lengths=20.0,
-            strength=None,
-        )
-
-        # Verify strength is None.
-        self.assertIsNone(horseshoe_vortex.strength)
-
-        # Verify leg strengths are also None.
-        self.assertIsNone(horseshoe_vortex.right_leg.strength)
-        self.assertIsNone(horseshoe_vortex.finite_leg.strength)
-        self.assertIsNone(horseshoe_vortex.left_leg.strength)
-
     def test_tilted_leg_vector(self):
         """Test HorseshoeVortex with tilted leg vector."""
         # The tilted legs fixture should have a normalized vector.

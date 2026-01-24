@@ -340,7 +340,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             horseshoe_vortex = panel.horseshoe_vortex
             assert horseshoe_vortex is not None
 
-            horseshoe_vortex.update_strength(self._vortex_strengths[panel_num])
+            horseshoe_vortex.strength = self._vortex_strengths[panel_num]
 
     def calculate_solution_velocity(
         self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]

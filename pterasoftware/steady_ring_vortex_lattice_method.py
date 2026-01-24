@@ -430,7 +430,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
             horseshoe_vortex = panel.horseshoe_vortex
             if horseshoe_vortex is not None:
-                horseshoe_vortex.update_strength(self._vortex_strengths[panel_num])
+                horseshoe_vortex.strength = self._vortex_strengths[panel_num]
 
                 # Also update 1D ndarray of HorseshoeVortex strengths at Panel's
                 # location.

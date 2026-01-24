@@ -481,10 +481,10 @@ class AirplaneMovement:
         """
         if not periods or all(p == 0.0 for p in periods):
             return 0.0
+
         # Filter out zero periods and calculate LCM.
         non_zero_periods = [p for p in periods if p != 0.0]
-        if not non_zero_periods:
-            return 0.0
+
         result = non_zero_periods[0]
         for period in non_zero_periods[1:]:
             result = AirplaneMovement._lcm(result, period)

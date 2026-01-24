@@ -474,7 +474,6 @@ class Panel:
             self._unitNormal_G = cast(np.ndarray, cross_G / np.linalg.norm(cross_G))
         return self._unitNormal_G
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def rightLeg_GP1(self) -> np.ndarray | None:
         """This Panel's right leg vector (in the first Airplane's geometry axes).
@@ -492,7 +491,6 @@ class Panel:
             )
         return self._rightLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def frontLeg_GP1(self) -> np.ndarray | None:
         """This Panel's front leg vector (in the first Airplane's geometry axes).
@@ -510,7 +508,6 @@ class Panel:
             )
         return self._frontLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def leftLeg_GP1(self) -> np.ndarray | None:
         """This Panel's left leg vector (in the first Airplane's geometry axes).
@@ -528,7 +525,6 @@ class Panel:
             )
         return self._leftLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def backLeg_GP1(self) -> np.ndarray | None:
         """This Panel's back leg vector (in the first Airplane's geometry axes).
@@ -546,7 +542,6 @@ class Panel:
             )
         return self._backLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def Frbvp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's front right bound vortex point (in the first
@@ -563,7 +558,6 @@ class Panel:
             self._Frbvp_GP1_CgP1 = self.Brpp_GP1_CgP1 + 0.75 * self.rightLeg_GP1
         return self._Frbvp_GP1_CgP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def Flbvp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's front left bound vortex point (in the first
@@ -580,7 +574,6 @@ class Panel:
             self._Flbvp_GP1_CgP1 = self.Flpp_GP1_CgP1 + 0.25 * self.leftLeg_GP1
         return self._Flbvp_GP1_CgP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def Cpp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's collocation point (in the first Airplane's
@@ -623,7 +616,6 @@ class Panel:
             )
         return self._Cpp_GP1_CgP1
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def unitNormal_GP1(self) -> np.ndarray | None:
         """An estimate of this Panel's unit normal vector (in the first Airplane's
@@ -678,7 +670,6 @@ class Panel:
             self._area = float(np.linalg.norm(cross_G) / 2)
         return self._area
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def aspect_ratio(self) -> float:
         """The aspect ratio of this Panel.

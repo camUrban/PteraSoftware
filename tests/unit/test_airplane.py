@@ -434,5 +434,187 @@ class TestAirplane(unittest.TestCase):
             self.assertIsNotNone(wing.panels)
 
 
+class TestAirplaneDeepCopy(unittest.TestCase):
+    """Tests for Airplane.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+        self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
+
+    def test_deepcopy_creates_new_instance(self):
+        """Test that deepcopy creates a new Airplane instance."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, ps.geometry.airplane.Airplane)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_airplane_parameters(self):
+        """Test that deepcopy preserves Airplane parameters."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.name, original.name)
+        self.assertEqual(copied.weight, original.weight)
+        self.assertEqual(copied.s_ref, original.s_ref)
+        self.assertEqual(copied.c_ref, original.c_ref)
+        self.assertEqual(copied.b_ref, original.b_ref)
+        npt.assert_array_equal(copied.Cg_GP1_CgP1, original.Cg_GP1_CgP1)
+
+    def test_deepcopy_creates_independent_cg_array(self):
+        """Test that deepcopy creates an independent copy of Cg_GP1_CgP1."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertIsNot(copied.Cg_GP1_CgP1, original.Cg_GP1_CgP1)
+
+    def test_deepcopy_creates_independent_wings(self):
+        """Test that deepcopy creates independent Wing copies."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(len(copied.wings), len(original.wings))
+        for orig_wing, copied_wing in zip(original.wings, copied.wings):
+            self.assertIsNot(orig_wing, copied_wing)
+            self.assertEqual(copied_wing.name, orig_wing.name)
+
+    def test_deepcopy_multi_wing_airplane(self):
+        """Test that deepcopy works correctly for multi-wing Airplanes."""
+        import copy
+
+        original = self.multi_wing_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(len(copied.wings), len(original.wings))
+        for i, (orig_wing, copied_wing) in enumerate(zip(original.wings, copied.wings)):
+            with self.subTest(wing_index=i):
+                self.assertIsNot(orig_wing, copied_wing)
+                self.assertEqual(copied_wing.symmetry_type, orig_wing.symmetry_type)
+
+    def test_deepcopy_resets_forces_and_moments(self):
+        """Test that deepcopy resets forces and moments to None."""
+        import copy
+
+        original = self.basic_airplane
+        original.forces_W = np.array([1.0, 2.0, 3.0])
+        original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
+        original.forceCoefficients_W = np.array([0.01, 0.02, 0.03])
+        original.momentCoefficients_W_CgP1 = np.array([0.001, 0.002, 0.003])
+
+        copied = copy.deepcopy(original)
+
+        self.assertIsNone(copied.forces_W)
+        self.assertIsNone(copied.moments_W_CgP1)
+        self.assertIsNone(copied.forceCoefficients_W)
+        self.assertIsNone(copied.momentCoefficients_W_CgP1)
+
+    def test_deepcopy_independence_modifying_copy(self):
+        """Test that modifying the copy does not affect the original."""
+        import copy
+
+        original = self.basic_airplane
+        original_name = original.name
+        original_Cg = original.Cg_GP1_CgP1.copy()
+
+        copied = copy.deepcopy(original)
+
+        copied.name = "Modified Airplane"
+        copied.Cg_GP1_CgP1[0] = 999.0
+
+        self.assertEqual(original.name, original_name)
+        npt.assert_array_equal(original.Cg_GP1_CgP1, original_Cg)
+
+    def test_deepcopy_independence_modifying_original(self):
+        """Test that modifying the original does not affect the copy."""
+        import copy
+
+        original = self.basic_airplane
+
+        copied = copy.deepcopy(original)
+        copied_name = copied.name
+        copied_Cg = copied.Cg_GP1_CgP1.copy()
+
+        original.name = "Modified Airplane"
+        original.Cg_GP1_CgP1[0] = 999.0
+
+        self.assertEqual(copied.name, copied_name)
+        npt.assert_array_equal(copied.Cg_GP1_CgP1, copied_Cg)
+
+    def test_deepcopy_preserves_num_panels(self):
+        """Test that deepcopy preserves the total number of Panels."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.num_panels, original.num_panels)
+
+    def test_deepcopy_preserves_wing_panels(self):
+        """Test that deepcopy preserves Wing Panels."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        for orig_wing, copied_wing in zip(original.wings, copied.wings):
+            self.assertIsNotNone(copied_wing.panels)
+            self.assertEqual(copied_wing.panels.shape, orig_wing.panels.shape)
+
+            for i in range(orig_wing.panels.shape[0]):
+                for j in range(orig_wing.panels.shape[1]):
+                    orig_panel = orig_wing.panels[i, j]
+                    copied_panel = copied_wing.panels[i, j]
+                    self.assertIsNot(orig_panel, copied_panel)
+                    npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
+
+    def test_deepcopy_resets_wing_wake_state(self):
+        """Test that deepcopy resets wake state in all Wings."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        for copied_wing in copied.wings:
+            self.assertEqual(copied_wing.wake_ring_vortices.shape[0], 0)
+            self.assertEqual(copied_wing.gridWrvp_GP1_CgP1.shape[0], 0)
+
+    def test_deepcopy_copied_airplane_is_functional(self):
+        """Test that copied Airplanes are fully functional."""
+        import copy
+
+        original = self.basic_airplane
+        copied = copy.deepcopy(original)
+
+        num_panels = copied.num_panels
+        s_ref = copied.s_ref
+        c_ref = copied.c_ref
+        b_ref = copied.b_ref
+
+        self.assertGreater(num_panels, 0)
+        self.assertGreater(s_ref, 0.0)
+        self.assertGreater(c_ref, 0.0)
+        self.assertGreater(b_ref, 0.0)
+
+    def test_deepcopy_first_airplane(self):
+        """Test that deepcopy works correctly for first Airplane (Cg at origin)."""
+        import copy
+
+        original = self.first_airplane
+        copied = copy.deepcopy(original)
+
+        npt.assert_array_equal(copied.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0]))
+        copied.validate_first_airplane_constraints()
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -418,6 +418,85 @@ def property_name(self) -> ReturnType:
     """
 ```
 
+### Cached Properties with Invalidating Setters
+
+When implementing a caching pattern where computed properties are lazily evaluated and cached, with setters that invalidate dependent caches, follow these conventions:
+
+#### Property Getters for Cached Attributes
+
+For simple getters that return a cached value (e.g., corner point positions that were previously plain attributes), use a brief docstring or omit the docstring entirely if the attribute is already thoroughly documented in `__init__`:
+
+```python
+@property
+def Frpp_G_Cg(self) -> np.ndarray:
+    # No docstring as this attribute is documented in __init__()'s docstring
+    return self._Frpp_G_Cg
+
+@property
+def Frpp_GP1_CgP1(self) -> np.ndarray:
+    """The position of the Panel's front right vertex (in the first Airplane's geometry
+    axes, relative to the first Airplane's CG).
+
+    :return: A (3,) ndarray of floats representing the position of the Panel's front
+        right vertex (in the first Airplane's geometry axes, relative to the first
+        Airplane's CG). The units are in meters. Returns None if not yet set or if
+        Frpp_G_Cg has been modified since last set.
+    """
+    return self._Frpp_GP1_CgP1
+```
+
+#### Property Setters that Invalidate Caches
+
+Do not add docstrings to setters. The cache invalidation behavior is an implementation detail.
+
+```python
+@Frpp_G_Cg.setter
+def Frpp_G_Cg(self, newFrpp_G_Cg: np.ndarray) -> None:
+    # No docstring as this is a setter method
+    self._rightLeg_G = None
+    self._frontLeg_G = None
+    self._Frbvp_G_Cg = None
+    self._Cpp_G_Cg = None
+    self._unitNormal_G = None
+    self._area = None
+    self._aspect_ratio = None
+
+    self.Frpp_GP1_CgP1 = None
+
+    self._Frpp_G_Cg = newFrpp_G_Cg
+```
+
+#### Cached Computed Properties
+
+For computed properties that are now cached (e.g., `rightLeg_G`, `area`), the existing docstring remains unchanged. Caching is an implementation detail that does not affect the public interface.
+
+#### Class Docstring for Classes with Caching
+
+When a class uses this caching pattern, add a **Notes:** section to the class docstring explaining the caching behavior. Don't add the getters and setter methods for the non-computed properties to the list of methods:
+
+```python
+class Panel:
+    """A class used to contain the panels of a Wing.
+
+    **Contains the following methods:**
+
+    rightLeg_G: The Panel's right leg vector (in geometry axes).
+
+    area: An estimate of the Panel's area.
+
+    [... other methods (don't include Frpp_G_Cg or Frpp_GP1_CgP1 ...]
+
+    **Notes:**
+
+    Computed geometric properties (leg vectors, bound vortex points, collocation points,
+    unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
+    corner point position invalidates all dependent cached values, ensuring consistency
+    while avoiding redundant computation. Also, setting a corner point's local position
+    (one of the parameters with a _G_Cg suffix), sets the corresponding global position
+    (_GP1_CgP1 suffix) to None.
+    """
+```
+
 ---
 
 ## Examples

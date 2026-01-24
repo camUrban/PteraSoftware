@@ -815,6 +815,10 @@ class Wing:
 
         projected_area = 0.0
 
+        # Get the wing Z-axis once before iterating.
+        WnZ_G = self.WnZ_G
+        assert WnZ_G is not None
+
         # Iterate through the chordwise and spanwise indices of the Panels and add
         # their area to the total projected area.
         assert self.num_spanwise_panels is not None
@@ -823,11 +827,7 @@ class Wing:
                 this_panel: _panel.Panel = self.panels[
                     chordwise_location, spanwise_location
                 ]
-
-                thisWnZ_G = self.WnZ_G
-                assert thisWnZ_G is not None
-
-                projected_area += this_panel.calculate_projected_area(thisWnZ_G)
+                projected_area += this_panel.calculate_projected_area(WnZ_G)
 
         return projected_area
 

@@ -267,6 +267,315 @@ class TestHorseshoeVortex(unittest.TestCase):
             decimal=10,
         )
 
+    def test_cache_invalidation_back_points_on_front_right_change(self):
+        """Test that back right point cache is invalidated when front right changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access back right point to populate cache.
+        _ = horseshoe_vortex.Brhvp_GP1_CgP1
+
+        # Change front right point.
+        new_front_right = np.array([0.5, 0.5, 0.0], dtype=float)
+        horseshoe_vortex.Frhvp_GP1_CgP1 = new_front_right
+
+        # Verify that back right point is recalculated.
+        expected_back_right = new_front_right + (
+            horseshoe_vortex.leftLegVector_GP1 * horseshoe_vortex.left_right_leg_lengths
+        )
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_back_right,
+            decimal=10,
+        )
+
+    def test_cache_invalidation_back_points_on_front_left_change(self):
+        """Test that back left point cache is invalidated when front left changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access back left point to populate cache.
+        _ = horseshoe_vortex.Blhvp_GP1_CgP1
+
+        # Change front left point.
+        new_front_left = np.array([0.5, -0.5, 0.0], dtype=float)
+        horseshoe_vortex.Flhvp_GP1_CgP1 = new_front_left
+
+        # Verify that back left point is recalculated.
+        expected_back_left = new_front_left + (
+            horseshoe_vortex.leftLegVector_GP1 * horseshoe_vortex.left_right_leg_lengths
+        )
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_back_left,
+            decimal=10,
+        )
+
+    def test_cache_invalidation_back_points_on_leg_vector_change(self):
+        """Test that back points are invalidated when left leg vector changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access back points to populate cache.
+        initial_back_right = horseshoe_vortex.Brhvp_GP1_CgP1.copy()
+        initial_back_left = horseshoe_vortex.Blhvp_GP1_CgP1.copy()
+
+        # Change leg vector.
+        new_leg_vector = np.array([0.707, 0.0, 0.707], dtype=float)
+        horseshoe_vortex.leftLegVector_GP1 = new_leg_vector
+
+        # Verify that back points are recalculated (different from initial).
+        self.assertFalse(
+            np.allclose(horseshoe_vortex.Brhvp_GP1_CgP1, initial_back_right)
+        )
+        self.assertFalse(
+            np.allclose(horseshoe_vortex.Blhvp_GP1_CgP1, initial_back_left)
+        )
+
+    def test_cache_invalidation_back_points_on_leg_length_change(self):
+        """Test that back points are invalidated when leg lengths change."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access back points to populate cache.
+        initial_back_right = horseshoe_vortex.Brhvp_GP1_CgP1.copy()
+
+        # Change leg length.
+        new_leg_length = 50.0
+        horseshoe_vortex.left_right_leg_lengths = new_leg_length
+
+        # Verify that back points are recalculated.
+        expected_back_right = horseshoe_vortex.Frhvp_GP1_CgP1 + (
+            horseshoe_vortex.leftLegVector_GP1 * new_leg_length
+        )
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_back_right,
+            decimal=10,
+        )
+        self.assertFalse(
+            np.allclose(horseshoe_vortex.Brhvp_GP1_CgP1, initial_back_right)
+        )
+
+    def test_leg_position_updates_on_front_right_change(self):
+        """Test that LineVortex leg positions update when front right changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access legs to create them.
+        _ = horseshoe_vortex.right_leg
+        _ = horseshoe_vortex.finite_leg
+
+        # Change front right point.
+        new_front_right = np.array([0.25, 0.75, 0.1], dtype=float)
+        horseshoe_vortex.Frhvp_GP1_CgP1 = new_front_right
+
+        # Verify that right leg end point is updated.
+        npt.assert_array_equal(
+            horseshoe_vortex.right_leg.Elvp_GP1_CgP1,
+            new_front_right,
+        )
+
+        # Verify that finite leg start point is updated.
+        npt.assert_array_equal(
+            horseshoe_vortex.finite_leg.Slvp_GP1_CgP1,
+            new_front_right,
+        )
+
+    def test_leg_position_updates_on_front_left_change(self):
+        """Test that LineVortex leg positions update when front left changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access legs to create them.
+        _ = horseshoe_vortex.finite_leg
+        _ = horseshoe_vortex.left_leg
+
+        # Change front left point.
+        new_front_left = np.array([0.25, -0.75, 0.1], dtype=float)
+        horseshoe_vortex.Flhvp_GP1_CgP1 = new_front_left
+
+        # Verify that finite leg end point is updated.
+        npt.assert_array_equal(
+            horseshoe_vortex.finite_leg.Elvp_GP1_CgP1,
+            new_front_left,
+        )
+
+        # Verify that left leg start point is updated.
+        npt.assert_array_equal(
+            horseshoe_vortex.left_leg.Slvp_GP1_CgP1,
+            new_front_left,
+        )
+
+    def test_leg_position_updates_on_leg_vector_change(self):
+        """Test that LineVortex leg positions update when leg vector changes."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access legs to create them.
+        _ = horseshoe_vortex.right_leg
+        _ = horseshoe_vortex.left_leg
+
+        # Change leg vector.
+        new_leg_vector = np.array([0.0, 0.0, 1.0], dtype=float)
+        horseshoe_vortex.leftLegVector_GP1 = new_leg_vector
+
+        # Verify that right leg start point is updated to new back right.
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.right_leg.Slvp_GP1_CgP1,
+            horseshoe_vortex.Brhvp_GP1_CgP1,
+            decimal=10,
+        )
+
+        # Verify that left leg end point is updated to new back left.
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.left_leg.Elvp_GP1_CgP1,
+            horseshoe_vortex.Blhvp_GP1_CgP1,
+            decimal=10,
+        )
+
+    def test_leg_position_updates_on_leg_length_change(self):
+        """Test that LineVortex leg positions update when leg lengths change."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access legs to create them.
+        _ = horseshoe_vortex.right_leg
+        _ = horseshoe_vortex.left_leg
+
+        # Change leg length.
+        new_leg_length = 50.0
+        horseshoe_vortex.left_right_leg_lengths = new_leg_length
+
+        # Verify that right leg start point is updated to new back right.
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.right_leg.Slvp_GP1_CgP1,
+            horseshoe_vortex.Brhvp_GP1_CgP1,
+            decimal=10,
+        )
+
+        # Verify that left leg end point is updated to new back left.
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.left_leg.Elvp_GP1_CgP1,
+            horseshoe_vortex.Blhvp_GP1_CgP1,
+            decimal=10,
+        )
+
+    def test_strength_propagation_to_legs(self):
+        """Test that changing HorseshoeVortex strength propagates to all legs."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access all legs to create them.
+        _ = horseshoe_vortex.right_leg
+        _ = horseshoe_vortex.finite_leg
+        _ = horseshoe_vortex.left_leg
+
+        # Change strength.
+        new_strength = 5.0
+        horseshoe_vortex.strength = new_strength
+
+        # Verify all legs have the new strength.
+        self.assertEqual(horseshoe_vortex.right_leg.strength, new_strength)
+        self.assertEqual(horseshoe_vortex.finite_leg.strength, new_strength)
+        self.assertEqual(horseshoe_vortex.left_leg.strength, new_strength)
+
+    def test_strength_propagation_to_uncreated_legs(self):
+        """Test that changing strength before accessing legs still works."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Change strength before accessing legs.
+        new_strength = 7.5
+        horseshoe_vortex.strength = new_strength
+
+        # Access legs now and verify they have the new strength.
+        self.assertEqual(horseshoe_vortex.right_leg.strength, new_strength)
+        self.assertEqual(horseshoe_vortex.finite_leg.strength, new_strength)
+        self.assertEqual(horseshoe_vortex.left_leg.strength, new_strength)
+
+    def test_multiple_front_point_updates(self):
+        """Test that multiple sequential front point updates work correctly."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Update both front points.
+        new_front_right = np.array([1.0, 1.0, 0.0], dtype=float)
+        new_front_left = np.array([1.0, -1.0, 0.0], dtype=float)
+        horseshoe_vortex.Frhvp_GP1_CgP1 = new_front_right
+        horseshoe_vortex.Flhvp_GP1_CgP1 = new_front_left
+
+        # Verify back points are recalculated.
+        expected_back_right = new_front_right + (
+            horseshoe_vortex.leftLegVector_GP1 * horseshoe_vortex.left_right_leg_lengths
+        )
+        expected_back_left = new_front_left + (
+            horseshoe_vortex.leftLegVector_GP1 * horseshoe_vortex.left_right_leg_lengths
+        )
+
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.Brhvp_GP1_CgP1,
+            expected_back_right,
+            decimal=10,
+        )
+        npt.assert_array_almost_equal(
+            horseshoe_vortex.Blhvp_GP1_CgP1,
+            expected_back_left,
+            decimal=10,
+        )
+
+    def test_strength_zero_to_nonzero(self):
+        """Test changing strength from zero to nonzero."""
+        # Create a zero strength fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_zero_strength_horseshoe_vortex_fixture()
+        )
+
+        # Access legs.
+        _ = horseshoe_vortex.right_leg
+
+        # Change to nonzero.
+        horseshoe_vortex.strength = 10.0
+
+        # Verify.
+        self.assertEqual(horseshoe_vortex.strength, 10.0)
+        self.assertEqual(horseshoe_vortex.right_leg.strength, 10.0)
+
+    def test_line_vortex_legs_are_line_vortex_type(self):
+        """Test that LineVortex legs are of the correct type."""
+        # Verify all legs are LineVortex instances.
+        self.assertIsInstance(
+            self.basic_horseshoe_vortex.right_leg, _aerodynamics._LineVortex
+        )
+        self.assertIsInstance(
+            self.basic_horseshoe_vortex.finite_leg, _aerodynamics._LineVortex
+        )
+        self.assertIsInstance(
+            self.basic_horseshoe_vortex.left_leg, _aerodynamics._LineVortex
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

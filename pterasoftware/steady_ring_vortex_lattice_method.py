@@ -426,7 +426,7 @@ class SteadyRingVortexLatticeMethodSolver:
             ring_vortex = panel.ring_vortex
             assert ring_vortex is not None
 
-            ring_vortex.update_strength(self._vortex_strengths[panel_num])
+            ring_vortex.strength = self._vortex_strengths[panel_num]
 
             horseshoe_vortex = panel.horseshoe_vortex
             if horseshoe_vortex is not None:

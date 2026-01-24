@@ -491,9 +491,10 @@ class Panel:
     Computed geometric properties (leg vectors, bound vortex points, collocation points,
     unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
     corner point position invalidates all dependent cached values, ensuring consistency
-    while avoiding redundant computation. Also, setting a corner point's local position
+    while avoiding redundant computation. Setting a corner point's local position
     (one of the parameters with a _G_Cg suffix), sets the corresponding global position
-    (_GP1_CgP1 suffix) to None.
+    (_GP1_CgP1 suffix) to None. It also sets this Panel's bound vortices and the loads
+    on the Panel to None.
     """
 ```
 

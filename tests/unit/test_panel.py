@@ -916,5 +916,307 @@ class TestPanelDegenerateCases(unittest.TestCase):
         self.assertAlmostEqual(area, expected_area, places=10)
 
 
+class TestPanelDeepCopy(unittest.TestCase):
+    """Tests for Panel.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.basic_panel = geometry_fixtures.make_basic_panel_fixture()
+
+    def test_deepcopy_creates_new_instance(self):
+        """Test that deepcopy creates a new Panel instance."""
+        import copy
+
+        original = self.basic_panel
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, _panel.Panel)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_local_corner_positions(self):
+        """Test that deepcopy preserves local corner positions."""
+        import copy
+
+        original = self.basic_panel
+        copied = copy.deepcopy(original)
+
+        # Corner positions should be equal but not the same object.
+        npt.assert_array_equal(copied.Frpp_G_Cg, original.Frpp_G_Cg)
+        npt.assert_array_equal(copied.Flpp_G_Cg, original.Flpp_G_Cg)
+        npt.assert_array_equal(copied.Blpp_G_Cg, original.Blpp_G_Cg)
+        npt.assert_array_equal(copied.Brpp_G_Cg, original.Brpp_G_Cg)
+
+        # Should be independent copies.
+        self.assertIsNot(copied._Frpp_G_Cg, original._Frpp_G_Cg)
+        self.assertIsNot(copied._Flpp_G_Cg, original._Flpp_G_Cg)
+        self.assertIsNot(copied._Blpp_G_Cg, original._Blpp_G_Cg)
+        self.assertIsNot(copied._Brpp_G_Cg, original._Brpp_G_Cg)
+
+    def test_deepcopy_preserves_mesh_metadata(self):
+        """Test that deepcopy preserves mesh metadata."""
+        import copy
+
+        original = self.basic_panel
+        # Set metadata values.
+        original.is_right_edge = True
+        original.is_left_edge = False
+        original.local_chordwise_position = 3
+        original.local_spanwise_position = 5
+
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.is_leading_edge, original.is_leading_edge)
+        self.assertEqual(copied.is_trailing_edge, original.is_trailing_edge)
+        self.assertEqual(copied.is_right_edge, original.is_right_edge)
+        self.assertEqual(copied.is_left_edge, original.is_left_edge)
+        self.assertEqual(
+            copied.local_chordwise_position, original.local_chordwise_position
+        )
+        self.assertEqual(
+            copied.local_spanwise_position, original.local_spanwise_position
+        )
+
+    def test_deepcopy_preserves_cached_local_properties(self):
+        """Test that deepcopy preserves cached local geometric properties."""
+        import copy
+
+        original = self.basic_panel
+        # Trigger caching by accessing properties.
+        _ = original.rightLeg_G
+        _ = original.frontLeg_G
+        _ = original.leftLeg_G
+        _ = original.backLeg_G
+        _ = original.Frbvp_G_Cg
+        _ = original.Flbvp_G_Cg
+        _ = original.Cpp_G_Cg
+        _ = original.unitNormal_G
+        _ = original.area
+        _ = original.aspect_ratio
+
+        copied = copy.deepcopy(original)
+
+        # Cached values should be equal.
+        npt.assert_array_equal(copied._rightLeg_G, original._rightLeg_G)
+        npt.assert_array_equal(copied._frontLeg_G, original._frontLeg_G)
+        npt.assert_array_equal(copied._leftLeg_G, original._leftLeg_G)
+        npt.assert_array_equal(copied._backLeg_G, original._backLeg_G)
+        npt.assert_array_equal(copied._Frbvp_G_Cg, original._Frbvp_G_Cg)
+        npt.assert_array_equal(copied._Flbvp_G_Cg, original._Flbvp_G_Cg)
+        npt.assert_array_equal(copied._Cpp_G_Cg, original._Cpp_G_Cg)
+        npt.assert_array_equal(copied._unitNormal_G, original._unitNormal_G)
+        self.assertEqual(copied._area, original._area)
+        self.assertEqual(copied._aspect_ratio, original._aspect_ratio)
+
+        # Numpy arrays should be independent copies.
+        self.assertIsNot(copied._rightLeg_G, original._rightLeg_G)
+        self.assertIsNot(copied._frontLeg_G, original._frontLeg_G)
+        self.assertIsNot(copied._leftLeg_G, original._leftLeg_G)
+        self.assertIsNot(copied._backLeg_G, original._backLeg_G)
+        self.assertIsNot(copied._Frbvp_G_Cg, original._Frbvp_G_Cg)
+        self.assertIsNot(copied._Flbvp_G_Cg, original._Flbvp_G_Cg)
+        self.assertIsNot(copied._Cpp_G_Cg, original._Cpp_G_Cg)
+        self.assertIsNot(copied._unitNormal_G, original._unitNormal_G)
+
+    def test_deepcopy_handles_uncached_local_properties(self):
+        """Test that deepcopy handles the case when local properties are not cached."""
+        import copy
+
+        original = self.basic_panel
+        # Do not access properties (they remain None).
+
+        copied = copy.deepcopy(original)
+
+        # Cached values should still be None.
+        self.assertIsNone(copied._rightLeg_G)
+        self.assertIsNone(copied._frontLeg_G)
+        self.assertIsNone(copied._leftLeg_G)
+        self.assertIsNone(copied._backLeg_G)
+        self.assertIsNone(copied._Frbvp_G_Cg)
+        self.assertIsNone(copied._Flbvp_G_Cg)
+        self.assertIsNone(copied._Cpp_G_Cg)
+        self.assertIsNone(copied._unitNormal_G)
+        self.assertIsNone(copied._area)
+        self.assertIsNone(copied._aspect_ratio)
+
+        # But accessing them should still work (lazy evaluation).
+        npt.assert_array_almost_equal(copied.rightLeg_G, np.array([-1.0, 0.0, 0.0]))
+        self.assertAlmostEqual(copied.area, 0.5, places=10)
+
+    def test_deepcopy_resets_global_positions(self):
+        """Test that deepcopy resets global positions to None."""
+        import copy
+
+        original = self.basic_panel
+        # Set global positions.
+        offset = np.array([10.0, 20.0, 5.0])
+        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
+        original.Flpp_GP1_CgP1 = original.Flpp_G_Cg + offset
+        original.Blpp_GP1_CgP1 = original.Blpp_G_Cg + offset
+        original.Brpp_GP1_CgP1 = original.Brpp_G_Cg + offset
+
+        copied = copy.deepcopy(original)
+
+        # Global positions should be reset to None.
+        self.assertIsNone(copied.Frpp_GP1_CgP1)
+        self.assertIsNone(copied.Flpp_GP1_CgP1)
+        self.assertIsNone(copied.Blpp_GP1_CgP1)
+        self.assertIsNone(copied.Brpp_GP1_CgP1)
+
+    def test_deepcopy_resets_cached_global_properties(self):
+        """Test that deepcopy resets cached global geometric properties to None."""
+        import copy
+
+        original = self.basic_panel
+        # Set global positions and trigger caching.
+        offset = np.array([10.0, 20.0, 5.0])
+        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
+        original.Flpp_GP1_CgP1 = original.Flpp_G_Cg + offset
+        original.Blpp_GP1_CgP1 = original.Blpp_G_Cg + offset
+        original.Brpp_GP1_CgP1 = original.Brpp_G_Cg + offset
+        _ = original.rightLeg_GP1
+        _ = original.frontLeg_GP1
+        _ = original.Cpp_GP1_CgP1
+        _ = original.unitNormal_GP1
+
+        copied = copy.deepcopy(original)
+
+        # Cached global properties should be reset to None.
+        self.assertIsNone(copied._rightLeg_GP1)
+        self.assertIsNone(copied._frontLeg_GP1)
+        self.assertIsNone(copied._leftLeg_GP1)
+        self.assertIsNone(copied._backLeg_GP1)
+        self.assertIsNone(copied._Frbvp_GP1_CgP1)
+        self.assertIsNone(copied._Flbvp_GP1_CgP1)
+        self.assertIsNone(copied._Cpp_GP1_CgP1)
+        self.assertIsNone(copied._unitNormal_GP1)
+
+    def test_deepcopy_resets_vortices(self):
+        """Test that deepcopy resets vortices to None."""
+        import copy
+
+        original = self.basic_panel
+        # Simulate setting vortices.
+        original.ring_vortex = "mock_ring_vortex"
+        original.horseshoe_vortex = "mock_horseshoe_vortex"
+
+        copied = copy.deepcopy(original)
+
+        # Vortices should be reset to None.
+        self.assertIsNone(copied.ring_vortex)
+        self.assertIsNone(copied.horseshoe_vortex)
+
+    def test_deepcopy_resets_forces_and_moments(self):
+        """Test that deepcopy resets forces and moments to None."""
+        import copy
+
+        original = self.basic_panel
+        # Simulate setting forces and moments.
+        original.forces_GP1 = np.array([1.0, 2.0, 3.0])
+        original.moments_GP1_CgP1 = np.array([0.1, 0.2, 0.3])
+        original.forces_W = np.array([1.0, 2.0, 3.0])
+        original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
+
+        copied = copy.deepcopy(original)
+
+        # Forces and moments should be reset to None.
+        self.assertIsNone(copied.forces_GP1)
+        self.assertIsNone(copied.moments_GP1_CgP1)
+        self.assertIsNone(copied.forces_W)
+        self.assertIsNone(copied.moments_W_CgP1)
+
+    def test_deepcopy_independence(self):
+        """Test that modifying the copy does not affect the original."""
+        import copy
+
+        original = self.basic_panel
+        # Trigger caching.
+        _ = original.area
+        _ = original.unitNormal_G
+
+        copied = copy.deepcopy(original)
+
+        # Modify the copy.
+        copied.Frpp_G_Cg = np.array([0.1, 0.6, 0.1])
+
+        # Original should be unchanged.
+        npt.assert_array_equal(original.Frpp_G_Cg, np.array([0.0, 0.5, 0.0]))
+        self.assertAlmostEqual(original.area, 0.5, places=10)
+
+    def test_deepcopy_modifying_original_does_not_affect_copy(self):
+        """Test that modifying the original does not affect the copy."""
+        import copy
+
+        original = self.basic_panel
+        # Trigger caching.
+        _ = original.area
+        _ = original.rightLeg_G
+
+        copied = copy.deepcopy(original)
+
+        # Store copy's values.
+        copied_area = copied.area
+        copied_rightLeg_G = copied.rightLeg_G.copy()
+
+        # Modify the original.
+        original.Frpp_G_Cg = np.array([0.1, 0.6, 0.1])
+
+        # Copy should be unchanged.
+        self.assertAlmostEqual(copied.area, copied_area, places=10)
+        npt.assert_array_equal(copied.rightLeg_G, copied_rightLeg_G)
+
+    def test_deepcopy_with_copy_module(self):
+        """Test that copy.deepcopy works correctly."""
+        import copy
+
+        original = self.basic_panel
+        # Set various attributes.
+        original.is_right_edge = True
+        original.local_chordwise_position = 2
+        offset = np.array([5.0, 10.0, 2.0])
+        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
+        original.ring_vortex = "mock_vortex"
+        original.forces_GP1 = np.array([1.0, 2.0, 3.0])
+        # Trigger caching.
+        _ = original.area
+        _ = original.Cpp_G_Cg
+
+        copied = copy.deepcopy(original)
+
+        # Preserved attributes.
+        npt.assert_array_equal(copied.Frpp_G_Cg, original.Frpp_G_Cg)
+        self.assertEqual(copied.is_right_edge, True)
+        self.assertEqual(copied.local_chordwise_position, 2)
+        self.assertAlmostEqual(copied.area, original.area, places=10)
+        npt.assert_array_equal(copied.Cpp_G_Cg, original.Cpp_G_Cg)
+
+        # Reset attributes.
+        self.assertIsNone(copied.Frpp_GP1_CgP1)
+        self.assertIsNone(copied.ring_vortex)
+        self.assertIsNone(copied.forces_GP1)
+
+    def test_deepcopy_copies_are_functional(self):
+        """Test that copied Panels are fully functional."""
+        import copy
+
+        original = self.basic_panel
+        copied = copy.deepcopy(original)
+
+        # Set global positions on the copy.
+        offset = np.array([100.0, 200.0, 50.0])
+        copied.Frpp_GP1_CgP1 = copied.Frpp_G_Cg + offset
+        copied.Flpp_GP1_CgP1 = copied.Flpp_G_Cg + offset
+        copied.Blpp_GP1_CgP1 = copied.Blpp_G_Cg + offset
+        copied.Brpp_GP1_CgP1 = copied.Brpp_G_Cg + offset
+
+        # Access GP1 properties (should work correctly).
+        rightLeg_GP1 = copied.rightLeg_GP1
+        expected_rightLeg_GP1 = np.array([-1.0, 0.0, 0.0])
+        npt.assert_array_almost_equal(rightLeg_GP1, expected_rightLeg_GP1)
+
+        Cpp_GP1_CgP1 = copied.Cpp_GP1_CgP1
+        expected_Cpp_GP1_CgP1 = np.array([0.75, 0.25, 0.0]) + offset
+        npt.assert_array_almost_equal(Cpp_GP1_CgP1, expected_Cpp_GP1_CgP1)
+
+
 if __name__ == "__main__":
     unittest.main()

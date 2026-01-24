@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import cast
 
 import numpy as np
@@ -13,6 +14,9 @@ class Panel:
     """A class used to contain the panels of a Wing.
 
     **Contains the following methods:**
+
+    __deepcopy__: Creates a deep copy of this Panel, preserving mesh geometry but
+    resetting solver state.
 
     rightLeg_G: This Panel's right leg vector (in geometry axes).
 
@@ -177,6 +181,102 @@ class Panel:
         self.moments_GP1_CgP1: np.ndarray | None = None
         self.forces_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
+
+    def __deepcopy__(self, memo: dict) -> Panel:
+        """Creates a deep copy of this Panel, preserving mesh geometry but resetting
+        solver state.
+
+        The copy preserves:
+
+        - Local corner positions (in geometry axes, relative to the CG) - Mesh metadata
+        (edge flags, grid positions) - Cached local geometric properties (leg vectors,
+        bound vortex points,   collocation point, unit normal, area, aspect ratio)
+
+        The copy resets to None:
+
+        - Global positions (in the first Airplane's geometry axes) - Cached global
+        geometric properties - Vortices (ring_vortex, horseshoe_vortex) - Loads
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Panel with preserved mesh geometry and reset solver state.
+        """
+        # Create a new Panel instance without calling __init__ to avoid redundant
+        # cache invalidation.
+        new_panel = object.__new__(Panel)
+
+        # Store this Panel in memo to handle potential circular references.
+        memo[id(self)] = new_panel
+
+        # Copy local corner positions (these are the primary mesh geometry).
+        new_panel._Frpp_G_Cg = self._Frpp_G_Cg.copy()
+        new_panel._Flpp_G_Cg = self._Flpp_G_Cg.copy()
+        new_panel._Blpp_G_Cg = self._Blpp_G_Cg.copy()
+        new_panel._Brpp_G_Cg = self._Brpp_G_Cg.copy()
+
+        # Copy mesh metadata (these are set during meshing and don't change).
+        new_panel.is_leading_edge = self.is_leading_edge
+        new_panel.is_trailing_edge = self.is_trailing_edge
+        new_panel.is_right_edge = self.is_right_edge
+        new_panel.is_left_edge = self.is_left_edge
+        new_panel.local_chordwise_position = self.local_chordwise_position
+        new_panel.local_spanwise_position = self.local_spanwise_position
+
+        # Copy cached local geometric properties (preserves computation from meshing).
+        new_panel._rightLeg_G = (
+            self._rightLeg_G.copy() if self._rightLeg_G is not None else None
+        )
+        new_panel._frontLeg_G = (
+            self._frontLeg_G.copy() if self._frontLeg_G is not None else None
+        )
+        new_panel._leftLeg_G = (
+            self._leftLeg_G.copy() if self._leftLeg_G is not None else None
+        )
+        new_panel._backLeg_G = (
+            self._backLeg_G.copy() if self._backLeg_G is not None else None
+        )
+        new_panel._Frbvp_G_Cg = (
+            self._Frbvp_G_Cg.copy() if self._Frbvp_G_Cg is not None else None
+        )
+        new_panel._Flbvp_G_Cg = (
+            self._Flbvp_G_Cg.copy() if self._Flbvp_G_Cg is not None else None
+        )
+        new_panel._Cpp_G_Cg = (
+            self._Cpp_G_Cg.copy() if self._Cpp_G_Cg is not None else None
+        )
+        new_panel._unitNormal_G = (
+            self._unitNormal_G.copy() if self._unitNormal_G is not None else None
+        )
+        new_panel._area = self._area
+        new_panel._aspect_ratio = self._aspect_ratio
+
+        # Reset global positions to None (solver will set these).
+        new_panel._Frpp_GP1_CgP1 = None
+        new_panel._Flpp_GP1_CgP1 = None
+        new_panel._Blpp_GP1_CgP1 = None
+        new_panel._Brpp_GP1_CgP1 = None
+
+        # Reset cached global geometric properties to None.
+        new_panel._rightLeg_GP1 = None
+        new_panel._frontLeg_GP1 = None
+        new_panel._leftLeg_GP1 = None
+        new_panel._backLeg_GP1 = None
+        new_panel._Frbvp_GP1_CgP1 = None
+        new_panel._Flbvp_GP1_CgP1 = None
+        new_panel._Cpp_GP1_CgP1 = None
+        new_panel._unitNormal_GP1 = None
+
+        # Reset vortices to None (solver will create new ones).
+        new_panel.ring_vortex = None
+        new_panel.horseshoe_vortex = None
+
+        # Reset forces and moments to None (solver will compute these).
+        new_panel.forces_GP1 = None
+        new_panel.moments_GP1_CgP1 = None
+        new_panel.forces_W = None
+        new_panel.moments_W_CgP1 = None
+
+        return new_panel
 
     @property
     def Frpp_G_Cg(self) -> np.ndarray:

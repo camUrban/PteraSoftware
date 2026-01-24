@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Callable, Sequence
 
 import numpy as np
@@ -182,6 +183,11 @@ class AirplaneMovement:
     ) -> list[geometry.airplane.Airplane]:
         """Creates the Airplane at each time step, and returns them in a list.
 
+        For static geometry (no periodic motion), this method optimizes performance by
+        creating the first Airplane with full mesh generation, then using deepcopy for
+        subsequent time steps. This avoids redundant mesh generation when the geometry
+        is identical across all steps.
+
         :param num_steps: The number of time steps in this movement. It must be a
             positive int.
         :param delta_time: The time between each time step. It must be a positive number
@@ -234,6 +240,68 @@ class AirplaneMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {spacing}")
 
+        # Check if geometry is static (no periodic motion).
+        is_static_geometry = self.max_period == 0.0
+
+        if is_static_geometry:
+            # Optimization for static geometry: create first Airplane with full mesh
+            # generation, then deepcopy for subsequent steps.
+            return self._generate_airplanes_static(num_steps, listCg_GP1_CgP1)
+        else:
+            # For variable geometry, use the standard approach.
+            return self._generate_airplanes_variable(
+                num_steps, delta_time, listCg_GP1_CgP1
+            )
+
+    def _generate_airplanes_static(
+        self, num_steps: int, listCg_GP1_CgP1: np.ndarray
+    ) -> list[geometry.airplane.Airplane]:
+        """Generates Airplanes for static geometry using deepcopy optimization.
+
+        Creates the first Airplane with full mesh generation, then uses deepcopy for
+        subsequent time steps to avoid redundant mesh generation.
+
+        :param num_steps: The number of time steps.
+        :param listCg_GP1_CgP1: A (3, num_steps) ndarray of Cg positions for each step.
+        :return: The list of Airplanes.
+        """
+        # Generate Wings only for step 0 (all steps have identical geometry).
+        first_step_wings = []
+        for wing_movement in self.wing_movements:
+            step_0_wings = wing_movement.generate_wings(num_steps=1, delta_time=1.0)
+            first_step_wings.append(step_0_wings[0])
+
+        # Create the first Airplane (triggers full mesh generation).
+        first_airplane = geometry.airplane.Airplane(
+            wings=first_step_wings,
+            name=self.base_airplane.name,
+            Cg_GP1_CgP1=listCg_GP1_CgP1[:, 0],
+            weight=self.base_airplane.weight,
+        )
+
+        # Create list with first Airplane.
+        airplanes = [first_airplane]
+
+        # Deepcopy for remaining steps, updating Cg_GP1_CgP1.
+        for step in range(1, num_steps):
+            copied_airplane = copy.deepcopy(first_airplane)
+            copied_airplane.Cg_GP1_CgP1 = listCg_GP1_CgP1[:, step].copy()
+            airplanes.append(copied_airplane)
+
+        return airplanes
+
+    def _generate_airplanes_variable(
+        self, num_steps: int, delta_time: float, listCg_GP1_CgP1: np.ndarray
+    ) -> list[geometry.airplane.Airplane]:
+        """Generates Airplanes for variable (periodic) geometry.
+
+        Uses the standard approach of creating new Airplanes for each time step.
+
+        :param num_steps: The number of time steps.
+        :param delta_time: The time between each time step in seconds.
+        :param listCg_GP1_CgP1: A (3, num_steps) ndarray of Cg positions for each step.
+        :return: The list of Airplanes.
+        """
         # Create an empty 2D ndarray that will hold each of the Airplane's Wing's vector
         # of Wings representing its changing state at each time step. The first index
         # denotes a particular base Wing, and the second index denotes the time step.
@@ -241,7 +309,6 @@ class AirplaneMovement:
 
         # Iterate through the WingMovements.
         for wing_movement_id, wing_movement in enumerate(self.wing_movements):
-
             # Generate this Wing's vector of Wings representing its changing state at
             # each time step.
             this_wings_list_of_wings = np.array(

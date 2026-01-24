@@ -114,6 +114,34 @@ class Panel:
             edge.
         :return: None
         """
+        # Declare type annotations and initialize the private cache variables.
+        self._Frpp_G_Cg: np.ndarray
+        self._Flpp_G_Cg: np.ndarray
+        self._Blpp_G_Cg: np.ndarray
+        self._Brpp_G_Cg: np.ndarray
+        self._Frpp_GP1_CgP1: np.ndarray | None = None
+        self._Flpp_GP1_CgP1: np.ndarray | None = None
+        self._Blpp_GP1_CgP1: np.ndarray | None = None
+        self._Brpp_GP1_CgP1: np.ndarray | None = None
+        self._rightLeg_G: np.ndarray | None = None
+        self._frontLeg_G: np.ndarray | None = None
+        self._leftLeg_G: np.ndarray | None = None
+        self._backLeg_G: np.ndarray | None = None
+        self._Frbvp_G_Cg: np.ndarray | None = None
+        self._Flbvp_G_Cg: np.ndarray | None = None
+        self._Cpp_G_Cg: np.ndarray | None = None
+        self._unitNormal_G: np.ndarray | None = None
+        self._area: float | None = None
+        self._aspect_ratio: float | None = None
+        self._rightLeg_GP1: np.ndarray | None = None
+        self._frontLeg_GP1: np.ndarray | None = None
+        self._leftLeg_GP1: np.ndarray | None = None
+        self._backLeg_GP1: np.ndarray | None = None
+        self._Frbvp_GP1_CgP1: np.ndarray | None = None
+        self._Flbvp_GP1_CgP1: np.ndarray | None = None
+        self._Cpp_GP1_CgP1: np.ndarray | None = None
+        self._unitNormal_GP1: np.ndarray | None = None
+
         # Initialize the attributes.
         self.Frpp_G_Cg = Frpp_G_Cg
         self.Flpp_G_Cg = Flpp_G_Cg
@@ -149,36 +177,6 @@ class Panel:
         self.moments_GP1_CgP1: np.ndarray | None = None
         self.forces_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
-
-        # Declare type annotations for private cache variables. These will be
-        # initialized to None by the setters below, but we need to declare the types
-        # here so mypy knows they can hold both None and their computed values.
-        self._Frpp_G_Cg: np.ndarray
-        self._Flpp_G_Cg: np.ndarray
-        self._Blpp_G_Cg: np.ndarray
-        self._Brpp_G_Cg: np.ndarray
-        self._Frpp_GP1_CgP1: np.ndarray | None = None
-        self._Flpp_GP1_CgP1: np.ndarray | None = None
-        self._Blpp_GP1_CgP1: np.ndarray | None = None
-        self._Brpp_GP1_CgP1: np.ndarray | None = None
-        self._rightLeg_G: np.ndarray | None = None
-        self._frontLeg_G: np.ndarray | None = None
-        self._leftLeg_G: np.ndarray | None = None
-        self._backLeg_G: np.ndarray | None = None
-        self._Frbvp_G_Cg: np.ndarray | None = None
-        self._Flbvp_G_Cg: np.ndarray | None = None
-        self._Cpp_G_Cg: np.ndarray | None = None
-        self._unitNormal_G: np.ndarray | None = None
-        self._area: float | None = None
-        self._aspect_ratio: float | None = None
-        self._rightLeg_GP1: np.ndarray | None = None
-        self._frontLeg_GP1: np.ndarray | None = None
-        self._leftLeg_GP1: np.ndarray | None = None
-        self._backLeg_GP1: np.ndarray | None = None
-        self._Frbvp_GP1_CgP1: np.ndarray | None = None
-        self._Flbvp_GP1_CgP1: np.ndarray | None = None
-        self._Cpp_GP1_CgP1: np.ndarray | None = None
-        self._unitNormal_GP1: np.ndarray | None = None
 
     @property
     def Frpp_G_Cg(self) -> np.ndarray:

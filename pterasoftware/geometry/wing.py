@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Sequence
 
 import numpy as np
@@ -25,6 +26,9 @@ class Wing:
     """A class used to contain the wings of an Airplane.
 
     **Contains the following methods:**
+
+    __deepcopy__: Creates a deep copy of this Wing, preserving mesh geometry but
+    resetting wake state.
 
     generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
     the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
@@ -298,6 +302,87 @@ class Wing:
         self.panels: np.ndarray | None = None
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
         self.wake_ring_vortices: np.ndarray | None = None
+
+    def __deepcopy__(self, memo: dict) -> Wing:
+        """Creates a deep copy of this Wing, preserving mesh geometry but resetting wake
+        state.
+
+        The copy preserves:
+
+        - Wing parameters (name, position, angles, symmetry settings, panel counts) -
+        WingCrossSections (deepcopied) - Mesh metadata (symmetry_type,
+        num_spanwise_panels, num_panels) - Panels array (each Panel is deepcopied)
+
+        The copy resets:
+
+        - Wake state (wake_ring_vortices and gridWrvp_GP1_CgP1 are reset to empty arrays
+        with correct shape if meshed, or None if not meshed)
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Wing with preserved mesh geometry and reset wake state.
+        """
+        # Create a new Wing instance without calling __init__ to avoid redundant
+        # validation and meshing.
+        new_wing = object.__new__(Wing)
+
+        # Store this Wing in memo to handle potential circular references.
+        memo[id(self)] = new_wing
+
+        # Deepcopy the WingCrossSections.
+        new_wing.wing_cross_sections = [
+            copy.deepcopy(wing_cross_section, memo)
+            for wing_cross_section in self.wing_cross_sections
+        ]
+
+        # Copy Wing parameters (immutable or primitive types).
+        new_wing.name = self.name
+        new_wing.symmetric = self.symmetric
+        new_wing.mirror_only = self.mirror_only
+        new_wing.num_chordwise_panels = self.num_chordwise_panels
+        new_wing.chordwise_spacing = self.chordwise_spacing
+
+        # Copy numpy arrays (mutable, need independent copies).
+        new_wing.Ler_Gs_Cgs = self.Ler_Gs_Cgs.copy()
+        new_wing.angles_Gs_to_Wn_ixyz = self.angles_Gs_to_Wn_ixyz.copy()
+
+        # Copy symmetry attributes (may be None).
+        new_wing.symmetryNormal_G = (
+            self.symmetryNormal_G.copy() if self.symmetryNormal_G is not None else None
+        )
+        new_wing.symmetryPoint_G_Cg = (
+            self.symmetryPoint_G_Cg.copy()
+            if self.symmetryPoint_G_Cg is not None
+            else None
+        )
+
+        # Copy mesh metadata.
+        new_wing.symmetry_type = self.symmetry_type
+        new_wing.num_spanwise_panels = self.num_spanwise_panels
+        new_wing.num_panels = self.num_panels
+
+        # Deepcopy the Panels array if it exists.
+        if self.panels is not None:
+            new_wing.panels = np.empty_like(self.panels, dtype=object)
+            for i in range(self.panels.shape[0]):
+                for j in range(self.panels.shape[1]):
+                    new_wing.panels[i, j] = copy.deepcopy(self.panels[i, j], memo)
+        else:
+            new_wing.panels = None
+
+        # Reset wake state to empty arrays with correct shape (if meshed).
+        if self.num_spanwise_panels is not None:
+            new_wing.wake_ring_vortices = np.zeros(
+                (0, self.num_spanwise_panels), dtype=object
+            )
+            new_wing.gridWrvp_GP1_CgP1 = np.empty(
+                (0, self.num_spanwise_panels + 1, 3), dtype=float
+            )
+        else:
+            new_wing.wake_ring_vortices = None
+            new_wing.gridWrvp_GP1_CgP1 = None
+
+        return new_wing
 
     def generate_mesh(self, symmetry_type: int) -> None:
         """Generates this Wing's mesh, which finishes the process of preparing the Wing

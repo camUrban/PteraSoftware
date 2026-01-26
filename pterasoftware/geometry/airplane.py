@@ -30,6 +30,9 @@ class Airplane:
 
     **Contains the following methods:**
 
+    __deepcopy__: Creates a deep copy of this Airplane, preserving mesh geometry but
+    resetting solver state.
+
     draw: Draws the 3D geometry of this Airplane.
 
     get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
@@ -161,6 +164,51 @@ class Airplane:
         self.forceCoefficients_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
         self.momentCoefficients_W_CgP1: np.ndarray | None = None
+
+    def __deepcopy__(self, memo: dict) -> Airplane:
+        """Creates a deep copy of this Airplane, preserving mesh geometry but resetting
+        solver state.
+
+        The copy preserves:
+
+        - Wings list (each Wing is deepcopied, preserving mesh and Panels) - Airplane
+        parameters (name, Cg_GP1_CgP1, weight, reference dimensions)
+
+        The copy resets to None:
+
+        - Loads and load coefficients
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Airplane with preserved mesh geometry and reset solver state.
+        """
+        # Create a new Airplane instance without calling __init__ to avoid redundant
+        # validation and Wing symmetry processing.
+        new_airplane = object.__new__(Airplane)
+
+        # Store this Airplane in memo to handle potential circular references.
+        memo[id(self)] = new_airplane
+
+        # Deepcopy the Wings.
+        new_airplane.wings = [copy.deepcopy(wing, memo) for wing in self.wings]
+
+        # Copy Airplane parameters (immutable or primitive types).
+        new_airplane.name = self.name
+        new_airplane.weight = self.weight
+        new_airplane.s_ref = self.s_ref
+        new_airplane.c_ref = self.c_ref
+        new_airplane.b_ref = self.b_ref
+
+        # Copy numpy arrays (mutable, need independent copies).
+        new_airplane.Cg_GP1_CgP1 = self.Cg_GP1_CgP1.copy()
+
+        # Reset loads and load coefficients to None (solver will compute these).
+        new_airplane.forces_W = None
+        new_airplane.forceCoefficients_W = None
+        new_airplane.moments_W_CgP1 = None
+        new_airplane.momentCoefficients_W_CgP1 = None
+
+        return new_airplane
 
     def draw(
         self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False

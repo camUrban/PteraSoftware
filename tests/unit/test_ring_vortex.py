@@ -185,188 +185,6 @@ class TestRingVortex(unittest.TestCase):
         self.assertEqual(self.unit_square_ring_vortex.age, 0)
         self.assertEqual(self.tilted_ring_vortex.age, 0)
 
-    def test_update_strength_method(self):
-        """Test the update_strength method."""
-        # Get initial strength.
-        initial_strength = self.basic_ring_vortex.strength
-
-        # Update to new strength.
-        new_strength = 5.0
-        self.basic_ring_vortex.update_strength(new_strength)
-
-        # Verify RingVortex strength was updated.
-        self.assertEqual(self.basic_ring_vortex.strength, new_strength)
-        self.assertNotEqual(self.basic_ring_vortex.strength, initial_strength)
-
-        # Verify all leg strengths were updated.
-        self.assertEqual(self.basic_ring_vortex.front_leg.strength, new_strength)
-        self.assertEqual(self.basic_ring_vortex.left_leg.strength, new_strength)
-        self.assertEqual(self.basic_ring_vortex.back_leg.strength, new_strength)
-        self.assertEqual(self.basic_ring_vortex.right_leg.strength, new_strength)
-
-    def test_update_strength_to_zero(self):
-        """Test updating strength to zero."""
-        self.basic_ring_vortex.update_strength(0.0)
-        self.assertEqual(self.basic_ring_vortex.strength, 0.0)
-        self.assertEqual(self.basic_ring_vortex.front_leg.strength, 0.0)
-        self.assertEqual(self.basic_ring_vortex.left_leg.strength, 0.0)
-        self.assertEqual(self.basic_ring_vortex.back_leg.strength, 0.0)
-        self.assertEqual(self.basic_ring_vortex.right_leg.strength, 0.0)
-
-    def test_update_strength_to_negative(self):
-        """Test updating strength to negative value."""
-        self.basic_ring_vortex.update_strength(-3.5)
-        self.assertEqual(self.basic_ring_vortex.strength, -3.5)
-        self.assertEqual(self.basic_ring_vortex.front_leg.strength, -3.5)
-        self.assertEqual(self.basic_ring_vortex.left_leg.strength, -3.5)
-        self.assertEqual(self.basic_ring_vortex.back_leg.strength, -3.5)
-        self.assertEqual(self.basic_ring_vortex.right_leg.strength, -3.5)
-
-    def test_update_position_method(self):
-        """Test the update_position method."""
-        # Define new positions.
-        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
-
-        # Update position.
-        self.basic_ring_vortex.update_position(
-            new_Frrvp_GP1_CgP1,
-            new_Flrvp_GP1_CgP1,
-            new_Blrvp_GP1_CgP1,
-            new_Brrvp_GP1_CgP1,
-        )
-
-        # Verify corner positions were updated.
-        npt.assert_array_equal(
-            self.basic_ring_vortex.Frrvp_GP1_CgP1, new_Frrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.Flrvp_GP1_CgP1, new_Flrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.Blrvp_GP1_CgP1, new_Blrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.Brrvp_GP1_CgP1, new_Brrvp_GP1_CgP1
-        )
-
-    def test_update_position_updates_line_vortices(self):
-        """Test that update_position updates LineVortex legs."""
-        # Define new positions.
-        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
-
-        # Update position.
-        self.basic_ring_vortex.update_position(
-            new_Frrvp_GP1_CgP1,
-            new_Flrvp_GP1_CgP1,
-            new_Blrvp_GP1_CgP1,
-            new_Brrvp_GP1_CgP1,
-        )
-
-        # Verify front leg was updated.
-        npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Slvp_GP1_CgP1, new_Frrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.front_leg.Elvp_GP1_CgP1, new_Flrvp_GP1_CgP1
-        )
-
-        # Verify left leg was updated.
-        npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Slvp_GP1_CgP1, new_Flrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.left_leg.Elvp_GP1_CgP1, new_Blrvp_GP1_CgP1
-        )
-
-        # Verify back leg was updated.
-        npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Slvp_GP1_CgP1, new_Blrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.back_leg.Elvp_GP1_CgP1, new_Brrvp_GP1_CgP1
-        )
-
-        # Verify right leg was updated.
-        npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Slvp_GP1_CgP1, new_Brrvp_GP1_CgP1
-        )
-        npt.assert_array_equal(
-            self.basic_ring_vortex.right_leg.Elvp_GP1_CgP1, new_Frrvp_GP1_CgP1
-        )
-
-    def test_update_position_updates_centroid(self):
-        """Test that update_position updates the centroid."""
-        # Define new positions that form a square centered at [1.5, 0.0, 0.5] (in
-        # geometry axes, relative to the CG).
-        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
-
-        # Update position.
-        self.basic_ring_vortex.update_position(
-            new_Frrvp_GP1_CgP1,
-            new_Flrvp_GP1_CgP1,
-            new_Blrvp_GP1_CgP1,
-            new_Brrvp_GP1_CgP1,
-        )
-
-        # Expected centroid.
-        expected_centroid = np.array([1.5, 0.0, 0.5], dtype=float)
-        npt.assert_array_almost_equal(
-            self.basic_ring_vortex.Crvp_GP1_CgP1, expected_centroid, decimal=10
-        )
-
-    def test_update_position_preserves_strength(self):
-        """Test that update_position preserves strength."""
-        original_strength = self.basic_ring_vortex.strength
-
-        # Define new positions.
-        new_Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.5], dtype=float)
-        new_Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.5], dtype=float)
-        new_Blrvp_GP1_CgP1 = np.array([2.0, -1.0, 0.5], dtype=float)
-        new_Brrvp_GP1_CgP1 = np.array([2.0, 1.0, 0.5], dtype=float)
-
-        # Update position.
-        self.basic_ring_vortex.update_position(
-            new_Frrvp_GP1_CgP1,
-            new_Flrvp_GP1_CgP1,
-            new_Blrvp_GP1_CgP1,
-            new_Brrvp_GP1_CgP1,
-        )
-
-        # Verify strength was preserved.
-        self.assertEqual(self.basic_ring_vortex.strength, original_strength)
-        self.assertEqual(self.basic_ring_vortex.front_leg.strength, original_strength)
-        self.assertEqual(self.basic_ring_vortex.left_leg.strength, original_strength)
-        self.assertEqual(self.basic_ring_vortex.back_leg.strength, original_strength)
-        self.assertEqual(self.basic_ring_vortex.right_leg.strength, original_strength)
-
-    def test_none_strength_handling(self):
-        """Test that None strength is handled correctly."""
-        ring_vortex = _aerodynamics.RingVortex(
-            Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-            Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-            Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
-            Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
-            strength=None,
-        )
-
-        # Verify strength is None.
-        self.assertIsNone(ring_vortex.strength)
-
-        # Verify leg strengths are also None.
-        self.assertIsNone(ring_vortex.front_leg.strength)
-        self.assertIsNone(ring_vortex.left_leg.strength)
-        self.assertIsNone(ring_vortex.back_leg.strength)
-        self.assertIsNone(ring_vortex.right_leg.strength)
-
     def test_very_small_vortex(self):
         """Test RingVortex with very small dimensions."""
         # Should handle very small RingVortices without issues.
@@ -464,14 +282,247 @@ class TestRingVortex(unittest.TestCase):
             decimal=4,
         )
 
-    def test_update_strength_to_large_value(self):
-        """Test updating strength to a very large value."""
-        self.basic_ring_vortex.update_strength(1e9)
-        self.assertEqual(self.basic_ring_vortex.strength, 1e9)
-        self.assertEqual(self.basic_ring_vortex.front_leg.strength, 1e9)
-        self.assertEqual(self.basic_ring_vortex.left_leg.strength, 1e9)
-        self.assertEqual(self.basic_ring_vortex.back_leg.strength, 1e9)
-        self.assertEqual(self.basic_ring_vortex.right_leg.strength, 1e9)
+    def test_cache_invalidation_centroid_on_corner_change(self):
+        """Test that centroid cache is invalidated when a corner position changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access centroid to populate cache.
+        _ = ring_vortex.Crvp_GP1_CgP1
+
+        # Change front right corner.
+        new_corner = np.array([0.5, 0.5, 0.0], dtype=float)
+        ring_vortex.Frrvp_GP1_CgP1 = new_corner
+
+        # Verify that centroid is recalculated with new corner.
+        expected_centroid = np.array([0.625, 0.0, 0.0], dtype=float)
+        npt.assert_array_almost_equal(
+            ring_vortex.Crvp_GP1_CgP1,
+            expected_centroid,
+            decimal=10,
+        )
+
+    def test_cache_invalidation_area_on_corner_change(self):
+        """Test that area cache is invalidated when a corner position changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
+
+        # Access area to populate cache.
+        initial_area = ring_vortex.area
+        self.assertEqual(initial_area, 1.0)
+
+        # Change front right corner to double the area.
+        ring_vortex.Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.0], dtype=float)
+
+        # Verify that area is recalculated.
+        new_area = ring_vortex.area
+        self.assertNotEqual(new_area, initial_area)
+
+    def test_cache_invalidation_all_corners(self):
+        """Test that caches are invalidated when each corner position changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
+
+        # Access cached properties.
+        initial_centroid = ring_vortex.Crvp_GP1_CgP1.copy()
+        initial_area = ring_vortex.area
+
+        # Change front left corner.
+        ring_vortex.Flrvp_GP1_CgP1 = np.array([0.5, -1.0, 0.0], dtype=float)
+        self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
+
+        # Reset and test back left corner.
+        ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
+        initial_centroid = ring_vortex.Crvp_GP1_CgP1.copy()
+        initial_area = ring_vortex.area
+        ring_vortex.Blrvp_GP1_CgP1 = np.array([-1.0, -1.0, 0.0], dtype=float)
+        self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
+
+        # Reset and test back right corner.
+        ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
+        initial_centroid = ring_vortex.Crvp_GP1_CgP1.copy()
+        initial_area = ring_vortex.area
+        ring_vortex.Brrvp_GP1_CgP1 = np.array([-1.0, 1.0, 0.0], dtype=float)
+        self.assertFalse(np.array_equal(ring_vortex.Crvp_GP1_CgP1, initial_centroid))
+        self.assertNotEqual(ring_vortex.area, initial_area)
+
+    def test_leg_position_updates_on_front_right_corner_change(self):
+        """Test that LineVortex leg positions are updated when front right corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.front_leg
+        _ = ring_vortex.right_leg
+
+        # Change front right corner.
+        new_corner = np.array([0.25, 0.75, 0.1], dtype=float)
+        ring_vortex.Frrvp_GP1_CgP1 = new_corner
+
+        # Verify that front leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.front_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that right leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.right_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_front_left_corner_change(self):
+        """Test that LineVortex leg positions are updated when front left corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.front_leg
+        _ = ring_vortex.left_leg
+
+        # Change front left corner.
+        new_corner = np.array([0.25, -0.75, 0.1], dtype=float)
+        ring_vortex.Flrvp_GP1_CgP1 = new_corner
+
+        # Verify that front leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.front_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that left leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.left_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_back_left_corner_change(self):
+        """Test that LineVortex leg positions are updated when back left corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.left_leg
+        _ = ring_vortex.back_leg
+
+        # Change back left corner.
+        new_corner = np.array([1.25, -0.75, 0.1], dtype=float)
+        ring_vortex.Blrvp_GP1_CgP1 = new_corner
+
+        # Verify that left leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.left_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that back leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.back_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_leg_position_updates_on_back_right_corner_change(self):
+        """Test that LineVortex leg positions are updated when back right corner
+        changes."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access legs to create them.
+        _ = ring_vortex.back_leg
+        _ = ring_vortex.right_leg
+
+        # Change back right corner.
+        new_corner = np.array([1.25, 0.75, 0.1], dtype=float)
+        ring_vortex.Brrvp_GP1_CgP1 = new_corner
+
+        # Verify that back leg end point is updated.
+        npt.assert_array_equal(
+            ring_vortex.back_leg.Elvp_GP1_CgP1,
+            new_corner,
+        )
+
+        # Verify that right leg start point is updated.
+        npt.assert_array_equal(
+            ring_vortex.right_leg.Slvp_GP1_CgP1,
+            new_corner,
+        )
+
+    def test_strength_propagation_to_legs(self):
+        """Test that changing RingVortex strength propagates to all legs."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access all legs to create them.
+        _ = ring_vortex.front_leg
+        _ = ring_vortex.left_leg
+        _ = ring_vortex.back_leg
+        _ = ring_vortex.right_leg
+
+        # Change strength.
+        new_strength = 5.0
+        ring_vortex.strength = new_strength
+
+        # Verify all legs have the new strength.
+        self.assertEqual(ring_vortex.front_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.left_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.back_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.right_leg.strength, new_strength)
+
+    def test_strength_propagation_to_uncreated_legs(self):
+        """Test that changing strength before accessing legs still works."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Change strength before accessing legs.
+        new_strength = 7.5
+        ring_vortex.strength = new_strength
+
+        # Access legs now and verify they have the new strength.
+        self.assertEqual(ring_vortex.front_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.left_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.back_leg.strength, new_strength)
+        self.assertEqual(ring_vortex.right_leg.strength, new_strength)
+
+    def test_multiple_corner_updates(self):
+        """Test that multiple sequential corner updates work correctly."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_unit_square_ring_vortex_fixture()
+
+        # Update multiple corners.
+        ring_vortex.Frrvp_GP1_CgP1 = np.array([1.0, 1.0, 0.0], dtype=float)
+        ring_vortex.Flrvp_GP1_CgP1 = np.array([1.0, -1.0, 0.0], dtype=float)
+        ring_vortex.Blrvp_GP1_CgP1 = np.array([-1.0, -1.0, 0.0], dtype=float)
+        ring_vortex.Brrvp_GP1_CgP1 = np.array([-1.0, 1.0, 0.0], dtype=float)
+
+        # Verify area is recalculated (now a 2x2 square = 4.0).
+        npt.assert_almost_equal(ring_vortex.area, 4.0, decimal=10)
+
+        # Verify centroid is at origin.
+        npt.assert_array_almost_equal(
+            ring_vortex.Crvp_GP1_CgP1,
+            np.array([0.0, 0.0, 0.0], dtype=float),
+            decimal=10,
+        )
+
+    def test_strength_zero_to_nonzero(self):
+        """Test changing strength from zero to nonzero."""
+        # Create a zero strength fixture.
+        ring_vortex = ring_vortex_fixtures.make_zero_strength_ring_vortex_fixture()
+
+        # Access legs.
+        _ = ring_vortex.front_leg
+
+        # Change to nonzero.
+        ring_vortex.strength = 10.0
+
+        # Verify.
+        self.assertEqual(ring_vortex.strength, 10.0)
+        self.assertEqual(ring_vortex.front_leg.strength, 10.0)
 
 
 if __name__ == "__main__":

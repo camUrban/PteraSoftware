@@ -608,5 +608,568 @@ class TestAirplaneMovement(unittest.TestCase):
             self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
 
 
+class TestAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
+    """This is a class with functions to test variable geometry optimization."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all variable geometry optimization tests."""
+        cls.static_airplane_movement = (
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        )
+        cls.periodic_geometry_airplane_movement = (
+            airplane_movement_fixtures.make_periodic_geometry_airplane_movement_fixture()
+        )
+        cls.basic_airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+
+    def test_lcm_static_method(self):
+        """Test the _lcm static method."""
+        # Test basic LCM calculation.
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(2.0, 3.0), 6.0
+        )
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(4.0, 6.0), 12.0
+        )
+
+        # Test with zero values.
+        self.assertEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(0.0, 5.0), 0.0
+        )
+        self.assertEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(5.0, 0.0), 0.0
+        )
+        self.assertEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(0.0, 0.0), 0.0
+        )
+
+        # Test with same values.
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm(5.0, 5.0), 5.0
+        )
+
+    def test_lcm_multiple_static_method(self):
+        """Test the _lcm_multiple static method."""
+        # Test basic LCM calculation.
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm_multiple(
+                [2.0, 3.0, 4.0]
+            ),
+            12.0,
+        )
+
+        # Test with empty list.
+        self.assertEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm_multiple([]), 0.0
+        )
+
+        # Test with all zeros.
+        self.assertEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm_multiple(
+                [0.0, 0.0, 0.0]
+            ),
+            0.0,
+        )
+
+        # Test with single value.
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm_multiple([5.0]), 5.0
+        )
+
+        # Test with mixed zeros and non zeros.
+        self.assertAlmostEqual(
+            ps.movements.airplane_movement.AirplaneMovement._lcm_multiple(
+                [0.0, 2.0, 0.0, 3.0]
+            ),
+            6.0,
+        )
+
+    def test_geometry_lcm_period_static(self):
+        """Test _geometry_lcm_period returns 0.0 for static geometry."""
+        result = self.static_airplane_movement._geometry_lcm_period()
+        self.assertEqual(result, 0.0)
+
+    def test_geometry_lcm_period_periodic(self):
+        """Test _geometry_lcm_period returns correct value for periodic geometry."""
+        # The periodic_geometry_airplane_movement has a 0.1s period.
+        result = self.periodic_geometry_airplane_movement._geometry_lcm_period()
+        self.assertAlmostEqual(result, 0.1, places=6)
+
+    def test_geometry_matches_identical_wings(self):
+        """Test _geometry_matches returns True for identical Wings."""
+        # Generate Wings for step 0.
+        wings = []
+        for wing_movement in self.static_airplane_movement.wing_movements:
+            step_0_wings = wing_movement.generate_wings(num_steps=1, delta_time=0.01)
+            wings.append(step_0_wings[0])
+
+        wings_array = np.array(wings)
+
+        # Identical Wings should match.
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array,
+            wings_step_b=wings_array,
+            tolerance=1e-9,
+        )
+        self.assertTrue(result)
+
+    def test_geometry_matches_different_wings(self):
+        """Test _geometry_matches returns False for different Wings."""
+        # Generate Wings for two different time steps with movement.
+        airplane_movement = self.basic_airplane_movement
+        wings_step_0 = []
+        wings_step_5 = []
+
+        for wing_movement in airplane_movement.wing_movements:
+            all_wings = wing_movement.generate_wings(num_steps=10, delta_time=0.01)
+            wings_step_0.append(all_wings[0])
+            wings_step_5.append(all_wings[5])
+
+        wings_array_0 = np.array(wings_step_0)
+        wings_array_5 = np.array(wings_step_5)
+
+        # Different Wings should not match.
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_0,
+            wings_step_b=wings_array_5,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_different_length(self):
+        """Test _geometry_matches returns False for different length Wing arrays."""
+        # Generate Wings.
+        wings = []
+        for wing_movement in self.static_airplane_movement.wing_movements:
+            step_0_wings = wing_movement.generate_wings(num_steps=1, delta_time=0.01)
+            wings.append(step_0_wings[0])
+
+        wings_array = np.array(wings)
+        # Create a shorter array.
+        wings_array_short = wings_array[:0]
+
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array,
+            wings_step_b=wings_array_short,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_variable_geometry_optimization_applies(self):
+        """Test that variable geometry optimization applies for periodic motion."""
+        airplane_movement = self.periodic_geometry_airplane_movement
+
+        # Use delta_time = 0.01 and period = 0.1, so steps_per_period = 10.
+        # With 30 steps, we get 3 periods, so optimization should apply.
+        num_steps = 30
+        delta_time = 0.01
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Verify correct number of Airplanes.
+        self.assertEqual(len(airplanes), num_steps)
+
+        # Verify all are Airplane instances.
+        for airplane in airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+    def test_variable_geometry_periodicity(self):
+        """Test that variable geometry produces periodic results."""
+        airplane_movement = self.periodic_geometry_airplane_movement
+
+        # Use delta_time = 0.01 and period = 0.1, so steps_per_period = 10.
+        num_steps = 30
+        delta_time = 0.01
+        steps_per_period = 10
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Check that geometry repeats at period boundaries.
+        # Compare step 0 to step 10 to step 20.
+        for period_num in range(1, 3):
+            base_step = 0
+            compare_step = period_num * steps_per_period
+
+            base_airplane = airplanes[base_step]
+            compare_airplane = airplanes[compare_step]
+
+            # Wings should have matching geometry.
+            for wing_id in range(len(base_airplane.wings)):
+                base_wing = base_airplane.wings[wing_id]
+                compare_wing = compare_airplane.wings[wing_id]
+
+                # Check Wing position.
+                npt.assert_allclose(
+                    base_wing.Ler_Gs_Cgs,
+                    compare_wing.Ler_Gs_Cgs,
+                    atol=1e-9,
+                    rtol=0.0,
+                )
+
+                # Check Wing angles.
+                npt.assert_allclose(
+                    base_wing.angles_Gs_to_Wn_ixyz,
+                    compare_wing.angles_Gs_to_Wn_ixyz,
+                    atol=1e-9,
+                    rtol=0.0,
+                )
+
+    def test_variable_geometry_independence(self):
+        """Test that deepcopied Airplanes in variable geometry are independent."""
+        airplane_movement = self.periodic_geometry_airplane_movement
+
+        # Use delta_time = 0.01 and period = 0.1, so steps_per_period = 10.
+        num_steps = 30
+        delta_time = 0.01
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Modify an Airplane from the second period (which should be a deepcopy).
+        airplanes[15].Cg_GP1_CgP1[0] = 999.0
+
+        # The source Airplane (step 5) should not be affected.
+        self.assertNotEqual(airplanes[5].Cg_GP1_CgP1[0], 999.0)
+
+        # The original first period Airplane should not be affected.
+        self.assertNotEqual(airplanes[5].Cg_GP1_CgP1[0], 999.0)
+
+    def test_variable_geometry_Cg_updates(self):
+        """Test that Cg_GP1_CgP1 is updated correctly for deepcopied Airplanes."""
+        # Create an AirplaneMovement with both geometry motion and CG motion.
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [
+            wing_movement_fixtures.make_periodic_geometry_wing_movement_fixture()
+        ]
+
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+            ampCg_GP1_CgP1=(0.05, 0.0, 0.0),
+            periodCg_GP1_CgP1=(0.2, 0.0, 0.0),
+            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+
+        num_steps = 30
+        delta_time = 0.01
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Verify that Cg_GP1_CgP1 varies across steps (not all the same).
+        x_positions = [airplane.Cg_GP1_CgP1[0] for airplane in airplanes]
+        self.assertFalse(all(x == x_positions[0] for x in x_positions))
+
+    def test_fallback_when_period_not_aligned(self):
+        """Test that fallback to standard generation works when period not aligned."""
+        # Create an AirplaneMovement with a wing movement that has period = 1.0.
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movements = [
+            wing_movement_fixtures.make_sine_spacing_Ler_wing_movement_fixture()
+        ]
+        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=wing_movements,
+        )
+
+        # Should still work (fallback to standard generation).
+        num_steps = 30
+        delta_time = 0.007  # Doesn't align with period = 1.0.
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        self.assertEqual(len(airplanes), num_steps)
+
+    def test_no_optimization_when_single_period(self):
+        """Test that optimization doesn't apply when num_steps <= steps_per_period."""
+        airplane_movement = self.periodic_geometry_airplane_movement
+
+        # Period = 0.1, delta_time = 0.01, so steps_per_period = 10.
+        # Use num_steps = 10 (exactly one period). No benefit from optimization.
+        num_steps = 10
+        delta_time = 0.01
+
+        airplanes = airplane_movement.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Should still work correctly.
+        self.assertEqual(len(airplanes), num_steps)
+        for airplane in airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+
+class TestGeometryMatchesEdgeCases(unittest.TestCase):
+    """Tests for _geometry_matches edge cases and panel comparison code."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all geometry matching tests."""
+        cls.static_airplane_movement = (
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        )
+        # Fixture with only angle movement (no position movement).
+        cls.angles_only_airplane_movement = (
+            airplane_movement_fixtures.make_angles_only_airplane_movement_fixture()
+        )
+
+    def test_geometry_matches_wing_angles_mismatch(self):
+        """Test _geometry_matches returns False when Wing angles don't match."""
+        # Use an AirplaneMovement with only angle movement (no position movement).
+        # This ensures Wing positions match but angles differ at different steps.
+        airplane_movement = self.angles_only_airplane_movement
+
+        # Generate Wings for two different time steps.
+        wings_step_0 = []
+        wings_step_5 = []
+
+        for wing_movement in airplane_movement.wing_movements:
+            all_wings = wing_movement.generate_wings(num_steps=10, delta_time=0.01)
+            wings_step_0.append(all_wings[0])
+            wings_step_5.append(all_wings[5])
+
+        wings_array_0 = np.array(wings_step_0)
+        wings_array_5 = np.array(wings_step_5)
+
+        # Verify positions are the same (angles-only movement doesn't change position).
+        for wing_0, wing_5 in zip(wings_array_0, wings_array_5):
+            npt.assert_allclose(
+                wing_0.Ler_Gs_Cgs, wing_5.Ler_Gs_Cgs, atol=1e-9, rtol=0.0
+            )
+
+        # Verify angles are different.
+        angles_differ = False
+        for wing_0, wing_5 in zip(wings_array_0, wings_array_5):
+            if not np.allclose(
+                wing_0.angles_Gs_to_Wn_ixyz,
+                wing_5.angles_Gs_to_Wn_ixyz,
+                atol=1e-9,
+                rtol=0.0,
+            ):
+                angles_differ = True
+                break
+        self.assertTrue(angles_differ, "Angles should differ between steps")
+
+        # _geometry_matches should return False due to angle mismatch.
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_0,
+            wings_step_b=wings_array_5,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_panel_shape_mismatch(self):
+        """Test _geometry_matches returns False when Panel shapes don't match."""
+        # Create AirplaneMovements with different panel grid sizes.
+        airplane_movement_2 = (
+            airplane_movement_fixtures.make_2_chordwise_panels_airplane_movement_fixture()
+        )
+        airplane_movement_3 = (
+            airplane_movement_fixtures.make_3_chordwise_panels_airplane_movement_fixture()
+        )
+
+        # Generate Airplanes (which have meshed Wings with panels).
+        airplanes_2 = airplane_movement_2.generate_airplanes(
+            num_steps=1, delta_time=0.01
+        )
+        airplanes_3 = airplane_movement_3.generate_airplanes(
+            num_steps=1, delta_time=0.01
+        )
+
+        # Extract Wings from Airplanes.
+        wings_2 = airplanes_2[0].wings
+        wings_3 = airplanes_3[0].wings
+
+        wings_array_2 = np.array(wings_2)
+        wings_array_3 = np.array(wings_3)
+
+        # Verify Wings have panels.
+        self.assertIsNotNone(wings_2[0].panels)
+        self.assertIsNotNone(wings_3[0].panels)
+
+        # Verify panel shapes are different.
+        self.assertNotEqual(wings_2[0].panels.shape, wings_3[0].panels.shape)
+
+        # _geometry_matches should return False due to panel shape mismatch.
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_2,
+            wings_step_b=wings_array_3,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def _get_meshed_wings(self):
+        """Helper to get two copies of meshed Wings for panel corner tests."""
+        # Use static airplane movement to generate Airplanes with meshed Wings.
+        airplane_movement = self.static_airplane_movement
+
+        # Generate 2 time steps to get independent copies.
+        airplanes = airplane_movement.generate_airplanes(num_steps=2, delta_time=0.01)
+
+        # Extract Wings from each Airplane.
+        wings_a = list(airplanes[0].wings)
+        wings_b = list(airplanes[1].wings)
+
+        return wings_a, wings_b
+
+    def test_geometry_matches_panel_corner_mismatch_Frpp(self):
+        """Test _geometry_matches returns False when Panel Frpp_G_Cg doesn't match."""
+        # Get two copies of meshed Wings.
+        wings_a, wings_b = self._get_meshed_wings()
+
+        # Modify front right corner of first panel in wing_b.
+        wings_b[0].panels[0, 0].Frpp_G_Cg = wings_b[0].panels[
+            0, 0
+        ].Frpp_G_Cg + np.array([0.1, 0.0, 0.0])
+
+        wings_array_a = np.array(wings_a)
+        wings_array_b = np.array(wings_b)
+
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_a,
+            wings_step_b=wings_array_b,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_panel_corner_mismatch_Flpp(self):
+        """Test _geometry_matches returns False when Panel Flpp_G_Cg doesn't match."""
+        # Get two copies of meshed Wings.
+        wings_a, wings_b = self._get_meshed_wings()
+
+        # Modify front left corner of first panel in wing_b.
+        wings_b[0].panels[0, 0].Flpp_G_Cg = wings_b[0].panels[
+            0, 0
+        ].Flpp_G_Cg + np.array([0.1, 0.0, 0.0])
+
+        wings_array_a = np.array(wings_a)
+        wings_array_b = np.array(wings_b)
+
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_a,
+            wings_step_b=wings_array_b,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_panel_corner_mismatch_Blpp(self):
+        """Test _geometry_matches returns False when Panel Blpp_G_Cg doesn't match."""
+        # Get two copies of meshed Wings.
+        wings_a, wings_b = self._get_meshed_wings()
+
+        # Modify back left corner of first panel in wing_b.
+        wings_b[0].panels[0, 0].Blpp_G_Cg = wings_b[0].panels[
+            0, 0
+        ].Blpp_G_Cg + np.array([0.1, 0.0, 0.0])
+
+        wings_array_a = np.array(wings_a)
+        wings_array_b = np.array(wings_b)
+
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_a,
+            wings_step_b=wings_array_b,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_panel_corner_mismatch_Brpp(self):
+        """Test _geometry_matches returns False when Panel Brpp_G_Cg doesn't match."""
+        # Get two copies of meshed Wings.
+        wings_a, wings_b = self._get_meshed_wings()
+
+        # Modify back right corner of first panel in wing_b.
+        wings_b[0].panels[0, 0].Brpp_G_Cg = wings_b[0].panels[
+            0, 0
+        ].Brpp_G_Cg + np.array([0.1, 0.0, 0.0])
+
+        wings_array_a = np.array(wings_a)
+        wings_array_b = np.array(wings_b)
+
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_a,
+            wings_step_b=wings_array_b,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+    def test_geometry_matches_panels_iteration(self):
+        """Test _geometry_matches iterates through all panels correctly."""
+        # Get two copies of meshed Wings.
+        wings_a, wings_b = self._get_meshed_wings()
+
+        # Verify there are multiple panels.
+        self.assertGreater(wings_a[0].panels.shape[0] * wings_a[0].panels.shape[1], 1)
+
+        # Modify a non-first panel (last panel in the grid).
+        last_i = wings_b[0].panels.shape[0] - 1
+        last_j = wings_b[0].panels.shape[1] - 1
+        wings_b[0].panels[last_i, last_j].Frpp_G_Cg = wings_b[0].panels[
+            last_i, last_j
+        ].Frpp_G_Cg + np.array([0.1, 0.0, 0.0])
+
+        wings_array_a = np.array(wings_a)
+        wings_array_b = np.array(wings_b)
+
+        # Should still detect the mismatch.
+        result = ps.movements.airplane_movement.AirplaneMovement._geometry_matches(
+            wings_step_a=wings_array_a,
+            wings_step_b=wings_array_b,
+            tolerance=1e-9,
+        )
+        self.assertFalse(result)
+
+
+class TestVariableGeometryFallback(unittest.TestCase):
+    """Tests for the variable geometry fallback code path."""
+
+    def test_fallback_when_geometry_validation_fails(self):
+        """Test that fallback to standard generation works when geometry validation
+        fails.
+
+        This test uses unittest.mock to force _geometry_matches to return False,
+        triggering the fallback path at line 353.
+        """
+        from unittest.mock import patch
+
+        # Create a periodic AirplaneMovement.
+        airplane_movement = (
+            airplane_movement_fixtures.make_periodic_geometry_airplane_movement_fixture()
+        )
+
+        # Use parameters that would normally trigger optimization.
+        # Period = 0.1s, delta_time = 0.01s → steps_per_period = 10
+        # num_steps = 30 > steps_per_period, so optimization would apply.
+        num_steps = 30
+        delta_time = 0.01
+
+        # Mock _geometry_matches to return False, triggering fallback.
+        with patch.object(
+            ps.movements.airplane_movement.AirplaneMovement,
+            "_geometry_matches",
+            return_value=False,
+        ):
+            airplanes = airplane_movement.generate_airplanes(
+                num_steps=num_steps, delta_time=delta_time
+            )
+
+        # Verify correct number of Airplanes generated via fallback path.
+        self.assertEqual(len(airplanes), num_steps)
+
+        # Verify all are valid Airplane instances.
+        for airplane in airplanes:
+            self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+
 if __name__ == "__main__":
     unittest.main()

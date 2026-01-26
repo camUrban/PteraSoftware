@@ -947,9 +947,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             this_ring_vortex = panel.ring_vortex
             assert this_ring_vortex is not None
 
-            this_ring_vortex.update_strength(
-                self._current_bound_vortex_strengths[panel_num]
-            )
+            this_ring_vortex.strength = self._current_bound_vortex_strengths[panel_num]
 
     def calculate_solution_velocity(
         self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
@@ -1657,11 +1655,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                         ],
                                     )
 
-                                    next_wake_ring_vortex.update_position(
-                                        Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
-                                        Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
-                                        Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,
-                                        Brrvp_GP1_CgP1=Brwrvp_GP1_CgP1,
+                                    next_wake_ring_vortex.Flrvp_GP1_CgP1 = (
+                                        Flwrvp_GP1_CgP1
+                                    )
+                                    next_wake_ring_vortex.Frrvp_GP1_CgP1 = (
+                                        Frwrvp_GP1_CgP1
+                                    )
+                                    next_wake_ring_vortex.Blrvp_GP1_CgP1 = (
+                                        Blwrvp_GP1_CgP1
+                                    )
+                                    next_wake_ring_vortex.Brrvp_GP1_CgP1 = (
+                                        Brwrvp_GP1_CgP1
                                     )
 
                                     # Also, update the age of the wake RingVortex at

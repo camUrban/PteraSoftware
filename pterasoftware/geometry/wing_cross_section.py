@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Sequence
 
 import numpy as np
@@ -24,6 +25,8 @@ class WingCrossSection:
     """A class used to contain the wing cross sections of a Wing.
 
     **Contains the following methods:**
+
+    __deepcopy__: Creates a deep copy of this WingCrossSection.
 
     get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
     outline and mean camber line.
@@ -252,6 +255,49 @@ class WingCrossSection:
         # will be set by its parent Wing immediately after it has its own
         # symmetry_type parameter set by its parent Airplane.
         self.symmetry_type: int | None = None
+
+    def __deepcopy__(self, memo: dict) -> WingCrossSection:
+        """Creates a deep copy of this WingCrossSection.
+
+        All attributes are copied. The Airfoil is deepcopied to ensure independence.
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new WingCrossSection with copied attributes.
+        """
+        # Create a new WingCrossSection instance without calling __init__ to avoid
+        # redundant validation.
+        new_wing_cross_section = object.__new__(WingCrossSection)
+
+        # Store this WingCrossSection in memo to handle potential circular references.
+        memo[id(self)] = new_wing_cross_section
+
+        # Deepcopy the Airfoil to ensure independence.
+        new_wing_cross_section.airfoil = copy.deepcopy(self.airfoil, memo)
+
+        # Copy simple attributes (immutable or primitive types).
+        new_wing_cross_section.num_spanwise_panels = self.num_spanwise_panels
+        new_wing_cross_section.chord = self.chord
+        new_wing_cross_section.control_surface_symmetry_type = (
+            self.control_surface_symmetry_type
+        )
+        new_wing_cross_section.control_surface_hinge_point = (
+            self.control_surface_hinge_point
+        )
+        new_wing_cross_section.control_surface_deflection = (
+            self.control_surface_deflection
+        )
+        new_wing_cross_section.spanwise_spacing = self.spanwise_spacing
+        new_wing_cross_section.validated = self.validated
+        new_wing_cross_section.symmetry_type = self.symmetry_type
+
+        # Copy numpy arrays (mutable, need independent copies).
+        new_wing_cross_section.Lp_Wcsp_Lpp = self.Lp_Wcsp_Lpp.copy()
+        new_wing_cross_section.angles_Wcsp_to_Wcs_ixyz = (
+            self.angles_Wcsp_to_Wcs_ixyz.copy()
+        )
+
+        return new_wing_cross_section
 
     # TEST: Consider adding unit tests for this method.
     def get_plottable_data(

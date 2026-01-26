@@ -838,5 +838,243 @@ class TestWing(unittest.TestCase):
         npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
 
 
+class TestWingDeepCopy(unittest.TestCase):
+    """Tests for Wing.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
+        self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+    def test_deepcopy_creates_new_instance(self):
+        """Test that deepcopy creates a new Wing instance."""
+        import copy
+
+        original = self.type_1_wing
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, ps.geometry.wing.Wing)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_wing_parameters(self):
+        """Test that deepcopy preserves Wing parameters."""
+        import copy
+
+        original = self.type_1_wing
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.name, original.name)
+        self.assertEqual(copied.symmetric, original.symmetric)
+        self.assertEqual(copied.mirror_only, original.mirror_only)
+        self.assertEqual(copied.num_chordwise_panels, original.num_chordwise_panels)
+        self.assertEqual(copied.chordwise_spacing, original.chordwise_spacing)
+        npt.assert_array_equal(copied.Ler_Gs_Cgs, original.Ler_Gs_Cgs)
+        npt.assert_array_equal(
+            copied.angles_Gs_to_Wn_ixyz, original.angles_Gs_to_Wn_ixyz
+        )
+
+    def test_deepcopy_creates_independent_arrays(self):
+        """Test that deepcopy creates independent copies of numpy arrays."""
+        import copy
+
+        original = self.type_1_wing
+        copied = copy.deepcopy(original)
+
+        self.assertIsNot(copied.Ler_Gs_Cgs, original.Ler_Gs_Cgs)
+        self.assertIsNot(copied.angles_Gs_to_Wn_ixyz, original.angles_Gs_to_Wn_ixyz)
+
+    def test_deepcopy_creates_independent_wing_cross_sections(self):
+        """Test that deepcopy creates independent WingCrossSection copies."""
+        import copy
+
+        original = self.type_1_wing
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(
+            len(copied.wing_cross_sections), len(original.wing_cross_sections)
+        )
+        for orig_wcs, copied_wcs in zip(
+            original.wing_cross_sections, copied.wing_cross_sections
+        ):
+            self.assertIsNot(orig_wcs, copied_wcs)
+            self.assertEqual(copied_wcs.chord, orig_wcs.chord)
+
+    def test_deepcopy_preserves_symmetry_attributes(self):
+        """Test that deepcopy preserves symmetry attributes correctly."""
+        import copy
+
+        original = self.type_4_wing
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.symmetric, original.symmetric)
+        self.assertEqual(copied.mirror_only, original.mirror_only)
+        npt.assert_array_equal(copied.symmetryNormal_G, original.symmetryNormal_G)
+        npt.assert_array_equal(copied.symmetryPoint_G_Cg, original.symmetryPoint_G_Cg)
+        self.assertIsNot(copied.symmetryNormal_G, original.symmetryNormal_G)
+        self.assertIsNot(copied.symmetryPoint_G_Cg, original.symmetryPoint_G_Cg)
+
+    def test_deepcopy_preserves_none_symmetry_attributes(self):
+        """Test that deepcopy handles None symmetry attributes correctly."""
+        import copy
+
+        original = self.type_1_wing
+        copied = copy.deepcopy(original)
+
+        self.assertIsNone(copied.symmetryNormal_G)
+        self.assertIsNone(copied.symmetryPoint_G_Cg)
+
+    def test_deepcopy_unmeshed_wing(self):
+        """Test that deepcopy handles unmeshed Wings correctly."""
+        import copy
+
+        original = self.type_1_wing
+        self.assertIsNone(original.panels)
+
+        copied = copy.deepcopy(original)
+
+        self.assertIsNone(copied.symmetry_type)
+        self.assertIsNone(copied.num_spanwise_panels)
+        self.assertIsNone(copied.num_panels)
+        self.assertIsNone(copied.panels)
+        self.assertIsNone(copied.wake_ring_vortices)
+        self.assertIsNone(copied.gridWrvp_GP1_CgP1)
+
+    def test_deepcopy_meshed_wing_preserves_mesh_metadata(self):
+        """Test that deepcopy preserves mesh metadata for meshed Wings."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.symmetry_type, original.symmetry_type)
+        self.assertEqual(copied.num_spanwise_panels, original.num_spanwise_panels)
+        self.assertEqual(copied.num_panels, original.num_panels)
+
+    def test_deepcopy_meshed_wing_preserves_panels(self):
+        """Test that deepcopy preserves Panels for meshed Wings."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+
+        self.assertIsNotNone(copied.panels)
+        self.assertEqual(copied.panels.shape, original.panels.shape)
+
+        for i in range(original.panels.shape[0]):
+            for j in range(original.panels.shape[1]):
+                orig_panel = original.panels[i, j]
+                copied_panel = copied.panels[i, j]
+                self.assertIsNot(orig_panel, copied_panel)
+                npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
+
+    def test_deepcopy_resets_wake_state(self):
+        """Test that deepcopy resets wake state to empty arrays."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+
+        self.assertIsNotNone(copied.wake_ring_vortices)
+        self.assertIsNotNone(copied.gridWrvp_GP1_CgP1)
+        self.assertEqual(copied.wake_ring_vortices.shape[0], 0)
+        self.assertEqual(copied.gridWrvp_GP1_CgP1.shape[0], 0)
+        self.assertEqual(
+            copied.wake_ring_vortices.shape[1], original.num_spanwise_panels
+        )
+        self.assertEqual(
+            copied.gridWrvp_GP1_CgP1.shape[1], original.num_spanwise_panels + 1
+        )
+
+    def test_deepcopy_independence_modifying_copy(self):
+        """Test that modifying the copy does not affect the original."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+        original_name = original.name
+        original_Ler = original.Ler_Gs_Cgs.copy()
+
+        copied = copy.deepcopy(original)
+
+        copied.name = "Modified Wing"
+        copied.Ler_Gs_Cgs[0] = 999.0
+
+        self.assertEqual(original.name, original_name)
+        npt.assert_array_equal(original.Ler_Gs_Cgs, original_Ler)
+
+    def test_deepcopy_independence_modifying_original(self):
+        """Test that modifying the original does not affect the copy."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+        copied_name = copied.name
+        copied_Ler = copied.Ler_Gs_Cgs.copy()
+
+        original.name = "Modified Wing"
+        original.Ler_Gs_Cgs[0] = 999.0
+
+        self.assertEqual(copied.name, copied_name)
+        npt.assert_array_equal(copied.Ler_Gs_Cgs, copied_Ler)
+
+    def test_deepcopy_preserves_geometric_properties(self):
+        """Test that deepcopy preserves geometric property calculations."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+
+        self.assertAlmostEqual(copied.span, original.span, places=10)
+        self.assertAlmostEqual(
+            copied.projected_area, original.projected_area, places=10
+        )
+        self.assertAlmostEqual(copied.wetted_area, original.wetted_area, places=10)
+
+    def test_deepcopy_type_4_wing(self):
+        """Test that deepcopy works correctly for type 4 symmetric Wings."""
+        import copy
+
+        original = self.type_4_wing
+        original.generate_mesh(4)
+
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.symmetry_type, 4)
+        self.assertEqual(copied.symmetric, True)
+        self.assertIsNotNone(copied.panels)
+        self.assertAlmostEqual(copied.span, original.span, places=10)
+
+    def test_deepcopy_copied_wing_is_functional(self):
+        """Test that copied Wings are fully functional."""
+        import copy
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        copied = copy.deepcopy(original)
+
+        span = copied.span
+        projected_area = copied.projected_area
+        standard_mean_chord = copied.standard_mean_chord
+        mean_aerodynamic_chord = copied.mean_aerodynamic_chord
+
+        self.assertIsNotNone(span)
+        self.assertIsNotNone(projected_area)
+        self.assertIsNotNone(standard_mean_chord)
+        self.assertIsNotNone(mean_aerodynamic_chord)
+        self.assertGreater(span, 0.0)
+        self.assertGreater(projected_area, 0.0)
+
+
 if __name__ == "__main__":
     unittest.main()

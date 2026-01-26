@@ -14,6 +14,9 @@ class Panel:
 
     **Contains the following methods:**
 
+    __deepcopy__: Creates a deep copy of this Panel, preserving mesh geometry but
+    resetting solver state.
+
     rightLeg_G: This Panel's right leg vector (in geometry axes).
 
     frontLeg_G: This Panel's front leg vector (in geometry axes).
@@ -61,6 +64,16 @@ class Panel:
 
     calculate_projected_area: The area of this Panel projected on a plane defined by a
     given normal vector (in geometry axes).
+
+    **Notes:**
+
+    Computed geometric properties (leg vectors, bound vortex points, collocation points,
+    unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
+    corner point position invalidates all dependent cached values, ensuring consistency
+    while avoiding redundant computation. Setting a corner point's local position (one
+    of the parameters with a _G_Cg suffix), sets the corresponding global position
+    (_GP1_CgP1 suffix) to None. It also sets this Panel's bound vortices and the loads
+    on the Panel to None.
     """
 
     def __init__(
@@ -104,6 +117,34 @@ class Panel:
             edge.
         :return: None
         """
+        # Declare type annotations and initialize the private cache variables.
+        self._Frpp_G_Cg: np.ndarray
+        self._Flpp_G_Cg: np.ndarray
+        self._Blpp_G_Cg: np.ndarray
+        self._Brpp_G_Cg: np.ndarray
+        self._Frpp_GP1_CgP1: np.ndarray | None = None
+        self._Flpp_GP1_CgP1: np.ndarray | None = None
+        self._Blpp_GP1_CgP1: np.ndarray | None = None
+        self._Brpp_GP1_CgP1: np.ndarray | None = None
+        self._rightLeg_G: np.ndarray | None = None
+        self._frontLeg_G: np.ndarray | None = None
+        self._leftLeg_G: np.ndarray | None = None
+        self._backLeg_G: np.ndarray | None = None
+        self._Frbvp_G_Cg: np.ndarray | None = None
+        self._Flbvp_G_Cg: np.ndarray | None = None
+        self._Cpp_G_Cg: np.ndarray | None = None
+        self._unitNormal_G: np.ndarray | None = None
+        self._area: float | None = None
+        self._aspect_ratio: float | None = None
+        self._rightLeg_GP1: np.ndarray | None = None
+        self._frontLeg_GP1: np.ndarray | None = None
+        self._leftLeg_GP1: np.ndarray | None = None
+        self._backLeg_GP1: np.ndarray | None = None
+        self._Frbvp_GP1_CgP1: np.ndarray | None = None
+        self._Flbvp_GP1_CgP1: np.ndarray | None = None
+        self._Cpp_GP1_CgP1: np.ndarray | None = None
+        self._unitNormal_GP1: np.ndarray | None = None
+
         # Initialize the attributes.
         self.Frpp_G_Cg = Frpp_G_Cg
         self.Flpp_G_Cg = Flpp_G_Cg
@@ -140,6 +181,286 @@ class Panel:
         self.forces_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
 
+    def __deepcopy__(self, memo: dict) -> Panel:
+        """Creates a deep copy of this Panel, preserving mesh geometry but resetting
+        solver state.
+
+        The copy preserves:
+
+        - Local corner positions (in geometry axes, relative to the CG) - Mesh metadata
+        (edge flags, grid positions) - Cached local geometric properties (leg vectors,
+        bound vortex points,   collocation point, unit normal, area, aspect ratio)
+
+        The copy resets to None:
+
+        - Global positions (in the first Airplane's geometry axes) - Cached global
+        geometric properties - Vortices (ring_vortex, horseshoe_vortex) - Loads
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Panel with preserved mesh geometry and reset solver state.
+        """
+        # Create a new Panel instance without calling __init__ to avoid redundant
+        # cache invalidation.
+        new_panel = object.__new__(Panel)
+
+        # Store this Panel in memo to handle potential circular references.
+        memo[id(self)] = new_panel
+
+        # Copy local corner positions (these are the primary mesh geometry).
+        new_panel._Frpp_G_Cg = self._Frpp_G_Cg.copy()
+        new_panel._Flpp_G_Cg = self._Flpp_G_Cg.copy()
+        new_panel._Blpp_G_Cg = self._Blpp_G_Cg.copy()
+        new_panel._Brpp_G_Cg = self._Brpp_G_Cg.copy()
+
+        # Copy mesh metadata (these are set during meshing and don't change).
+        new_panel.is_leading_edge = self.is_leading_edge
+        new_panel.is_trailing_edge = self.is_trailing_edge
+        new_panel.is_right_edge = self.is_right_edge
+        new_panel.is_left_edge = self.is_left_edge
+        new_panel.local_chordwise_position = self.local_chordwise_position
+        new_panel.local_spanwise_position = self.local_spanwise_position
+
+        # Copy cached local geometric properties (preserves computation from meshing).
+        new_panel._rightLeg_G = (
+            self._rightLeg_G.copy() if self._rightLeg_G is not None else None
+        )
+        new_panel._frontLeg_G = (
+            self._frontLeg_G.copy() if self._frontLeg_G is not None else None
+        )
+        new_panel._leftLeg_G = (
+            self._leftLeg_G.copy() if self._leftLeg_G is not None else None
+        )
+        new_panel._backLeg_G = (
+            self._backLeg_G.copy() if self._backLeg_G is not None else None
+        )
+        new_panel._Frbvp_G_Cg = (
+            self._Frbvp_G_Cg.copy() if self._Frbvp_G_Cg is not None else None
+        )
+        new_panel._Flbvp_G_Cg = (
+            self._Flbvp_G_Cg.copy() if self._Flbvp_G_Cg is not None else None
+        )
+        new_panel._Cpp_G_Cg = (
+            self._Cpp_G_Cg.copy() if self._Cpp_G_Cg is not None else None
+        )
+        new_panel._unitNormal_G = (
+            self._unitNormal_G.copy() if self._unitNormal_G is not None else None
+        )
+        new_panel._area = self._area
+        new_panel._aspect_ratio = self._aspect_ratio
+
+        # Reset global positions to None (solver will set these).
+        new_panel._Frpp_GP1_CgP1 = None
+        new_panel._Flpp_GP1_CgP1 = None
+        new_panel._Blpp_GP1_CgP1 = None
+        new_panel._Brpp_GP1_CgP1 = None
+
+        # Reset cached global geometric properties to None.
+        new_panel._rightLeg_GP1 = None
+        new_panel._frontLeg_GP1 = None
+        new_panel._leftLeg_GP1 = None
+        new_panel._backLeg_GP1 = None
+        new_panel._Frbvp_GP1_CgP1 = None
+        new_panel._Flbvp_GP1_CgP1 = None
+        new_panel._Cpp_GP1_CgP1 = None
+        new_panel._unitNormal_GP1 = None
+
+        # Reset vortices to None (solver will create new ones).
+        new_panel.ring_vortex = None
+        new_panel.horseshoe_vortex = None
+
+        # Reset forces and moments to None (solver will compute these).
+        new_panel.forces_GP1 = None
+        new_panel.moments_GP1_CgP1 = None
+        new_panel.forces_W = None
+        new_panel.moments_W_CgP1 = None
+
+        return new_panel
+
+    @property
+    def Frpp_G_Cg(self) -> np.ndarray:
+        return self._Frpp_G_Cg
+
+    @Frpp_G_Cg.setter
+    def Frpp_G_Cg(self, newFrpp_G_Cg: np.ndarray) -> None:
+        self._rightLeg_G = None
+        self._frontLeg_G = None
+        self._Frbvp_G_Cg = None
+        self._Cpp_G_Cg = None
+        self._unitNormal_G = None
+        self._area = None
+        self._aspect_ratio = None
+
+        self.Frpp_GP1_CgP1 = None
+        self.ring_vortex = None
+        self.horseshoe_vortex = None
+        self.forces_GP1 = None
+        self.moments_GP1_CgP1 = None
+        self.forces_W = None
+        self.moments_W_CgP1 = None
+
+        self._Frpp_G_Cg = newFrpp_G_Cg
+
+    @property
+    def Flpp_G_Cg(self) -> np.ndarray:
+        return self._Flpp_G_Cg
+
+    @Flpp_G_Cg.setter
+    def Flpp_G_Cg(self, newFlpp_G_Cg: np.ndarray) -> None:
+        self._frontLeg_G = None
+        self._leftLeg_G = None
+        self._Flbvp_G_Cg = None
+        self._Cpp_G_Cg = None
+        self._unitNormal_G = None
+        self._area = None
+        self._aspect_ratio = None
+
+        self.Flpp_GP1_CgP1 = None
+        self.ring_vortex = None
+        self.horseshoe_vortex = None
+        self.forces_GP1 = None
+        self.moments_GP1_CgP1 = None
+        self.forces_W = None
+        self.moments_W_CgP1 = None
+
+        self._Flpp_G_Cg = newFlpp_G_Cg
+
+    @property
+    def Blpp_G_Cg(self) -> np.ndarray:
+        return self._Blpp_G_Cg
+
+    @Blpp_G_Cg.setter
+    def Blpp_G_Cg(self, newBlpp_G_Cg: np.ndarray) -> None:
+        self._leftLeg_G = None
+        self._backLeg_G = None
+        self._Flbvp_G_Cg = None
+        self._Cpp_G_Cg = None
+        self._unitNormal_G = None
+        self._area = None
+        self._aspect_ratio = None
+
+        self.Blpp_GP1_CgP1 = None
+        self.ring_vortex = None
+        self.horseshoe_vortex = None
+        self.forces_GP1 = None
+        self.moments_GP1_CgP1 = None
+        self.forces_W = None
+        self.moments_W_CgP1 = None
+
+        self._Blpp_G_Cg = newBlpp_G_Cg
+
+    @property
+    def Brpp_G_Cg(self) -> np.ndarray:
+        return self._Brpp_G_Cg
+
+    @Brpp_G_Cg.setter
+    def Brpp_G_Cg(self, newBrpp_G_Cg: np.ndarray) -> None:
+        self._rightLeg_G = None
+        self._backLeg_G = None
+        self._Frbvp_G_Cg = None
+        self._Cpp_G_Cg = None
+        self._unitNormal_G = None
+        self._area = None
+        self._aspect_ratio = None
+
+        self.Brpp_GP1_CgP1 = None
+        self.ring_vortex = None
+        self.horseshoe_vortex = None
+        self.forces_GP1 = None
+        self.moments_GP1_CgP1 = None
+        self.forces_W = None
+        self.moments_W_CgP1 = None
+
+        self._Brpp_G_Cg = newBrpp_G_Cg
+
+    @property
+    def Frpp_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of the Panel's front right vertex (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the Panel's front
+            right vertex (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if not yet set or if
+            Frpp_G_Cg has been modified since last set.
+        """
+        return self._Frpp_GP1_CgP1
+
+    @Frpp_GP1_CgP1.setter
+    def Frpp_GP1_CgP1(self, newFrpp_GP1_CgP1: np.ndarray | None) -> None:
+        self._rightLeg_GP1 = None
+        self._frontLeg_GP1 = None
+        self._Frbvp_GP1_CgP1 = None
+        self._Cpp_GP1_CgP1 = None
+        self._unitNormal_GP1 = None
+
+        self._Frpp_GP1_CgP1 = newFrpp_GP1_CgP1
+
+    @property
+    def Flpp_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of the Panel's front left vertex (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the Panel's front
+            left vertex (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if not yet set or if
+            Flpp_G_Cg has been modified since last set.
+        """
+        return self._Flpp_GP1_CgP1
+
+    @Flpp_GP1_CgP1.setter
+    def Flpp_GP1_CgP1(self, newFlpp_GP1_CgP1: np.ndarray | None) -> None:
+        self._frontLeg_GP1 = None
+        self._leftLeg_GP1 = None
+        self._Flbvp_GP1_CgP1 = None
+        self._Cpp_GP1_CgP1 = None
+        self._unitNormal_GP1 = None
+
+        self._Flpp_GP1_CgP1 = newFlpp_GP1_CgP1
+
+    @property
+    def Blpp_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of the Panel's back left vertex (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the Panel's back
+            left vertex (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if not yet set or if
+            Blpp_G_Cg has been modified since last set.
+        """
+        return self._Blpp_GP1_CgP1
+
+    @Blpp_GP1_CgP1.setter
+    def Blpp_GP1_CgP1(self, newBlpp_GP1_CgP1: np.ndarray | None) -> None:
+        self._leftLeg_GP1 = None
+        self._backLeg_GP1 = None
+        self._Flbvp_GP1_CgP1 = None
+        self._Cpp_GP1_CgP1 = None
+        self._unitNormal_GP1 = None
+
+        self._Blpp_GP1_CgP1 = newBlpp_GP1_CgP1
+
+    @property
+    def Brpp_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of the Panel's back right vertex (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the Panel's back
+            right vertex (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if not yet set or if
+            Brpp_G_Cg has been modified since last set.
+        """
+        return self._Brpp_GP1_CgP1
+
+    @Brpp_GP1_CgP1.setter
+    def Brpp_GP1_CgP1(self, newBrpp_GP1_CgP1: np.ndarray | None) -> None:
+        self._rightLeg_GP1 = None
+        self._backLeg_GP1 = None
+        self._Frbvp_GP1_CgP1 = None
+        self._Cpp_GP1_CgP1 = None
+        self._unitNormal_GP1 = None
+
+        self._Brpp_GP1_CgP1 = newBrpp_GP1_CgP1
+
     @property
     def rightLeg_G(self) -> np.ndarray:
         """This Panel's right leg vector (in geometry axes).
@@ -147,7 +468,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing this Panel's right leg vector,
             which is defined from back to front. The units are in meters.
         """
-        return cast(np.ndarray, self.Frpp_G_Cg - self.Brpp_G_Cg)
+        if self._rightLeg_G is None:
+            self._rightLeg_G = cast(np.ndarray, self.Frpp_G_Cg - self.Brpp_G_Cg)
+        return self._rightLeg_G
 
     @property
     def frontLeg_G(self) -> np.ndarray:
@@ -156,7 +479,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing this Panel's front leg vector,
             which is defined from right to left. The units are in meters.
         """
-        return cast(np.ndarray, self.Flpp_G_Cg - self.Frpp_G_Cg)
+        if self._frontLeg_G is None:
+            self._frontLeg_G = cast(np.ndarray, self.Flpp_G_Cg - self.Frpp_G_Cg)
+        return self._frontLeg_G
 
     @property
     def leftLeg_G(self) -> np.ndarray:
@@ -165,7 +490,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing this Panel's left leg vector,
             which is defined from front to back. The units are in meters.
         """
-        return cast(np.ndarray, self.Blpp_G_Cg - self.Flpp_G_Cg)
+        if self._leftLeg_G is None:
+            self._leftLeg_G = cast(np.ndarray, self.Blpp_G_Cg - self.Flpp_G_Cg)
+        return self._leftLeg_G
 
     @property
     def backLeg_G(self) -> np.ndarray:
@@ -174,7 +501,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing this Panel's back leg vector,
             which is defined from left to right. The units are in meters.
         """
-        return cast(np.ndarray, self.Brpp_G_Cg - self.Blpp_G_Cg)
+        if self._backLeg_G is None:
+            self._backLeg_G = cast(np.ndarray, self.Brpp_G_Cg - self.Blpp_G_Cg)
+        return self._backLeg_G
 
     @property
     def Frbvp_G_Cg(self) -> np.ndarray:
@@ -184,7 +513,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing the position of this Panel's
             front right bound vortex point. The units are in meters.
         """
-        return self.Brpp_G_Cg + 0.75 * self.rightLeg_G
+        if self._Frbvp_G_Cg is None:
+            self._Frbvp_G_Cg = self.Brpp_G_Cg + 0.75 * self.rightLeg_G
+        return self._Frbvp_G_Cg
 
     @property
     def Flbvp_G_Cg(self) -> np.ndarray:
@@ -194,7 +525,9 @@ class Panel:
         :return: A (3,) ndarray of floats representing the position of this Panel's
             front left bound vortex point. The units are in meters.
         """
-        return self.Flpp_G_Cg + 0.25 * self.leftLeg_G
+        if self._Flbvp_G_Cg is None:
+            self._Flbvp_G_Cg = self.Flpp_G_Cg + 0.25 * self.leftLeg_G
+        return self._Flbvp_G_Cg
 
     @property
     def Cpp_G_Cg(self) -> np.ndarray:
@@ -204,21 +537,42 @@ class Panel:
         :return: A (3,) ndarray of floats representing the position of this Panel's
             collocation point. The units are in meters.
         """
-        # Find the positions of points three quarters of the way down the left and
-        # right legs of the Panel (in geometry axes, relative to the CG).
-        rightThreeQuarterChord_G_Cg = self.Brpp_G_Cg + 0.25 * self.rightLeg_G
-        leftThreeQuarterChord_G_Cg = self.Flpp_G_Cg + 0.75 * self.leftLeg_G
+        if self._Cpp_G_Cg is None:
+            # Find the positions of points three quarters of the way down the left and
+            # right legs of the Panel (in geometry axes, relative to the CG).
+            rightThreeQuarterChord_G_Cg = self.Brpp_G_Cg + 0.25 * self.rightLeg_G
+            leftThreeQuarterChord_G_Cg = self.Flpp_G_Cg + 0.75 * self.leftLeg_G
 
-        # Find the vector (in geometry axes) between the points three quarters of the
-        # way down the left and right legs of the Panel.
-        threeQuarterChord_G = leftThreeQuarterChord_G_Cg - rightThreeQuarterChord_G_Cg
+            # Find the vector (in geometry axes) between the points three quarters of
+            # the way down the left and right legs of the Panel.
+            threeQuarterChord_G = (
+                leftThreeQuarterChord_G_Cg - rightThreeQuarterChord_G_Cg
+            )
 
-        # Find the collocation point (in geometry axes, relative to the CG), which is
-        # halfway between the points three quarters of the way down the left and
-        # right legs of the Panel. Then populate the class attribute.
-        return rightThreeQuarterChord_G_Cg + 0.5 * threeQuarterChord_G
+            # Find the collocation point (in geometry axes, relative to the CG), which
+            # is halfway between the points three quarters of the way down the left and
+            # right legs of the Panel. Then populate the class attribute.
+            self._Cpp_G_Cg = rightThreeQuarterChord_G_Cg + 0.5 * threeQuarterChord_G
+        return self._Cpp_G_Cg
 
-    # TEST: Consider adding unit tests for this method.
+    @property
+    def unitNormal_G(self) -> np.ndarray:
+        """An estimate of this Panel's unit normal vector (in geometry axes).
+
+        :return: A (3,) ndarray of floats representing an estimate of this Panel's unit
+            normal vector. The sign is determined via the right-hand rule given the
+            orientation of Panel's leg vectors (front right to front left to back left
+            to back right).
+        """
+        if self._unitNormal_G is None:
+            firstDiagonal_G = cast(np.ndarray, self.Frpp_G_Cg - self.Blpp_G_Cg)
+            secondDiagonal_G = cast(np.ndarray, self.Flpp_G_Cg - self.Brpp_G_Cg)
+
+            cross_G = cast(np.ndarray, np.cross(firstDiagonal_G, secondDiagonal_G))
+
+            self._unitNormal_G = cast(np.ndarray, cross_G / np.linalg.norm(cross_G))
+        return self._unitNormal_G
+
     @property
     def rightLeg_GP1(self) -> np.ndarray | None:
         """This Panel's right leg vector (in the first Airplane's geometry axes).
@@ -229,9 +583,13 @@ class Panel:
         """
         if self.Frpp_GP1_CgP1 is None or self.Brpp_GP1_CgP1 is None:
             return None
-        return cast(np.ndarray, self.Frpp_GP1_CgP1 - self.Brpp_GP1_CgP1)
 
-    # TEST: Consider adding unit tests for this method.
+        if self._rightLeg_GP1 is None:
+            self._rightLeg_GP1 = cast(
+                np.ndarray, self.Frpp_GP1_CgP1 - self.Brpp_GP1_CgP1
+            )
+        return self._rightLeg_GP1
+
     @property
     def frontLeg_GP1(self) -> np.ndarray | None:
         """This Panel's front leg vector (in the first Airplane's geometry axes).
@@ -242,9 +600,13 @@ class Panel:
         """
         if self.Flpp_GP1_CgP1 is None or self.Frpp_GP1_CgP1 is None:
             return None
-        return cast(np.ndarray, self.Flpp_GP1_CgP1 - self.Frpp_GP1_CgP1)
 
-    # TEST: Consider adding unit tests for this method.
+        if self._frontLeg_GP1 is None:
+            self._frontLeg_GP1 = cast(
+                np.ndarray, self.Flpp_GP1_CgP1 - self.Frpp_GP1_CgP1
+            )
+        return self._frontLeg_GP1
+
     @property
     def leftLeg_GP1(self) -> np.ndarray | None:
         """This Panel's left leg vector (in the first Airplane's geometry axes).
@@ -255,9 +617,13 @@ class Panel:
         """
         if self.Blpp_GP1_CgP1 is None or self.Flpp_GP1_CgP1 is None:
             return None
-        return cast(np.ndarray, self.Blpp_GP1_CgP1 - self.Flpp_GP1_CgP1)
 
-    # TEST: Consider adding unit tests for this method.
+        if self._leftLeg_GP1 is None:
+            self._leftLeg_GP1 = cast(
+                np.ndarray, self.Blpp_GP1_CgP1 - self.Flpp_GP1_CgP1
+            )
+        return self._leftLeg_GP1
+
     @property
     def backLeg_GP1(self) -> np.ndarray | None:
         """This Panel's back leg vector (in the first Airplane's geometry axes).
@@ -268,9 +634,13 @@ class Panel:
         """
         if self.Brpp_GP1_CgP1 is None or self.Blpp_GP1_CgP1 is None:
             return None
-        return cast(np.ndarray, self.Brpp_GP1_CgP1 - self.Blpp_GP1_CgP1)
 
-    # TEST: Consider adding unit tests for this method.
+        if self._backLeg_GP1 is None:
+            self._backLeg_GP1 = cast(
+                np.ndarray, self.Brpp_GP1_CgP1 - self.Blpp_GP1_CgP1
+            )
+        return self._backLeg_GP1
+
     @property
     def Frbvp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's front right bound vortex point (in the first
@@ -282,9 +652,11 @@ class Panel:
         """
         if self.Brpp_GP1_CgP1 is None or self.rightLeg_GP1 is None:
             return None
-        return self.Brpp_GP1_CgP1 + 0.75 * self.rightLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
+        if self._Frbvp_GP1_CgP1 is None:
+            self._Frbvp_GP1_CgP1 = self.Brpp_GP1_CgP1 + 0.75 * self.rightLeg_GP1
+        return self._Frbvp_GP1_CgP1
+
     @property
     def Flbvp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's front left bound vortex point (in the first
@@ -296,9 +668,11 @@ class Panel:
         """
         if self.Flpp_GP1_CgP1 is None or self.leftLeg_GP1 is None:
             return None
-        return self.Flpp_GP1_CgP1 + 0.25 * self.leftLeg_GP1
 
-    # TEST: Consider adding unit tests for this method.
+        if self._Flbvp_GP1_CgP1 is None:
+            self._Flbvp_GP1_CgP1 = self.Flpp_GP1_CgP1 + 0.25 * self.leftLeg_GP1
+        return self._Flbvp_GP1_CgP1
+
     @property
     def Cpp_GP1_CgP1(self) -> np.ndarray | None:
         """The position of this Panel's collocation point (in the first Airplane's
@@ -316,50 +690,31 @@ class Panel:
         ):
             return None
 
-        # Find the positions of points three quarters of the way down the left and
-        # right legs of the Panel (in the first Airplane's geometry axes, relative to
-        # the first Airplane's CG).
-        rightThreeQuarterChord_GP1_CgP1 = self.Brpp_GP1_CgP1 + 0.25 * self.rightLeg_GP1
-        leftThreeQuarterChord_GP1_CgP1 = self.Flpp_GP1_CgP1 + 0.75 * self.leftLeg_GP1
+        if self._Cpp_GP1_CgP1 is None:
+            # Find the positions of points three quarters of the way down the left and
+            # right legs of the Panel (in the first Airplane's geometry axes, relative
+            # to the first Airplane's CG).
+            rightThreeQuarterChord_GP1_CgP1 = (
+                self.Brpp_GP1_CgP1 + 0.25 * self.rightLeg_GP1
+            )
+            leftThreeQuarterChord_GP1_CgP1 = (
+                self.Flpp_GP1_CgP1 + 0.75 * self.leftLeg_GP1
+            )
 
-        # Find the vector (in the first Airplane's geometry axes) between the points
-        # three quarters of the way down the left and right legs of the Panel.
-        threeQuarterChord_GP1 = (
-            leftThreeQuarterChord_GP1_CgP1 - rightThreeQuarterChord_GP1_CgP1
-        )
+            # Find the vector (in the first Airplane's geometry axes) between the points
+            # three quarters of the way down the left and right legs of the Panel.
+            threeQuarterChord_GP1 = (
+                leftThreeQuarterChord_GP1_CgP1 - rightThreeQuarterChord_GP1_CgP1
+            )
 
-        # Find the collocation point (in the first Airplane's geometry axes, relative
-        # to the first Airplane's CG), which is halfway between the points three
-        # quarters of the way down the left and right legs of the Panel.
-        return rightThreeQuarterChord_GP1_CgP1 + 0.5 * threeQuarterChord_GP1
+            # Find the collocation point (in the first Airplane's geometry axes,
+            # relative to the first Airplane's CG), which is halfway between the points
+            # three quarters of the way down the left and right legs of the Panel.
+            self._Cpp_GP1_CgP1 = (
+                rightThreeQuarterChord_GP1_CgP1 + 0.5 * threeQuarterChord_GP1
+            )
+        return self._Cpp_GP1_CgP1
 
-    @property
-    def area(self) -> float:
-        """An estimate of this Panel's area.
-
-        This is only an estimate because the surface defined by four line segments in
-        3-space is a hyperboloid, and there doesn't seem to be a closed-form equation
-        for the surface area of a hyperboloid between four points. Instead, we estimate
-        the area using the cross product of Panel's diagonal vectors, which should be
-        relatively accurate if the Panel can be approximated as a planar, convex
-        quadrilateral.
-
-        :return: An estimate of the Panel's area. The units are square meters.
-        """
-        return float(np.linalg.norm(self._cross_G) / 2)
-
-    @property
-    def unitNormal_G(self) -> np.ndarray:
-        """An estimate of this Panel's unit normal vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing an estimate of this Panel's unit
-            normal vector. The sign is determined via the right-hand rule given the
-            orientation of Panel's leg vectors (front right to front left to back left
-            to back right).
-        """
-        return cast(np.ndarray, self._cross_G / np.linalg.norm(self._cross_G))
-
-    # TEST: Consider adding unit tests for this method.
     @property
     def unitNormal_GP1(self) -> np.ndarray | None:
         """An estimate of this Panel's unit normal vector (in the first Airplane's
@@ -379,15 +734,41 @@ class Panel:
         ):
             return None
 
-        # Compute diagonal vectors (in the first Airplane's geometry axes).
-        firstDiagonal_GP1 = self.Frpp_GP1_CgP1 - self.Blpp_GP1_CgP1
-        secondDiagonal_GP1 = self.Flpp_GP1_CgP1 - self.Brpp_GP1_CgP1
+        if self._unitNormal_GP1 is None:
+            # Compute diagonal vectors (in the first Airplane's geometry axes).
+            firstDiagonal_GP1 = self.Frpp_GP1_CgP1 - self.Blpp_GP1_CgP1
+            secondDiagonal_GP1 = self.Flpp_GP1_CgP1 - self.Brpp_GP1_CgP1
 
-        # Compute the cross product and normalize.
-        cross_GP1 = np.cross(firstDiagonal_GP1, secondDiagonal_GP1)
-        return cast(np.ndarray, cross_GP1 / np.linalg.norm(cross_GP1))
+            # Compute the cross product and normalize.
+            cross_GP1 = np.cross(firstDiagonal_GP1, secondDiagonal_GP1)
 
-    # TEST: Consider adding unit tests for this method.
+            self._unitNormal_GP1 = cast(
+                np.ndarray, cross_GP1 / np.linalg.norm(cross_GP1)
+            )
+        return self._unitNormal_GP1
+
+    @property
+    def area(self) -> float:
+        """An estimate of this Panel's area.
+
+        This is only an estimate because the surface defined by four line segments in
+        3-space is a hyperboloid, and there doesn't seem to be a closed-form equation
+        for the surface area of a hyperboloid between four points. Instead, we estimate
+        the area using the cross product of Panel's diagonal vectors, which should be
+        relatively accurate if the Panel can be approximated as a planar, convex
+        quadrilateral.
+
+        :return: An estimate of the Panel's area. The units are square meters.
+        """
+        if self._area is None:
+            firstDiagonal_G = cast(np.ndarray, self.Frpp_G_Cg - self.Blpp_G_Cg)
+            secondDiagonal_G = cast(np.ndarray, self.Flpp_G_Cg - self.Brpp_G_Cg)
+
+            cross_G = cast(np.ndarray, np.cross(firstDiagonal_G, secondDiagonal_G))
+
+            self._area = float(np.linalg.norm(cross_G) / 2)
+        return self._area
+
     @property
     def aspect_ratio(self) -> float:
         """The aspect ratio of this Panel.
@@ -396,49 +777,21 @@ class Panel:
             right and left legs' center points divided by the distance between the front
             and back legs' center points.
         """
-        frontCenterPoint_G_Cg = self.Frpp_G_Cg + self.frontLeg_G / 2
-        leftCenterPoint_G_Cg = self.Flpp_G_Cg + self.leftLeg_G / 2
-        backCenterPoint_G_Cg = self.Blpp_G_Cg + self.backLeg_G / 2
-        rightCenterPoint_G_Cg = self.Brpp_G_Cg + self.rightLeg_G / 2
+        if self._aspect_ratio is None:
+            frontCenterPoint_G_Cg = self.Frpp_G_Cg + self.frontLeg_G / 2
+            leftCenterPoint_G_Cg = self.Flpp_G_Cg + self.leftLeg_G / 2
+            backCenterPoint_G_Cg = self.Blpp_G_Cg + self.backLeg_G / 2
+            rightCenterPoint_G_Cg = self.Brpp_G_Cg + self.rightLeg_G / 2
 
-        right_left_distance = float(
-            np.linalg.norm(rightCenterPoint_G_Cg - leftCenterPoint_G_Cg)
-        )
-        front_back_distance = float(
-            np.linalg.norm(frontCenterPoint_G_Cg - backCenterPoint_G_Cg)
-        )
+            right_left_distance = float(
+                np.linalg.norm(rightCenterPoint_G_Cg - leftCenterPoint_G_Cg)
+            )
+            front_back_distance = float(
+                np.linalg.norm(frontCenterPoint_G_Cg - backCenterPoint_G_Cg)
+            )
 
-        return right_left_distance / front_back_distance
-
-    @property
-    def _firstDiagonal_G(self) -> np.ndarray:
-        """This Panel's first diagonal vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing the Panel's first diagonal
-            vector, which is defined as the vector from the back left panel point to the
-            front right panel point. The units are in meters.
-        """
-        return cast(np.ndarray, self.Frpp_G_Cg - self.Blpp_G_Cg)
-
-    @property
-    def _secondDiagonal_G(self) -> np.ndarray:
-        """This Panel's second diagonal vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing the Panel's second diagonal
-            vector, which is defined as the vector from the back right panel point to
-            the front left panel point. The units are in meters.
-        """
-        return cast(np.ndarray, self.Flpp_G_Cg - self.Brpp_G_Cg)
-
-    @property
-    def _cross_G(self) -> np.ndarray:
-        """The cross product (in geometry axes) of this Panel's first and second
-        diagonal vectors.
-
-        :return: A (3,) ndarray of floats representing the cross product of this Panel's
-            first and second diagonal vectors.
-        """
-        return cast(np.ndarray, np.cross(self._firstDiagonal_G, self._secondDiagonal_G))
+            self._aspect_ratio = right_left_distance / front_back_distance
+        return self._aspect_ratio
 
     def calculate_projected_area(self, normal_G: np.ndarray) -> float:
         """Calculates the area of this Panel projected on a plane defined by a given
@@ -452,21 +805,22 @@ class Panel:
         # Normalize the normal vector.
         unitNormal_G = normal_G / np.linalg.norm(normal_G)
 
+        firstDiagonal_G = cast(np.ndarray, self.Frpp_G_Cg - self.Blpp_G_Cg)
+        secondDiagonal_G = cast(np.ndarray, self.Flpp_G_Cg - self.Brpp_G_Cg)
+
         # Find the projections of the first and second diagonal vectors (in geometry
         # axes) onto the plane's unit normal vector.
         projFirstDiagonalOnNormal_G = (
-            np.dot(self._firstDiagonal_G, unitNormal_G) * unitNormal_G
+            np.dot(firstDiagonal_G, unitNormal_G) * unitNormal_G
         )
         projSecondDiagonalOnNormal_G = (
-            np.dot(self._secondDiagonal_G, unitNormal_G) * unitNormal_G
+            np.dot(secondDiagonal_G, unitNormal_G) * unitNormal_G
         )
 
         # Find the projection (in geometry axes) of the first and second diagonal
         # vectors onto the plane.
-        projFirstDiagonalOnPlane_G = self._firstDiagonal_G - projFirstDiagonalOnNormal_G
-        projSecondDiagonalOnPlane_G = (
-            self._secondDiagonal_G - projSecondDiagonalOnNormal_G
-        )
+        projFirstDiagonalOnPlane_G = firstDiagonal_G - projFirstDiagonalOnNormal_G
+        projSecondDiagonalOnPlane_G = secondDiagonal_G - projSecondDiagonalOnNormal_G
 
         # The projected area is found by dividing the magnitude of cross product of
         # the diagonal vectors (in geometry axes) by two. Read the area method for a

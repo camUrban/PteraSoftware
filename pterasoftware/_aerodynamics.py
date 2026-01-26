@@ -32,12 +32,24 @@ class RingVortex:
 
     **Contains the following methods:**
 
+    front_leg: The LineVortex representing this RingVortex's front leg.
+
+    left_leg: The LineVortex representing this RingVortex's left leg.
+
+    back_leg: The LineVortex representing this RingVortex's back leg.
+
+    right_leg: The LineVortex representing this RingVortex's right leg.
+
+    Crvp_GP1_CgP1: The position of the RingVortex's centroid (in the first Airplane's
+    geometry axes, relative to the first Airplane's CG).
+
     area: An estimate of this RingVortex's area.
 
-    update_strength: Updates the strength of this RingVortex and of its four LineVortex
-    legs.
+    **Notes:**
 
-    update_position: Updates the position of the RingVortex and of its attributes.
+    Computed geometric properties (LineVortex legs, centroid, and area) are lazily
+    evaluated and cached. Setting any corner point position invalidates dependent cached
+    values, ensuring consistency while avoiding redundant computation.
     """
 
     def __init__(
@@ -74,45 +86,188 @@ class RingVortex:
             per second.
         :return: None
         """
+        # Declare type annotations and initialize the private cache variables.
+        self._Flrvp_GP1_CgP1: np.ndarray
+        self._Frrvp_GP1_CgP1: np.ndarray
+        self._Blrvp_GP1_CgP1: np.ndarray
+        self._Brrvp_GP1_CgP1: np.ndarray
+        self._strength: float
+        self._front_leg: _LineVortex | None = None
+        self._left_leg: _LineVortex | None = None
+        self._back_leg: _LineVortex | None = None
+        self._right_leg: _LineVortex | None = None
+        self._Crvp_GP1_CgP1: np.ndarray | None = None
+        self._area: float | None = None
+
+        # Initialize the attributes.
         self.Flrvp_GP1_CgP1 = Flrvp_GP1_CgP1
         self.Frrvp_GP1_CgP1 = Frrvp_GP1_CgP1
         self.Blrvp_GP1_CgP1 = Blrvp_GP1_CgP1
         self.Brrvp_GP1_CgP1 = Brrvp_GP1_CgP1
         self.strength = strength
 
-        # Initialize the LineVortices that make up the RingVortex.
-        self.front_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.left_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.back_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.right_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-
-        # Initialize a variable to hold the centroid of the RingVortex.
-        self.Crvp_GP1_CgP1 = _functions.numba_centroid_of_quadrilateral(
-            self.Flrvp_GP1_CgP1,
-            self.Frrvp_GP1_CgP1,
-            self.Blrvp_GP1_CgP1,
-            self.Brrvp_GP1_CgP1,
-        )
-
         # Initialize a variable to hold the age of the RingVortex in seconds (in
         # simulation time).
         self.age: float = 0.0
+
+    @property
+    def Frrvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Frrvp_GP1_CgP1
+
+    @Frrvp_GP1_CgP1.setter
+    def Frrvp_GP1_CgP1(self, newFrrvp_GP1_CgP1: np.ndarray) -> None:
+        self._area = None
+        self._Crvp_GP1_CgP1 = None
+
+        self._Frrvp_GP1_CgP1 = newFrrvp_GP1_CgP1
+
+        if self._right_leg is not None:
+            self._right_leg.Elvp_GP1_CgP1 = self._Frrvp_GP1_CgP1
+        if self._front_leg is not None:
+            self._front_leg.Slvp_GP1_CgP1 = self._Frrvp_GP1_CgP1
+
+    @property
+    def Flrvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Flrvp_GP1_CgP1
+
+    @Flrvp_GP1_CgP1.setter
+    def Flrvp_GP1_CgP1(self, newFlrvp_GP1_CgP1: np.ndarray) -> None:
+        self._area = None
+        self._Crvp_GP1_CgP1 = None
+
+        self._Flrvp_GP1_CgP1 = newFlrvp_GP1_CgP1
+
+        if self._front_leg is not None:
+            self._front_leg.Elvp_GP1_CgP1 = self._Flrvp_GP1_CgP1
+        if self._left_leg is not None:
+            self._left_leg.Slvp_GP1_CgP1 = self._Flrvp_GP1_CgP1
+
+    @property
+    def Blrvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Blrvp_GP1_CgP1
+
+    @Blrvp_GP1_CgP1.setter
+    def Blrvp_GP1_CgP1(self, newBlrvp_GP1_CgP1: np.ndarray) -> None:
+        self._area = None
+        self._Crvp_GP1_CgP1 = None
+
+        self._Blrvp_GP1_CgP1 = newBlrvp_GP1_CgP1
+
+        if self._left_leg is not None:
+            self._left_leg.Elvp_GP1_CgP1 = self._Blrvp_GP1_CgP1
+        if self._back_leg is not None:
+            self._back_leg.Slvp_GP1_CgP1 = self._Blrvp_GP1_CgP1
+
+    @property
+    def Brrvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Brrvp_GP1_CgP1
+
+    @Brrvp_GP1_CgP1.setter
+    def Brrvp_GP1_CgP1(self, newBrrvp_GP1_CgP1: np.ndarray) -> None:
+        self._area = None
+        self._Crvp_GP1_CgP1 = None
+
+        self._Brrvp_GP1_CgP1 = newBrrvp_GP1_CgP1
+
+        if self._back_leg is not None:
+            self._back_leg.Elvp_GP1_CgP1 = self._Brrvp_GP1_CgP1
+        if self._right_leg is not None:
+            self._right_leg.Slvp_GP1_CgP1 = self._Brrvp_GP1_CgP1
+
+    @property
+    def strength(self) -> float:
+        return self._strength
+
+    @strength.setter
+    def strength(self, new_strength: float) -> None:
+        self._strength = new_strength
+
+        if self._front_leg is not None:
+            self._front_leg.strength = self._strength
+        if self._left_leg is not None:
+            self._left_leg.strength = self._strength
+        if self._back_leg is not None:
+            self._back_leg.strength = self._strength
+        if self._right_leg is not None:
+            self._right_leg.strength = self._strength
+
+    @property
+    def front_leg(self) -> _LineVortex:
+        """The LineVortex representing this RingVortex's front leg.
+
+        :return: A LineVortex representing this RingVortex's front leg. The front leg
+            goes from the front right point to the front left point.
+        """
+        if self._front_leg is None:
+            self._front_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._front_leg
+
+    @property
+    def left_leg(self) -> _LineVortex:
+        """The LineVortex representing this RingVortex's left leg.
+
+        :return: A LineVortex representing this RingVortex's left leg. The left leg goes
+            from the front left point to the back left point.
+        """
+        if self._left_leg is None:
+            self._left_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._left_leg
+
+    @property
+    def back_leg(self) -> _LineVortex:
+        """The LineVortex representing this RingVortex's back leg.
+
+        :return: A LineVortex representing this RingVortex's back leg. The back leg goes
+            from the back left point to the back right point.
+        """
+        if self._back_leg is None:
+            self._back_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._back_leg
+
+    @property
+    def right_leg(self) -> _LineVortex:
+        """The LineVortex representing this RingVortex's right leg.
+
+        :return: A LineVortex representing this RingVortex's right leg. The right leg
+            goes from the back right point to the front right point.
+        """
+        if self._right_leg is None:
+            self._right_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._right_leg
+
+    @property
+    def Crvp_GP1_CgP1(self) -> np.ndarray:
+        """The position of the RingVortex's centroid (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the RingVortex's
+            centroid (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters.
+        """
+        if self._Crvp_GP1_CgP1 is None:
+            self._Crvp_GP1_CgP1 = _functions.numba_centroid_of_quadrilateral(
+                self.Flrvp_GP1_CgP1,
+                self.Frrvp_GP1_CgP1,
+                self.Blrvp_GP1_CgP1,
+                self.Brrvp_GP1_CgP1,
+            )
+        return self._Crvp_GP1_CgP1
 
     @property
     def area(self) -> float:
@@ -127,87 +282,14 @@ class RingVortex:
 
         :return: An estimate of the RingVortex's area. The units are square meters.
         """
-        firstDiagonal_GP1 = self.Frrvp_GP1_CgP1 - self.Blrvp_GP1_CgP1
-        secondDiagonal_GP1 = self.Flrvp_GP1_CgP1 - self.Brrvp_GP1_CgP1
+        if self._area is None:
+            firstDiagonal_GP1 = self.Frrvp_GP1_CgP1 - self.Blrvp_GP1_CgP1
+            secondDiagonal_GP1 = self.Flrvp_GP1_CgP1 - self.Brrvp_GP1_CgP1
 
-        return float(
-            np.linalg.norm(np.cross(firstDiagonal_GP1, secondDiagonal_GP1)) / 2.0
-        )
-
-    def update_strength(self, strength: float) -> None:
-        """Updates the strength of this RingVortex and of its four LineVortex legs.
-
-        :param strength: The new strength of the RingVortex. Its units are in meters
-            squared per second.
-        :return: None
-        """
-        self.strength = strength
-        self.right_leg.strength = strength
-        self.front_leg.strength = strength
-        self.left_leg.strength = strength
-        self.back_leg.strength = strength
-
-    def update_position(
-        self,
-        Frrvp_GP1_CgP1: np.ndarray,
-        Flrvp_GP1_CgP1: np.ndarray,
-        Blrvp_GP1_CgP1: np.ndarray,
-        Brrvp_GP1_CgP1: np.ndarray,
-    ) -> None:
-        """Updates the position of the RingVortex and of its attributes.
-
-        :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's front right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG).
-        :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's front left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG).
-        :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's back left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG).
-        :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the new position of
-            the RingVortex's back right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG).
-        :return: None
-        """
-        self.Flrvp_GP1_CgP1 = Flrvp_GP1_CgP1
-        self.Frrvp_GP1_CgP1 = Frrvp_GP1_CgP1
-        self.Blrvp_GP1_CgP1 = Blrvp_GP1_CgP1
-        self.Brrvp_GP1_CgP1 = Brrvp_GP1_CgP1
-
-        # TODO: Is it really faster to make new LineVortices instead of writing an
-        #  update_position method inside of LineVortex and calling that from this
-        #  method? Initialize the line vortices that make up the ring vortex. Or
-        #  maybe I should make decorate the LineVortices as properties of RingVortex?
-        self.front_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.left_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.back_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.right_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-            strength=self.strength,
-        )
-
-        # Update the variable with the centroid of the RingVortex (in the first
-        # Airplane's geometry axes, relative to the first Airplane's CG).
-        self.Crvp_GP1_CgP1 = _functions.numba_centroid_of_quadrilateral(
-            self.Flrvp_GP1_CgP1,
-            self.Frrvp_GP1_CgP1,
-            self.Blrvp_GP1_CgP1,
-            self.Brrvp_GP1_CgP1,
-        )
+            self._area = float(
+                np.linalg.norm(np.cross(firstDiagonal_GP1, secondDiagonal_GP1)) / 2.0
+            )
+        return self._area
 
 
 class HorseshoeVortex:
@@ -215,8 +297,24 @@ class HorseshoeVortex:
 
     **Contains the following methods:**
 
-    update_strength: Updates the strength of this HorseshoeVortex and of its three
-    LineVortex legs.
+    Brhvp_GP1_CgP1: The position of the HorseshoeVortex's back right point (in the first
+    Airplane's geometry axes, relative to the first Airplane's CG).
+
+    Blhvp_GP1_CgP1: The position of the HorseshoeVortex's back left point (in the first
+    Airplane's geometry axes, relative to the first Airplane's CG).
+
+    right_leg: The LineVortex representing this HorseshoeVortex's right leg.
+
+    finite_leg: The LineVortex representing this HorseshoeVortex's finite leg.
+
+    left_leg: The LineVortex representing this HorseshoeVortex's left leg.
+
+    **Notes:**
+
+    Computed geometric properties (back right point, back left point, and LineVortex
+    legs) are lazily evaluated and cached. Setting front point positions, the left leg
+    vector, or the left/right leg lengths invalidates dependent cached values, ensuring
+    consistency while avoiding redundant computation.
     """
 
     def __init__(
@@ -253,54 +351,180 @@ class HorseshoeVortex:
             squared per second.
         :return: None
         """
+        # Declare type annotations and initialize the private cache variables.
+        self._Frhvp_GP1_CgP1: np.ndarray
+        self._Flhvp_GP1_CgP1: np.ndarray
+        self._leftLegVector_GP1: np.ndarray
+        self._left_right_leg_lengths: float
+        self._strength: float
+        self._Brhvp_GP1_CgP1: np.ndarray | None = None
+        self._Blhvp_GP1_CgP1: np.ndarray | None = None
+        self._right_leg: _LineVortex | None = None
+        self._finite_leg: _LineVortex | None = None
+        self._left_leg: _LineVortex | None = None
+
+        # Initialize the attributes.
         self.Frhvp_GP1_CgP1 = Frhvp_GP1_CgP1
         self.Flhvp_GP1_CgP1 = Flhvp_GP1_CgP1
-        self.leftLegVector_GP1 = leftLegVector_GP1 / np.linalg.norm(leftLegVector_GP1)
+        self.leftLegVector_GP1 = leftLegVector_GP1
         self.left_right_leg_lengths = left_right_leg_lengths
         self.strength = strength
 
-        # TODO: Consider making these properties.
-        # Save attributes for the back right and back left horseshoe vortex points (in
-        # the first Airplane's geometry axes, relative to the first Airplane's CG).
-        self.Brhvp_GP1_CgP1 = (
-            self.Frhvp_GP1_CgP1 + self.leftLegVector_GP1 * self.left_right_leg_lengths
-        )
-        self.Blhvp_GP1_CgP1 = (
-            self.Flhvp_GP1_CgP1 + self.leftLegVector_GP1 * self.left_right_leg_lengths
+    @property
+    def Frhvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Frhvp_GP1_CgP1
+
+    @Frhvp_GP1_CgP1.setter
+    def Frhvp_GP1_CgP1(self, newFrhvp_GP1_CgP1: np.ndarray) -> None:
+        self._Brhvp_GP1_CgP1 = None
+
+        self._Frhvp_GP1_CgP1 = newFrhvp_GP1_CgP1
+
+        if self._right_leg is not None:
+            self._right_leg.Elvp_GP1_CgP1 = self._Frhvp_GP1_CgP1
+        if self._finite_leg is not None:
+            self._finite_leg.Slvp_GP1_CgP1 = self._Frhvp_GP1_CgP1
+
+    @property
+    def Flhvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Flhvp_GP1_CgP1
+
+    @Flhvp_GP1_CgP1.setter
+    def Flhvp_GP1_CgP1(self, newFlhvp_GP1_CgP1: np.ndarray) -> None:
+        self._Blhvp_GP1_CgP1 = None
+
+        self._Flhvp_GP1_CgP1 = newFlhvp_GP1_CgP1
+
+        if self._finite_leg is not None:
+            self._finite_leg.Elvp_GP1_CgP1 = self._Flhvp_GP1_CgP1
+        if self._left_leg is not None:
+            self._left_leg.Slvp_GP1_CgP1 = self._Flhvp_GP1_CgP1
+
+    @property
+    def leftLegVector_GP1(self) -> np.ndarray:
+        return self._leftLegVector_GP1
+
+    @leftLegVector_GP1.setter
+    def leftLegVector_GP1(self, newLeftLegVector_GP1: np.ndarray) -> None:
+        self._Brhvp_GP1_CgP1 = None
+        self._Blhvp_GP1_CgP1 = None
+
+        self._leftLegVector_GP1 = newLeftLegVector_GP1 / np.linalg.norm(
+            newLeftLegVector_GP1
         )
 
-        # TODO: Consider making these properties.
-        # Initialize LineVortices to represent the HorseshoeVortex's legs.
-        self.right_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Brhvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.finite_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
-            strength=self.strength,
-        )
-        self.left_leg = _LineVortex(
-            Slvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
-            Elvp_GP1_CgP1=self.Blhvp_GP1_CgP1,
-            strength=self.strength,
-        )
+        if self._right_leg is not None:
+            self._right_leg.Slvp_GP1_CgP1 = self.Brhvp_GP1_CgP1
+        if self._left_leg is not None:
+            self._left_leg.Elvp_GP1_CgP1 = self.Blhvp_GP1_CgP1
 
-    # TODO: If we make the LineVortices strengths properties, then we can get rid of
-    #  this method.
-    def update_strength(self, strength: float) -> None:
-        """Updates the strength of this HorseshoeVortex and of its three LineVortex
-        legs.
+    @property
+    def left_right_leg_lengths(self) -> float:
+        return self._left_right_leg_lengths
 
-        :param strength: The new strength of the HorseshoeVortex. Its units are in
-            meters squared per second.
-        :return: None
+    @left_right_leg_lengths.setter
+    def left_right_leg_lengths(self, new_left_right_leg_lengths: float) -> None:
+        self._Brhvp_GP1_CgP1 = None
+        self._Blhvp_GP1_CgP1 = None
+
+        self._left_right_leg_lengths = new_left_right_leg_lengths
+
+        if self._right_leg is not None:
+            self._right_leg.Slvp_GP1_CgP1 = self.Brhvp_GP1_CgP1
+        if self._left_leg is not None:
+            self._left_leg.Elvp_GP1_CgP1 = self.Blhvp_GP1_CgP1
+
+    @property
+    def strength(self) -> float:
+        return self._strength
+
+    @strength.setter
+    def strength(self, new_strength: float) -> None:
+        self._strength = new_strength
+
+        if self._right_leg is not None:
+            self._right_leg.strength = self._strength
+        if self._finite_leg is not None:
+            self._finite_leg.strength = self._strength
+        if self._left_leg is not None:
+            self._left_leg.strength = self._strength
+
+    @property
+    def Brhvp_GP1_CgP1(self) -> np.ndarray:
+        """The position of the HorseshoeVortex's back right point (in the first
+        Airplane's geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the
+            HorseshoeVortex's back right point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The units are in meters.
         """
-        self.strength = strength
-        self.right_leg.strength = strength
-        self.finite_leg.strength = strength
-        self.left_leg.strength = strength
+        if self._Brhvp_GP1_CgP1 is None:
+            self._Brhvp_GP1_CgP1 = (
+                self.Frhvp_GP1_CgP1
+                + self.leftLegVector_GP1 * self.left_right_leg_lengths
+            )
+        return self._Brhvp_GP1_CgP1
+
+    @property
+    def Blhvp_GP1_CgP1(self) -> np.ndarray:
+        """The position of the HorseshoeVortex's back left point (in the first
+        Airplane's geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the
+            HorseshoeVortex's back left point (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). The units are in meters.
+        """
+        if self._Blhvp_GP1_CgP1 is None:
+            self._Blhvp_GP1_CgP1 = (
+                self.Flhvp_GP1_CgP1
+                + self.leftLegVector_GP1 * self.left_right_leg_lengths
+            )
+        return self._Blhvp_GP1_CgP1
+
+    @property
+    def right_leg(self) -> _LineVortex:
+        """The LineVortex representing this HorseshoeVortex's right leg.
+
+        :return: A LineVortex representing this HorseshoeVortex's right leg. The right
+            leg goes from the back right point to the front right point.
+        """
+        if self._right_leg is None:
+            self._right_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Brhvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._right_leg
+
+    @property
+    def finite_leg(self) -> _LineVortex:
+        """The LineVortex representing this HorseshoeVortex's finite leg.
+
+        :return: A LineVortex representing this HorseshoeVortex's finite leg. The finite
+            leg goes from the front right point to the front left point.
+        """
+        if self._finite_leg is None:
+            self._finite_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._finite_leg
+
+    @property
+    def left_leg(self) -> _LineVortex:
+        """The LineVortex representing this HorseshoeVortex's left leg.
+
+        :return: A LineVortex representing this HorseshoeVortex's left leg. The left leg
+            goes from the front left point to the back left point.
+        """
+        if self._left_leg is None:
+            self._left_leg = _LineVortex(
+                Slvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
+                Elvp_GP1_CgP1=self.Blhvp_GP1_CgP1,
+                strength=self.strength,
+            )
+        return self._left_leg
 
 
 class _LineVortex:
@@ -308,7 +532,17 @@ class _LineVortex:
 
     **Contains the following methods:**
 
-    None
+    vector_GP1: The LineVortex's vector from start to end point (in the first Airplane's
+    geometry axes).
+
+    Clvp_GP1_CgP1: The position of the LineVortex's center point (in the first
+    Airplane's geometry axes, relative to the first Airplane's CG).
+
+    **Notes:**
+
+    Computed geometric properties (vector and center point) are lazily evaluated and
+    cached. Setting either endpoint position invalidates all cached values, ensuring
+    consistency while avoiding redundant computation.
     """
 
     def __init__(
@@ -326,16 +560,64 @@ class _LineVortex:
             per second.
         :return: None
         """
+        # Declare type annotations and initialize the private cache variables.
+        self._Slvp_GP1_CgP1: np.ndarray
+        self._Elvp_GP1_CgP1: np.ndarray
+        self._vector_GP1: np.ndarray | None = None
+        self._Clvp_GP1_CgP1: np.ndarray | None = None
+
+        # Initialize the attributes.
         self.Slvp_GP1_CgP1 = Slvp_GP1_CgP1
         self.Elvp_GP1_CgP1 = Elvp_GP1_CgP1
         self.strength = strength
 
-        # TODO: Consider making these properties.
-        # Initialize variables to hold the vector from the LineVortex's start to end
-        # point (in the first Airplane's geometry axes), and its center point (in the
-        # first Airplane's geometry axes, relative to the first Airplane's CG).
-        self.vector_GP1 = self.Elvp_GP1_CgP1 - self.Slvp_GP1_CgP1
-        self.Clvp_GP1_CgP1 = self.Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
+    @property
+    def Slvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Slvp_GP1_CgP1
+
+    @Slvp_GP1_CgP1.setter
+    def Slvp_GP1_CgP1(self, newSlvp_GP1_CgP1: np.ndarray) -> None:
+        self._vector_GP1 = None
+        self._Clvp_GP1_CgP1 = None
+
+        self._Slvp_GP1_CgP1 = newSlvp_GP1_CgP1
+
+    @property
+    def Elvp_GP1_CgP1(self) -> np.ndarray:
+        return self._Elvp_GP1_CgP1
+
+    @Elvp_GP1_CgP1.setter
+    def Elvp_GP1_CgP1(self, newElvp_GP1_CgP1: np.ndarray) -> None:
+        self._vector_GP1 = None
+        self._Clvp_GP1_CgP1 = None
+
+        self._Elvp_GP1_CgP1 = newElvp_GP1_CgP1
+
+    @property
+    def vector_GP1(self) -> np.ndarray:
+        """The LineVortex's vector from start to end point (in the first Airplane's
+        geometry axes).
+
+        :return: A (3,) ndarray of floats representing the vector from the LineVortex's
+            start point to its end point (in the first Airplane's geometry axes). The
+            units are in meters.
+        """
+        if self._vector_GP1 is None:
+            self._vector_GP1 = self.Elvp_GP1_CgP1 - self.Slvp_GP1_CgP1
+        return self._vector_GP1
+
+    @property
+    def Clvp_GP1_CgP1(self) -> np.ndarray:
+        """The position of the LineVortex's center point (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of the LineVortex's
+            center point (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters.
+        """
+        if self._Clvp_GP1_CgP1 is None:
+            self._Clvp_GP1_CgP1 = self.Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
+        return self._Clvp_GP1_CgP1
 
 
 @njit(cache=True, fastmath=False)

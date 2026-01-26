@@ -441,5 +441,160 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(max_wing_cross_section.chord, 50.0)
 
 
+class TestWingCrossSectionDeepCopy(unittest.TestCase):
+    """Tests for WingCrossSection.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        self.basic_wing_cross_section = (
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
+        )
+
+    def test_deepcopy_creates_new_instance(self):
+        """Test that deepcopy creates a new WingCrossSection instance."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, ps.geometry.wing_cross_section.WingCrossSection)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_all_attributes(self):
+        """Test that deepcopy preserves all attribute values."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original.validated = True
+        original.symmetry_type = 4
+
+        copied = copy.deepcopy(original)
+
+        self.assertEqual(copied.num_spanwise_panels, original.num_spanwise_panels)
+        self.assertEqual(copied.chord, original.chord)
+        np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, original.Lp_Wcsp_Lpp)
+        np.testing.assert_array_equal(
+            copied.angles_Wcsp_to_Wcs_ixyz, original.angles_Wcsp_to_Wcs_ixyz
+        )
+        self.assertEqual(
+            copied.control_surface_symmetry_type, original.control_surface_symmetry_type
+        )
+        self.assertEqual(
+            copied.control_surface_hinge_point, original.control_surface_hinge_point
+        )
+        self.assertEqual(
+            copied.control_surface_deflection, original.control_surface_deflection
+        )
+        self.assertEqual(copied.spanwise_spacing, original.spanwise_spacing)
+        self.assertEqual(copied.validated, original.validated)
+        self.assertEqual(copied.symmetry_type, original.symmetry_type)
+
+    def test_deepcopy_creates_independent_airfoil(self):
+        """Test that deepcopy creates an independent copy of the Airfoil."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        copied = copy.deepcopy(original)
+
+        self.assertIsNot(copied.airfoil, original.airfoil)
+        self.assertEqual(copied.airfoil.name, original.airfoil.name)
+
+    def test_deepcopy_creates_independent_arrays(self):
+        """Test that deepcopy creates independent copies of numpy arrays."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        copied = copy.deepcopy(original)
+
+        self.assertIsNot(copied.Lp_Wcsp_Lpp, original.Lp_Wcsp_Lpp)
+        self.assertIsNot(
+            copied.angles_Wcsp_to_Wcs_ixyz, original.angles_Wcsp_to_Wcs_ixyz
+        )
+
+    def test_deepcopy_independence_modifying_copy(self):
+        """Test that modifying the copy does not affect the original."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original_chord = original.chord
+        original_Lp = original.Lp_Wcsp_Lpp.copy()
+
+        copied = copy.deepcopy(original)
+
+        copied.chord = 999.0
+        copied.Lp_Wcsp_Lpp[0] = 100.0
+
+        self.assertEqual(original.chord, original_chord)
+        np.testing.assert_array_equal(original.Lp_Wcsp_Lpp, original_Lp)
+
+    def test_deepcopy_independence_modifying_original(self):
+        """Test that modifying the original does not affect the copy."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        copied = copy.deepcopy(original)
+
+        copied_chord = copied.chord
+        copied_Lp = copied.Lp_Wcsp_Lpp.copy()
+
+        original.chord = 999.0
+        original.Lp_Wcsp_Lpp[0] = 100.0
+
+        self.assertEqual(copied.chord, copied_chord)
+        np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, copied_Lp)
+
+    def test_deepcopy_with_none_values(self):
+        """Test that deepcopy handles None values correctly."""
+        import copy
+
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        copied = copy.deepcopy(tip_wcs)
+
+        self.assertIsNone(copied.num_spanwise_panels)
+        self.assertIsNone(copied.spanwise_spacing)
+        self.assertIsNone(copied.symmetry_type)
+
+    def test_deepcopy_preserves_transformation_matrix_behavior(self):
+        """Test that copied WingCrossSection has correct transformation matrix behavior."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original.validated = True
+
+        copied = copy.deepcopy(original)
+
+        original_T = original.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        copied_T = copied.T_pas_Wcsp_Lpp_to_Wcs_Lp
+
+        self.assertIsNotNone(original_T)
+        self.assertIsNotNone(copied_T)
+        np.testing.assert_array_almost_equal(copied_T, original_T)
+
+    def test_deepcopy_unvalidated_cross_section(self):
+        """Test that deepcopy handles unvalidated WingCrossSections correctly."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        self.assertFalse(original.validated)
+
+        copied = copy.deepcopy(original)
+
+        self.assertFalse(copied.validated)
+        self.assertIsNone(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+
+    def test_deepcopy_airfoil_independence(self):
+        """Test that modifying copied Airfoil does not affect original."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original_airfoil_name = original.airfoil.name
+
+        copied = copy.deepcopy(original)
+        copied.airfoil.name = "modified_name"
+
+        self.assertEqual(original.airfoil.name, original_airfoil_name)
+
+
 if __name__ == "__main__":
     unittest.main()

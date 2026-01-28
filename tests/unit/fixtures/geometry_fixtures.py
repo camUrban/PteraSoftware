@@ -4,9 +4,6 @@ import numpy as np
 
 import pterasoftware as ps
 
-# noinspection PyProtectedMember
-from pterasoftware import _panel
-
 
 def make_test_airfoil_fixture():
     """This method makes a fixture that is an Airfoil for testing purposes.
@@ -841,27 +838,6 @@ def make_named_airfoil_fixture():
     named_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="a18")
 
     return named_airfoil_fixture
-
-
-# TODO: Move this to its own fixture module.
-def make_basic_panel_fixture():
-    """This method makes a fixture that is a Panel for testing purposes.
-
-    :return basic_panel_fixture: Panel
-        This is the Panel configured for testing.
-    """
-    # Define panel corner points (in geometry axes, relative to the CG) for a
-    # simple rectangular panel with 1.0 m chord and 0.5 m span.
-    basic_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 0.5, 0.0]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([1.0, 0.5, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return basic_panel_fixture
 
 
 def make_simple_rectangular_wing_fixture():

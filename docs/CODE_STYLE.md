@@ -10,12 +10,20 @@ Guidelines for developers and Claude when writing code.
 - Use descriptive variable names that clearly indicate their purpose  
 - Use underscores for variable names
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_AND_COORDINATE_SYSTEMS.md` and `AXES_POINTS_AND_FRAMES.md` documents when naming vector-valued variables or things such as transformation and rotation matrices.
+- Do not use `wcs` (or any other abbreviation) for "wing cross section" or "WingCrossSection" in variable names. Instead, always write it out in full (e.g., `wing_cross_section`, `wing_cross_section_movement`, etc.).
 
 ## Formatting with Black
 For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
 cd ${WORKSPACE} && ".venv/Scripts/python.exe" black .
+```
+
+## Running a CodeSpell Spell Check
+For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
+
+```bash
+cd ${WORKSPACE} && ".venv/Scripts/codespell.exe" --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
 ```
 
 ## Miscellaneous Guidelines

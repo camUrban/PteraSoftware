@@ -214,30 +214,37 @@ class Wing:
                 wing_cross_section.validate_mid_constraints()
             # Set the validated flag for this WingCrossSection.
             wing_cross_section.validated = True
-        self.wing_cross_sections: list[wing_cross_section_mod.WingCrossSection] = (
-            wing_cross_sections
-        )
+        # Store as tuple to prevent external mutation.
+        self._wing_cross_sections: tuple[
+            wing_cross_section_mod.WingCrossSection, ...
+        ] = tuple(wing_cross_sections)
 
-        # Validate name and Ler_Gs_Cgs.
-        self.name = _parameter_validation.str_return_str(name, "name")
-        self.Ler_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
+        # Validate name and store as immutable.
+        self._name = _parameter_validation.str_return_str(name, "name")
+
+        # Validate Ler_Gs_Cgs, store as immutable, and make read-only.
+        self._Ler_Gs_Cgs = _parameter_validation.threeD_number_vectorLike_return_float(
             Ler_Gs_Cgs, "Ler_Gs_Cgs"
         )
+        self._Ler_Gs_Cgs.flags.writeable = False
 
-        # Validate angles_Gs_to_Wn_ixyz.
-        angles_Gs_to_Wn_ixyz = (
+        # Validate angles_Gs_to_Wn_ixyz, store as immutable, and make read-only.
+        self._angles_Gs_to_Wn_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
                 angles_Gs_to_Wn_ixyz, "angles_Gs_to_Wn_ixyz"
             )
         )
-        if not np.all((-90.0 <= angles_Gs_to_Wn_ixyz) & (angles_Gs_to_Wn_ixyz <= 90.0)):
+        if not np.all(
+            (-90.0 <= self._angles_Gs_to_Wn_ixyz) & (self._angles_Gs_to_Wn_ixyz <= 90.0)
+        ):
             raise ValueError(
                 "All elements of angles_Gs_to_Wn_ixyz must lie in the range [-90, "
                 "90] degrees."
             )
-        self.angles_Gs_to_Wn_ixyz = angles_Gs_to_Wn_ixyz
+        self._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
-        # Validate symmetric and mirror_only.
+        # Validate symmetric and mirror_only. These are mutable because
+        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
         symmetric = _parameter_validation.boolLike_return_bool(symmetric, "symmetric")
         mirror_only = _parameter_validation.boolLike_return_bool(
             mirror_only, "mirror_only"
@@ -247,7 +254,8 @@ class Wing:
         self.symmetric = symmetric
         self.mirror_only = mirror_only
 
-        # Validate symmetryNormal_G and symmetryPoint_G_Cg.
+        # Validate symmetryNormal_G and symmetryPoint_G_Cg. These are mutable because
+        # Airplane.process_wing_symmetry modifies them for type 5 symmetry.
         if self.symmetric or self.mirror_only:
             if symmetryNormal_G is None:
                 raise ValueError(
@@ -283,8 +291,8 @@ class Wing:
         self.symmetryNormal_G = symmetryNormal_G
         self.symmetryPoint_G_Cg = symmetryPoint_G_Cg
 
-        # Validate num_chordwise_panels and chordwise_spacing.
-        self.num_chordwise_panels = _parameter_validation.int_in_range_return_int(
+        # Validate num_chordwise_panels and chordwise_spacing. Store as immutable.
+        self._num_chordwise_panels = _parameter_validation.int_in_range_return_int(
             num_chordwise_panels,
             "num_chordwise_panels",
             min_val=1,
@@ -292,16 +300,160 @@ class Wing:
         )
         if chordwise_spacing not in ["cosine", "uniform"]:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
-        self.chordwise_spacing = chordwise_spacing
+        self._chordwise_spacing = chordwise_spacing
 
-        # These attributes will be initialized or populated once this Wing's parent
+        # Set-once attributes: will be initialized or populated once this Wing's parent
         # Airplane calls generate_mesh.
-        self.symmetry_type: int | None = None
-        self.num_spanwise_panels: int | None = None
-        self.num_panels: int | None = None
-        self.panels: np.ndarray | None = None
+        self._symmetry_type: int | None = None
+        self._num_spanwise_panels: int | None = None
+        self._num_panels: int | None = None
+        self._panels: np.ndarray | None = None
+
+        # Mutable wake state.
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
         self.wake_ring_vortices: np.ndarray | None = None
+
+        # Caches for derived properties. These are populated on first access and never
+        # invalidated since panels are set-once.
+        self._projected_area_cache: float | None = None
+        self._wetted_area_cache: float | None = None
+        self._span_cache: float | None = None
+
+    # --- Immutable: read-only properties ---
+    @property
+    def wing_cross_sections(
+        self,
+    ) -> tuple[wing_cross_section_mod.WingCrossSection, ...]:
+        """A tuple of WingCrossSections representing the wing's cross sections.
+
+        :return: A tuple of WingCrossSections in order from root to tip.
+        """
+        return self._wing_cross_sections
+
+    @property
+    def name(self) -> str:
+        """The Wing's name.
+
+        :return: The Wing's name as a string.
+        """
+        return self._name
+
+    @property
+    def Ler_Gs_Cgs(self) -> np.ndarray:
+        """The position of the origin of this Wing's axes.
+
+        :return: A (3,) ndarray of floats representing the position in geometry axes
+            after accounting for symmetry, relative to the CG after accounting for
+            symmetry. The units are meters.
+        """
+        return self._Ler_Gs_Cgs
+
+    @property
+    def angles_Gs_to_Wn_ixyz(self) -> np.ndarray:
+        """The angle vector defining the orientation of this Wing's axes.
+
+        :return: A (3,) ndarray of floats representing the angle vector relative to the
+            geometry axes (after accounting for symmetry). The units are degrees.
+        """
+        return self._angles_Gs_to_Wn_ixyz
+
+    @property
+    def num_chordwise_panels(self) -> int:
+        """The number of chordwise panels on this Wing.
+
+        :return: A positive integer representing the number of chordwise panels.
+        """
+        return self._num_chordwise_panels
+
+    @property
+    def chordwise_spacing(self) -> str:
+        """The type of spacing between the Wing's chordwise panels.
+
+        :return: Either "cosine" or "uniform".
+        """
+        return self._chordwise_spacing
+
+    # --- Set-once: properties with single-assignment enforcement ---
+    @property
+    def symmetry_type(self) -> int | None:
+        """The symmetry type of this Wing.
+
+        :return: An integer from 1-4 representing the symmetry type, or None if the
+            Wing's symmetry type hasn't been determined yet.
+        """
+        return self._symmetry_type
+
+    @symmetry_type.setter
+    def symmetry_type(self, value: int) -> None:
+        """Sets the symmetry type. Can only be set once.
+
+        :param value: An integer from 1-4 representing the symmetry type.
+        :raises AttributeError: If symmetry_type has already been set.
+        """
+        if self._symmetry_type is not None:
+            raise AttributeError("symmetry_type can only be set once")
+        self._symmetry_type = value
+
+    @property
+    def num_spanwise_panels(self) -> int | None:
+        """The total number of spanwise panels on this Wing.
+
+        :return: A positive integer representing the number of spanwise panels, or None
+            if the Wing hasn't been meshed yet.
+        """
+        return self._num_spanwise_panels
+
+    @num_spanwise_panels.setter
+    def num_spanwise_panels(self, value: int) -> None:
+        """Sets the number of spanwise panels. Can only be set once.
+
+        :param value: A positive integer representing the number of spanwise panels.
+        :raises AttributeError: If num_spanwise_panels has already been set.
+        """
+        if self._num_spanwise_panels is not None:
+            raise AttributeError("num_spanwise_panels can only be set once")
+        self._num_spanwise_panels = value
+
+    @property
+    def num_panels(self) -> int | None:
+        """The total number of Panels on this Wing.
+
+        :return: A positive integer representing the total number of Panels, or None if
+            the Wing hasn't been meshed yet.
+        """
+        return self._num_panels
+
+    @num_panels.setter
+    def num_panels(self, value: int) -> None:
+        """Sets the total number of Panels. Can only be set once.
+
+        :param value: A positive integer representing the total number of Panels.
+        :raises AttributeError: If num_panels has already been set.
+        """
+        if self._num_panels is not None:
+            raise AttributeError("num_panels can only be set once")
+        self._num_panels = value
+
+    @property
+    def panels(self) -> np.ndarray | None:
+        """The 2D array of Panels on this Wing.
+
+        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
+            or None if the Wing hasn't been meshed yet.
+        """
+        return self._panels
+
+    @panels.setter
+    def panels(self, value: np.ndarray) -> None:
+        """Sets the Panels array. Can only be set once.
+
+        :param value: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel
+            objects.
+        :raises AttributeError: If panels has already been set.
+        """
+        if self._panels is not None:
+            raise AttributeError("panels can only be set once")
+        self._panels = value
 
     def __deepcopy__(self, memo: dict) -> Wing:
         """Creates a deep copy of this Wing, preserving mesh geometry but resetting wake
@@ -329,24 +481,30 @@ class Wing:
         # Store this Wing in memo to handle potential circular references.
         memo[id(self)] = new_wing
 
-        # Deepcopy the WingCrossSections.
-        new_wing.wing_cross_sections = [
+        # Deepcopy the WingCrossSections into a new tuple.
+        new_wing._wing_cross_sections = tuple(
             copy.deepcopy(wing_cross_section, memo)
-            for wing_cross_section in self.wing_cross_sections
-        ]
+            for wing_cross_section in self._wing_cross_sections
+        )
 
-        # Copy Wing parameters (immutable or primitive types).
-        new_wing.name = self.name
+        # Copy immutable Wing parameters (primitive types).
+        new_wing._name = self._name
+        new_wing._num_chordwise_panels = self._num_chordwise_panels
+        new_wing._chordwise_spacing = self._chordwise_spacing
+
+        # Copy mutable symmetry attributes (these may be modified by
+        # process_wing_symmetry for type 5 symmetry).
         new_wing.symmetric = self.symmetric
         new_wing.mirror_only = self.mirror_only
-        new_wing.num_chordwise_panels = self.num_chordwise_panels
-        new_wing.chordwise_spacing = self.chordwise_spacing
 
-        # Copy numpy arrays (mutable, need independent copies).
-        new_wing.Ler_Gs_Cgs = self.Ler_Gs_Cgs.copy()
-        new_wing.angles_Gs_to_Wn_ixyz = self.angles_Gs_to_Wn_ixyz.copy()
+        # Copy immutable numpy arrays and make them read-only.
+        new_wing._Ler_Gs_Cgs = np.copy(self._Ler_Gs_Cgs)
+        new_wing._Ler_Gs_Cgs.flags.writeable = False
+        new_wing._angles_Gs_to_Wn_ixyz = np.copy(self._angles_Gs_to_Wn_ixyz)
+        new_wing._angles_Gs_to_Wn_ixyz.flags.writeable = False
 
-        # Copy symmetry attributes (may be None).
+        # Copy mutable symmetry arrays (may be None, may be modified by
+        # process_wing_symmetry).
         new_wing.symmetryNormal_G = (
             self.symmetryNormal_G.copy() if self.symmetryNormal_G is not None else None
         )
@@ -356,31 +514,37 @@ class Wing:
             else None
         )
 
-        # Copy mesh metadata.
-        new_wing.symmetry_type = self.symmetry_type
-        new_wing.num_spanwise_panels = self.num_spanwise_panels
-        new_wing.num_panels = self.num_panels
+        # Copy set-once mesh metadata directly to private attributes (bypassing
+        # setters) since we're copying, not setting for the first time.
+        new_wing._symmetry_type = self._symmetry_type
+        new_wing._num_spanwise_panels = self._num_spanwise_panels
+        new_wing._num_panels = self._num_panels
 
-        # Deepcopy the Panels array if it exists.
-        if self.panels is not None:
-            new_wing.panels = np.empty_like(self.panels, dtype=object)
-            for i in range(self.panels.shape[0]):
-                for j in range(self.panels.shape[1]):
-                    new_wing.panels[i, j] = copy.deepcopy(self.panels[i, j], memo)
+        # Deepcopy the Panels array if it exists (directly to private attribute).
+        if self._panels is not None:
+            new_wing._panels = np.empty_like(self._panels, dtype=object)
+            for i in range(self._panels.shape[0]):
+                for j in range(self._panels.shape[1]):
+                    new_wing._panels[i, j] = copy.deepcopy(self._panels[i, j], memo)
         else:
-            new_wing.panels = None
+            new_wing._panels = None
 
         # Reset wake state to empty arrays with correct shape (if meshed).
-        if self.num_spanwise_panels is not None:
+        if self._num_spanwise_panels is not None:
             new_wing.wake_ring_vortices = np.zeros(
-                (0, self.num_spanwise_panels), dtype=object
+                (0, self._num_spanwise_panels), dtype=object
             )
             new_wing.gridWrvp_GP1_CgP1 = np.empty(
-                (0, self.num_spanwise_panels + 1, 3), dtype=float
+                (0, self._num_spanwise_panels + 1, 3), dtype=float
             )
         else:
             new_wing.wake_ring_vortices = None
             new_wing.gridWrvp_GP1_CgP1 = None
+
+        # Reset derived property caches.
+        new_wing._projected_area_cache = None
+        new_wing._wetted_area_cache = None
+        new_wing._span_cache = None
 
         return new_wing
 
@@ -397,7 +561,7 @@ class Wing:
         # the parent Airplane should have modified a Wing that initially had type 5
         # symmetry to have type 1 symmetry, and then made a new reflected Wing with
         # type 3 symmetry.
-        self.symmetry_type = _parameter_validation.int_in_range_return_int(
+        validated_symmetry_type = _parameter_validation.int_in_range_return_int(
             symmetry_type,
             "symmetry_type",
             min_val=1,
@@ -405,30 +569,34 @@ class Wing:
             max_val=4,
             max_inclusive=True,
         )
+        self.symmetry_type = validated_symmetry_type
 
         # Set this Wing's children WingCrossSections' symmetry type parameters.
         for wing_cross_section in self.wing_cross_sections:
-            wing_cross_section.symmetry_type = self.symmetry_type
+            wing_cross_section.symmetry_type = validated_symmetry_type
 
         # Find the number of spanwise panels on the wing by adding each cross
         # section's number of spanwise panels. Exclude the last cross section's
         # number of spanwise panels as this is irrelevant. If the wing has type 4
         # symmetry multiply the summation by two.
-        self.num_spanwise_panels = 0
+        computed_num_spanwise_panels = 0
         for wing_cross_section in self.wing_cross_sections[:-1]:
             assert wing_cross_section.num_spanwise_panels is not None
-            self.num_spanwise_panels += wing_cross_section.num_spanwise_panels
-        if self.symmetry_type == 4:
-            self.num_spanwise_panels *= 2
+            computed_num_spanwise_panels += wing_cross_section.num_spanwise_panels
+        if validated_symmetry_type == 4:
+            computed_num_spanwise_panels *= 2
+        self.num_spanwise_panels = computed_num_spanwise_panels
 
         # Calculate the number of panels on this wing.
-        self.num_panels = self.num_spanwise_panels * self.num_chordwise_panels
+        self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize empty arrays to hold this wing's wake RingVortices and its wake
         # RingVortex points.
-        self.wake_ring_vortices = np.zeros((0, self.num_spanwise_panels), dtype=object)
+        self.wake_ring_vortices = np.zeros(
+            (0, computed_num_spanwise_panels), dtype=object
+        )
         self.gridWrvp_GP1_CgP1 = np.empty(
-            (0, self.num_spanwise_panels + 1, 3), dtype=float
+            (0, computed_num_spanwise_panels + 1, 3), dtype=float
         )
 
         # Generate the wing's mesh, which populates the Panels attribute.
@@ -895,8 +1063,12 @@ class Wing:
             Wing hasn't been meshed yet, None is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
-        if self.panels is None:
+        if self._panels is None:
             return None
+
+        # Return cached value if available.
+        if self._projected_area_cache is not None:
+            return self._projected_area_cache
 
         projected_area = 0.0
 
@@ -906,14 +1078,16 @@ class Wing:
 
         # Iterate through the chordwise and spanwise indices of the Panels and add
         # their area to the total projected area.
-        assert self.num_spanwise_panels is not None
-        for chordwise_location in range(self.num_chordwise_panels):
-            for spanwise_location in range(self.num_spanwise_panels):
-                this_panel: _panel.Panel = self.panels[
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
                     chordwise_location, spanwise_location
                 ]
                 projected_area += this_panel.calculate_projected_area(WnZ_G)
 
+        # Cache the computed value.
+        self._projected_area_cache = projected_area
         return projected_area
 
     @property
@@ -929,21 +1103,27 @@ class Wing:
             hasn't been meshed yet, None is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
-        if self.panels is None:
+        if self._panels is None:
             return None
+
+        # Return cached value if available.
+        if self._wetted_area_cache is not None:
+            return self._wetted_area_cache
 
         wetted_area = 0.0
 
         # Iterate through the chordwise and spanwise indices of the panels and add
         # their area to the total wetted area.
-        assert self.num_spanwise_panels is not None
-        for chordwise_location in range(self.num_chordwise_panels):
-            for spanwise_location in range(self.num_spanwise_panels):
-                this_panel: _panel.Panel = self.panels[
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
                     chordwise_location, spanwise_location
                 ]
                 wetted_area += this_panel.area
 
+        # Cache the computed value.
+        self._wetted_area_cache = wetted_area
         return wetted_area
 
     # TEST: Consider adding unit tests for this method.
@@ -955,23 +1135,23 @@ class Wing:
             meshed yet, None is returned instead.
         """
         # Return None if the Wing hasn't been meshed yet.
-        if self.panels is None:
+        if self._panels is None:
             return None
 
         aspect_ratio_sum = 0.0
 
         # Iterate through the chordwise and spanwise indices of the Panels and sum
         # all the Panels' aspect ratios.
-        assert self.num_spanwise_panels is not None
-        for chordwise_location in range(self.num_chordwise_panels):
-            for spanwise_location in range(self.num_spanwise_panels):
-                this_panel: _panel.Panel = self.panels[
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
                     chordwise_location, spanwise_location
                 ]
                 aspect_ratio_sum += this_panel.aspect_ratio
 
-        assert self.num_panels is not None
-        average_aspect_ratio = aspect_ratio_sum / self.num_panels
+        assert self._num_panels is not None
+        average_aspect_ratio = aspect_ratio_sum / self._num_panels
 
         return average_aspect_ratio
 
@@ -994,10 +1174,14 @@ class Wing:
         """
         # If the Wing's symmetry type hasn't been set yet, return None to avoid
         # incorrect symmetry handling.
-        if self.symmetry_type is None:
+        if self._symmetry_type is None:
             return None
 
-        tipLp_Wcsp_Lpp = self.wing_cross_sections[-1].Lp_Wcsp_Lpp
+        # Return cached value if available.
+        if self._span_cache is not None:
+            return self._span_cache
+
+        tipLp_Wcsp_Lpp = self._wing_cross_sections[-1].Lp_Wcsp_Lpp
 
         tip_T_pas_Wcsp_Lpp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[-2]
 
@@ -1013,9 +1197,11 @@ class Wing:
         span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
 
         # If the wing is symmetric and continuous, multiply the span by two.
-        if self.symmetry_type == 4:
+        if self._symmetry_type == 4:
             span *= 2
 
+        # Cache the computed value.
+        self._span_cache = span
         return span
 
     @property

@@ -62,7 +62,17 @@ kid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_KEY, "launch")
 mujoco.mj_resetDataKeyframe(model, data, kid)
 
 body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "gammabot")
-F_body = np.array([0.005, 0.0, 0.0])  # force in body frame
+
+V_LEFT = 170
+V_RIGHT = 180
+
+thrust_left_mN = 0.0036892 * V_LEFT - 0.27836
+thrust_right_mN = 0.0049799 * V_RIGHT - 0.43449
+
+thrust_net_mN = thrust_left_mN + thrust_right_mN
+thrust_net_N = thrust_net_mN / 1000
+
+F_body = np.array([thrust_net_N, 0.0, 0.0])  # force in body frame
 T_body = np.array([0.0, 0.0, 0.0])  # torque in body frame
 p_body = np.array([0.0, 0.0, 0.0])  # point of application wrt COM (body frame)
 # # Pose

@@ -101,39 +101,74 @@ class Airfoil:
             400.
         :return: None
         """
-        self.name = _parameter_validation.str_return_str(name, "name")
+        self._name = _parameter_validation.str_return_str(name, "name")
 
         if outline_A_lp is not None:
             if _trust is not _TRUST:
                 # Validate, normalize, and final validate user provided outlines.
-                self.outline_A_lp = self._validate_outline_preliminary(outline_A_lp)
+                self._outline_A_lp = self._validate_outline_preliminary(outline_A_lp)
                 self._normalize_outline()
                 self._validate_outline_final()
             else:
                 # When _trust is _TRUST, we know outline_A_lp is already validated.
-                self.outline_A_lp = cast(np.ndarray, outline_A_lp)
+                self._outline_A_lp = cast(np.ndarray, outline_A_lp)
         else:
             self._populate_outline()
             # Validate, normalize, and final validate database and generated NACA
             # outlines.
-            self.outline_A_lp = self._validate_outline_preliminary(self.outline_A_lp)
+            self._outline_A_lp = self._validate_outline_preliminary(self._outline_A_lp)
             self._normalize_outline()
             self._validate_outline_final()
 
-        self.resample = _parameter_validation.boolLike_return_bool(resample, "resample")
+        self._resample = _parameter_validation.boolLike_return_bool(
+            resample, "resample"
+        )
 
-        self.n_points_per_side = _parameter_validation.int_in_range_return_int(
+        self._n_points_per_side = _parameter_validation.int_in_range_return_int(
             n_points_per_side, "n_points_per_side", 3, True, None, None
         )
 
         # If resample is True, resample the Airfoil's outline points.
-        if self.resample:
-            self._resample_outline(self.n_points_per_side)
+        if self._resample:
+            self._resample_outline(self._n_points_per_side)
 
         # Initialize an attribute for an array of points along the MCL (in airfoil
         # axes, relative to the leading point). It will be set by _populate_mcl.
-        self.mcl_A_lp: np.ndarray | None = None
+        self._mcl_A_lp: np.ndarray | None = None
         self._populate_mcl()
+
+        # Make numpy arrays read-only to prevent external mutation.
+        self._outline_A_lp.flags.writeable = False
+        if self._mcl_A_lp is not None:
+            self._mcl_A_lp.flags.writeable = False
+
+    # --- Immutable: read-only properties ---
+    @property
+    def name(self) -> str:
+        """The name of the Airfoil."""
+        return self._name
+
+    @property
+    def outline_A_lp(self) -> np.ndarray:
+        """The Airfoil's outline coordinates (in airfoil axes, relative to leading
+        point)."""
+        return self._outline_A_lp
+
+    @property
+    def resample(self) -> bool:
+        """Whether the outline was resampled during initialization."""
+        return self._resample
+
+    @property
+    def n_points_per_side(self) -> int:
+        """The number of points per side used for resampling and MCL generation."""
+        return self._n_points_per_side
+
+    @property
+    def mcl_A_lp(self) -> np.ndarray | None:
+        """The mean camber line coordinates (in airfoil axes, relative to leading
+        point)."""
+        return self._mcl_A_lp
 
     def __deepcopy__(self, memo: dict[int, Any]) -> Airfoil:
         """Returns an independent deep copy of this Airfoil.
@@ -147,13 +182,20 @@ class Airfoil:
         :return: A new Airfoil instance with copied data.
         """
         new_airfoil = Airfoil.__new__(Airfoil)
-        new_airfoil.name = self.name
-        new_airfoil.resample = self.resample
-        new_airfoil.n_points_per_side = self.n_points_per_side
-        new_airfoil.outline_A_lp = np.copy(self.outline_A_lp)
-        new_airfoil.mcl_A_lp = (
-            np.copy(self.mcl_A_lp) if self.mcl_A_lp is not None else None
-        )
+        new_airfoil._name = self._name
+        new_airfoil._resample = self._resample
+        new_airfoil._n_points_per_side = self._n_points_per_side
+
+        # Copy numpy arrays and make them read-only.
+        new_airfoil._outline_A_lp = np.copy(self._outline_A_lp)
+        new_airfoil._outline_A_lp.flags.writeable = False
+
+        if self._mcl_A_lp is not None:
+            new_airfoil._mcl_A_lp = np.copy(self._mcl_A_lp)
+            new_airfoil._mcl_A_lp.flags.writeable = False
+        else:
+            new_airfoil._mcl_A_lp = None
+
         return new_airfoil
 
     # TODO: In the future, if adding control surfaces becomes more important,
@@ -310,8 +352,8 @@ class Airfoil:
 
         :return: None
         """
-        outlineX_A_lp = self.outline_A_lp[:, 0]
-        outlineY_A_lp = self.outline_A_lp[:, 1]
+        outlineX_A_lp = self._outline_A_lp[:, 0]
+        outlineY_A_lp = self._outline_A_lp[:, 1]
 
         assert self.mcl_A_lp is not None
         mclX_A_lp = self.mcl_A_lp[:, 0]
@@ -364,8 +406,8 @@ class Airfoil:
 
         airfoil_figure, airfoil_axes = plt.subplots()
 
-        outlineX_A_lp = self.outline_A_lp[:, 0]
-        outlineY_A_lp = self.outline_A_lp[:, 1]
+        outlineX_A_lp = self._outline_A_lp[:, 0]
+        outlineY_A_lp = self._outline_A_lp[:, 1]
 
         assert self.mcl_A_lp is not None
         mclX_A_lp = self.mcl_A_lp[:, 0]
@@ -464,11 +506,11 @@ class Airfoil:
         return np.column_stack([mclX_resampled, mclY_resampled])
 
     def _lp_index(self) -> int:
-        """Returns the index of the leading point in the outline_A_lp attribute.
+        """Returns the index of the leading point in the _outline_A_lp attribute.
 
         :return: The index of the leading point.
         """
-        return int(np.argmin(self.outline_A_lp[:, 0]))
+        return int(np.argmin(self._outline_A_lp[:, 0]))
 
     def _lower_outline(self) -> np.ndarray:
         """Returns a 2D ndarray of points on the lower portion of the Airfoil's outline
@@ -481,7 +523,7 @@ class Airfoil:
         :return: A (N,2) ndarray of floats that describe the position of N points on the
             Airfoil's lower outline (in airfoil axes, relative to the leading point).
         """
-        return self.outline_A_lp[self._lp_index() :, :]
+        return self._outline_A_lp[self._lp_index() :, :]
 
     def _upper_outline(self) -> np.ndarray:
         """Returns a 2D ndarray of points on the upper portion of the Airfoil's outline
@@ -494,7 +536,7 @@ class Airfoil:
         :return: A (N,2) ndarray of floats that describe the position of N points on the
             Airfoil's upper outline (in airfoil axes, relative to the leading point).
         """
-        return self.outline_A_lp[: self._lp_index() + 1, :]
+        return self._outline_A_lp[: self._lp_index() + 1, :]
 
     def _populate_outline(self) -> None:
         """Populates a variable with the points of the Airfoil's outline (in airfoil
@@ -509,7 +551,7 @@ class Airfoil:
         :return: None
         """
         # Sanitize the name input.
-        sanitized_name = self.name.lower().strip()
+        sanitized_name = self._name.lower().strip()
 
         # Check if the sanitized Airfoil's name matches a name for a NACA 4 series
         # airfoil (NACA0000 is not valid, thickness must be at most 30%, first two
@@ -652,8 +694,8 @@ class Airfoil:
                     outlineX_A_lp = np.hstack((upperOutlineX_A_lp, lowerOutlineX_A_lp))
                     outlineY_A_lp = np.hstack((upperOutlineY_A_lp, lowerOutlineY_A_lp))
 
-                    # Populate the outline_A_lp attribute and return.
-                    self.outline_A_lp = np.column_stack((outlineX_A_lp, outlineY_A_lp))
+                    # Populate the _outline_A_lp attribute and return.
+                    self._outline_A_lp = np.column_stack((outlineX_A_lp, outlineY_A_lp))
                     return
 
         # Try to read from the airfoil directory.
@@ -700,8 +742,8 @@ class Airfoil:
                     "could not be read correctly."
                 )
 
-            # Populate the outline_A_lp attribute and return.
-            self.outline_A_lp = np.reshape(outline1D_A_lp, (-1, 2))
+            # Populate the _outline_A_lp attribute and return.
+            self._outline_A_lp = np.reshape(outline1D_A_lp, (-1, 2))
             return
 
         # If the Airfoil was not a NACA 4 series and was not found in the database,
@@ -724,12 +766,16 @@ class Airfoil:
 
         :param outline_A_lp: The input to validate (can be any type initially).
         :return: The validated version of outline_A_lp as a (N,2) ndarray of floats.
+            Always returns a copy to ensure the Airfoil owns its own data.
         """
         validated_outline_A_lp = (
             _parameter_validation.arrayLike_of_twoD_number_vectorLikes_return_float(
                 outline_A_lp, "outline_A_lp"
             )
         )
+        # Make a copy to ensure the Airfoil owns its own data. This is important
+        # because the input might be a read only array from another Airfoil.
+        validated_outline_A_lp = validated_outline_A_lp.copy()
 
         n_outline_points = validated_outline_A_lp.shape[0]
 
@@ -782,15 +828,15 @@ class Airfoil:
         for iteration in range(max_iterations):
             # Find the current leading point (minimum x).
             lp_index = self._lp_index()
-            lp_A = self.outline_A_lp[lp_index, :]
+            lp_A = self._outline_A_lp[lp_index, :]
 
             # Translate the leading point to the origin.
-            self.outline_A_lp[:, 0] -= lp_A[0]
-            self.outline_A_lp[:, 1] -= lp_A[1]
+            self._outline_A_lp[:, 0] -= lp_A[0]
+            self._outline_A_lp[:, 1] -= lp_A[1]
 
             # Find the trailing edge point (average of upper and lower TE points).
-            upperTp_A_lp = self.outline_A_lp[0, :]
-            lowerTp_A_lp = self.outline_A_lp[-1, :]
+            upperTp_A_lp = self._outline_A_lp[0, :]
+            lowerTp_A_lp = self._outline_A_lp[-1, :]
             te_A_lp = (upperTp_A_lp + lowerTp_A_lp) / 2
 
             # Calculate the angle the chord makes with the x axis.
@@ -824,11 +870,11 @@ class Airfoil:
             )
 
             # Apply rotation to all points.
-            self.outline_A_lp = (R_pas_old_to_new @ self.outline_A_lp.T).T
+            self._outline_A_lp = (R_pas_old_to_new @ self._outline_A_lp.T).T
 
             # Check if the point at origin is still the minimum x point.
             new_lp_index = self._lp_index()
-            new_min_x = self.outline_A_lp[new_lp_index, 0]
+            new_min_x = self._outline_A_lp[new_lp_index, 0]
 
             # If the minimum x is at or very close to 0, we have converged.
             if np.abs(new_min_x) < convergence_tol:
@@ -841,44 +887,44 @@ class Airfoil:
             )
 
         # Scale to unit chord.
-        upperTp_A_lp = self.outline_A_lp[0, :]
-        lowerTp_A_lp = self.outline_A_lp[-1, :]
+        upperTp_A_lp = self._outline_A_lp[0, :]
+        lowerTp_A_lp = self._outline_A_lp[-1, :]
         te_A_lp = (upperTp_A_lp + lowerTp_A_lp) / 2
         chord_length = te_A_lp[0]
 
-        self.outline_A_lp /= chord_length
+        self._outline_A_lp /= chord_length
 
         # Clamp x coordinates to [0.0, 1.0] and extrapolate trailing edge points to
         # exactly x = 1.0 if needed.
-        self.outline_A_lp[:, 0] = np.clip(self.outline_A_lp[:, 0], 0.0, 1.0)
+        self._outline_A_lp[:, 0] = np.clip(self._outline_A_lp[:, 0], 0.0, 1.0)
 
         # Extrapolate upper TE to x = 1.0 if it's not already there.
-        if self.outline_A_lp[0, 0] < 1.0:
+        if self._outline_A_lp[0, 0] < 1.0:
             # Linear extrapolation between first two points to find y at x = 1.0.
-            x0, y0 = self.outline_A_lp[1, :]
-            x1, y1 = self.outline_A_lp[0, :]
+            x0, y0 = self._outline_A_lp[1, :]
+            x1, y1 = self._outline_A_lp[0, :]
             if x1 > x0:
                 y_at_1 = y0 + (y1 - y0) * (1.0 - x0) / (x1 - x0)
-                self.outline_A_lp[0, :] = [1.0, y_at_1]
+                self._outline_A_lp[0, :] = [1.0, y_at_1]
 
         # Extrapolate lower TE to x = 1.0 if it's not already there.
-        if self.outline_A_lp[-1, 0] < 1.0:
+        if self._outline_A_lp[-1, 0] < 1.0:
             # Linear extrapolation between last two points to find y at x = 1.0.
-            x0, y0 = self.outline_A_lp[-2, :]
-            x1, y1 = self.outline_A_lp[-1, :]
+            x0, y0 = self._outline_A_lp[-2, :]
+            x1, y1 = self._outline_A_lp[-1, :]
             if x1 > x0:
                 y_at_1 = y0 + (y1 - y0) * (1.0 - x0) / (x1 - x0)
-                self.outline_A_lp[-1, :] = [1.0, y_at_1]
+                self._outline_A_lp[-1, :] = [1.0, y_at_1]
 
         # Remove duplicate interior points while preserving first and last points.
         # For closed trailing edges, the upper and lower TE points may be identical,
         # but both must be kept to maintain proper outline topology.
-        interior = self.outline_A_lp[1:-1]
+        interior = self._outline_A_lp[1:-1]
         _, unique_indices = np.unique(interior, axis=0, return_index=True)
         unique_indices = np.sort(unique_indices)
         unique_interior = interior[unique_indices]
-        self.outline_A_lp = np.vstack(
-            [self.outline_A_lp[0:1], unique_interior, self.outline_A_lp[-1:]]
+        self._outline_A_lp = np.vstack(
+            [self._outline_A_lp[0:1], unique_interior, self._outline_A_lp[-1:]]
         )
 
         # Correct small trailing edge inversions. After normalization, floating-point
@@ -887,14 +933,14 @@ class Airfoil:
         # correct it by averaging the y values to create a closed trailing edge.
         # Larger inversions indicate genuinely malformed data and are left for
         # _validate_outline_final() to catch.
-        upperTpY_A_lp = self.outline_A_lp[0, 1]
-        lowerTpY_A_lp = self.outline_A_lp[-1, 1]
+        upperTpY_A_lp = self._outline_A_lp[0, 1]
+        lowerTpY_A_lp = self._outline_A_lp[-1, 1]
         if lowerTpY_A_lp > upperTpY_A_lp:
             te_inversion = lowerTpY_A_lp - upperTpY_A_lp
             if te_inversion <= 1e-3:
                 avg_te_y = (upperTpY_A_lp + lowerTpY_A_lp) / 2
-                self.outline_A_lp[0, 1] = avg_te_y
-                self.outline_A_lp[-1, 1] = avg_te_y
+                self._outline_A_lp[0, 1] = avg_te_y
+                self._outline_A_lp[-1, 1] = avg_te_y
 
     def _validate_outline_final(self) -> None:
         """Verifies that outline normalization succeeded, checks x monotonicity, and
@@ -903,14 +949,14 @@ class Airfoil:
         :return: None
         """
         # Check for NaN values.
-        if np.any(np.isnan(self.outline_A_lp)):
+        if np.any(np.isnan(self._outline_A_lp)):
             raise ValueError(
                 "The Airfoil's outline contains NaN values after normalization."
             )
 
         # Check that the leading point is at approximately [0.0, 0.0].
         lp_index = self._lp_index()
-        lp_A_lp = self.outline_A_lp[lp_index, :]
+        lp_A_lp = self._outline_A_lp[lp_index, :]
         tol = 1e-6
         if not np.isclose(lp_A_lp[0], 0.0, atol=tol):
             raise ValueError(
@@ -924,8 +970,8 @@ class Airfoil:
             )
 
         # Check that trailing edge x values are approximately 1.0.
-        upperTpX_A_lp = self.outline_A_lp[0, 0]
-        lowerTpX_A_lp = self.outline_A_lp[-1, 0]
+        upperTpX_A_lp = self._outline_A_lp[0, 0]
+        lowerTpX_A_lp = self._outline_A_lp[-1, 0]
         te_tol = 1e-6
         if not np.isclose(upperTpX_A_lp, 1.0, atol=te_tol):
             raise ValueError(
@@ -939,8 +985,8 @@ class Airfoil:
             )
 
         # Check that upper TE y >= lower TE y.
-        upperTpY_A_lp = self.outline_A_lp[0, 1]
-        lowerTpY_A_lp = self.outline_A_lp[-1, 1]
+        upperTpY_A_lp = self._outline_A_lp[0, 1]
+        lowerTpY_A_lp = self._outline_A_lp[-1, 1]
         if lowerTpY_A_lp > upperTpY_A_lp:
             raise ValueError(
                 "The Airfoil's upper outline's trailing point y value must be "
@@ -1129,7 +1175,7 @@ class Airfoil:
             (upperResampledOutlineY_A_lp, lowerResampledOutlineY_A_lp)
         )
 
-        self.outline_A_lp = np.column_stack(
+        self._outline_A_lp = np.column_stack(
             (resampledOutlineX_A_lp, resampledOutlineY_A_lp)
         )
 
@@ -1147,7 +1193,7 @@ class Airfoil:
 
         # Generate cosine spaced x fractions from 0.0 to 1.0.
         cosine_spaced_chord_fractions = _functions.cosspace(
-            0.0, 1.0, self.n_points_per_side
+            0.0, 1.0, self._n_points_per_side
         )
 
         # Use linear interpolation to find the y values of the upper and lower
@@ -1165,7 +1211,7 @@ class Airfoil:
 
         # Calculate the approximate MCL points (in airfoil axes, relative to the
         # leading point) and set the class attribute.
-        self.mcl_A_lp = np.column_stack(
+        self._mcl_A_lp = np.column_stack(
             [
                 cosine_spaced_chord_fractions,
                 (flippedUpperOutlineY_A_lp + lowerOutlineY_A_lp) / 2,
@@ -1174,8 +1220,10 @@ class Airfoil:
 
         # Resample the MCL points using cosine spaced distances along the MCL. The
         # fractions here represent normalized arc length (0.0 to 1.0).
-        normalized_mcl_fractions = _functions.cosspace(0.0, 1.0, self.n_points_per_side)
-        self.mcl_A_lp = self.get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
+        normalized_mcl_fractions = _functions.cosspace(
+            0.0, 1.0, self._n_points_per_side
+        )
+        self._mcl_A_lp = self.get_resampled_mcl(mcl_fractions=normalized_mcl_fractions)
 
         # Normalize the MCL so that x spans from 0.0 to 1.0. This corrects for slight
         # variations in the outline data where upper and lower surfaces may not extend
@@ -1185,9 +1233,9 @@ class Airfoil:
         # that would remove control surface deflection effects from the MCL.
 
         # Step 1: Translate so leading edge is at origin.
-        self.mcl_A_lp[:, 0] -= self.mcl_A_lp[0, 0]
-        self.mcl_A_lp[:, 1] -= self.mcl_A_lp[0, 1]
+        self._mcl_A_lp[:, 0] -= self._mcl_A_lp[0, 0]
+        self._mcl_A_lp[:, 1] -= self._mcl_A_lp[0, 1]
 
         # Step 2: Scale x only so trailing edge is at x=1.0.
-        x_scale_factor = 1.0 / self.mcl_A_lp[-1, 0]
-        self.mcl_A_lp[:, 0] *= x_scale_factor
+        x_scale_factor = 1.0 / self._mcl_A_lp[-1, 0]
+        self._mcl_A_lp[:, 0] *= x_scale_factor

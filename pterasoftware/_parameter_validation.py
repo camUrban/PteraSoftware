@@ -300,11 +300,11 @@ def threeD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
 
     :param value: The value to validate.
     :param name: The name of the value.
-    :return: The validated value as a ndarray of floats with the same shape as the input
-        value.
+    :return: The validated value as a new ndarray of floats. Always returns a copy to
+        ensure the caller owns its own data.
     """
     try:
-        validated_vector = np.asarray(value, dtype=float)
+        validated_vector = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 

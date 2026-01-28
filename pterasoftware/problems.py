@@ -576,10 +576,10 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         self.angluar_velocities = None
 
         # Tunable Parameters
-        self.wing_density = 12  # per unit height kg/m^2
-        self.moment_scaling_factor = 3.0
-        self.spring_constant = 0.1
-        self.damping_constant = 0.1
+        self.wing_density = 0.012  # per unit height kg/m^2
+        self.moment_scaling_factor = 1.0
+        self.spring_constant = 1
+        self.damping_constant = 1
         self.aero_scaling = 0.0
         self.numerical_integration = True # use numerical integration or closed form solution
         self.damping_eps = 1e-3  # critical damping tolerance
@@ -787,7 +787,6 @@ class BetterAeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
                 span_I=span_I,
             )
             d += W / 2
-            print("Theta", theta, "Omega", omega, "Moment", moment)
             thetas[span_panel + 1] = theta
             omegas[span_panel + 1] = omega
             spring_moments[span_panel] = np.array([0, moment, 0])

@@ -214,12 +214,13 @@ class TestUnsteadyProblem(unittest.TestCase):
 
     def test_only_final_results_parameter_validation(self):
         """Test only_final_results parameter validation."""
-        # Test with valid bool values.
-        movement = movement_fixtures.make_basic_movement_fixture()
-
+        # Test with valid bool values. A fresh movement fixture is needed for each
+        # iteration because UnsteadyProblem sets attributes on Panels that can only be
+        # set once.
         valid_values = [True, False]
         for value in valid_values:
             with self.subTest(value=value):
+                movement = movement_fixtures.make_basic_movement_fixture()
                 unsteady_problem = ps.problems.UnsteadyProblem(
                     movement=movement,
                     only_final_results=value,

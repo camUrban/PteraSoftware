@@ -18,7 +18,7 @@ from typing import cast
 import numpy as np
 
 from . import (
-    _aerodynamics,
+    _aerodynamics_functions,
     _functions,
     _logging,
     _panel,
@@ -205,12 +205,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # Initialize this Panel's HorseshoeVortex's location (in the
                         # first Airplane's geometry axes, relative to the first
                         # Airplane's CG).
-                        panel.horseshoe_vortex = _aerodynamics.HorseshoeVortex(
-                            Frhvp_GP1_CgP1=_Frbvp_GP1_CgP1,
-                            Flhvp_GP1_CgP1=_Flbvp_GP1_CgP1,
-                            leftLegVector_GP1=vInfHat_GP1__E,
-                            left_right_leg_lengths=infinite_leg_length,
-                            strength=0.0,
+                        panel.horseshoe_vortex = (
+                            _aerodynamics_functions.HorseshoeVortex(
+                                Frhvp_GP1_CgP1=_Frbvp_GP1_CgP1,
+                                Flhvp_GP1_CgP1=_Flbvp_GP1_CgP1,
+                                leftLegVector_GP1=vInfHat_GP1__E,
+                                left_right_leg_lengths=infinite_leg_length,
+                                strength=0.0,
+                            )
                         )
 
     def _collapse_geometry(self) -> None:
@@ -302,7 +304,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # geometry axes, observed from the Earth frame) induced at each Panel's
         # collocation point by each HorseshoeVortex.
         gridNormVIndCpp_GP1__E = (
-            _aerodynamics.expanded_velocities_from_horseshoe_vortices(
+            _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
                 stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
                 stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
@@ -371,15 +373,17 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
         )
 
-        stackVInd_GP1__E = _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
-            stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
-            stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
-            stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
-            strengths=self._vortex_strengths,
-            ages=None,
-            nu=self.operating_point.nu,
+        stackVInd_GP1__E = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                strengths=self._vortex_strengths,
+                ages=None,
+                nu=self.operating_point.nu,
+            )
         )
 
         return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)

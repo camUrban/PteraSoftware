@@ -3,7 +3,7 @@
 import numpy as np
 
 # noinspection PyProtectedMember
-from pterasoftware._aerodynamics import _LineVortex
+from pterasoftware._aerodynamics_functions import _LineVortex
 
 
 def make_basic_line_vortex_fixture():

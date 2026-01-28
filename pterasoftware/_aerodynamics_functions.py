@@ -1,4 +1,4 @@
-"""Contains the vortex classes and functions for calculating induced velocities."""
+"""Contains functions for calculating induced velocities."""
 
 from __future__ import annotations
 

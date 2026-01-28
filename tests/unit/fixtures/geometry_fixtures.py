@@ -100,6 +100,33 @@ def make_tip_wing_cross_section_fixture():
     return tip_wing_cross_section_fixture
 
 
+def make_tip_wing_cross_section_with_control_surface_fixture():
+    """This method makes a fixture that is a tip WingCrossSection with control
+    surface parameters for type 4 and type 5 wing testing.
+
+    :return tip_wing_cross_section_fixture: WingCrossSection
+        This is the tip WingCrossSection with control surface parameters.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the tip WingCrossSection with control surface parameters.
+    tip_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil_fixture,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=[0.5, 2.0, 0.2],
+        angles_Wcsp_to_Wcs_ixyz=[10.0, -5.0, 8.0],
+        control_surface_symmetry_type="symmetric",
+        control_surface_hinge_point=0.75,
+        control_surface_deflection=2.0,
+        spanwise_spacing=None,
+    )
+
+    # Return the tip WingCrossSection fixture.
+    return tip_wing_cross_section_fixture
+
+
 def make_minimal_wing_cross_section_fixture():
     """This method makes a fixture that is a WingCrossSection with minimal
     valid parameters.
@@ -149,6 +176,35 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
 
     # Return the asymmetric WingCrossSection fixture.
     return asymmetric_wing_cross_section_fixture
+
+
+def make_root_asymmetric_control_surface_wing_cross_section_fixture():
+    """This method makes a fixture that is a root WingCrossSection with asymmetric
+    control surface configuration for type 5 symmetry testing.
+
+    :return root_asymmetric_wing_cross_section_fixture: WingCrossSection
+        This is the root WingCrossSection with asymmetric control surface.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the root WingCrossSection with asymmetric control surface.
+    root_asymmetric_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=10,
+            chord=2.0,
+            Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
+            angles_Wcsp_to_Wcs_ixyz=[0.0, 0.0, 0.0],
+            control_surface_symmetry_type="asymmetric",
+            control_surface_hinge_point=0.75,
+            control_surface_deflection=2.5,
+            spanwise_spacing="cosine",
+        )
+    )
+
+    # Return the root asymmetric WingCrossSection fixture.
+    return root_asymmetric_wing_cross_section_fixture
 
 
 def make_middle_wing_cross_section_fixture():
@@ -350,12 +406,8 @@ def make_type_4_wing_fixture():
     root_wcs = make_root_wing_cross_section_fixture()
     root_wcs.control_surface_symmetry_type = "symmetric"
 
-    tip_wcs = make_tip_wing_cross_section_fixture()
-    # Set chord and control surface for tip (since it was None)
-    tip_wcs.chord = 1.0
-    tip_wcs.control_surface_symmetry_type = "symmetric"
-    tip_wcs.control_surface_hinge_point = 0.75
-    tip_wcs.control_surface_deflection = 2.0
+    # Use the tip fixture with control surface parameters already set
+    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 4 wing (symmetric=True, coincident xz-plane symmetry)
     type_4_wing_fixture = ps.geometry.wing.Wing(
@@ -389,12 +441,8 @@ def make_type_5_wing_fixture():
     root_wcs = make_root_wing_cross_section_fixture()
     root_wcs.control_surface_symmetry_type = "symmetric"
 
-    tip_wcs = make_tip_wing_cross_section_fixture()
-    # Set chord and control surface for tip (since it was None)
-    tip_wcs.chord = 1.0
-    tip_wcs.control_surface_symmetry_type = "symmetric"
-    tip_wcs.control_surface_hinge_point = 0.75
-    tip_wcs.control_surface_deflection = 2.0
+    # Use the tip fixture with control surface parameters already set
+    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 5 wing (symmetric=True, non-coincident symmetry plane)
     type_5_wing_fixture = ps.geometry.wing.Wing(
@@ -589,13 +637,42 @@ def make_multi_wing_airplane_fixture():
     :return multi_wing_airplane_fixture: Airplane
         This is the Airplane with multiple Wings.
     """
-    # Create multiple Wings for the Airplane
-    main_wing = make_type_4_wing_fixture()
-    main_wing.name = "Main Wing"
+    # Create WingCrossSections for the main wing with symmetric control surfaces.
+    main_root_wcs = make_root_wing_cross_section_fixture()
+    main_root_wcs.control_surface_symmetry_type = "symmetric"
+    main_tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
-    tail_wing = make_type_2_wing_fixture()
-    tail_wing.name = "Tail Wing"
-    tail_wing.Ler_Gs_Cgs = [0.0, 0.0, 5.0]  # Move tail wing back
+    # Create main wing (type 4: symmetric=True, coincident xz-plane symmetry).
+    main_wing = ps.geometry.wing.Wing(
+        wing_cross_sections=[main_root_wcs, main_tip_wcs],
+        name="Main Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=True,
+        mirror_only=False,
+        symmetryNormal_G=[0.0, 1.0, 0.0],
+        symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    # Create WingCrossSections for the tail wing.
+    tail_root_wcs = make_root_wing_cross_section_fixture()
+    tail_tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create tail wing (type 2: mirror_only=True, coincident symmetry plane).
+    tail_wing = ps.geometry.wing.Wing(
+        wing_cross_sections=[tail_root_wcs, tail_tip_wcs],
+        name="Tail Wing",
+        Ler_Gs_Cgs=[0.0, 0.0, 5.0],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=True,
+        symmetryNormal_G=[0.0, 1.0, 0.0],
+        symmetryPoint_G_Cg=[0.0, 0.0, 5.0],
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
 
     # Create the multi-wing Airplane
     multi_wing_airplane_fixture = ps.geometry.airplane.Airplane(

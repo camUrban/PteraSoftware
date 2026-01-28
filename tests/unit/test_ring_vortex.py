@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics
+from pterasoftware import _aerodynamics_functions
 from tests.unit.fixtures import ring_vortex_fixtures
 
 
@@ -42,7 +42,9 @@ class TestRingVortex(unittest.TestCase):
     def test_initialization_valid_parameters(self):
         """Test RingVortex initialization with valid parameters."""
         # Test that basic RingVortex initializes correctly.
-        self.assertIsInstance(self.basic_ring_vortex, _aerodynamics.RingVortex)
+        self.assertIsInstance(
+            self.basic_ring_vortex, _aerodynamics_functions.RingVortex
+        )
         npt.assert_array_equal(
             self.basic_ring_vortex.Frrvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.0], dtype=float),
@@ -243,16 +245,16 @@ class TestRingVortex(unittest.TestCase):
         """Test that LineVortex legs are of the correct type."""
         # Verify all legs are LineVortex instances.
         self.assertIsInstance(
-            self.basic_ring_vortex.front_leg, _aerodynamics._LineVortex
+            self.basic_ring_vortex.front_leg, _aerodynamics_functions._LineVortex
         )
         self.assertIsInstance(
-            self.basic_ring_vortex.left_leg, _aerodynamics._LineVortex
+            self.basic_ring_vortex.left_leg, _aerodynamics_functions._LineVortex
         )
         self.assertIsInstance(
-            self.basic_ring_vortex.back_leg, _aerodynamics._LineVortex
+            self.basic_ring_vortex.back_leg, _aerodynamics_functions._LineVortex
         )
         self.assertIsInstance(
-            self.basic_ring_vortex.right_leg, _aerodynamics._LineVortex
+            self.basic_ring_vortex.right_leg, _aerodynamics_functions._LineVortex
         )
 
     def test_large_strength_vortex(self):

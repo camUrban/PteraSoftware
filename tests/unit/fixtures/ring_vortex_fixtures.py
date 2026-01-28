@@ -3,7 +3,7 @@
 import numpy as np
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics
+from pterasoftware import _aerodynamics_functions
 
 
 def make_basic_ring_vortex_fixture():
@@ -15,7 +15,7 @@ def make_basic_ring_vortex_fixture():
         square in the xz-plane (in the first Airplane's geometry axes, relative to
         the first Airplane's CG) with unit strength.
     """
-    basic_ring_vortex_fixture = _aerodynamics.RingVortex(
+    basic_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -35,7 +35,7 @@ def make_unit_square_ring_vortex_fixture():
         origin (in the first Airplane's geometry axes, relative to the first
         Airplane's CG) with unit strength.
     """
-    unit_square_ring_vortex_fixture = _aerodynamics.RingVortex(
+    unit_square_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.5, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.5, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([-0.5, -0.5, 0.0], dtype=float),
@@ -55,7 +55,7 @@ def make_rectangular_ring_vortex_fixture():
         Airplane's geometry axes, relative to the first Airplane's CG) with strength
         of 2.5.
     """
-    rectangular_ring_vortex_fixture = _aerodynamics.RingVortex(
+    rectangular_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([2.0, -0.5, 0.0], dtype=float),
@@ -73,7 +73,7 @@ def make_tilted_ring_vortex_fixture():
     :return tilted_ring_vortex_fixture: RingVortex
         This is the RingVortex forming a tilted quadrilateral with strength of 1.5.
     """
-    tilted_ring_vortex_fixture = _aerodynamics.RingVortex(
+    tilted_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.2], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.1], dtype=float),
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, -0.1], dtype=float),
@@ -91,7 +91,7 @@ def make_zero_strength_ring_vortex_fixture():
     :return zero_strength_ring_vortex_fixture: RingVortex
         This is the RingVortex forming a unit square with zero strength.
     """
-    zero_strength_ring_vortex_fixture = _aerodynamics.RingVortex(
+    zero_strength_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -110,7 +110,7 @@ def make_negative_strength_ring_vortex_fixture():
         This is the RingVortex forming a unit square with negative strength of
         -1.0.
     """
-    negative_strength_ring_vortex_fixture = _aerodynamics.RingVortex(
+    negative_strength_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -131,7 +131,7 @@ def make_offset_ring_vortex_fixture():
         unit strength.
     """
     offset = np.array([5.0, 3.0, 2.0], dtype=float)
-    offset_ring_vortex_fixture = _aerodynamics.RingVortex(
+    offset_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float) + offset,
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float) + offset,
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float) + offset,
@@ -151,7 +151,7 @@ def make_small_ring_vortex_fixture():
         first Airplane's geometry axes, relative to the first Airplane's CG) with
         unit strength.
     """
-    small_ring_vortex_fixture = _aerodynamics.RingVortex(
+    small_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.005, 0.005, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.005, -0.005, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([-0.005, -0.005, 0.0], dtype=float),
@@ -170,7 +170,7 @@ def make_large_strength_ring_vortex_fixture():
         This is the RingVortex forming a unit square with large strength of
         1e6.
     """
-    large_strength_ring_vortex_fixture = _aerodynamics.RingVortex(
+    large_strength_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
@@ -191,7 +191,7 @@ def make_large_coordinate_ring_vortex_fixture():
         to the first Airplane's CG) with unit strength.
     """
     offset = np.array([1e6, 1e6, 1e6], dtype=float)
-    large_coordinate_ring_vortex_fixture = _aerodynamics.RingVortex(
+    large_coordinate_ring_vortex_fixture = _aerodynamics_functions.RingVortex(
         Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float) + offset,
         Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float) + offset,
         Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float) + offset,

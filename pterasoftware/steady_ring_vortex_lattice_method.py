@@ -18,7 +18,7 @@ from typing import cast
 import numpy as np
 
 from . import (
-    _aerodynamics,
+    _aerodynamics_functions,
     _functions,
     _logging,
     _panel,
@@ -274,16 +274,18 @@ class SteadyRingVortexLatticeMethodSolver:
 
                             # If the Panel is along the trailing edge, initialize its
                             # HorseshoeVortex.
-                            panel.horseshoe_vortex = _aerodynamics.HorseshoeVortex(
-                                Frhvp_GP1_CgP1=Brrvp_GP1_CgP1,
-                                Flhvp_GP1_CgP1=Blrvp_GP1_CgP1,
-                                leftLegVector_GP1=vInfHat_GP1__E,
-                                left_right_leg_lengths=infinite_leg_length,
-                                strength=1.0,
+                            panel.horseshoe_vortex = (
+                                _aerodynamics_functions.HorseshoeVortex(
+                                    Frhvp_GP1_CgP1=Brrvp_GP1_CgP1,
+                                    Flhvp_GP1_CgP1=Blrvp_GP1_CgP1,
+                                    leftLegVector_GP1=vInfHat_GP1__E,
+                                    left_right_leg_lengths=infinite_leg_length,
+                                    strength=1.0,
+                                )
                             )
 
                         # Initialize the Panel's RingVortex.
-                        panel.ring_vortex = _aerodynamics.RingVortex(
+                        panel.ring_vortex = _aerodynamics_functions.RingVortex(
                             Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
                             Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                             Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
@@ -363,7 +365,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # solver's list of RingVortex strengths was initialized to all be 1.0. This
         # will be updated once the correct strengths are calculated.
         gridRingNormVIndCpp_GP1__E = (
-            _aerodynamics.expanded_velocities_from_ring_vortices(
+            _aerodynamics_functions.expanded_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
@@ -384,7 +386,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # the correct vortex strengths are calculated. The positions elsewhere will
         # remain zero.
         gridHorseshoeNormVIndCpp_GP1__E = (
-            _aerodynamics.expanded_velocities_from_horseshoe_vortices(
+            _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                 stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
                 stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
@@ -468,18 +470,20 @@ class SteadyRingVortexLatticeMethodSolver:
             )
         )
 
-        stackRingVInd_GP1__E = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
-            stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
-            stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
-            stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
-            strengths=self._vortex_strengths,
-            ages=None,
-            nu=self.operating_point.nu,
+        stackRingVInd_GP1__E = (
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                strengths=self._vortex_strengths,
+                ages=None,
+                nu=self.operating_point.nu,
+            )
         )
         stackHorseshoeVInd_GP1__E = (
-            _aerodynamics.collapsed_velocities_from_horseshoe_vortices(
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
                 stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,

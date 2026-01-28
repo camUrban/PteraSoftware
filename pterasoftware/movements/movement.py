@@ -16,7 +16,7 @@ import math
 
 import scipy.optimize as sp_opt
 
-from .. import _aerodynamics, _logging, _parameter_validation
+from .. import _aerodynamics_functions, _logging, _parameter_validation
 from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
@@ -498,9 +498,9 @@ def _compute_wake_area_mismatch(
 
                     for spanwise_id in range(num_spanwise):
                         # Get wake RingVortex area (first row, current step).
-                        wake_rv: _aerodynamics.RingVortex = wake_ring_vortices[
-                            0, spanwise_id
-                        ]
+                        wake_rv: _aerodynamics_functions.RingVortex = (
+                            wake_ring_vortices[0, spanwise_id]
+                        )
                         wake_area = wake_rv.area
 
                         # Get bound trailing edge RingVortex area (previous step).
@@ -510,7 +510,7 @@ def _compute_wake_area_mismatch(
                         _bound_rv = trailing_edge_panel.ring_vortex
 
                         assert _bound_rv is not None
-                        bound_rv: _aerodynamics.RingVortex = _bound_rv
+                        bound_rv: _aerodynamics_functions.RingVortex = _bound_rv
 
                         bound_area = bound_rv.area
 

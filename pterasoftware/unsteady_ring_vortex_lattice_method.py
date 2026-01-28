@@ -19,7 +19,7 @@ import numpy as np
 from tqdm import tqdm
 
 from . import (
-    _aerodynamics,
+    _aerodynamics_functions,
     _functions,
     _logging,
     _panel,
@@ -669,7 +669,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
 
                             # Initialize the Panel's RingVortex.
-                            panel.ring_vortex = _aerodynamics.RingVortex(
+                            panel.ring_vortex = _aerodynamics_functions.RingVortex(
                                 Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
                                 Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                                 Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
@@ -718,7 +718,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     global_panel_position += 1
 
                 # Iterate through the 1D ndarray of this Wing's wake RingVortices.
-                wake_ring_vortex: _aerodynamics.RingVortex
+                wake_ring_vortex: _aerodynamics_functions.RingVortex
                 for wake_ring_vortex in wake_ring_vortices:
                     # Update the solver's list of attributes with this wake
                     # RingVortex's attributes.
@@ -818,15 +818,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # collocation point by each bound RingVortex. The answer is normalized
         # because the solver's list of bound RingVortex strengths was initialized to
         # all be 1.0. This will be updated once the correct strengths are calculated.
-        gridNormVIndCpp_GP1_E = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
-            stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
-            stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
-            stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
-            stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
-            strengths=self._current_bound_vortex_strengths,
-            ages=None,
-            nu=self.current_operating_point.nu,
+        gridNormVIndCpp_GP1_E = (
+            _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                strengths=self._current_bound_vortex_strengths,
+                ages=None,
+                nu=self.current_operating_point.nu,
+            )
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -900,7 +902,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # from the Earth frame) induced by the wake RingVortices at each Panel's
             # collocation point.
             currentStackWakeV_GP1_E = (
-                _aerodynamics.collapsed_velocities_from_ring_vortices(
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                     stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                     stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
                     stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
@@ -984,7 +986,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         stackBoundRingVInd_GP1_E = (
-            _aerodynamics.collapsed_velocities_from_ring_vortices(
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
@@ -995,15 +997,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_operating_point.nu,
             )
         )
-        stackWakeRingVInd_GP1_E = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
-            stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
-            stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
-            stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
-            strengths=self._current_wake_vortex_strengths,
-            ages=self._current_wake_vortex_ages,
-            nu=self.current_operating_point.nu,
+        stackWakeRingVInd_GP1_E = (
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                strengths=self._current_wake_vortex_strengths,
+                ages=self._current_wake_vortex_ages,
+                nu=self.current_operating_point.nu,
+            )
         )
 
         return cast(
@@ -1651,7 +1655,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
                                     assert next_wake_ring_vortices is not None
                                     next_wake_ring_vortex = cast(
-                                        _aerodynamics.RingVortex,
+                                        _aerodynamics_functions.RingVortex,
                                         next_wake_ring_vortices[
                                             chordwise_point_id, spanwise_point_id
                                         ],
@@ -1702,7 +1706,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     next_wing.wake_ring_vortices[
                                         chordwise_point_id,
                                         spanwise_point_id,
-                                    ] = _aerodynamics.RingVortex(
+                                    ] = _aerodynamics_functions.RingVortex(
                                         Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
                                         Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
                                         Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,

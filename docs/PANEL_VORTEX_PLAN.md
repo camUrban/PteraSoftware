@@ -34,6 +34,14 @@ Each attribute falls into one of these categories:
 4. **Solver-mutable attributes remain mutable**: Properties like `strength` that the
    solver needs to set keep their setters.
 
+### Numpy Array Mutability
+
+Even with read-only properties, numpy arrays can still be mutated in place via the
+getter (e.g., `panel.Frpp_G_Cg[0] = 999.0`). To prevent this, immutable numpy arrays
+are set to read-only using `arr.flags.writeable = False` in `__init__` and after
+set-once assignment. When deepcopying, use `.copy()` then set `flags.writeable = False`
+on the copy.
+
 ---
 
 ## Panel Class (`_panel.py`)
@@ -163,7 +171,7 @@ class Panel:
     @property
     def rightLeg_G(self) -> np.ndarray:
         if self._rightLeg_G is None:
-            self._rightLeg_G = self._Frpp_G_Cg - self._Brpp_G_Cg
+            self._rightLeg_G = cast(np.ndarray, self._Frpp_G_Cg - self._Brpp_G_Cg)
         return self._rightLeg_G
 
     @property
@@ -232,7 +240,7 @@ class Panel:
         if self._Frpp_GP1_CgP1 is None or self._Brpp_GP1_CgP1 is None:
             return None
         if self._rightLeg_GP1 is None:
-            self._rightLeg_GP1 = self._Frpp_GP1_CgP1 - self._Brpp_GP1_CgP1
+            self._rightLeg_GP1 = cast(np.ndarray, self._Frpp_GP1_CgP1 - self._Brpp_GP1_CgP1)
         return self._rightLeg_GP1
 ```
 

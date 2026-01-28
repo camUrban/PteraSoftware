@@ -160,3 +160,10 @@ This pattern:
 1. Changes to the script's directory
 2. Sets `PYTHONPATH` to the parent directory (project root)
 3. Runs the script using the virtual environment's Python interpreter
+
+## Common Mistakes
+- Forgetting to read RUNNING_TESTS_AND_TYPE_CHECKS.md before running tests and trying to use pytest (Ptera Software uses unittest)
+- Forgetting to read CODE_STYLE.md before contributing code
+- Forgetting to read TYPE_HINT_AND_DOCSTRING_STYLE.md before writing docstrings
+- Forgetting to read ANGLE_VECTORS_AND_TRANSFORMATIONS.md and AXES_POINTS_AND_FRAMES.md before working with vector-valued variables. If in doubt, before writing code, read both of these documents
+- Forgetting to read WRITING_STYLE.md before writing documentation, docstrings, or comments

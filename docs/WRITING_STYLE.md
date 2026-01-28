@@ -2,8 +2,7 @@
 Guidelines for developers and Claude when writing comments, docstrings, and documentation for Ptera Software.
 
 ## Terminology
-- **"Ptera Software"**: When writing as text, always write as two words without a hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware")
-- **"cross section"**: Always write as two words, never hyphenated (not "cross-section")  
+- **"Ptera Software"**: When writing as text, always write as two words without a hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware").
 - **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). In summary, when talking about code objects:
   - GOOD: "the previous WingCrossSection"
   - BAD: "the previous cross section"
@@ -11,6 +10,7 @@ Guidelines for developers and Claude when writing comments, docstrings, and docu
   - BAD: "this wing"
   - GOOD: "update the Wings"
   - BAD: "update the Wing objects" (unnecessary)
+- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section".
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_AND_COORDINATE_SYSTEMS.md` and `AXES_POINTS_AND_FRAMES.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
 

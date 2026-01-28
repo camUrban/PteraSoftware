@@ -1,0 +1,393 @@
+{
+  "timestamp": "20260128_175731",
+  "label": "default",
+  "python_version": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+  "platform_info": "Windows 11 (AMD64)",
+  "git_commit": "bcac4959",
+  "results": [
+    {
+      "config": {
+        "name": "Static 4x4 panels, 2 cycles eq",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 4,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.17076290003024042,
+      "movement_creation_time": 0.024540200014598668,
+      "problem_creation_time": 0.09348659997340292,
+      "total_time": 0.288789700018242,
+      "actual_num_panels": 32,
+      "num_steps": 80
+    },
+    {
+      "config": {
+        "name": "Static 8x6 panels, 2 cycles eq",
+        "num_spanwise_panels": 8,
+        "num_chordwise_panels": 6,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.008171600056812167,
+      "movement_creation_time": 0.07345909997820854,
+      "problem_creation_time": 0.4158612999599427,
+      "total_time": 0.4974919999949634,
+      "actual_num_panels": 96,
+      "num_steps": 120
+    },
+    {
+      "config": {
+        "name": "Static 12x8 panels, 2 cycles eq",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.011321500060148537,
+      "movement_creation_time": 0.1814752999925986,
+      "problem_creation_time": 1.0945377999451011,
+      "total_time": 1.2873345999978483,
+      "actual_num_panels": 192,
+      "num_steps": 160
+    },
+    {
+      "config": {
+        "name": "Static 16x10 panels, 2 cycles eq",
+        "num_spanwise_panels": 16,
+        "num_chordwise_panels": 10,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.01573189999908209,
+      "movement_creation_time": 0.36195199994836,
+      "problem_creation_time": 2.534429099992849,
+      "total_time": 2.912112999940291,
+      "actual_num_panels": 320,
+      "num_steps": 200
+    },
+    {
+      "config": {
+        "name": "Static 20x12 panels, 2 cycles eq",
+        "num_spanwise_panels": 20,
+        "num_chordwise_panels": 12,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.02240790007635951,
+      "movement_creation_time": 0.6561934999190271,
+      "problem_creation_time": 4.19885929999873,
+      "total_time": 4.877460699994117,
+      "actual_num_panels": 480,
+      "num_steps": 240
+    },
+    {
+      "config": {
+        "name": "Static 24x14 panels, 2 cycles eq",
+        "num_spanwise_panels": 24,
+        "num_chordwise_panels": 14,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.027387999929487705,
+      "movement_creation_time": 1.178849200019613,
+      "problem_creation_time": 7.0504560000263155,
+      "total_time": 8.256693199975416,
+      "actual_num_panels": 672,
+      "num_steps": 280
+    },
+    {
+      "config": {
+        "name": "Static 12x8 panels, 1 cycles eq",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 1,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.011272400035522878,
+      "movement_creation_time": 0.09629779995884746,
+      "problem_creation_time": 0.5491363999899477,
+      "total_time": 0.656706599984318,
+      "actual_num_panels": 192,
+      "num_steps": 80
+    },
+    {
+      "config": {
+        "name": "Static 12x8 panels, 2 cycles eq",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 2,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.011344099999405444,
+      "movement_creation_time": 0.1798442000290379,
+      "problem_creation_time": 1.0995725999819115,
+      "total_time": 1.2907609000103548,
+      "actual_num_panels": 192,
+      "num_steps": 160
+    },
+    {
+      "config": {
+        "name": "Static 12x8 panels, 3 cycles eq",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 3,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.014004299999214709,
+      "movement_creation_time": 0.2831462000031024,
+      "problem_creation_time": 1.6986844999482855,
+      "total_time": 1.9958349999506027,
+      "actual_num_panels": 192,
+      "num_steps": 240
+    },
+    {
+      "config": {
+        "name": "Static 12x8 panels, 5 cycles eq",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 5,
+        "is_variable_geometry": false,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.011785299982875586,
+      "movement_creation_time": 0.45598760002758354,
+      "problem_creation_time": 2.8484593000030145,
+      "total_time": 3.3162322000134736,
+      "actual_num_panels": 192,
+      "num_steps": 400
+    },
+    {
+      "config": {
+        "name": "Variable 4x4 panels, 2 cycles",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 4,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.004812700091861188,
+      "movement_creation_time": 0.25539690000005066,
+      "problem_creation_time": 0.062060900032520294,
+      "total_time": 0.32227050012443215,
+      "actual_num_panels": 16,
+      "num_steps": 98
+    },
+    {
+      "config": {
+        "name": "Variable 8x6 panels, 2 cycles",
+        "num_spanwise_panels": 8,
+        "num_chordwise_panels": 6,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.005866700084879994,
+      "movement_creation_time": 0.530874399933964,
+      "problem_creation_time": 0.26208060001954436,
+      "total_time": 0.7988217000383884,
+      "actual_num_panels": 48,
+      "num_steps": 147
+    },
+    {
+      "config": {
+        "name": "Variable 12x8 panels, 2 cycles",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.007882899953983724,
+      "movement_creation_time": 1.0866108000045642,
+      "problem_creation_time": 0.6849775000009686,
+      "total_time": 1.7794711999595165,
+      "actual_num_panels": 96,
+      "num_steps": 196
+    },
+    {
+      "config": {
+        "name": "Variable 16x10 panels, 2 cycles",
+        "num_spanwise_panels": 16,
+        "num_chordwise_panels": 10,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.009866400039754808,
+      "movement_creation_time": 1.9100871999980882,
+      "problem_creation_time": 1.4696952000958845,
+      "total_time": 3.3896488001337275,
+      "actual_num_panels": 160,
+      "num_steps": 245
+    },
+    {
+      "config": {
+        "name": "Variable 20x12 panels, 2 cycles",
+        "num_spanwise_panels": 20,
+        "num_chordwise_panels": 12,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.012196099967695773,
+      "movement_creation_time": 3.0323095000348985,
+      "problem_creation_time": 2.7412379999877885,
+      "total_time": 5.785743599990383,
+      "actual_num_panels": 240,
+      "num_steps": 294
+    },
+    {
+      "config": {
+        "name": "Variable 24x14 panels, 2 cycles",
+        "num_spanwise_panels": 24,
+        "num_chordwise_panels": 14,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.016944200033321977,
+      "movement_creation_time": 5.478709200047888,
+      "problem_creation_time": 6.124324099975638,
+      "total_time": 11.619977500056848,
+      "actual_num_panels": 336,
+      "num_steps": 343
+    },
+    {
+      "config": {
+        "name": "Variable 12x8 panels, 1 cycles",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 1,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.007903999998234212,
+      "movement_creation_time": 0.6867619999684393,
+      "problem_creation_time": 0.6489157000323758,
+      "total_time": 1.3435816999990493,
+      "actual_num_panels": 96,
+      "num_steps": 98
+    },
+    {
+      "config": {
+        "name": "Variable 12x8 panels, 2 cycles",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 2,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.013551200041547418,
+      "movement_creation_time": 2.062105300021358,
+      "problem_creation_time": 1.3145366000244394,
+      "total_time": 3.3901931000873446,
+      "actual_num_panels": 96,
+      "num_steps": 196
+    },
+    {
+      "config": {
+        "name": "Variable 12x8 panels, 3 cycles",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 3,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.013427999918349087,
+      "movement_creation_time": 3.1373427000362426,
+      "problem_creation_time": 1.5526186999632046,
+      "total_time": 4.703389399917796,
+      "actual_num_panels": 96,
+      "num_steps": 294
+    },
+    {
+      "config": {
+        "name": "Variable 12x8 panels, 5 cycles",
+        "num_spanwise_panels": 12,
+        "num_chordwise_panels": 8,
+        "num_cycles": 5,
+        "is_variable_geometry": true,
+        "num_cross_sections": 2
+      },
+      "airplane_creation_time": 0.007635199930518866,
+      "movement_creation_time": 4.328465300030075,
+      "problem_creation_time": 3.077019999967888,
+      "total_time": 7.413120499928482,
+      "actual_num_panels": 96,
+      "num_steps": 490
+    },
+    {
+      "config": {
+        "name": "Static 4x6 panels, 10 WCS, 5 cycles eq",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 6,
+        "num_cycles": 5,
+        "is_variable_geometry": false,
+        "num_cross_sections": 10
+      },
+      "airplane_creation_time": 0.6081003999570385,
+      "movement_creation_time": 1.8207061999710277,
+      "problem_creation_time": 7.201772600063123,
+      "total_time": 9.630579199991189,
+      "actual_num_panels": 432,
+      "num_steps": 300
+    },
+    {
+      "config": {
+        "name": "Static 4x6 panels, 10 WCS, 10 cycles eq",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 6,
+        "num_cycles": 10,
+        "is_variable_geometry": false,
+        "num_cross_sections": 10
+      },
+      "airplane_creation_time": 0.7194852000102401,
+      "movement_creation_time": 4.029917599982582,
+      "problem_creation_time": 13.260930599994026,
+      "total_time": 18.01033339998685,
+      "actual_num_panels": 432,
+      "num_steps": 600
+    },
+    {
+      "config": {
+        "name": "Variable 4x6 panels, 10 WCS, 5 cycles",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 6,
+        "num_cycles": 5,
+        "is_variable_geometry": true,
+        "num_cross_sections": 10
+      },
+      "airplane_creation_time": 0.5136809000978246,
+      "movement_creation_time": 197.6839571999153,
+      "problem_creation_time": 3.10750729998108,
+      "total_time": 201.30514539999422,
+      "actual_num_panels": 216,
+      "num_steps": 398
+    },
+    {
+      "config": {
+        "name": "Variable 4x6 panels, 10 WCS, 10 cycles",
+        "num_spanwise_panels": 4,
+        "num_chordwise_panels": 6,
+        "num_cycles": 10,
+        "is_variable_geometry": true,
+        "num_cross_sections": 10
+      },
+      "airplane_creation_time": 0.4959165999898687,
+      "movement_creation_time": 388.54133740009274,
+      "problem_creation_time": 6.1923872999614105,
+      "total_time": 395.229641300044,
+      "actual_num_panels": 216,
+      "num_steps": 796
+    }
+  ]
+}

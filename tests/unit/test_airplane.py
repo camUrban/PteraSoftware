@@ -64,19 +64,23 @@ class TestAirplane(unittest.TestCase):
     def test_name_parameter_validation(self):
         """Test name parameter validation."""
         # Test valid string name
+        # Create fresh fixture since Wings can only be processed once
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         airplane = ps.geometry.airplane.Airplane(
-            wings=[self.test_wing_type_1], name="Valid Test Name"
+            wings=[test_wing], name="Valid Test Name"
         )
         self.assertEqual(airplane.name, "Valid Test Name")
 
         # Test invalid name types
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=123)
+            ps.geometry.airplane.Airplane(wings=[test_wing], name=123)
 
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], name=None)
+            ps.geometry.airplane.Airplane(wings=[test_wing], name=None)
 
     def test_Cg_GP1_CgP1_parameter_validation(self):
         """Test Cg_GP1_CgP1 parameter validation."""
@@ -90,8 +94,10 @@ class TestAirplane(unittest.TestCase):
 
         for position in valid_positions:
             with self.subTest(position=position):
+                # Create fresh fixture since Wings can only be processed once
+                test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], Cg_GP1_CgP1=position
+                    wings=[test_wing], Cg_GP1_CgP1=position
                 )
                 npt.assert_array_equal(airplane.Cg_GP1_CgP1, position)
 
@@ -105,10 +111,12 @@ class TestAirplane(unittest.TestCase):
 
         for invalid_position in invalid_positions:
             with self.subTest(invalid_position=invalid_position):
+                # Create fresh fixture since Wings can only be processed once
+                test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.geometry.airplane.Airplane(
-                        wings=[self.test_wing_type_1], Cg_GP1_CgP1=invalid_position
+                        wings=[test_wing], Cg_GP1_CgP1=invalid_position
                     )
 
     def test_weight_parameter_validation(self):
@@ -118,8 +126,10 @@ class TestAirplane(unittest.TestCase):
 
         for weight in valid_weights:
             with self.subTest(weight=weight):
+                # Create fresh fixture since Wings can only be processed once
+                test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 airplane = ps.geometry.airplane.Airplane(
-                    wings=[self.test_wing_type_1], weight=weight
+                    wings=[test_wing], weight=weight
                 )
                 self.assertEqual(airplane.weight, weight)
 
@@ -128,15 +138,19 @@ class TestAirplane(unittest.TestCase):
 
         for invalid_weight in invalid_weights:
             with self.subTest(invalid_weight=invalid_weight):
+                # Create fresh fixture since Wings can only be processed once
+                test_wing = geometry_fixtures.make_type_1_wing_fixture()
                 with self.assertRaises(ValueError):
                     ps.geometry.airplane.Airplane(
-                        wings=[self.test_wing_type_1], weight=invalid_weight
+                        wings=[test_wing], weight=invalid_weight
                     )
 
         # Test invalid weight types
+        # Create fresh fixture since Wings can only be processed once
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], weight="heavy")
+            ps.geometry.airplane.Airplane(wings=[test_wing], weight="heavy")
 
     def test_reference_dimensions_default_behavior(self):
         """Test reference dimensions default to first Wing's properties."""
@@ -157,15 +171,19 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(self.custom_reference_airplane.b_ref, 10.0)
 
         # Test validation of reference dimensions
+        # Create fresh fixtures since Wings can only be processed once
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], s_ref=-1.0)
+            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=-1.0)
 
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(ValueError):
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], c_ref=0.0)
+            ps.geometry.airplane.Airplane(wings=[test_wing], c_ref=0.0)
 
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1], b_ref="large")
+            ps.geometry.airplane.Airplane(wings=[test_wing], b_ref="large")
 
     def test_num_panels_calculation(self):
         """Test that num_panels is calculated correctly from all Wings."""
@@ -303,13 +321,12 @@ class TestAirplane(unittest.TestCase):
 
     def test_process_wing_symmetry_control_surface_validation_types_1_2_3(self):
         """Test control surface validation for symmetry types 1, 2, 3."""
-        # Create Wings with invalid control surface configurations
+        # Type 1: should fail with control surfaces
+        # Create fresh fixtures since WingCrossSections can only be validated once
         wing_cross_sections = [
             geometry_fixtures.make_root_wing_cross_section_fixture(),
             geometry_fixtures.make_basic_wing_cross_section_fixture(),  # Has control surface
         ]
-
-        # Type 1: should fail with control surfaces
         with self.assertRaises(ValueError):
             wing_type_1 = ps.geometry.wing.Wing(
                 wing_cross_sections=wing_cross_sections,
@@ -319,6 +336,11 @@ class TestAirplane(unittest.TestCase):
             ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_1)
 
         # Type 2: should fail with control surfaces
+        # Create fresh fixtures since WingCrossSections can only be validated once
+        wing_cross_sections = [
+            geometry_fixtures.make_root_wing_cross_section_fixture(),
+            geometry_fixtures.make_basic_wing_cross_section_fixture(),  # Has control surface
+        ]
         with self.assertRaises(ValueError):
             wing_type_2 = ps.geometry.wing.Wing(
                 wing_cross_sections=wing_cross_sections,
@@ -350,18 +372,17 @@ class TestAirplane(unittest.TestCase):
 
     def test_process_wing_symmetry_type_5_control_surface_deflections(self):
         """Test type 5 Wing processing with different control surface deflections."""
-        # Create asymmetric control surface Wing cross section
-        asymmetric_wcs = (
+        # Create asymmetric control surface Wing cross sections
+        # Use root fixture with asymmetric control surface already configured
+        root_wcs = (
+            geometry_fixtures.make_root_asymmetric_control_surface_wing_cross_section_fixture()
+        )
+        tip_wcs = (
             geometry_fixtures.make_asymmetric_control_surface_wing_cross_section_fixture()
         )
 
         # Create type 5 Wing with asymmetric control surfaces
-        wing_cross_sections = [
-            geometry_fixtures.make_root_wing_cross_section_fixture(),
-            asymmetric_wcs,
-        ]
-        wing_cross_sections[0].control_surface_symmetry_type = "asymmetric"
-        wing_cross_sections[0].control_surface_deflection = 2.5
+        wing_cross_sections = [root_wcs, tip_wcs]
 
         wing = ps.geometry.wing.Wing(
             wing_cross_sections=wing_cross_sections,

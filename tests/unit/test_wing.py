@@ -40,7 +40,7 @@ class TestWing(unittest.TestCase):
         for wing, wing_type in wings_to_test:
             with self.subTest(wing_type=wing_type):
                 self.assertIsInstance(wing, ps.geometry.wing.Wing)
-                self.assertIsInstance(wing.wing_cross_sections, list)
+                self.assertIsInstance(wing.wing_cross_sections, tuple)
                 self.assertEqual(len(wing.wing_cross_sections), 2)
                 self.assertIsInstance(wing.name, str)
                 self.assertEqual(len(wing.Ler_Gs_Cgs), 3)
@@ -72,9 +72,12 @@ class TestWing(unittest.TestCase):
     def test_symmetry_parameter_validation(self):
         """Test symmetry parameter validation logic."""
         # Test that symmetric and mirror_only cannot both be True
+        # Create fresh fixtures since WingCrossSections can only be validated once
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 symmetric=True,
                 mirror_only=True,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
@@ -82,18 +85,22 @@ class TestWing(unittest.TestCase):
             )
 
         # Test that symmetry parameters must be None when no symmetry
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 symmetric=False,
                 mirror_only=False,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
             )
 
         # Test that symmetry parameters must be provided when symmetric=True
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 symmetric=True,
                 mirror_only=False,
                 symmetryNormal_G=None,
@@ -314,8 +321,12 @@ class TestWing(unittest.TestCase):
 
         for spacing in spacing_options:
             with self.subTest(spacing=spacing):
+                # Create fresh fixtures for each iteration since WingCrossSections
+                # can only be validated once
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                    wing_cross_sections=[root_wcs, tip_wcs],
                     chordwise_spacing=spacing,
                 )
                 self.assertEqual(wing.chordwise_spacing, spacing)
@@ -326,8 +337,12 @@ class TestWing(unittest.TestCase):
 
         for count in panel_counts:
             with self.subTest(count=count):
+                # Create fresh fixtures for each iteration since WingCrossSections
+                # can only be validated once
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                    wing_cross_sections=[root_wcs, tip_wcs],
                     num_chordwise_panels=count,
                 )
                 self.assertEqual(wing.num_chordwise_panels, count)
@@ -335,55 +350,70 @@ class TestWing(unittest.TestCase):
     def test_wing_parameter_validation(self):
         """Test parameter validation for Wing initialization."""
         # Test invalid Ler position
+        # Create fresh fixtures since WingCrossSections can only be validated once
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs], Ler_Gs_Cgs="invalid"
+                wing_cross_sections=[root_wcs, tip_wcs], Ler_Gs_Cgs="invalid"
             )
 
         # Test invalid angles
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 angles_Gs_to_Wn_ixyz="invalid",
             )
 
         # Test invalid num_chordwise_panels
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 num_chordwise_panels=0,
             )
 
         # Test invalid chordwise_spacing
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs],
+                wing_cross_sections=[root_wcs, tip_wcs],
                 chordwise_spacing="invalid_spacing",
             )
 
     def test_wing_name_validation(self):
         """Test Wing name parameter validation."""
         # Test valid string name
+        # Create fresh fixtures since WingCrossSections can only be validated once
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[self.root_wcs, self.tip_wcs], name="Test Wing Name"
+            wing_cross_sections=[root_wcs, tip_wcs], name="Test Wing Name"
         )
         self.assertEqual(wing.name, "Test Wing Name")
 
         # Test invalid name type
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(
-                wing_cross_sections=[self.root_wcs, self.tip_wcs], name=123
-            )
+            ps.geometry.wing.Wing(wing_cross_sections=[root_wcs, tip_wcs], name=123)
 
     def test_symmetry_normal_normalization(self):
         """Test that symmetry normal vectors are properly normalized."""
+        # Create fresh fixtures since WingCrossSections can only be validated once
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # Create Wing with non-unit normal vector
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[self.root_wcs, self.tip_wcs],
+            wing_cross_sections=[root_wcs, tip_wcs],
             symmetric=False,
             mirror_only=True,
             symmetryNormal_G=[0.0, 5.0, 0.0],
@@ -991,39 +1021,96 @@ class TestWingDeepCopy(unittest.TestCase):
             copied.gridWrvp_GP1_CgP1.shape[1], original.num_spanwise_panels + 1
         )
 
-    def test_deepcopy_independence_modifying_copy(self):
-        """Test that modifying the copy does not affect the original."""
+    def test_deepcopy_independence_modifying_copy_mutable_attrs(self):
+        """Test that modifying mutable attributes on the copy does not affect the
+        original."""
         import copy
 
-        original = self.type_1_wing
-        original.generate_mesh(1)
-        original_name = original.name
-        original_Ler = original.Ler_Gs_Cgs.copy()
+        original = self.type_4_wing
+        original.generate_mesh(4)
+        original_symmetric = original.symmetric
+        original_symmetryNormal = original.symmetryNormal_G.copy()
 
         copied = copy.deepcopy(original)
 
-        copied.name = "Modified Wing"
-        copied.Ler_Gs_Cgs[0] = 999.0
+        # Modify mutable attributes on the copy.
+        copied.symmetric = not original_symmetric
+        copied.symmetryNormal_G[0] = 999.0
 
-        self.assertEqual(original.name, original_name)
-        npt.assert_array_equal(original.Ler_Gs_Cgs, original_Ler)
+        # Verify the original is unchanged.
+        self.assertEqual(original.symmetric, original_symmetric)
+        npt.assert_array_equal(original.symmetryNormal_G, original_symmetryNormal)
 
-    def test_deepcopy_independence_modifying_original(self):
-        """Test that modifying the original does not affect the copy."""
+    def test_deepcopy_independence_modifying_original_mutable_attrs(self):
+        """Test that modifying mutable attributes on the original does not affect the
+        copy."""
         import copy
 
-        original = self.type_1_wing
-        original.generate_mesh(1)
+        original = self.type_4_wing
+        original.generate_mesh(4)
 
         copied = copy.deepcopy(original)
-        copied_name = copied.name
-        copied_Ler = copied.Ler_Gs_Cgs.copy()
+        copied_symmetric = copied.symmetric
+        copied_symmetryNormal = copied.symmetryNormal_G.copy()
 
-        original.name = "Modified Wing"
-        original.Ler_Gs_Cgs[0] = 999.0
+        # Modify mutable attributes on the original.
+        original.symmetric = not copied_symmetric
+        original.symmetryNormal_G[0] = 999.0
 
-        self.assertEqual(copied.name, copied_name)
-        npt.assert_array_equal(copied.Ler_Gs_Cgs, copied_Ler)
+        # Verify the copy is unchanged.
+        self.assertEqual(copied.symmetric, copied_symmetric)
+        npt.assert_array_equal(copied.symmetryNormal_G, copied_symmetryNormal)
+
+    def test_immutable_attributes_are_read_only(self):
+        """Test that immutable Wing attributes cannot be modified."""
+        wing = self.type_1_wing
+        wing.generate_mesh(1)
+
+        # Test that setting immutable attributes raises AttributeError.
+        with self.assertRaises(AttributeError):
+            wing.name = "New Name"
+
+        with self.assertRaises(AttributeError):
+            wing.num_chordwise_panels = 16
+
+        with self.assertRaises(AttributeError):
+            wing.chordwise_spacing = "uniform"
+
+        # Test that numpy arrays are read-only (raises ValueError on in-place mutation).
+        with self.assertRaises(ValueError):
+            wing.Ler_Gs_Cgs[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            wing.angles_Gs_to_Wn_ixyz[0] = 45.0
+
+    def test_set_once_attributes_cannot_be_reassigned(self):
+        """Test that set-once attributes raise AttributeError on second assignment."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Test that set-once attributes raise AttributeError when set again.
+        with self.assertRaises(AttributeError):
+            wing.symmetry_type = 2
+
+        with self.assertRaises(AttributeError):
+            wing.num_spanwise_panels = 100
+
+        with self.assertRaises(AttributeError):
+            wing.num_panels = 1000
+
+        with self.assertRaises(AttributeError):
+            wing.panels = np.empty((1, 1), dtype=object)
+
+    def test_wing_cross_sections_tuple_immutability(self):
+        """Test that wing_cross_sections tuple cannot be mutated."""
+        wing = self.type_1_wing
+
+        # Verify it's a tuple (tuples don't have append method).
+        self.assertIsInstance(wing.wing_cross_sections, tuple)
+
+        # Attempting to call append should raise AttributeError.
+        with self.assertRaises(AttributeError):
+            wing.wing_cross_sections.append(self.root_wcs)
 
     def test_deepcopy_preserves_geometric_properties(self):
         """Test that deepcopy preserves geometric property calculations."""

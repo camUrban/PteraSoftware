@@ -1023,15 +1023,63 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
 
         return wings_a, wings_b
 
+    def _create_panel_with_modified_corner(
+        self, original_panel, corner_name, new_corner_value
+    ):
+        """Create a new Panel with one corner modified.
+
+        Panel corners are immutable, so to test geometry mismatch detection we need
+        to create a new Panel with the modified corner value rather than modifying
+        the existing panel.
+
+        :param original_panel: The Panel to copy.
+        :param corner_name: Which corner to modify ("Frpp", "Flpp", "Blpp", or "Brpp").
+        :param new_corner_value: The new value for the specified corner.
+        :return: A new Panel with the modified corner.
+        """
+        # Get corner values, using the modified value for the specified corner.
+        corners = {
+            "Frpp": original_panel.Frpp_G_Cg.copy(),
+            "Flpp": original_panel.Flpp_G_Cg.copy(),
+            "Blpp": original_panel.Blpp_G_Cg.copy(),
+            "Brpp": original_panel.Brpp_G_Cg.copy(),
+        }
+        corners[corner_name] = new_corner_value
+
+        # Create the new Panel.
+        new_panel = ps._panel.Panel(
+            Frpp_G_Cg=corners["Frpp"],
+            Flpp_G_Cg=corners["Flpp"],
+            Blpp_G_Cg=corners["Blpp"],
+            Brpp_G_Cg=corners["Brpp"],
+            is_leading_edge=original_panel.is_leading_edge,
+            is_trailing_edge=original_panel.is_trailing_edge,
+        )
+
+        # Copy over the set-once attributes that were set during meshing.
+        if original_panel.is_right_edge is not None:
+            new_panel.is_right_edge = original_panel.is_right_edge
+        if original_panel.is_left_edge is not None:
+            new_panel.is_left_edge = original_panel.is_left_edge
+        if original_panel.local_chordwise_position is not None:
+            new_panel.local_chordwise_position = original_panel.local_chordwise_position
+        if original_panel.local_spanwise_position is not None:
+            new_panel.local_spanwise_position = original_panel.local_spanwise_position
+
+        return new_panel
+
     def test_geometry_matches_panel_corner_mismatch_Frpp(self):
         """Test _geometry_matches returns False when Panel Frpp_G_Cg doesn't match."""
         # Get two copies of meshed Wings.
         wings_a, wings_b = self._get_meshed_wings()
 
-        # Modify front right corner of first panel in wing_b.
-        wings_b[0].panels[0, 0].Frpp_G_Cg = wings_b[0].panels[
-            0, 0
-        ].Frpp_G_Cg + np.array([0.1, 0.0, 0.0])
+        # Create a new panel with modified front right corner and replace the
+        # original. Panel corners are immutable, so we create a new Panel.
+        original_panel = wings_b[0].panels[0, 0]
+        new_corner = original_panel.Frpp_G_Cg.copy() + np.array([0.1, 0.0, 0.0])
+        wings_b[0].panels[0, 0] = self._create_panel_with_modified_corner(
+            original_panel, "Frpp", new_corner
+        )
 
         wings_array_a = np.array(wings_a)
         wings_array_b = np.array(wings_b)
@@ -1048,10 +1096,13 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         # Get two copies of meshed Wings.
         wings_a, wings_b = self._get_meshed_wings()
 
-        # Modify front left corner of first panel in wing_b.
-        wings_b[0].panels[0, 0].Flpp_G_Cg = wings_b[0].panels[
-            0, 0
-        ].Flpp_G_Cg + np.array([0.1, 0.0, 0.0])
+        # Create a new panel with modified front left corner and replace the
+        # original. Panel corners are immutable, so we create a new Panel.
+        original_panel = wings_b[0].panels[0, 0]
+        new_corner = original_panel.Flpp_G_Cg.copy() + np.array([0.1, 0.0, 0.0])
+        wings_b[0].panels[0, 0] = self._create_panel_with_modified_corner(
+            original_panel, "Flpp", new_corner
+        )
 
         wings_array_a = np.array(wings_a)
         wings_array_b = np.array(wings_b)
@@ -1068,10 +1119,13 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         # Get two copies of meshed Wings.
         wings_a, wings_b = self._get_meshed_wings()
 
-        # Modify back left corner of first panel in wing_b.
-        wings_b[0].panels[0, 0].Blpp_G_Cg = wings_b[0].panels[
-            0, 0
-        ].Blpp_G_Cg + np.array([0.1, 0.0, 0.0])
+        # Create a new panel with modified back left corner and replace the
+        # original. Panel corners are immutable, so we create a new Panel.
+        original_panel = wings_b[0].panels[0, 0]
+        new_corner = original_panel.Blpp_G_Cg.copy() + np.array([0.1, 0.0, 0.0])
+        wings_b[0].panels[0, 0] = self._create_panel_with_modified_corner(
+            original_panel, "Blpp", new_corner
+        )
 
         wings_array_a = np.array(wings_a)
         wings_array_b = np.array(wings_b)
@@ -1088,10 +1142,13 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         # Get two copies of meshed Wings.
         wings_a, wings_b = self._get_meshed_wings()
 
-        # Modify back right corner of first panel in wing_b.
-        wings_b[0].panels[0, 0].Brpp_G_Cg = wings_b[0].panels[
-            0, 0
-        ].Brpp_G_Cg + np.array([0.1, 0.0, 0.0])
+        # Create a new panel with modified back right corner and replace the
+        # original. Panel corners are immutable, so we create a new Panel.
+        original_panel = wings_b[0].panels[0, 0]
+        new_corner = original_panel.Brpp_G_Cg.copy() + np.array([0.1, 0.0, 0.0])
+        wings_b[0].panels[0, 0] = self._create_panel_with_modified_corner(
+            original_panel, "Brpp", new_corner
+        )
 
         wings_array_a = np.array(wings_a)
         wings_array_b = np.array(wings_b)
@@ -1111,12 +1168,15 @@ class TestGeometryMatchesEdgeCases(unittest.TestCase):
         # Verify there are multiple panels.
         self.assertGreater(wings_a[0].panels.shape[0] * wings_a[0].panels.shape[1], 1)
 
-        # Modify a non-first panel (last panel in the grid).
+        # Create a new panel with modified front right corner for the last panel
+        # in the grid. Panel corners are immutable, so we create a new Panel.
         last_i = wings_b[0].panels.shape[0] - 1
         last_j = wings_b[0].panels.shape[1] - 1
-        wings_b[0].panels[last_i, last_j].Frpp_G_Cg = wings_b[0].panels[
-            last_i, last_j
-        ].Frpp_G_Cg + np.array([0.1, 0.0, 0.0])
+        original_panel = wings_b[0].panels[last_i, last_j]
+        new_corner = original_panel.Frpp_G_Cg.copy() + np.array([0.1, 0.0, 0.0])
+        wings_b[0].panels[last_i, last_j] = self._create_panel_with_modified_corner(
+            original_panel, "Frpp", new_corner
+        )
 
         wings_array_a = np.array(wings_a)
         wings_array_b = np.array(wings_b)

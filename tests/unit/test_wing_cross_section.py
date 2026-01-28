@@ -441,6 +441,119 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(max_wing_cross_section.chord, 50.0)
 
 
+class TestWingCrossSectionImmutability(unittest.TestCase):
+    """Tests for WingCrossSection attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        self.basic_wing_cross_section = (
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
+        )
+
+    def test_immutable_airfoil_property(self):
+        """Test that airfoil property is read only."""
+        new_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.airfoil = new_airfoil
+
+    def test_immutable_num_spanwise_panels_property(self):
+        """Test that num_spanwise_panels property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.num_spanwise_panels = 20
+
+    def test_immutable_chord_property(self):
+        """Test that chord property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.chord = 2.5
+
+    def test_immutable_Lp_Wcsp_Lpp_property(self):
+        """Test that Lp_Wcsp_Lpp property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.Lp_Wcsp_Lpp = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Lp_Wcsp_Lpp_array_read_only(self):
+        """Test that Lp_Wcsp_Lpp array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_wing_cross_section.Lp_Wcsp_Lpp[0] = 999.0
+
+    def test_immutable_angles_Wcsp_to_Wcs_ixyz_property(self):
+        """Test that angles_Wcsp_to_Wcs_ixyz property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_ixyz = np.array(
+                [1.0, 2.0, 3.0]
+            )
+
+    def test_immutable_angles_Wcsp_to_Wcs_ixyz_array_read_only(self):
+        """Test that angles_Wcsp_to_Wcs_ixyz array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[0] = 999.0
+
+    def test_immutable_control_surface_hinge_point_property(self):
+        """Test that control_surface_hinge_point property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.control_surface_hinge_point = 0.5
+
+    def test_immutable_control_surface_deflection_property(self):
+        """Test that control_surface_deflection property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.control_surface_deflection = 2.0
+
+    def test_immutable_spanwise_spacing_property(self):
+        """Test that spanwise_spacing property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.spanwise_spacing = "uniform"
+
+    def test_mutable_control_surface_symmetry_type(self):
+        """Test that control_surface_symmetry_type remains mutable."""
+        # This attribute must remain mutable for type 5 symmetry processing
+        self.basic_wing_cross_section.control_surface_symmetry_type = "asymmetric"
+        self.assertEqual(
+            self.basic_wing_cross_section.control_surface_symmetry_type, "asymmetric"
+        )
+
+        self.basic_wing_cross_section.control_surface_symmetry_type = None
+        self.assertIsNone(self.basic_wing_cross_section.control_surface_symmetry_type)
+
+    def test_set_once_validated_property(self):
+        """Test that validated can only be set once."""
+        # First set should succeed
+        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.basic_wing_cross_section.validated = True
+        self.assertTrue(self.basic_wing_cross_section.validated)
+
+        # Second set should raise AttributeError
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.validated = True
+
+    def test_set_once_symmetry_type_property(self):
+        """Test that symmetry_type can only be set once."""
+        # First set should succeed
+        self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
+        self.basic_wing_cross_section.symmetry_type = 4
+        self.assertEqual(self.basic_wing_cross_section.symmetry_type, 4)
+
+        # Second set should raise AttributeError
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.symmetry_type = 3
+
+    def test_validated_cannot_be_set_to_false(self):
+        """Test that validated cannot be set from True back to False."""
+        self.basic_wing_cross_section.validated = True
+
+        # Trying to set it again (even to the same value) should raise
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.validated = False
+
+    def test_symmetry_type_cannot_be_changed(self):
+        """Test that symmetry_type cannot be changed once set."""
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        # Trying to set it again (even to the same value) should raise
+        with self.assertRaises(AttributeError):
+            self.basic_wing_cross_section.symmetry_type = 1
+
+
 class TestWingCrossSectionDeepCopy(unittest.TestCase):
     """Tests for WingCrossSection.__deepcopy__ method."""
 
@@ -513,36 +626,38 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         )
 
     def test_deepcopy_independence_modifying_copy(self):
-        """Test that modifying the copy does not affect the original."""
+        """Test that immutable attributes cannot be modified on the copy."""
         import copy
 
         original = self.basic_wing_cross_section
-        original_chord = original.chord
-        original_Lp = original.Lp_Wcsp_Lpp.copy()
-
         copied = copy.deepcopy(original)
 
-        copied.chord = 999.0
-        copied.Lp_Wcsp_Lpp[0] = 100.0
+        # Verify that immutable properties cannot be set
+        with self.assertRaises(AttributeError):
+            copied.chord = 999.0
 
-        self.assertEqual(original.chord, original_chord)
-        np.testing.assert_array_equal(original.Lp_Wcsp_Lpp, original_Lp)
+        # Verify that numpy arrays are read only
+        with self.assertRaises(ValueError):
+            copied.Lp_Wcsp_Lpp[0] = 100.0
 
     def test_deepcopy_independence_modifying_original(self):
-        """Test that modifying the original does not affect the copy."""
+        """Test that immutable attributes cannot be modified on the original."""
         import copy
 
         original = self.basic_wing_cross_section
         copied = copy.deepcopy(original)
 
-        copied_chord = copied.chord
-        copied_Lp = copied.Lp_Wcsp_Lpp.copy()
+        # Verify that immutable properties cannot be set on the original
+        with self.assertRaises(AttributeError):
+            original.chord = 999.0
 
-        original.chord = 999.0
-        original.Lp_Wcsp_Lpp[0] = 100.0
+        # Verify that numpy arrays are read only on the original
+        with self.assertRaises(ValueError):
+            original.Lp_Wcsp_Lpp[0] = 100.0
 
-        self.assertEqual(copied.chord, copied_chord)
-        np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, copied_Lp)
+        # Verify that the copy still has the original values
+        self.assertEqual(copied.chord, original.chord)
+        np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, original.Lp_Wcsp_Lpp)
 
     def test_deepcopy_with_none_values(self):
         """Test that deepcopy handles None values correctly."""
@@ -584,16 +699,23 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp)
 
     def test_deepcopy_airfoil_independence(self):
-        """Test that modifying copied Airfoil does not affect original."""
+        """Test that deepcopied Airfoil is a separate instance with immutable attributes."""
         import copy
 
         original = self.basic_wing_cross_section
-        original_airfoil_name = original.airfoil.name
-
         copied = copy.deepcopy(original)
-        copied.airfoil.name = "modified_name"
 
-        self.assertEqual(original.airfoil.name, original_airfoil_name)
+        # Verify that the Airfoil is a separate instance
+        self.assertIsNot(copied.airfoil, original.airfoil)
+
+        # Verify that the Airfoil's name is immutable (no setter)
+        with self.assertRaises(AttributeError):
+            copied.airfoil.name = "modified_name"
+
+        # Verify that the Airfoil arrays are independent and read only
+        self.assertIsNot(copied.airfoil.outline_A_lp, original.airfoil.outline_A_lp)
+        with self.assertRaises(ValueError):
+            copied.airfoil.outline_A_lp[0, 0] = 999.0
 
 
 if __name__ == "__main__":

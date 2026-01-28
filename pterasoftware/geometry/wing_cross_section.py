@@ -28,6 +28,33 @@ class WingCrossSection:
 
     __deepcopy__: Creates a deep copy of this WingCrossSection.
 
+    airfoil: The Airfoil at this WingCrossSection.
+
+    num_spanwise_panels: The number of spanwise Panels between this WingCrossSection and
+    the next one.
+
+    chord: The Wing's chord at this WingCrossSection.
+
+    Lp_Wcsp_Lpp: The position of this WingCrossSection's leading edge in parent wing
+    cross section axes, relative to the parent leading edge point.
+
+    angles_Wcsp_to_Wcs_ixyz: The angle vector of rotation angles defining the
+    orientation of this WingCrossSection's axes relative to the parent wing cross
+    section axes.
+
+    control_surface_hinge_point: The location of the control surface hinge from the
+    leading edge as a fraction of chord.
+
+    control_surface_deflection: The control deflection in degrees.
+
+    spanwise_spacing: The spanwise spacing type for panels between this WingCrossSection
+    and the next one.
+
+    validated: A flag indicating if this WingCrossSection has been fully validated by
+    its parent Wing.
+
+    symmetry_type: The symmetry type inherited from the parent Wing.
+
     get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
     outline and mean camber line.
 
@@ -51,6 +78,18 @@ class WingCrossSection:
     point. Is None if the WingCrossSection hasn't been fully validated yet.
 
     **Notes:**
+
+    Immutable attributes (airfoil, num_spanwise_panels, chord, Lp_Wcsp_Lpp,
+    angles_Wcsp_to_Wcs_ixyz, control_surface_hinge_point, control_surface_deflection,
+    and spanwise_spacing) are set during initialization and cannot be modified
+    afterward. The numpy arrays Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz are made read
+    only to prevent in place mutation.
+
+    The validated and symmetry_type attributes are set once by the parent Wing and
+    cannot be modified after being set.
+
+    The control_surface_symmetry_type attribute remains mutable as it may be modified by
+    Airplane.process_wing_symmetry() for type 5 symmetry handling.
 
     The first WingCrossSection in a Wing's wing_cross_section list is known as the root
     WingCrossSection. The last is known as the tip WingCrossSection.
@@ -139,14 +178,14 @@ class WingCrossSection:
             WingCrossSections it must be None.
         :return: None
         """
-        # Validate airfoil.
+        # Validate airfoil (immutable).
         if not isinstance(airfoil, airfoil_mod.Airfoil):
             raise TypeError("airfoil must be an Airfoil.")
-        self.airfoil = airfoil
+        self._airfoil = airfoil
 
-        # Perform a preliminary validation for num_spanwise_panels. The parent Wing
-        # will later check that this is None if this WingCrossSection is a tip
-        # WingCrossSection.
+        # Perform a preliminary validation for num_spanwise_panels (immutable). The
+        # parent Wing will later check that this is None if this WingCrossSection is
+        # a tip WingCrossSection.
         if num_spanwise_panels is not None:
             num_spanwise_panels = _parameter_validation.int_in_range_return_int(
                 num_spanwise_panels,
@@ -154,27 +193,28 @@ class WingCrossSection:
                 min_val=1,
                 min_inclusive=True,
             )
-        self.num_spanwise_panels = num_spanwise_panels
+        self._num_spanwise_panels = num_spanwise_panels
 
-        # Validate chord.
-        self.chord = _parameter_validation.number_in_range_return_float(
+        # Validate chord (immutable).
+        self._chord = _parameter_validation.number_in_range_return_float(
             chord, "chord", min_val=0.0, min_inclusive=False
         )
 
-        # Perform a preliminary validation for Lp_Wcsp_Lpp. The parent Wing will
-        # later check that this is a zero vector if this WingCrossSection is a root
-        # WingCrossSection.
+        # Perform a preliminary validation for Lp_Wcsp_Lpp (immutable). The parent
+        # Wing will later check that this is a zero vector if this WingCrossSection
+        # is a root WingCrossSection.
         Lp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
         )
         Lp_Wcsp_Lpp[1] = _parameter_validation.number_in_range_return_float(
             Lp_Wcsp_Lpp[1], "Lp_Wcsp_Lpp[1]", min_val=0.0, min_inclusive=True
         )
-        self.Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
+        self._Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
+        self._Lp_Wcsp_Lpp.flags.writeable = False
 
-        # Perform a preliminary validation for angles_Wcsp_to_Wcs_ixyz. The parent
-        # Wing will later check that this is a zero vector if this WingCrossSection
-        # is a root WingCrossSection.
+        # Perform a preliminary validation for angles_Wcsp_to_Wcs_ixyz (immutable).
+        # The parent Wing will later check that this is a zero vector if this
+        # WingCrossSection is a root WingCrossSection.
         angles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
                 angles_Wcsp_to_Wcs_ixyz, "angles_Wcsp_to_Wcs_ixyz"
@@ -191,9 +231,11 @@ class WingCrossSection:
                     True,
                 )
             )
-        self.angles_Wcsp_to_Wcs_ixyz = angles_Wcsp_to_Wcs_ixyz
+        self._angles_Wcsp_to_Wcs_ixyz = angles_Wcsp_to_Wcs_ixyz
+        self._angles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
-        # Validate control surface symmetry type.
+        # Validate control surface symmetry type (mutable, may be modified by
+        # Airplane.process_wing_symmetry for type 5 symmetry).
         if control_surface_symmetry_type is not None:
             control_surface_symmetry_type = _parameter_validation.str_return_str(
                 control_surface_symmetry_type, "control_surface_symmetry_type"
@@ -209,8 +251,9 @@ class WingCrossSection:
                 )
         self.control_surface_symmetry_type = control_surface_symmetry_type
 
-        # Validate control_surface_hinge_point and control_surface_deflection.
-        self.control_surface_hinge_point = (
+        # Validate control_surface_hinge_point and control_surface_deflection
+        # (immutable).
+        self._control_surface_hinge_point = (
             _parameter_validation.number_in_range_return_float(
                 control_surface_hinge_point,
                 "control_surface_hinge_point",
@@ -220,7 +263,7 @@ class WingCrossSection:
                 False,
             )
         )
-        self.control_surface_deflection = (
+        self._control_surface_deflection = (
             _parameter_validation.number_in_range_return_float(
                 control_surface_deflection,
                 "control_surface_deflection",
@@ -231,9 +274,9 @@ class WingCrossSection:
             )
         )
 
-        # Perform a preliminary validation for spanwise_spacing. The parent Wing will
-        # later check that this is None if this WingCrossSection is a tip
-        # WingCrossSection.
+        # Perform a preliminary validation for spanwise_spacing (immutable). The
+        # parent Wing will later check that this is None if this WingCrossSection is
+        # a tip WingCrossSection.
         if spanwise_spacing is not None:
             spanwise_spacing = _parameter_validation.str_return_str(
                 spanwise_spacing, "spanwise_spacing"
@@ -244,17 +287,17 @@ class WingCrossSection:
                     f"Values for non None spanwise_spacing must be one of "
                     f"{valid_non_none_spanwise_spacings}."
                 )
-        self.spanwise_spacing = spanwise_spacing
+        self._spanwise_spacing = spanwise_spacing
 
-        # Define a flag for if this WingCrossSection has been fully validated. This
-        # will be set by the parent Wing after calling its additional validation
-        # methods.
-        self.validated: bool = False
+        # Define a flag for if this WingCrossSection has been fully validated
+        # (set once). This will be set by the parent Wing after calling its
+        # additional validation methods.
+        self._validated: bool = False
 
-        # Define a flag for this WingCrossSection's parent Wing's symmetry type. This
-        # will be set by its parent Wing immediately after it has its own
-        # symmetry_type parameter set by its parent Airplane.
-        self.symmetry_type: int | None = None
+        # Define a flag for this WingCrossSection's parent Wing's symmetry type
+        # (set once). This will be set by its parent Wing immediately after it has
+        # its own symmetry_type parameter set by its parent Airplane.
+        self._symmetry_type: int | None = None
 
     def __deepcopy__(self, memo: dict) -> WingCrossSection:
         """Creates a deep copy of this WingCrossSection.
@@ -272,32 +315,142 @@ class WingCrossSection:
         # Store this WingCrossSection in memo to handle potential circular references.
         memo[id(self)] = new_wing_cross_section
 
-        # Deepcopy the Airfoil to ensure independence.
-        new_wing_cross_section.airfoil = copy.deepcopy(self.airfoil, memo)
+        # Deepcopy the Airfoil to ensure independence (immutable).
+        new_wing_cross_section._airfoil = copy.deepcopy(self._airfoil, memo)
 
-        # Copy simple attributes (immutable or primitive types).
-        new_wing_cross_section.num_spanwise_panels = self.num_spanwise_panels
-        new_wing_cross_section.chord = self.chord
+        # Copy simple immutable attributes (primitive types).
+        new_wing_cross_section._num_spanwise_panels = self._num_spanwise_panels
+        new_wing_cross_section._chord = self._chord
+        new_wing_cross_section._control_surface_hinge_point = (
+            self._control_surface_hinge_point
+        )
+        new_wing_cross_section._control_surface_deflection = (
+            self._control_surface_deflection
+        )
+        new_wing_cross_section._spanwise_spacing = self._spanwise_spacing
+
+        # Copy mutable attribute.
         new_wing_cross_section.control_surface_symmetry_type = (
             self.control_surface_symmetry_type
         )
-        new_wing_cross_section.control_surface_hinge_point = (
-            self.control_surface_hinge_point
-        )
-        new_wing_cross_section.control_surface_deflection = (
-            self.control_surface_deflection
-        )
-        new_wing_cross_section.spanwise_spacing = self.spanwise_spacing
-        new_wing_cross_section.validated = self.validated
-        new_wing_cross_section.symmetry_type = self.symmetry_type
 
-        # Copy numpy arrays (mutable, need independent copies).
-        new_wing_cross_section.Lp_Wcsp_Lpp = self.Lp_Wcsp_Lpp.copy()
-        new_wing_cross_section.angles_Wcsp_to_Wcs_ixyz = (
-            self.angles_Wcsp_to_Wcs_ixyz.copy()
+        # Copy set once attributes directly to private fields to preserve their state.
+        new_wing_cross_section._validated = self._validated
+        new_wing_cross_section._symmetry_type = self._symmetry_type
+
+        # Copy numpy arrays and make them read only.
+        new_wing_cross_section._Lp_Wcsp_Lpp = self._Lp_Wcsp_Lpp.copy()
+        new_wing_cross_section._Lp_Wcsp_Lpp.flags.writeable = False
+        new_wing_cross_section._angles_Wcsp_to_Wcs_ixyz = (
+            self._angles_Wcsp_to_Wcs_ixyz.copy()
         )
+        new_wing_cross_section._angles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
         return new_wing_cross_section
+
+    # --- Immutable: read-only properties ---
+
+    @property
+    def airfoil(self) -> airfoil_mod.Airfoil:
+        """The Airfoil at this WingCrossSection.
+
+        :return: The Airfoil at this WingCrossSection.
+        """
+        return self._airfoil
+
+    @property
+    def num_spanwise_panels(self) -> int | None:
+        """The number of spanwise Panels between this WingCrossSection and the next one.
+
+        :return: The number of spanwise Panels, or None for tip WingCrossSections.
+        """
+        return self._num_spanwise_panels
+
+    @property
+    def chord(self) -> float:
+        """The Wing's chord at this WingCrossSection.
+
+        :return: The chord length in meters.
+        """
+        return self._chord
+
+    @property
+    def Lp_Wcsp_Lpp(self) -> np.ndarray:
+        """The position of this WingCrossSection's leading edge in parent wing cross
+        section axes, relative to the parent leading edge point.
+
+        :return: A (3,) ndarray of floats representing the position in meters. The array
+            is read only to prevent in place mutation.
+        """
+        return self._Lp_Wcsp_Lpp
+
+    @property
+    def angles_Wcsp_to_Wcs_ixyz(self) -> np.ndarray:
+        """The angle vector of rotation angles defining the orientation of this
+        WingCrossSection's axes relative to the parent wing cross section axes.
+
+        :return: A (3,) ndarray of floats representing the rotation angles in degrees.
+            The array is read only to prevent in place mutation.
+        """
+        return self._angles_Wcsp_to_Wcs_ixyz
+
+    @property
+    def control_surface_hinge_point(self) -> float:
+        """The location of the control surface hinge from the leading edge as a fraction
+        of chord.
+
+        :return: The hinge location as a fraction of chord in the range (0.0, 1.0).
+        """
+        return self._control_surface_hinge_point
+
+    @property
+    def control_surface_deflection(self) -> float:
+        """The control deflection in degrees.
+
+        :return: The deflection in degrees. Deflection downwards is positive.
+        """
+        return self._control_surface_deflection
+
+    @property
+    def spanwise_spacing(self) -> str | None:
+        """The spanwise spacing type for panels between this WingCrossSection and the
+        next one.
+
+        :return: "cosine" or "uniform" for non tip WingCrossSections, None for tip
+            WingCrossSections.
+        """
+        return self._spanwise_spacing
+
+    # --- Set-once: properties with single-assignment enforcement ---
+
+    @property
+    def validated(self) -> bool:
+        """A flag indicating if this WingCrossSection has been fully validated by its
+        parent Wing.
+
+        :return: True if validated, False otherwise.
+        """
+        return self._validated
+
+    @validated.setter
+    def validated(self, value: bool) -> None:
+        if self._validated:
+            raise AttributeError("validated can only be set once")
+        self._validated = value
+
+    @property
+    def symmetry_type(self) -> int | None:
+        """The symmetry type inherited from the parent Wing.
+
+        :return: The symmetry type (1, 2, 3, or 4) or None if not yet set.
+        """
+        return self._symmetry_type
+
+    @symmetry_type.setter
+    def symmetry_type(self, value: int) -> None:
+        if self._symmetry_type is not None:
+            raise AttributeError("symmetry_type can only be set once")
+        self._symmetry_type = value
 
     # TEST: Consider adding unit tests for this method.
     def get_plottable_data(

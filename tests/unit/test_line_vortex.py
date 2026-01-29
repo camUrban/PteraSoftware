@@ -1,4 +1,4 @@
-"""This module contains a class to test LineVortices."""
+"""This module contains classes to test LineVortices."""
 
 import unittest
 
@@ -260,7 +260,6 @@ class TestLineVortex(unittest.TestCase):
         self.assertEqual(line_vortex.strength, 0.0)
 
 
-
 class TestLineVortexImmutability(unittest.TestCase):
     """Tests for LineVortex attribute immutability."""
 
@@ -271,12 +270,16 @@ class TestLineVortexImmutability(unittest.TestCase):
     def test_Slvp_GP1_CgP1_property_is_read_only(self):
         """Test that Slvp_GP1_CgP1 property cannot be reassigned."""
         with self.assertRaises(AttributeError):
-            self.basic_line_vortex.Slvp_GP1_CgP1 = np.array([1.0, 1.0, 1.0], dtype=float)
+            self.basic_line_vortex.Slvp_GP1_CgP1 = np.array(
+                [1.0, 1.0, 1.0], dtype=float
+            )
 
     def test_Elvp_GP1_CgP1_property_is_read_only(self):
         """Test that Elvp_GP1_CgP1 property cannot be reassigned."""
         with self.assertRaises(AttributeError):
-            self.basic_line_vortex.Elvp_GP1_CgP1 = np.array([2.0, 2.0, 2.0], dtype=float)
+            self.basic_line_vortex.Elvp_GP1_CgP1 = np.array(
+                [2.0, 2.0, 2.0], dtype=float
+            )
 
     def test_Slvp_GP1_CgP1_array_is_immutable(self):
         """Test that Slvp_GP1_CgP1 array cannot be modified in place."""

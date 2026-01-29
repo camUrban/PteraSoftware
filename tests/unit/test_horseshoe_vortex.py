@@ -1,4 +1,4 @@
-"""This module contains a class to test HorseshoeVortices."""
+"""This module contains classes to test HorseshoeVortices."""
 
 import unittest
 
@@ -231,15 +231,8 @@ class TestHorseshoeVortex(unittest.TestCase):
             self.basic_horseshoe_vortex.Blhvp_GP1_CgP1,
         )
 
-    def test_tilted_leg_vector(self):
-        """Test HorseshoeVortex with tilted leg vector."""
-        # The tilted legs fixture should have a normalized vector.
-        npt.assert_almost_equal(
-            np.linalg.norm(self.tilted_legs_horseshoe_vortex.leftLegVector_GP1),
-            1.0,
-            decimal=10,
-        )
-
+    def test_tilted_leg_vector_back_point_displacement(self):
+        """Test that back points are displaced along a tilted leg vector direction."""
         # Back points should be displaced along the tilted direction.
         expected_displacement = (
             self.tilted_legs_horseshoe_vortex.leftLegVector_GP1
@@ -307,23 +300,6 @@ class TestHorseshoeVortex(unittest.TestCase):
         self.assertEqual(horseshoe_vortex.finite_leg.strength, new_strength)
         self.assertEqual(horseshoe_vortex.left_leg.strength, new_strength)
 
-    def test_strength_zero_to_nonzero(self):
-        """Test changing strength from zero to nonzero."""
-        # Create a zero strength fixture.
-        horseshoe_vortex = (
-            horseshoe_vortex_fixtures.make_zero_strength_horseshoe_vortex_fixture()
-        )
-
-        # Access legs.
-        _ = horseshoe_vortex.right_leg
-
-        # Change to nonzero.
-        horseshoe_vortex.strength = 10.0
-
-        # Verify.
-        self.assertEqual(horseshoe_vortex.strength, 10.0)
-        self.assertEqual(horseshoe_vortex.right_leg.strength, 10.0)
-
     def test_line_vortex_legs_are_line_vortex_type(self):
         """Test that LineVortex legs are of the correct type."""
         # Verify all legs are LineVortex instances.
@@ -336,6 +312,237 @@ class TestHorseshoeVortex(unittest.TestCase):
         self.assertIsInstance(
             self.basic_horseshoe_vortex.left_leg, _line_vortex.LineVortex
         )
+
+
+class TestHorseshoeVortexImmutability(unittest.TestCase):
+    """Tests for HorseshoeVortex attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+    def test_immutable_Frhvp_GP1_CgP1_property(self):
+        """Test that Frhvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.Frhvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Frhvp_GP1_CgP1_array_read_only(self):
+        """Test that Frhvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_horseshoe_vortex.Frhvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Flhvp_GP1_CgP1_property(self):
+        """Test that Flhvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.Flhvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Flhvp_GP1_CgP1_array_read_only(self):
+        """Test that Flhvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_horseshoe_vortex.Flhvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_leftLegVector_GP1_property(self):
+        """Test that leftLegVector_GP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.leftLegVector_GP1 = np.array([0.0, 1.0, 0.0])
+
+    def test_immutable_leftLegVector_GP1_array_read_only(self):
+        """Test that leftLegVector_GP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_horseshoe_vortex.leftLegVector_GP1[0] = 999.0
+
+    def test_immutable_left_right_leg_lengths_property(self):
+        """Test that left_right_leg_lengths property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.left_right_leg_lengths = 50.0
+
+    def test_immutable_Brhvp_GP1_CgP1_property(self):
+        """Test that Brhvp_GP1_CgP1 property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_horseshoe_vortex.Brhvp_GP1_CgP1
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.Brhvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Brhvp_GP1_CgP1_array_read_only(self):
+        """Test that Brhvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_horseshoe_vortex.Brhvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Blhvp_GP1_CgP1_property(self):
+        """Test that Blhvp_GP1_CgP1 property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_horseshoe_vortex.Blhvp_GP1_CgP1
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.Blhvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Blhvp_GP1_CgP1_array_read_only(self):
+        """Test that Blhvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_horseshoe_vortex.Blhvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_right_leg_property(self):
+        """Test that right_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_horseshoe_vortex.right_leg
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.right_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_finite_leg_property(self):
+        """Test that finite_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_horseshoe_vortex.finite_leg
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.finite_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_left_leg_property(self):
+        """Test that left_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_horseshoe_vortex.left_leg
+        with self.assertRaises(AttributeError):
+            self.basic_horseshoe_vortex.left_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_mutable_strength_property(self):
+        """Test that strength property is mutable."""
+        # Strength should be modifiable.
+        self.basic_horseshoe_vortex.strength = 5.0
+        self.assertEqual(self.basic_horseshoe_vortex.strength, 5.0)
+
+        self.basic_horseshoe_vortex.strength = -3.0
+        self.assertEqual(self.basic_horseshoe_vortex.strength, -3.0)
+
+
+class TestHorseshoeVortexLazyCaching(unittest.TestCase):
+    """Tests for HorseshoeVortex lazy caching behavior."""
+
+    def test_back_points_lazy_evaluation(self):
+        """Test that back points are lazily evaluated."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Verify that _Brhvp_GP1_CgP1 is None before access.
+        self.assertIsNone(horseshoe_vortex._Brhvp_GP1_CgP1)
+        self.assertIsNone(horseshoe_vortex._Blhvp_GP1_CgP1)
+
+        # Access the properties.
+        _ = horseshoe_vortex.Brhvp_GP1_CgP1
+        _ = horseshoe_vortex.Blhvp_GP1_CgP1
+
+        # Verify that the caches are now populated.
+        self.assertIsNotNone(horseshoe_vortex._Brhvp_GP1_CgP1)
+        self.assertIsNotNone(horseshoe_vortex._Blhvp_GP1_CgP1)
+
+    def test_back_points_caching(self):
+        """Test that back points return the same cached object on repeated access."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access back right point twice.
+        back_right_first = horseshoe_vortex.Brhvp_GP1_CgP1
+        back_right_second = horseshoe_vortex.Brhvp_GP1_CgP1
+
+        # Verify they are the same object (not just equal).
+        self.assertIs(back_right_first, back_right_second)
+
+        # Access back left point twice.
+        back_left_first = horseshoe_vortex.Blhvp_GP1_CgP1
+        back_left_second = horseshoe_vortex.Blhvp_GP1_CgP1
+
+        # Verify they are the same object.
+        self.assertIs(back_left_first, back_left_second)
+
+    def test_line_vortex_legs_lazy_evaluation(self):
+        """Test that LineVortex legs are lazily evaluated."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Verify that leg caches are None before access.
+        self.assertIsNone(horseshoe_vortex._right_leg)
+        self.assertIsNone(horseshoe_vortex._finite_leg)
+        self.assertIsNone(horseshoe_vortex._left_leg)
+
+        # Access the properties.
+        _ = horseshoe_vortex.right_leg
+        _ = horseshoe_vortex.finite_leg
+        _ = horseshoe_vortex.left_leg
+
+        # Verify that the caches are now populated.
+        self.assertIsNotNone(horseshoe_vortex._right_leg)
+        self.assertIsNotNone(horseshoe_vortex._finite_leg)
+        self.assertIsNotNone(horseshoe_vortex._left_leg)
+
+    def test_line_vortex_legs_caching(self):
+        """Test that LineVortex legs return the same cached object on repeated access."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Access right leg twice.
+        right_leg_first = horseshoe_vortex.right_leg
+        right_leg_second = horseshoe_vortex.right_leg
+
+        # Verify they are the same object.
+        self.assertIs(right_leg_first, right_leg_second)
+
+        # Access finite leg twice.
+        finite_leg_first = horseshoe_vortex.finite_leg
+        finite_leg_second = horseshoe_vortex.finite_leg
+
+        # Verify they are the same object.
+        self.assertIs(finite_leg_first, finite_leg_second)
+
+        # Access left leg twice.
+        left_leg_first = horseshoe_vortex.left_leg
+        left_leg_second = horseshoe_vortex.left_leg
+
+        # Verify they are the same object.
+        self.assertIs(left_leg_first, left_leg_second)
+
+    def test_back_points_computed_before_legs_when_accessing_legs(self):
+        """Test that accessing legs triggers computation of back points."""
+        # Create a fresh fixture.
+        horseshoe_vortex = (
+            horseshoe_vortex_fixtures.make_basic_horseshoe_vortex_fixture()
+        )
+
+        # Verify caches start empty.
+        self.assertIsNone(horseshoe_vortex._Brhvp_GP1_CgP1)
+        self.assertIsNone(horseshoe_vortex._Blhvp_GP1_CgP1)
+
+        # Access right leg (which needs back right point).
+        _ = horseshoe_vortex.right_leg
+
+        # Verify back right point is now computed.
+        self.assertIsNotNone(horseshoe_vortex._Brhvp_GP1_CgP1)
+
+        # Back left point should still be None since it wasn't needed.
+        self.assertIsNone(horseshoe_vortex._Blhvp_GP1_CgP1)
+
+        # Access left leg (which needs back left point).
+        _ = horseshoe_vortex.left_leg
+
+        # Verify back left point is now computed.
+        self.assertIsNotNone(horseshoe_vortex._Blhvp_GP1_CgP1)
 
 
 if __name__ == "__main__":

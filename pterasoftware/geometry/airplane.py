@@ -366,7 +366,6 @@ class Airplane:
             )
         return self._num_panels
 
-    # TEST: Add unit tests for this method.
     @property
     def T_pas_G_Cg_to_GP1_CgP1(self) -> np.ndarray:
         """The passive transformation matrix from this Airplane's geometry axes,
@@ -383,8 +382,15 @@ class Airplane:
             Airplane's geometry axes, relative to its CG.
         """
         if self._T_pas_G_Cg_to_GP1_CgP1 is None:
+            # generate_trans_T with passive=True expects the `translations` parameter
+            # to be the position of the target reference point (CgP1) relative to the
+            # source reference point (Cg). Using the notation from
+            # AXES_POINTS_AND_FRAMES.md: translations=CgP1_G_Cg. However, we have
+            # Cg_GP1_CgP1 (position of Cg, in GP1 axes, relative to CgP1). Since
+            # geometry axes G and GP1 are parallel (pure translation, no rotation):
+            # CgP1_G_Cg=-Cg_GP1_CgP1.
             self._T_pas_G_Cg_to_GP1_CgP1 = _transformations.generate_trans_T(
-                translations=self._Cg_GP1_CgP1, passive=True
+                translations=-self._Cg_GP1_CgP1, passive=True
             )
             self._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
         return self._T_pas_G_Cg_to_GP1_CgP1
@@ -514,7 +520,6 @@ class Airplane:
         # Close all the plotters
         pv.close_all()
 
-    # TEST: Consider adding unit tests for this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[list[list[np.ndarray]]] | None:
@@ -764,7 +769,6 @@ class Airplane:
                 "0.0, 0.0, 0.0) by definition."
             )
 
-    # TEST: Add more thorough unit tests for this method.
     @staticmethod
     def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
         """Processes a Wing to determine what type of symmetry it has. If necessary, it

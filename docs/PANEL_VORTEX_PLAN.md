@@ -46,9 +46,6 @@ should be immutable are set to read-only using `arr.flags.writeable = False`:
    operations like subtraction create new writable arrays regardless of input writability)
 4. **Deepcopy**: Use `.copy()` then set `flags.writeable = False` on the copy
 
-**Status**: Implemented for `Panel` and `LineVortex`. Still needed for `RingVortex`
-and `HorseshoeVortex`.
-
 ---
 
 ## Panel Class (`_panel.py`)

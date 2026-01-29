@@ -348,6 +348,7 @@ class Panel:
         """
         if self._rightLeg_G is None:
             self._rightLeg_G = cast(np.ndarray, self._Frpp_G_Cg - self._Brpp_G_Cg)
+            self._rightLeg_G.flags.writeable = False
         return self._rightLeg_G
 
     @property
@@ -359,6 +360,7 @@ class Panel:
         """
         if self._frontLeg_G is None:
             self._frontLeg_G = cast(np.ndarray, self._Flpp_G_Cg - self._Frpp_G_Cg)
+            self._frontLeg_G.flags.writeable = False
         return self._frontLeg_G
 
     @property
@@ -370,6 +372,7 @@ class Panel:
         """
         if self._leftLeg_G is None:
             self._leftLeg_G = cast(np.ndarray, self._Blpp_G_Cg - self._Flpp_G_Cg)
+            self._leftLeg_G.flags.writeable = False
         return self._leftLeg_G
 
     @property
@@ -381,6 +384,7 @@ class Panel:
         """
         if self._backLeg_G is None:
             self._backLeg_G = cast(np.ndarray, self._Brpp_G_Cg - self._Blpp_G_Cg)
+            self._backLeg_G.flags.writeable = False
         return self._backLeg_G
 
     @property
@@ -393,6 +397,7 @@ class Panel:
         """
         if self._Frbvp_G_Cg is None:
             self._Frbvp_G_Cg = self._Brpp_G_Cg + 0.75 * self.rightLeg_G
+            self._Frbvp_G_Cg.flags.writeable = False
         return self._Frbvp_G_Cg
 
     @property
@@ -405,6 +410,7 @@ class Panel:
         """
         if self._Flbvp_G_Cg is None:
             self._Flbvp_G_Cg = self._Flpp_G_Cg + 0.25 * self.leftLeg_G
+            self._Flbvp_G_Cg.flags.writeable = False
         return self._Flbvp_G_Cg
 
     @property
@@ -431,6 +437,7 @@ class Panel:
             # is halfway between the points three quarters of the way down the left and
             # right legs of the Panel. Then populate the class attribute.
             self._Cpp_G_Cg = rightThreeQuarterChord_G_Cg + 0.5 * threeQuarterChord_G
+            self._Cpp_G_Cg.flags.writeable = False
         return self._Cpp_G_Cg
 
     @property
@@ -449,6 +456,7 @@ class Panel:
             cross_G = cast(np.ndarray, np.cross(firstDiagonal_G, secondDiagonal_G))
 
             self._unitNormal_G = cast(np.ndarray, cross_G / np.linalg.norm(cross_G))
+            self._unitNormal_G.flags.writeable = False
         return self._unitNormal_G
 
     @property
@@ -650,6 +658,7 @@ class Panel:
             self._rightLeg_GP1 = cast(
                 np.ndarray, self._Frpp_GP1_CgP1 - self._Brpp_GP1_CgP1
             )
+            self._rightLeg_GP1.flags.writeable = False
         return self._rightLeg_GP1
 
     @property
@@ -667,6 +676,7 @@ class Panel:
             self._frontLeg_GP1 = cast(
                 np.ndarray, self._Flpp_GP1_CgP1 - self._Frpp_GP1_CgP1
             )
+            self._frontLeg_GP1.flags.writeable = False
         return self._frontLeg_GP1
 
     @property
@@ -684,6 +694,7 @@ class Panel:
             self._leftLeg_GP1 = cast(
                 np.ndarray, self._Blpp_GP1_CgP1 - self._Flpp_GP1_CgP1
             )
+            self._leftLeg_GP1.flags.writeable = False
         return self._leftLeg_GP1
 
     @property
@@ -701,6 +712,7 @@ class Panel:
             self._backLeg_GP1 = cast(
                 np.ndarray, self._Brpp_GP1_CgP1 - self._Blpp_GP1_CgP1
             )
+            self._backLeg_GP1.flags.writeable = False
         return self._backLeg_GP1
 
     @property
@@ -721,6 +733,7 @@ class Panel:
             self._Frbvp_GP1_CgP1 = cast(np.ndarray, self._Brpp_GP1_CgP1) + 0.75 * cast(
                 np.ndarray, self._rightLeg_GP1
             )
+            self._Frbvp_GP1_CgP1.flags.writeable = False
         return self._Frbvp_GP1_CgP1
 
     @property
@@ -741,6 +754,7 @@ class Panel:
             self._Flbvp_GP1_CgP1 = cast(np.ndarray, self._Flpp_GP1_CgP1) + 0.25 * cast(
                 np.ndarray, self._leftLeg_GP1
             )
+            self._Flbvp_GP1_CgP1.flags.writeable = False
         return self._Flbvp_GP1_CgP1
 
     @property
@@ -780,6 +794,7 @@ class Panel:
             self._Cpp_GP1_CgP1 = (
                 rightThreeQuarterChord_GP1_CgP1 + 0.5 * threeQuarterChord_GP1
             )
+            self._Cpp_GP1_CgP1.flags.writeable = False
         return self._Cpp_GP1_CgP1
 
     @property
@@ -812,6 +827,7 @@ class Panel:
             self._unitNormal_GP1 = cast(
                 np.ndarray, cross_GP1 / np.linalg.norm(cross_GP1)
             )
+            self._unitNormal_GP1.flags.writeable = False
         return self._unitNormal_GP1
 
     # --- Non property methods ---

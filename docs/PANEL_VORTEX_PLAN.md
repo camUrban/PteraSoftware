@@ -1,4 +1,4 @@
-# Panel and Vortex Class Plan
+# Panel and Vortex Class Plan - IMPLEMENTED
 
 This document describes the planned refactoring of class attributes to use a consistent
 pattern of immutability and lazy caching across Panel and the vortex classes.

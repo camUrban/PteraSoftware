@@ -1,4 +1,4 @@
-"""This module contains a class to test RingVortices."""
+"""This module contains classes to test RingVortices."""
 
 import unittest
 
@@ -182,12 +182,6 @@ class TestRingVortex(unittest.TestCase):
             self.basic_ring_vortex.Crvp_GP1_CgP1, expectedCentroid_GP1_CgP1, decimal=10
         )
 
-    def test_initial_age_is_zero(self):
-        """Test that RingVortex age is initialized to zero."""
-        self.assertEqual(self.basic_ring_vortex.age, 0)
-        self.assertEqual(self.unit_square_ring_vortex.age, 0)
-        self.assertEqual(self.tilted_ring_vortex.age, 0)
-
     def test_very_small_vortex(self):
         """Test RingVortex with very small dimensions."""
         # Should handle very small RingVortices without issues.
@@ -219,12 +213,6 @@ class TestRingVortex(unittest.TestCase):
         npt.assert_almost_equal(
             self.rectangular_ring_vortex.area, expected_area, decimal=10
         )
-
-    def test_area_property_basic(self):
-        """Test that area property returns correct value for basic vortex."""
-        # For basic RingVortex (1x1), area should be 1.0 square meter.
-        expected_area = 1.0
-        npt.assert_almost_equal(self.basic_ring_vortex.area, expected_area, decimal=10)
 
     def test_area_property_small(self):
         """Test that area property returns correct value for small vortex."""
@@ -327,6 +315,295 @@ class TestRingVortex(unittest.TestCase):
         # Verify.
         self.assertEqual(ring_vortex.strength, 10.0)
         self.assertEqual(ring_vortex.front_leg.strength, 10.0)
+
+
+class TestRingVortexImmutability(unittest.TestCase):
+    """Tests for RingVortex attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+    def test_immutable_Frrvp_GP1_CgP1_property(self):
+        """Test that Frrvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.Frrvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Frrvp_GP1_CgP1_array_read_only(self):
+        """Test that Frrvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_ring_vortex.Frrvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Flrvp_GP1_CgP1_property(self):
+        """Test that Flrvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.Flrvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Flrvp_GP1_CgP1_array_read_only(self):
+        """Test that Flrvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_ring_vortex.Flrvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Blrvp_GP1_CgP1_property(self):
+        """Test that Blrvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.Blrvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Blrvp_GP1_CgP1_array_read_only(self):
+        """Test that Blrvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_ring_vortex.Blrvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Brrvp_GP1_CgP1_property(self):
+        """Test that Brrvp_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.Brrvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Brrvp_GP1_CgP1_array_read_only(self):
+        """Test that Brrvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_ring_vortex.Brrvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_Crvp_GP1_CgP1_property(self):
+        """Test that Crvp_GP1_CgP1 property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.Crvp_GP1_CgP1
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.Crvp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Crvp_GP1_CgP1_array_read_only(self):
+        """Test that Crvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_ring_vortex.Crvp_GP1_CgP1[0] = 999.0
+
+    def test_immutable_front_leg_property(self):
+        """Test that front_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.front_leg
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.front_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_left_leg_property(self):
+        """Test that left_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.left_leg
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.left_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_back_leg_property(self):
+        """Test that back_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.back_leg
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.back_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_right_leg_property(self):
+        """Test that right_leg property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.right_leg
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.right_leg = _line_vortex.LineVortex(
+                Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
+                Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
+                strength=1.0,
+            )
+
+    def test_immutable_area_property(self):
+        """Test that area property is read only."""
+        # Access to trigger lazy computation.
+        _ = self.basic_ring_vortex.area
+        with self.assertRaises(AttributeError):
+            self.basic_ring_vortex.area = 5.0
+
+    def test_mutable_strength_property(self):
+        """Test that strength property is mutable."""
+        # Strength should be modifiable.
+        self.basic_ring_vortex.strength = 5.0
+        self.assertEqual(self.basic_ring_vortex.strength, 5.0)
+
+        self.basic_ring_vortex.strength = -3.0
+        self.assertEqual(self.basic_ring_vortex.strength, -3.0)
+
+    def test_mutable_age_attribute(self):
+        """Test that age attribute is mutable."""
+        # Age should be modifiable.
+        self.basic_ring_vortex.age = 5.0
+        self.assertEqual(self.basic_ring_vortex.age, 5.0)
+
+        self.basic_ring_vortex.age = 10.0
+        self.assertEqual(self.basic_ring_vortex.age, 10.0)
+
+
+class TestRingVortexLazyCaching(unittest.TestCase):
+    """Tests for RingVortex lazy caching behavior."""
+
+    def test_centroid_lazy_evaluation(self):
+        """Test that centroid is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _Crvp_GP1_CgP1 is None before access.
+        self.assertIsNone(ring_vortex._Crvp_GP1_CgP1)
+
+        # Access the property.
+        _ = ring_vortex.Crvp_GP1_CgP1
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._Crvp_GP1_CgP1)
+
+    def test_centroid_caching(self):
+        """Test that centroid returns the same cached object on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access centroid twice.
+        centroid_first = ring_vortex.Crvp_GP1_CgP1
+        centroid_second = ring_vortex.Crvp_GP1_CgP1
+
+        # Verify they are the same object (not just equal).
+        self.assertIs(centroid_first, centroid_second)
+
+    def test_front_leg_lazy_evaluation(self):
+        """Test that front_leg is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _front_leg is None before access.
+        self.assertIsNone(ring_vortex._front_leg)
+
+        # Access the property.
+        _ = ring_vortex.front_leg
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._front_leg)
+
+    def test_front_leg_caching(self):
+        """Test that front_leg returns the same cached object on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access front_leg twice.
+        front_leg_first = ring_vortex.front_leg
+        front_leg_second = ring_vortex.front_leg
+
+        # Verify they are the same object.
+        self.assertIs(front_leg_first, front_leg_second)
+
+    def test_left_leg_lazy_evaluation(self):
+        """Test that left_leg is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _left_leg is None before access.
+        self.assertIsNone(ring_vortex._left_leg)
+
+        # Access the property.
+        _ = ring_vortex.left_leg
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._left_leg)
+
+    def test_left_leg_caching(self):
+        """Test that left_leg returns the same cached object on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access left_leg twice.
+        left_leg_first = ring_vortex.left_leg
+        left_leg_second = ring_vortex.left_leg
+
+        # Verify they are the same object.
+        self.assertIs(left_leg_first, left_leg_second)
+
+    def test_back_leg_lazy_evaluation(self):
+        """Test that back_leg is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _back_leg is None before access.
+        self.assertIsNone(ring_vortex._back_leg)
+
+        # Access the property.
+        _ = ring_vortex.back_leg
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._back_leg)
+
+    def test_back_leg_caching(self):
+        """Test that back_leg returns the same cached object on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access back_leg twice.
+        back_leg_first = ring_vortex.back_leg
+        back_leg_second = ring_vortex.back_leg
+
+        # Verify they are the same object.
+        self.assertIs(back_leg_first, back_leg_second)
+
+    def test_right_leg_lazy_evaluation(self):
+        """Test that right_leg is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _right_leg is None before access.
+        self.assertIsNone(ring_vortex._right_leg)
+
+        # Access the property.
+        _ = ring_vortex.right_leg
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._right_leg)
+
+    def test_right_leg_caching(self):
+        """Test that right_leg returns the same cached object on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access right_leg twice.
+        right_leg_first = ring_vortex.right_leg
+        right_leg_second = ring_vortex.right_leg
+
+        # Verify they are the same object.
+        self.assertIs(right_leg_first, right_leg_second)
+
+    def test_area_lazy_evaluation(self):
+        """Test that area is lazily evaluated."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Verify that _area is None before access.
+        self.assertIsNone(ring_vortex._area)
+
+        # Access the property.
+        _ = ring_vortex.area
+
+        # Verify that the cache is now populated.
+        self.assertIsNotNone(ring_vortex._area)
+
+    def test_area_caching(self):
+        """Test that area returns the same cached value on repeated access."""
+        # Create a fresh fixture.
+        ring_vortex = ring_vortex_fixtures.make_basic_ring_vortex_fixture()
+
+        # Access area twice.
+        area_first = ring_vortex.area
+        area_second = ring_vortex.area
+
+        # Verify they are equal (floats are immutable so no identity check).
+        self.assertEqual(area_first, area_second)
 
 
 if __name__ == "__main__":

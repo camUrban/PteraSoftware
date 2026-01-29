@@ -48,7 +48,7 @@ This package contains the following modules:
     test_transformations.py: This module contains classes to test functions in the
     transformations module.
 
-    test_wing.py: This module contains a class to test Wings.
+    test_wing.py: This module contains classes to test Wings.
 
     test_wing_cross_section.py: This module contains classes to test WingCrossSections.
 

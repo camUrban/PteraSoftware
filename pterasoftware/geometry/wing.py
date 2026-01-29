@@ -970,7 +970,6 @@ class Wing:
         self._wetted_area = wetted_area
         return wetted_area
 
-    # TEST: Consider adding unit tests for this method.
     @property
     def average_panel_aspect_ratio(self) -> None | float:
         """The average aspect ratio of the Wing's Panels.
@@ -1227,7 +1226,6 @@ class Wing:
         # Generate the wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
 
-    # TEST: Consider adding unit tests for this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[list[np.ndarray]] | None:

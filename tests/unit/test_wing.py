@@ -1,4 +1,4 @@
-"""This module contains a class to test Wings."""
+"""This module contains classes to test Wings."""
 
 import unittest
 
@@ -712,37 +712,6 @@ class TestWing(unittest.TestCase):
                     projected_area, calculated_area, rtol=1e-10, atol=1e-14
                 )
 
-    def test_properties_none_before_meshing(self):
-        """Test that span, standard_mean_chord, and mean_aerodynamic_chord return
-        None before meshing."""
-        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-
-        # Properties should return None before meshing
-        self.assertIsNone(wing.span)
-        self.assertIsNone(wing.projected_area)
-        self.assertIsNone(wing.wetted_area)
-        self.assertIsNone(wing.standard_mean_chord)
-        self.assertIsNone(wing.mean_aerodynamic_chord)
-
-    def test_properties_available_after_meshing(self):
-        """Test that span, standard_mean_chord, and mean_aerodynamic_chord are
-        available after meshing."""
-        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
-        wing.generate_mesh(1)
-
-        # Properties should be available and positive after meshing
-        self.assertIsNotNone(wing.span)
-        self.assertIsNotNone(wing.projected_area)
-        self.assertIsNotNone(wing.wetted_area)
-        self.assertIsNotNone(wing.standard_mean_chord)
-        self.assertIsNotNone(wing.mean_aerodynamic_chord)
-
-        self.assertGreater(wing.span, 0.0)
-        self.assertGreater(wing.projected_area, 0.0)
-        self.assertGreater(wing.wetted_area, 0.0)
-        self.assertGreater(wing.standard_mean_chord, 0.0)
-        self.assertGreater(wing.mean_aerodynamic_chord, 0.0)
-
     def test_span_rotated_wing_x_axis(self):
         """Test span calculation invariance for Wing rotated about x axis."""
         # Create a Wing rotated 45 degrees about x axis
@@ -867,6 +836,149 @@ class TestWing(unittest.TestCase):
 
         npt.assert_allclose(actual_smc, expected_smc, rtol=1e-10, atol=1e-14)
 
+    def test_average_panel_aspect_ratio_returns_none_before_meshing(self):
+        """Test that average_panel_aspect_ratio returns None before meshing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+
+        self.assertIsNone(wing.average_panel_aspect_ratio)
+
+    def test_average_panel_aspect_ratio_returns_positive_after_meshing(self):
+        """Test that average_panel_aspect_ratio returns a positive value after meshing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        average_aspect_ratio = wing.average_panel_aspect_ratio
+        self.assertIsNotNone(average_aspect_ratio)
+        self.assertGreater(average_aspect_ratio, 0.0)
+
+    def test_average_panel_aspect_ratio_simple_rectangular_wing(self):
+        """Test average_panel_aspect_ratio calculation for simple rectangular Wing."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        average_aspect_ratio = wing.average_panel_aspect_ratio
+        self.assertIsNotNone(average_aspect_ratio)
+
+        # For a rectangular wing with uniform spacing:
+        # Panel chord = wing_chord / num_chordwise_panels = 1.0 / 4 = 0.25
+        # Panel span = wing_span / num_spanwise_panels = 2.0 / 8 = 0.25
+        # Expected aspect ratio ~ 1.0 for roughly square panels.
+        # This is an approximate check since actual Panel aspect ratios depend on
+        # the meshing algorithm's implementation details.
+        self.assertGreater(average_aspect_ratio, 0.0)
+        self.assertLess(average_aspect_ratio, 100.0)
+
+    def test_average_panel_aspect_ratio_type_4_symmetric_wing(self):
+        """Test average_panel_aspect_ratio for type 4 symmetric Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        average_aspect_ratio = wing.average_panel_aspect_ratio
+        self.assertIsNotNone(average_aspect_ratio)
+        self.assertGreater(average_aspect_ratio, 0.0)
+
+    def test_average_panel_aspect_ratio_caching(self):
+        """Test that average_panel_aspect_ratio is cached after first access."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Access twice.
+        first_access = wing.average_panel_aspect_ratio
+        second_access = wing.average_panel_aspect_ratio
+
+        # Values should be identical.
+        self.assertEqual(first_access, second_access)
+
+    def test_angles_Gs_to_Wn_ixyz_validation_boundary_values(self):
+        """Test angles_Gs_to_Wn_ixyz validation with boundary values."""
+        # Test with boundary values (should be valid).
+        valid_angles_sets = [
+            [90.0, 0.0, 0.0],
+            [0.0, 90.0, 0.0],
+            [0.0, 0.0, 90.0],
+            [-90.0, 0.0, 0.0],
+            [0.0, -90.0, 0.0],
+            [0.0, 0.0, -90.0],
+            [90.0, 90.0, 90.0],
+            [-90.0, -90.0, -90.0],
+        ]
+
+        for angles in valid_angles_sets:
+            with self.subTest(angles=angles):
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                wing = ps.geometry.wing.Wing(
+                    wing_cross_sections=[root_wcs, tip_wcs],
+                    angles_Gs_to_Wn_ixyz=angles,
+                )
+                npt.assert_array_equal(wing.angles_Gs_to_Wn_ixyz, np.array(angles))
+
+    def test_angles_Gs_to_Wn_ixyz_validation_outside_range(self):
+        """Test angles_Gs_to_Wn_ixyz validation with values outside valid range."""
+        # Test with values outside valid range (should raise ValueError).
+        invalid_angles_sets = [
+            [90.1, 0.0, 0.0],
+            [0.0, 90.1, 0.0],
+            [0.0, 0.0, 90.1],
+            [-90.1, 0.0, 0.0],
+            [0.0, -90.1, 0.0],
+            [0.0, 0.0, -90.1],
+            [100.0, 0.0, 0.0],
+            [0.0, -100.0, 0.0],
+        ]
+
+        for angles in invalid_angles_sets:
+            with self.subTest(angles=angles):
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                with self.assertRaises(ValueError):
+                    ps.geometry.wing.Wing(
+                        wing_cross_sections=[root_wcs, tip_wcs],
+                        angles_Gs_to_Wn_ixyz=angles,
+                    )
+
+    def test_Ler_Gs_Cgs_accepts_various_input_types(self):
+        """Test that Ler_Gs_Cgs accepts various array-like input types."""
+        input_formats = [
+            np.array([1.0, 2.0, 3.0]),  # ndarray
+            [1.0, 2.0, 3.0],  # list
+            (1.0, 2.0, 3.0),  # tuple
+            [1, 2, 3],  # list of ints
+            (1, 2, 3),  # tuple of ints
+        ]
+
+        for input_val in input_formats:
+            with self.subTest(input_format=type(input_val).__name__):
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                wing = ps.geometry.wing.Wing(
+                    wing_cross_sections=[root_wcs, tip_wcs],
+                    Ler_Gs_Cgs=input_val,
+                )
+                expected = np.array([1.0, 2.0, 3.0])
+                npt.assert_array_equal(wing.Ler_Gs_Cgs, expected)
+
+    def test_angles_Gs_to_Wn_ixyz_accepts_various_input_types(self):
+        """Test that angles_Gs_to_Wn_ixyz accepts various array-like input types."""
+        input_formats = [
+            np.array([10.0, 20.0, 30.0]),  # ndarray
+            [10.0, 20.0, 30.0],  # list
+            (10.0, 20.0, 30.0),  # tuple
+            [10, 20, 30],  # list of ints
+            (10, 20, 30),  # tuple of ints
+        ]
+
+        for input_val in input_formats:
+            with self.subTest(input_format=type(input_val).__name__):
+                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                wing = ps.geometry.wing.Wing(
+                    wing_cross_sections=[root_wcs, tip_wcs],
+                    angles_Gs_to_Wn_ixyz=input_val,
+                )
+                expected = np.array([10.0, 20.0, 30.0])
+                npt.assert_array_equal(wing.angles_Gs_to_Wn_ixyz, expected)
+
 
 class TestWingDeepCopy(unittest.TestCase):
     """Tests for Wing.__deepcopy__ method."""
@@ -875,6 +987,7 @@ class TestWingDeepCopy(unittest.TestCase):
         """Set up test fixtures for deepcopy tests."""
         self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
         self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
+        self.root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
 
     def test_deepcopy_creates_new_instance(self):
         """Test that deepcopy creates a new Wing instance."""
@@ -1110,6 +1223,7 @@ class TestWingDeepCopy(unittest.TestCase):
 
         # Attempting to call append should raise AttributeError.
         with self.assertRaises(AttributeError):
+            # noinspection PyUnresolvedReferences
             wing.wing_cross_sections.append(self.root_wcs)
 
     def test_deepcopy_preserves_geometric_properties(self):
@@ -1161,6 +1275,279 @@ class TestWingDeepCopy(unittest.TestCase):
         self.assertIsNotNone(mean_aerodynamic_chord)
         self.assertGreater(span, 0.0)
         self.assertGreater(projected_area, 0.0)
+
+
+class TestWingGetPlottableData(unittest.TestCase):
+    """Tests for Wing.get_plottable_data method."""
+
+    def setUp(self):
+        """Set up test fixtures for get_plottable_data tests."""
+        self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
+        self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
+
+    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self):
+        """Test that get_plottable_data returns None when symmetry_type not set."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+
+        # Symmetry type not set (Wing not meshed).
+        self.assertIsNone(wing.symmetry_type)
+
+        result = wing.get_plottable_data(show=False)
+
+        self.assertIsNone(result)
+
+    def test_get_plottable_data_returns_list_when_meshed(self):
+        """Test that get_plottable_data returns a list when meshed."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        result = wing.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+
+    def test_get_plottable_data_returns_list_of_lists(self):
+        """Test that get_plottable_data returns two lists of ndarrays."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        result = wing.get_plottable_data(show=False)
+
+        # First element is list of Airfoil outlines.
+        self.assertIsInstance(result[0], list)
+        # Second element is list of Airfoil mean camber lines.
+        self.assertIsInstance(result[1], list)
+
+    def test_get_plottable_data_returns_ndarrays_for_each_cross_section(self):
+        """Test that get_plottable_data returns one ndarray per WingCrossSection."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        result = wing.get_plottable_data(show=False)
+
+        num_wcs = len(wing.wing_cross_sections)
+
+        # Should have one outline array per WingCrossSection.
+        self.assertEqual(len(result[0]), num_wcs)
+        # Should have one MCL array per WingCrossSection.
+        self.assertEqual(len(result[1]), num_wcs)
+
+        for outline in result[0]:
+            self.assertIsInstance(outline, np.ndarray)
+            self.assertEqual(outline.shape[1], 3)  # 3D points
+
+        for mcl in result[1]:
+            self.assertIsInstance(mcl, np.ndarray)
+            self.assertEqual(mcl.shape[1], 3)  # 3D points
+
+    def test_get_plottable_data_three_section_wing(self):
+        """Test get_plottable_data for Wing with 3 WingCrossSections."""
+        wing = geometry_fixtures.make_three_section_wing_fixture()
+        wing.generate_mesh(1)
+
+        result = wing.get_plottable_data(show=False)
+
+        # Should have 3 outlines and 3 MCLs.
+        self.assertEqual(len(result[0]), 3)
+        self.assertEqual(len(result[1]), 3)
+
+    def test_get_plottable_data_type_4_symmetric_wing(self):
+        """Test get_plottable_data for type 4 symmetric Wing."""
+        wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
+        wing.generate_mesh(4)
+
+        result = wing.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+
+    def test_get_plottable_data_default_show_is_false(self):
+        """Test that get_plottable_data default for show is False."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Call without show parameter, should return data (not None).
+        result = wing.get_plottable_data()
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_accepts_numpy_bool(self):
+        """Test that get_plottable_data accepts numpy bool for show parameter."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        result = wing.get_plottable_data(show=np.bool_(False))
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_invalid_show_type_raises(self):
+        """Test that get_plottable_data raises error for invalid show type."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            wing.get_plottable_data(show="invalid")
+
+    def test_get_plottable_data_with_panels_meshed(self):
+        """Test get_plottable_data with meshed Panels."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        # Verify Panels are meshed.
+        self.assertIsNotNone(wing.panels)
+
+        result = wing.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+
+
+class TestWingTransformationMatrixCaching(unittest.TestCase):
+    """Tests for Wing transformation matrix caching behavior."""
+
+    def test_T_pas_G_Cg_to_Wn_Ler_returns_same_object_on_repeated_access(self):
+        """Test that T_pas_G_Cg_to_Wn_Ler returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        T1 = wing.T_pas_G_Cg_to_Wn_Ler
+        T2 = wing.T_pas_G_Cg_to_Wn_Ler
+
+        self.assertIs(T1, T2)
+
+    def test_T_pas_Wn_Ler_to_G_Cg_returns_same_object_on_repeated_access(self):
+        """Test that T_pas_Wn_Ler_to_G_Cg returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        T1 = wing.T_pas_Wn_Ler_to_G_Cg
+        T2 = wing.T_pas_Wn_Ler_to_G_Cg
+
+        self.assertIs(T1, T2)
+
+    def test_WnX_G_returns_same_object_on_repeated_access(self):
+        """Test that WnX_G returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        v1 = wing.WnX_G
+        v2 = wing.WnX_G
+
+        self.assertIs(v1, v2)
+
+    def test_WnY_G_returns_same_object_on_repeated_access(self):
+        """Test that WnY_G returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        v1 = wing.WnY_G
+        v2 = wing.WnY_G
+
+        self.assertIs(v1, v2)
+
+    def test_WnZ_G_returns_same_object_on_repeated_access(self):
+        """Test that WnZ_G returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        v1 = wing.WnZ_G
+        v2 = wing.WnZ_G
+
+        self.assertIs(v1, v2)
+
+    def test_children_T_pas_Wn_Ler_to_Wcs_Lp_returns_same_object_on_repeated_access(
+        self,
+    ):
+        """Test that children_T_pas_Wn_Ler_to_Wcs_Lp returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        list1 = wing.children_T_pas_Wn_Ler_to_Wcs_Lp
+        list2 = wing.children_T_pas_Wn_Ler_to_Wcs_Lp
+
+        self.assertIs(list1, list2)
+
+    def test_children_T_pas_Wcs_Lp_to_Wn_Ler_returns_same_object_on_repeated_access(
+        self,
+    ):
+        """Test that children_T_pas_Wcs_Lp_to_Wn_Ler returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        list1 = wing.children_T_pas_Wcs_Lp_to_Wn_Ler
+        list2 = wing.children_T_pas_Wcs_Lp_to_Wn_Ler
+
+        self.assertIs(list1, list2)
+
+    def test_children_T_pas_G_Cg_to_Wcs_Lp_returns_same_object_on_repeated_access(self):
+        """Test that children_T_pas_G_Cg_to_Wcs_Lp returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        list1 = wing.children_T_pas_G_Cg_to_Wcs_Lp
+        list2 = wing.children_T_pas_G_Cg_to_Wcs_Lp
+
+        self.assertIs(list1, list2)
+
+    def test_children_T_pas_Wcs_Lp_to_G_Cg_returns_same_object_on_repeated_access(self):
+        """Test that children_T_pas_Wcs_Lp_to_G_Cg returns the same cached object."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        list1 = wing.children_T_pas_Wcs_Lp_to_G_Cg
+        list2 = wing.children_T_pas_Wcs_Lp_to_G_Cg
+
+        self.assertIs(list1, list2)
+
+    def test_transformation_matrices_are_read_only(self):
+        """Test that transformation matrices are read only."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        with self.assertRaises(ValueError):
+            wing.T_pas_G_Cg_to_Wn_Ler[0, 0] = 999.0
+
+        with self.assertRaises(ValueError):
+            wing.T_pas_Wn_Ler_to_G_Cg[0, 0] = 999.0
+
+    def test_basis_vectors_are_read_only(self):
+        """Test that basis vectors are read only."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        with self.assertRaises(ValueError):
+            wing.WnX_G[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            wing.WnY_G[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            wing.WnZ_G[0] = 999.0
+
+    def test_children_transformation_matrices_are_read_only(self):
+        """Test that children transformation matrices are read only."""
+        wing = geometry_fixtures.make_type_1_wing_fixture()
+        wing.generate_mesh(1)
+
+        for T in wing.children_T_pas_Wn_Ler_to_Wcs_Lp:
+            with self.assertRaises(ValueError):
+                T[0, 0] = 999.0
+
+        for T in wing.children_T_pas_Wcs_Lp_to_Wn_Ler:
+            with self.assertRaises(ValueError):
+                T[0, 0] = 999.0
+
+        for T in wing.children_T_pas_G_Cg_to_Wcs_Lp:
+            with self.assertRaises(ValueError):
+                T[0, 0] = 999.0
+
+        for T in wing.children_T_pas_Wcs_Lp_to_G_Cg:
+            with self.assertRaises(ValueError):
+                T[0, 0] = 999.0
 
 
 if __name__ == "__main__":

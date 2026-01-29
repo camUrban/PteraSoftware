@@ -20,6 +20,8 @@ This package contains the following modules:
 
     test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
 
+    test_line_vortex.py: This module contains a class to test LineVortices.
+
     test_movement.py: This module contains a class to test Movements.
 
     test_movements_functions.py: This module contains a class to test movements
@@ -61,6 +63,7 @@ import tests.unit.test_airfoil
 import tests.unit.test_airplane
 import tests.unit.test_airplane_movement
 import tests.unit.test_horseshoe_vortex
+import tests.unit.test_line_vortex
 import tests.unit.test_movement
 import tests.unit.test_movements_functions
 import tests.unit.test_operating_point

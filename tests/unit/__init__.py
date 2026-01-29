@@ -12,9 +12,9 @@ This package contains the following modules:
     test_aerodynamics_functions.py: This module contains a class to test aerodynamics
     functions.
 
-    test_airfoils.py: This module contains a class to test Airfoils.
+    test_airfoil.py: This module contains classes to test Airfoils.
 
-    test_airplane.py: This module contains a class to test Airplanes.
+    test_airplane.py: This module contains classes to test Airplanes.
 
     test_airplane_movement.py: This module contains a class to test AirplaneMovements.
 

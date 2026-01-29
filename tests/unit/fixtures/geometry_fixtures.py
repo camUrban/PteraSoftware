@@ -1427,3 +1427,74 @@ def make_3_chordwise_panels_airplane_fixture():
     )
 
     return airplane
+
+
+def make_minimum_n_points_per_side_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with the minimum valid
+    n_points_per_side value (3) for testing purposes.
+
+    :return minimum_n_points_per_side_airfoil_fixture: Airfoil
+        This is the Airfoil with minimum n_points_per_side.
+    """
+    minimum_n_points_per_side_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        resample=True,
+        n_points_per_side=3,
+    )
+
+    return minimum_n_points_per_side_airfoil_fixture
+
+
+def make_thick_naca_airfoil_fixture():
+    """This method makes a fixture that is a thick NACA 0030 Airfoil (30%
+    thickness) for testing purposes.
+
+    :return thick_naca_airfoil_fixture: Airfoil
+        This is the thick NACA 0030 Airfoil configured for testing.
+    """
+    thick_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0030")
+
+    return thick_naca_airfoil_fixture
+
+
+def make_blunt_trailing_edge_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with a blunt (open)
+    trailing edge for testing purposes.
+
+    :return blunt_trailing_edge_airfoil_fixture: Airfoil
+        This is the Airfoil with blunt trailing edge.
+    """
+    blunt_te_outline = np.array(
+        [
+            [1.00, 0.01],  # Upper TE above centerline
+            [0.75, 0.06],
+            [0.50, 0.08],
+            [0.25, 0.06],
+            [0.00, 0.00],  # Leading point
+            [0.25, -0.06],
+            [0.50, -0.08],
+            [0.75, -0.06],
+            [1.00, -0.01],  # Lower TE below centerline
+        ]
+    )
+
+    blunt_trailing_edge_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="Blunt TE Test Airfoil",
+        outline_A_lp=blunt_te_outline,
+        resample=False,
+        n_points_per_side=400,
+    )
+
+    return blunt_trailing_edge_airfoil_fixture
+
+
+def make_case_insensitive_naca_airfoil_fixture():
+    """This method makes a fixture that is a NACA 0012 Airfoil using mixed case
+    naming for testing case insensitivity.
+
+    :return case_insensitive_naca_airfoil_fixture: Airfoil
+        This is the NACA 0012 Airfoil with mixed case name.
+    """
+    case_insensitive_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="NaCa0012")
+
+    return case_insensitive_naca_airfoil_fixture

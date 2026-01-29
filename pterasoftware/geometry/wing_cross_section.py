@@ -28,27 +28,15 @@ class WingCrossSection:
 
     __deepcopy__: Creates a deep copy of this WingCrossSection.
 
-    airfoil: The Airfoil at this WingCrossSection.
+    T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation matrix
+    which maps in homogeneous coordinates from parent wing cross section axes, relative
+    to the parent leading point, to wing cross section axes, relative to the leading
+    point. Is None if the WingCrossSection hasn't been fully validated yet.
 
-    num_spanwise_panels: The number of spanwise Panels between this WingCrossSection and
-    the next one.
-
-    chord: The Wing's chord at this WingCrossSection.
-
-    Lp_Wcsp_Lpp: The position of this WingCrossSection's leading edge in parent wing
-    cross section axes, relative to the parent leading edge point.
-
-    angles_Wcsp_to_Wcs_ixyz: The angle vector of rotation angles defining the
-    orientation of this WingCrossSection's axes relative to the parent wing cross
-    section axes.
-
-    control_surface_hinge_point: The location of the control surface hinge from the
-    leading edge as a fraction of chord.
-
-    control_surface_deflection: The control deflection in degrees.
-
-    spanwise_spacing: The spanwise spacing type for panels between this WingCrossSection
-    and the next one.
+    T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation matrix
+    which maps in homogeneous coordinates from wing cross section axes, relative to the
+    leading point, to parent wing cross section axes, relative to the parent leading
+    point. Is None if the WingCrossSection hasn't been fully validated yet.
 
     validated: A flag indicating if this WingCrossSection has been fully validated by
     its parent Wing.
@@ -67,16 +55,6 @@ class WingCrossSection:
     validate_tip_constraints: Called by the parent Wing to validate constraints specific
     to tip WingCrossSections.
 
-    T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation matrix
-    which maps in homogeneous coordinates from parent wing cross section axes, relative
-    to the parent leading point, to wing cross section axes, relative to the leading
-    point. Is None if the WingCrossSection hasn't been fully validated yet.
-
-    T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation matrix
-    which maps in homogeneous coordinates from wing cross section axes, relative to the
-    leading point, to parent wing cross section axes, relative to the parent leading
-    point. Is None if the WingCrossSection hasn't been fully validated yet.
-
     **Notes:**
 
     Immutable attributes (airfoil, num_spanwise_panels, chord, Lp_Wcsp_Lpp,
@@ -84,6 +62,9 @@ class WingCrossSection:
     and spanwise_spacing) are set during initialization and cannot be modified
     afterward. The numpy arrays Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz are made read
     only to prevent in place mutation.
+
+    Derived transformation matrices (T_pas_Wcsp_Lpp_to_Wcs_Lp and
+    T_pas_Wcs_Lp_to_Wcsp_Lpp) are lazily evaluated and cached.
 
     The validated and symmetry_type attributes are set once by the parent Wing and
     cannot be modified after being set.
@@ -299,6 +280,12 @@ class WingCrossSection:
         # its own symmetry_type parameter set by its parent Airplane.
         self._symmetry_type: int | None = None
 
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._T_pas_Wcsp_Lpp_to_Wcs_Lp: np.ndarray | None = None
+        self._T_pas_Wcs_Lp_to_Wcsp_Lpp: np.ndarray | None = None
+
+    # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> WingCrossSection:
         """Creates a deep copy of this WingCrossSection.
 
@@ -346,83 +333,119 @@ class WingCrossSection:
         )
         new_wing_cross_section._angles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
+        # Copy cached derived properties. This preserves computation from validation.
+        # For those that are numpy arrays, make the copies read only.
+        new_wing_cross_section._T_pas_Wcsp_Lpp_to_Wcs_Lp = (
+            self._T_pas_Wcsp_Lpp_to_Wcs_Lp.copy()
+            if self._T_pas_Wcsp_Lpp_to_Wcs_Lp is not None
+            else None
+        )
+        if new_wing_cross_section._T_pas_Wcsp_Lpp_to_Wcs_Lp is not None:
+            new_wing_cross_section._T_pas_Wcsp_Lpp_to_Wcs_Lp.flags.writeable = False
+
+        new_wing_cross_section._T_pas_Wcs_Lp_to_Wcsp_Lpp = (
+            self._T_pas_Wcs_Lp_to_Wcsp_Lpp.copy()
+            if self._T_pas_Wcs_Lp_to_Wcsp_Lpp is not None
+            else None
+        )
+        if new_wing_cross_section._T_pas_Wcs_Lp_to_Wcsp_Lpp is not None:
+            new_wing_cross_section._T_pas_Wcs_Lp_to_Wcsp_Lpp.flags.writeable = False
+
         return new_wing_cross_section
 
-    # --- Immutable: read-only properties ---
-
+    # --- Immutable: read only properties ---
     @property
     def airfoil(self) -> airfoil_mod.Airfoil:
-        """The Airfoil at this WingCrossSection.
-
-        :return: The Airfoil at this WingCrossSection.
-        """
         return self._airfoil
 
     @property
     def num_spanwise_panels(self) -> int | None:
-        """The number of spanwise Panels between this WingCrossSection and the next one.
-
-        :return: The number of spanwise Panels, or None for tip WingCrossSections.
-        """
         return self._num_spanwise_panels
 
     @property
     def chord(self) -> float:
-        """The Wing's chord at this WingCrossSection.
-
-        :return: The chord length in meters.
-        """
         return self._chord
 
     @property
     def Lp_Wcsp_Lpp(self) -> np.ndarray:
-        """The position of this WingCrossSection's leading edge in parent wing cross
-        section axes, relative to the parent leading edge point.
-
-        :return: A (3,) ndarray of floats representing the position in meters. The array
-            is read only to prevent in place mutation.
-        """
         return self._Lp_Wcsp_Lpp
 
     @property
     def angles_Wcsp_to_Wcs_ixyz(self) -> np.ndarray:
-        """The angle vector of rotation angles defining the orientation of this
-        WingCrossSection's axes relative to the parent wing cross section axes.
-
-        :return: A (3,) ndarray of floats representing the rotation angles in degrees.
-            The array is read only to prevent in place mutation.
-        """
         return self._angles_Wcsp_to_Wcs_ixyz
 
     @property
     def control_surface_hinge_point(self) -> float:
-        """The location of the control surface hinge from the leading edge as a fraction
-        of chord.
-
-        :return: The hinge location as a fraction of chord in the range (0.0, 1.0).
-        """
         return self._control_surface_hinge_point
 
     @property
     def control_surface_deflection(self) -> float:
-        """The control deflection in degrees.
-
-        :return: The deflection in degrees. Deflection downwards is positive.
-        """
         return self._control_surface_deflection
 
     @property
     def spanwise_spacing(self) -> str | None:
-        """The spanwise spacing type for panels between this WingCrossSection and the
-        next one.
-
-        :return: "cosine" or "uniform" for non tip WingCrossSections, None for tip
-            WingCrossSections.
-        """
         return self._spanwise_spacing
 
-    # --- Set-once: properties with single-assignment enforcement ---
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def T_pas_Wcsp_Lpp_to_Wcs_Lp(self) -> np.ndarray | None:
+        """Defines a property for the passive transformation matrix which maps in
+        homogeneous coordinates from parent wing cross section axes, relative to the
+        parent leading point, to wing cross section axes, relative to the leading point.
+        Is None if the WingCrossSection hasn't been fully validated yet.
 
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if self.validated=False.
+        """
+        if not self.validated:
+            return None
+
+        if self._T_pas_Wcsp_Lpp_to_Wcs_Lp is None:
+            # Step 1: Create T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, which maps in homogeneous
+            # coordinates from parent wing cross section axes relative to the parent
+            # leading point to parent wing cross section axes relative to the leading
+            # point. This is the translation step.
+            T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = _transformations.generate_trans_T(
+                self._Lp_Wcsp_Lpp, passive=True
+            )
+
+            # Step 2: Create T_rot_pas_Wcsp_to_Wcs, which maps in homogeneous
+            # coordinates from parent wing cross section axes to wing cross section
+            # axes. This is the rotation step.
+            T_rot_pas_Wcsp_to_Wcs = _transformations.generate_rot_T(
+                self._angles_Wcsp_to_Wcs_ixyz, passive=True, intrinsic=True, order="xyz"
+            )
+
+            self._T_pas_Wcsp_Lpp_to_Wcs_Lp = _transformations.compose_T_pas(
+                T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
+            )
+            self._T_pas_Wcsp_Lpp_to_Wcs_Lp.flags.writeable = False
+        return self._T_pas_Wcsp_Lpp_to_Wcs_Lp
+
+    @property
+    def T_pas_Wcs_Lp_to_Wcsp_Lpp(self) -> np.ndarray | None:
+        """Defines a property for the passive transformation matrix which maps in
+        homogeneous coordinates from wing cross section axes, relative to the leading
+        point, to parent wing cross section axes, relative to the parent leading point.
+        Is None if the WingCrossSection hasn't been fully validated yet.
+
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if self.validated=False.
+        """
+        if not self.validated:
+            return None
+
+        if self._T_pas_Wcs_Lp_to_Wcsp_Lpp is None:
+            _T_pas_Wcsp_Lpp_to_Wcs_Lp = self.T_pas_Wcsp_Lpp_to_Wcs_Lp
+            assert _T_pas_Wcsp_Lpp_to_Wcs_Lp is not None
+
+            self._T_pas_Wcs_Lp_to_Wcsp_Lpp = _transformations.invert_T_pas(
+                _T_pas_Wcsp_Lpp_to_Wcs_Lp
+            )
+            self._T_pas_Wcs_Lp_to_Wcsp_Lpp.flags.writeable = False
+        return self._T_pas_Wcs_Lp_to_Wcsp_Lpp
+
+    # --- Set once: properties with single assignment enforcement ---
     @property
     def validated(self) -> bool:
         """A flag indicating if this WingCrossSection has been fully validated by its
@@ -452,6 +475,7 @@ class WingCrossSection:
             raise AttributeError("symmetry_type can only be set once")
         self._symmetry_type = value
 
+    # --- Other methods ---
     # TEST: Consider adding unit tests for this method.
     def get_plottable_data(
         self,
@@ -476,7 +500,7 @@ class WingCrossSection:
 
         # If this WingCrossSection hasn't been fully validated, or its symmetry type
         # hasn't been set, return None.
-        if self.symmetry_type is None or self.validated is None:
+        if self.symmetry_type is None or not self.validated:
             return None
 
         plottable_data = self.airfoil.get_plottable_data(show=False)
@@ -730,53 +754,3 @@ class WingCrossSection:
             raise ValueError(
                 "The tip WingCrossSection must have spanwise_spacing=None."
             )
-
-    @property
-    def T_pas_Wcsp_Lpp_to_Wcs_Lp(self) -> np.ndarray | None:
-        """Defines a property for the passive transformation matrix which maps in
-        homogeneous coordinates from parent wing cross section axes, relative to the
-        parent leading point, to wing cross section axes, relative to the leading point.
-        Is None if the WingCrossSection hasn't been fully validated yet.
-
-        :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if self.validated=False.
-        """
-        if not self.validated:
-            return None
-
-        # Step 1: Create T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, which maps in homogeneous
-        # coordinates from parent wing cross section axes relative to the parent
-        # leading point to parent wing cross section axes relative to the leading
-        # point. This is the translation step.
-        T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp = _transformations.generate_trans_T(
-            self.Lp_Wcsp_Lpp, passive=True
-        )
-
-        # Step 2: Create T_rot_pas_Wcsp_to_Wcs, which maps in homogeneous coordinates
-        # from parent wing cross section axes to wing cross section axes This is the
-        # rotation step.
-        T_rot_pas_Wcsp_to_Wcs = _transformations.generate_rot_T(
-            self.angles_Wcsp_to_Wcs_ixyz, passive=True, intrinsic=True, order="xyz"
-        )
-
-        return _transformations.compose_T_pas(
-            T_trans_pas_Wcsp_Lpp_to_Wcsp_Lp, T_rot_pas_Wcsp_to_Wcs
-        )
-
-    @property
-    def T_pas_Wcs_Lp_to_Wcsp_Lpp(self) -> np.ndarray | None:
-        """Defines a property for the passive transformation matrix which maps in
-        homogeneous coordinates from wing cross section axes, relative to the leading
-        point, to parent wing cross section axes, relative to the parent leading point.
-        Is None if the WingCrossSection hasn't been fully validated yet.
-
-        :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if self.validated=False.
-        """
-        if not self.validated:
-            return None
-
-        _T_pas_Wcsp_Lpp_to_Wcs_Lp = self.T_pas_Wcsp_Lpp_to_Wcs_Lp
-        assert _T_pas_Wcsp_Lpp_to_Wcs_Lp is not None
-
-        return _transformations.invert_T_pas(_T_pas_Wcsp_Lpp_to_Wcs_Lp)

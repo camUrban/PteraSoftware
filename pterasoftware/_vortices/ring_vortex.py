@@ -5,7 +5,8 @@ from __future__ import annotations
 import numpy as np
 
 from pterasoftware import _functions
-from pterasoftware._aerodynamics_functions import _LineVortex
+
+from . import _line_vortex
 
 
 class RingVortex:
@@ -73,10 +74,10 @@ class RingVortex:
         self._Blrvp_GP1_CgP1: np.ndarray
         self._Brrvp_GP1_CgP1: np.ndarray
         self._strength: float
-        self._front_leg: _LineVortex | None = None
-        self._left_leg: _LineVortex | None = None
-        self._back_leg: _LineVortex | None = None
-        self._right_leg: _LineVortex | None = None
+        self._front_leg: _line_vortex.LineVortex | None = None
+        self._left_leg: _line_vortex.LineVortex | None = None
+        self._back_leg: _line_vortex.LineVortex | None = None
+        self._right_leg: _line_vortex.LineVortex | None = None
         self._Crvp_GP1_CgP1: np.ndarray | None = None
         self._area: float | None = None
 
@@ -173,14 +174,14 @@ class RingVortex:
             self._right_leg.strength = self._strength
 
     @property
-    def front_leg(self) -> _LineVortex:
+    def front_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this RingVortex's front leg.
 
         :return: A LineVortex representing this RingVortex's front leg. The front leg
             goes from the front right point to the front left point.
         """
         if self._front_leg is None:
-            self._front_leg = _LineVortex(
+            self._front_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
                 strength=self.strength,
@@ -188,14 +189,14 @@ class RingVortex:
         return self._front_leg
 
     @property
-    def left_leg(self) -> _LineVortex:
+    def left_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this RingVortex's left leg.
 
         :return: A LineVortex representing this RingVortex's left leg. The left leg goes
             from the front left point to the back left point.
         """
         if self._left_leg is None:
-            self._left_leg = _LineVortex(
+            self._left_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
                 strength=self.strength,
@@ -203,14 +204,14 @@ class RingVortex:
         return self._left_leg
 
     @property
-    def back_leg(self) -> _LineVortex:
+    def back_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this RingVortex's back leg.
 
         :return: A LineVortex representing this RingVortex's back leg. The back leg goes
             from the back left point to the back right point.
         """
         if self._back_leg is None:
-            self._back_leg = _LineVortex(
+            self._back_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
                 strength=self.strength,
@@ -218,14 +219,14 @@ class RingVortex:
         return self._back_leg
 
     @property
-    def right_leg(self) -> _LineVortex:
+    def right_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this RingVortex's right leg.
 
         :return: A LineVortex representing this RingVortex's right leg. The right leg
             goes from the back right point to the front right point.
         """
         if self._right_leg is None:
-            self._right_leg = _LineVortex(
+            self._right_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
                 strength=self.strength,

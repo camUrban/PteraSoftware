@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics_functions
+from pterasoftware._vortices import _line_vortex
 from tests.unit.fixtures import line_vortex_fixtures
 
 
@@ -42,9 +42,7 @@ class TestLineVortex(unittest.TestCase):
     def test_initialization_valid_parameters(self):
         """Test LineVortex initialization with valid parameters."""
         # Test that basic LineVortex initializes correctly.
-        self.assertIsInstance(
-            self.basic_line_vortex, _aerodynamics_functions._LineVortex
-        )
+        self.assertIsInstance(self.basic_line_vortex, _line_vortex.LineVortex)
         npt.assert_array_equal(
             self.basic_line_vortex.Slvp_GP1_CgP1,
             np.array([0.0, 0.0, 0.0], dtype=float),

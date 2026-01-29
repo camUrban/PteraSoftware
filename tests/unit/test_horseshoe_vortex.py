@@ -6,7 +6,10 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics_functions, _vortices
+from pterasoftware import _vortices
+
+# noinspection PyProtectedMember
+from pterasoftware._vortices import _line_vortex
 from tests.unit.fixtures import horseshoe_vortex_fixtures
 
 
@@ -567,13 +570,13 @@ class TestHorseshoeVortex(unittest.TestCase):
         """Test that LineVortex legs are of the correct type."""
         # Verify all legs are LineVortex instances.
         self.assertIsInstance(
-            self.basic_horseshoe_vortex.right_leg, _aerodynamics_functions._LineVortex
+            self.basic_horseshoe_vortex.right_leg, _line_vortex.LineVortex
         )
         self.assertIsInstance(
-            self.basic_horseshoe_vortex.finite_leg, _aerodynamics_functions._LineVortex
+            self.basic_horseshoe_vortex.finite_leg, _line_vortex.LineVortex
         )
         self.assertIsInstance(
-            self.basic_horseshoe_vortex.left_leg, _aerodynamics_functions._LineVortex
+            self.basic_horseshoe_vortex.left_leg, _line_vortex.LineVortex
         )
 
 

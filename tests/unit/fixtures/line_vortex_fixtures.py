@@ -3,7 +3,7 @@
 import numpy as np
 
 # noinspection PyProtectedMember
-from pterasoftware._aerodynamics_functions import _LineVortex
+from pterasoftware._vortices import _line_vortex
 
 
 def make_basic_line_vortex_fixture():
@@ -15,7 +15,7 @@ def make_basic_line_vortex_fixture():
         [0.0, 0.0, 0.0] to [1.0, 0.0, 0.0] (in the first Airplane's geometry axes,
         relative to the first Airplane's CG) with unit strength.
     """
-    basic_line_vortex_fixture = _LineVortex(
+    basic_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
         strength=1.0,
@@ -33,7 +33,7 @@ def make_diagonal_line_vortex_fixture():
         1.0] (in the first Airplane's geometry axes, relative to the first Airplane's
         CG) with unit strength.
     """
-    diagonal_line_vortex_fixture = _LineVortex(
+    diagonal_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1.0, 1.0, 1.0], dtype=float),
         strength=1.0,
@@ -51,7 +51,7 @@ def make_y_aligned_line_vortex_fixture():
         [0.0, 0.5, 0.0] (in the first Airplane's geometry axes, relative to the first
         Airplane's CG) with unit strength.
     """
-    y_aligned_line_vortex_fixture = _LineVortex(
+    y_aligned_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
         strength=1.0,
@@ -69,7 +69,7 @@ def make_z_aligned_line_vortex_fixture():
         [0.0, 0.0, 2.0] (in the first Airplane's geometry axes, relative to the first
         Airplane's CG) with strength of 3.0.
     """
-    z_aligned_line_vortex_fixture = _LineVortex(
+    z_aligned_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([0.0, 0.0, 2.0], dtype=float),
         strength=3.0,
@@ -85,7 +85,7 @@ def make_zero_strength_line_vortex_fixture():
     :return zero_strength_line_vortex_fixture: LineVortex
         This is the LineVortex with zero strength.
     """
-    zero_strength_line_vortex_fixture = _LineVortex(
+    zero_strength_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
         strength=0.0,
@@ -101,7 +101,7 @@ def make_negative_strength_line_vortex_fixture():
     :return negative_strength_line_vortex_fixture: LineVortex
         This is the LineVortex with negative strength of -2.5.
     """
-    negative_strength_line_vortex_fixture = _LineVortex(
+    negative_strength_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
         strength=-2.5,
@@ -117,7 +117,7 @@ def make_large_strength_line_vortex_fixture():
     :return large_strength_line_vortex_fixture: LineVortex
         This is the LineVortex with large strength of 1e6.
     """
-    large_strength_line_vortex_fixture = _LineVortex(
+    large_strength_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
         strength=1e6,
@@ -135,7 +135,7 @@ def make_offset_line_vortex_fixture():
         geometry axes, relative to the first Airplane's CG) with unit strength.
     """
     offset = np.array([5.0, 3.0, 2.0], dtype=float)
-    offset_line_vortex_fixture = _LineVortex(
+    offset_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float) + offset,
         Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float) + offset,
         strength=1.0,
@@ -151,7 +151,7 @@ def make_small_line_vortex_fixture():
     :return small_line_vortex_fixture: LineVortex
         This is the LineVortex with length of 0.001 meters.
     """
-    small_line_vortex_fixture = _LineVortex(
+    small_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([0.001, 0.0, 0.0], dtype=float),
         strength=1.0,
@@ -167,7 +167,7 @@ def make_long_line_vortex_fixture():
     :return long_line_vortex_fixture: LineVortex
         This is the LineVortex with length of 1000 meters.
     """
-    long_line_vortex_fixture = _LineVortex(
+    long_line_vortex_fixture = _line_vortex.LineVortex(
         Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
         Elvp_GP1_CgP1=np.array([1000.0, 0.0, 0.0], dtype=float),
         strength=1.0,

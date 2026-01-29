@@ -276,7 +276,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             # If the Panel is along the trailing edge, initialize its
                             # HorseshoeVortex.
                             panel.horseshoe_vortex = (
-                                _aerodynamics_functions.HorseshoeVortex(
+                                _vortices.horseshoe_vortex.HorseshoeVortex(
                                     Frhvp_GP1_CgP1=Brrvp_GP1_CgP1,
                                     Flhvp_GP1_CgP1=Blrvp_GP1_CgP1,
                                     leftLegVector_GP1=vInfHat_GP1__E,

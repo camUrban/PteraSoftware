@@ -21,6 +21,9 @@ This package contains the following modules:
     horseshoe_vortex_fixtures.py: This module contains functions to create
     HorseshoeVortices for uses in tests.
 
+    line_vortex_fixtures.py: This module contains functions to create LineVortices
+    for use in tests.
+
     movement_fixtures.py: This module contains functions to create Movements for use
     in tests.
 
@@ -56,6 +59,7 @@ import tests.unit.fixtures.aerodynamics_functions_fixtures
 import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
+import tests.unit.fixtures.line_vortex_fixtures
 import tests.unit.fixtures.movement_fixtures
 import tests.unit.fixtures.movements_functions_fixtures
 import tests.unit.fixtures.operating_point_fixtures

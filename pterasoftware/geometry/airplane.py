@@ -155,19 +155,39 @@ class Airplane:
         # corresponding reference. Otherwise, set them to the passed dimension after
         # checking that it is valid.
         if s_ref is None:
-            self._s_ref = self._wings[0].projected_area
+            first_wing_projected_area = self._wings[0].projected_area
+            if first_wing_projected_area is None:
+                raise ValueError(
+                    "s_ref was not provided and the first Wing's projected_area is "
+                    "None. Either provide an explicit s_ref or ensure the first Wing "
+                    "is meshed."
+                )
+            self._s_ref = first_wing_projected_area
         else:
             self._s_ref = _parameter_validation.number_in_range_return_float(
                 s_ref, "s_ref", min_val=0.0, min_inclusive=False
             )
         if c_ref is None:
-            self._c_ref = self._wings[0].mean_aerodynamic_chord
+            first_wing_mean_aerodynamic_chord = self._wings[0].mean_aerodynamic_chord
+            if first_wing_mean_aerodynamic_chord is None:
+                raise ValueError(
+                    "c_ref was not provided and the first Wing's "
+                    "mean_aerodynamic_chord is None. Either provide an explicit c_ref "
+                    "or ensure the first Wing is meshed."
+                )
+            self._c_ref = first_wing_mean_aerodynamic_chord
         else:
             self._c_ref = _parameter_validation.number_in_range_return_float(
                 c_ref, "c_ref", min_val=0.0, min_inclusive=False
             )
         if b_ref is None:
-            self._b_ref = self._wings[0].span
+            first_wing_span = self._wings[0].span
+            if first_wing_span is None:
+                raise ValueError(
+                    "b_ref was not provided and the first Wing's span is None. Either "
+                    "provide an explicit b_ref or ensure the first Wing is meshed."
+                )
+            self._b_ref = first_wing_span
         else:
             self._b_ref = _parameter_validation.number_in_range_return_float(
                 b_ref, "b_ref", min_val=0.0, min_inclusive=False

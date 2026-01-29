@@ -476,7 +476,6 @@ class WingCrossSection:
         self._symmetry_type = value
 
     # --- Other methods ---
-    # TEST: Consider adding unit tests for this method.
     def get_plottable_data(
         self,
         show: bool | np.bool_ = False,

@@ -50,7 +50,7 @@ This package contains the following modules:
 
     test_wing.py: This module contains a class to test Wings.
 
-    test_wing_cross_section.py: This module contains a class to test WingCrossSections.
+    test_wing_cross_section.py: This module contains classes to test WingCrossSections.
 
     test_wing_cross_section_movement.py: This module contains a class to test
     WingCrossSectionMovements.

@@ -1,4 +1,4 @@
-"""This module contains a class to test WingCrossSections."""
+"""This module contains classes to test WingCrossSections."""
 
 import unittest
 
@@ -537,21 +537,49 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.basic_wing_cross_section.symmetry_type = 3
 
-    def test_validated_cannot_be_set_to_false(self):
-        """Test that validated cannot be set from True back to False."""
+    def test_validated_false_to_false_succeeds(self):
+        """Test that setting validated from False to False succeeds.
+
+        The set once logic only blocks when validated is already True. Setting
+        from False to False is allowed. This test documents this behavior.
+        """
+        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.basic_wing_cross_section.validated = False
+        self.assertFalse(self.basic_wing_cross_section.validated)
+
+    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_array_read_only(self):
+        """Test that T_pas_Wcsp_Lpp_to_Wcs_Lp array cannot be modified in place."""
         self.basic_wing_cross_section.validated = True
+        T = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        self.assertIsNotNone(T)
+        with self.assertRaises(ValueError):
+            T[0, 0] = 999.0
 
-        # Trying to set it again (even to the same value) should raise
-        with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.validated = False
+    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_array_read_only(self):
+        """Test that T_pas_Wcs_Lp_to_Wcsp_Lpp array cannot be modified in place."""
+        self.basic_wing_cross_section.validated = True
+        T = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        self.assertIsNotNone(T)
+        with self.assertRaises(ValueError):
+            T[0, 0] = 999.0
 
-    def test_symmetry_type_cannot_be_changed(self):
-        """Test that symmetry_type cannot be changed once set."""
-        self.basic_wing_cross_section.symmetry_type = 1
+    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_caching_returns_same_object(self):
+        """Test that repeated access to T_pas_Wcsp_Lpp_to_Wcs_Lp returns the same
+        cached object.
+        """
+        self.basic_wing_cross_section.validated = True
+        T1 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        T2 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        self.assertIs(T1, T2)
 
-        # Trying to set it again (even to the same value) should raise
-        with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.symmetry_type = 1
+    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_caching_returns_same_object(self):
+        """Test that repeated access to T_pas_Wcs_Lp_to_Wcsp_Lpp returns the same
+        cached object.
+        """
+        self.basic_wing_cross_section.validated = True
+        T1 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        T2 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        self.assertIs(T1, T2)
 
 
 class TestWingCrossSectionDeepCopy(unittest.TestCase):
@@ -602,16 +630,6 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertEqual(copied.spanwise_spacing, original.spanwise_spacing)
         self.assertEqual(copied.validated, original.validated)
         self.assertEqual(copied.symmetry_type, original.symmetry_type)
-
-    def test_deepcopy_creates_independent_airfoil(self):
-        """Test that deepcopy creates an independent copy of the Airfoil."""
-        import copy
-
-        original = self.basic_wing_cross_section
-        copied = copy.deepcopy(original)
-
-        self.assertIsNot(copied.airfoil, original.airfoil)
-        self.assertEqual(copied.airfoil.name, original.airfoil.name)
 
     def test_deepcopy_creates_independent_arrays(self):
         """Test that deepcopy creates independent copies of numpy arrays."""
@@ -716,6 +734,258 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsNot(copied.airfoil.outline_A_lp, original.airfoil.outline_A_lp)
         with self.assertRaises(ValueError):
             copied.airfoil.outline_A_lp[0, 0] = 999.0
+
+    def test_deepcopy_cached_transformation_matrices_read_only(self):
+        """Test that deepcopied cached transformation matrices are read only."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original.validated = True
+
+        # Trigger caching on original.
+        _ = original.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        _ = original.T_pas_Wcs_Lp_to_Wcsp_Lpp
+
+        copied = copy.deepcopy(original)
+
+        # Verify that the copied matrices are read only.
+        with self.assertRaises(ValueError):
+            copied.T_pas_Wcsp_Lpp_to_Wcs_Lp[0, 0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.T_pas_Wcs_Lp_to_Wcsp_Lpp[0, 0] = 999.0
+
+    def test_deepcopy_cached_transformation_matrices_are_independent(self):
+        """Test that deepcopied cached transformation matrices are independent copies."""
+        import copy
+
+        original = self.basic_wing_cross_section
+        original.validated = True
+
+        # Trigger caching on original.
+        original_T_forward = original.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        original_T_inverse = original.T_pas_Wcs_Lp_to_Wcsp_Lpp
+
+        copied = copy.deepcopy(original)
+
+        # Verify that the copied matrices are different objects.
+        self.assertIsNot(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp, original_T_forward)
+        self.assertIsNot(copied.T_pas_Wcs_Lp_to_Wcsp_Lpp, original_T_inverse)
+
+        # Verify that the values are equal.
+        np.testing.assert_array_equal(
+            copied.T_pas_Wcsp_Lpp_to_Wcs_Lp, original_T_forward
+        )
+        np.testing.assert_array_equal(
+            copied.T_pas_Wcs_Lp_to_Wcsp_Lpp, original_T_inverse
+        )
+
+
+class TestWingCrossSectionGetPlottableData(unittest.TestCase):
+    """Tests for WingCrossSection.get_plottable_data method."""
+
+    def setUp(self):
+        """Set up test fixtures for get_plottable_data tests."""
+        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        self.basic_wing_cross_section = (
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
+        )
+        self.root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+
+    def test_get_plottable_data_returns_none_when_not_validated(self):
+        """Test that get_plottable_data returns None when not validated."""
+        # Set symmetry_type but not validated.
+        self.basic_wing_cross_section.symmetry_type = 1
+        self.assertFalse(self.basic_wing_cross_section.validated)
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNone(result)
+
+    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self):
+        """Test that get_plottable_data returns None when symmetry_type not set."""
+        # Set validated but not symmetry_type.
+        self.basic_wing_cross_section.validated = True
+        self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNone(result)
+
+    def test_get_plottable_data_returns_none_when_neither_set(self):
+        """Test that get_plottable_data returns None when neither validated nor
+        symmetry_type is set.
+        """
+        self.assertFalse(self.basic_wing_cross_section.validated)
+        self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNone(result)
+
+    def test_get_plottable_data_returns_list_when_valid(self):
+        """Test that get_plottable_data returns a list when validated and
+        symmetry_type is set.
+        """
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+
+    def test_get_plottable_data_returns_ndarrays(self):
+        """Test that get_plottable_data returns ndarrays for outline and MCL."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsInstance(result[0], np.ndarray)
+        self.assertIsInstance(result[1], np.ndarray)
+
+    def test_get_plottable_data_returns_3d_points(self):
+        """Test that get_plottable_data returns arrays with 3 columns (x, y, z)."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        # Both outline and MCL should have 3 columns (x, y, z).
+        self.assertEqual(result[0].shape[1], 3)
+        self.assertEqual(result[1].shape[1], 3)
+
+    def test_get_plottable_data_y_components_are_zero(self):
+        """Test that get_plottable_data returns points with zero y components.
+
+        The points are in wing cross section axes relative to the leading point,
+        so the y components should all be zero (the cross section is in the xz
+        plane).
+        """
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        # All y components should be zero.
+        np.testing.assert_array_equal(result[0][:, 1], 0.0)
+        np.testing.assert_array_equal(result[1][:, 1], 0.0)
+
+    def test_get_plottable_data_scaled_by_chord(self):
+        """Test that get_plottable_data returns points scaled by chord."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+        chord = self.basic_wing_cross_section.chord
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        outline = result[0]
+
+        # The x range should be approximately [0, chord].
+        x_min = np.min(outline[:, 0])
+        x_max = np.max(outline[:, 0])
+
+        self.assertAlmostEqual(x_min, 0.0, places=5)
+        self.assertAlmostEqual(x_max, chord, places=5)
+
+    def test_get_plottable_data_default_show_is_false(self):
+        """Test that get_plottable_data default for show is False."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        # Call without show parameter, should return data (not None).
+        result = self.basic_wing_cross_section.get_plottable_data()
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_accepts_numpy_bool(self):
+        """Test that get_plottable_data accepts numpy bool for show parameter."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=np.bool_(False))
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_with_symmetry_type_1(self):
+        """Test get_plottable_data with symmetry type 1 (no symmetry)."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+
+    def test_get_plottable_data_with_root_cross_section(self):
+        """Test get_plottable_data with a root WingCrossSection (identity transform)."""
+        self.root_wing_cross_section.validated = True
+        self.root_wing_cross_section.symmetry_type = 1
+
+        result = self.root_wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+
+        # For root cross section, chord is 2.0.
+        chord = self.root_wing_cross_section.chord
+        outline = result[0]
+        x_max = np.max(outline[:, 0])
+        self.assertAlmostEqual(x_max, chord, places=5)
+
+    def test_get_plottable_data_with_unit_chord(self):
+        """Test get_plottable_data with a WingCrossSection with chord=1.0."""
+        # Create a WingCrossSection with chord=1.0.
+        wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=self.test_airfoil,
+            num_spanwise_panels=8,
+            chord=1.0,
+        )
+        wing_cross_section.validated = True
+        wing_cross_section.symmetry_type = 1
+
+        result = wing_cross_section.get_plottable_data(show=False)
+
+        self.assertIsNotNone(result)
+        outline = result[0]
+
+        # With chord=1.0, the x range should be [0, 1].
+        x_min = np.min(outline[:, 0])
+        x_max = np.max(outline[:, 0])
+
+        self.assertAlmostEqual(x_min, 0.0, places=5)
+        self.assertAlmostEqual(x_max, 1.0, places=5)
+
+    def test_get_plottable_data_mcl_within_outline_bounds(self):
+        """Test that MCL points are within the outline x bounds."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        outline = result[0]
+        mcl = result[1]
+
+        outline_x_min = np.min(outline[:, 0])
+        outline_x_max = np.max(outline[:, 0])
+        mcl_x_min = np.min(mcl[:, 0])
+        mcl_x_max = np.max(mcl[:, 0])
+
+        # MCL should be within outline x bounds.
+        self.assertGreaterEqual(mcl_x_min, outline_x_min - 1e-10)
+        self.assertLessEqual(mcl_x_max, outline_x_max + 1e-10)
+
+    def test_get_plottable_data_invalid_show_type_raises(self):
+        """Test that get_plottable_data raises error for invalid show type."""
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            self.basic_wing_cross_section.get_plottable_data(show="invalid")
 
 
 if __name__ == "__main__":

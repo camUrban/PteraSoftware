@@ -51,6 +51,10 @@ Requires Python 3.11, but active development is done in 3.13
 - `examples/`: Directory with example scripts for users
 - `gui/`: Directory with GUI source code
 - `pterasoftware/`: Main package with modular solver architecture
+  - `_vortices/`: Package with vortex classes
+    - `_line_vortex.py`: LineVortex class
+    - `horseshoe_vortex.py`: HorseshoeVortex class
+    - `ring_vortex.py`: RingVortex class
   - `geometry/`: Package with aircraft geometry classes
     - `_airfoils/`: Directory containing data files with airfoil coordinates
     - `_meshing.py`: Wing mesh generation
@@ -65,7 +69,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `operating_point_movement.py`: Operating condition changes
     - `wing_cross_section_movement.py`: Wing cross section motion
     - `wing_movement.py`: Wing flapping motion
-  - `_aerodynamics.py`: Vortex elements and velocity calculations
+  - `_aerodynamics_functions.py`: Induced velocity functions
   - `_functions.py`: Shared utility functions
   - `_logging.py`: Contains function for setting up logging
   - `_panel.py`: Panel class for discretized mesh elements

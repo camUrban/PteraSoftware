@@ -246,7 +246,7 @@ class Panel:
 
 ---
 
-## RingVortex Class (`_aerodynamics.py`)
+## RingVortex Class (`_vortices/ring_vortex.py`)
 
 ### Current State
 
@@ -374,7 +374,7 @@ class RingVortex:
 
 ---
 
-## HorseshoeVortex Class (`_aerodynamics.py`)
+## HorseshoeVortex Class (`_vortices/horseshoe_vortex.py`)
 
 ### Attribute Classification
 
@@ -427,7 +427,7 @@ def __init__(self, ..., leftLegVector_GP1: np.ndarray, ...):
 
 ---
 
-## _LineVortex Class (`_aerodynamics.py`)
+## _LineVortex Class (`_vortices/_line_vortex.py`)
 
 ### Current State
 

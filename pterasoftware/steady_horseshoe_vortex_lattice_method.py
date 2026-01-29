@@ -23,6 +23,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _vortices,
     geometry,
     operating_point,
     problems,
@@ -206,7 +207,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         # first Airplane's geometry axes, relative to the first
                         # Airplane's CG).
                         panel.horseshoe_vortex = (
-                            _aerodynamics_functions.HorseshoeVortex(
+                            _vortices.horseshoe_vortex.HorseshoeVortex(
                                 Frhvp_GP1_CgP1=_Frbvp_GP1_CgP1,
                                 Flhvp_GP1_CgP1=_Flbvp_GP1_CgP1,
                                 leftLegVector_GP1=vInfHat_GP1__E,

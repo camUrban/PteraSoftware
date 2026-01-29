@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics_functions
+from pterasoftware import _aerodynamics_functions, _vortices
 from tests.unit.fixtures import horseshoe_vortex_fixtures
 
 
@@ -51,7 +51,7 @@ class TestHorseshoeVortex(unittest.TestCase):
         """Test HorseshoeVortex initialization with valid parameters."""
         # Test that basic HorseshoeVortex initializes correctly.
         self.assertIsInstance(
-            self.basic_horseshoe_vortex, _aerodynamics_functions.HorseshoeVortex
+            self.basic_horseshoe_vortex, _vortices.horseshoe_vortex.HorseshoeVortex
         )
         npt.assert_array_equal(
             self.basic_horseshoe_vortex.Frhvp_GP1_CgP1,

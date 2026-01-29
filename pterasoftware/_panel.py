@@ -6,7 +6,7 @@ from typing import cast
 
 import numpy as np
 
-from . import _aerodynamics_functions, _vortices
+from . import _vortices
 
 
 class Panel:
@@ -188,7 +188,7 @@ class Panel:
         # Initialize mutable attributes to hold the Panel's RingVortex and
         # HorseshoeVortex and the loads on this Panel.
         self.ring_vortex: _vortices.ring_vortex.RingVortex | None = None
-        self.horseshoe_vortex: _aerodynamics_functions.HorseshoeVortex | None = None
+        self.horseshoe_vortex: _vortices.horseshoe_vortex.HorseshoeVortex | None = None
         self.forces_GP1: np.ndarray | None = None
         self.moments_GP1_CgP1: np.ndarray | None = None
         self.forces_W: np.ndarray | None = None

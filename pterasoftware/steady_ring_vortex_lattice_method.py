@@ -23,6 +23,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _vortices,
     geometry,
     operating_point,
     problems,
@@ -285,7 +286,7 @@ class SteadyRingVortexLatticeMethodSolver:
                             )
 
                         # Initialize the Panel's RingVortex.
-                        panel.ring_vortex = _aerodynamics_functions.RingVortex(
+                        panel.ring_vortex = _vortices.ring_vortex.RingVortex(
                             Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
                             Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                             Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,

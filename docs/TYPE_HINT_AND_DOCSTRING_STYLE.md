@@ -105,10 +105,7 @@ Use `cast()` sparingly, only when the type checker cannot infer what you know to
 from typing import cast
 
 # For dtype=object arrays where we know the element type
-ring_vortex = cast(
-    _aerodynamics.RingVortex,
-    object_array[i, j],
-)
+ring_vortex = cast(_vortices.ring_vortex.RingVortex, object_array[i, j], )
 ```
 
 **Use `cast()` when:**

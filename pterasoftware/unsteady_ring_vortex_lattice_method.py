@@ -24,6 +24,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _vortices,
     geometry,
     movements,
     operating_point,
@@ -669,7 +670,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
 
                             # Initialize the Panel's RingVortex.
-                            panel.ring_vortex = _aerodynamics_functions.RingVortex(
+                            panel.ring_vortex = _vortices.ring_vortex.RingVortex(
                                 Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
                                 Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                                 Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
@@ -718,7 +719,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     global_panel_position += 1
 
                 # Iterate through the 1D ndarray of this Wing's wake RingVortices.
-                wake_ring_vortex: _aerodynamics_functions.RingVortex
+                wake_ring_vortex: _vortices.ring_vortex.RingVortex
                 for wake_ring_vortex in wake_ring_vortices:
                     # Update the solver's list of attributes with this wake
                     # RingVortex's attributes.
@@ -1655,7 +1656,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     )
                                     assert next_wake_ring_vortices is not None
                                     next_wake_ring_vortex = cast(
-                                        _aerodynamics_functions.RingVortex,
+                                        _vortices.ring_vortex.RingVortex,
                                         next_wake_ring_vortices[
                                             chordwise_point_id, spanwise_point_id
                                         ],
@@ -1706,7 +1707,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     next_wing.wake_ring_vortices[
                                         chordwise_point_id,
                                         spanwise_point_id,
-                                    ] = _aerodynamics_functions.RingVortex(
+                                    ] = _vortices.ring_vortex.RingVortex(
                                         Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
                                         Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
                                         Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,

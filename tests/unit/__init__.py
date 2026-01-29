@@ -18,9 +18,9 @@ This package contains the following modules:
 
     test_airplane_movement.py: This module contains a class to test AirplaneMovements.
 
-    test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
+    test_horseshoe_vortex.py: This module contains classes to test HorseshoeVortices.
 
-    test_line_vortex.py: This module contains a class to test LineVortices.
+    test_line_vortex.py: This module contains classes to test LineVortices.
 
     test_movement.py: This module contains a class to test Movements.
 
@@ -35,7 +35,7 @@ This package contains the following modules:
     test_package_init.py: This module contains tests for the pterasoftware package
     __init__.py.
 
-    test_panel.py: This module contains a class to test Panels.
+    test_panel.py: This module contains classes to test Panels.
 
     test_parameter_validation.py: This module contains a class to test parameter
     validation functions.
@@ -43,7 +43,7 @@ This package contains the following modules:
     test_problems.py: This module contains a class to test SteadyProblems and
     UnsteadyProblems.
 
-    test_ring_vortex.py: This module contains a class to test RingVortices.
+    test_ring_vortex.py: This module contains classes to test RingVortices.
 
     test_transformations.py: This module contains classes to test functions in the
     transformations module.

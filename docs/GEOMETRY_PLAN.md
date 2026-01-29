@@ -42,12 +42,12 @@ When implementing `__deepcopy__`, handle cached derived properties based on thei
 2. **Derived from Set-Once → Reset to None**: These depend on values that will be set
    fresh by the solver or meshing, so reset them.
 
-| Class                | Preserve (Derived from Immutable)                        | Reset (Derived from Set-Once)                                             |
-|----------------------|----------------------------------------------------------|---------------------------------------------------------------------------|
-| **Airplane**         | `_num_panels`, `_T_pas_G_Cg_to_GP1_CgP1`                 | (none)                                                                    |
-| **Wing**             | `_T_pas_*` matrices, basis vectors                       | `_span`, `_projected_area`, `_wetted_area`, `_average_panel_aspect_ratio` |
-| **WingCrossSection** | `_T_pas_Wcsp_Lpp_to_Wcs_Lp`, `_T_pas_Wcs_Lp_to_Wcsp_Lpp` | (none)                                                                    |
-| **Airfoil**          | (no cached derived properties)                           | (none)                                                                    |
+| Class                | Preserve (Derived from Immutable)                        | Reset (Derived from Set-Once)                                                                                                  |
+|----------------------|----------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| **Airplane**         | `_num_panels`, `_T_pas_G_Cg_to_GP1_CgP1`                 | (none)                                                                                                                         |
+| **Wing**             | `_T_pas_*` matrices, basis vectors, `_children_T_pas_*`  | `_span`, `_projected_area`, `_wetted_area`, `_average_panel_aspect_ratio`, `_standard_mean_chord`, `_mean_aerodynamic_chord`   |
+| **WingCrossSection** | `_T_pas_Wcsp_Lpp_to_Wcs_Lp`, `_T_pas_Wcs_Lp_to_Wcsp_Lpp` | (none)                                                                                                                         |
+| **Airfoil**          | (no cached derived properties)                           | (none)                                                                                                                         |
 
 ---
 
@@ -137,17 +137,17 @@ with type 3 symmetry.
 | `T_pas_Wn_Ler_to_G_Cg`     | Above            | Inverse transformation |
 | `WnX_G`, `WnY_G`, `WnZ_G`  | Above            | Basis vectors          |
 | `children_T_pas_*`         | Cross sections   | Child transformations  |
-| `standard_mean_chord`      | Cross sections   | Standard mean chord    |
-| `mean_aerodynamic_chord`   | Cross sections   | MAC                    |
 
 #### Derived from Set-Once (use manual lazy caching)
 
-| Property                     | Depends On                      | Notes                |
-|------------------------------|---------------------------------|----------------------|
-| `projected_area`             | `panels`                        | Projected area       |
-| `wetted_area`                | `panels`                        | Wetted area          |
-| `average_panel_aspect_ratio` | `panels`                        | Average aspect ratio |
-| `span`                       | Cross sections, `symmetry_type` | Wing span            |
+| Property                     | Depends On                        | Notes                |
+|------------------------------|-----------------------------------|----------------------|
+| `projected_area`             | `panels`                          | Projected area       |
+| `wetted_area`                | `panels`                          | Wetted area          |
+| `average_panel_aspect_ratio` | `panels`                          | Average aspect ratio |
+| `span`                       | Cross sections, `symmetry_type`   | Wing span            |
+| `standard_mean_chord`        | `projected_area`, `span`          | Standard mean chord  |
+| `mean_aerodynamic_chord`     | `projected_area`, `symmetry_type` | MAC                  |
 
 **Note on caching**: Most derived properties iterate over panels or cross sections.
 For large meshes, caching `projected_area`, `wetted_area`, and `span` could provide

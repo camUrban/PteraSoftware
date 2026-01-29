@@ -194,6 +194,7 @@ class Panel:
         self.forces_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
 
+    # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> Panel:
         """Creates a deep copy of this Panel, preserving mesh geometry but resetting
         solver state.
@@ -830,7 +831,7 @@ class Panel:
             self._unitNormal_GP1.flags.writeable = False
         return self._unitNormal_GP1
 
-    # --- Non property methods ---
+    # --- Other methods ---
     def calculate_projected_area(self, normal_G: np.ndarray) -> float:
         """Calculates the area of this Panel projected on a plane defined by a given
         normal vector (in geometry axes).

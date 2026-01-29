@@ -137,67 +137,66 @@ class Airfoil:
         self._mcl_A_lp: np.ndarray | None = None
         self._populate_mcl()
 
-        # Make numpy arrays read-only to prevent external mutation.
+        # Set immutable numpy arrays to be read only.
         self._outline_A_lp.flags.writeable = False
         if self._mcl_A_lp is not None:
             self._mcl_A_lp.flags.writeable = False
 
-    # --- Immutable: read-only properties ---
-    @property
-    def name(self) -> str:
-        """The name of the Airfoil."""
-        return self._name
-
-    @property
-    def outline_A_lp(self) -> np.ndarray:
-        """The Airfoil's outline coordinates (in airfoil axes, relative to leading
-        point)."""
-        return self._outline_A_lp
-
-    @property
-    def resample(self) -> bool:
-        """Whether the outline was resampled during initialization."""
-        return self._resample
-
-    @property
-    def n_points_per_side(self) -> int:
-        """The number of points per side used for resampling and MCL generation."""
-        return self._n_points_per_side
-
-    @property
-    def mcl_A_lp(self) -> np.ndarray | None:
-        """The mean camber line coordinates (in airfoil axes, relative to leading
-        point)."""
-        return self._mcl_A_lp
-
+    # --- Deep copy method ---
     def __deepcopy__(self, memo: dict[int, Any]) -> Airfoil:
-        """Returns an independent deep copy of this Airfoil.
+        """Creates a deep copy of this Airfoil.
 
-        This method is optimized for performance by directly copying numpy arrays using
-        np.copy() and sharing immutable attributes (name, resample, n_points_per_side)
-        without copying.
+        The copy preserves all attributes since they are all immutable.
 
-        :param memo: A dictionary used by the copy module to track already copied
-            objects and avoid infinite recursion with circular references.
-        :return: A new Airfoil instance with copied data.
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Airfoil with copied data.
         """
-        new_airfoil = Airfoil.__new__(Airfoil)
+        # Create a new Airfoil instance without calling __init__.
+        new_airfoil = object.__new__(Airfoil)
+
+        # Store this Airfoil in memo to handle potential circular references.
+        memo[id(self)] = new_airfoil
+
+        # Copy immutable attributes. For those that are numpy arrays, make the copies
+        # read only.
         new_airfoil._name = self._name
         new_airfoil._resample = self._resample
         new_airfoil._n_points_per_side = self._n_points_per_side
 
-        # Copy numpy arrays and make them read-only.
-        new_airfoil._outline_A_lp = np.copy(self._outline_A_lp)
+        new_airfoil._outline_A_lp = self._outline_A_lp.copy()
         new_airfoil._outline_A_lp.flags.writeable = False
 
         if self._mcl_A_lp is not None:
-            new_airfoil._mcl_A_lp = np.copy(self._mcl_A_lp)
+            new_airfoil._mcl_A_lp = self._mcl_A_lp.copy()
             new_airfoil._mcl_A_lp.flags.writeable = False
         else:
             new_airfoil._mcl_A_lp = None
 
         return new_airfoil
 
+    # --- Immutable: read only properties ---
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def outline_A_lp(self) -> np.ndarray:
+        return self._outline_A_lp
+
+    @property
+    def resample(self) -> bool:
+        return self._resample
+
+    @property
+    def n_points_per_side(self) -> int:
+        return self._n_points_per_side
+
+    @property
+    def mcl_A_lp(self) -> np.ndarray | None:
+        return self._mcl_A_lp
+
+    # --- Other methods ---
     # TODO: In the future, if adding control surfaces becomes more important,
     #  we may want to rework this method. Using this method we need to artificially
     #  limit the maximum deflection to 5.0 degrees because higher values may cause

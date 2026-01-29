@@ -250,7 +250,7 @@ class Panel:
 
 ### Current State
 
-Has setters on corner positions that update child `_LineVortex` objects and invalidate
+Has setters on corner positions that update child `LineVortex` objects and invalidate
 caches. However, corners are never modified after construction in practice.
 
 ### Attribute Classification
@@ -280,14 +280,14 @@ caches. However, corners are never modified after construction in practice.
 
 #### Derived (special: child objects)
 
-| Property    | Depends On                                     | Notes               |
-|-------------|------------------------------------------------|---------------------|
-| `front_leg` | `Frrvp_GP1_CgP1`, `Flrvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
-| `left_leg`  | `Flrvp_GP1_CgP1`, `Blrvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
-| `back_leg`  | `Blrvp_GP1_CgP1`, `Brrvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
-| `right_leg` | `Brrvp_GP1_CgP1`, `Frrvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
+| Property    | Depends On                                     | Notes              |
+|-------------|------------------------------------------------|--------------------|
+| `front_leg` | `Frrvp_GP1_CgP1`, `Flrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
+| `left_leg`  | `Flrvp_GP1_CgP1`, `Blrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
+| `back_leg`  | `Blrvp_GP1_CgP1`, `Brrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
+| `right_leg` | `Brrvp_GP1_CgP1`, `Frrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
 
-**Note on legs**: The leg `_LineVortex` objects depend on both geometry (immutable)
+**Note on legs**: The leg `LineVortex` objects depend on both geometry (immutable)
 and `strength` (mutable). Since `strength` is set by the solver AFTER the vortex is
 created, we have two options:
 
@@ -317,10 +317,10 @@ class RingVortex:
         self.age: float = 0.0
 
         # Child objects (lazily created)
-        self._front_leg: _LineVortex | None = None
-        self._left_leg: _LineVortex | None = None
-        self._back_leg: _LineVortex | None = None
-        self._right_leg: _LineVortex | None = None
+        self._front_leg: LineVortex | None = None
+        self._left_leg: LineVortex | None = None
+        self._back_leg: LineVortex | None = None
+        self._right_leg: LineVortex | None = None
 
     # --- Immutable: read-only ---
     @property
@@ -362,9 +362,9 @@ class RingVortex:
 
     # --- Child objects: lazy creation ---
     @property
-    def front_leg(self) -> _LineVortex:
+    def front_leg(self) -> LineVortex:
         if self._front_leg is None:
-            self._front_leg = _LineVortex(
+            self._front_leg = LineVortex(
                 Slvp_GP1_CgP1=self._Frrvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self._Flrvp_GP1_CgP1,
                 strength=self._strength,
@@ -402,11 +402,11 @@ class RingVortex:
 
 #### Derived (child objects)
 
-| Property     | Depends On                                     | Notes               |
-|--------------|------------------------------------------------|---------------------|
-| `right_leg`  | `Brhvp_GP1_CgP1`, `Frhvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
-| `finite_leg` | `Frhvp_GP1_CgP1`, `Flhvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
-| `left_leg`   | `Flhvp_GP1_CgP1`, `Blhvp_GP1_CgP1`, `strength` | Child `_LineVortex` |
+| Property     | Depends On                                     | Notes              |
+|--------------|------------------------------------------------|--------------------|
+| `right_leg`  | `Brhvp_GP1_CgP1`, `Frhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
+| `finite_leg` | `Frhvp_GP1_CgP1`, `Flhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
+| `left_leg`   | `Flhvp_GP1_CgP1`, `Blhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
 
 ### Implementation Changes
 
@@ -427,7 +427,7 @@ def __init__(self, ..., leftLegVector_GP1: np.ndarray, ...):
 
 ---
 
-## _LineVortex Class (`_vortices/_line_vortex.py`)
+## LineVortex Class (`_vortices/_line_vortex.py`)
 
 ### Current State
 
@@ -436,12 +436,12 @@ Has setters on endpoints that invalidate caches. Endpoints are set by parent
 
 ### Attribute Classification
 
-Since `_LineVortex` is an internal class whose endpoints ARE updated by parent vortex
+Since `LineVortex` is an internal class whose endpoints ARE updated by parent vortex
 classes when their corners change, we need to consider whether this mutation actually
 happens.
 
 **Analysis**: Looking at the parent classes, endpoint updates only happen in setters
-that we're now removing (since corners are immutable). Therefore, `_LineVortex`
+that we're now removing (since corners are immutable). Therefore, `LineVortex`
 endpoints are also effectively immutable after creation.
 
 #### Immutable (set in `__init__`)
@@ -467,7 +467,7 @@ endpoints are also effectively immutable after creation.
 ### Implementation Changes
 
 ```python
-class _LineVortex:
+class LineVortex:
     def __init__(self, ...):
         # Immutable geometry
         self._Slvp_GP1_CgP1 = Slvp_GP1_CgP1
@@ -507,12 +507,12 @@ class _LineVortex:
 
 ## Summary of Changes
 
-| Class               | Remove                                                          | Add                                                    | Keep                                       |
-|---------------------|-----------------------------------------------------------------|--------------------------------------------------------|--------------------------------------------|
-| **Panel**           | Setters on `_G_Cg` corners, cache invalidation in those setters | Set-once enforcement on meshing and `_GP1` attrs       | Manual lazy cache for all derived props    |
-| **RingVortex**      | Setters on corners, child update logic in corner setters        | (none)                                                 | Manual lazy cache, `strength` propagation  |
-| **HorseshoeVortex** | Setters on front points/vector/lengths, child update logic      | Normalization of `leftLegVector_GP1` in `__init__`     | Manual lazy cache, `strength` propagation  |
-| **_LineVortex**     | Setters on endpoints                                            | (none)                                                 | Manual lazy cache, plain `strength` attr   |
+| Class               | Remove                                                          | Add                                                | Keep                                      |
+|---------------------|-----------------------------------------------------------------|----------------------------------------------------|-------------------------------------------|
+| **Panel**           | Setters on `_G_Cg` corners, cache invalidation in those setters | Set-once enforcement on meshing and `_GP1` attrs   | Manual lazy cache for all derived props   |
+| **RingVortex**      | Setters on corners, child update logic in corner setters        | (none)                                             | Manual lazy cache, `strength` propagation |
+| **HorseshoeVortex** | Setters on front points/vector/lengths, child update logic      | Normalization of `leftLegVector_GP1` in `__init__` | Manual lazy cache, `strength` propagation |
+| **LineVortex**      | Setters on endpoints                                            | (none)                                             | Manual lazy cache, plain `strength` attr  |
 
 ---
 
@@ -528,7 +528,7 @@ class _LineVortex:
 
 2. **RingVortex class**:
    - Remove setters from corner properties (make read-only)
-   - Remove child `_LineVortex` update logic from (now removed) corner setters
+   - Remove child `LineVortex` update logic from (now removed) corner setters
    - Keep existing manual lazy caching for `Crvp_GP1_CgP1` and `area` (no change needed)
    - Keep `strength` setter with child propagation
 
@@ -539,7 +539,7 @@ class _LineVortex:
    - Keep existing manual lazy caching for `Brhvp_GP1_CgP1` and `Blhvp_GP1_CgP1` (no change needed)
    - Keep `strength` setter with child propagation
 
-4. **_LineVortex class**:
+4. **LineVortex class**:
    - Remove setters from `Slvp_GP1_CgP1` and `Elvp_GP1_CgP1` (make read-only)
    - Keep existing manual lazy caching for `vector_GP1` and `Clvp_GP1_CgP1` (no change needed)
    - Keep `strength` as plain attribute (no propagation needed)
@@ -555,7 +555,7 @@ class _LineVortex:
      - `Panel.is_leading_edge`, `Panel.is_trailing_edge`
      - `RingVortex.Frrvp_GP1_CgP1`, etc.
      - `HorseshoeVortex.Frhvp_GP1_CgP1`, `leftLegVector_GP1`, etc.
-     - `_LineVortex.Slvp_GP1_CgP1`, `_LineVortex.Elvp_GP1_CgP1`
+     - `LineVortex.Slvp_GP1_CgP1`, `LineVortex.Elvp_GP1_CgP1`
    - Add tests verifying set-once enforcement (second assignment raises `AttributeError`):
      - `Panel.is_right_edge`, `Panel.is_left_edge`
      - `Panel.local_chordwise_position`, `Panel.local_spanwise_position`

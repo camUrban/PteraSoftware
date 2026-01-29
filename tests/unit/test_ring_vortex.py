@@ -6,8 +6,10 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics_functions
-from pterasoftware._vortices import ring_vortex
+from pterasoftware import _vortices
+
+# noinspection PyProtectedMember
+from pterasoftware._vortices import _line_vortex
 from tests.unit.fixtures import ring_vortex_fixtures
 
 
@@ -43,7 +45,7 @@ class TestRingVortex(unittest.TestCase):
     def test_initialization_valid_parameters(self):
         """Test RingVortex initialization with valid parameters."""
         # Test that basic RingVortex initializes correctly.
-        self.assertIsInstance(self.basic_ring_vortex, ring_vortex.RingVortex)
+        self.assertIsInstance(self.basic_ring_vortex, _vortices.ring_vortex.RingVortex)
         npt.assert_array_equal(
             self.basic_ring_vortex.Frrvp_GP1_CgP1,
             np.array([0.0, 0.5, 0.0], dtype=float),
@@ -243,18 +245,10 @@ class TestRingVortex(unittest.TestCase):
     def test_line_vortex_legs_are_line_vortex_type(self):
         """Test that LineVortex legs are of the correct type."""
         # Verify all legs are LineVortex instances.
-        self.assertIsInstance(
-            self.basic_ring_vortex.front_leg, _aerodynamics_functions._LineVortex
-        )
-        self.assertIsInstance(
-            self.basic_ring_vortex.left_leg, _aerodynamics_functions._LineVortex
-        )
-        self.assertIsInstance(
-            self.basic_ring_vortex.back_leg, _aerodynamics_functions._LineVortex
-        )
-        self.assertIsInstance(
-            self.basic_ring_vortex.right_leg, _aerodynamics_functions._LineVortex
-        )
+        self.assertIsInstance(self.basic_ring_vortex.front_leg, _line_vortex.LineVortex)
+        self.assertIsInstance(self.basic_ring_vortex.left_leg, _line_vortex.LineVortex)
+        self.assertIsInstance(self.basic_ring_vortex.back_leg, _line_vortex.LineVortex)
+        self.assertIsInstance(self.basic_ring_vortex.right_leg, _line_vortex.LineVortex)
 
     def test_large_strength_vortex(self):
         """Test RingVortex with very large strength."""

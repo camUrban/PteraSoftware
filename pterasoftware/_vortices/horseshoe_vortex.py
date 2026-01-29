@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pterasoftware._aerodynamics_functions import _LineVortex
+from . import _line_vortex
 
 
 class HorseshoeVortex:
@@ -74,9 +74,9 @@ class HorseshoeVortex:
         self._strength: float
         self._Brhvp_GP1_CgP1: np.ndarray | None = None
         self._Blhvp_GP1_CgP1: np.ndarray | None = None
-        self._right_leg: _LineVortex | None = None
-        self._finite_leg: _LineVortex | None = None
-        self._left_leg: _LineVortex | None = None
+        self._right_leg: _line_vortex.LineVortex | None = None
+        self._finite_leg: _line_vortex.LineVortex | None = None
+        self._left_leg: _line_vortex.LineVortex | None = None
 
         # Initialize the attributes.
         self.Frhvp_GP1_CgP1 = Frhvp_GP1_CgP1
@@ -197,14 +197,14 @@ class HorseshoeVortex:
         return self._Blhvp_GP1_CgP1
 
     @property
-    def right_leg(self) -> _LineVortex:
+    def right_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this HorseshoeVortex's right leg.
 
         :return: A LineVortex representing this HorseshoeVortex's right leg. The right
             leg goes from the back right point to the front right point.
         """
         if self._right_leg is None:
-            self._right_leg = _LineVortex(
+            self._right_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Brhvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
                 strength=self.strength,
@@ -212,14 +212,14 @@ class HorseshoeVortex:
         return self._right_leg
 
     @property
-    def finite_leg(self) -> _LineVortex:
+    def finite_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this HorseshoeVortex's finite leg.
 
         :return: A LineVortex representing this HorseshoeVortex's finite leg. The finite
             leg goes from the front right point to the front left point.
         """
         if self._finite_leg is None:
-            self._finite_leg = _LineVortex(
+            self._finite_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
                 strength=self.strength,
@@ -227,14 +227,14 @@ class HorseshoeVortex:
         return self._finite_leg
 
     @property
-    def left_leg(self) -> _LineVortex:
+    def left_leg(self) -> _line_vortex.LineVortex:
         """The LineVortex representing this HorseshoeVortex's left leg.
 
         :return: A LineVortex representing this HorseshoeVortex's left leg. The left leg
             goes from the front left point to the back left point.
         """
         if self._left_leg is None:
-            self._left_leg = _LineVortex(
+            self._left_leg = _line_vortex.LineVortex(
                 Slvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
                 Elvp_GP1_CgP1=self.Blhvp_GP1_CgP1,
                 strength=self.strength,

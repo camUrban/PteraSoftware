@@ -30,13 +30,6 @@ class Wing:
     __deepcopy__: Creates a deep copy of this Wing, preserving mesh geometry but
     resetting wake state.
 
-    generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
-    the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
-    after it's determined its symmetry type.
-
-    get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines and
-    mean camber lines.
-
     T_pas_G_Cg_to_Wn_Ler: The passive transformation matrix which maps in homogeneous
     coordinates from geometry axes relative to the CG to wing axes relative to the
     leading edge root point. It is None if the Wing's symmetry type hasn't been defined
@@ -71,6 +64,14 @@ class Wing:
     in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
     relative to their respective leading points, to geometry axes, relative to the CG.
 
+    symmetry_type: The symmetry type of this Wing.
+
+    num_spanwise_panels: The number of spanwise Panels on this Wing.
+
+    num_panels: The total number of Panels on this Wing.
+
+    panels: The 2D array of Panels on this Wing.
+
     projected_area: The area of the Wing projected onto the plane defined by the wing
     axes' xy plane.
 
@@ -84,7 +85,34 @@ class Wing:
 
     mean_aerodynamic_chord: The Wing's mean aerodynamic chord.
 
+    generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
+    the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
+    after it's determined its symmetry type.
+
+    get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines and
+    mean camber lines.
+
     **Notes:**
+
+    Immutable attributes (wing_cross_sections, name, Ler_Gs_Cgs, angles_Gs_to_Wn_ixyz,
+    num_chordwise_panels, and chordwise_spacing) are set during initialization and
+    cannot be modified afterward. The numpy arrays Ler_Gs_Cgs and angles_Gs_to_Wn_ixyz
+    are made read only to prevent in place mutation. The wing_cross_sections attribute
+    is stored as a tuple to prevent external mutation.
+
+    Derived transformation matrices and basis vectors (T_pas_G_Cg_to_Wn_Ler,
+    T_pas_Wn_Ler_to_G_Cg, WnX_G, WnY_G, WnZ_G, and the children_T_pas_* properties) are
+    lazily evaluated and cached. Derived geometric properties (projected_area,
+    wetted_area, average_panel_aspect_ratio, span, standard_mean_chord, and
+    mean_aerodynamic_chord) are also lazily evaluated and cached.
+
+    The symmetry_type, num_spanwise_panels, num_panels, and panels attributes are set
+    once by generate_mesh and cannot be modified after being set.
+
+    The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
+    remain mutable as they may be modified by Airplane.process_wing_symmetry() for type
+    5 symmetry handling. The wake_ring_vortices and gridWrvp_GP1_CgP1 attributes are
+    mutable as they are modified during simulation.
 
     Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the Ler_Gs_Cgs and
@@ -302,7 +330,7 @@ class Wing:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
         self._chordwise_spacing = chordwise_spacing
 
-        # Set-once attributes: will be initialized or populated once this Wing's parent
+        # Set once attributes: will be initialized or populated once this Wing's parent
         # Airplane calls generate_mesh.
         self._symmetry_type: int | None = None
         self._num_spanwise_panels: int | None = None
@@ -313,162 +341,43 @@ class Wing:
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
         self.wake_ring_vortices: np.ndarray | None = None
 
-        # Caches for derived properties. These are populated on first access and never
-        # invalidated since panels are set-once.
-        self._projected_area_cache: float | None = None
-        self._wetted_area_cache: float | None = None
-        self._span_cache: float | None = None
+        # Caches for properties derived from immutable attributes. These are populated
+        # on first access and preserved in deepcopy.
+        self._T_pas_G_Cg_to_Wn_Ler: np.ndarray | None = None
+        self._T_pas_Wn_Ler_to_G_Cg: np.ndarray | None = None
+        self._WnX_G: np.ndarray | None = None
+        self._WnY_G: np.ndarray | None = None
+        self._WnZ_G: np.ndarray | None = None
+        self._children_T_pas_Wn_Ler_to_Wcs_Lp: list[np.ndarray] | None = None
+        self._children_T_pas_Wcs_Lp_to_Wn_Ler: list[np.ndarray] | None = None
+        self._children_T_pas_G_Cg_to_Wcs_Lp: list[np.ndarray] | None = None
+        self._children_T_pas_Wcs_Lp_to_G_Cg: list[np.ndarray] | None = None
 
-    # --- Immutable: read-only properties ---
-    @property
-    def wing_cross_sections(
-        self,
-    ) -> tuple[wing_cross_section_mod.WingCrossSection, ...]:
-        """A tuple of WingCrossSections representing the wing's cross sections.
+        # Caches for properties derived from set once attributes. These are populated
+        # on first access and reset to None in deepcopy.
+        self._projected_area: float | None = None
+        self._wetted_area: float | None = None
+        self._average_panel_aspect_ratio: float | None = None
+        self._span: float | None = None
+        self._standard_mean_chord: float | None = None
+        self._mean_aerodynamic_chord: float | None = None
 
-        :return: A tuple of WingCrossSections in order from root to tip.
-        """
-        return self._wing_cross_sections
-
-    @property
-    def name(self) -> str:
-        """The Wing's name.
-
-        :return: The Wing's name as a string.
-        """
-        return self._name
-
-    @property
-    def Ler_Gs_Cgs(self) -> np.ndarray:
-        """The position of the origin of this Wing's axes.
-
-        :return: A (3,) ndarray of floats representing the position in geometry axes
-            after accounting for symmetry, relative to the CG after accounting for
-            symmetry. The units are meters.
-        """
-        return self._Ler_Gs_Cgs
-
-    @property
-    def angles_Gs_to_Wn_ixyz(self) -> np.ndarray:
-        """The angle vector defining the orientation of this Wing's axes.
-
-        :return: A (3,) ndarray of floats representing the angle vector relative to the
-            geometry axes (after accounting for symmetry). The units are degrees.
-        """
-        return self._angles_Gs_to_Wn_ixyz
-
-    @property
-    def num_chordwise_panels(self) -> int:
-        """The number of chordwise panels on this Wing.
-
-        :return: A positive integer representing the number of chordwise panels.
-        """
-        return self._num_chordwise_panels
-
-    @property
-    def chordwise_spacing(self) -> str:
-        """The type of spacing between the Wing's chordwise panels.
-
-        :return: Either "cosine" or "uniform".
-        """
-        return self._chordwise_spacing
-
-    # --- Set-once: properties with single-assignment enforcement ---
-    @property
-    def symmetry_type(self) -> int | None:
-        """The symmetry type of this Wing.
-
-        :return: An integer from 1-4 representing the symmetry type, or None if the
-            Wing's symmetry type hasn't been determined yet.
-        """
-        return self._symmetry_type
-
-    @symmetry_type.setter
-    def symmetry_type(self, value: int) -> None:
-        """Sets the symmetry type. Can only be set once.
-
-        :param value: An integer from 1-4 representing the symmetry type.
-        :raises AttributeError: If symmetry_type has already been set.
-        """
-        if self._symmetry_type is not None:
-            raise AttributeError("symmetry_type can only be set once")
-        self._symmetry_type = value
-
-    @property
-    def num_spanwise_panels(self) -> int | None:
-        """The total number of spanwise panels on this Wing.
-
-        :return: A positive integer representing the number of spanwise panels, or None
-            if the Wing hasn't been meshed yet.
-        """
-        return self._num_spanwise_panels
-
-    @num_spanwise_panels.setter
-    def num_spanwise_panels(self, value: int) -> None:
-        """Sets the number of spanwise panels. Can only be set once.
-
-        :param value: A positive integer representing the number of spanwise panels.
-        :raises AttributeError: If num_spanwise_panels has already been set.
-        """
-        if self._num_spanwise_panels is not None:
-            raise AttributeError("num_spanwise_panels can only be set once")
-        self._num_spanwise_panels = value
-
-    @property
-    def num_panels(self) -> int | None:
-        """The total number of Panels on this Wing.
-
-        :return: A positive integer representing the total number of Panels, or None if
-            the Wing hasn't been meshed yet.
-        """
-        return self._num_panels
-
-    @num_panels.setter
-    def num_panels(self, value: int) -> None:
-        """Sets the total number of Panels. Can only be set once.
-
-        :param value: A positive integer representing the total number of Panels.
-        :raises AttributeError: If num_panels has already been set.
-        """
-        if self._num_panels is not None:
-            raise AttributeError("num_panels can only be set once")
-        self._num_panels = value
-
-    @property
-    def panels(self) -> np.ndarray | None:
-        """The 2D array of Panels on this Wing.
-
-        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
-            or None if the Wing hasn't been meshed yet.
-        """
-        return self._panels
-
-    @panels.setter
-    def panels(self, value: np.ndarray) -> None:
-        """Sets the Panels array. Can only be set once.
-
-        :param value: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel
-            objects.
-        :raises AttributeError: If panels has already been set.
-        """
-        if self._panels is not None:
-            raise AttributeError("panels can only be set once")
-        self._panels = value
-
+    # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> Wing:
         """Creates a deep copy of this Wing, preserving mesh geometry but resetting wake
         state.
 
-        The copy preserves:
+        The copy preserves: (1) wing parameters (name, position, angles, symmetry
+        settings, panel counts), (2) WingCrossSections (deepcopied), (3) mesh metadata
+        (symmetry_type, num_spanwise_panels, num_panels), (4) Panels array (each Panel
+        is deepcopied), and (5) caches for properties derived from immutable attributes
+        (transformation matrices, basis vectors, children transformation matrices).
 
-        - Wing parameters (name, position, angles, symmetry settings, panel counts) -
-        WingCrossSections (deepcopied) - Mesh metadata (symmetry_type,
-        num_spanwise_panels, num_panels) - Panels array (each Panel is deepcopied)
-
-        The copy resets:
-
-        - Wake state (wake_ring_vortices and gridWrvp_GP1_CgP1 are reset to empty arrays
-        with correct shape if meshed, or None if not meshed)
+        The copy resets: (1) wake state (wake_ring_vortices and gridWrvp_GP1_CgP1 are
+        reset to empty arrays with correct shape if meshed, or None if not meshed), and
+        (2) caches for properties derived from set once attributes (projected_area,
+        wetted_area, average_panel_aspect_ratio, span, standard_mean_chord,
+        mean_aerodynamic_chord).
 
         :param memo: A dict used by the copy module to track already copied objects and
             avoid infinite recursion.
@@ -514,7 +423,7 @@ class Wing:
             else None
         )
 
-        # Copy set-once mesh metadata directly to private attributes (bypassing
+        # Copy set once mesh metadata directly to private attributes (bypassing
         # setters) since we're copying, not setting for the first time.
         new_wing._symmetry_type = self._symmetry_type
         new_wing._num_spanwise_panels = self._num_spanwise_panels
@@ -541,13 +450,729 @@ class Wing:
             new_wing.wake_ring_vortices = None
             new_wing.gridWrvp_GP1_CgP1 = None
 
-        # Reset derived property caches.
-        new_wing._projected_area_cache = None
-        new_wing._wetted_area_cache = None
-        new_wing._span_cache = None
+        # Preserve caches for properties derived from immutable attributes.
+        # Copy numpy arrays and make them read-only.
+        if self._T_pas_G_Cg_to_Wn_Ler is not None:
+            new_wing._T_pas_G_Cg_to_Wn_Ler = self._T_pas_G_Cg_to_Wn_Ler.copy()
+            new_wing._T_pas_G_Cg_to_Wn_Ler.flags.writeable = False
+        else:
+            new_wing._T_pas_G_Cg_to_Wn_Ler = None
+
+        if self._T_pas_Wn_Ler_to_G_Cg is not None:
+            new_wing._T_pas_Wn_Ler_to_G_Cg = self._T_pas_Wn_Ler_to_G_Cg.copy()
+            new_wing._T_pas_Wn_Ler_to_G_Cg.flags.writeable = False
+        else:
+            new_wing._T_pas_Wn_Ler_to_G_Cg = None
+
+        if self._WnX_G is not None:
+            new_wing._WnX_G = self._WnX_G.copy()
+            new_wing._WnX_G.flags.writeable = False
+        else:
+            new_wing._WnX_G = None
+
+        if self._WnY_G is not None:
+            new_wing._WnY_G = self._WnY_G.copy()
+            new_wing._WnY_G.flags.writeable = False
+        else:
+            new_wing._WnY_G = None
+
+        if self._WnZ_G is not None:
+            new_wing._WnZ_G = self._WnZ_G.copy()
+            new_wing._WnZ_G.flags.writeable = False
+        else:
+            new_wing._WnZ_G = None
+
+        # Copy list caches (lists of numpy arrays).
+        if self._children_T_pas_Wn_Ler_to_Wcs_Lp is not None:
+            new_wing._children_T_pas_Wn_Ler_to_Wcs_Lp = []
+            for T in self._children_T_pas_Wn_Ler_to_Wcs_Lp:
+                T_copy = T.copy()
+                T_copy.flags.writeable = False
+                new_wing._children_T_pas_Wn_Ler_to_Wcs_Lp.append(T_copy)
+        else:
+            new_wing._children_T_pas_Wn_Ler_to_Wcs_Lp = None
+
+        if self._children_T_pas_Wcs_Lp_to_Wn_Ler is not None:
+            new_wing._children_T_pas_Wcs_Lp_to_Wn_Ler = []
+            for T in self._children_T_pas_Wcs_Lp_to_Wn_Ler:
+                T_copy = T.copy()
+                T_copy.flags.writeable = False
+                new_wing._children_T_pas_Wcs_Lp_to_Wn_Ler.append(T_copy)
+        else:
+            new_wing._children_T_pas_Wcs_Lp_to_Wn_Ler = None
+
+        if self._children_T_pas_G_Cg_to_Wcs_Lp is not None:
+            new_wing._children_T_pas_G_Cg_to_Wcs_Lp = []
+            for T in self._children_T_pas_G_Cg_to_Wcs_Lp:
+                T_copy = T.copy()
+                T_copy.flags.writeable = False
+                new_wing._children_T_pas_G_Cg_to_Wcs_Lp.append(T_copy)
+        else:
+            new_wing._children_T_pas_G_Cg_to_Wcs_Lp = None
+
+        if self._children_T_pas_Wcs_Lp_to_G_Cg is not None:
+            new_wing._children_T_pas_Wcs_Lp_to_G_Cg = []
+            for T in self._children_T_pas_Wcs_Lp_to_G_Cg:
+                T_copy = T.copy()
+                T_copy.flags.writeable = False
+                new_wing._children_T_pas_Wcs_Lp_to_G_Cg.append(T_copy)
+        else:
+            new_wing._children_T_pas_Wcs_Lp_to_G_Cg = None
+
+        # Reset caches for properties derived from set once attributes.
+        new_wing._projected_area = None
+        new_wing._wetted_area = None
+        new_wing._average_panel_aspect_ratio = None
+        new_wing._span = None
+        new_wing._standard_mean_chord = None
+        new_wing._mean_aerodynamic_chord = None
 
         return new_wing
 
+    # --- Immutable: read only properties ---
+    @property
+    def wing_cross_sections(
+        self,
+    ) -> tuple[wing_cross_section_mod.WingCrossSection, ...]:
+        return self._wing_cross_sections
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def Ler_Gs_Cgs(self) -> np.ndarray:
+        return self._Ler_Gs_Cgs
+
+    @property
+    def angles_Gs_to_Wn_ixyz(self) -> np.ndarray:
+        return self._angles_Gs_to_Wn_ixyz
+
+    @property
+    def num_chordwise_panels(self) -> int:
+        return self._num_chordwise_panels
+
+    @property
+    def chordwise_spacing(self) -> str:
+        return self._chordwise_spacing
+
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def T_pas_G_Cg_to_Wn_Ler(self) -> None | np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        geometry axes relative to the CG to wing axes relative to the leading edge root
+        point. Is None if the Wing's symmetry type hasn't been defined yet.
+
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._T_pas_G_Cg_to_Wn_Ler is not None:
+            return self._T_pas_G_Cg_to_Wn_Ler
+
+        # Step 1: Create T_reflect_pas_G_Cg_to_Gs_Cgs, which maps from which maps in
+        # homogeneous coordinates from geometry axes relative to the CG to reflected
+        # geometry axes (after accounting for symmetry) relative to the CG (after
+        # accounting for symmetry). This is the reflection step. Only apply reflection
+        # for mirror-only Wings (types 2 and 3), not for symmetric Wings (type 4).
+        if self.symmetry_type in (2, 3):
+            assert self.symmetryPoint_G_Cg is not None
+            assert self.symmetryNormal_G is not None
+            T_reflect_pas_G_Cg_to_Gs_Cgs = _transformations.generate_reflect_T(
+                plane_point_A_a=self.symmetryPoint_G_Cg,
+                plane_normal_A=self.symmetryNormal_G,
+                passive=True,
+            )
+        else:
+            T_reflect_pas_G_Cg_to_Gs_Cgs = np.eye(4, dtype=float)
+
+        # Step 2: Create T_trans_pas_Gs_Cgs_to_Gs_Ler, which maps in homogeneous
+        # coordinates from geometry axes (after accounting for symmetry) relative to
+        # the CG (after accounting for symmetry) to geometry axes (after accounting
+        # for symmetry) relative to the leading edge root point. This is the
+        # translation step.
+        T_trans_pas_Gs_Cgs_to_Gs_Ler = _transformations.generate_trans_T(
+            self.Ler_Gs_Cgs, passive=True
+        )
+
+        # Step 3: Create T_rot_pas_Gs_to_Wn, which maps in homogeneous coordinates
+        # from geometry axes (after accounting for symmetry) to wing axes. This is
+        # the rotation step.
+        T_rot_pas_Gs_to_Wn = _transformations.generate_rot_T(
+            self.angles_Gs_to_Wn_ixyz, passive=True, intrinsic=True, order="xyz"
+        )
+
+        # Cache and return the result.
+        self._T_pas_G_Cg_to_Wn_Ler = _transformations.compose_T_pas(
+            T_reflect_pas_G_Cg_to_Gs_Cgs,
+            T_trans_pas_Gs_Cgs_to_Gs_Ler,
+            T_rot_pas_Gs_to_Wn,
+        )
+        self._T_pas_G_Cg_to_Wn_Ler.flags.writeable = False
+        return self._T_pas_G_Cg_to_Wn_Ler
+
+    @property
+    def T_pas_Wn_Ler_to_G_Cg(self) -> None | np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        wing axes relative to the leading edge root point to geometry axes relative to
+        the CG. Is None if the Wing's symmetry type hasn't been defined yet.
+
+        :return: A (4,4) ndarray of floats representing the transformation matrix or
+            None if the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._T_pas_Wn_Ler_to_G_Cg is not None:
+            return self._T_pas_Wn_Ler_to_G_Cg
+
+        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
+        assert _T_pas_G_Cg_to_Wn_Ler is not None
+
+        # Cache and return the result.
+        self._T_pas_Wn_Ler_to_G_Cg = _transformations.invert_T_pas(
+            _T_pas_G_Cg_to_Wn_Ler
+        )
+        self._T_pas_Wn_Ler_to_G_Cg.flags.writeable = False
+        return self._T_pas_Wn_Ler_to_G_Cg
+
+    @property
+    def WnX_G(self) -> None | np.ndarray:
+        """The wing axes' first basis vector (in geometry axes).
+
+        :return: A (3,) ndarray of floats representing the wing axes' first basis vector
+            (in geometry axes) or None if the Wing's symmetry type hasn't been defined
+            yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._WnX_G is not None:
+            return self._WnX_G
+
+        WnX_Wn = np.array([1.0, 0.0, 0.0])
+
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
+        # Cache and return the result.
+        self._WnX_G = _transformations.apply_T_to_vectors(
+            _T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
+        )
+        self._WnX_G.flags.writeable = False
+        return self._WnX_G
+
+    @property
+    def WnY_G(self) -> None | np.ndarray:
+        """The wing axes' second basis vector (in geometry axes).
+
+        :return: A (3,) ndarray of floats representing the wing axes' second basis
+            vector (in geometry axes) or None if the Wing's symmetry type hasn't been
+            defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._WnY_G is not None:
+            return self._WnY_G
+
+        WnY_Wn = np.array([0.0, 1.0, 0.0])
+
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
+        # Cache and return the result.
+        self._WnY_G = _transformations.apply_T_to_vectors(
+            _T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
+        )
+        self._WnY_G.flags.writeable = False
+        return self._WnY_G
+
+    @property
+    def WnZ_G(self) -> None | np.ndarray:
+        """The wing axes' third basis vector (in geometry axes).
+
+        :return: A (3,) ndarray of floats representing the wing axes' third basis vector
+            (in geometry axes) or None if the Wing's symmetry type hasn't been defined
+            yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._WnZ_G is not None:
+            return self._WnZ_G
+
+        WnZ_Wn = np.array([0.0, 0.0, 1.0])
+
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
+        # Cache and return the result.
+        self._WnZ_G = _transformations.apply_T_to_vectors(
+            _T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
+        )
+        self._WnZ_G.flags.writeable = False
+        return self._WnZ_G
+
+    @property
+    def children_T_pas_Wn_Ler_to_Wcs_Lp(self) -> list[np.ndarray]:
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from wing axes, relative to the leading edge root point, to each of
+        this Wing's WingCrossSection's axes, relative to their respective leading
+        points.
+
+        :return: A list of (4,4) ndarrays of floats representing the homogeneous
+            transformation matrices.
+        """
+        # Return cached value if available.
+        if self._children_T_pas_Wn_Ler_to_Wcs_Lp is not None:
+            return self._children_T_pas_Wn_Ler_to_Wcs_Lp
+
+        # Compute, cache, and return the result.
+        result = []
+        for i in range(len(self.wing_cross_sections)):
+            T = _transformations.compose_T_pas(
+                *(
+                    _assert_T_not_none(wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
+                    for wing_cross_section in self.wing_cross_sections[: i + 1]
+                )
+            )
+            T.flags.writeable = False
+            result.append(T)
+        self._children_T_pas_Wn_Ler_to_Wcs_Lp = result
+        return self._children_T_pas_Wn_Ler_to_Wcs_Lp
+
+    @property
+    def children_T_pas_Wcs_Lp_to_Wn_Ler(self) -> list[np.ndarray]:
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points, to wing axes, relative to the leading edge root
+        point.
+
+        :return: A list of (4,4) ndarrays of floats representing the homogeneous
+            transformation matrices.
+        """
+        # Return cached value if available.
+        if self._children_T_pas_Wcs_Lp_to_Wn_Ler is not None:
+            return self._children_T_pas_Wcs_Lp_to_Wn_Ler
+
+        # Compute, cache, and return the result.
+        result = []
+        for i in range(len(self.wing_cross_sections)):
+            T = _transformations.invert_T_pas(self.children_T_pas_Wn_Ler_to_Wcs_Lp[i])
+            T.flags.writeable = False
+            result.append(T)
+        self._children_T_pas_Wcs_Lp_to_Wn_Ler = result
+        return self._children_T_pas_Wcs_Lp_to_Wn_Ler
+
+    @property
+    def children_T_pas_G_Cg_to_Wcs_Lp(self) -> list[np.ndarray]:
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from geometry axes, relative to the CG, to each of this Wing's
+        WingCrossSection's axes, relative to their respective leading points.
+
+        :return: A list of (4,4) ndarrays of floats representing the homogeneous
+            transformation matrices.
+        """
+        # Return cached value if available.
+        if self._children_T_pas_G_Cg_to_Wcs_Lp is not None:
+            return self._children_T_pas_G_Cg_to_Wcs_Lp
+
+        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
+        assert _T_pas_G_Cg_to_Wn_Ler is not None
+
+        # Compute, cache, and return the result.
+        result = []
+        for i in range(len(self.wing_cross_sections)):
+            T = _transformations.compose_T_pas(
+                _T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
+            )
+            T.flags.writeable = False
+            result.append(T)
+        self._children_T_pas_G_Cg_to_Wcs_Lp = result
+        return self._children_T_pas_G_Cg_to_Wcs_Lp
+
+    @property
+    def children_T_pas_Wcs_Lp_to_G_Cg(self) -> list[np.ndarray]:
+        """A list of passive transformation matrices which map in homogeneous
+        coordinates from each of this Wing's WingCrossSection's axes, relative to their
+        respective leading points, to geometry axes, relative to the CG.
+
+        :return: A list of (4,4) ndarrays of floats representing the homogeneous
+            transformation matrices.
+        """
+        # Return cached value if available.
+        if self._children_T_pas_Wcs_Lp_to_G_Cg is not None:
+            return self._children_T_pas_Wcs_Lp_to_G_Cg
+
+        # Compute, cache, and return the result.
+        result = []
+        for i in range(len(self.wing_cross_sections)):
+            T = _transformations.invert_T_pas(self.children_T_pas_G_Cg_to_Wcs_Lp[i])
+            T.flags.writeable = False
+            result.append(T)
+        self._children_T_pas_Wcs_Lp_to_G_Cg = result
+        return self._children_T_pas_Wcs_Lp_to_G_Cg
+
+    # --- Set once: properties with single assignment enforcement ---
+    @property
+    def symmetry_type(self) -> int | None:
+        """The symmetry type of this Wing.
+
+        :return: An integer from 1-4 representing the symmetry type, or None if the
+            Wing's symmetry type hasn't been determined yet.
+        """
+        return self._symmetry_type
+
+    @symmetry_type.setter
+    def symmetry_type(self, value: int) -> None:
+        if self._symmetry_type is not None:
+            raise AttributeError("symmetry_type can only be set once")
+        self._symmetry_type = value
+
+    @property
+    def num_spanwise_panels(self) -> int | None:
+        """The total number of spanwise Panels on this Wing.
+
+        :return: A positive integer representing the number of spanwise Panels, or None
+            if the Wing hasn't been meshed yet.
+        """
+        return self._num_spanwise_panels
+
+    @num_spanwise_panels.setter
+    def num_spanwise_panels(self, value: int) -> None:
+        if self._num_spanwise_panels is not None:
+            raise AttributeError("num_spanwise_panels can only be set once")
+        self._num_spanwise_panels = value
+
+    @property
+    def num_panels(self) -> int | None:
+        """The total number of Panels on this Wing.
+
+        :return: A positive integer representing the total number of Panels, or None if
+            the Wing hasn't been meshed yet.
+        """
+        return self._num_panels
+
+    @num_panels.setter
+    def num_panels(self, value: int) -> None:
+        if self._num_panels is not None:
+            raise AttributeError("num_panels can only be set once")
+        self._num_panels = value
+
+    @property
+    def panels(self) -> np.ndarray | None:
+        """The 2D array of Panels on this Wing.
+
+        :return: A (num_chordwise_panels, num_spanwise_panels) ndarray of Panel objects,
+            or None if the Wing hasn't been meshed yet.
+        """
+        return self._panels
+
+    @panels.setter
+    def panels(self, value: np.ndarray) -> None:
+        if self._panels is not None:
+            raise AttributeError("panels can only be set once")
+        self._panels = value
+
+    # --- Set once derived: manual lazy caching ---
+    @property
+    def projected_area(self) -> None | float:
+        """The area of the Wing projected onto the plane defined by the wing axes' xy
+        plane.
+
+        **Notes:**
+
+        If the Wing is symmetric and continuous, the area of the mirrored half is
+        included.
+
+        :return: The projected area of the Wing. It has units of square meters. If the
+            Wing hasn't been meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self._panels is None:
+            return None
+
+        # Return cached value if available.
+        if self._projected_area is not None:
+            return self._projected_area
+
+        projected_area = 0.0
+
+        # Get the wing Z-axis once before iterating.
+        WnZ_G = self.WnZ_G
+        assert WnZ_G is not None
+
+        # Iterate through the chordwise and spanwise indices of the Panels and add
+        # their area to the total projected area.
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
+                    chordwise_location, spanwise_location
+                ]
+                projected_area += this_panel.calculate_projected_area(WnZ_G)
+
+        # Cache the computed value.
+        self._projected_area = projected_area
+        return projected_area
+
+    @property
+    def wetted_area(self) -> None | float:
+        """The Wing's wetted area.
+
+        **Notes:**
+
+        If the Wing is symmetric and continuous, the area of the mirrored half is
+        included.
+
+        :return: The wetted area of the Wing. It has units of square meters. If the Wing
+            hasn't been meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self._panels is None:
+            return None
+
+        # Return cached value if available.
+        if self._wetted_area is not None:
+            return self._wetted_area
+
+        wetted_area = 0.0
+
+        # Iterate through the chordwise and spanwise indices of the panels and add
+        # their area to the total wetted area.
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
+                    chordwise_location, spanwise_location
+                ]
+                wetted_area += this_panel.area
+
+        # Cache the computed value.
+        self._wetted_area = wetted_area
+        return wetted_area
+
+    # TEST: Consider adding unit tests for this method.
+    @property
+    def average_panel_aspect_ratio(self) -> None | float:
+        """The average aspect ratio of the Wing's Panels.
+
+        :return: The average aspect ratio of the Wing's Panels. If the Wing hasn't been
+            meshed yet, None is returned instead.
+        """
+        # Return None if the Wing hasn't been meshed yet.
+        if self._panels is None:
+            return None
+
+        # Return cached value if available.
+        if self._average_panel_aspect_ratio is not None:
+            return self._average_panel_aspect_ratio
+
+        aspect_ratio_sum = 0.0
+
+        # Iterate through the chordwise and spanwise indices of the Panels and sum
+        # all the Panels' aspect ratios.
+        assert self._num_spanwise_panels is not None
+        for chordwise_location in range(self._num_chordwise_panels):
+            for spanwise_location in range(self._num_spanwise_panels):
+                this_panel: _panel.Panel = self._panels[
+                    chordwise_location, spanwise_location
+                ]
+                aspect_ratio_sum += this_panel.aspect_ratio
+
+        assert self._num_panels is not None
+
+        # Cache and return the result.
+        self._average_panel_aspect_ratio = aspect_ratio_sum / self._num_panels
+        return self._average_panel_aspect_ratio
+
+    @property
+    def span(self) -> None | float:
+        """The Wing's span.
+
+        **Notes:**
+
+        The span is derived by first finding the vector connecting the leading edges of
+        the root and tip WingCrossSections. Then, this vector is projected onto the wing
+        axes' second basis vector. The span is defined as the magnitude of this
+        projection.
+
+        If the Wing is symmetric and continuous, this method includes the span of the
+        mirrored half.
+
+        :return: The Wing's span. It has units of meters. None is returned if the Wing's
+            symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self._symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._span is not None:
+            return self._span
+
+        tipLp_Wcsp_Lpp = self._wing_cross_sections[-1].Lp_Wcsp_Lpp
+
+        tip_T_pas_Wcsp_Lpp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[-2]
+
+        tipLp_Wn_Ler = _transformations.apply_T_to_vectors(
+            tip_T_pas_Wcsp_Lpp_to_Wn_Ler, tipLp_Wcsp_Lpp, has_point=True
+        )
+
+        # Project the tip position onto the wing axes' y direction (spanwise direction)
+        projectedTipLp_Wn_Ler = np.dot(
+            tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
+        ) * np.array([0.0, 1.0, 0.0])
+
+        span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
+
+        # If the wing is symmetric and continuous, multiply the span by two.
+        if self._symmetry_type == 4:
+            span *= 2
+
+        # Cache the computed value.
+        self._span = span
+        return span
+
+    @property
+    def standard_mean_chord(self) -> None | float:
+        """The Wing's standard mean chord.
+
+        **Notes:**
+
+        The standard mean chord is defined as the projected area divided by the span.
+        See their respective methods for the definitions of span and projected area.
+
+        :return: The standard mean chord of the Wing. It has units of meters. None is
+            returned if the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._standard_mean_chord is not None:
+            return self._standard_mean_chord
+
+        _projected_area = self.projected_area
+        assert _projected_area is not None
+
+        _span = self.span
+        assert _span is not None
+
+        # Cache and return the result.
+        self._standard_mean_chord = _projected_area / _span
+        return self._standard_mean_chord
+
+    @property
+    def mean_aerodynamic_chord(self) -> None | float:
+        """The Wing's mean aerodynamic chord.
+
+        :return: The mean aerodynamic chord of the Wing. It has units of meters. None is
+            returned if the Wing's symmetry type hasn't been defined yet.
+        """
+        # If the Wing's symmetry type hasn't been set yet, return None to avoid
+        # incorrect symmetry handling.
+        if self.symmetry_type is None:
+            return None
+
+        # Return cached value if available.
+        if self._mean_aerodynamic_chord is not None:
+            return self._mean_aerodynamic_chord
+
+        # This method is based on the equation for the mean aerodynamic chord of a
+        # wing, which can be found here: https://en.wikipedia.org/wiki/Chord_(
+        # aeronautics)#Mean_aerodynamic_chord. This equation integrates the squared
+        # chord from the Wing's center to the Wing's tip. We will perform this
+        # integral piecewise for each section of the Wing.
+        integral = 0.0
+
+        # Iterate through the WingCrossSections to add the contribution of their
+        # corresponding Wing section to the piecewise integral.
+        for wing_cross_section_id, wing_cross_section in enumerate(
+            self.wing_cross_sections[:-1]
+        ):
+            next_wing_cross_section = self.wing_cross_sections[
+                wing_cross_section_id + 1
+            ]
+
+            chord = wing_cross_section.chord
+            next_chord = next_wing_cross_section.chord
+
+            # Find this section's span by calculating the positions of both
+            # WingCrossSections in wing axes, then finding the distance between them.
+
+            # Calculate current WingCrossSection's position in wing axes
+            Lp_Wcs_Lp = np.array([0.0, 0.0, 0.0])
+
+            T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
+                wing_cross_section_id
+            ]
+
+            Lp_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, Lp_Wcs_Lp, has_point=True
+            )
+
+            # Calculate next WingCrossSection's position in wing axes
+            nextLp_nextWcs_nextLp = np.array([0.0, 0.0, 0.0])
+
+            T_pas_nextWcs_nextLp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
+                wing_cross_section_id + 1
+            ]
+
+            nextLp_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_nextWcs_nextLp_to_Wn_Ler, nextLp_nextWcs_nextLp, has_point=True
+            )
+
+            # Find the section vector and project it onto spanwise direction (wing axes y direction)
+            nextLp_Wn_Lp = nextLp_Wn_Ler - Lp_Wn_Ler
+
+            nextLpProj_Wn_Lp = np.dot(
+                nextLp_Wn_Lp, np.array([0.0, 1.0, 0.0])
+            ) * np.array([0.0, 1.0, 0.0])
+
+            section_span = float(np.linalg.norm(nextLpProj_Wn_Lp))
+
+            # Each Wing section is, by definition, trapezoidal (at least when
+            # projected on to the wing axes' xy plane). For a trapezoid,
+            # the integral from the cited equation can be shown to evaluate to the
+            # following.
+            integral += (
+                section_span * (chord**2 + chord * next_chord + next_chord**2) / 3
+            )
+
+        _projected_area = self.projected_area
+        assert _projected_area is not None
+
+        # Multiply the integral's value by the coefficients from the cited equation.
+        # Double if the wing is symmetric and continuous.
+        if self.symmetry_type == 4:
+            self._mean_aerodynamic_chord = 2 * integral / _projected_area
+        else:
+            self._mean_aerodynamic_chord = integral / _projected_area
+        return self._mean_aerodynamic_chord
+
+    # --- Other methods ---
     def generate_mesh(self, symmetry_type: int) -> None:
         """Generates this Wing's mesh, which finishes the process of preparing the Wing
         to be used in a simulation. It is called by the Wing's parent Airplane, after
@@ -839,477 +1464,6 @@ class Wing:
         )
 
         return None
-
-    @property
-    def T_pas_G_Cg_to_Wn_Ler(self) -> None | np.ndarray:
-        """The passive transformation matrix which maps in homogeneous coordinates from
-        geometry axes relative to the CG to wing axes relative to the leading edge root
-        point. Is None if the Wing's symmetry type hasn't been defined yet.
-
-        :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if the Wing's symmetry type hasn't been defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        # Step 1: Create T_reflect_pas_G_Cg_to_Gs_Cgs, which maps from which maps in
-        # homogeneous coordinates from geometry axes relative to the CG to reflected
-        # geometry axes (after accounting for symmetry) relative to the CG (after
-        # accounting for symmetry). This is the reflection step. Only apply reflection
-        # for mirror-only Wings (types 2 and 3), not for symmetric Wings (type 4).
-        if self.symmetry_type in (2, 3):
-            assert self.symmetryPoint_G_Cg is not None
-            assert self.symmetryNormal_G is not None
-            T_reflect_pas_G_Cg_to_Gs_Cgs = _transformations.generate_reflect_T(
-                plane_point_A_a=self.symmetryPoint_G_Cg,
-                plane_normal_A=self.symmetryNormal_G,
-                passive=True,
-            )
-        else:
-            T_reflect_pas_G_Cg_to_Gs_Cgs = np.eye(4, dtype=float)
-
-        # Step 2: Create T_trans_pas_Gs_Cgs_to_Gs_Ler, which maps in homogeneous
-        # coordinates from geometry axes (after accounting for symmetry) relative to
-        # the CG (after accounting for symmetry) to geometry axes (after accounting
-        # for symmetry) relative to the leading edge root point. This is the
-        # translation step.
-        T_trans_pas_Gs_Cgs_to_Gs_Ler = _transformations.generate_trans_T(
-            self.Ler_Gs_Cgs, passive=True
-        )
-
-        # Step 3: Create T_rot_pas_Gs_to_Wn, which maps in homogeneous coordinates
-        # from geometry axes (after accounting for symmetry) to wing axes. This is
-        # the rotation step.
-        T_rot_pas_Gs_to_Wn = _transformations.generate_rot_T(
-            self.angles_Gs_to_Wn_ixyz, passive=True, intrinsic=True, order="xyz"
-        )
-
-        return _transformations.compose_T_pas(
-            T_reflect_pas_G_Cg_to_Gs_Cgs,
-            T_trans_pas_Gs_Cgs_to_Gs_Ler,
-            T_rot_pas_Gs_to_Wn,
-        )
-
-    @property
-    def T_pas_Wn_Ler_to_G_Cg(self) -> None | np.ndarray:
-        """The passive transformation matrix which maps in homogeneous coordinates from
-        wing axes relative to the leading edge root point to geometry axes relative to
-        the CG. Is None if the Wing's symmetry type hasn't been defined yet.
-
-        :return: A (4,4) ndarray of floats representing the transformation matrix or
-            None if the Wing's symmetry type hasn't been defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
-        assert _T_pas_G_Cg_to_Wn_Ler is not None
-
-        return _transformations.invert_T_pas(_T_pas_G_Cg_to_Wn_Ler)
-
-    @property
-    def WnX_G(self) -> None | np.ndarray:
-        """The wing axes' first basis vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing the wing axes' first basis vector
-            (in geometry axes) or None if the Wing's symmetry type hasn't been defined
-            yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        WnX_Wn = np.array([1.0, 0.0, 0.0])
-
-        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
-        assert _T_pas_Wn_Ler_to_G_Cg is not None
-
-        return _transformations.apply_T_to_vectors(
-            _T_pas_Wn_Ler_to_G_Cg, WnX_Wn, has_point=False
-        )
-
-    @property
-    def WnY_G(self) -> None | np.ndarray:
-        """The wing axes' second basis vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing the wing axes' second basis
-            vector (in geometry axes) or None if the Wing's symmetry type hasn't been
-            defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        WnY_Wn = np.array([0.0, 1.0, 0.0])
-
-        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
-        assert _T_pas_Wn_Ler_to_G_Cg is not None
-
-        return _transformations.apply_T_to_vectors(
-            _T_pas_Wn_Ler_to_G_Cg, WnY_Wn, has_point=False
-        )
-
-    @property
-    def WnZ_G(self) -> None | np.ndarray:
-        """The wing axes' third basis vector (in geometry axes).
-
-        :return: A (3,) ndarray of floats representing the wing axes' third basis vector
-            (in geometry axes) or None if the Wing's symmetry type hasn't been defined
-            yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        WnZ_Wn = np.array([0.0, 0.0, 1.0])
-
-        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
-        assert _T_pas_Wn_Ler_to_G_Cg is not None
-
-        return _transformations.apply_T_to_vectors(
-            _T_pas_Wn_Ler_to_G_Cg, WnZ_Wn, has_point=False
-        )
-
-    @property
-    def children_T_pas_Wn_Ler_to_Wcs_Lp(self) -> list[np.ndarray]:
-        """A list of passive transformation matrices which map in homogeneous
-        coordinates from wing axes, relative to the leading edge root point, to each of
-        this Wing's WingCrossSection's axes, relative to their respective leading
-        points.
-
-        :return: A list of (4,4) ndarrays of floats representing the homogeneous
-            transformation matrices.
-        """
-
-        return [
-            _transformations.compose_T_pas(
-                *(
-                    _assert_T_not_none(wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
-                    for wing_cross_section in self.wing_cross_sections[: i + 1]
-                )
-            )
-            for i in range(len(self.wing_cross_sections))
-        ]
-
-    @property
-    def children_T_pas_Wcs_Lp_to_Wn_Ler(self) -> list[np.ndarray]:
-        """A list of passive transformation matrices which map in homogeneous
-        coordinates from each of this Wing's WingCrossSection's axes, relative to their
-        respective leading points, to wing axes, relative to the leading edge root
-        point.
-
-        :return: A list of (4,4) ndarrays of floats representing the homogeneous
-            transformation matrices.
-        """
-
-        return [
-            _transformations.invert_T_pas(self.children_T_pas_Wn_Ler_to_Wcs_Lp[i])
-            for i in range(len(self.wing_cross_sections))
-        ]
-
-    @property
-    def children_T_pas_G_Cg_to_Wcs_Lp(self) -> list[np.ndarray]:
-        """A list of passive transformation matrices which map in homogeneous
-        coordinates from geometry axes, relative to the CG, to each of this Wing's
-        WingCrossSection's axes, relative to their respective leading points.
-
-        :return: A list of (4,4) ndarrays of floats representing the homogeneous
-            transformation matrices.
-        """
-
-        _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
-        assert _T_pas_G_Cg_to_Wn_Ler is not None
-
-        return [
-            _transformations.compose_T_pas(
-                _T_pas_G_Cg_to_Wn_Ler, self.children_T_pas_Wn_Ler_to_Wcs_Lp[i]
-            )
-            for i in range(len(self.wing_cross_sections))
-        ]
-
-    @property
-    def children_T_pas_Wcs_Lp_to_G_Cg(self) -> list[np.ndarray]:
-        """A list of passive transformation matrices which map in homogeneous
-        coordinates from each of this Wing's WingCrossSection's axes, relative to their
-        respective leading points, to geometry axes, relative to the CG.
-
-        :return: A list of (4,4) ndarrays of floats representing the homogeneous
-            transformation matrices.
-        """
-
-        return [
-            _transformations.invert_T_pas(self.children_T_pas_G_Cg_to_Wcs_Lp[i])
-            for i in range(len(self.wing_cross_sections))
-        ]
-
-    @property
-    def projected_area(self) -> None | float:
-        """The area of the Wing projected onto the plane defined by the wing axes' xy
-        plane.
-
-        **Notes:**
-
-        If the Wing is symmetric and continuous, the area of the mirrored half is
-        included.
-
-        :return: The projected area of the Wing. It has units of square meters. If the
-            Wing hasn't been meshed yet, None is returned instead.
-        """
-        # Return None if the Wing hasn't been meshed yet.
-        if self._panels is None:
-            return None
-
-        # Return cached value if available.
-        if self._projected_area_cache is not None:
-            return self._projected_area_cache
-
-        projected_area = 0.0
-
-        # Get the wing Z-axis once before iterating.
-        WnZ_G = self.WnZ_G
-        assert WnZ_G is not None
-
-        # Iterate through the chordwise and spanwise indices of the Panels and add
-        # their area to the total projected area.
-        assert self._num_spanwise_panels is not None
-        for chordwise_location in range(self._num_chordwise_panels):
-            for spanwise_location in range(self._num_spanwise_panels):
-                this_panel: _panel.Panel = self._panels[
-                    chordwise_location, spanwise_location
-                ]
-                projected_area += this_panel.calculate_projected_area(WnZ_G)
-
-        # Cache the computed value.
-        self._projected_area_cache = projected_area
-        return projected_area
-
-    @property
-    def wetted_area(self) -> None | float:
-        """The Wing's wetted area.
-
-        **Notes:**
-
-        If the Wing is symmetric and continuous, the area of the mirrored half is
-        included.
-
-        :return: The wetted area of the Wing. It has units of square meters. If the Wing
-            hasn't been meshed yet, None is returned instead.
-        """
-        # Return None if the Wing hasn't been meshed yet.
-        if self._panels is None:
-            return None
-
-        # Return cached value if available.
-        if self._wetted_area_cache is not None:
-            return self._wetted_area_cache
-
-        wetted_area = 0.0
-
-        # Iterate through the chordwise and spanwise indices of the panels and add
-        # their area to the total wetted area.
-        assert self._num_spanwise_panels is not None
-        for chordwise_location in range(self._num_chordwise_panels):
-            for spanwise_location in range(self._num_spanwise_panels):
-                this_panel: _panel.Panel = self._panels[
-                    chordwise_location, spanwise_location
-                ]
-                wetted_area += this_panel.area
-
-        # Cache the computed value.
-        self._wetted_area_cache = wetted_area
-        return wetted_area
-
-    # TEST: Consider adding unit tests for this method.
-    @property
-    def average_panel_aspect_ratio(self) -> None | float:
-        """The average aspect ratio of the Wing's Panels.
-
-        :return: The average aspect ratio of the Wing's Panels. If the Wing hasn't been
-            meshed yet, None is returned instead.
-        """
-        # Return None if the Wing hasn't been meshed yet.
-        if self._panels is None:
-            return None
-
-        aspect_ratio_sum = 0.0
-
-        # Iterate through the chordwise and spanwise indices of the Panels and sum
-        # all the Panels' aspect ratios.
-        assert self._num_spanwise_panels is not None
-        for chordwise_location in range(self._num_chordwise_panels):
-            for spanwise_location in range(self._num_spanwise_panels):
-                this_panel: _panel.Panel = self._panels[
-                    chordwise_location, spanwise_location
-                ]
-                aspect_ratio_sum += this_panel.aspect_ratio
-
-        assert self._num_panels is not None
-        average_aspect_ratio = aspect_ratio_sum / self._num_panels
-
-        return average_aspect_ratio
-
-    @property
-    def span(self) -> None | float:
-        """The Wing's span.
-
-        **Notes:**
-
-        The span is derived by first finding the vector connecting the leading edges of
-        the root and tip WingCrossSections. Then, this vector is projected onto the wing
-        axes' second basis vector. The span is defined as the magnitude of this
-        projection.
-
-        If the Wing is symmetric and continuous, this method includes the span of the
-        mirrored half.
-
-        :return: The Wing's span. It has units of meters. None is returned if the Wing's
-            symmetry type hasn't been defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self._symmetry_type is None:
-            return None
-
-        # Return cached value if available.
-        if self._span_cache is not None:
-            return self._span_cache
-
-        tipLp_Wcsp_Lpp = self._wing_cross_sections[-1].Lp_Wcsp_Lpp
-
-        tip_T_pas_Wcsp_Lpp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[-2]
-
-        tipLp_Wn_Ler = _transformations.apply_T_to_vectors(
-            tip_T_pas_Wcsp_Lpp_to_Wn_Ler, tipLp_Wcsp_Lpp, has_point=True
-        )
-
-        # Project the tip position onto the wing axes' y direction (spanwise direction)
-        projectedTipLp_Wn_Ler = np.dot(
-            tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
-        ) * np.array([0.0, 1.0, 0.0])
-
-        span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
-
-        # If the wing is symmetric and continuous, multiply the span by two.
-        if self._symmetry_type == 4:
-            span *= 2
-
-        # Cache the computed value.
-        self._span_cache = span
-        return span
-
-    @property
-    def standard_mean_chord(self) -> None | float:
-        """The Wing's standard mean chord.
-
-        **Notes:**
-
-        The standard mean chord is defined as the projected area divided by the span.
-        See their respective methods for the definitions of span and projected area.
-
-        :return: The standard mean chord of the Wing. It has units of meters. None is
-            returned if the Wing's symmetry type hasn't been defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        _projected_area = self.projected_area
-        assert _projected_area is not None
-
-        _span = self.span
-        assert _span is not None
-
-        return _projected_area / _span
-
-    @property
-    def mean_aerodynamic_chord(self) -> None | float:
-        """The Wing's mean aerodynamic chord.
-
-        :return: The mean aerodynamic chord of the Wing. It has units of meters. None is
-            returned if the Wing's symmetry type hasn't been defined yet.
-        """
-        # If the Wing's symmetry type hasn't been set yet, return None to avoid
-        # incorrect symmetry handling.
-        if self.symmetry_type is None:
-            return None
-
-        # This method is based on the equation for the mean aerodynamic chord of a
-        # wing, which can be found here: https://en.wikipedia.org/wiki/Chord_(
-        # aeronautics)#Mean_aerodynamic_chord. This equation integrates the squared
-        # chord from the Wing's center to the Wing's tip. We will perform this
-        # integral piecewise for each section of the Wing.
-        integral = 0.0
-
-        # Iterate through the WingCrossSections to add the contribution of their
-        # corresponding Wing section to the piecewise integral.
-        for wing_cross_section_id, wing_cross_section in enumerate(
-            self.wing_cross_sections[:-1]
-        ):
-            next_wing_cross_section = self.wing_cross_sections[
-                wing_cross_section_id + 1
-            ]
-
-            chord = wing_cross_section.chord
-            next_chord = next_wing_cross_section.chord
-
-            # Find this section's span by calculating the positions of both
-            # WingCrossSections in wing axes, then finding the distance between them.
-
-            # Calculate current WingCrossSection's position in wing axes
-            Lp_Wcs_Lp = np.array([0.0, 0.0, 0.0])
-
-            T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
-                wing_cross_section_id
-            ]
-
-            Lp_Wn_Ler = _transformations.apply_T_to_vectors(
-                T_pas_Wcs_Lp_to_Wn_Ler, Lp_Wcs_Lp, has_point=True
-            )
-
-            # Calculate next WingCrossSection's position in wing axes
-            nextLp_nextWcs_nextLp = np.array([0.0, 0.0, 0.0])
-
-            T_pas_nextWcs_nextLp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
-                wing_cross_section_id + 1
-            ]
-
-            nextLp_Wn_Ler = _transformations.apply_T_to_vectors(
-                T_pas_nextWcs_nextLp_to_Wn_Ler, nextLp_nextWcs_nextLp, has_point=True
-            )
-
-            # Find the section vector and project it onto spanwise direction (wing axes y direction)
-            nextLp_Wn_Lp = nextLp_Wn_Ler - Lp_Wn_Ler
-
-            nextLpProj_Wn_Lp = np.dot(
-                nextLp_Wn_Lp, np.array([0.0, 1.0, 0.0])
-            ) * np.array([0.0, 1.0, 0.0])
-
-            section_span = float(np.linalg.norm(nextLpProj_Wn_Lp))
-
-            # Each Wing section is, by definition, trapezoidal (at least when
-            # projected on to the wing axes' xy plane). For a trapezoid,
-            # the integral from the cited equation can be shown to evaluate to the
-            # following.
-            integral += (
-                section_span * (chord**2 + chord * next_chord + next_chord**2) / 3
-            )
-
-        _projected_area = self.projected_area
-        assert _projected_area is not None
-
-        # Multiply the integral's value by the coefficients from the cited equation.
-        # Double if the wing is symmetric and continuous.
-        if self.symmetry_type == 4:
-            return 2 * integral / _projected_area
-        return integral / _projected_area
 
 
 def _assert_T_not_none(T: np.ndarray | None) -> np.ndarray:

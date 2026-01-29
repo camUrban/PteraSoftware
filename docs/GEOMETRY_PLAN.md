@@ -1,4 +1,4 @@
-# Geometry Class Plan
+# Geometry Class Plan - IMPLEMENTED
 
 This document extends the panel and vortex class plan to cover the geometry classes:
 Airplane, Wing, WingCrossSection, and Airfoil. It follows the same taxonomic categories

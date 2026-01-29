@@ -1498,3 +1498,28 @@ def make_case_insensitive_naca_airfoil_fixture():
     case_insensitive_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="NaCa0012")
 
     return case_insensitive_naca_airfoil_fixture
+
+
+def make_follower_airplane_fixture():
+    """This method makes a fixture that is an Airplane suitable for use as a
+    follower (non first) Airplane in a simulation with a non zero Cg_GP1_CgP1.
+
+    This fixture is useful for testing the T_pas_G_Cg_to_GP1_CgP1 transformation
+    matrix which is the identity for the first Airplane but non trivial for
+    follower Airplanes.
+
+    :return follower_airplane_fixture: Airplane
+        This is the Airplane configured as a follower in a simulation.
+    """
+    # Create a Wing for the Airplane.
+    wing = make_type_1_wing_fixture()
+
+    # Create the follower Airplane with non zero position.
+    follower_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Follower Test Airplane",
+        Cg_GP1_CgP1=[5.0, 2.0, -1.0],
+        weight=1200.0,
+    )
+
+    return follower_airplane_fixture

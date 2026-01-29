@@ -472,7 +472,7 @@ class TestAirplaneDeepCopy(unittest.TestCase):
             self.assertEqual(copied_wing.name, orig_wing.name)
 
     def test_deepcopy_multi_wing_airplane(self):
-        """Test that deepcopy works correctly for multi-wing Airplanes."""
+        """Test that deepcopy works correctly for multi wing Airplanes."""
         import copy
 
         original = self.multi_wing_airplane
@@ -565,6 +565,448 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
         npt.assert_array_equal(copied.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0]))
         copied.validate_first_airplane_constraints()
+
+
+class TestAirplaneImmutability(unittest.TestCase):
+    """Tests for Airplane attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+    def test_immutable_wings_property(self):
+        """Test that wings property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.wings = ()
+
+    def test_immutable_wings_tuple_cannot_be_modified(self):
+        """Test that wings tuple elements cannot be reassigned."""
+        with self.assertRaises(TypeError):
+            self.basic_airplane.wings[0] = None
+
+    def test_immutable_name_property(self):
+        """Test that name property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.name = "New Name"
+
+    def test_immutable_Cg_GP1_CgP1_property(self):
+        """Test that Cg_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.Cg_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_Cg_GP1_CgP1_array_read_only(self):
+        """Test that Cg_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_airplane.Cg_GP1_CgP1[0] = 999.0
+
+    def test_immutable_weight_property(self):
+        """Test that weight property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.weight = 5000.0
+
+    def test_immutable_s_ref_property(self):
+        """Test that s_ref property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.s_ref = 100.0
+
+    def test_immutable_c_ref_property(self):
+        """Test that c_ref property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.c_ref = 5.0
+
+    def test_immutable_b_ref_property(self):
+        """Test that b_ref property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_airplane.b_ref = 20.0
+
+    def test_mutable_forces_W(self):
+        """Test that forces_W attribute remains mutable."""
+        self.basic_airplane.forces_W = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(self.basic_airplane.forces_W, np.array([1.0, 2.0, 3.0]))
+
+    def test_mutable_forceCoefficients_W(self):
+        """Test that forceCoefficients_W attribute remains mutable."""
+        self.basic_airplane.forceCoefficients_W = np.array([0.01, 0.02, 0.03])
+        npt.assert_array_equal(
+            self.basic_airplane.forceCoefficients_W, np.array([0.01, 0.02, 0.03])
+        )
+
+    def test_mutable_moments_W_CgP1(self):
+        """Test that moments_W_CgP1 attribute remains mutable."""
+        self.basic_airplane.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
+        npt.assert_array_equal(
+            self.basic_airplane.moments_W_CgP1, np.array([0.1, 0.2, 0.3])
+        )
+
+    def test_mutable_momentCoefficients_W_CgP1(self):
+        """Test that momentCoefficients_W_CgP1 attribute remains mutable."""
+        self.basic_airplane.momentCoefficients_W_CgP1 = np.array([0.001, 0.002, 0.003])
+        npt.assert_array_equal(
+            self.basic_airplane.momentCoefficients_W_CgP1,
+            np.array([0.001, 0.002, 0.003]),
+        )
+
+
+class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
+    """Tests for Airplane.deep_copy_with_Cg_GP1_CgP1 method."""
+
+    def setUp(self):
+        """Set up test fixtures for deep_copy_with_Cg_GP1_CgP1 tests."""
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+        self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
+
+    def test_deep_copy_with_Cg_GP1_CgP1_creates_new_instance(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 creates a new Airplane instance."""
+        original = self.first_airplane
+        new_position = [5.0, 2.0, -1.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertIsInstance(copied, ps.geometry.airplane.Airplane)
+        self.assertIsNot(original, copied)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_uses_new_position(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 uses the specified position."""
+        original = self.first_airplane
+        new_position = [5.0, 2.0, -1.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        npt.assert_array_equal(copied.Cg_GP1_CgP1, new_position)
+        # Original should be unchanged.
+        npt.assert_array_equal(original.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0]))
+
+    def test_deep_copy_with_Cg_GP1_CgP1_preserves_other_parameters(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 preserves all other parameters."""
+        original = self.basic_airplane
+        new_position = [10.0, -5.0, 3.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertEqual(copied.name, original.name)
+        self.assertEqual(copied.weight, original.weight)
+        self.assertEqual(copied.s_ref, original.s_ref)
+        self.assertEqual(copied.c_ref, original.c_ref)
+        self.assertEqual(copied.b_ref, original.b_ref)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_creates_independent_wings(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 creates independent Wing copies."""
+        original = self.basic_airplane
+        new_position = [10.0, -5.0, 3.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertEqual(len(copied.wings), len(original.wings))
+        for orig_wing, copied_wing in zip(original.wings, copied.wings):
+            self.assertIsNot(orig_wing, copied_wing)
+            self.assertEqual(copied_wing.name, orig_wing.name)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_preserves_num_panels(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 preserves num_panels."""
+        original = self.basic_airplane
+        new_position = [10.0, -5.0, 3.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertEqual(copied.num_panels, original.num_panels)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_resets_forces_and_moments(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 resets forces and moments to None."""
+        original = self.basic_airplane
+        original.forces_W = np.array([1.0, 2.0, 3.0])
+        original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
+        original.forceCoefficients_W = np.array([0.01, 0.02, 0.03])
+        original.momentCoefficients_W_CgP1 = np.array([0.001, 0.002, 0.003])
+
+        new_position = [10.0, -5.0, 3.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertIsNone(copied.forces_W)
+        self.assertIsNone(copied.moments_W_CgP1)
+        self.assertIsNone(copied.forceCoefficients_W)
+        self.assertIsNone(copied.momentCoefficients_W_CgP1)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_resets_transformation_cache(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 resets T_pas_G_Cg_to_GP1_CgP1 cache."""
+        original = self.basic_airplane
+        # Access the transformation matrix to cache it.
+        _ = original.T_pas_G_Cg_to_GP1_CgP1
+
+        new_position = [10.0, -5.0, 3.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        # The cached transformation should be None and will be recomputed on access.
+        # Access it and verify it uses the new position.
+        T = copied.T_pas_G_Cg_to_GP1_CgP1
+        # The translation component should match the new position.
+        npt.assert_array_almost_equal(T[:3, 3], new_position)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_accepts_various_array_types(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 accepts various array-like inputs."""
+        _ = self.first_airplane
+        valid_positions = [
+            [1.0, 2.0, 3.0],  # list
+            (4.0, 5.0, 6.0),  # tuple
+            np.array([7.0, 8.0, 9.0]),  # numpy array
+            [1, 2, 3],  # list of ints
+        ]
+
+        for position in valid_positions:
+            with self.subTest(position=position):
+                # Create fresh fixture since Wings can only be processed once.
+                test_airplane = geometry_fixtures.make_first_airplane_fixture()
+                copied = test_airplane.deep_copy_with_Cg_GP1_CgP1(position)
+                npt.assert_array_equal(copied.Cg_GP1_CgP1, position)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_validates_position(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 validates the position parameter."""
+        original = self.first_airplane
+
+        # Test invalid position shapes.
+        invalid_positions = [
+            [1.0, 2.0],  # Wrong size.
+            [1.0, 2.0, 3.0, 4.0],  # Wrong size.
+            "not a vector",  # String.
+        ]
+
+        for invalid_position in invalid_positions:
+            with self.subTest(invalid_position=invalid_position):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    original.deep_copy_with_Cg_GP1_CgP1(invalid_position)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_multi_wing(self):
+        """Test that deep_copy_with_Cg_GP1_CgP1 works correctly for multi wing Airplanes."""
+        original = self.multi_wing_airplane
+        new_position = [15.0, -10.0, 5.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        self.assertEqual(len(copied.wings), len(original.wings))
+        npt.assert_array_equal(copied.Cg_GP1_CgP1, new_position)
+
+        for i, (orig_wing, copied_wing) in enumerate(zip(original.wings, copied.wings)):
+            with self.subTest(wing_index=i):
+                self.assertIsNot(orig_wing, copied_wing)
+                self.assertEqual(copied_wing.symmetry_type, orig_wing.symmetry_type)
+
+    def test_deep_copy_with_Cg_GP1_CgP1_new_position_array_is_read_only(self):
+        """Test that the new position array is read only after copying."""
+        original = self.first_airplane
+        new_position = [5.0, 2.0, -1.0]
+        copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
+
+        with self.assertRaises(ValueError):
+            copied.Cg_GP1_CgP1[0] = 999.0
+
+
+class TestAirplaneTPasGCgToGP1CgP1(unittest.TestCase):
+    """Tests for Airplane.T_pas_G_Cg_to_GP1_CgP1 property."""
+
+    def setUp(self):
+        """Set up test fixtures for T_pas_G_Cg_to_GP1_CgP1 tests."""
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+        self.follower_airplane = geometry_fixtures.make_follower_airplane_fixture()
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+
+    def test_first_airplane_returns_identity(self):
+        """Test that first Airplane (Cg at origin) returns identity transformation."""
+        T = self.first_airplane.T_pas_G_Cg_to_GP1_CgP1
+        expected_identity = np.eye(4, dtype=float)
+        npt.assert_array_almost_equal(T, expected_identity)
+
+    def test_follower_airplane_returns_translation_matrix(self):
+        """Test that follower Airplane returns correct translation transformation."""
+        T = self.follower_airplane.T_pas_G_Cg_to_GP1_CgP1
+        position = self.follower_airplane.Cg_GP1_CgP1
+
+        # For a passive translation, the position appears in the last column.
+        npt.assert_array_almost_equal(T[:3, 3], position)
+
+        # The rotation part should be identity.
+        npt.assert_array_almost_equal(T[:3, :3], np.eye(3, dtype=float))
+
+    def test_transformation_matrix_shape(self):
+        """Test that the transformation matrix has the correct shape."""
+        T = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        self.assertEqual(T.shape, (4, 4))
+
+    def test_transformation_matrix_is_ndarray(self):
+        """Test that the transformation matrix is a numpy ndarray."""
+        T = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        self.assertIsInstance(T, np.ndarray)
+
+    def test_transformation_matrix_is_read_only(self):
+        """Test that the transformation matrix cannot be modified in place."""
+        T = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        with self.assertRaises(ValueError):
+            T[0, 0] = 999.0
+
+    def test_transformation_matrix_is_cached(self):
+        """Test that the transformation matrix is cached after first access."""
+        T1 = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+        T2 = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        self.assertIs(T1, T2)
+
+    def test_transformation_matrix_homogeneous_last_row(self):
+        """Test that the transformation matrix has correct homogeneous last row."""
+        T = self.basic_airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        expected_last_row = np.array([0.0, 0.0, 0.0, 1.0])
+        npt.assert_array_equal(T[3, :], expected_last_row)
+
+    def test_transformation_matrix_applies_correct_translation(self):
+        """Test that the transformation matrix applies the correct translation to a
+        point.
+        """
+        position = np.array([5.0, 2.0, -1.0])
+        test_wing = geometry_fixtures.make_type_1_wing_fixture()
+        airplane = ps.geometry.airplane.Airplane(
+            wings=[test_wing], Cg_GP1_CgP1=position
+        )
+
+        T = airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        # Transform the origin point in local coordinates.
+        local_point_homogeneous = np.array([0.0, 0.0, 0.0, 1.0])
+        global_point_homogeneous = T @ local_point_homogeneous
+
+        # The global point should be at the Airplane's CG position.
+        npt.assert_array_almost_equal(global_point_homogeneous[:3], position)
+
+
+class TestAirplaneGetPlottableData(unittest.TestCase):
+    """Tests for Airplane.get_plottable_data method."""
+
+    def setUp(self):
+        """Set up test fixtures for get_plottable_data tests."""
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+        self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+    def test_get_plottable_data_returns_list_when_show_is_false(self):
+        """Test that get_plottable_data returns a list when show is False."""
+        result = self.basic_airplane.get_plottable_data(show=False)
+
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_returns_two_sub_lists(self):
+        """Test that get_plottable_data returns two sub lists (outlines and MCLs)."""
+        result = self.basic_airplane.get_plottable_data(show=False)
+
+        self.assertEqual(len(result), 2)
+
+    def test_get_plottable_data_structure_matches_wings_and_cross_sections(self):
+        """Test that the returned data structure matches the number of Wings and
+        WingCrossSections.
+        """
+        result = self.basic_airplane.get_plottable_data(show=False)
+        outlines = result[0]
+        mcls = result[1]
+
+        # The number of sub lists should match the number of Wings.
+        self.assertEqual(len(outlines), len(self.basic_airplane.wings))
+        self.assertEqual(len(mcls), len(self.basic_airplane.wings))
+
+        # Each Wing's sub list should have the same number of cross sections.
+        for wing_id, wing in enumerate(self.basic_airplane.wings):
+            expected_num = len(wing.wing_cross_sections)
+            self.assertEqual(len(outlines[wing_id]), expected_num)
+            self.assertEqual(len(mcls[wing_id]), expected_num)
+
+    def test_get_plottable_data_returns_ndarrays(self):
+        """Test that get_plottable_data returns ndarrays for each cross section."""
+        result = self.basic_airplane.get_plottable_data(show=False)
+        outlines = result[0]
+        mcls = result[1]
+
+        for wing_outlines in outlines:
+            for outline in wing_outlines:
+                self.assertIsInstance(outline, np.ndarray)
+
+        for wing_mcls in mcls:
+            for mcl in wing_mcls:
+                self.assertIsInstance(mcl, np.ndarray)
+
+    def test_get_plottable_data_returns_3d_points(self):
+        """Test that get_plottable_data returns arrays with 3 columns (x, y, z)."""
+        result = self.basic_airplane.get_plottable_data(show=False)
+        outlines = result[0]
+        mcls = result[1]
+
+        for wing_outlines in outlines:
+            for outline in wing_outlines:
+                self.assertEqual(outline.shape[1], 3)
+
+        for wing_mcls in mcls:
+            for mcl in wing_mcls:
+                self.assertEqual(mcl.shape[1], 3)
+
+    def test_get_plottable_data_default_show_is_false(self):
+        """Test that get_plottable_data default for show is False."""
+        result = self.basic_airplane.get_plottable_data()
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_accepts_numpy_bool(self):
+        """Test that get_plottable_data accepts numpy bool for show parameter."""
+        result = self.basic_airplane.get_plottable_data(show=np.bool_(False))
+
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, list)
+
+    def test_get_plottable_data_multi_wing_airplane(self):
+        """Test get_plottable_data with a multi wing Airplane."""
+        result = self.multi_wing_airplane.get_plottable_data(show=False)
+        outlines = result[0]
+        mcls = result[1]
+
+        # Should have data for each Wing.
+        self.assertEqual(len(outlines), len(self.multi_wing_airplane.wings))
+        self.assertEqual(len(mcls), len(self.multi_wing_airplane.wings))
+
+    def test_get_plottable_data_invalid_show_type_raises(self):
+        """Test that get_plottable_data raises error for invalid show type."""
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            self.basic_airplane.get_plottable_data(show="invalid")
+
+
+class TestAirplaneDraw(unittest.TestCase):
+    """Tests for Airplane.draw method."""
+
+    def setUp(self):
+        """Set up test fixtures for draw tests."""
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+    def test_draw_runs_without_error_in_testing_mode(self):
+        """Test that draw runs without error in testing mode."""
+        # Use testing=True to avoid blocking on window close.
+        try:
+            self.basic_airplane.draw(save=False, testing=True)
+        except Exception as e:
+            self.fail(f"draw() raised {type(e).__name__}: {e}")
+
+    def test_draw_accepts_numpy_bool_for_save(self):
+        """Test that draw accepts numpy bool for save parameter."""
+        try:
+            self.basic_airplane.draw(save=np.bool_(False), testing=np.bool_(True))
+        except Exception as e:
+            self.fail(f"draw() raised {type(e).__name__}: {e}")
+
+    def test_draw_invalid_save_type_raises(self):
+        """Test that draw raises error for invalid save type."""
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            self.basic_airplane.draw(save="invalid", testing=True)
+
+    def test_draw_invalid_testing_type_raises(self):
+        """Test that draw raises error for invalid testing type."""
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            self.basic_airplane.draw(save=False, testing="invalid")
 
 
 if __name__ == "__main__":

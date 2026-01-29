@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 
 
@@ -19,8 +21,7 @@ class LineVortex:
     **Notes:**
 
     Computed geometric properties (vector and center point) are lazily evaluated and
-    cached. Setting either endpoint position invalidates all cached values, ensuring
-    consistency while avoiding redundant computation.
+    cached.
     """
 
     def __init__(
@@ -38,39 +39,31 @@ class LineVortex:
             per second.
         :return: None
         """
-        # Declare type annotations and initialize the private cache variables.
-        self._Slvp_GP1_CgP1: np.ndarray
-        self._Elvp_GP1_CgP1: np.ndarray
+        # Initialize the immutable attributes. Set those that are numpy arrays to be
+        # read only.
+        self._Slvp_GP1_CgP1 = Slvp_GP1_CgP1
+        self._Slvp_GP1_CgP1.flags.writeable = False
+        self._Elvp_GP1_CgP1 = Elvp_GP1_CgP1
+        self._Elvp_GP1_CgP1.flags.writeable = False
+
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
         self._vector_GP1: np.ndarray | None = None
         self._Clvp_GP1_CgP1: np.ndarray | None = None
 
-        # Initialize the attributes.
-        self.Slvp_GP1_CgP1 = Slvp_GP1_CgP1
-        self.Elvp_GP1_CgP1 = Elvp_GP1_CgP1
+        # Initialize a mutable attribute to hold the LineVortex's strength.
         self.strength = strength
 
+    # --- Immutable: read only properties ---
     @property
     def Slvp_GP1_CgP1(self) -> np.ndarray:
         return self._Slvp_GP1_CgP1
-
-    @Slvp_GP1_CgP1.setter
-    def Slvp_GP1_CgP1(self, newSlvp_GP1_CgP1: np.ndarray) -> None:
-        self._vector_GP1 = None
-        self._Clvp_GP1_CgP1 = None
-
-        self._Slvp_GP1_CgP1 = newSlvp_GP1_CgP1
 
     @property
     def Elvp_GP1_CgP1(self) -> np.ndarray:
         return self._Elvp_GP1_CgP1
 
-    @Elvp_GP1_CgP1.setter
-    def Elvp_GP1_CgP1(self, newElvp_GP1_CgP1: np.ndarray) -> None:
-        self._vector_GP1 = None
-        self._Clvp_GP1_CgP1 = None
-
-        self._Elvp_GP1_CgP1 = newElvp_GP1_CgP1
-
+    # --- Immutable derived: manual lazy caching ---
     @property
     def vector_GP1(self) -> np.ndarray:
         """The LineVortex's vector from start to end point (in the first Airplane's
@@ -81,7 +74,10 @@ class LineVortex:
             units are in meters.
         """
         if self._vector_GP1 is None:
-            self._vector_GP1 = self.Elvp_GP1_CgP1 - self.Slvp_GP1_CgP1
+            self._vector_GP1 = cast(
+                np.ndarray, self._Elvp_GP1_CgP1 - self._Slvp_GP1_CgP1
+            )
+            self._vector_GP1.flags.writeable = False
         return self._vector_GP1
 
     @property
@@ -94,5 +90,6 @@ class LineVortex:
             Airplane's CG). The units are in meters.
         """
         if self._Clvp_GP1_CgP1 is None:
-            self._Clvp_GP1_CgP1 = self.Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
+            self._Clvp_GP1_CgP1 = self._Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
+            self._Clvp_GP1_CgP1.flags.writeable = False
         return self._Clvp_GP1_CgP1

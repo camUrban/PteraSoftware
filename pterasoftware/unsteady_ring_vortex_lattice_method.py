@@ -217,8 +217,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             this_problem: problems.SteadyProblem = self.steady_problems[step]
             these_airplanes = this_problem.airplanes
 
-            # Loop through this time step's Airplanes to create a list of their Wings.
-            these_wings: list[list[geometry.wing.Wing]] = []
+            # Loop through this time step's Airplanes to gather their Wings.
+            these_wings: list[tuple[geometry.wing.Wing, ...]] = []
             for airplane in these_airplanes:
                 these_wings.append(airplane.wings)
 

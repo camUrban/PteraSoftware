@@ -11,7 +11,6 @@ None
 
 from __future__ import annotations
 
-import copy
 import math
 from collections.abc import Callable, Sequence
 
@@ -283,10 +282,11 @@ class AirplaneMovement:
         # Create list with first Airplane.
         airplanes = [first_airplane]
 
-        # Deepcopy for remaining steps, updating Cg_GP1_CgP1.
+        # Create copies for remaining steps with different Cg_GP1_CgP1 positions.
         for step in range(1, num_steps):
-            copied_airplane = copy.deepcopy(first_airplane)
-            copied_airplane.Cg_GP1_CgP1 = listCg_GP1_CgP1[:, step].copy()
+            copied_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(
+                listCg_GP1_CgP1[:, step]
+            )
             airplanes.append(copied_airplane)
 
         return airplanes
@@ -371,12 +371,13 @@ class AirplaneMovement:
             )
             first_period_airplanes.append(this_airplane)
 
-        # Step 6: Deepcopy for remaining steps.
+        # Step 6: Create copies for remaining steps with different Cg_GP1_CgP1 positions.
         airplanes = list(first_period_airplanes)
         for step in range(steps_per_period, num_steps):
             source_step = step % steps_per_period
-            copied_airplane = copy.deepcopy(first_period_airplanes[source_step])
-            copied_airplane.Cg_GP1_CgP1 = listCg_GP1_CgP1[:, step].copy()
+            copied_airplane = first_period_airplanes[
+                source_step
+            ].deep_copy_with_Cg_GP1_CgP1(listCg_GP1_CgP1[:, step])
             airplanes.append(copied_airplane)
 
         return airplanes

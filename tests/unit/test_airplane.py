@@ -1,4 +1,4 @@
-"""This module contains a class to test Airplanes."""
+"""This module contains classes to test Airplanes."""
 
 import unittest
 
@@ -28,18 +28,6 @@ class TestAirplane(unittest.TestCase):
         # Create additional test fixtures
         self.test_wing_type_1 = geometry_fixtures.make_type_1_wing_fixture()
         self.test_wing_type_4 = geometry_fixtures.make_type_4_wing_fixture()
-
-    def test_initialization_valid_parameters(self):
-        """Test Airplane initialization with valid parameters."""
-        # Test that basic Airplane initializes correctly
-        self.assertIsInstance(self.basic_airplane, ps.geometry.airplane.Airplane)
-        self.assertIsInstance(self.basic_airplane.wings, list)
-        self.assertEqual(len(self.basic_airplane.wings), 1)
-        self.assertEqual(self.basic_airplane.name, "Basic Test Airplane")
-        npt.assert_array_equal(
-            self.basic_airplane.Cg_GP1_CgP1, np.array([1.0, 0.5, -0.2])
-        )
-        self.assertEqual(self.basic_airplane.weight, 1000.0)
 
     def test_wings_parameter_validation(self):
         """Test that wings parameter validation works correctly."""
@@ -407,32 +395,6 @@ class TestAirplane(unittest.TestCase):
             # Reflected Wing should have None-type control surface symmetry
             self.assertEqual(reflected_wcs.control_surface_symmetry_type, None)
 
-    def test_comprehensive_airplane_properties(self):
-        """Test comprehensive property access for different Airplane configurations."""
-        airplanes_to_test = [
-            (self.basic_airplane, "basic"),
-            (self.first_airplane, "first"),
-            (self.multi_wing_airplane, "multi-wing"),
-            (self.custom_reference_airplane, "custom reference"),
-        ]
-
-        for airplane, airplane_type in airplanes_to_test:
-            with self.subTest(airplane_type=airplane_type):
-                # Test basic properties
-                self.assertIsInstance(airplane.wings, list)
-                self.assertGreater(len(airplane.wings), 0)
-                self.assertIsInstance(airplane.name, str)
-                self.assertEqual(len(airplane.Cg_GP1_CgP1), 3)
-                self.assertGreaterEqual(airplane.weight, 0.0)
-
-                # Test reference dimensions
-                self.assertGreater(airplane.s_ref, 0.0)
-                self.assertGreater(airplane.c_ref, 0.0)
-                self.assertGreater(airplane.b_ref, 0.0)
-
-                # Test calculated properties
-                self.assertGreaterEqual(airplane.num_panels, 0)
-
     def test_airplane_with_various_wing_combinations(self):
         """Test Airplane with various combinations of Wing types."""
         # Mix of different Wing types
@@ -538,38 +500,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.moments_W_CgP1)
         self.assertIsNone(copied.forceCoefficients_W)
         self.assertIsNone(copied.momentCoefficients_W_CgP1)
-
-    def test_deepcopy_independence_modifying_copy(self):
-        """Test that modifying the copy does not affect the original."""
-        import copy
-
-        original = self.basic_airplane
-        original_name = original.name
-        original_Cg = original.Cg_GP1_CgP1.copy()
-
-        copied = copy.deepcopy(original)
-
-        copied.name = "Modified Airplane"
-        copied.Cg_GP1_CgP1[0] = 999.0
-
-        self.assertEqual(original.name, original_name)
-        npt.assert_array_equal(original.Cg_GP1_CgP1, original_Cg)
-
-    def test_deepcopy_independence_modifying_original(self):
-        """Test that modifying the original does not affect the copy."""
-        import copy
-
-        original = self.basic_airplane
-
-        copied = copy.deepcopy(original)
-        copied_name = copied.name
-        copied_Cg = copied.Cg_GP1_CgP1.copy()
-
-        original.name = "Modified Airplane"
-        original.Cg_GP1_CgP1[0] = 999.0
-
-        self.assertEqual(copied.name, copied_name)
-        npt.assert_array_equal(copied.Cg_GP1_CgP1, copied_Cg)
 
     def test_deepcopy_preserves_num_panels(self):
         """Test that deepcopy preserves the total number of Panels."""

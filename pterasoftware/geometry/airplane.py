@@ -33,6 +33,9 @@ class Airplane:
     __deepcopy__: Creates a deep copy of this Airplane, preserving mesh geometry but
     resetting solver state.
 
+    deep_copy_with_Cg_GP1_CgP1: Creates a deep copy of this Airplane with a different
+    Cg_GP1_CgP1 position.
+
     num_panels: The total number of Panels across all Wings.
 
     T_pas_G_Cg_to_GP1_CgP1: The passive transformation matrix from this Airplane's
@@ -205,7 +208,7 @@ class Airplane:
         self.moments_W_CgP1: np.ndarray | None = None
         self.momentCoefficients_W_CgP1: np.ndarray | None = None
 
-    # --- Deep copy method ---
+    # --- Deep copy methods ---
     def __deepcopy__(self, memo: dict) -> Airplane:
         """Creates a deep copy of this Airplane, preserving mesh geometry but resetting
         solver state.
@@ -228,7 +231,7 @@ class Airplane:
         # Store this Airplane in memo to handle potential circular references.
         memo[id(self)] = new_airplane
 
-        # Deepcopy the Wings into a new tuple.
+        # Deep copy the Wings into a new tuple.
         new_airplane._wings = tuple(copy.deepcopy(wing, memo) for wing in self._wings)
 
         # Copy immutable attributes. For those that are numpy arrays, make the copies
@@ -249,6 +252,68 @@ class Airplane:
             new_airplane._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
         else:
             new_airplane._T_pas_G_Cg_to_GP1_CgP1 = None
+
+        # Reset loads and load coefficients to None (solver will compute these).
+        new_airplane.forces_W = None
+        new_airplane.forceCoefficients_W = None
+        new_airplane.moments_W_CgP1 = None
+        new_airplane.momentCoefficients_W_CgP1 = None
+
+        return new_airplane
+
+    def deep_copy_with_Cg_GP1_CgP1(
+        self, new_Cg_GP1_CgP1: np.ndarray | Sequence[float | int]
+    ) -> Airplane:
+        """Creates a deep copy of this Airplane with a different Cg_GP1_CgP1 position.
+
+        This method is used by AirplaneMovement to create Airplanes at different time
+        steps that share the same geometry but have different positions in the
+        formation. It maintains immutability by returning a new Airplane rather than
+        modifying the existing one.
+
+        Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to differ
+        from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs, panels, etc.)
+        is defined relative to this Airplane's own CG, not the formation position, so it
+        remains valid, (2) Panel local coordinates (_G_Cg) are independent of formation
+        position (global coordinates (_GP1_CgP1) are reset to None by Panel's
+        __deepcopy__ and will be recomputed by the Problem using the new transformation
+        matrix), and (3) all other child objects (WingCrossSections, Airfoils, vortices)
+        have no dependency on Cg_GP1_CgP1.
+
+        :param new_Cg_GP1_CgP1: An array-like object of 3 numbers representing the
+            position of the new Airplane's CG (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). Can be a list, tuple, or ndarray.
+            Values are converted to floats internally. The units are in meters.
+        :return: A new Airplane with the specified position and deep copied geometry.
+        """
+        # Validate the new position.
+        validated_Cg_GP1_CgP1 = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                new_Cg_GP1_CgP1, "new_Cg_GP1_CgP1"
+            )
+        )
+        validated_Cg_GP1_CgP1.flags.writeable = False
+
+        # Create a new Airplane instance without calling __init__ to avoid redundant
+        # validation and Wing symmetry processing.
+        new_airplane = object.__new__(Airplane)
+
+        # Deep copy the Wings into a new tuple.
+        memo: dict = {id(self): new_airplane}
+        new_airplane._wings = tuple(copy.deepcopy(wing, memo) for wing in self._wings)
+
+        # Copy immutable attributes, using the new Cg_GP1_CgP1.
+        new_airplane._name = self._name
+        new_airplane._Cg_GP1_CgP1 = validated_Cg_GP1_CgP1
+        new_airplane._weight = self._weight
+        new_airplane._s_ref = self._s_ref
+        new_airplane._c_ref = self._c_ref
+        new_airplane._b_ref = self._b_ref
+
+        # Copy _num_panels cache (depends only on Wings, not position).
+        # Reset _T_pas_G_Cg_to_GP1_CgP1 to None (depends on Cg_GP1_CgP1).
+        new_airplane._num_panels = self._num_panels
+        new_airplane._T_pas_G_Cg_to_GP1_CgP1 = None
 
         # Reset loads and load coefficients to None (solver will compute these).
         new_airplane.forces_W = None

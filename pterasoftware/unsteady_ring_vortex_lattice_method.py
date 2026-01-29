@@ -1648,39 +1648,44 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 ]
 
                                 if chordwise_point_id > 0:
-                                    # If this isn't the front of the wake, update the
-                                    # position of the wake RingVortex at this
-                                    # location for the next time step.
+                                    # If this isn't the front of the wake, create a
+                                    # new RingVortex with the convected position for
+                                    # the next time step.
                                     next_wake_ring_vortices = (
                                         next_wing.wake_ring_vortices
                                     )
                                     assert next_wake_ring_vortices is not None
-                                    next_wake_ring_vortex = cast(
+                                    old_wake_ring_vortex = cast(
                                         _vortices.ring_vortex.RingVortex,
                                         next_wake_ring_vortices[
                                             chordwise_point_id, spanwise_point_id
                                         ],
                                     )
 
-                                    next_wake_ring_vortex.Flrvp_GP1_CgP1 = (
-                                        Flwrvp_GP1_CgP1
-                                    )
-                                    next_wake_ring_vortex.Frrvp_GP1_CgP1 = (
-                                        Frwrvp_GP1_CgP1
-                                    )
-                                    next_wake_ring_vortex.Blrvp_GP1_CgP1 = (
-                                        Blwrvp_GP1_CgP1
-                                    )
-                                    next_wake_ring_vortex.Brrvp_GP1_CgP1 = (
-                                        Brwrvp_GP1_CgP1
-                                    )
-
-                                    # Also, update the age of the wake RingVortex at
-                                    # this position for the next time step.
+                                    # Compute the new age.
                                     if self._current_step == 0:
-                                        next_wake_ring_vortex.age = self.delta_time
+                                        new_age = self.delta_time
                                     else:
-                                        next_wake_ring_vortex.age += self.delta_time
+                                        new_age = (
+                                            old_wake_ring_vortex.age + self.delta_time
+                                        )
+
+                                    # Create a new RingVortex with convected corners.
+                                    new_wake_ring_vortex = (
+                                        _vortices.ring_vortex.RingVortex(
+                                            Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
+                                            Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
+                                            Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,
+                                            Brrvp_GP1_CgP1=Brwrvp_GP1_CgP1,
+                                            strength=old_wake_ring_vortex.strength,
+                                        )
+                                    )
+                                    new_wake_ring_vortex.age = new_age
+
+                                    # Replace the old RingVortex in the array.
+                                    next_wake_ring_vortices[
+                                        chordwise_point_id, spanwise_point_id
+                                    ] = new_wake_ring_vortex
 
                                 if chordwise_point_id == 0:
                                     _panels = this_wing.panels

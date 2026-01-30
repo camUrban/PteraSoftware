@@ -1,4 +1,4 @@
-"""This module contains functions to create OperatingPoints for use in tests"""
+"""This module contains functions to create OperatingPoints for use in tests."""
 
 import pterasoftware as ps
 
@@ -201,3 +201,165 @@ def make_boundary_alpha_operating_point_fixture():
     )
 
     return boundary_alpha_operating_point_fixture
+
+
+def make_negative_beta_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with negative sideslip
+    angle for negative angle handling testing.
+
+    :return negative_beta_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with negative sideslip angle to test negative
+        angle handling in wind axes orientation.
+    """
+    negative_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=-15.0,
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return negative_beta_operating_point_fixture
+
+
+def make_boundary_beta_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with beta at boundary
+    values for angle wrapping edge case testing.
+
+    :return boundary_beta_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with beta at the boundary value of 180
+        degrees to test angle wrapping edge cases.
+    """
+    boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=0.0,
+        beta=180.0,
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return boundary_beta_operating_point_fixture
+
+
+def make_combined_boundary_angles_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with both alpha and
+    beta at boundary values for combined boundary edge case testing.
+
+    :return combined_boundary_angles_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with both alpha and beta at boundary
+        values to test combined boundary edge cases.
+    """
+    combined_boundary_angles_operating_point_fixture = (
+        ps.operating_point.OperatingPoint(
+            rho=1.225,
+            vCg__E=10.0,
+            alpha=180.0,
+            beta=180.0,
+            externalFX_W=0.0,
+            nu=15.06e-6,
+        )
+    )
+
+    return combined_boundary_angles_operating_point_fixture
+
+
+def make_very_low_speed_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with very low but valid
+    velocity for testing numerical stability at low speeds.
+
+    :return very_low_speed_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with very low velocity to test numerical
+        stability at low dynamic pressures.
+    """
+    very_low_speed_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=0.01,
+        alpha=5.0,
+        beta=0.0,
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return very_low_speed_operating_point_fixture
+
+
+def make_integer_parameters_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint initialized with integer
+    values to verify type conversion to floats.
+
+    :return integer_parameters_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint initialized with integer values to test
+        internal conversion to floats.
+    """
+    integer_parameters_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1,
+        vCg__E=10,
+        alpha=5,
+        beta=0,
+        externalFX_W=0,
+        nu=1,
+    )
+
+    return integer_parameters_operating_point_fixture
+
+
+def make_negative_external_force_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with negative external
+    force for drag simulation testing.
+
+    :return negative_external_force_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with negative external force to test drag
+        simulation.
+    """
+    negative_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=0.0,
+        externalFX_W=-25.0,
+        nu=15.06e-6,
+    )
+
+    return negative_external_force_operating_point_fixture
+
+
+def make_near_boundary_alpha_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with alpha near the
+    lower boundary for testing near boundary behavior.
+
+    :return near_boundary_alpha_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with alpha near the lower boundary value
+        of negative 180 degrees to test near boundary behavior.
+    """
+    near_boundary_alpha_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=-179.999,
+        beta=0.0,
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return near_boundary_alpha_operating_point_fixture
+
+
+def make_near_boundary_beta_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with beta near the
+    lower boundary for testing near boundary behavior.
+
+    :return near_boundary_beta_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with beta near the lower boundary value
+        of negative 180 degrees to test near boundary behavior.
+    """
+    near_boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=0.0,
+        beta=-179.999,
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return near_boundary_beta_operating_point_fixture

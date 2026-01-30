@@ -93,28 +93,63 @@ class OperatingPoint:
             20 degrees Celsius [source: https://www.engineeringtoolbox.com].
         :return: None
         """
-        self.rho = _parameter_validation.number_in_range_return_float(
+        # Initialize the immutable attributes.
+        self._rho = _parameter_validation.number_in_range_return_float(
             rho, "rho", min_val=0.0, min_inclusive=False
         )
         # TODO: In the future, test what happens with vCg__E = 0.
-        self.vCg__E = _parameter_validation.number_in_range_return_float(
+        self._vCg__E = _parameter_validation.number_in_range_return_float(
             vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
         )
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
-        self.alpha = _parameter_validation.number_in_range_return_float(
+        self._alpha = _parameter_validation.number_in_range_return_float(
             alpha, "alpha", -180.0, False, 180.0, True
         )
-        self.beta = _parameter_validation.number_in_range_return_float(
+        self._beta = _parameter_validation.number_in_range_return_float(
             beta, "beta", -180.0, False, 180.0, True
         )
-        self.externalFX_W = _parameter_validation.number_in_range_return_float(
+        self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )
-        self.nu = _parameter_validation.number_in_range_return_float(
+        self._nu = _parameter_validation.number_in_range_return_float(
             nu, "nu", min_val=0.0, min_inclusive=False
         )
 
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._qInf__E: float | None = None
+        self._T_pas_GP1_CgP1_to_W_CgP1: np.ndarray | None = None
+        self._T_pas_W_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._vInfHat_GP1__E: np.ndarray | None = None
+        self._vInf_GP1__E: np.ndarray | None = None
+
+    # --- Immutable: read only properties ---
+    @property
+    def rho(self) -> float:
+        return self._rho
+
+    @property
+    def vCg__E(self) -> float:
+        return self._vCg__E
+
+    @property
+    def alpha(self) -> float:
+        return self._alpha
+
+    @property
+    def beta(self) -> float:
+        return self._beta
+
+    @property
+    def externalFX_W(self) -> float:
+        return self._externalFX_W
+
+    @property
+    def nu(self) -> float:
+        return self._nu
+
+    # --- Immutable derived: manual lazy caching ---
     @property
     def qInf__E(self) -> float:
         """The freestream dynamic pressure experienced by the Airplane (observed in the
@@ -123,7 +158,9 @@ class OperatingPoint:
         :return: The freestream dynamic pressure (observed in the Earth frame). Its
             units are in Pascals.
         """
-        return 0.5 * self.rho * self.vCg__E**2
+        if self._qInf__E is None:
+            self._qInf__E = 0.5 * self._rho * self._vCg__E**2
+        return self._qInf__E
 
     @property
     def T_pas_GP1_CgP1_to_W_CgP1(self) -> np.ndarray:
@@ -135,24 +172,27 @@ class OperatingPoint:
             from the first Airplane's geometry axes relative to the first Airplane's CG
             to wind axes relative to the first Airplane's CG.
         """
-        # Geometry axes to body axes transformation: flip x (aft to forward) and z (up
-        # to down). This is equivalent to a 180-degree rotation about y.
-        T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-            angles=np.array([0.0, 180.0, 0.0]),
-            passive=True,
-            intrinsic=False,
-            order="xyz",
-        )
+        if self._T_pas_GP1_CgP1_to_W_CgP1 is None:
+            # Geometry axes to body axes transformation: flip x (aft to forward) and z
+            # (up to down). This is equivalent to a 180-degree rotation about y.
+            T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+                angles=np.array([0.0, 180.0, 0.0]),
+                passive=True,
+                intrinsic=False,
+                order="xyz",
+            )
 
-        angles_B_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
+            angles_B_to_W_exyz = np.array([0.0, -self._alpha, self._beta])
 
-        T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
-            angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
-        )
+            T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
+                angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
+            )
 
-        return _transformations.compose_T_pas(
-            T_pas_GP1_CgP1_to_BP1_CgP1, T_pas_BP1_CgP1_to_W_CgP1
-        )
+            self._T_pas_GP1_CgP1_to_W_CgP1 = _transformations.compose_T_pas(
+                T_pas_GP1_CgP1_to_BP1_CgP1, T_pas_BP1_CgP1_to_W_CgP1
+            )
+            self._T_pas_GP1_CgP1_to_W_CgP1.flags.writeable = False
+        return self._T_pas_GP1_CgP1_to_W_CgP1
 
     @property
     def T_pas_W_CgP1_to_GP1_CgP1(self) -> np.ndarray:
@@ -164,7 +204,12 @@ class OperatingPoint:
             from wind axes relative to the first Airplane's CG to the first Airplane's
             geometry axes relative to the first Airplane's CG.
         """
-        return _transformations.invert_T_pas(self.T_pas_GP1_CgP1_to_W_CgP1)
+        if self._T_pas_W_CgP1_to_GP1_CgP1 is None:
+            self._T_pas_W_CgP1_to_GP1_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_GP1_CgP1_to_W_CgP1
+            )
+            self._T_pas_W_CgP1_to_GP1_CgP1.flags.writeable = False
+        return self._T_pas_W_CgP1_to_GP1_CgP1
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:
@@ -178,11 +223,14 @@ class OperatingPoint:
         :return: The unit vector along the freestream velocity vector (in the first
             Airplane's geometry axes, observed from the Earth frame).
         """
-        vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
+        if self._vInfHat_GP1__E is None:
+            vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
 
-        return _transformations.apply_T_to_vectors(
-            self.T_pas_W_CgP1_to_GP1_CgP1, vInfHat_W__E, has_point=False
-        )
+            self._vInfHat_GP1__E = _transformations.apply_T_to_vectors(
+                self.T_pas_W_CgP1_to_GP1_CgP1, vInfHat_W__E, has_point=False
+            )
+            self._vInfHat_GP1__E.flags.writeable = False
+        return self._vInfHat_GP1__E
 
     @property
     def vInf_GP1__E(self) -> np.ndarray:
@@ -201,4 +249,7 @@ class OperatingPoint:
         :return: The freestream velocity vector (in the first Airplane's geometry axes,
             observed from the Earth frame).
         """
-        return self.vInfHat_GP1__E * self.vCg__E
+        if self._vInf_GP1__E is None:
+            self._vInf_GP1__E = self.vInfHat_GP1__E * self._vCg__E
+            self._vInf_GP1__E.flags.writeable = False
+        return self._vInf_GP1__E

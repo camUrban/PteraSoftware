@@ -16,7 +16,7 @@ This package contains the following modules:
 
     test_airplane.py: This module contains classes to test Airplanes.
 
-    test_airplane_movement.py: This module contains a class to test AirplaneMovements.
+    test_airplane_movement.py: This module contains classes to test AirplaneMovements.
 
     test_horseshoe_vortex.py: This module contains classes to test HorseshoeVortices.
 

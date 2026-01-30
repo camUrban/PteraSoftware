@@ -12,9 +12,7 @@ gammabot = """
   <compiler inertiafromgeom="true" meshdir="assets"/>
   
   <default>
-  <!-- friction = [sliding, torsional, rolling] -->
-  <geom friction="0.005 0.0001 0.0001"
-        condim="3"
+  <geom condim="1"
         solref="0.01 1"
         solimp="0.99 0.999 0.001 0.5 2"/>
   </default>
@@ -72,9 +70,19 @@ thrust_right_mN = 0.0049799 * V_RIGHT - 0.43449
 thrust_net_mN = thrust_left_mN + thrust_right_mN
 thrust_net_N = thrust_net_mN / 1000
 
-F_body = np.array([thrust_net_N, 0.0, 0.0])  # force in body frame
+thrust_angle = np.deg2rad(45)  # 6 degree thrust angle
+
+F_body = np.array(
+    [
+        thrust_net_N * np.cos(thrust_angle),
+        0.0,
+        thrust_net_N * np.sin(thrust_angle),
+    ]
+)  # force in body frame
 T_body = np.array([0.0, 0.0, 0.0])  # torque in body frame
 p_body = np.array([0.0, 0.0, 0.0])  # point of application wrt COM (body frame)
+
+drag_coefficient = 2.5526 * 0.978e-3  # drag coefficient (N*s^2/m^2)
 # # Pose
 # data.qpos[0:3] = [0.0, 0.0, 10.70]  # x,y,z (m)
 # data.qpos[3:7] = [1.0, 0.0, 0.0, 0.0]  # quaternion (w,x,y,z)
@@ -106,15 +114,24 @@ frames = []
 mujoco.mj_resetDataKeyframe(model, data, 0)  # Reset the state to keyframe 0
 with mujoco.Renderer(model, width=1920, height=1088) as renderer:
     while data.time < duration:
+        # Compute drag force (acts on CG, opposes velocity)
+        velocity = data.qvel[0:3]  # linear velocity in world frame
+        speed = np.linalg.norm(velocity)
+        if speed > 1e-9:
+            F_drag = -drag_coefficient * speed * velocity  # -C_d * |v|² * v̂
+        else:
+            F_drag = np.zeros(3)
+
         if data.time >= 1.0:
             R_bw = data.xmat[body_id].reshape(3, 3)  # body->world rotation
-            F_world = R_bw @ F_body
-            # Equivalent torque about COM: rotate body torque + r × F (all in world)
+            F_world = R_bw @ F_body + F_drag
+            # Equivalent torque about COM: rotate body torque + r x F (all in world)
             r_world = R_bw @ p_body
             T_world = (R_bw @ T_body) + np.cross(r_world, F_world)
             data.xfrc_applied[body_id][:] = np.hstack([F_world, T_world])
         else:
-            data.xfrc_applied[body_id][:] = 0.0
+            # Apply only drag before thrust starts
+            data.xfrc_applied[body_id][:] = np.hstack([F_drag, np.zeros(3)])
 
         mujoco.mj_step(model, data)
         if len(frames) < data.time * frame_rate:

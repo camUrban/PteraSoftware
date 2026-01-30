@@ -29,7 +29,7 @@ This package contains the following modules:
 
     test_operating_point.py: This module contains a class to test OperatingPoints.
 
-    test_operating_point_movement.py: This module contains a class to test
+    test_operating_point_movement.py: This module contains classes to test
     OperatingPointMovements.
 
     test_package_init.py: This module contains tests for the pterasoftware package

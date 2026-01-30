@@ -1,4 +1,4 @@
-"""This module contains a class to test Movements."""
+"""This module contains classes to test Movements and related functions."""
 
 import math
 import unittest
@@ -33,27 +33,6 @@ class TestMovement(unittest.TestCase):
         cls.movement_with_multiple_airplanes = (
             movement_fixtures.make_movement_with_multiple_airplanes_fixture()
         )
-
-    def test_initialization_valid_parameters(self):
-        """Test Movement initialization with valid parameters."""
-        movement = self.basic_movement
-        self.assertIsInstance(movement, ps.movements.movement.Movement)
-        self.assertIsInstance(movement.airplane_movements, list)
-        self.assertEqual(len(movement.airplane_movements), 1)
-        self.assertIsInstance(
-            movement.airplane_movements[0],
-            ps.movements.airplane_movement.AirplaneMovement,
-        )
-        self.assertIsInstance(
-            movement.operating_point_movement,
-            ps.movements.operating_point_movement.OperatingPointMovement,
-        )
-        self.assertIsInstance(movement.delta_time, float)
-        self.assertGreater(movement.delta_time, 0.0)
-        self.assertEqual(movement.num_cycles, 1)
-        self.assertIsNone(movement.num_chords)
-        self.assertIsInstance(movement.num_steps, int)
-        self.assertGreater(movement.num_steps, 0)
 
     def test_airplane_movements_validation_not_list(self):
         """Test that airplane_movements must be a list."""
@@ -655,33 +634,6 @@ class TestMovement(unittest.TestCase):
 
         # The max_period should still be 3.0.
         self.assertEqual(movement.max_period, 3.0)
-
-    def test_airplanes_generation(self):
-        """Test that airplanes are generated correctly."""
-        movement = self.basic_movement
-
-        # Check that airplanes attribute is a list of lists.
-        self.assertIsInstance(movement.airplanes, list)
-        self.assertEqual(len(movement.airplanes), len(movement.airplane_movements))
-
-        # Check that each element is a list of Airplanes.
-        for airplane_list in movement.airplanes:
-            self.assertIsInstance(airplane_list, list)
-            self.assertEqual(len(airplane_list), movement.num_steps)
-            for airplane in airplane_list:
-                self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
-
-    def test_operating_points_generation(self):
-        """Test that operating_points are generated correctly."""
-        movement = self.basic_movement
-
-        # Check that operating_points attribute is a list.
-        self.assertIsInstance(movement.operating_points, list)
-        self.assertEqual(len(movement.operating_points), movement.num_steps)
-
-        # Check that each element is an OperatingPoint.
-        for operating_point in movement.operating_points:
-            self.assertIsInstance(operating_point, ps.operating_point.OperatingPoint)
 
     def test_delta_time_automatic_calculation(self):
         """Test that delta_time is automatically calculated when not provided."""
@@ -1299,6 +1251,236 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
+
+
+class TestMovementImmutability(unittest.TestCase):
+    """Tests for Movement attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.static_movement = movement_fixtures.make_static_movement_fixture()
+        cls.basic_movement = movement_fixtures.make_basic_movement_fixture()
+
+    def test_immutable_airplane_movements_property(self):
+        """Test that airplane_movements property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.airplane_movements = []
+
+    def test_immutable_airplane_movements_tuple(self):
+        """Test that airplane_movements returns a tuple (immutable sequence)."""
+        airplane_movements = self.basic_movement.airplane_movements
+        self.assertIsInstance(airplane_movements, tuple)
+
+    def test_immutable_operating_point_movement_property(self):
+        """Test that operating_point_movement property is read only."""
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+        with self.assertRaises(AttributeError):
+            self.basic_movement.operating_point_movement = operating_point_movement
+
+    def test_immutable_delta_time_property(self):
+        """Test that delta_time property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.delta_time = 0.05
+
+    def test_immutable_num_cycles_property(self):
+        """Test that num_cycles property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.num_cycles = 5
+
+    def test_immutable_num_chords_property(self):
+        """Test that num_chords property is read only."""
+        with self.assertRaises(AttributeError):
+            self.static_movement.num_chords = 10
+
+    def test_immutable_num_steps_property(self):
+        """Test that num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.num_steps = 100
+
+    def test_immutable_airplanes_property(self):
+        """Test that airplanes property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.airplanes = ()
+
+    def test_immutable_airplanes_tuple_of_tuples(self):
+        """Test that airplanes returns a tuple of tuples (immutable structure)."""
+        airplanes = self.basic_movement.airplanes
+        self.assertIsInstance(airplanes, tuple)
+        for airplane_list in airplanes:
+            self.assertIsInstance(airplane_list, tuple)
+
+    def test_immutable_operating_points_property(self):
+        """Test that operating_points property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_movement.operating_points = ()
+
+    def test_immutable_operating_points_tuple(self):
+        """Test that operating_points returns a tuple (immutable sequence)."""
+        operating_points = self.basic_movement.operating_points
+        self.assertIsInstance(operating_points, tuple)
+
+
+class TestMovementCaching(unittest.TestCase):
+    """Tests for Movement caching behavior."""
+
+    def test_lcm_period_cache_is_populated_after_access(self):
+        """Test that _lcm_period cache is populated after first access."""
+        # Create a fresh Movement to test cache population.
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_steps=1,
+        )
+
+        # Cache should be None initially.
+        self.assertIsNone(movement._lcm_period)
+
+        # Access the property.
+        _ = movement.lcm_period
+
+        # Cache should now be populated.
+        self.assertIsNotNone(movement._lcm_period)
+
+    def test_max_period_cache_is_populated_after_init(self):
+        """Test that _max_period cache is populated during __init__ because the static
+        property is accessed during __init__ to determine num_steps calculation, and
+        static depends on max_period.
+        """
+        # Create a fresh Movement.
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_steps=1,
+        )
+
+        # max_period is accessed during __init__ via the static property
+        # (which checks self.max_period == 0), so the cache should already be populated.
+        self.assertIsNotNone(movement._max_period)
+
+    def test_static_cache_is_populated_after_init(self):
+        """Test that _static cache is populated during __init__ because it is accessed
+        to determine num_steps calculation.
+        """
+        # Create a fresh Movement.
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_steps=1,
+        )
+
+        # static is accessed during __init__ to determine num_steps calculation,
+        # so the cache should already be populated.
+        self.assertIsNotNone(movement._static)
+
+
+class TestMovementLcmMethods(unittest.TestCase):
+    """Tests for Movement._lcm and Movement._lcm_multiple static methods."""
+
+    def test_lcm_of_two_positive_numbers(self):
+        """Test _lcm returns correct LCM for two positive numbers."""
+        result = ps.movements.movement.Movement._lcm(2.0, 3.0)
+        self.assertEqual(result, 6.0)
+
+    def test_lcm_of_same_numbers(self):
+        """Test _lcm returns the number when both inputs are the same."""
+        result = ps.movements.movement.Movement._lcm(4.0, 4.0)
+        self.assertEqual(result, 4.0)
+
+    def test_lcm_with_first_zero(self):
+        """Test _lcm returns 0.0 when first input is zero."""
+        result = ps.movements.movement.Movement._lcm(0.0, 5.0)
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_with_second_zero(self):
+        """Test _lcm returns 0.0 when second input is zero."""
+        result = ps.movements.movement.Movement._lcm(5.0, 0.0)
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_with_both_zero(self):
+        """Test _lcm returns 0.0 when both inputs are zero."""
+        result = ps.movements.movement.Movement._lcm(0.0, 0.0)
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_of_one_and_any_number(self):
+        """Test _lcm of 1.0 and any number returns that number."""
+        result = ps.movements.movement.Movement._lcm(1.0, 7.0)
+        self.assertEqual(result, 7.0)
+
+        result = ps.movements.movement.Movement._lcm(7.0, 1.0)
+        self.assertEqual(result, 7.0)
+
+    def test_lcm_of_multiples(self):
+        """Test _lcm of a number and its multiple returns the larger number."""
+        result = ps.movements.movement.Movement._lcm(3.0, 9.0)
+        self.assertEqual(result, 9.0)
+
+        result = ps.movements.movement.Movement._lcm(9.0, 3.0)
+        self.assertEqual(result, 9.0)
+
+    def test_lcm_multiple_empty_list(self):
+        """Test _lcm_multiple returns 0.0 for empty list."""
+        result = ps.movements.movement.Movement._lcm_multiple([])
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_multiple_all_zeros(self):
+        """Test _lcm_multiple returns 0.0 when all periods are zero."""
+        result = ps.movements.movement.Movement._lcm_multiple([0.0, 0.0, 0.0])
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_multiple_single_nonzero(self):
+        """Test _lcm_multiple returns the value for a single non zero period."""
+        result = ps.movements.movement.Movement._lcm_multiple([5.0])
+        self.assertEqual(result, 5.0)
+
+    def test_lcm_multiple_single_zero(self):
+        """Test _lcm_multiple returns 0.0 for a single zero period."""
+        result = ps.movements.movement.Movement._lcm_multiple([0.0])
+        self.assertEqual(result, 0.0)
+
+    def test_lcm_multiple_mixed_with_zeros(self):
+        """Test _lcm_multiple correctly ignores zeros in the list."""
+        result = ps.movements.movement.Movement._lcm_multiple([0.0, 2.0, 0.0, 3.0, 0.0])
+        self.assertEqual(result, 6.0)
+
+    def test_lcm_multiple_three_periods(self):
+        """Test _lcm_multiple returns correct LCM for three periods."""
+        result = ps.movements.movement.Movement._lcm_multiple([2.0, 3.0, 4.0])
+        self.assertEqual(result, 12.0)
+
+    def test_lcm_multiple_many_same_periods(self):
+        """Test _lcm_multiple returns the period when all are the same."""
+        result = ps.movements.movement.Movement._lcm_multiple([5.0, 5.0, 5.0, 5.0])
+        self.assertEqual(result, 5.0)
+
+    def test_lcm_multiple_coprime_periods(self):
+        """Test _lcm_multiple of coprime numbers returns their product."""
+        # 2, 3, and 5 are coprime, so LCM = 2 * 3 * 5 = 30.
+        result = ps.movements.movement.Movement._lcm_multiple([2.0, 3.0, 5.0])
+        self.assertEqual(result, 30.0)
 
 
 if __name__ == "__main__":

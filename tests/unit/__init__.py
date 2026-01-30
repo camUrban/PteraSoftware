@@ -22,7 +22,8 @@ This package contains the following modules:
 
     test_line_vortex.py: This module contains classes to test LineVortices.
 
-    test_movement.py: This module contains a class to test Movements.
+    test_movement.py: This module contains classes to test Movements and related
+    functions.
 
     test_movements_functions.py: This module contains a class to test movements
     functions.

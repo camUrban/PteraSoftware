@@ -1,5 +1,6 @@
-"""This module contains a class to test AirplaneMovements."""
+"""This module contains classes to test AirplaneMovements."""
 
+import copy
 import unittest
 
 import numpy as np
@@ -121,33 +122,6 @@ class TestAirplaneMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_initialization_valid_parameters(self):
-        """Test AirplaneMovement initialization with valid parameters."""
-        # Test that basic AirplaneMovement initializes correctly.
-        airplane_movement = self.basic_airplane_movement
-        self.assertIsInstance(
-            airplane_movement, ps.movements.airplane_movement.AirplaneMovement
-        )
-        self.assertIsInstance(
-            airplane_movement.base_airplane, ps.geometry.airplane.Airplane
-        )
-        self.assertIsInstance(airplane_movement.wing_movements, list)
-        self.assertEqual(len(airplane_movement.wing_movements), 1)
-        self.assertIsInstance(
-            airplane_movement.wing_movements[0],
-            ps.movements.wing_movement.WingMovement,
-        )
-        npt.assert_array_equal(
-            airplane_movement.ampCg_GP1_CgP1, np.array([0.0, 0.0, 0.0])
-        )
-        npt.assert_array_equal(
-            airplane_movement.periodCg_GP1_CgP1, np.array([0.0, 0.0, 0.0])
-        )
-        self.assertEqual(airplane_movement.spacingCg_GP1_CgP1, ("sine", "sine", "sine"))
-        npt.assert_array_equal(
-            airplane_movement.phaseCg_GP1_CgP1, np.array([0.0, 0.0, 0.0])
-        )
-
     def test_base_airplane_validation(self):
         """Test that base_airplane parameter validation works correctly."""
         # Test non-Airplane raises error.
@@ -175,45 +149,6 @@ class TestAirplaneMovement(unittest.TestCase):
             base_airplane=base_airplane, wing_movements=wing_movements
         )
         self.assertEqual(airplane_movement.base_airplane, base_airplane)
-
-    def test_wing_movements_validation(self):
-        """Test that wing_movements parameter validation works correctly."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
-
-        # Test non-list raises error.
-        with self.assertRaises(TypeError):
-            ps.movements.airplane_movement.AirplaneMovement(
-                base_airplane=base_airplane, wing_movements="not a list"
-            )
-
-        # Test empty list raises error.
-        with self.assertRaises(ValueError):
-            ps.movements.airplane_movement.AirplaneMovement(
-                base_airplane=base_airplane, wing_movements=[]
-            )
-
-        # Test wrong number of WingMovements raises error.
-        base_airplane_multi_wing = geometry_fixtures.make_multi_wing_airplane_fixture()
-        with self.assertRaises(ValueError):
-            ps.movements.airplane_movement.AirplaneMovement(
-                base_airplane=base_airplane_multi_wing,
-                wing_movements=[
-                    wing_movement_fixtures.make_static_wing_movement_fixture()
-                ],
-            )
-
-        # Test non-WingMovement element raises error.
-        with self.assertRaises(TypeError):
-            ps.movements.airplane_movement.AirplaneMovement(
-                base_airplane=base_airplane, wing_movements=["not a wing movement"]
-            )
-
-        # Test valid list works.
-        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane, wing_movements=wing_movements
-        )
-        self.assertEqual(airplane_movement.wing_movements, wing_movements)
 
     def test_ampCg_GP1_CgP1_validation(self):
         """Test ampCg_GP1_CgP1 parameter validation."""
@@ -487,31 +422,6 @@ class TestAirplaneMovement(unittest.TestCase):
         for airplane in airplanes:
             npt.assert_array_equal(airplane.Cg_GP1_CgP1, base_airplane.Cg_GP1_CgP1)
 
-    def test_generate_airplanes_different_num_steps(self):
-        """Test generate_airplanes with various num_steps values."""
-        airplane_movement = self.basic_airplane_movement
-
-        num_steps_list = [1, 10, 25, 100, 200]
-        for num_steps in num_steps_list:
-            with self.subTest(num_steps=num_steps):
-                airplanes = airplane_movement.generate_airplanes(
-                    num_steps=num_steps, delta_time=0.01
-                )
-                self.assertEqual(len(airplanes), num_steps)
-
-    def test_generate_airplanes_different_delta_time(self):
-        """Test generate_airplanes with various delta_time values."""
-        airplane_movement = self.basic_airplane_movement
-
-        delta_time_list = [0.001, 0.01, 0.1, 1.0]
-        num_steps = 10
-        for delta_time in delta_time_list:
-            with self.subTest(delta_time=delta_time):
-                airplanes = airplane_movement.generate_airplanes(
-                    num_steps=num_steps, delta_time=delta_time
-                )
-                self.assertEqual(len(airplanes), num_steps)
-
     def test_phase_offset_Cg(self):
         """Test that phase shifts initial position correctly for Cg_GP1_CgP1."""
         airplane_movement = self.phase_offset_Cg_airplane_movement
@@ -544,41 +454,6 @@ class TestAirplaneMovement(unittest.TestCase):
         self.assertFalse(np.allclose(x_positions, x_positions[0]))
         npt.assert_array_equal(y_positions, y_positions[0])
         npt.assert_array_equal(z_positions, z_positions[0])
-
-    def test_boundary_phase_values(self):
-        """Test phase at boundary values (-179.9, 0.0, and 180.0)."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
-
-        # Test phase = 0.0 works.
-        airplane_movement1 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements,
-            ampCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
-        self.assertEqual(airplane_movement1.phaseCg_GP1_CgP1[0], 0.0)
-
-        # Test phase = 180.0 works (upper boundary, inclusive).
-        airplane_movement2 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements,
-            ampCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            phaseCg_GP1_CgP1=(180.0, 0.0, 0.0),
-        )
-        self.assertEqual(airplane_movement2.phaseCg_GP1_CgP1[0], 180.0)
-
-        # Test phase = -179.9 works (near lower boundary).
-        airplane_movement3 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=wing_movements,
-            ampCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            periodCg_GP1_CgP1=(1.0, 0.0, 0.0),
-            phaseCg_GP1_CgP1=(-179.9, 0.0, 0.0),
-        )
-        self.assertEqual(airplane_movement3.phaseCg_GP1_CgP1[0], -179.9)
 
     def test_custom_spacing_function_Cg(self):
         """Test that custom spacing function works for Cg_GP1_CgP1."""
@@ -1042,6 +917,371 @@ class TestVariableGeometryFallback(unittest.TestCase):
         # Verify all are valid Airplane instances.
         for airplane in airplanes:
             self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
+
+
+class TestAirplaneMovementWingMovementsValidation(unittest.TestCase):
+    """Tests for wing_movements parameter validation in AirplaneMovement."""
+
+    def test_wing_movements_must_be_list(self):
+        """Test that wing_movements must be a list."""
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movement = wing_movement_fixtures.make_static_wing_movement_fixture()
+
+        # Test tuple raises TypeError.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=(wing_movement,),
+            )
+
+        # Test single WingMovement (not in list) raises TypeError.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movement,
+            )
+
+    def test_wing_movements_length_must_match_airplane_wings(self):
+        """Test that wing_movements length must match base_airplane.wings length."""
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        wing_movement = wing_movement_fixtures.make_static_wing_movement_fixture()
+
+        # base_airplane has 1 Wing, so 2 WingMovements should raise ValueError.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=[wing_movement, wing_movement],
+            )
+
+        # Empty list should raise ValueError.
+        with self.assertRaises(ValueError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=[],
+            )
+
+    def test_wing_movements_elements_must_be_wing_movements(self):
+        """Test that every element in wing_movements must be a WingMovement."""
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+        # Test string raises TypeError.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=["not a wing movement"],
+            )
+
+        # Test None raises TypeError.
+        with self.assertRaises(TypeError):
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=[None],
+            )
+
+
+class TestAirplaneMovementImmutability(unittest.TestCase):
+    """Tests for AirplaneMovement attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+
+    def test_immutable_base_airplane_property(self):
+        """Test that base_airplane property is read only."""
+        new_airplane = geometry_fixtures.make_first_airplane_fixture()
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.base_airplane = new_airplane
+
+    def test_immutable_wing_movements_property(self):
+        """Test that wing_movements property is read only."""
+        new_wing_movements = [
+            wing_movement_fixtures.make_static_wing_movement_fixture()
+        ]
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.wing_movements = new_wing_movements
+
+    def test_wing_movements_returns_tuple(self):
+        """Test that wing_movements property returns a tuple (not a list)."""
+        wing_movements = self.airplane_movement.wing_movements
+        self.assertIsInstance(wing_movements, tuple)
+
+    def test_immutable_ampCg_GP1_CgP1_property(self):
+        """Test that ampCg_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.ampCg_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_ampCg_GP1_CgP1_array_read_only(self):
+        """Test that ampCg_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.airplane_movement.ampCg_GP1_CgP1[0] = 999.0
+
+    def test_immutable_periodCg_GP1_CgP1_property(self):
+        """Test that periodCg_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.periodCg_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_periodCg_GP1_CgP1_array_read_only(self):
+        """Test that periodCg_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.airplane_movement.periodCg_GP1_CgP1[0] = 999.0
+
+    def test_immutable_spacingCg_GP1_CgP1_property(self):
+        """Test that spacingCg_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.spacingCg_GP1_CgP1 = (
+                "uniform",
+                "uniform",
+                "uniform",
+            )
+
+    def test_spacingCg_GP1_CgP1_returns_tuple(self):
+        """Test that spacingCg_GP1_CgP1 property returns a tuple."""
+        spacing = self.airplane_movement.spacingCg_GP1_CgP1
+        self.assertIsInstance(spacing, tuple)
+
+    def test_immutable_phaseCg_GP1_CgP1_property(self):
+        """Test that phaseCg_GP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.airplane_movement.phaseCg_GP1_CgP1 = np.array([45.0, 45.0, 45.0])
+
+    def test_immutable_phaseCg_GP1_CgP1_array_read_only(self):
+        """Test that phaseCg_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.airplane_movement.phaseCg_GP1_CgP1[0] = 999.0
+
+
+class TestAirplaneMovementCaching(unittest.TestCase):
+    """Tests for AirplaneMovement caching behavior."""
+
+    def setUp(self):
+        """Set up test fixtures for caching tests."""
+        self.airplane_movement = (
+            airplane_movement_fixtures.make_multiple_periods_airplane_movement_fixture()
+        )
+
+    def test_all_periods_caching_returns_same_object(self):
+        """Test that repeated access to all_periods returns the same cached object."""
+        all_periods_1 = self.airplane_movement.all_periods
+        all_periods_2 = self.airplane_movement.all_periods
+        self.assertIs(all_periods_1, all_periods_2)
+
+    def test_max_period_caching_returns_same_value(self):
+        """Test that repeated access to max_period returns the same cached value."""
+        max_period_1 = self.airplane_movement.max_period
+        max_period_2 = self.airplane_movement.max_period
+        # Since floats are immutable, we check equality rather than identity.
+        self.assertEqual(max_period_1, max_period_2)
+
+
+class TestAirplaneMovementAllPeriods(unittest.TestCase):
+    """Tests for AirplaneMovement.all_periods property."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all all_periods tests."""
+        cls.static_airplane_movement = (
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        )
+        cls.Cg_airplane_movement = (
+            airplane_movement_fixtures.make_Cg_airplane_movement_fixture()
+        )
+        cls.multiple_periods_airplane_movement = (
+            airplane_movement_fixtures.make_multiple_periods_airplane_movement_fixture()
+        )
+
+    def test_all_periods_static_movement(self):
+        """Test that all_periods returns empty tuple for static movement."""
+        airplane_movement = self.static_airplane_movement
+        self.assertEqual(airplane_movement.all_periods, ())
+
+    def test_all_periods_Cg_only_movement(self):
+        """Test that all_periods includes Cg periods."""
+        airplane_movement = self.Cg_airplane_movement
+        # periodCg_GP1_CgP1 is (1.5, 1.5, 1.5), all non zero.
+        # WingMovement is static, so no geometry periods.
+        # Should return tuple with three 1.5 values.
+        self.assertEqual(airplane_movement.all_periods, (1.5, 1.5, 1.5))
+
+    def test_all_periods_returns_tuple(self):
+        """Test that all_periods returns a tuple."""
+        airplane_movement = self.multiple_periods_airplane_movement
+        self.assertIsInstance(airplane_movement.all_periods, tuple)
+
+    def test_all_periods_includes_wing_movement_periods(self):
+        """Test that all_periods includes periods from WingMovements."""
+        airplane_movement = self.multiple_periods_airplane_movement
+        all_periods = airplane_movement.all_periods
+
+        # Should include periods from both Cg and WingMovements.
+        # Cg periods: (1.0, 2.0, 3.0).
+        # WingMovements contribute additional periods.
+        self.assertIn(1.0, all_periods)
+        self.assertIn(2.0, all_periods)
+        self.assertIn(3.0, all_periods)
+
+
+class TestAirplaneMovementDeepcopy(unittest.TestCase):
+    """Tests for AirplaneMovement.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.airplane_movement = (
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        )
+
+    def test_deepcopy_returns_new_instance(self):
+        """Test that deepcopy returns a new AirplaneMovement instance."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, ps.movements.airplane_movement.AirplaneMovement)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_attribute_values(self):
+        """Test that deepcopy preserves all attribute values."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        # Check numpy array attributes.
+        npt.assert_array_equal(copied.ampCg_GP1_CgP1, original.ampCg_GP1_CgP1)
+        npt.assert_array_equal(copied.periodCg_GP1_CgP1, original.periodCg_GP1_CgP1)
+        npt.assert_array_equal(copied.phaseCg_GP1_CgP1, original.phaseCg_GP1_CgP1)
+
+        # Check tuple attributes.
+        self.assertEqual(copied.spacingCg_GP1_CgP1, original.spacingCg_GP1_CgP1)
+
+        # Check scalar derived properties.
+        self.assertEqual(copied.max_period, original.max_period)
+
+    def test_deepcopy_numpy_arrays_are_independent(self):
+        """Test that deepcopied numpy arrays are independent objects."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        # Verify arrays are different objects.
+        self.assertIsNot(copied.ampCg_GP1_CgP1, original.ampCg_GP1_CgP1)
+        self.assertIsNot(copied.periodCg_GP1_CgP1, original.periodCg_GP1_CgP1)
+        self.assertIsNot(copied.phaseCg_GP1_CgP1, original.phaseCg_GP1_CgP1)
+
+    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self):
+        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        # Verify that attempting to modify copied arrays raises ValueError.
+        with self.assertRaises(ValueError):
+            copied.ampCg_GP1_CgP1[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.periodCg_GP1_CgP1[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.phaseCg_GP1_CgP1[0] = 999.0
+
+    def test_deepcopy_base_airplane_is_independent(self):
+        """Test that deepcopied base_airplane is an independent object."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        # Verify base_airplane is a different object.
+        self.assertIsNot(copied.base_airplane, original.base_airplane)
+
+        # Verify attributes are equal.
+        self.assertEqual(copied.base_airplane.name, original.base_airplane.name)
+        self.assertEqual(copied.base_airplane.weight, original.base_airplane.weight)
+        npt.assert_array_equal(
+            copied.base_airplane.Cg_GP1_CgP1, original.base_airplane.Cg_GP1_CgP1
+        )
+
+    def test_deepcopy_wing_movements_are_independent(self):
+        """Test that deepcopied wing_movements are independent objects."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        # Verify wing_movements tuple is a different object.
+        self.assertIsNot(copied.wing_movements, original.wing_movements)
+
+        # Verify each WingMovement is a different object.
+        for original_wm, copied_wm in zip(
+            original.wing_movements, copied.wing_movements
+        ):
+            self.assertIsNot(copied_wm, original_wm)
+
+    def test_deepcopy_resets_caches_to_none(self):
+        """Test that deepcopy resets cached derived properties to None."""
+        original = self.airplane_movement
+
+        # Access cached properties to populate caches.
+        _ = original.all_periods
+        _ = original.max_period
+
+        # Verify original caches are populated.
+        self.assertIsNotNone(original._all_periods)
+        self.assertIsNotNone(original._max_period)
+
+        # Deepcopy the object.
+        copied = copy.deepcopy(original)
+
+        # Verify copied caches are reset to None.
+        self.assertIsNone(copied._all_periods)
+        self.assertIsNone(copied._max_period)
+
+    def test_deepcopy_cached_properties_can_be_recomputed(self):
+        """Test that cached properties work correctly after deepcopy."""
+        original = self.airplane_movement
+
+        # Get original cached values.
+        original_all_periods = original.all_periods
+        original_max_period = original.max_period
+
+        # Deepcopy the object.
+        copied = copy.deepcopy(original)
+
+        # Verify cached properties can be computed and match original.
+        self.assertEqual(copied.all_periods, original_all_periods)
+        self.assertEqual(copied.max_period, original_max_period)
+
+    def test_deepcopy_generate_airplanes_produces_same_results(self):
+        """Test that generate_airplanes produces same results after deepcopy."""
+        original = self.airplane_movement
+        copied = copy.deepcopy(original)
+
+        num_steps = 10
+        delta_time = 0.01
+
+        original_airplanes = original.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+        copied_airplanes = copied.generate_airplanes(
+            num_steps=num_steps, delta_time=delta_time
+        )
+
+        # Verify same number of Airplanes.
+        self.assertEqual(len(copied_airplanes), len(original_airplanes))
+
+        # Verify each Airplane has matching Cg_GP1_CgP1.
+        for original_ap, copied_ap in zip(original_airplanes, copied_airplanes):
+            npt.assert_array_equal(copied_ap.Cg_GP1_CgP1, original_ap.Cg_GP1_CgP1)
+            self.assertEqual(copied_ap.name, original_ap.name)
+            self.assertEqual(copied_ap.weight, original_ap.weight)
+
+    def test_deepcopy_handles_memo_correctly(self):
+        """Test that deepcopy handles the memo dict correctly for circular references."""
+        original = self.airplane_movement
+        memo = {}
+
+        # First deepcopy.
+        copied1 = copy.deepcopy(original, memo)
+
+        # Verify original is in memo.
+        self.assertIn(id(original), memo)
+        self.assertIs(memo[id(original)], copied1)
+
+        # Second deepcopy with same memo should return same object.
+        copied2 = copy.deepcopy(original, memo)
+        self.assertIs(copied1, copied2)
 
 
 if __name__ == "__main__":

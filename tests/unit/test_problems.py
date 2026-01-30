@@ -1,7 +1,9 @@
-"""This module contains a class to test SteadyProblems and UnsteadyProblems."""
+"""This module contains classes to test SteadyProblems and UnsteadyProblems."""
 
 import math
 import unittest
+
+import numpy as np
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -31,7 +33,7 @@ class TestSteadyProblem(unittest.TestCase):
             self.basic_steady_problem,
             ps.problems.SteadyProblem,
         )
-        self.assertIsInstance(self.basic_steady_problem.airplanes, list)
+        self.assertIsInstance(self.basic_steady_problem.airplanes, tuple)
         self.assertEqual(len(self.basic_steady_problem.airplanes), 1)
         self.assertIsInstance(
             self.basic_steady_problem.airplanes[0],
@@ -132,14 +134,16 @@ class TestSteadyProblem(unittest.TestCase):
                         operating_point=invalid,
                     )
 
-    def test_reynolds_numbers_returns_correct_list_length(self):
-        """Test that reynolds_numbers returns a list with one element per Airplane."""
-        # Single Airplane problem should return list with one element.
-        self.assertIsInstance(self.basic_steady_problem.reynolds_numbers, list)
+    def test_reynolds_numbers_returns_correct_tuple_length(self):
+        """Test that reynolds_numbers returns a tuple with one element per Airplane."""
+        # Single Airplane problem should return tuple with one element.
+        self.assertIsInstance(self.basic_steady_problem.reynolds_numbers, tuple)
         self.assertEqual(len(self.basic_steady_problem.reynolds_numbers), 1)
 
-        # Multi Airplane problem should return list with two elements.
-        self.assertIsInstance(self.multi_airplane_steady_problem.reynolds_numbers, list)
+        # Multi Airplane problem should return tuple with two elements.
+        self.assertIsInstance(
+            self.multi_airplane_steady_problem.reynolds_numbers, tuple
+        )
         self.assertEqual(len(self.multi_airplane_steady_problem.reynolds_numbers), 2)
 
     def test_reynolds_numbers_calculation_accuracy(self):
@@ -167,6 +171,89 @@ class TestSteadyProblem(unittest.TestCase):
             expected_re = (v * airplane.c_ref) / nu
             calculated_re = self.multi_airplane_steady_problem.reynolds_numbers[i]
             self.assertAlmostEqual(calculated_re, expected_re, places=6)
+
+
+class TestSteadyProblemImmutability(unittest.TestCase):
+    """Tests for SteadyProblem attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.basic_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
+
+    def test_immutable_airplanes_property(self):
+        """Test that airplanes property is read only."""
+        new_airplanes = (geometry_fixtures.make_basic_airplane_fixture(),)
+        with self.assertRaises(AttributeError):
+            self.basic_steady_problem.airplanes = new_airplanes
+
+    def test_immutable_operating_point_property(self):
+        """Test that operating_point property is read only."""
+        new_operating_point = (
+            operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+        with self.assertRaises(AttributeError):
+            self.basic_steady_problem.operating_point = new_operating_point
+
+    def test_airplanes_tuple_immutability(self):
+        """Test that airplanes tuple cannot be modified via append or other methods."""
+        # Tuples don't have append, so attempting to call it raises AttributeError.
+        with self.assertRaises(AttributeError):
+            self.basic_steady_problem.airplanes.append(
+                geometry_fixtures.make_basic_airplane_fixture()
+            )
+
+    def test_reynolds_numbers_caching(self):
+        """Test that reynolds_numbers returns the same cached object on repeated access."""
+        # Access reynolds_numbers twice.
+        reynolds_first = self.basic_steady_problem.reynolds_numbers
+        reynolds_second = self.basic_steady_problem.reynolds_numbers
+
+        # Should return the same cached tuple object.
+        self.assertIs(reynolds_first, reynolds_second)
+
+
+class TestSteadyProblemPanelCoordinates(unittest.TestCase):
+    """Tests for SteadyProblem Panel GP1_CgP1 coordinate population."""
+
+    def test_panel_GP1_CgP1_coordinates_are_read_only(self):
+        """Test that Panel GP1_CgP1 coordinate arrays are read only."""
+        # Create a fresh SteadyProblem.
+        steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
+
+        # Get the first Panel.
+        first_airplane = steady_problem.airplanes[0]
+        first_wing = first_airplane.wings[0]
+        self.assertIsNotNone(first_wing.panels)
+        first_panel = first_wing.panels[0, 0]
+
+        # Verify that the arrays are read only.
+        with self.assertRaises(ValueError):
+            first_panel.Frpp_GP1_CgP1[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            first_panel.Flpp_GP1_CgP1[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            first_panel.Blpp_GP1_CgP1[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            first_panel.Brpp_GP1_CgP1[0] = 999.0
+
+    def test_panel_GP1_CgP1_coordinates_multi_airplane(self):
+        """Test that Panel GP1_CgP1 coordinates are populated for multiple Airplanes."""
+        # Create a SteadyProblem with multiple Airplanes.
+        steady_problem = problem_fixtures.make_multi_airplane_steady_problem_fixture()
+
+        # Check that all Panels in all Airplanes have GP1_CgP1 coordinates set.
+        for airplane in steady_problem.airplanes:
+            for wing in airplane.wings:
+                self.assertIsNotNone(wing.panels)
+                for panel in np.ravel(wing.panels):
+                    self.assertIsNotNone(panel.Frpp_GP1_CgP1)
+                    self.assertIsNotNone(panel.Flpp_GP1_CgP1)
+                    self.assertIsNotNone(panel.Blpp_GP1_CgP1)
+                    self.assertIsNotNone(panel.Brpp_GP1_CgP1)
 
 
 class TestUnsteadyProblem(unittest.TestCase):

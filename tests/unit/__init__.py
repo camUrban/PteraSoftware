@@ -40,7 +40,7 @@ This package contains the following modules:
     test_parameter_validation.py: This module contains a class to test parameter
     validation functions.
 
-    test_problems.py: This module contains a class to test SteadyProblems and
+    test_problems.py: This module contains classes to test SteadyProblems and
     UnsteadyProblems.
 
     test_ring_vortex.py: This module contains classes to test RingVortices.

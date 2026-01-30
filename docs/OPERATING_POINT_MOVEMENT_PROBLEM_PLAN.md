@@ -105,9 +105,9 @@ same is true for `qInf__E`.
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property           | Depends On                     | Notes                                 |
-|--------------------|--------------------------------|---------------------------------------|
-| `reynolds_numbers` | `airplanes`, `operating_point` | List of Re for each Airplane (cached) |
+| Property           | Depends On                     | Notes                                  |
+|--------------------|--------------------------------|----------------------------------------|
+| `reynolds_numbers` | `airplanes`, `operating_point` | Tuple of Re for each Airplane (cached) |
 
 ---
 
@@ -153,10 +153,10 @@ same is true for `qInf__E`.
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On      | Notes    |
-|---------------|-----------------|----------|
-| `all_periods` | Period arrays   | (cached) |
-| `max_period`  | Period arrays   | (cached) |
+| Property      | Depends On    | Notes                                        |
+|---------------|---------------|----------------------------------------------|
+| `all_periods` | Period arrays | Tuple of unique non zero periods (cached)    |
+| `max_period`  | Period arrays | Scalar float, longest period (cached)        |
 
 ---
 
@@ -182,10 +182,10 @@ same is true for `qInf__E`.
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On                        | Notes    |
-|---------------|-----------------------------------|----------|
-| `all_periods` | Own periods + child `all_periods` | (cached) |
-| `max_period`  | Own periods + child `max_period`  | (cached) |
+| Property      | Depends On                        | Notes                                     |
+|---------------|-----------------------------------|-------------------------------------------|
+| `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
+| `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
 
 ---
 
@@ -206,10 +206,10 @@ same is true for `qInf__E`.
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On                        | Notes    |
-|---------------|-----------------------------------|----------|
-| `all_periods` | Own periods + child `all_periods` | (cached) |
-| `max_period`  | Own periods + child `max_period`  | (cached) |
+| Property      | Depends On                        | Notes                                     |
+|---------------|-----------------------------------|-------------------------------------------|
+| `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
+| `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
 
 ---
 

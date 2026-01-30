@@ -302,7 +302,7 @@ class WingCrossSection:
         # Store this WingCrossSection in memo to handle potential circular references.
         memo[id(self)] = new_wing_cross_section
 
-        # Deepcopy the Airfoil to ensure independence (immutable).
+        # Deep copy the Airfoil to ensure independence (immutable).
         new_wing_cross_section._airfoil = copy.deepcopy(self._airfoil, memo)
 
         # Copy simple immutable attributes (primitive types).

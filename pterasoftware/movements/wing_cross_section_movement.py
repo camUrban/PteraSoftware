@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Callable, Sequence
 
 import numpy as np
@@ -24,12 +25,14 @@ class WingCrossSectionMovement:
 
     **Contains the following methods:**
 
+    __deepcopy__: Creates a deep copy of this WingCrossSectionMovement.
+
     all_periods: All unique non zero periods from this WingCrossSectionMovement.
+
+    max_period: WingCrossSectionMovement's longest period of motion.
 
     generate_wing_cross_sections: Creates the WingCrossSection at each time step, and
     returns them in a list.
-
-    max_period: WingCrossSectionMovement's longest period of motion.
     """
 
     def __init__(
@@ -145,18 +148,21 @@ class WingCrossSectionMovement:
             0.0).
         :return: None
         """
+        # Validate and store immutable attributes. Set those that are numpy arrays to
+        # be read only.
         if not isinstance(
             base_wing_cross_section, geometry.wing_cross_section.WingCrossSection
         ):
             raise TypeError("base_wing_cross_section must be a WingCrossSection.")
-        self.base_wing_cross_section = base_wing_cross_section
+        self._base_wing_cross_section = base_wing_cross_section
 
         ampLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             ampLp_Wcsp_Lpp, "ampLp_Wcsp_Lpp"
         )
         if not np.all(ampLp_Wcsp_Lpp >= 0.0):
             raise ValueError("All elements in ampLp_Wcsp_Lpp must be non negative.")
-        self.ampLp_Wcsp_Lpp = ampLp_Wcsp_Lpp
+        self._ampLp_Wcsp_Lpp = ampLp_Wcsp_Lpp
+        self._ampLp_Wcsp_Lpp.flags.writeable = False
 
         periodLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             periodLp_Wcsp_Lpp, "periodLp_Wcsp_Lpp"
@@ -164,20 +170,21 @@ class WingCrossSectionMovement:
         if not np.all(periodLp_Wcsp_Lpp >= 0.0):
             raise ValueError("All elements in periodLp_Wcsp_Lpp must be non negative.")
         for period_index, period in enumerate(periodLp_Wcsp_Lpp):
-            amp = self.ampLp_Wcsp_Lpp[period_index]
+            amp = self._ampLp_Wcsp_Lpp[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
                     "If an element in ampLp_Wcsp_Lpp is 0.0, the corresponding "
                     "element in periodLp_Wcsp_Lpp must be also be 0.0."
                 )
-        self.periodLp_Wcsp_Lpp = periodLp_Wcsp_Lpp
+        self._periodLp_Wcsp_Lpp = periodLp_Wcsp_Lpp
+        self._periodLp_Wcsp_Lpp.flags.writeable = False
 
-        spacingLp_Wcsp_Lpp = (
+        # Store as tuple to prevent external mutation.
+        self._spacingLp_Wcsp_Lpp = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingLp_Wcsp_Lpp, "spacingLp_Wcsp_Lpp"
             )
         )
-        self.spacingLp_Wcsp_Lpp = spacingLp_Wcsp_Lpp
 
         phaseLp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             phaseLp_Wcsp_Lpp, "phaseLp_Wcsp_Lpp"
@@ -189,13 +196,14 @@ class WingCrossSectionMovement:
                 "All elements in phaseLp_Wcsp_Lpp must be in the range (-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseLp_Wcsp_Lpp):
-            amp = self.ampLp_Wcsp_Lpp[phase_index]
+            amp = self._ampLp_Wcsp_Lpp[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
                     "If an element in ampLp_Wcsp_Lpp is 0.0, the corresponding "
                     "element in phaseLp_Wcsp_Lpp must be also be 0.0."
                 )
-        self.phaseLp_Wcsp_Lpp = phaseLp_Wcsp_Lpp
+        self._phaseLp_Wcsp_Lpp = phaseLp_Wcsp_Lpp
+        self._phaseLp_Wcsp_Lpp.flags.writeable = False
 
         ampAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -210,7 +218,8 @@ class WingCrossSectionMovement:
                 "All elements in ampAngles_Wcsp_to_Wcs_ixyz must be in the range ["
                 "0.0, 180.0]."
             )
-        self.ampAngles_Wcsp_to_Wcs_ixyz = ampAngles_Wcsp_to_Wcs_ixyz
+        self._ampAngles_Wcsp_to_Wcs_ixyz = ampAngles_Wcsp_to_Wcs_ixyz
+        self._ampAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
         periodAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -222,21 +231,22 @@ class WingCrossSectionMovement:
                 "All elements in periodAngles_Wcsp_to_Wcs_ixyz must be non negative."
             )
         for period_index, period in enumerate(periodAngles_Wcsp_to_Wcs_ixyz):
-            amp = self.ampAngles_Wcsp_to_Wcs_ixyz[period_index]
+            amp = self._ampAngles_Wcsp_to_Wcs_ixyz[period_index]
             if amp == 0 and period != 0:
                 raise ValueError(
                     "If an element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0, "
                     "the corresponding element in periodAngles_Wcsp_to_Wcs_ixyz must "
                     "be also be 0.0."
                 )
-        self.periodAngles_Wcsp_to_Wcs_ixyz = periodAngles_Wcsp_to_Wcs_ixyz
+        self._periodAngles_Wcsp_to_Wcs_ixyz = periodAngles_Wcsp_to_Wcs_ixyz
+        self._periodAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
 
-        spacingAngles_Wcsp_to_Wcs_ixyz = (
+        # Store as tuple to prevent external mutation.
+        self._spacingAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_spacing_vectorLike_return_tuple(
                 spacingAngles_Wcsp_to_Wcs_ixyz, "spacingAngles_Wcsp_to_Wcs_ixyz"
             )
         )
-        self.spacingAngles_Wcsp_to_Wcs_ixyz = spacingAngles_Wcsp_to_Wcs_ixyz
 
         phaseAngles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -252,35 +262,165 @@ class WingCrossSectionMovement:
                 "-180.0, 180.0]."
             )
         for phase_index, phase in enumerate(phaseAngles_Wcsp_to_Wcs_ixyz):
-            amp = self.ampAngles_Wcsp_to_Wcs_ixyz[phase_index]
+            amp = self._ampAngles_Wcsp_to_Wcs_ixyz[phase_index]
             if amp == 0 and phase != 0:
                 raise ValueError(
                     "If an element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0, "
                     "the corresponding element in phaseAngles_Wcsp_to_Wcs_ixyz must "
                     "be also be 0.0."
                 )
-        self.phaseAngles_Wcsp_to_Wcs_ixyz = phaseAngles_Wcsp_to_Wcs_ixyz
+        self._phaseAngles_Wcsp_to_Wcs_ixyz = phaseAngles_Wcsp_to_Wcs_ixyz
+        self._phaseAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
+
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._all_periods: tuple[float, ...] | None = None
+        self._max_period: float | None = None
+
+    # --- Deep copy method ---
+    def __deepcopy__(self, memo: dict) -> WingCrossSectionMovement:
+        """Creates a deep copy of this WingCrossSectionMovement.
+
+        All attributes are copied. The base WingCrossSection is deepcopied to ensure
+        independence. Numpy arrays are copied and set to read only to preserve
+        immutability. Cache variables are reset to None.
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new WingCrossSectionMovement with copied attributes.
+        """
+        # Create a new WingCrossSectionMovement instance without calling __init__ to
+        # avoid redundant validation.
+        new_movement = object.__new__(WingCrossSectionMovement)
+
+        # Store this WingCrossSectionMovement in memo to handle potential circular
+        # references.
+        memo[id(self)] = new_movement
+
+        # Deep copy the base WingCrossSection to ensure independence (immutable).
+        new_movement._base_wing_cross_section = copy.deepcopy(
+            self._base_wing_cross_section, memo
+        )
+
+        # Copy numpy arrays and make them read only.
+        new_movement._ampLp_Wcsp_Lpp = self._ampLp_Wcsp_Lpp.copy()
+        new_movement._ampLp_Wcsp_Lpp.flags.writeable = False
+
+        new_movement._periodLp_Wcsp_Lpp = self._periodLp_Wcsp_Lpp.copy()
+        new_movement._periodLp_Wcsp_Lpp.flags.writeable = False
+
+        new_movement._phaseLp_Wcsp_Lpp = self._phaseLp_Wcsp_Lpp.copy()
+        new_movement._phaseLp_Wcsp_Lpp.flags.writeable = False
+
+        new_movement._ampAngles_Wcsp_to_Wcs_ixyz = (
+            self._ampAngles_Wcsp_to_Wcs_ixyz.copy()
+        )
+        new_movement._ampAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
+
+        new_movement._periodAngles_Wcsp_to_Wcs_ixyz = (
+            self._periodAngles_Wcsp_to_Wcs_ixyz.copy()
+        )
+        new_movement._periodAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
+
+        new_movement._phaseAngles_Wcsp_to_Wcs_ixyz = (
+            self._phaseAngles_Wcsp_to_Wcs_ixyz.copy()
+        )
+        new_movement._phaseAngles_Wcsp_to_Wcs_ixyz.flags.writeable = False
+
+        # Copy tuples directly (they are immutable).
+        new_movement._spacingLp_Wcsp_Lpp = self._spacingLp_Wcsp_Lpp
+        new_movement._spacingAngles_Wcsp_to_Wcs_ixyz = (
+            self._spacingAngles_Wcsp_to_Wcs_ixyz
+        )
+
+        # Initialize cache variables to None (caches will be recomputed on access).
+        new_movement._all_periods = None
+        new_movement._max_period = None
+
+        return new_movement
+
+    # --- Immutable: read only properties ---
+    @property
+    def base_wing_cross_section(self) -> geometry.wing_cross_section.WingCrossSection:
+        return self._base_wing_cross_section
 
     @property
-    def all_periods(self) -> list[float]:
+    def ampLp_Wcsp_Lpp(self) -> np.ndarray:
+        return self._ampLp_Wcsp_Lpp
+
+    @property
+    def periodLp_Wcsp_Lpp(self) -> np.ndarray:
+        return self._periodLp_Wcsp_Lpp
+
+    @property
+    def spacingLp_Wcsp_Lpp(
+        self,
+    ) -> tuple[str | Callable[[np.ndarray], np.ndarray], ...]:
+        return self._spacingLp_Wcsp_Lpp
+
+    @property
+    def phaseLp_Wcsp_Lpp(self) -> np.ndarray:
+        return self._phaseLp_Wcsp_Lpp
+
+    @property
+    def ampAngles_Wcsp_to_Wcs_ixyz(self) -> np.ndarray:
+        return self._ampAngles_Wcsp_to_Wcs_ixyz
+
+    @property
+    def periodAngles_Wcsp_to_Wcs_ixyz(self) -> np.ndarray:
+        return self._periodAngles_Wcsp_to_Wcs_ixyz
+
+    @property
+    def spacingAngles_Wcsp_to_Wcs_ixyz(
+        self,
+    ) -> tuple[str | Callable[[np.ndarray], np.ndarray], ...]:
+        return self._spacingAngles_Wcsp_to_Wcs_ixyz
+
+    @property
+    def phaseAngles_Wcsp_to_Wcs_ixyz(self) -> np.ndarray:
+        return self._phaseAngles_Wcsp_to_Wcs_ixyz
+
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def all_periods(self) -> tuple[float, ...]:
         """All unique non zero periods from this WingCrossSectionMovement.
 
-        :return: A list of all unique non zero periods in seconds. If the motion is
-            static, this will be an empty list.
+        :return: A tuple of all unique non zero periods in seconds. If the motion is
+            static, this will be an empty tuple.
         """
-        periods = []
+        if self._all_periods is None:
+            periods = []
 
-        # Collect all periods from positional motion.
-        for period in self.periodLp_Wcsp_Lpp:
-            if period > 0.0:
-                periods.append(float(period))
+            # Collect all periods from positional motion.
+            for period in self._periodLp_Wcsp_Lpp:
+                if period > 0.0:
+                    periods.append(float(period))
 
-        # Collect all periods from angular motion.
-        for period in self.periodAngles_Wcsp_to_Wcs_ixyz:
-            if period > 0.0:
-                periods.append(float(period))
-        return periods
+            # Collect all periods from angular motion.
+            for period in self._periodAngles_Wcsp_to_Wcs_ixyz:
+                if period > 0.0:
+                    periods.append(float(period))
 
+            self._all_periods = tuple(periods)
+        return self._all_periods
+
+    @property
+    def max_period(self) -> float:
+        """WingCrossSectionMovement's longest period of motion.
+
+        :return: The longest period in seconds. If the motion is static, this will be
+            0.0.
+        """
+        if self._max_period is None:
+            self._max_period = float(
+                max(
+                    np.max(self._periodLp_Wcsp_Lpp),
+                    np.max(self._periodAngles_Wcsp_to_Wcs_ixyz),
+                )
+            )
+        return self._max_period
+
+    # --- Other methods ---
     def generate_wing_cross_sections(
         self,
         num_steps: int,
@@ -309,31 +449,31 @@ class WingCrossSectionMovement:
         # Generate oscillating values for each dimension of Lp_Wcsp_Lpp.
         listLp_Wcsp_Lpp = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingLp_Wcsp_Lpp[dim]
+            spacing = self._spacingLp_Wcsp_Lpp[dim]
             if spacing == "sine":
                 listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    amps=self._ampLp_Wcsp_Lpp[dim],
+                    periods=self._periodLp_Wcsp_Lpp[dim],
+                    phases=self._phaseLp_Wcsp_Lpp[dim],
+                    bases=self._base_wing_cross_section.Lp_Wcsp_Lpp[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
                 listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    amps=self._ampLp_Wcsp_Lpp[dim],
+                    periods=self._periodLp_Wcsp_Lpp[dim],
+                    phases=self._phaseLp_Wcsp_Lpp[dim],
+                    bases=self._base_wing_cross_section.Lp_Wcsp_Lpp[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
                 listLp_Wcsp_Lpp[dim, :] = _functions.oscillating_customspaces(
-                    amps=self.ampLp_Wcsp_Lpp[dim],
-                    periods=self.periodLp_Wcsp_Lpp[dim],
-                    phases=self.phaseLp_Wcsp_Lpp[dim],
-                    bases=self.base_wing_cross_section.Lp_Wcsp_Lpp[dim],
+                    amps=self._ampLp_Wcsp_Lpp[dim],
+                    periods=self._periodLp_Wcsp_Lpp[dim],
+                    phases=self._phaseLp_Wcsp_Lpp[dim],
+                    bases=self._base_wing_cross_section.Lp_Wcsp_Lpp[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                     custom_function=spacing,
@@ -344,32 +484,34 @@ class WingCrossSectionMovement:
         # Generate oscillating values for each dimension of angles_Wcsp_to_Wcs_ixyz.
         listAngles_Wcsp_to_Wcs_ixyz = np.zeros((3, num_steps), dtype=float)
         for dim in range(3):
-            spacing = self.spacingAngles_Wcsp_to_Wcs_ixyz[dim]
+            spacing = self._spacingAngles_Wcsp_to_Wcs_ixyz[dim]
             if spacing == "sine":
                 listAngles_Wcsp_to_Wcs_ixyz[dim, :] = _functions.oscillating_sinspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                    amps=self._ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self._periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self._phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=self._base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif spacing == "uniform":
                 listAngles_Wcsp_to_Wcs_ixyz[dim, :] = _functions.oscillating_linspaces(
-                    amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                    periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                    phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                    bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                    amps=self._ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                    periods=self._periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                    phases=self._phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                    bases=self._base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
                     num_steps=num_steps,
                     delta_time=delta_time,
                 )
             elif callable(spacing):
                 listAngles_Wcsp_to_Wcs_ixyz[dim, :] = (
                     _functions.oscillating_customspaces(
-                        amps=self.ampAngles_Wcsp_to_Wcs_ixyz[dim],
-                        periods=self.periodAngles_Wcsp_to_Wcs_ixyz[dim],
-                        phases=self.phaseAngles_Wcsp_to_Wcs_ixyz[dim],
-                        bases=self.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[dim],
+                        amps=self._ampAngles_Wcsp_to_Wcs_ixyz[dim],
+                        periods=self._periodAngles_Wcsp_to_Wcs_ixyz[dim],
+                        phases=self._phaseAngles_Wcsp_to_Wcs_ixyz[dim],
+                        bases=self._base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[
+                            dim
+                        ],
                         num_steps=num_steps,
                         delta_time=delta_time,
                         custom_function=spacing,
@@ -382,19 +524,19 @@ class WingCrossSectionMovement:
         wing_cross_sections = []
 
         # Get the non changing WingCrossSectionAttributes.
-        this_airfoil = self.base_wing_cross_section.airfoil
-        this_num_spanwise_panels = self.base_wing_cross_section.num_spanwise_panels
-        this_chord = self.base_wing_cross_section.chord
+        this_airfoil = self._base_wing_cross_section.airfoil
+        this_num_spanwise_panels = self._base_wing_cross_section.num_spanwise_panels
+        this_chord = self._base_wing_cross_section.chord
         this_control_surface_symmetry_type = (
-            self.base_wing_cross_section.control_surface_symmetry_type
+            self._base_wing_cross_section.control_surface_symmetry_type
         )
         this_control_surface_hinge_point = (
-            self.base_wing_cross_section.control_surface_hinge_point
+            self._base_wing_cross_section.control_surface_hinge_point
         )
         this_control_surface_deflection = (
-            self.base_wing_cross_section.control_surface_deflection
+            self._base_wing_cross_section.control_surface_deflection
         )
-        this_spanwise_spacing = self.base_wing_cross_section.spanwise_spacing
+        this_spanwise_spacing = self._base_wing_cross_section.spanwise_spacing
 
         # Iterate through the time steps.
         for step in range(num_steps):
@@ -418,17 +560,3 @@ class WingCrossSectionMovement:
             wing_cross_sections.append(this_wing_cross_section)
 
         return wing_cross_sections
-
-    @property
-    def max_period(self) -> float:
-        """WingCrossSectionMovement's longest period of motion.
-
-        :return: The longest period in seconds. If the motion is static, this will be
-            0.0.
-        """
-        return float(
-            max(
-                np.max(self.periodLp_Wcsp_Lpp),
-                np.max(self.periodAngles_Wcsp_to_Wcs_ixyz),
-            )
-        )

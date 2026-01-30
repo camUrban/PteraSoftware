@@ -390,7 +390,7 @@ class Wing:
         # Store this Wing in memo to handle potential circular references.
         memo[id(self)] = new_wing
 
-        # Deepcopy the WingCrossSections into a new tuple.
+        # Deep copy the WingCrossSections into a new tuple.
         new_wing._wing_cross_sections = tuple(
             copy.deepcopy(wing_cross_section, memo)
             for wing_cross_section in self._wing_cross_sections
@@ -429,7 +429,7 @@ class Wing:
         new_wing._num_spanwise_panels = self._num_spanwise_panels
         new_wing._num_panels = self._num_panels
 
-        # Deepcopy the Panels array if it exists (directly to private attribute).
+        # Deep copy the Panels array if it exists (directly to private attribute).
         if self._panels is not None:
             new_wing._panels = np.empty_like(self._panels, dtype=object)
             for i in range(self._panels.shape[0]):

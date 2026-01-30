@@ -76,7 +76,7 @@ Requires Python 3.11, but active development is done in 3.13
   - `_parameter_validation.py`: Input validation functions
   - `_transformations.py`: Coordinate transformations and rotations
   - `convergence.py`: Convergence analysis tools
-  - `operating_point.py`: OperatingPoint and CoupledOperatingPoint classes
+  - `operating_point.py`: OperatingPoint class
   - `output.py`: Visualization and results processing
   - `problems.py`: SteadyProblem and UnsteadyProblem classes
   - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver

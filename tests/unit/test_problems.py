@@ -275,6 +275,9 @@ class TestUnsteadyProblem(unittest.TestCase):
         cls.cyclic_unsteady_problem = (
             problem_fixtures.make_cyclic_unsteady_problem_fixture()
         )
+        cls.multi_airplane_unsteady_problem = (
+            problem_fixtures.make_multi_airplane_unsteady_problem_fixture()
+        )
 
     def test_initialization_valid_parameters(self):
         """Test UnsteadyProblem initialization with valid parameters."""
@@ -365,14 +368,14 @@ class TestUnsteadyProblem(unittest.TestCase):
 
     def test_first_averaging_step_cyclic_movement(self):
         """Test first_averaging_step for cyclic Movement."""
-        # For cyclic Movement (max_period > 0), first_averaging_step should be
-        # calculated based on the max_period.
-        movement_max_period = self.cyclic_unsteady_problem.movement.max_period
+        # For cyclic Movement (lcm_period > 0), first_averaging_step should be
+        # calculated based on the lcm_period.
+        movement_lcm_period = self.cyclic_unsteady_problem.movement.lcm_period
         expected_first_averaging_step = max(
             0,
             math.floor(
                 self.cyclic_unsteady_problem.num_steps
-                - (movement_max_period / self.cyclic_unsteady_problem.delta_time)
+                - (movement_lcm_period / self.cyclic_unsteady_problem.delta_time)
             ),
         )
         self.assertEqual(
@@ -455,10 +458,10 @@ class TestUnsteadyProblem(unittest.TestCase):
             len(self.basic_unsteady_problem.finalRmsMomentCoefficients_W_CgP1), 0
         )
 
-    def test_steady_problems_list_initialization(self):
-        """Test that steady_problems list is initialized correctly."""
-        # steady_problems list should be initialized with correct length.
-        self.assertIsInstance(self.basic_unsteady_problem.steady_problems, list)
+    def test_steady_problems_tuple_initialization(self):
+        """Test that steady_problems tuple is initialized correctly."""
+        # steady_problems tuple should be initialized with correct length.
+        self.assertIsInstance(self.basic_unsteady_problem.steady_problems, tuple)
         self.assertEqual(
             len(self.basic_unsteady_problem.steady_problems),
             self.basic_unsteady_problem.num_steps,
@@ -488,6 +491,94 @@ class TestUnsteadyProblem(unittest.TestCase):
             self.assertIsInstance(
                 steady_problem.operating_point, ps.operating_point.OperatingPoint
             )
+
+    def test_only_final_results_accepts_numpy_bool(self):
+        """Test that only_final_results accepts numpy bool values."""
+        # Create a fresh movement fixture for this test.
+        movement = movement_fixtures.make_basic_movement_fixture()
+        unsteady_problem = ps.problems.UnsteadyProblem(
+            movement=movement,
+            only_final_results=np.bool_(True),
+        )
+        self.assertTrue(unsteady_problem.only_final_results)
+        self.assertIsInstance(unsteady_problem.only_final_results, bool)
+
+    def test_initialization_multiple_airplanes(self):
+        """Test UnsteadyProblem initialization with multiple Airplanes."""
+        # Test that UnsteadyProblem with multiple Airplanes initializes correctly.
+        self.assertIsInstance(
+            self.multi_airplane_unsteady_problem,
+            ps.problems.UnsteadyProblem,
+        )
+        # Verify that each SteadyProblem has multiple Airplanes.
+        for steady_problem in self.multi_airplane_unsteady_problem.steady_problems:
+            self.assertEqual(len(steady_problem.airplanes), 2)
+
+
+class TestUnsteadyProblemImmutability(unittest.TestCase):
+    """Tests for UnsteadyProblem attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.basic_unsteady_problem = (
+            problem_fixtures.make_basic_unsteady_problem_fixture()
+        )
+
+    def test_immutable_movement_property(self):
+        """Test that movement property is read only."""
+        new_movement = movement_fixtures.make_basic_movement_fixture()
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.movement = new_movement
+
+    def test_immutable_only_final_results_property(self):
+        """Test that only_final_results property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.only_final_results = True
+
+    def test_immutable_num_steps_property(self):
+        """Test that num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.num_steps = 100
+
+    def test_immutable_delta_time_property(self):
+        """Test that delta_time property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.delta_time = 0.1
+
+    def test_immutable_first_averaging_step_property(self):
+        """Test that first_averaging_step property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.first_averaging_step = 0
+
+    def test_immutable_first_results_step_property(self):
+        """Test that first_results_step property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.first_results_step = 0
+
+    def test_immutable_steady_problems_property(self):
+        """Test that steady_problems property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.steady_problems = ()
+
+    def test_steady_problems_tuple_immutability(self):
+        """Test that steady_problems tuple cannot be modified via append or other
+        methods.
+        """
+        # Tuples don't have append, so attempting to call it raises AttributeError.
+        with self.assertRaises(AttributeError):
+            self.basic_unsteady_problem.steady_problems.append(
+                problem_fixtures.make_basic_steady_problem_fixture()
+            )
+
+    def test_mutable_load_lists(self):
+        """Test that load lists remain mutable for solver population."""
+        # The load lists should be mutable so the solver can populate them.
+        self.basic_unsteady_problem.finalForces_W.append(np.array([1.0, 2.0, 3.0]))
+        self.assertEqual(len(self.basic_unsteady_problem.finalForces_W), 1)
+
+        # Clean up.
+        self.basic_unsteady_problem.finalForces_W.pop()
 
 
 if __name__ == "__main__":

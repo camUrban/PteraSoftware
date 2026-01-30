@@ -1,4 +1,4 @@
-"""This module contains a class to test WingMovements."""
+"""This module contains classes to test WingMovements."""
 
 import unittest
 
@@ -766,3 +766,420 @@ class TestWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wcs_movements,
                 rotationPointOffset_Gs_Ler=("a", "b", "c"),
             )
+
+    def test_all_periods_static_movement(self):
+        """Test that all_periods returns empty tuple for static WingMovement."""
+        wing_movement = self.static_wing_movement
+        self.assertEqual(wing_movement.all_periods, ())
+
+    def test_all_periods_Ler_only(self):
+        """Test that all_periods returns correct periods for Ler only movement."""
+        wing_movement = self.Ler_only_wing_movement
+        # periodLer_Gs_Cgs is (1.5, 1.5, 1.5), all non zero.
+        # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0).
+        # WingCrossSectionMovements are static (all zeros).
+        # Should return tuple with three 1.5 values.
+        self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
+
+    def test_all_periods_angles_only(self):
+        """Test that all_periods returns correct periods for angles only movement."""
+        wing_movement = self.angles_only_wing_movement
+        # periodLer_Gs_Cgs is (0.0, 0.0, 0.0).
+        # periodAngles_Gs_to_Wn_ixyz is (1.5, 1.5, 1.5), all non zero.
+        # WingCrossSectionMovements are static (all zeros).
+        # Should return tuple with three 1.5 values.
+        self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
+
+    def test_all_periods_mixed(self):
+        """Test that all_periods returns all non zero periods for mixed movement."""
+        wing_movement = self.multiple_periods_wing_movement
+        # periodLer_Gs_Cgs is (1.0, 2.0, 3.0).
+        # periodAngles_Gs_to_Wn_ixyz is (0.5, 1.5, 2.5).
+        # WingCrossSectionMovements include one with multiple periods.
+        # Should return tuple with all non zero values from WingCrossSectionMovements first,
+        # then WingMovement's own periods.
+        all_periods = wing_movement.all_periods
+
+        # Verify WingMovement's own periods are included.
+        self.assertIn(1.0, all_periods)
+        self.assertIn(2.0, all_periods)
+        self.assertIn(3.0, all_periods)
+        self.assertIn(0.5, all_periods)
+        self.assertIn(1.5, all_periods)
+        self.assertIn(2.5, all_periods)
+
+    def test_all_periods_contains_duplicates(self):
+        """Test that all_periods contains duplicate periods if they appear multiple
+        times.
+        """
+        wing_movement = self.basic_wing_movement
+        all_periods = wing_movement.all_periods
+
+        # Both periodLer_Gs_Cgs and periodAngles_Gs_to_Wn_ixyz are (2.0, 2.0, 2.0).
+        # This contributes six 2.0 values. Plus WingCrossSectionMovement periods.
+        # Count how many times 2.0 appears (should be at least 6 from WingMovement).
+        count_2_0 = all_periods.count(2.0)
+        self.assertGreaterEqual(count_2_0, 6)
+
+    def test_all_periods_partial_movement(self):
+        """Test all_periods with only some dimensions having non zero periods."""
+        wing_movement = self.sine_spacing_Ler_wing_movement
+        # periodLer_Gs_Cgs is (1.0, 0.0, 0.0), only first element is non zero.
+        # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0).
+        # WingCrossSectionMovements are static.
+        # Should return tuple with one 1.0 value.
+        self.assertEqual(wing_movement.all_periods, (1.0,))
+
+
+class TestWingMovementImmutability(unittest.TestCase):
+    """Tests for WingMovement attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.wing_movement = wing_movement_fixtures.make_basic_wing_movement_fixture()
+
+    def test_immutable_base_wing_property(self):
+        """Test that base_wing property is read only."""
+        new_wing = geometry_fixtures.make_type_1_wing_fixture()
+        with self.assertRaises(AttributeError):
+            self.wing_movement.base_wing = new_wing
+
+    def test_immutable_wing_cross_section_movements_property(self):
+        """Test that wing_cross_section_movements property is read only."""
+        new_movements = [
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture()
+        ]
+        with self.assertRaises(AttributeError):
+            self.wing_movement.wing_cross_section_movements = new_movements
+
+    def test_immutable_ampLer_Gs_Cgs_property(self):
+        """Test that ampLer_Gs_Cgs property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.ampLer_Gs_Cgs = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_ampLer_Gs_Cgs_array_read_only(self):
+        """Test that ampLer_Gs_Cgs array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.ampLer_Gs_Cgs[0] = 999.0
+
+    def test_immutable_periodLer_Gs_Cgs_property(self):
+        """Test that periodLer_Gs_Cgs property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.periodLer_Gs_Cgs = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_periodLer_Gs_Cgs_array_read_only(self):
+        """Test that periodLer_Gs_Cgs array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.periodLer_Gs_Cgs[0] = 999.0
+
+    def test_immutable_spacingLer_Gs_Cgs_property(self):
+        """Test that spacingLer_Gs_Cgs property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.spacingLer_Gs_Cgs = ("uniform", "uniform", "uniform")
+
+    def test_immutable_phaseLer_Gs_Cgs_property(self):
+        """Test that phaseLer_Gs_Cgs property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.phaseLer_Gs_Cgs = np.array([45.0, 45.0, 45.0])
+
+    def test_immutable_phaseLer_Gs_Cgs_array_read_only(self):
+        """Test that phaseLer_Gs_Cgs array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.phaseLer_Gs_Cgs[0] = 999.0
+
+    def test_immutable_ampAngles_Gs_to_Wn_ixyz_property(self):
+        """Test that ampAngles_Gs_to_Wn_ixyz property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.ampAngles_Gs_to_Wn_ixyz = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_ampAngles_Gs_to_Wn_ixyz_array_read_only(self):
+        """Test that ampAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.ampAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+    def test_immutable_periodAngles_Gs_to_Wn_ixyz_property(self):
+        """Test that periodAngles_Gs_to_Wn_ixyz property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.periodAngles_Gs_to_Wn_ixyz = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_periodAngles_Gs_to_Wn_ixyz_array_read_only(self):
+        """Test that periodAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.periodAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+    def test_immutable_spacingAngles_Gs_to_Wn_ixyz_property(self):
+        """Test that spacingAngles_Gs_to_Wn_ixyz property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.spacingAngles_Gs_to_Wn_ixyz = (
+                "uniform",
+                "uniform",
+                "uniform",
+            )
+
+    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_property(self):
+        """Test that phaseAngles_Gs_to_Wn_ixyz property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.phaseAngles_Gs_to_Wn_ixyz = np.array([45.0, 45.0, 45.0])
+
+    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_array_read_only(self):
+        """Test that phaseAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.phaseAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+    def test_immutable_rotationPointOffset_Gs_Ler_property(self):
+        """Test that rotationPointOffset_Gs_Ler property is read only."""
+        with self.assertRaises(AttributeError):
+            self.wing_movement.rotationPointOffset_Gs_Ler = np.array([1.0, 2.0, 3.0])
+
+    def test_immutable_rotationPointOffset_Gs_Ler_array_read_only(self):
+        """Test that rotationPointOffset_Gs_Ler array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.wing_movement.rotationPointOffset_Gs_Ler[0] = 999.0
+
+
+class TestWingMovementCaching(unittest.TestCase):
+    """Tests for WingMovement caching behavior."""
+
+    def setUp(self):
+        """Set up test fixtures for caching tests."""
+        self.wing_movement = wing_movement_fixtures.make_basic_wing_movement_fixture()
+
+    def test_all_periods_caching_returns_same_object(self):
+        """Test that repeated access to all_periods returns the same cached object."""
+        all_periods_1 = self.wing_movement.all_periods
+        all_periods_2 = self.wing_movement.all_periods
+        self.assertIs(all_periods_1, all_periods_2)
+
+    def test_max_period_caching_returns_same_value(self):
+        """Test that repeated access to max_period returns the same cached value."""
+        max_period_1 = self.wing_movement.max_period
+        max_period_2 = self.wing_movement.max_period
+        # Since floats are immutable, we check equality rather than identity.
+        self.assertEqual(max_period_1, max_period_2)
+
+
+class TestWingMovementDeepcopy(unittest.TestCase):
+    """Tests for WingMovement deepcopy behavior."""
+
+    def setUp(self):
+        """Set up test fixtures for deepcopy tests."""
+        self.wing_movement = wing_movement_fixtures.make_basic_wing_movement_fixture()
+
+    def test_deepcopy_returns_new_instance(self):
+        """Test that deepcopy returns a new WingMovement instance."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        self.assertIsInstance(copied, ps.movements.wing_movement.WingMovement)
+        self.assertIsNot(original, copied)
+
+    def test_deepcopy_preserves_attribute_values(self):
+        """Test that deepcopy preserves all attribute values."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        # Check numpy array attributes.
+        npt.assert_array_equal(copied.ampLer_Gs_Cgs, original.ampLer_Gs_Cgs)
+        npt.assert_array_equal(copied.periodLer_Gs_Cgs, original.periodLer_Gs_Cgs)
+        npt.assert_array_equal(copied.phaseLer_Gs_Cgs, original.phaseLer_Gs_Cgs)
+        npt.assert_array_equal(
+            copied.ampAngles_Gs_to_Wn_ixyz, original.ampAngles_Gs_to_Wn_ixyz
+        )
+        npt.assert_array_equal(
+            copied.periodAngles_Gs_to_Wn_ixyz, original.periodAngles_Gs_to_Wn_ixyz
+        )
+        npt.assert_array_equal(
+            copied.phaseAngles_Gs_to_Wn_ixyz, original.phaseAngles_Gs_to_Wn_ixyz
+        )
+        npt.assert_array_equal(
+            copied.rotationPointOffset_Gs_Ler, original.rotationPointOffset_Gs_Ler
+        )
+
+        # Check tuple attributes.
+        self.assertEqual(copied.spacingLer_Gs_Cgs, original.spacingLer_Gs_Cgs)
+        self.assertEqual(
+            copied.spacingAngles_Gs_to_Wn_ixyz,
+            original.spacingAngles_Gs_to_Wn_ixyz,
+        )
+
+    def test_deepcopy_numpy_arrays_are_independent(self):
+        """Test that deepcopied numpy arrays are independent objects."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        # Verify arrays are different objects.
+        self.assertIsNot(copied.ampLer_Gs_Cgs, original.ampLer_Gs_Cgs)
+        self.assertIsNot(copied.periodLer_Gs_Cgs, original.periodLer_Gs_Cgs)
+        self.assertIsNot(copied.phaseLer_Gs_Cgs, original.phaseLer_Gs_Cgs)
+        self.assertIsNot(
+            copied.ampAngles_Gs_to_Wn_ixyz, original.ampAngles_Gs_to_Wn_ixyz
+        )
+        self.assertIsNot(
+            copied.periodAngles_Gs_to_Wn_ixyz, original.periodAngles_Gs_to_Wn_ixyz
+        )
+        self.assertIsNot(
+            copied.phaseAngles_Gs_to_Wn_ixyz, original.phaseAngles_Gs_to_Wn_ixyz
+        )
+        self.assertIsNot(
+            copied.rotationPointOffset_Gs_Ler, original.rotationPointOffset_Gs_Ler
+        )
+
+    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self):
+        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        # Verify that attempting to modify copied arrays raises ValueError.
+        with self.assertRaises(ValueError):
+            copied.ampLer_Gs_Cgs[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.periodLer_Gs_Cgs[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.phaseLer_Gs_Cgs[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.ampAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.periodAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.phaseAngles_Gs_to_Wn_ixyz[0] = 999.0
+
+        with self.assertRaises(ValueError):
+            copied.rotationPointOffset_Gs_Ler[0] = 999.0
+
+    def test_deepcopy_base_wing_is_independent(self):
+        """Test that deepcopied base_wing is an independent object."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        # Verify base_wing is a different object.
+        self.assertIsNot(copied.base_wing, original.base_wing)
+
+        # Verify attributes are equal.
+        self.assertEqual(copied.base_wing.name, original.base_wing.name)
+        npt.assert_array_equal(
+            copied.base_wing.Ler_Gs_Cgs, original.base_wing.Ler_Gs_Cgs
+        )
+        npt.assert_array_equal(
+            copied.base_wing.angles_Gs_to_Wn_ixyz,
+            original.base_wing.angles_Gs_to_Wn_ixyz,
+        )
+
+    def test_deepcopy_wing_cross_section_movements_are_independent(self):
+        """Test that deepcopied wing_cross_section_movements are independent objects."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        # Verify wing_cross_section_movements tuple is different.
+        self.assertIsNot(
+            copied.wing_cross_section_movements, original.wing_cross_section_movements
+        )
+
+        # Verify each WingCrossSectionMovement is a different object.
+        for i in range(len(original.wing_cross_section_movements)):
+            self.assertIsNot(
+                copied.wing_cross_section_movements[i],
+                original.wing_cross_section_movements[i],
+            )
+
+    def test_deepcopy_resets_caches_to_none(self):
+        """Test that deepcopy resets cached derived properties to None."""
+        import copy
+
+        original = self.wing_movement
+
+        # Access cached properties to populate caches.
+        _ = original.all_periods
+        _ = original.max_period
+
+        # Verify original caches are populated.
+        self.assertIsNotNone(original._all_periods)
+        self.assertIsNotNone(original._max_period)
+
+        # Deepcopy the object.
+        copied = copy.deepcopy(original)
+
+        # Verify copied caches are reset to None.
+        self.assertIsNone(copied._all_periods)
+        self.assertIsNone(copied._max_period)
+
+    def test_deepcopy_cached_properties_can_be_recomputed(self):
+        """Test that cached properties work correctly after deepcopy."""
+        import copy
+
+        original = self.wing_movement
+
+        # Get original cached values.
+        original_all_periods = original.all_periods
+        original_max_period = original.max_period
+
+        # Deepcopy the object.
+        copied = copy.deepcopy(original)
+
+        # Verify cached properties can be computed and match original.
+        self.assertEqual(copied.all_periods, original_all_periods)
+        self.assertEqual(copied.max_period, original_max_period)
+
+    def test_deepcopy_generate_wings_produces_same_results(self):
+        """Test that generate_wings produces same results after deepcopy."""
+        import copy
+
+        original = self.wing_movement
+        copied = copy.deepcopy(original)
+
+        num_steps = 50
+        delta_time = 0.01
+
+        original_wings = original.generate_wings(
+            num_steps=num_steps, delta_time=delta_time
+        )
+        copied_wings = copied.generate_wings(num_steps=num_steps, delta_time=delta_time)
+
+        # Verify same number of Wings.
+        self.assertEqual(len(copied_wings), len(original_wings))
+
+        # Verify each Wing has matching attributes.
+        for original_wing, copied_wing in zip(original_wings, copied_wings):
+            npt.assert_array_equal(copied_wing.Ler_Gs_Cgs, original_wing.Ler_Gs_Cgs)
+            npt.assert_array_equal(
+                copied_wing.angles_Gs_to_Wn_ixyz, original_wing.angles_Gs_to_Wn_ixyz
+            )
+            self.assertEqual(copied_wing.name, original_wing.name)
+
+    def test_deepcopy_handles_memo_correctly(self):
+        """Test that deepcopy handles the memo dict correctly for circular references."""
+        import copy
+
+        original = self.wing_movement
+        memo = {}
+
+        # First deepcopy.
+        copied1 = copy.deepcopy(original, memo)
+
+        # Verify original is in memo.
+        self.assertIn(id(original), memo)
+        self.assertIs(memo[id(original)], copied1)
+
+        # Second deepcopy with same memo should return same object.
+        copied2 = copy.deepcopy(original, memo)
+        self.assertIs(copied1, copied2)
+
+
+if __name__ == "__main__":
+    unittest.main()

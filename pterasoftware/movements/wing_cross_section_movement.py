@@ -281,7 +281,7 @@ class WingCrossSectionMovement:
     def __deepcopy__(self, memo: dict) -> WingCrossSectionMovement:
         """Creates a deep copy of this WingCrossSectionMovement.
 
-        All attributes are copied. The base WingCrossSection is deepcopied to ensure
+        All attributes are copied. The base WingCrossSection is deep copied to ensure
         independence. Numpy arrays are copied and set to read only to preserve
         immutability. Cache variables are reset to None.
 

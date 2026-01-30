@@ -213,7 +213,7 @@ class Airplane:
         """Creates a deep copy of this Airplane, preserving mesh geometry but resetting
         solver state.
 
-        The copy preserves: (1) Wings tuple (each Wing is deepcopied, preserving mesh
+        The copy preserves: (1) Wings tuple (each Wing is deep copied, preserving mesh
         and Panels) (2) Airplane parameters (name, Cg_GP1_CgP1, weight, reference
         dimensions), and (3) cached derived properties (num_panels,
         T_pas_G_Cg_to_GP1_CgP1).

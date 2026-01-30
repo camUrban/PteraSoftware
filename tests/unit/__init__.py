@@ -55,7 +55,7 @@ This package contains the following modules:
     test_wing_cross_section_movement.py: This module contains classes to test
     WingCrossSectionMovements.
 
-    test_wing_movement.py: This module contains a class to test WingMovements.
+    test_wing_movement.py: This module contains classes to test WingMovements.
 """
 
 import tests.unit.test_aerodynamics_functions

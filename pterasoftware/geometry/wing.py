@@ -368,9 +368,9 @@ class Wing:
         state.
 
         The copy preserves: (1) wing parameters (name, position, angles, symmetry
-        settings, panel counts), (2) WingCrossSections (deepcopied), (3) mesh metadata
+        settings, panel counts), (2) WingCrossSections (deep copied), (3) mesh metadata
         (symmetry_type, num_spanwise_panels, num_panels), (4) Panels array (each Panel
-        is deepcopied), and (5) caches for properties derived from immutable attributes
+        is deep copied), and (5) caches for properties derived from immutable attributes
         (transformation matrices, basis vectors, children transformation matrices).
 
         The copy resets: (1) wake state (wake_ring_vortices and gridWrvp_GP1_CgP1 are

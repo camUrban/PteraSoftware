@@ -289,7 +289,7 @@ class WingCrossSection:
     def __deepcopy__(self, memo: dict) -> WingCrossSection:
         """Creates a deep copy of this WingCrossSection.
 
-        All attributes are copied. The Airfoil is deepcopied to ensure independence.
+        All attributes are copied. The Airfoil is deep copied to ensure independence.
 
         :param memo: A dict used by the copy module to track already copied objects and
             avoid infinite recursion.

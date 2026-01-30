@@ -1,4 +1,4 @@
-# OperatingPoint, Movement, and Problem Class Plan
+# OperatingPoint, Movement, and Problem Class Plan - IMPLEMENTED
 
 This document describes the planned refactoring of class attributes to use a consistent
 pattern of immutability and lazy caching across OperatingPoint, the movement classes,

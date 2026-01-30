@@ -285,16 +285,16 @@ during the solve.
 
 ## Summary of Changes
 
-| Class                        | Changes                                                                                                               |
-|------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| **OperatingPoint**           | Convert 6 scalars to read only properties; add lazy caching                                                           |
-| **SteadyProblem**            | Convert to read only properties; convert `airplanes` list to tuple; add lazy caching                                  |
-| **OperatingPointMovement**   | Convert all attrs to read only properties; add lazy caching                                                           |
-| **WingCrossSectionMovement** | Convert to read only properties; set `flags.writeable = False` on numpy arrays; add lazy caching                      |
-| **WingMovement**             | Convert to read only; tuple for `wing_cross_section_movements`; `flags.writeable = False`; add lazy caching           |
-| **AirplaneMovement**         | Convert to read only; tuple for `wing_movements`; `flags.writeable = False`; add lazy caching                         |
-| **Movement**                 | Convert to read only; tuples for all collections including generated `airplanes`/`operating_points`; add lazy caching |
-| **UnsteadyProblem**          | Convert config attrs to read only; convert `steady_problems` to tuple; keep result lists mutable                      |
+| Class                        | Changes                                                                                                                            |
+|------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| **OperatingPoint**           | Convert 6 scalars to read only properties; add lazy caching                                                                        |
+| **SteadyProblem**            | Convert to read only properties; convert `airplanes` list to tuple; add lazy caching                                               |
+| **OperatingPointMovement**   | Convert all attrs to read only properties; add lazy caching                                                                        |
+| **WingCrossSectionMovement** | Convert to read only properties; set `flags.writeable = False` on numpy arrays; add lazy caching; add `__deepcopy__`               |
+| **WingMovement**             | Convert to read only; tuple for `wing_cross_section_movements`; `flags.writeable = False`; add lazy caching; add `__deepcopy__`    |
+| **AirplaneMovement**         | Convert to read only; tuple for `wing_movements`; `flags.writeable = False`; add lazy caching; add `__deepcopy__`                  |
+| **Movement**                 | Convert to read only; tuples for all collections including generated `airplanes`/`operating_points`; add lazy caching              |
+| **UnsteadyProblem**          | Convert config attrs to read only; convert `steady_problems` to tuple; keep result lists mutable                                   |
 
 ---
 
@@ -325,6 +325,7 @@ during the solve.
    - Add lazy caching
    - Initialize cache variables to `None` in `__init__`
    - Add section header comments
+   - Add `__deepcopy__` method that copies numpy arrays and sets them read only
 
 5. **WingMovement class**:
    - Convert `wing_cross_section_movements` list to tuple
@@ -333,6 +334,7 @@ during the solve.
    - Add lazy caching
    - Initialize cache variables to `None` in `__init__`
    - Add section header comments
+   - Add `__deepcopy__` method that copies numpy arrays and sets them read only
 
 6. **AirplaneMovement class**:
    - Convert `wing_movements` list to tuple
@@ -341,6 +343,7 @@ during the solve.
    - Add lazy caching
    - Initialize cache variables to `None` in `__init__`
    - Add section header comments
+   - Add `__deepcopy__` method that copies numpy arrays and sets them read only
 
 7. **Movement class**:
    - Convert `airplane_movements` list to tuple
@@ -373,23 +376,54 @@ during the solve.
      `AttributeError`)
    - Verify `generate_*` methods continue to work correctly
    - Verify solver can still populate UnsteadyProblem result lists
-   - Verify `copy.deepcopy()` works correctly on Movement classes after refactoring
-     (used by `_compute_wake_area_mismatch` in `movement.py`)
+   - Verify `copy.deepcopy()` works correctly on Movement classes:
+     - Deepcopied numpy arrays remain read only (`flags.writeable == False`)
+     - Deepcopied objects are independent (modifying copy doesn't affect original)
+     - Cached derived properties are reset to `None` in the copy
+     - Used by `_compute_wake_area_mismatch` in `movement.py`
 
 ---
 
 ## Special Considerations
 
-### No Deepcopy Methods Needed
+### Deepcopy Methods for Movement Classes with Numpy Arrays
 
-Unlike the geometry classes, these classes do not require custom `__deepcopy__` methods:
+The default `copy.deepcopy()` behavior does **not** preserve the `writeable = False` flag
+on numpy arrays. When deepcopying an array, the resulting copy has `writeable = True` by
+default. To maintain immutability invariants through deepcopy operations, classes with
+immutable numpy array attributes require custom `__deepcopy__` methods.
 
-- **OperatingPoint**: New instances are created by `generate_operating_points()` at each
-  time step rather than being copied.
-- **Movement classes**: These are configuration objects that generate new geometry
-  instances via their `generate_*` methods. They are not copied during simulation.
-- **Problem classes**: These hold references to geometry that already has proper
-  deepcopy support from previous refactoring.
+**Classes that need custom `__deepcopy__` methods:**
+
+- **WingCrossSectionMovement**: Has 6 numpy arrays (`ampLp_Wcsp_Lpp`, `periodLp_Wcsp_Lpp`,
+  `phaseLp_Wcsp_Lpp`, `ampAngles_Wcsp_to_Wcs_ixyz`, `periodAngles_Wcsp_to_Wcs_ixyz`,
+  `phaseAngles_Wcsp_to_Wcs_ixyz`)
+- **WingMovement**: Has 7 numpy arrays (`ampLer_Gs_Cgs`, `periodLer_Gs_Cgs`,
+  `phaseLer_Gs_Cgs`, `ampAngles_Gs_to_Wn_ixyz`, `periodAngles_Gs_to_Wn_ixyz`,
+  `phaseAngles_Gs_to_Wn_ixyz`, `rotationPointOffset_Gs_Ler`)
+- **AirplaneMovement**: Has 3 numpy arrays (`ampCg_GP1_CgP1`, `periodCg_GP1_CgP1`,
+  `phaseCg_GP1_CgP1`)
+
+**Classes that do NOT need custom `__deepcopy__` methods:**
+
+- **OperatingPoint**: Only has `float` scalar immutable attributes. Derived cached
+  properties (transformation matrices) are numpy arrays but can be recomputed.
+- **OperatingPointMovement**: Only has `float`, `str | Callable`, and object reference
+  attributes.
+- **Movement**: Only has `tuple`, `float`, `int`, and object reference attributes.
+- **SteadyProblem**: Only has `tuple` and object reference attributes.
+- **UnsteadyProblem**: Only has scalars, `tuple`, and mutable `list` attributes.
+
+The `__deepcopy__` implementation pattern follows the geometry classes (see
+`WingCrossSection.__deepcopy__` for reference):
+
+1. Create new instance via `object.__new__()` to skip `__init__` validation
+2. Store in `memo` dict to handle circular references
+3. Copy simple immutable attributes directly
+4. Deepcopy object references (e.g., `base_wing_cross_section`) with memo
+5. Copy tuples directly (they are immutable)
+6. Copy numpy arrays via `.copy()` and set `flags.writeable = False`
+7. Initialize cache variables to `None` (caches will be recomputed on access)
 
 ### Solver Result Lists
 
@@ -426,12 +460,19 @@ are computed once when the problem is initialized.
 ### Deepcopy Compatibility
 
 The `_compute_wake_area_mismatch` function in `movement.py` uses `copy.deepcopy()` on
-`AirplaneMovement` and `OperatingPointMovement` objects. After refactoring to use tuples
-and read only properties, `deepcopy` should continue to work correctly because:
+`AirplaneMovement` and `OperatingPointMovement` objects. With the custom `__deepcopy__`
+methods implemented for movement classes containing numpy arrays, deepcopy will correctly
+preserve immutability:
 
-- The default `deepcopy` behavior recursively copies referenced objects
+- `AirplaneMovement.__deepcopy__` copies its numpy arrays and sets them read only
+- `WingMovement.__deepcopy__` (called recursively) does the same for its arrays
+- `WingCrossSectionMovement.__deepcopy__` (called recursively) does the same for its
+  arrays
+- `OperatingPointMovement` does not need a custom `__deepcopy__` as it has no numpy arrays
 - The geometry objects (Airplane, Wing, etc.) already have proper `__deepcopy__`
   implementations from previous refactoring
-- Tuples and immutable scalars are handled correctly by default `deepcopy`
 
-A test case should be added to verify this behavior after refactoring.
+Test cases should verify:
+1. Deepcopied movement objects maintain read only numpy arrays
+2. Deepcopied objects are independent (modifying one doesn't affect the other)
+3. Cached derived properties are reset to `None` in the copy

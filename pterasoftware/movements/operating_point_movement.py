@@ -25,10 +25,10 @@ class OperatingPointMovement:
 
     **Contains the following methods:**
 
+    max_period: OperatingPointMovement's longest period of motion.
+
     generate_operating_points: Creates the OperatingPoint at each time step, and returns
     them in a list.
-
-    max_period: OperatingPointMovement's longest period of motion.
     """
 
     def __init__(
@@ -70,20 +70,21 @@ class OperatingPointMovement:
             zero if not. The units are in degrees. The default is 0.0.
         :return: None
         """
+        # Validate and store immutable attributes.
         if not isinstance(base_operating_point, operating_point_mod.OperatingPoint):
             raise TypeError("base_operating_point must be an OperatingPoint")
-        self.base_operating_point = base_operating_point
+        self._base_operating_point = base_operating_point
 
-        self.ampVCg__E = _parameter_validation.number_in_range_return_float(
+        self._ampVCg__E = _parameter_validation.number_in_range_return_float(
             ampVCg__E, "ampVCg__E", min_val=0.0, min_inclusive=True
         )
 
         periodVCg__E = _parameter_validation.number_in_range_return_float(
             periodVCg__E, "periodVCg__E", min_val=0.0, min_inclusive=True
         )
-        if self.ampVCg__E == 0 and periodVCg__E != 0:
+        if self._ampVCg__E == 0 and periodVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
-        self.periodVCg__E = periodVCg__E
+        self._periodVCg__E = periodVCg__E
 
         if isinstance(spacingVCg__E, str):
             if spacingVCg__E not in ["sine", "uniform"]:
@@ -96,15 +97,53 @@ class OperatingPointMovement:
                 f"spacingVCg__E must be 'sine', 'uniform', or a callable, got "
                 f"{type(spacingVCg__E).__name__}."
             )
-        self.spacingVCg__E = spacingVCg__E
+        self._spacingVCg__E = spacingVCg__E
 
         phaseVCg__E = _parameter_validation.number_in_range_return_float(
             phaseVCg__E, "phaseVCg__E", -180.0, False, 180.0, True
         )
-        if self.ampVCg__E == 0 and phaseVCg__E != 0:
+        if self._ampVCg__E == 0 and phaseVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
-        self.phaseVCg__E = phaseVCg__E
+        self._phaseVCg__E = phaseVCg__E
 
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._max_period: float | None = None
+
+    # --- Immutable: read only properties ---
+    @property
+    def base_operating_point(self) -> operating_point_mod.OperatingPoint:
+        return self._base_operating_point
+
+    @property
+    def ampVCg__E(self) -> float:
+        return self._ampVCg__E
+
+    @property
+    def periodVCg__E(self) -> float:
+        return self._periodVCg__E
+
+    @property
+    def spacingVCg__E(self) -> str | Callable[[np.ndarray], np.ndarray]:
+        return self._spacingVCg__E
+
+    @property
+    def phaseVCg__E(self) -> float:
+        return self._phaseVCg__E
+
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def max_period(self) -> float:
+        """OperatingPointMovement's longest period of motion.
+
+        :return: The longest period in seconds. If the motion is static, this will be
+            0.0.
+        """
+        if self._max_period is None:
+            self._max_period = self._periodVCg__E
+        return self._max_period
+
+    # --- Other methods ---
     def generate_operating_points(
         self, num_steps: int, delta_time: float | int
     ) -> list[operating_point_mod.OperatingPoint]:
@@ -129,46 +168,46 @@ class OperatingPointMovement:
         )
 
         # Generate oscillating values for VCg__E.
-        if self.spacingVCg__E == "sine":
+        if self._spacingVCg__E == "sine":
             listVCg__E = _functions.oscillating_sinspaces(
-                amps=self.ampVCg__E,
-                periods=self.periodVCg__E,
-                phases=self.phaseVCg__E,
-                bases=self.base_operating_point.vCg__E,
+                amps=self._ampVCg__E,
+                periods=self._periodVCg__E,
+                phases=self._phaseVCg__E,
+                bases=self._base_operating_point.vCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        elif self.spacingVCg__E == "uniform":
+        elif self._spacingVCg__E == "uniform":
             listVCg__E = _functions.oscillating_linspaces(
-                amps=self.ampVCg__E,
-                periods=self.periodVCg__E,
-                phases=self.phaseVCg__E,
-                bases=self.base_operating_point.vCg__E,
+                amps=self._ampVCg__E,
+                periods=self._periodVCg__E,
+                phases=self._phaseVCg__E,
+                bases=self._base_operating_point.vCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
             )
-        elif callable(self.spacingVCg__E):
+        elif callable(self._spacingVCg__E):
             listVCg__E = _functions.oscillating_customspaces(
-                amps=self.ampVCg__E,
-                periods=self.periodVCg__E,
-                phases=self.phaseVCg__E,
-                bases=self.base_operating_point.vCg__E,
+                amps=self._ampVCg__E,
+                periods=self._periodVCg__E,
+                phases=self._phaseVCg__E,
+                bases=self._base_operating_point.vCg__E,
                 num_steps=num_steps,
                 delta_time=delta_time,
-                custom_function=self.spacingVCg__E,
+                custom_function=self._spacingVCg__E,
             )
         else:
-            raise ValueError(f"Invalid spacing value: {self.spacingVCg__E}")
+            raise ValueError(f"Invalid spacing value: {self._spacingVCg__E}")
 
         # Create an empty list to hold each time step's OperatingPoint.
         operating_points = []
 
         # Get the non changing OperatingPoint attributes.
-        this_rho = self.base_operating_point.rho
-        this_alpha = self.base_operating_point.alpha
-        this_beta = self.base_operating_point.beta
-        thisExternalFX_W = self.base_operating_point.externalFX_W
-        this_nu = self.base_operating_point.nu
+        this_rho = self._base_operating_point.rho
+        this_alpha = self._base_operating_point.alpha
+        this_beta = self._base_operating_point.beta
+        thisExternalFX_W = self._base_operating_point.externalFX_W
+        this_nu = self._base_operating_point.nu
 
         # Iterate through the time steps.
         for step in range(num_steps):
@@ -188,12 +227,3 @@ class OperatingPointMovement:
             operating_points.append(this_operating_point)
 
         return operating_points
-
-    @property
-    def max_period(self) -> float:
-        """OperatingPointMovement's longest period of motion.
-
-        :return: The longest period in seconds. If the motion is static, this will be
-            0.0.
-        """
-        return self.periodVCg__E

@@ -24,7 +24,7 @@ Select the option that best describes the size and impact of your change:
 
 # Checklist
 
-- [ ] I have created or claimed an issue for this work as described in [Contributing Code](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md#contributing-code).
+- [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
 - [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
 - [ ] All calculations use S.I. units.
 - [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).

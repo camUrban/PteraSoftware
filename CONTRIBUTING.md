@@ -65,7 +65,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
      - If you want to work on one, check that no one else has already commented claiming it. If unclaimed, comment on the issue to claim it and a maintainer will then "assign" the issue to you. 
      - If you want to work on a claimed issue that hasn't been updated in a while, write a comment asking if the user who originally claimed it is still actively working on it.
    - If you have your own idea, search the issues to ensure it hasn't already been proposed.  
-     - If you can't find anything, open a new issue describing your change and state that you will be implementing it.
+     - If you can't find anything, you could open a new issue describing your change and state that you will be implementing it. This step isn't strictly required, but it is recommended for first-time contributors.
 
    #### Coordination on In-Progress and Draft Work
 

@@ -441,7 +441,7 @@ class WingMovement:
             static, this will be an empty tuple.
         """
         if self._all_periods is None:
-            periods = []
+            periods: list[float] = []
 
             # Collect all periods from WingCrossSectionMovements.
             for wing_cross_section_movement in self._wing_cross_section_movements:

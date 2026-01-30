@@ -74,7 +74,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         first_steady_problem: problems.SteadyProblem = self.steady_problems[0]
 
-        self.current_airplanes: list[geometry.airplane.Airplane] = []
+        self.current_airplanes: tuple[geometry.airplane.Airplane, ...] = ()
         self.current_operating_point: operating_point.OperatingPoint = (
             first_steady_problem.operating_point
         )

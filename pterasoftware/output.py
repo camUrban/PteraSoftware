@@ -1218,12 +1218,12 @@ def print_results(
 
 # TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
-    airplanes: list[geometry.airplane.Airplane],
+    airplanes: tuple[geometry.airplane.Airplane, ...],
 ) -> pv.PolyData:
     """Returns a PolyData representation of the Wings' Panels' surfaces associated with
-    all the Airplanes in a list of Airplanes.
+    all the Airplanes in a tuple of Airplanes.
 
-    :param airplanes: The list of Airplanes whose Wings' Panels' surfaces will be
+    :param airplanes: The tuple of Airplanes whose Wings' Panels' surfaces will be
         returned.
     :return: A PolyData representation of the Airplanes' Wings' Panels' surfaces.
     """
@@ -1342,14 +1342,14 @@ def _get_wake_ring_vortex_surfaces(
 
 # TEST: Consider adding unit tests for this function.
 def _get_scalars(
-    airplanes: list[geometry.airplane.Airplane],
+    airplanes: tuple[geometry.airplane.Airplane, ...],
     scalar_type: str,
     qInf__E: float,
 ) -> np.ndarray:
     """Returns the load coefficient values from a SteadyProblem's Airplanes' Wings'
     Panels.
 
-    :param airplanes: The list of Airplanes with the scalars to return.
+    :param airplanes: The tuple of Airplanes with the scalars to return.
     :param scalar_type: Determines which load coefficient to return as scalars. Can be
         "induced drag", "side force", or "lift", which respectively use each Panel's
         induced drag, side force, and lift coefficient.

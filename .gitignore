@@ -153,3 +153,6 @@ Draw.webp
 # This folder contains documentation files that shouldn't be uploaded.
 /docs/katz_plotkin_13_12/
 /docs/lambert_2015_2_3__2_4/
+
+# This folder contains built documentation files that shouldn't be uploaded.
+/docs/website/_build/

@@ -1,0 +1,612 @@
+/* ==========================================================================
+   Ptera Software - Custom Furo Theme
+   Brand Colors: Red #E62129, Black #000000, Gray #EEEEEE
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Google Fonts - Rajdhani for headings (geometric, technical feel like BankGothic)
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* --------------------------------------------------------------------------
+   CSS Custom Properties (Light Mode)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand Colors */
+  --ptera-red: #E62129;
+  --ptera-red-hover: #c91b22;
+  --ptera-red-light: #fef2f2;
+  --ptera-black: #000000;
+  --ptera-gray: #EEEEEE;
+  --ptera-gray-dark: #6b7280;
+
+  /* Typography */
+  --font-stack-headings: 'Rajdhani', system-ui, sans-serif;
+  --font-stack-body: 'Source Sans 3', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-stack-code: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Wider sidebars */
+  --sidebar-width: 320px;
+  --sidebar-secondary-width: 300px;
+}
+
+body {
+  /* Override Furo's default colors */
+  --color-brand-primary: var(--ptera-red);
+  --color-brand-content: var(--ptera-red);
+
+  /* Links */
+  --color-link: var(--ptera-red);
+  --color-link-underline: transparent;
+  --color-link--hover: var(--ptera-red-hover);
+  --color-link-underline--hover: var(--ptera-red-hover);
+
+  /* Sidebar */
+  --color-sidebar-brand-text: var(--ptera-black);
+  --color-sidebar-link-text--top-level: #1f2937;
+  --color-sidebar-item-background--hover: var(--ptera-red-light);
+  --color-sidebar-item-background--current: var(--ptera-red-light);
+  --color-sidebar-item-expander-background--hover: var(--ptera-red-light);
+
+  /* Backgrounds */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #fafafa;
+  --color-background-hover: var(--ptera-gray);
+
+  /* Highlighted text / admonitions */
+  --color-highlighted-background: var(--ptera-red-light);
+  --color-highlighted-text: var(--ptera-red);
+
+  /* API elements */
+  --color-api-name: var(--ptera-red);
+  --color-api-pre-name: var(--ptera-red);
+
+  /* Code blocks */
+  --color-code-background: #f8f8f8;
+  --color-code-foreground: #1f2937;
+  --color-inline-code-background: #f3f4f6;
+
+  /* Header link on hover */
+  --color-header-text: var(--ptera-red);
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode
+   -------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) {
+    --color-brand-primary: var(--ptera-red);
+    --color-brand-content: var(--ptera-red);
+
+    /* Links */
+    --color-link: #f87171;
+    --color-link--hover: var(--ptera-red);
+
+    /* Sidebar */
+    --color-sidebar-brand-text: #f9fafb;
+    --color-sidebar-link-text--top-level: #e5e7eb;
+    --color-sidebar-item-background--hover: rgba(230, 33, 41, 0.15);
+    --color-sidebar-item-background--current: rgba(230, 33, 41, 0.2);
+
+    /* Backgrounds */
+    --color-background-primary: #0f0f0f;
+    --color-background-secondary: #1a1a1a;
+    --color-background-hover: #262626;
+
+    /* Highlighted */
+    --color-highlighted-background: rgba(230, 33, 41, 0.15);
+    --color-highlighted-text: #f87171;
+
+    /* Code */
+    --color-code-background: #1e1e1e;
+    --color-code-foreground: #e5e7eb;
+    --color-inline-code-background: #262626;
+
+    /* Text */
+    --color-foreground-primary: #f3f4f6;
+    --color-foreground-secondary: #d1d5db;
+    --color-foreground-muted: #9ca3af;
+  }
+}
+
+body[data-theme="dark"] {
+  --color-brand-primary: var(--ptera-red);
+  --color-brand-content: var(--ptera-red);
+
+  /* Links */
+  --color-link: #f87171;
+  --color-link--hover: var(--ptera-red);
+
+  /* Sidebar */
+  --color-sidebar-brand-text: #f9fafb;
+  --color-sidebar-link-text--top-level: #e5e7eb;
+  --color-sidebar-item-background--hover: rgba(230, 33, 41, 0.15);
+  --color-sidebar-item-background--current: rgba(230, 33, 41, 0.2);
+
+  /* Backgrounds */
+  --color-background-primary: #0f0f0f;
+  --color-background-secondary: #1a1a1a;
+  --color-background-hover: #262626;
+
+  /* Highlighted */
+  --color-highlighted-background: rgba(230, 33, 41, 0.15);
+  --color-highlighted-text: #f87171;
+
+  /* Code */
+  --color-code-background: #1e1e1e;
+  --color-code-foreground: #e5e7eb;
+  --color-inline-code-background: #262626;
+
+  /* Text */
+  --color-foreground-primary: #f3f4f6;
+  --color-foreground-secondary: #d1d5db;
+  --color-foreground-muted: #9ca3af;
+}
+
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+body {
+  font-family: var(--font-stack-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings with brand-inspired font */
+h1, h2, h3, h4, h5, h6,
+.sidebar-brand-text,
+article h1,
+article h2,
+article h3,
+article h4 {
+  font-family: var(--font-stack-headings);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+h1, article h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* API reference module headings (multi-line with periods) */
+h1.api-module-heading {
+  font-size: 2.1rem;
+}
+
+h2, article h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-top: 2.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--ptera-red);
+}
+
+h3, article h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ptera-gray-dark);
+}
+
+body[data-theme="dark"] h3,
+body[data-theme="dark"] article h3 {
+  color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) h3,
+  body:not([data-theme="light"]) article h3 {
+    color: #9ca3af;
+  }
+}
+
+/* Sidebar brand text styling */
+.sidebar-brand-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar Enhancements
+   -------------------------------------------------------------------------- */
+
+/* Force wider sidebars */
+.sidebar-drawer,
+.sidebar-container,
+aside.sidebar-drawer,
+.sidebar-scroll {
+  width: 470px !important;
+  min-width: 470px !important;
+}
+
+.toc-drawer {
+  width: 540px !important;
+}
+
+/* Target Furo's CSS variable at multiple levels */
+.sidebar-drawer {
+  --sidebar-width: 470px;
+}
+
+/* Adjust content area to accommodate wider sidebars */
+@media (min-width: 97em) {
+  .sidebar-drawer,
+  .sidebar-container,
+  aside.sidebar-drawer {
+    width: 470px !important;
+    min-width: 470px !important;
+  }
+  .toc-drawer {
+    width: 540px !important;
+  }
+}
+
+.sidebar-logo {
+  max-width: 180px;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.02);
+}
+
+.sidebar-tree .current > .reference {
+  font-weight: 600;
+  color: var(--ptera-red) !important;
+}
+
+/* Smoother hover transitions */
+.sidebar-tree a {
+  transition: color 0.15s ease, background-color 0.15s ease;
+  border-radius: 4px;
+}
+
+/* Caption styling in sidebar */
+.sidebar-tree .caption {
+  font-family: var(--font-stack-headings);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--ptera-gray-dark);
+  margin-top: 1.5rem;
+}
+
+/* GitHub link in sidebar */
+.sidebar-github {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-background-hover);
+  margin-top: 1rem !important;
+}
+
+.sidebar-github a {
+  font-family: var(--font-stack-headings);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--ptera-gray-dark);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sidebar-github a:hover {
+  color: var(--ptera-red);
+}
+
+/* --------------------------------------------------------------------------
+   Content Area
+   -------------------------------------------------------------------------- */
+
+/* Article container max-width for readability */
+.article-container {
+  max-width: 52rem;
+}
+
+/* Paragraph spacing */
+article p {
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+/* List styling */
+article ul, article ol {
+  line-height: 1.75;
+}
+
+article li {
+  margin-bottom: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Links
+   -------------------------------------------------------------------------- */
+article a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+article a:hover {
+  border-bottom-color: var(--ptera-red);
+}
+
+/* Header anchor links */
+a.headerlink {
+  color: var(--ptera-red);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  margin-left: 0.5rem;
+}
+
+h1:hover a.headerlink,
+h2:hover a.headerlink,
+h3:hover a.headerlink,
+h4:hover a.headerlink {
+  opacity: 0.7;
+}
+
+a.headerlink:hover {
+  opacity: 1 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Code Blocks
+   -------------------------------------------------------------------------- */
+code, pre, .highlight {
+  font-family: var(--font-stack-code);
+  font-size: 0.875rem;
+}
+
+/* Inline code */
+code.literal {
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* Code block container */
+div.highlight {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-background-hover);
+}
+
+div.highlight pre {
+  padding: 1rem 1.25rem;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* Copy button styling */
+button.copybtn {
+  border-radius: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+button.copybtn:hover {
+  background-color: var(--ptera-red) !important;
+  color: white !important;
+}
+
+/* --------------------------------------------------------------------------
+   Admonitions
+   -------------------------------------------------------------------------- */
+.admonition {
+  border-radius: 8px;
+  border-left-width: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.admonition-title {
+  font-family: var(--font-stack-headings);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* Note */
+.admonition.note {
+  border-left-color: var(--ptera-red);
+}
+
+.admonition.note > .admonition-title {
+  background-color: var(--ptera-red-light);
+}
+
+/* Warning */
+.admonition.warning {
+  border-left-color: #f59e0b;
+}
+
+/* Tip */
+.admonition.tip {
+  border-left-color: #10b981;
+}
+
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+th {
+  font-family: var(--font-stack-headings);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-background-secondary);
+  border-bottom: 2px solid var(--ptera-red);
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-background-hover);
+}
+
+tr:hover {
+  background-color: var(--color-background-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   API Documentation
+   -------------------------------------------------------------------------- */
+.sig {
+  font-family: var(--font-stack-code);
+}
+
+.sig-name {
+  color: var(--ptera-red);
+  font-weight: 600;
+}
+
+
+dl.py.class,
+dl.py.function,
+dl.py.method,
+dl.py.attribute {
+  padding: 1rem;
+  background-color: var(--color-background-secondary);
+  border-radius: 8px;
+  border-left: 3px solid var(--ptera-red);
+  margin-bottom: 1.5rem;
+}
+
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.bottom-of-page {
+  border-top: 1px solid var(--color-background-hover);
+  padding-top: 1.5rem;
+  margin-top: 3rem;
+}
+
+.copyright {
+  font-size: 0.875rem;
+  color: var(--ptera-gray-dark);
+}
+
+/* --------------------------------------------------------------------------
+   Related Pages Navigation
+   -------------------------------------------------------------------------- */
+.related-pages a {
+  border: 1px solid var(--color-background-hover);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.related-pages a:hover {
+  border-color: var(--ptera-red);
+  box-shadow: 0 4px 12px rgba(230, 33, 41, 0.1);
+}
+
+.related-pages .context {
+  color: var(--ptera-red);
+  font-family: var(--font-stack-headings);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.related-pages .next-page,
+.related-pages .prev-page {
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Search
+   -------------------------------------------------------------------------- */
+.sidebar-search {
+  border-radius: 6px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sidebar-search:focus {
+  border-color: var(--ptera-red);
+  box-shadow: 0 0 0 3px rgba(230, 33, 41, 0.1);
+}
+
+/* --------------------------------------------------------------------------
+   Back to Top Button
+   -------------------------------------------------------------------------- */
+.back-to-top {
+  font-family: var(--font-stack-headings);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  transition: color 0.15s ease;
+}
+
+.back-to-top:hover {
+  color: var(--ptera-red) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile Responsive Adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  h1, article h1 {
+    font-size: 1.75rem;
+  }
+
+  h2, article h2 {
+    font-size: 1.35rem;
+  }
+
+  .sidebar-brand-text {
+    font-size: 1rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print Styles
+   -------------------------------------------------------------------------- */
+@media print {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--ptera-black) !important;
+  }
+
+  a {
+    color: var(--ptera-black) !important;
+    text-decoration: underline;
+  }
+
+  h2 {
+    border-bottom-color: var(--ptera-black) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Smooth Scrolling & Focus States
+   -------------------------------------------------------------------------- */
+html {
+  scroll-behavior: smooth;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ptera-red);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Selection Styling
+   -------------------------------------------------------------------------- */
+::selection {
+  background-color: rgba(230, 33, 41, 0.2);
+  color: inherit;
+}
+
+::-moz-selection {
+  background-color: rgba(230, 33, 41, 0.2);
+  color: inherit;
+}

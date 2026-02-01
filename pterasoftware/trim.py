@@ -8,10 +8,10 @@ None
 **Contains the following functions:**
 
 analyze_steady_trim: Attempts to calculate a trim condition of a SteadyProblem by
-varying the operating conditions until the net loads are sufficient low.
+varying the operating conditions until the net loads are sufficiently low.
 
 analyze_unsteady_trim: Attempts to calculate a trim condition of an UnsteadyProblem by
-varying the base operating conditions until the net loads are sufficient low.
+varying the base operating conditions until the net loads are sufficiently low.
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ def analyze_steady_trim(
     num_calls: int = 100,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of a SteadyProblem by varying the
-    operating conditions until the net loads are sufficient low.
+    operating conditions until the net loads are sufficiently low.
 
     **Procedure:**
 
@@ -428,7 +428,7 @@ def analyze_unsteady_trim(
     show_solver_progress: bool | np.bool_ = True,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
-    operating conditions until the net loads are sufficient low.
+    operating conditions until the net loads are sufficiently low.
 
     **Procedure:**
 

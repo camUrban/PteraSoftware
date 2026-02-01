@@ -1,4 +1,4 @@
-# Type Hint and Docstring Style Guide
+# Type Hints and Docstrings
 
 This document defines the conventions for type hints and docstrings in the Ptera Software codebase.
 

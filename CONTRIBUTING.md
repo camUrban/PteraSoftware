@@ -11,7 +11,7 @@ Please review the following documents before making contributions:
 1. [README](README.md)  
 2. [Code of Conduct](CODE_OF_CONDUCT.md)  
 3. [Security Policy](SECURITY.md)  
-4. [License](LICENSE.txt)  
+4. [License](LICENSE.md)  
 
 ---
 
@@ -41,7 +41,7 @@ There are three main ways you can contribute:
 For all other bugs:  
 1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to check if it's already been reported.  
    - If it exists, you can comment or add an emoji reaction to indicate that you are also affected.  
-2. If it has not been reported, open a new issue using the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).  
+2. If it has not been reported, open a new issue using the [bug report template](https://github.com/camUrban/PteraSoftware/issues/new?template=bug_report.md).  
 3. Add the `bug` and `help wanted` labels and any other relevant labels.  
 
 ---
@@ -51,7 +51,7 @@ For all other bugs:
 For feature requests or enhancements:  
 1. Search the [issues page](https://github.com/camUrban/PteraSoftware/issues) to avoid duplicates.  
    - If it exists, comment or react to indicate interest.  
-2. If it has not been requested, open a new issue using the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md).  
+2. If it has not been requested, open a new issue using the [feature request template](https://github.com/camUrban/PteraSoftware/issues/new?template=feature_request.md).  
 3. Add the `feature` and `help wanted` labels plus any others that apply.  
 
 ---
@@ -110,7 +110,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
 
 4. **Make your changes**  
    - Commit frequently with clear, descriptive messages.  
-   - Follow the code style and standards described in the [pull request template](.github/pull_request_template.md).  
+   - Follow the code style and standards described in the pull request template.  
    - Run automated checks locally before pushing:  
      ```shell
      .venv\Scripts\activate # On Mac or Linux use source .venv/bin/activate
@@ -139,7 +139,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
      ```  
    - Open a pull request (PR) from your branch to the main branch of the upstream repository.  
    - You can open the PR as a **Draft** to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
-   - In the PR description, follow the [pull request template](.github/pull_request_template.md) and link any related issues.
+   - In the PR description, follow the pull request template, and link any related issues.
 
 6. **Keeping your branch up to date**  
    - If main changes before your PR is merged, sync your branch to avoid merge conflicts:  
@@ -152,5 +152,3 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  
    - Once approved, it will be merged into main and included in the next release.
-
----

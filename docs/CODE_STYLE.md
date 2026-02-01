@@ -1,5 +1,4 @@
-# Code Style Guidelines
-Guidelines for developers and Claude when writing code.
+# Code Style
 
 ## Code Formatting
 - Follow existing code style (black) and conventions
@@ -13,14 +12,12 @@ Guidelines for developers and Claude when writing code.
 - Do not use `wcs` (or any other abbreviation) for "wing cross section" or "WingCrossSection" in variable names. Instead, always write it out in full (e.g., `wing_cross_section`, `wing_cross_section_movement`, etc.).
 
 ## Formatting with Black
-For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
 cd ${WORKSPACE} && ".venv/Scripts/python.exe" black .
 ```
 
 ## Running a CodeSpell Spell Check
-For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
 cd ${WORKSPACE} && ".venv/Scripts/codespell.exe" --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"

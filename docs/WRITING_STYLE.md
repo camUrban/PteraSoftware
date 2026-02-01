@@ -1,5 +1,5 @@
-# Writing Style Guidelines
-Guidelines for developers and Claude when writing comments, docstrings, and documentation for Ptera Software.
+# Writing Style
+Guidelines when writing comments, docstrings, and documentation for Ptera Software.
 
 ## Terminology
 - **"Ptera Software"**: When writing as text, always write as two words without a hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware").
@@ -15,14 +15,12 @@ Guidelines for developers and Claude when writing comments, docstrings, and docu
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_AND_COORDINATE_SYSTEMS.md` and `AXES_POINTS_AND_FRAMES.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
 
 ## Running a CodeSpell Spell Check
-For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
 cd ${WORKSPACE} && ".venv/Scripts/codespell.exe" --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
 ```
 
 ## Formatting Docstrings with docformatter
-For Claude, use the following command. For developers, see the `CONTRIBUTING.md` file for instructions.
 
 ```bash
 cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pterasoftware -r
@@ -32,9 +30,9 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pt
 - Avoid abbreviations in text unless they are well-known in the context.
 - Never hyphenate words in docstrings or comments. This is because they are often incorrectly wrapped by docformatter and incorrectly rendered in PyCharm's quick documentation. For example, even though not standard grammar, it's okay to write "non symmetric" instead of "non-symmetric".
 - In documentation, docstrings, and comments, represent subtraction using hyphens surrounded by spaces ( - ); never use em-dashes (—) or en-dashes (–).
-- In documentation, docstrings, and comments, never use a multiplication sign (×); always use a lowercase x or an asterisk surrounded by spaces (" x " or " * ").
+- In documentation, docstrings, and comments, never use a multiplication sign (×); always use a lowercase x or an asterisk surrounded by spaces.
 - In documentation, docstrings, and comments, never use the pi symbol (π); always write "pi" instead (e.g., "2 * pi" not "2 π"). The same goes for other Greek letters (e.g., use "alpha" instead of "α").
-- In documentation, docstrings, and comments, never use the approximately-equal sign (≈); always write " ~ " instead (e.g., "a ~ b" not "a≈b").
+- In documentation, docstrings, and comments, never use the approximately-equal sign (≈); always write a tilde (~) instead (e.g., "a ~ b" not "a≈b").
 - When referring to axes, coordinates, or planes, use  lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - Never use emojis in code, comments, docstrings, or documentation.
 - Always use straight single and double quotes, not curly ones.

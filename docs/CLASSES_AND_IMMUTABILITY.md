@@ -592,5 +592,3 @@ Since `LineVortex` is an internal class whose endpoints ARE updated by parent vo
 | Attribute  | Type    | Notes                    |
 |------------|---------|--------------------------|
 | `strength` | `float` | Updated by parent vortex |
-
----

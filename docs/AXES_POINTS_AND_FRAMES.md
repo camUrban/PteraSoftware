@@ -16,11 +16,14 @@ Consider the arbitrary vector **r**, which exists in 3D space. For now, let's sa
 
 Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. An example of this next structure for an unsteady vortex lattice method simulation is shown below.
 
-<img src="ObjectHierarchy.jpg" alt="Object Hierarchy" width="400"/>
+```{image} ../Object_Hierarchy.jpg
+:alt: Object Hierarchy
+:width: 400px
+```
 
-For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](https://raw.githubusercontent.com/camUrban/PteraSoftware/feature/improved_geometry_definitions/docs/ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
+For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
 
-# Specifying Axes, Points, and Frames
+## Specifying Axes, Points, and Frames
 
 Given the varied requirements for vector-valued quantities, it is important that we are very specific when assigning them variable names or referencing them in text. Also, due to the hierarchical structure of Ptera Software's objects, additional specificity may be required depending on the context. For example, if we use a force vector within the Wing class that references wing axes, we still need to specify that this vector is given in wind axes, but we don't (and can't) specify which of the parent Airplane's Wing's axes we mean. In contrast, if we declare a variable inside the Wing class that references wing cross section axes, we must specify which of the Wing's WingCrossSections's axes we are referring to.
 
@@ -105,9 +108,9 @@ The standard abbreviations and names are given below for reference. See the sect
   * …b: back leg
   * …r: right leg
 
-# Axis Systems
+## Axis Systems
 
-## 1. The Earth axis system
+### 1. The Earth axis system
 
 * Basis directions  
   1. +x: North  
@@ -119,7 +122,7 @@ The standard abbreviations and names are given below for reference. See the sect
   * Text: …in Earth axes…  
   * Variables: …\_E…
 
-## 2. Body axes
+### 2. Body axes
 
 * Basis directions  
   1. +x: Towards the front of the Airplane  
@@ -134,7 +137,7 @@ The standard abbreviations and names are given below for reference. See the sect
   * Text: …in the first Airplane's body axes…  
   * Variables: …\_BP1…
 
-## 3. Wind axes
+### 3. Wind axes
 
 * Caveat: We assume a still airmass, so the freestream velocity observed from the body frame is solely due to the Airplane's velocity observed from the Earth frame.  
 * Basis directions  
@@ -156,7 +159,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Problem's wind axes…  
   * Variables: …\_WPr1…
 
-## 4. Geometry axes
+### 4. Geometry axes
 
 * Basis directions  
   1. +x: Towards the back of the Airplane (aft)  
@@ -171,7 +174,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's geometry axes…  
   * Variables: …\_GP1…
 
-## 5. Geometry axes (after accounting for symmetry)
+### 5. Geometry axes (after accounting for symmetry)
 
 * Basis directions: For a given Wing, the basis directions are identical to that Wing's Airplane's geometry axes if the Wing is non-symmetric or symmetric-continuous. For mirror-only Wings, the basis directions are that Wing's Airplane's geometry axes reflected about that Wing's symmetry plane.  
 * Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.  
@@ -186,7 +189,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's geometry axes (after accounting for its second Wing's symmetry)…  
   * Variables: …\_Gs2P1…
 
-## 6. Wing axes
+### 6. Wing axes
 
 * Basis directions  
   1. +x: Towards the back of the Wing at its root  
@@ -204,7 +207,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's axes…  
   * Variables: …\_Wn2P1…
 
-## 7. Wing cross section axes
+### 7. Wing cross section axes
 
 * Basis directions  
   1. +x: Towards the trailing edge in the WingCrossSection's plane  
@@ -225,7 +228,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's first WingCrossSection's axes…  
   * Variables: …\_Wcs1Wn2P1…
 
-## 8. Wing cross section parent axes
+### 8. Wing cross section parent axes
 
 * Basis directions: Identical to Wing axes for a Wing's first WingCrossSection, and identical to the previous WingCrossSection's axes for subsequent ones.  
 * Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.  
@@ -243,7 +246,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's first WingCrossSection's parent axes…  
   * Variables: …\_Wcsp1Wn2P1…
 
-## 9. Airfoil axes
+### 9. Airfoil axes
 
 * Basis directions  
   1. +x: Chordwise towards the Airfoil's trailing point  
@@ -263,9 +266,9 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …in the first Airplane's second Wing's first WingCrossSection's Airfoil's axes…  
   * Variables: …\_AWcs1Wn2P1…
 
-# Reference Points
+## Reference Points
 
-## 1. CG
+### 1. CG
 
 * Position of the Airplane's CG  
 * Ownership: Airplane  
@@ -276,7 +279,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's CG…  
   * Variables: …\_CgP1
 
-## 2. CG (after accounting for symmetry)
+### 2. CG (after accounting for symmetry)
 
 * For a non-symmetric or symmetric-continuous Wing, this identical to its Airplane's CG. For mirror-only Wings, it is their Airplane's CG reflected across that Wing's symmetry plane.  
 * Ownership: Wing  
@@ -290,7 +293,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's CG (after accounting for its second Wing's symmetry)…  
   * Variables: …\_Cgs2P1
 
-## 3. Leading edge root point
+### 3. Leading edge root point
 
 * Root point of the Wing's leading edge  
 * Ownership: Wing  
@@ -304,7 +307,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's leading edge root point…  
   * Variables: …\_Ler2P1
 
-## 4. Leading point
+### 4. Leading point
 
 * The leading point of the WingCrossSection  
 * Ownership: WingCrossSection  
@@ -321,7 +324,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading point…  
   * Variables: …\_Lp1Wn2P1
 
-## 5. Leading point parent
+### 5. Leading point parent
 
 * For a Wing's first WingCrossSection, this is the Wing's leading edge root point. For subsequent WingCrossSections, this is the previous WingCrossSection's leading point.  
 * Ownership: WingCrossSection  
@@ -338,7 +341,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading parent point…  
   * Variables: …\_Lpp1Wn2P1
 
-## 6. Panel points
+### 6. Panel points
 
 * The front right, front left, back left, back right, and collocation points of a Panel  
 * Ownership: Panel  
@@ -355,7 +358,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's front right point…  
   * Variables: …\_Frppr3c2Wn2P1
 
-## 7. Bound horseshoe vortex points
+### 7. Bound horseshoe vortex points
 
 * Only relevant in steady horseshoe vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a bound HorseshoeVortex  
@@ -373,7 +376,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…  
   * Variables: …\_Frbhvpr3c2Wn2P1
 
-## 8. Bound ring vortex points
+### 8. Bound ring vortex points
 
 * The front right, front left, back left, and back right points of a bound RingVortex  
 * Ownership: RingVortex  
@@ -390,7 +393,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound RingVortex's front right point…  
   * Variables: …\_Frbrvpr3c2Wn2P1
 
-## 9. Wake horseshoe vortex points
+### 9. Wake horseshoe vortex points
 
 * Only relevant in steady horseshoe and steady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake HorseshoeVortex  
@@ -408,7 +411,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's third wake HorseshoeVortex's front right point…  
   * Variables: …\_Frwhvp3Wn2P1
 
-## 10. Wake ring vortex points
+### 10. Wake ring vortex points
 
 * Only relevant in unsteady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake RingVortex  
@@ -426,7 +429,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) wake RingVortex's front right point…  
   * Variables: …\_Frwrvpr3c2Wn2P1
 
-## 11. Line vortex points
+### 11. Line vortex points
 
 * The start, end, and center points of a LineVortex  
 * Ownership: LineVortex  
@@ -446,9 +449,9 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) bound HorseshoeVortex's front LineVortex's center point…  
   * Variables: …\_ClvpfBhvr3c2Wn2P1
 
-# Reference Frames
+## Reference Frames
 
-## 1. Earth reference frame
+### 1. Earth reference frame
 
 * Inertial  
 * Attached rigidly to the Earth  
@@ -457,7 +460,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …observed from the Earth frame…  
   * Variables: …\_\_E
 
-## 2. Body reference frame
+### 2. Body reference frame
 
 * Non-inertial  
 * Attached rigidly to the Airplane's body  
@@ -469,7 +472,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …observed from the second Airplane's body frame…  
   * Variables …\_\_BP2
 
-## 3. Wing reference frame
+### 3. Wing reference frame
 
 * Non-inertial  
 * Attached rigidly to the root of a Wing's leading edge  
@@ -484,7 +487,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …observed from the fourth Airplane's second Wing's frame…  
   * Variables …\_\_Wn2P4
 
-## 4. Wing cross section reference frame
+### 4. Wing cross section reference frame
 
 * Non-inertial  
 * Attached rigidly to the leading point of a WingCrossSection  
@@ -502,7 +505,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …observed from the fourth Airplane's second Wing's third WingCrossSection's frame…  
   * Variables …\_\_Wcs3Wn2P4
 
-## 5. Wing cross section parent reference frame
+### 5. Wing cross section parent reference frame
 
 * Non-inertial  
 * Attached rigidly to the leading parent point of a WingCrossSection  

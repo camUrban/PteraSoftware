@@ -6,14 +6,14 @@ generated automatically from docstrings using AutoAPI.
 ```{toctree}
 :maxdepth: 1
 
-api/pterasoftware/geometry/index
-api/pterasoftware/movements/index
-api/pterasoftware/convergence/index
-api/pterasoftware/operating_point/index
-api/pterasoftware/output/index
-api/pterasoftware/problems/index
-api/pterasoftware/steady_horseshoe_vortex_lattice_method/index
-api/pterasoftware/steady_ring_vortex_lattice_method/index
-api/pterasoftware/trim/index
-api/pterasoftware/unsteady_ring_vortex_lattice_method/index
+geometry <api/pterasoftware/geometry/index>
+movements <api/pterasoftware/movements/index>
+convergence <api/pterasoftware/convergence/index>
+operating_point <api/pterasoftware/operating_point/index>
+output <api/pterasoftware/output/index>
+problems <api/pterasoftware/problems/index>
+steady_horseshoe_vortex_lattice_method <api/pterasoftware/steady_horseshoe_vortex_lattice_method/index>
+steady_ring_vortex_lattice_method <api/pterasoftware/steady_ring_vortex_lattice_method/index>
+trim <api/pterasoftware/trim/index>
+unsteady_ring_vortex_lattice_method <api/pterasoftware/unsteady_ring_vortex_lattice_method/index>
 ```

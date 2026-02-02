@@ -4,11 +4,6 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Google Fonts - Rajdhani for headings (geometric, technical feel like BankGothic)
-   -------------------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
-
-/* --------------------------------------------------------------------------
    CSS Custom Properties (Light Mode)
    -------------------------------------------------------------------------- */
 :root {
@@ -25,9 +20,19 @@
   --font-stack-body: 'Source Sans 3', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-stack-code: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
-  /* Wider sidebars */
-  --sidebar-width: 320px;
-  --sidebar-secondary-width: 300px;
+  /*
+   * Custom Sidebar Layout (overrides Furo's defaults)
+   *
+   * Furo's defaults: $sidebar-width: 15em, $content-width: 46em, $content-padding: 3em
+   * Furo's $full-width = 46em + 6em + 30em = 82em
+   *
+   * Our custom values use slightly wider sidebars (20em instead of 15em)
+   * Custom $full-width = 46em + 6em + 40em = 92em
+   */
+  --ptera-sidebar-width: 20em;
+  --ptera-content-width: 46em;
+  --ptera-content-padding: 3em;
+  --ptera-full-width: 92em;  /* content + padding*2 + sidebar*2 */
 }
 
 body {
@@ -213,37 +218,152 @@ body[data-theme="dark"] article h3 {
 }
 
 /* --------------------------------------------------------------------------
-   Sidebar Enhancements
+   Sidebar Enhancements - Aligned with Furo's Layout System
    -------------------------------------------------------------------------- */
 
-/* Force wider sidebars */
-.sidebar-drawer,
-.sidebar-container,
-aside.sidebar-drawer,
-.sidebar-scroll {
-  width: 470px !important;
-  min-width: 470px !important;
+/*
+ * RESPONSIVE STRATEGY (aligned with Furo's breakpoints):
+ *
+ * Furo uses em-based breakpoints that scale with font size.
+ * We use the same breakpoint values to avoid conflicts.
+ *
+ * Breakpoints (using our custom --ptera-full-width: 92em):
+ * - > 92em + 20em = 112em (~1792px): Both sidebars, larger font (110%)
+ * - < 92em (~1472px): TOC collapses to mobile icon
+ * - < ~52em + 20em = 72em (~1152px): Hamburger menu appears
+ * - < 46em (~736px): Full mobile layout
+ *
+ * Note: Furo increases font-size to 110% on very large screens,
+ * which makes em-based values scale up proportionally.
+ */
+
+/*
+ * Override Furo's compiled sidebar widths.
+ * These selectors match what Furo outputs from its SASS.
+ */
+
+/* Left sidebar container - where navigation lives */
+.sidebar-container {
+  width: var(--ptera-sidebar-width);
 }
 
+/* Right TOC drawer */
 .toc-drawer {
-  width: 540px !important;
+  width: var(--ptera-sidebar-width);
 }
 
-/* Target Furo's CSS variable at multiple levels */
+/*
+ * The sidebar-drawer is the full left column including background.
+ * Furo uses: width: calc((100% - $full-width) / 2 + $sidebar-width)
+ * This centers the content and extends the sidebar background to the edge.
+ */
 .sidebar-drawer {
-  --sidebar-width: 470px;
+  width: calc((100% - var(--ptera-full-width)) / 2 + var(--ptera-sidebar-width));
+  min-width: var(--ptera-sidebar-width);
 }
 
-/* Adjust content area to accommodate wider sidebars */
-@media (min-width: 97em) {
-  .sidebar-drawer,
-  .sidebar-container,
-  aside.sidebar-drawer {
-    width: 470px !important;
-    min-width: 470px !important;
+/*
+ * Very large screens: Furo increases font-size to 110% at $full-width + $sidebar-width (97em).
+ * For our layout (92em + 20em = 112em), we need it at 112em instead.
+ *
+ * Problem: Furo's compiled 97em rule still applies between 97-112em, making things cramped.
+ * Solution: Override Furo's 110% back to 100% in that range, then apply 110% at 112em+.
+ */
+@media (min-width: 97em) and (max-width: 112em) {
+  html {
+    font-size: 100%; /* Override Furo's 110% in this range where our layout is tighter */
   }
+}
+
+@media (min-width: 112em) {
+  html {
+    font-size: 110%;
+  }
+}
+
+/*
+ * When TOC is hidden (Furo does this at $full-width breakpoint = 82em),
+ * we need to trigger it earlier at 92em for our wider sidebars.
+ * This replicates all of Furo's TOC collapse behavior at our breakpoint.
+ */
+@media (max-width: 92em) {
+  /* Adjust left sidebar width for layout without TOC */
+  .sidebar-drawer {
+    width: calc((100% - (var(--ptera-full-width) - var(--ptera-sidebar-width))) / 2 + var(--ptera-sidebar-width));
+  }
+
+  /* Show the TOC toggle icon in the content area */
+  .toc-content-icon {
+    display: flex;
+  }
+
+  /* Convert TOC to a slide-in drawer positioned off-screen */
   .toc-drawer {
-    width: 540px !important;
+    position: fixed;
+    height: 100vh;
+    top: 0;
+    right: calc(-1 * var(--ptera-sidebar-width) - 1rem);
+    border-left: 1px solid var(--color-background-border);
+  }
+
+  /* Adjust TOC tree styling for mobile/drawer mode */
+  .toc-tree {
+    border-left: none;
+    font-size: var(--toc-font-size--mobile);
+  }
+}
+
+/*
+ * When hamburger menu appears (Furo does this at ~63em),
+ * we need to trigger it earlier at 72em for our wider sidebars.
+ * This also includes content centering (Furo does at 67em, we do at 72em).
+ */
+@media (max-width: 72em) {
+  /* Center content with smaller padding */
+  .content {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1em; /* Furo's $content-padding--small */
+  }
+
+  /* Show the hamburger menu icon */
+  .nav-overlay-icon {
+    display: flex;
+  }
+
+  /* Convert left sidebar to a slide-in drawer positioned off-screen */
+  .sidebar-drawer {
+    position: fixed;
+    height: 100vh;
+    width: var(--ptera-sidebar-width);
+    top: 0;
+    left: calc(-1 * var(--ptera-sidebar-width));
+  }
+
+  /* Swap icon visibility - show header icons, hide content icons */
+  .toc-header-icon,
+  .theme-toggle-header {
+    display: flex;
+  }
+
+  .toc-content-icon,
+  .theme-toggle-content {
+    display: none;
+  }
+
+  /* Show the mobile header */
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Stack page layout vertically */
+  .page {
+    flex-direction: column;
+    justify-content: center;
   }
 }
 
@@ -303,9 +423,25 @@ aside.sidebar-drawer,
    Content Area
    -------------------------------------------------------------------------- */
 
-/* Article container max-width for readability */
+/* Article container */
 .article-container {
   max-width: 52rem;
+  min-width: 0; /* Allow flexbox shrinking */
+  /* Note: Don't add overflow-x: auto here - it causes spurious scrollbars.
+     Instead, we wrap specific wide elements (tables, code) below. */
+}
+
+/* Main content wrapper */
+.content {
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Page headings - prevent truncation of long module names */
+article h1,
+.content h1 {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 
 /* Paragraph spacing */
@@ -375,12 +511,15 @@ div.highlight {
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--color-background-hover);
+  max-width: 100%;
 }
 
 div.highlight pre {
   padding: 1rem 1.25rem;
   margin: 0;
-  overflow-x: auto;
+  white-space: pre;
+  word-break: normal;
+  /* Note: Furo already sets overflow: auto on pre elements */
 }
 
 /* Copy button styling */
@@ -431,9 +570,16 @@ button.copybtn:hover {
 /* --------------------------------------------------------------------------
    Tables
    -------------------------------------------------------------------------- */
+
+/*
+ * Note: Furo already handles table overflow via [role=main] .table-wrapper.container
+ * with overflow-x: auto. We don't need to add it here.
+ */
+
 table {
+  display: table;
   border-collapse: collapse;
-  width: 100%;
+  min-width: 100%;
   margin: 1.5rem 0;
 }
 
@@ -445,6 +591,7 @@ th {
   padding: 0.75rem 1rem;
   background-color: var(--color-background-secondary);
   border-bottom: 2px solid var(--ptera-red);
+  white-space: nowrap; /* Prevent header wrapping */
 }
 
 td {
@@ -452,15 +599,45 @@ td {
   border-bottom: 1px solid var(--color-background-hover);
 }
 
+/* Allow table cells with descriptions to wrap, but keep code cells intact */
+td:last-child {
+  white-space: normal;
+  min-width: 200px;
+}
+
+/* Keep code/class names in tables from wrapping */
+td:first-child,
+td code,
+td .py-class-name,
+td a.reference {
+  white-space: nowrap;
+}
+
 tr:hover {
   background-color: var(--color-background-secondary);
 }
 
+/* AutoAPI summary tables - keep proper table display */
+table.autosummary,
+table.longtable {
+  display: table;
+}
+
+table.autosummary td:first-child,
+table.longtable td:first-child {
+  white-space: nowrap;
+  font-family: var(--font-stack-code);
+}
+
 /* --------------------------------------------------------------------------
-   API Documentation
+   API Documentation - Wrap Long Signatures
    -------------------------------------------------------------------------- */
 .sig {
   font-family: var(--font-stack-code);
+  display: block;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .sig-name {
@@ -468,16 +645,37 @@ tr:hover {
   font-weight: 600;
 }
 
-
+/* API definition blocks - allow wrapping, no scrollbars */
 dl.py.class,
 dl.py.function,
 dl.py.method,
 dl.py.attribute {
   padding: 1rem;
-  background-color: var(--color-background-secondary);
-  border-radius: 8px;
+  padding-left: 1.25rem;
+  background-color: transparent;
+  border-radius: 0;
   border-left: 3px solid var(--ptera-red);
   margin-bottom: 1.5rem;
+  overflow: visible;
+}
+
+/* Allow signature lines to wrap - styled like code blocks */
+dl.py dt {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background-color: var(--color-code-background);
+  border-radius: 8px;
+  border: 1px solid var(--color-background-hover);
+  font-size: 0.875rem;
+}
+
+/* Description text wraps normally */
+dl.py dd {
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 
@@ -552,11 +750,52 @@ dl.py.attribute {
 }
 
 /* --------------------------------------------------------------------------
-   Mobile Responsive Adjustments
+   Responsive Typography & Layout Adjustments
    -------------------------------------------------------------------------- */
-@media (max-width: 768px) {
+
+/*
+ * Breakpoints aligned with Furo's em-based system (for 20em sidebars, 92em full-width):
+ * - 112em (~1792px): Very large screens (Furo uses 110% font-size above this)
+ * - 92em (~1472px): TOC hides
+ * - 72em (~1152px): Hamburger menu appears
+ * - 46em (~736px): Full mobile
+ *
+ * Using em units so typography scales with Furo's font-size changes.
+ */
+
+/* Very large screens - Furo increases base font to 110% here */
+@media (min-width: 112em) {
   h1, article h1 {
-    font-size: 1.75rem;
+    font-size: 2.25rem;
+  }
+}
+
+/* Large screens - both sidebars visible */
+@media (max-width: 112em) and (min-width: 92em) {
+  h1, article h1 {
+    font-size: 2.1rem;
+  }
+
+  h2, article h2 {
+    font-size: 1.45rem;
+  }
+}
+
+/* Medium screens - TOC hidden, left sidebar visible */
+@media (max-width: 92em) and (min-width: 72em) {
+  h1, article h1 {
+    font-size: 2rem;
+  }
+
+  h2, article h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Tablet/hamburger menu mode */
+@media (max-width: 72em) and (min-width: 46em) {
+  h1, article h1 {
+    font-size: 1.85rem;
   }
 
   h2, article h2 {
@@ -565,6 +804,26 @@ dl.py.attribute {
 
   .sidebar-brand-text {
     font-size: 1rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 46em) {
+  h1, article h1 {
+    font-size: 1.6rem;
+  }
+
+  h2, article h2 {
+    font-size: 1.25rem;
+  }
+
+  .sidebar-brand-text {
+    font-size: 0.95rem;
+  }
+
+  /* Furo uses smaller padding on mobile */
+  .content {
+    min-width: 0;
   }
 }
 
@@ -591,6 +850,8 @@ dl.py.attribute {
    -------------------------------------------------------------------------- */
 html {
   scroll-behavior: smooth;
+  /* Note: Furo sets overflow-x: hidden on html to prevent horizontal scrollbars
+     during sidebar slide-in animations. Don't override this. */
 }
 
 :focus-visible {

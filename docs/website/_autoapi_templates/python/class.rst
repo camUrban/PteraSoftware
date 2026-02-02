@@ -11,7 +11,7 @@
    :hidden:
 
       {% for child in own_page_children %}
-   {{ child.include_path }}
+   {{ child.short_name }} <{{ child.include_path }}>
       {% endfor %}
 
    {% endif %}

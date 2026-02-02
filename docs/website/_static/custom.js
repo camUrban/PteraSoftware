@@ -38,4 +38,20 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+
+  // Simplify right sidebar TOC entries by removing class name prefixes
+  // e.g., "ClassName.method()" becomes "method()"
+  const tocLinks = document.querySelectorAll('.toc-tree a');
+
+  tocLinks.forEach(function(link) {
+    const text = link.textContent;
+
+    // Match patterns like "ClassName.method_name()" or "ClassName.attribute"
+    // where ClassName starts with uppercase
+    const match = text.match(/^[A-Z][A-Za-z0-9_]*\.(.+)$/);
+
+    if (match) {
+      link.textContent = match[1];
+    }
+  });
 });

@@ -24,7 +24,7 @@ Submodules
    :maxdepth: 1
 
             {% for submodule in visible_submodules %}
-   {{ submodule.include_path }}
+   {{ submodule.short_name }} <{{ submodule.include_path }}>
             {% endfor %}
 
 
@@ -44,7 +44,7 @@ Attributes
    :hidden:
 
                      {% for attribute in visible_attributes %}
-   {{ attribute.include_path }}
+   {{ attribute.short_name }} <{{ attribute.include_path }}>
                      {% endfor %}
 
                   {% endif %}
@@ -71,7 +71,7 @@ Exceptions
    :hidden:
 
                      {% for exception in visible_exceptions %}
-   {{ exception.include_path }}
+   {{ exception.short_name }} <{{ exception.include_path }}>
                      {% endfor %}
 
                   {% endif %}
@@ -98,7 +98,7 @@ Classes
    :hidden:
 
                      {% for klass in visible_classes %}
-   {{ klass.include_path }}
+   {{ klass.short_name }} <{{ klass.include_path }}>
                      {% endfor %}
 
                   {% endif %}
@@ -125,7 +125,7 @@ Functions
    :hidden:
 
                      {% for function in visible_functions %}
-   {{ function.include_path }}
+   {{ function.short_name }} <{{ function.include_path }}>
                      {% endfor %}
 
                   {% endif %}

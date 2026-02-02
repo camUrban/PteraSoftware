@@ -156,3 +156,6 @@ Draw.webp
 
 # This folder contains built documentation files that shouldn't be uploaded.
 /docs/website/_build/
+
+# This folder contains a copy of the Furo theme to use as a reference for customization.
+/docs/website/furo_src/

@@ -1,4 +1,4 @@
-![Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/Logo.png)
+![Logo](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/website/Logo.png)
 
 ***
 

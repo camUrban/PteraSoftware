@@ -82,7 +82,7 @@ napoleon_attr_annotations = True
 html_theme = "furo"
 html_title = "PteraSoftware"
 html_favicon = "favicon/favicon.ico"
-html_static_path = ["_static", "favicon", "Black_Text_Logo.png", "Logo.png"]
+html_static_path = ["_static", "Black_Text_Logo.png", "Logo.png"]
 # Optionally also copy to site root (may be ignored by some builders)
 html_extra_path = ["favicon"]
 

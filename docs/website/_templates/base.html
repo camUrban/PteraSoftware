@@ -2,7 +2,7 @@
 
 {#
   Add comprehensive favicon and PWA links to the <head> for cross-browser support.
-  Assets are copied into _static/ via html_static_path from docs/favicon/.
+  Assets are copied to the site root via html_extra_path and the build-finished hook.
 #}
 
 {% block extrahead %}
@@ -11,11 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Rajdhani:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="icon" href="{{ pathto('_static/favicon.ico', 1) }}" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="{{ pathto('_static/favicon.svg', 1) }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ pathto('_static/apple-touch-icon.png', 1) }}">
-  <link rel="icon" type="image/png" sizes="96x96" href="{{ pathto('_static/favicon-96x96.png', 1) }}">
-  <link rel="icon" type="image/png" sizes="192x192" href="{{ pathto('_static/web-app-manifest-192x192.png', 1) }}">
-  <link rel="icon" type="image/png" sizes="512x512" href="{{ pathto('_static/web-app-manifest-512x512.png', 1) }}">
-  <link rel="manifest" href="{{ pathto('_static/site.webmanifest', 1) }}">
+  <link rel="icon" href="{{ pathto('favicon.ico', 1) }}" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="{{ pathto('favicon.svg', 1) }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ pathto('apple-touch-icon.png', 1) }}">
+  <link rel="icon" type="image/png" sizes="96x96" href="{{ pathto('favicon-96x96.png', 1) }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ pathto('web-app-manifest-192x192.png', 1) }}">
+  <link rel="icon" type="image/png" sizes="512x512" href="{{ pathto('web-app-manifest-512x512.png', 1) }}">
+  <link rel="manifest" href="{{ pathto('site.webmanifest', 1) }}">
 {% endblock %}

@@ -34,6 +34,8 @@ from . import (
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
 
+# REFACTOR: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
+#  and load coefficients.
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
@@ -1905,7 +1907,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             results_step += 1
 
         # For each Airplane, calculate and then save the final or cycle-averaged and
-        # RMS loads and load coefficients.
+        # RMS loads and load coefficients. For variable geometry cases, use the
+        # trapezoidal rule to compute the time-averaged mean and RMS over the final
+        # cycle.
         first_problem: problems.SteadyProblem = self.steady_problems[0]
         for airplane_id, airplane in enumerate(first_problem.airplanes):
             if static:
@@ -1920,48 +1924,58 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     moment_coefficients_W_CgP1[airplane_id, :, -1]
                 )
             else:
+                # The number of intervals for the trapezoidal rule is one less
+                # than the number of samples.
+                num_intervals = num_steps_to_average - 1
+
                 self.unsteady_problem.finalMeanForces_W.append(
-                    np.mean(forces_W[airplane_id], axis=-1)
+                    np.trapezoid(forces_W[airplane_id], axis=-1) / num_intervals
                 )
                 self.unsteady_problem.finalMeanForceCoefficients_W.append(
-                    np.mean(force_coefficients_W[airplane_id], axis=-1)
+                    np.trapezoid(force_coefficients_W[airplane_id], axis=-1)
+                    / num_intervals
                 )
                 self.unsteady_problem.finalMeanMoments_W_CgP1.append(
-                    np.mean(moments_W_CgP1[airplane_id], axis=-1)
+                    np.trapezoid(moments_W_CgP1[airplane_id], axis=-1) / num_intervals
                 )
                 self.unsteady_problem.finalMeanMomentCoefficients_W_CgP1.append(
-                    np.mean(moment_coefficients_W_CgP1[airplane_id], axis=-1)
+                    np.trapezoid(moment_coefficients_W_CgP1[airplane_id], axis=-1)
+                    / num_intervals
                 )
 
                 self.unsteady_problem.finalRmsForces_W.append(
                     np.sqrt(
-                        np.mean(
+                        np.trapezoid(
                             np.square(forces_W[airplane_id]),
                             axis=-1,
                         )
+                        / num_intervals
                     )
                 )
                 self.unsteady_problem.finalRmsForceCoefficients_W.append(
                     np.sqrt(
-                        np.mean(
+                        np.trapezoid(
                             np.square(force_coefficients_W[airplane_id]),
                             axis=-1,
                         )
+                        / num_intervals
                     )
                 )
                 self.unsteady_problem.finalRmsMoments_W_CgP1.append(
                     np.sqrt(
-                        np.mean(
+                        np.trapezoid(
                             np.square(moments_W_CgP1[airplane_id]),
                             axis=-1,
                         )
+                        / num_intervals
                     )
                 )
                 self.unsteady_problem.finalRmsMomentCoefficients_W_CgP1.append(
                     np.sqrt(
-                        np.mean(
+                        np.trapezoid(
                             np.square(moment_coefficients_W_CgP1[airplane_id]),
                             axis=-1,
                         )
+                        / num_intervals
                     )
                 )

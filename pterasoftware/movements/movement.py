@@ -14,14 +14,52 @@ from __future__ import annotations
 import copy
 import math
 
+import numpy as np
 import scipy.optimize as sp_opt
 
 from .. import _logging, _parameter_validation, _vortices, geometry
 from .. import operating_point as operating_point_mod
+from .. import problems
 from . import airplane_movement as airplane_movement_mod
 from . import operating_point_movement as operating_point_movement_mod
 
 movement_logger = _logging.get_logger("movements.movement")
+
+
+def _lcm(a: float, b: float) -> float:
+    """Calculates the least common multiple of two numbers.
+
+    :param a: First number (period in seconds)
+    :param b: Second number (period in seconds)
+    :return: LCM of a and b. Returns 0.0 if either input is 0.0.
+    """
+    if a == 0.0 or b == 0.0:
+        return 0.0
+    # Convert to integers (periods are typically whole multiples of delta_time)
+    # Use sufficiently large multiplier to preserve precision
+    multiplier = 1000000
+    a_int = int(round(a * multiplier))
+    b_int = int(round(b * multiplier))
+    lcm_int = abs(a_int * b_int) // math.gcd(a_int, b_int)
+    return lcm_int / multiplier
+
+
+def _lcm_multiple(periods: list[float]) -> float:
+    """Calculates the least common multiple of multiple periods.
+
+    :param periods: List of periods in seconds
+    :return: LCM of all periods. Returns 0.0 if all periods are 0.0.
+    """
+    if not periods or all(p == 0.0 for p in periods):
+        return 0.0
+    # Filter out zero periods and calculate LCM
+    non_zero_periods = [p for p in periods if p != 0.0]
+    if not non_zero_periods:
+        return 0.0
+    result = non_zero_periods[0]
+    for period in non_zero_periods[1:]:
+        result = _lcm(result, period)
+    return result
 
 
 class Movement:
@@ -35,6 +73,10 @@ class Movement:
     max_period: The longest period of motion of Movement's sub movement objects, the
     motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
     movement objects.
+
+    min_period: The shortest non zero period of motion of Movement's sub movement
+    objects, the motion(s) of its sub sub movement object(s), and the motions of its sub
+    sub sub movement objects.
 
     static: Flags if Movement's sub movement objects, its sub sub movement object(s),
     and its sub sub sub movement objects all represent no motion.
@@ -61,17 +103,16 @@ class Movement:
         :param operating_point_movement: An OperatingPointMovement characterizing any
             changes to the UnsteadyProblem's operating conditions.
         :param delta_time: The time between each time step. Accepts the following: None
-            (default): Movement calculates a fast estimate based on freestream velocity
-            alone. This works well when forward velocity dominates, but may give poor
-            results at high Strouhal numbers where motion velocity is significant. The
-            estimate is based on the first base Airplane's reference chord length, its
-            first Wing's number of chordwise panels, and its base OperatingPoint's
-            velocity. "optimize": Movement runs an iterative optimization to find the
-            delta_time that minimizes the area mismatch between wake RingVortices and
-            their parent bound trailing edge RingVortices. This is slower but produces
-            better results at high Strouhal numbers. Positive number (int or float): Use
-            the specified value directly. All values are converted internally to floats.
-            The units are in seconds.
+            (default): Movement analytically estimates the delta_time that produces wake
+            RingVortices with roughly the same chord length as the bound trailing edge
+            RingVortices, accounting for both freestream and geometry motion velocities.
+            This provides good results across all Strouhal numbers. "optimize": Movement
+            first runs the analytical estimation, then uses that result as an initial
+            guess for an iterative optimization that minimizes the area mismatch between
+            wake RingVortices and their parent bound trailing edge RingVortices. This is
+            slower but may produce slightly more accurate results. Positive number (int
+            or float): Use the specified value directly. All values are converted
+            internally to floats. The units are in seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if Movement isn't
             static. If num_steps is not None or if Movement is static, this must be
@@ -126,34 +167,31 @@ class Movement:
         # during __init__ to determine num_steps calculation.
         self._lcm_period: float | None = None
         self._max_period: float | None = None
+        self._min_period: float | None = None
         self._static: bool | None = None
 
-        # Track whether optimization should run after the initial setup.
-        _should_optimize_delta_time: bool = False
+        # Track whether iterative optimization should run after analytical.
+        _should_iteratively_optimize_delta_time: bool = False
 
         if isinstance(delta_time, str):
-            if delta_time != "optimize":
+            if delta_time == "optimize":
+                _should_iteratively_optimize_delta_time = True
+                # Fall through to calculate analytical estimate first.
+                delta_time = None
+            else:
                 raise ValueError('delta_time string must be "optimize".')
-            _should_optimize_delta_time = True
-            # Fall through to calculate initial estimate for optimization.
-            delta_time = None
 
         if delta_time is not None:
             delta_time = _parameter_validation.number_in_range_return_float(
                 delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
-            # Calculate initial delta_time estimate based on freestream velocity.
-            # This works well when forward velocity dominates, but may give poor
-            # results at high Strouhal numbers where motion velocity is significant.
+            # Calculate a fast initial delta_time estimate based on freestream
+            # velocity. This is used as a fallback for static movements and as
+            # a starting point for the analytical optimization.
             delta_times = []
             for airplane_movement in self._airplane_movements:
                 # TODO: Consider making this also average across each Airplane's Wings.
-                # For a given Airplane, the ideal time step length is that which
-                # sheds RingVortices off the first Wing that have roughly the same
-                # chord length as the RingVortices on the first Wing. This is based
-                # on the base Airplane's reference chord length, its first Wing's
-                # number of chordwise panels, and its base OperatingPoint's velocity.
                 c_ref = airplane_movement.base_airplane.c_ref
                 assert c_ref is not None
                 delta_times.append(
@@ -161,12 +199,19 @@ class Movement:
                     / airplane_movement.base_airplane.wings[0].num_chordwise_panels
                     / operating_point_movement.base_operating_point.vCg__E
                 )
+            fast_estimate = sum(delta_times) / len(delta_times)
 
-            # Set the delta_time to be the average of the Airplanes' ideal delta times.
-            delta_time = sum(delta_times) / len(delta_times)
+            # Run analytical optimization to get a better delta_time that accounts
+            # for both freestream and geometry motion velocities.
+            delta_time = _analytically_optimize_delta_time(
+                airplane_movements=list(self._airplane_movements),
+                operating_point_movement=self._operating_point_movement,
+                initial_delta_time=fast_estimate,
+            )
 
-        # Run delta_time optimization if requested.
-        if _should_optimize_delta_time:
+        # Run iterative optimization if requested, using the analytical result
+        # as the initial guess.
+        if _should_iteratively_optimize_delta_time:
             delta_time = _optimize_delta_time(
                 airplane_movements=list(self._airplane_movements),
                 operating_point_movement=self._operating_point_movement,
@@ -374,7 +419,7 @@ class Movement:
             # Add the OperatingPointMovement period
             all_periods.append(self._operating_point_movement.max_period)
 
-            self._lcm_period = self._lcm_multiple(all_periods)
+            self._lcm_period = _lcm_multiple(all_periods)
         return self._lcm_period
 
     @property
@@ -406,6 +451,34 @@ class Movement:
         return self._max_period
 
     @property
+    def min_period(self) -> float:
+        """The shortest non zero period of motion of Movement's sub movement objects,
+        the motion(s) of its sub sub movement object(s), and the motions of its sub sub
+        sub movement objects.
+
+        :return: The shortest non zero period in seconds. If all the motion is static,
+            this will be 0.0.
+        """
+        if self._min_period is None:
+            # Collect all periods from AirplaneMovements.
+            all_periods: list[float] = []
+            for airplane_movement in self._airplane_movements:
+                all_periods.extend(airplane_movement.all_periods)
+
+            # Add the OperatingPointMovement period.
+            op_period = self._operating_point_movement.max_period
+            if op_period != 0.0:
+                all_periods.append(op_period)
+
+            # Filter out zero periods and find the minimum.
+            non_zero_periods = [p for p in all_periods if p != 0.0]
+            if not non_zero_periods:
+                self._min_period = 0.0
+            else:
+                self._min_period = min(non_zero_periods)
+        return self._min_period
+
+    @property
     def static(self) -> bool:
         """Flags if the Movement's sub movement objects, its sub sub movement object(s),
         and its sub sub sub movement objects all represent no motion.
@@ -417,42 +490,6 @@ class Movement:
         if self._static is None:
             self._static = self.max_period == 0
         return self._static
-
-    @staticmethod
-    def _lcm(a: float, b: float) -> float:
-        """Calculates the least common multiple of two numbers.
-
-        :param a: First number (period in seconds)
-        :param b: Second number (period in seconds)
-        :return: LCM of a and b. Returns 0.0 if either input is 0.0.
-        """
-        if a == 0.0 or b == 0.0:
-            return 0.0
-        # Convert to integers (periods are typically whole multiples of delta_time)
-        # Use sufficiently large multiplier to preserve precision
-        multiplier = 1000000
-        a_int = int(round(a * multiplier))
-        b_int = int(round(b * multiplier))
-        lcm_int = abs(a_int * b_int) // math.gcd(a_int, b_int)
-        return lcm_int / multiplier
-
-    @staticmethod
-    def _lcm_multiple(periods: list[float]) -> float:
-        """Calculates the least common multiple of multiple periods.
-
-        :param periods: List of periods in seconds
-        :return: LCM of all periods. Returns 0.0 if all periods are 0.0.
-        """
-        if not periods or all(p == 0.0 for p in periods):
-            return 0.0
-        # Filter out zero periods and calculate LCM
-        non_zero_periods = [p for p in periods if p != 0.0]
-        if not non_zero_periods:
-            return 0.0
-        result = non_zero_periods[0]
-        for period in non_zero_periods[1:]:
-            result = Movement._lcm(result, period)
-        return result
 
 
 def _compute_wake_area_mismatch(
@@ -605,8 +642,8 @@ def _optimize_delta_time(
     Otherwise, it will return the locally minimum with an absolute convergence tolerance
     of 0.001.
 
-    The optimization search is bounded within one order of magnitude, centered at the
-    specified starting value.
+    The optimization search is bounded within a factor of 2, centered at the specified
+    starting value.
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
@@ -618,8 +655,8 @@ def _optimize_delta_time(
     :return: The optimized delta_time value. Its units are in seconds.
     :raises RuntimeError: If optimization fails to converge.
     """
-    lower_bound = initial_delta_time / math.sqrt(10)
-    upper_bound = initial_delta_time * math.sqrt(10)
+    lower_bound = initial_delta_time / 2.0
+    upper_bound = initial_delta_time * 2.0
 
     movement_logger.info("Starting delta_time optimization.")
 
@@ -699,5 +736,265 @@ def _optimize_delta_time(
         )
 
     movement_logger.info("Optimization complete.")
+
+    return optimized_delta_time
+
+
+def _analytically_optimize_delta_time(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    initial_delta_time: float,
+) -> float:
+    """Analytically estimates the optimal delta_time from wake displacement.
+
+    Estimates the delta_time that produces wake RingVortices with roughly the same chord
+    length as the bound trailing edge RingVortices, accounting for both freestream and
+    geometry motion velocities. This is faster than _optimize_delta_time but may be
+    slightly less accurate.
+
+    The algorithm works by: (1) computing a very small preliminary delta_time as the
+    minimum motion period divided by 100 (capped by a maximum of 1000 total time steps
+    for one cycle of the motion's LCM period), (2) creating a temporary Movement and
+    UnsteadyProblem to generate Airplane geometry at each time step (with all Panel
+    coordinates transformed into the first Airplane's geometry axes), (3) measuring the
+    average wake displacement per time step for each Wing's trailing edge Panels
+    (combining freestream velocity and geometry motion, both in the first Airplane's
+    geometry axes), and (4) choosing a delta_time such that each wake RingVortex has
+    approximately the same chord as its parent bound RingVortex (averaged across the one
+    LCM period).
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :param initial_delta_time: The initial estimate from the fast calculation. It must
+        be a positive float. Its units are in seconds. Used as a fallback for static
+        Movements or degenerate cases.
+    :return: The analytically optimized delta_time value. Its units are in seconds.
+    """
+    movement_logger.info("Starting analytical delta_time optimization.")
+
+    # Collect all non zero periods.
+    all_periods: list[float] = []
+    for airplane_movement in airplane_movements:
+        all_periods.extend(airplane_movement.all_periods)
+    op_period = operating_point_movement.max_period
+    if op_period != 0.0:
+        all_periods.append(op_period)
+    non_zero_periods = [p for p in all_periods if p != 0.0]
+
+    # If there is no motion, fall back to the initial estimate.
+    if not non_zero_periods:
+        movement_logger.info(
+            "All motion is static. Returning initial delta_time estimate."
+        )
+        return initial_delta_time
+
+    min_period = min(non_zero_periods)
+
+    lcm_period = _lcm_multiple(non_zero_periods)
+
+    # Step 1: Compute a preliminary delta_time that divides the LCM period into roughly
+    # min_period / 100 sized steps. Cap at 1000 steps to prevent excessive computation
+    # for cases with very large LCM to min period ratios.
+    preliminary_delta_time = min_period / 100.0
+    preliminary_num_steps = round(lcm_period / preliminary_delta_time)
+    max_preliminary_steps = 1000
+    if preliminary_num_steps > max_preliminary_steps:
+        movement_logger.warning(
+            "Preliminary num_steps ("
+            + str(preliminary_num_steps)
+            + ") exceeds cap of "
+            + str(max_preliminary_steps)
+            + ". Capping to prevent excessive computation."
+        )
+        preliminary_num_steps = max_preliminary_steps
+    if preliminary_num_steps < 1:
+        preliminary_num_steps = 1
+    # Adjust to ensure an integer number of steps fits the LCM period.
+    preliminary_delta_time = lcm_period / preliminary_num_steps
+
+    # Step 2: Deep copy the movement objects and create a temporary Movement and
+    # UnsteadyProblem. The UnsteadyProblem creates SteadyProblems that transform all
+    # Panel coordinates into the first Airplane's geometry axes (GP1_CgP1), ensuring
+    # consistent coordinate frames for multi airplane formation flight cases.
+    airplane_movements_copy = copy.deepcopy(airplane_movements)
+    operating_point_movement_copy = copy.deepcopy(operating_point_movement)
+
+    temp_movement = Movement(
+        airplane_movements=airplane_movements_copy,
+        operating_point_movement=operating_point_movement_copy,
+        delta_time=preliminary_delta_time,
+        num_steps=preliminary_num_steps + 1,
+    )
+
+    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+
+    # Step 3: For each Airplane and Wing, measure the average wake displacement of
+    # trailing edge Panels across all time steps. All coordinates are in the first
+    # Airplane's geometry axes (GP1), relative to the first Airplane's CG (CgP1).
+    wing_num_steps_values: list[float] = []
+    wing_num_spanwise_panels_values: list[int] = []
+
+    num_airplanes = len(temp_problem.steady_problems[0].airplanes)
+    for airplane_id in range(num_airplanes):
+        # Use the first generated Airplane to get Wing properties, since the base
+        # Airplane may have different panel counts (e.g., due to symmetry processing
+        # that occurs during generate_airplanes).
+        first_airplane = temp_problem.steady_problems[0].airplanes[airplane_id]
+        for wing_id, wing in enumerate(first_airplane.wings):
+            num_chordwise = wing.num_chordwise_panels
+            _panels = wing.panels
+            assert _panels is not None
+            num_spanwise = _panels.shape[1]
+
+            # Compute the mean chordwise width of trailing edge Panels. This is
+            # the target chord length for wake RingVortices. We use the trailing
+            # edge Panel chord directly (rather than standard_mean_chord /
+            # num_chordwise) because non uniform chordwise spacing can cause
+            # trailing edge Panels to have different chords than average.
+            total_te_panel_chord = 0.0
+            for spanwise_id in range(num_spanwise):
+                te_panel = _panels[num_chordwise - 1, spanwise_id]
+                _leftLeg_GP1 = te_panel.leftLeg_GP1
+                _rightLeg_GP1 = te_panel.rightLeg_GP1
+                assert _leftLeg_GP1 is not None
+                assert _rightLeg_GP1 is not None
+                # Average the left and right leg magnitudes for this Panel.
+                panel_chord = (
+                    float(np.linalg.norm(_leftLeg_GP1))
+                    + float(np.linalg.norm(_rightLeg_GP1))
+                ) / 2.0
+                total_te_panel_chord += panel_chord
+            mean_te_panel_chord = total_te_panel_chord / num_spanwise
+
+            # Accumulate displacement distance across all trailing edge Panels
+            # across all consecutive time step pairs.
+            total_distance = 0.0
+            num_measurements = 0
+
+            for spanwise_id in range(num_spanwise):
+                spanwise_distance = 0.0
+
+                for step in range(preliminary_num_steps):
+                    # Get this and next time step's trailing edge Panel.
+                    this_airplane = temp_problem.steady_problems[step].airplanes[
+                        airplane_id
+                    ]
+                    next_airplane = temp_problem.steady_problems[step + 1].airplanes[
+                        airplane_id
+                    ]
+
+                    _this_panels = this_airplane.wings[wing_id].panels
+                    _next_panels = next_airplane.wings[wing_id].panels
+                    assert _this_panels is not None
+                    assert _next_panels is not None
+
+                    this_panel = _this_panels[num_chordwise - 1, spanwise_id]
+                    next_panel = _next_panels[num_chordwise - 1, spanwise_id]
+
+                    # Compute the trailing edge center at each time step (in the first
+                    # Airplane's geometry axes, relative to the first Airplane's CG).
+                    _thisBlpp_GP1_CgP1 = this_panel.Blpp_GP1_CgP1
+                    _thisBrpp_GP1_CgP1 = this_panel.Brpp_GP1_CgP1
+                    _nextBlpp_GP1_CgP1 = next_panel.Blpp_GP1_CgP1
+                    _nextBrpp_GP1_CgP1 = next_panel.Brpp_GP1_CgP1
+                    assert _thisBlpp_GP1_CgP1 is not None
+                    assert _thisBrpp_GP1_CgP1 is not None
+                    assert _nextBlpp_GP1_CgP1 is not None
+                    assert _nextBrpp_GP1_CgP1 is not None
+
+                    thisCenter_GP1_CgP1 = (
+                        _thisBlpp_GP1_CgP1 + _thisBrpp_GP1_CgP1
+                    ) / 2.0
+                    nextCenter_GP1_CgP1 = (
+                        _nextBlpp_GP1_CgP1 + _nextBrpp_GP1_CgP1
+                    ) / 2.0
+
+                    # Geometry displacement of the trailing edge (in the first
+                    # Airplane's geometry axes).
+                    geometryDisplacement_GP1 = nextCenter_GP1_CgP1 - thisCenter_GP1_CgP1
+
+                    # Flow displacement during this time step (in the first Airplane's
+                    # geometry axes).
+                    vInf_GP1__E = temp_movement.operating_points[step].vInf_GP1__E
+                    flowDisplacement_GP1 = vInf_GP1__E * preliminary_delta_time
+
+                    # Wake displacement is the combination of freestream flow and the
+                    # opposite of geometry motion (the wake stays where the trailing
+                    # edge was, then convects with the flow). Both vectors are in the
+                    # first Airplane's geometry axes.
+                    wakeDisplacement_GP1 = (
+                        flowDisplacement_GP1 - geometryDisplacement_GP1
+                    )
+
+                    spanwise_distance += float(np.linalg.norm(wakeDisplacement_GP1))
+
+                total_distance += spanwise_distance
+                num_measurements += 1
+
+            # Average distance over one LCM period per spanwise Panel.
+            average_distance = total_distance / num_measurements
+            # The desired number of steps per LCM period is such that each wake
+            # RingVortex chord equals the trailing edge bound Panel chord.
+            wing_num_steps_per_lcm = average_distance / mean_te_panel_chord
+            wing_num_steps_values.append(wing_num_steps_per_lcm)
+            wing_num_spanwise_panels_values.append(num_spanwise)
+
+    # Step 4: Compute the weighted average of num_steps across all Wings.
+    if not wing_num_steps_values:
+        movement_logger.info(
+            "No valid wake displacement data. Returning initial delta_time estimate."
+        )
+        return initial_delta_time
+
+    total_weight = sum(wing_num_spanwise_panels_values)
+    weighted_num_steps = (
+        sum(
+            n * w
+            for n, w in zip(wing_num_steps_values, wing_num_spanwise_panels_values)
+        )
+        / total_weight
+    )
+
+    if weighted_num_steps <= 0.0:
+        movement_logger.info(
+            "Computed num_steps is non positive. Returning initial delta_time estimate."
+        )
+        return initial_delta_time
+
+    # Round to an integer number of steps that fits the LCM period.
+    final_num_steps = round(weighted_num_steps)
+    if final_num_steps < 1:
+        final_num_steps = 1
+    optimized_delta_time = lcm_period / final_num_steps
+
+    dt_str = str(round(optimized_delta_time, 6))
+    movement_logger.info(
+        "\tResult: delta_time="
+        + dt_str
+        + " ("
+        + str(final_num_steps)
+        + " steps per LCM period)"
+    )
+
+    # Warn if the result implies fewer than 20 time steps per minimum period of motion.
+    # This indicates the trailing edge Panels are large relative to the motion, so
+    # matching wake RingVortex area to bound RingVortex area requires a time step that
+    # is large compared to the minimum period. This results in poor temporal resolution
+    # of the fastest motion. Increasing the number of chordwise Panels or switching to
+    # cosine chordwise spacing (which concentrates Panels at the leading and trailing
+    # edges) will reduce the trailing edge Panels' chord lengths and allow finer time
+    # stepping.
+    steps_per_min_period = min_period / optimized_delta_time
+    if steps_per_min_period < 20:
+        movement_logger.warning(
+            "Analytical optimization result implies only "
+            + str(round(steps_per_min_period, 1))
+            + " time steps per minimum period of motion. This may cause poor temporal "
+            + "resolution. Consider increasing the number of chordwise Panels or "
+            + "switching to cosine chordwise spacing to reduce the trailing edge "
+            + "Panels' chord lengths."
+        )
+
+    movement_logger.info("Analytical optimization complete.")
 
     return optimized_delta_time

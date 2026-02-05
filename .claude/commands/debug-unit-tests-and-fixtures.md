@@ -1,10 +1,10 @@
 ---
-description: Run and debug unit tests, carefully analyzing failures for real bugs
+description: Run and debug the unit tests for a specified module, carefully analyzing failures for real bugs
 ---
 
 # Run and Debug Tests
 
-Run and debug unit tests for the contents of $ARGUMENTS, with careful analysis of failures.
+Run and debug unit tests for the contents of `$ARGUMENTS`, with careful analysis of failures.
 
 ## Critical Rule
 
@@ -20,7 +20,7 @@ If there's ANY possibility you've found a real bug based on the source code logi
 
 Follow these steps carefully and track your progress:
 
-- [ ] Identify which test files correspond to $ARGUMENTS
+- [ ] Identify which test files correspond to `$ARGUMENTS`
 - [ ] Run the relevant tests and capture output
 - [ ] For each failure, analyze the source code logic
 - [ ] Check documentation/docstrings for intended behavior
@@ -29,11 +29,12 @@ Follow these steps carefully and track your progress:
 - [ ] STOP and alert user if potential source bug found
 - [ ] Verify all tests pass after fixes
 - [ ] Document any assumptions or edge cases discovered
+- [ ] If you've modified any modules, reformat them using black
 
 ## Detailed Steps
 
-1. **Identify test files** for $ARGUMENTS:
-   - Find corresponding test files in tests/unit/
+1. **Identify test files** for `$ARGUMENTS`:
+   - Find corresponding test files in `tests/unit/`
    - Note any fixture dependencies
 
 2. **Run initial tests**:
@@ -72,7 +73,7 @@ Follow these steps carefully and track your progress:
         - ONLY AFTER documenting this analysis, fix the test implementation or expected values
       - **Source might have bug**: 
         ```
-        ⚠️ POTENTIAL BUG DETECTED
+        POTENTIAL BUG DETECTED
         Test: [test_name]
         Expected: [expected_behavior]
         Actual: [actual_behavior]
@@ -91,11 +92,12 @@ Follow these steps carefully and track your progress:
    - Run tests incrementally to verify fixes
    - Ensure no regressions are introduced
 
-5. **Review CLAUDE.md** if you encounter testing patterns questions
-
-6. **Final verification**:
+5. **Final verification**:
    - Run all tests for the module
    - Confirm all tests pass
+
+6. **Reformatting**:
+   - If you've modified any files, run black to reformat them
 
 ## Analysis Guidelines
 
@@ -136,3 +138,4 @@ Before considering debugging complete:
 - [ ] All potential bugs have been flagged to user
 - [ ] Changes are documented with reasoning
 - [ ] Edge cases discovered are documented
+- [ ] If any modules have been updated, they've also been reformatted using black

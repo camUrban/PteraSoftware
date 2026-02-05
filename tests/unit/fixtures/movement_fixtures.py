@@ -82,11 +82,11 @@ def make_static_movement_with_explicit_num_steps_fixture():
 
 
 def make_non_static_movement_with_explicit_num_steps_fixture():
-    """This method makes a fixture that is a Movement with non-static motion and
+    """This method makes a fixture that is a Movement with non static motion and
     explicitly set num_steps.
 
     :return non_static_movement_with_explicit_num_steps_fixture: Movement
-        This is the Movement with non-static motion and explicit num_steps.
+        This is the Movement with non static motion and explicit num_steps.
     """
     # Initialize the constructing fixtures.
     airplane_movements = [

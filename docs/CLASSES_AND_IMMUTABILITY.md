@@ -127,6 +127,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 |--------------|--------------------------------------------------|--------|
 | `lcm_period` | `airplane_movements`, `operating_point_movement` | Cached |
 | `max_period` | `airplane_movements`, `operating_point_movement` | Cached |
+| `min_period` | `airplane_movements`, `operating_point_movement` | Cached |
 | `static`     | `max_period`                                     | Cached |
 
 **Note on `airplanes` and `operating_points`**: These are generated during `__init__` by calling the child movements' `generate_*` methods. Are stored as nested tuples to prevent modification after generation.

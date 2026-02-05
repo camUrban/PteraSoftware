@@ -1438,22 +1438,32 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
+        # Use a larger initial_delta_time to reduce the brute force search range.
+        # The fixture has a period of 2.0 s, so 0.1 s gives ~20 steps per period,
+        # and the search range is ~10 to ~40 steps (~30 evaluations).
+        initial_delta_time = 0.1
 
-        # Run with an abnormally high mismatch_cutoff to speed up test.
+        # For non static movements, brute force search is used (mismatch_cutoff is
+        # ignored).
         optimized_delta_time = _optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
             initial_delta_time=initial_delta_time,
-            mismatch_cutoff=0.35,
         )
 
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
 
-        # The optimization searches within [initial / 2, initial * 2].
-        self.assertGreaterEqual(optimized_delta_time, initial_delta_time / 2.0)
-        self.assertLessEqual(optimized_delta_time, initial_delta_time * 2.0)
+        # The optimization searches num_steps from 0.5x to 2x the initial estimate.
+        # Calculate the exact bounds using the same equations as the function.
+        lcm_period = 2.0  # Fixture has a period of 2.0 s.
+        initial_num_steps = lcm_period / initial_delta_time
+        min_num_steps = max(1, int(initial_num_steps / 2))
+        max_num_steps = int(initial_num_steps * 2) + 1
+        min_delta_time = lcm_period / max_num_steps
+        max_delta_time = lcm_period / min_num_steps
+        self.assertGreaterEqual(optimized_delta_time, min_delta_time)
+        self.assertLessEqual(optimized_delta_time, max_delta_time)
 
     def test_works_with_static_movement(self):
         """Test that _optimize_delta_time works with static AirplaneMovement."""

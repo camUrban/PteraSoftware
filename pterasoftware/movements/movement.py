@@ -632,33 +632,81 @@ def _optimize_delta_time(
     initial_delta_time: float,
     mismatch_cutoff: float = 0.01,
 ) -> float:
-    """Finds an optimal delta_time using sp_opt.minimize_scalar.
+    """Finds an optimal delta_time by minimizing wake area mismatch.
 
     Optimizes delta_time to minimize the area mismatch between wake RingVortices and
     their parent bound trailing edge RingVortices. This produces better results at high
     Strouhal numbers where motion induced velocity is significant.
 
-    The search terminates early if the mismatch falls below the specified cutoff value.
-    Otherwise, it will return the locally minimum with an absolute convergence tolerance
-    of 0.001.
+    For non static Movements, the optimization uses a brute force search over integer
+    num_steps_per_lcm_cycle values (from 0.5x to 2x the initial estimate). This ensures
+    the resulting delta_time divides the LCM period evenly.
 
-    The optimization search is bounded within a factor of 2, centered at the specified
-    starting value.
+    For static Movements, the optimization uses scipy.optimize.minimize_scalar with
+    early termination if the mismatch falls below the specified cutoff value.
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
     :param initial_delta_time: The initial estimate from the fast calculation. It must
         be a positive float. Its units are in seconds.
     :param mismatch_cutoff: A positive float for the optimization's convergence
-        threshold. When the average area mismatch (which is an absolute percent error)
-        falls below this value, the search terminates early. The default is 0.01.
+        threshold. Only used for static Movements. When the average area mismatch (which
+        is an absolute percent error) falls below this value, the search terminates
+        early. The default is 0.01.
     :return: The optimized delta_time value. Its units are in seconds.
-    :raises RuntimeError: If optimization fails to converge.
+    """
+    movement_logger.info("Starting delta_time optimization.")
+
+    # Collect all non zero periods to determine if static.
+    all_periods: list[float] = []
+    for airplane_movement in airplane_movements:
+        all_periods.extend(airplane_movement.all_periods)
+    op_period = operating_point_movement.max_period
+    if op_period != 0.0:
+        all_periods.append(op_period)
+    non_zero_periods = [p for p in all_periods if p != 0.0]
+
+    if not non_zero_periods:
+        # Static case: use scipy continuous optimization.
+        return _optimize_delta_time_static(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=initial_delta_time,
+            mismatch_cutoff=mismatch_cutoff,
+        )
+    else:
+        # Non static case: brute force search over integer num_steps_per_lcm_cycle.
+        lcm_period = _lcm_multiple(non_zero_periods)
+        return _optimize_delta_time_non_static(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=initial_delta_time,
+            lcm_period=lcm_period,
+        )
+
+
+def _optimize_delta_time_static(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    initial_delta_time: float,
+    mismatch_cutoff: float,
+) -> float:
+    """Optimizes delta_time for static Movements using scipy.
+
+    Uses scipy.optimize.minimize_scalar to find the delta_time that minimizes wake area
+    mismatch. The search terminates early if the mismatch falls below the specified
+    cutoff value.
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :param initial_delta_time: The initial estimate. It must be a positive float. Its
+        units are in seconds.
+    :param mismatch_cutoff: A positive float for early termination. When the average
+        area mismatch falls below this value, the search terminates early.
+    :return: The optimized delta_time value. Its units are in seconds.
     """
     lower_bound = initial_delta_time / 2.0
     upper_bound = initial_delta_time * 2.0
-
-    movement_logger.info("Starting delta_time optimization.")
 
     # Check initial estimate first before running optimizer.
     initial_mismatch = _compute_wake_area_mismatch(
@@ -736,6 +784,90 @@ def _optimize_delta_time(
         )
 
     movement_logger.info("Optimization complete.")
+
+    return optimized_delta_time
+
+
+def _optimize_delta_time_non_static(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    initial_delta_time: float,
+    lcm_period: float,
+) -> float:
+    """Optimizes delta_time for non static Movements using brute force search.
+
+    Searches over integer num_steps_per_lcm_cycle values from 0.5x to 2x the initial
+    estimate. This ensures the resulting delta_time divides the LCM period evenly, which
+    is important for clean cycle boundaries when averaging.
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :param initial_delta_time: The initial estimate. It must be a positive float. Its
+        units are in seconds.
+    :param lcm_period: The LCM of all motion periods. It must be a positive float. Its
+        units are in seconds.
+    :return: The optimized delta_time value. Its units are in seconds.
+    """
+    # Convert initial_delta_time to num_steps_per_lcm_cycle.
+    initial_num_steps = lcm_period / initial_delta_time
+
+    # Search from 0.5x to 2x the initial estimate.
+    min_num_steps = max(1, int(initial_num_steps / 2))
+    max_num_steps = int(initial_num_steps * 2) + 1
+
+    movement_logger.info(
+        "\tSearching num_steps_per_lcm_cycle from "
+        + str(min_num_steps)
+        + " to "
+        + str(max_num_steps)
+    )
+
+    best_num_steps = min_num_steps
+    best_mismatch = float("inf")
+
+    for num_steps in range(min_num_steps, max_num_steps + 1):
+        delta_time = lcm_period / num_steps
+        mismatch = _compute_wake_area_mismatch(
+            delta_time, airplane_movements, operating_point_movement
+        )
+
+        movement_logger.info(
+            "\tnum_steps="
+            + str(num_steps)
+            + ", delta_time="
+            + str(round(delta_time, 6))
+            + ", mismatch="
+            + str(round(mismatch, 6))
+        )
+
+        if mismatch < best_mismatch:
+            best_mismatch = mismatch
+            best_num_steps = num_steps
+
+    optimized_delta_time = lcm_period / best_num_steps
+
+    movement_logger.info(
+        "Optimization complete. Best: num_steps_per_lcm_cycle="
+        + str(best_num_steps)
+        + ", delta_time="
+        + str(round(optimized_delta_time, 6))
+        + ", mismatch="
+        + str(round(best_mismatch, 6))
+    )
+
+    # Warn if the optimized value is at one of the bounds.
+    if best_num_steps == min_num_steps:
+        movement_logger.warning(
+            "Optimized num_steps_per_lcm_cycle is at the lower bound ("
+            + str(min_num_steps)
+            + "). A better value may exist below the search range."
+        )
+    elif best_num_steps == max_num_steps:
+        movement_logger.warning(
+            "Optimized num_steps_per_lcm_cycle is at the upper bound ("
+            + str(max_num_steps)
+            + "). A better value may exist above the search range."
+        )
 
     return optimized_delta_time
 

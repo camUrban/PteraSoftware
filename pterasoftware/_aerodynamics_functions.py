@@ -402,7 +402,7 @@ def _collapsed_velocities_from_line_vortices(
     """Takes in a group of points and the attributes of a group of LineVortices and
     finds the cumulative induced velocity at every point.
 
-    This function uses a modified version of the Bio-Savart law to create a smooth
+    This function uses a modified version of the Biot-Savart law to create a smooth
     induced velocity decay based on a LineVortex's core radius. The radius is determined
     based on the LineVortex's age and the kinematic viscosity. If the age of the
     LineVortex is 0.0 seconds, the radius is set to 0.0 meters. The age of a LineVortex
@@ -527,7 +527,7 @@ def _expanded_velocities_from_line_vortices(
     """Takes in a group of points and the attributes of a group of LineVortices and
     finds the induced velocity at every point due to each LineVortex.
 
-    This function uses a modified version of the Bio-Savart law to create a smooth
+    This function uses a modified version of the Biot-Savart law to create a smooth
     induced velocity decay based on a LineVortex's core radius. The radius is determined
     based on a LineVortex's age and the kinematic viscosity. If the age of the
     LineVortex is 0.0 seconds, the radius is set to 0.0 meters. The age of a vortex in

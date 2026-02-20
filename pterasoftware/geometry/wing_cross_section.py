@@ -127,8 +127,9 @@ class WingCrossSection:
             section axes are the wing axes and the parent leading point is the Wing's
             leading edge root point. If not, the parent axes and point are those of the
             previous WingCrossSection. If this is the root WingCrossSection, it must be
-            a zero vector. The second component must be non negative. The units are in
-            meters. The default is (0.0, 0.0, 0.0).
+            a zero vector. The second component must be non negative. For non root
+            WingCrossSections, the second component must be strictly positive. The units
+            are in meters. The default is (0.0, 0.0, 0.0).
         :param angles_Wcsp_to_Wcs_ixyz: An array-like object of 3 numbers (int or float)
             representing the angle vector of rotation angles that define the orientation
             of this WingCrossSection's axes relative to the parent wing cross section
@@ -720,31 +721,48 @@ class WingCrossSection:
                 "The root WingCrossSection cannot have num_spanwise_panels set to None."
             )
 
-    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_mid_constraints(self) -> None:
         """Called by the parent Wing to validate constraints specific to middle
         WingCrossSections.
 
         Middle WingCrossSections must have num_spanwise_panels not None (it's previously
-        been checked to be None or a positive int).
+        been checked to be None or a positive int). They must also have a strictly
+        positive second component of Lp_Wcsp_Lpp.
 
         :return: None
         """
+        if self.Lp_Wcsp_Lpp[1] <= 0.0:
+            raise ValueError(
+                "Non root WingCrossSections must have a strictly positive second "
+                "component of Lp_Wcsp_Lpp. To create a vertical surface, define "
+                "the WingCrossSections with spanwise (y) offsets and rotate the "
+                "Wing using angles_Gs_to_Wn_ixyz (e.g., (90.0, 0.0, 0.0) for a "
+                "vertical tail). To create a winglet, rotate the previous "
+                "WingCrossSection's axes using angles_Wcsp_to_Wcs_ixyz."
+            )
         if self.num_spanwise_panels is None:
             raise ValueError(
                 "Middle WingCrossSections cannot have num_spanwise_panels set to None."
             )
 
-    # TODO: Check that tip WingCrossSections have self.Lp_Wcsp_Lpp[0] != 0.
     def validate_tip_constraints(self) -> None:
         """Called by the parent Wing to validate constraints specific to tip
         WingCrossSections.
 
         Tip WingCrossSections must have num_spanwise_panels and spanwise_spacing set to
-        None.
+        None. They must also have a strictly positive second component of Lp_Wcsp_Lpp.
 
         :return: None
         """
+        if self.Lp_Wcsp_Lpp[1] <= 0.0:
+            raise ValueError(
+                "Non root WingCrossSections must have a strictly positive second "
+                "component of Lp_Wcsp_Lpp. To create a vertical surface, define "
+                "the WingCrossSections with spanwise (y) offsets and rotate the "
+                "Wing using angles_Gs_to_Wn_ixyz (e.g., (90.0, 0.0, 0.0) for a "
+                "vertical tail). To create a winglet, rotate the previous "
+                "WingCrossSection's axes using angles_Wcsp_to_Wcs_ixyz."
+            )
         if self.num_spanwise_panels is not None:
             raise ValueError(
                 "The tip WingCrossSection must have num_spanwise_panels=None."

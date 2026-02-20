@@ -109,6 +109,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
         self._stackBoundVortexVectors_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
+        self._stackRc0s = np.zeros(self.num_panels, dtype=float)
+
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
@@ -232,6 +234,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         for airplane in self.airplanes:
             wing: geometry.wing.Wing
             for wing in airplane.wings:
+                _standard_mean_chord = wing.standard_mean_chord
+                assert _standard_mean_chord is not None
+                wing_r_c0 = 0.03 * _standard_mean_chord
+
                 _panels = wing.panels
                 assert _panels is not None
 
@@ -248,6 +254,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # attributes (in the first Airplane's geometry axes, relative to
                     # the first Airplane's CG).
                     self.panels[global_panel_position] = panel
+                    self._stackRc0s[global_panel_position] = wing_r_c0
                     self.stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
                     )
@@ -312,6 +319,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=np.ones(self.num_panels, dtype=float),
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -382,6 +390,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )

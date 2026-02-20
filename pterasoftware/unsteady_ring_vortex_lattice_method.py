@@ -12,6 +12,7 @@ None
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import cast
 
@@ -838,6 +839,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # collocation point by each bound RingVortex. The answer is normalized
         # because the solver's list of bound RingVortex strengths was initialized to
         # all be 1.0. This will be updated once the correct strengths are calculated.
+        singularity_counts = np.zeros(4, dtype=np.int64)
         gridNormVIndCpp_GP1_E = (
             _aerodynamics_functions.expanded_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
@@ -847,9 +849,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._current_bound_vortex_strengths,
                 r_c0s=self._currentStackBoundRc0s,
+                singularity_counts=singularity_counts,
                 ages=None,
                 nu=self.current_operating_point.nu,
             )
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_wing_wing_influences",
+            singularity_counts,
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -922,6 +931,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # Get the velocities (in the first Airplane's geometry axes, observed
             # from the Earth frame) induced by the wake RingVortices at each Panel's
             # collocation point.
+            singularity_counts = np.zeros(4, dtype=np.int64)
             currentStackWakeV_GP1_E = (
                 _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                     stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
@@ -931,9 +941,16 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
                     strengths=self._current_wake_vortex_strengths,
                     r_c0s=self._currentStackWakeRc0s,
+                    singularity_counts=singularity_counts,
                     ages=self._current_wake_vortex_ages,
                     nu=self.current_operating_point.nu,
                 )
+            )
+            _functions.log_singularity_counts(
+                _logger,
+                logging.INFO,
+                "_calculate_wake_wing_influences",
+                singularity_counts,
             )
 
             # Get the current wake Wing influence coefficients (observed from the
@@ -974,7 +991,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             this_ring_vortex.strength = self._current_bound_vortex_strengths[panel_num]
 
     def calculate_solution_velocity(
-        self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
+        wake_singularity_counts: np.ndarray | None = None,
     ) -> np.ndarray:
         """Finds the fluid velocity (in the first Airplane's geometry axes, observed
         from the Earth frame) at one or more points (in the first Airplane's geometry
@@ -995,6 +1015,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, relative to the first Airplane's CG). Can be
             a tuple, list, or ndarray. Values are converted to floats internally. The
             units are in meters.
+        :param bound_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from bound RingVortices. If None,
+            counts are discarded.
+        :param wake_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from wake RingVortices. If None,
+            counts are discarded.
         :return: A (N,3) ndarray of floats representing the velocity (in the first
             Airplane's geometry axes, observed from the Earth frame) at each evaluation
             point due to the summed effects of the freestream velocity and the induced
@@ -1007,6 +1033,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         )
 
+        if bound_singularity_counts is None:
+            bound_singularity_counts = np.zeros(4, dtype=np.int64)
+        if wake_singularity_counts is None:
+            wake_singularity_counts = np.zeros(4, dtype=np.int64)
+
         stackBoundRingVInd_GP1_E = (
             _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
@@ -1016,6 +1047,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._current_bound_vortex_strengths,
                 r_c0s=self._currentStackBoundRc0s,
+                singularity_counts=bound_singularity_counts,
                 ages=None,
                 nu=self.current_operating_point.nu,
             )
@@ -1029,6 +1061,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
                 strengths=self._current_wake_vortex_strengths,
                 r_c0s=self._currentStackWakeRc0s,
+                singularity_counts=wake_singularity_counts,
                 ages=self._current_wake_vortex_ages,
                 nu=self.current_operating_point.nu,
             )
@@ -1211,21 +1244,51 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Calculate the velocity (in the first Airplane's geometry axes, observed
         # from the Earth frame) at the center of every Panels' RingVortex's right
         # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
+        bound_singularity_counts = np.zeros(4, dtype=np.int64)
+        wake_singularity_counts = np.zeros(4, dtype=np.int64)
         stackVelocityRightLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1)
+            self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1,
+                bound_singularity_counts=bound_singularity_counts,
+                wake_singularity_counts=wake_singularity_counts,
+            )
             + self._calculate_current_movement_velocities_at_right_leg_centers()
         )
         stackVelocityFrontLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1)
+            self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1,
+                bound_singularity_counts=bound_singularity_counts,
+                wake_singularity_counts=wake_singularity_counts,
+            )
             + self._calculate_current_movement_velocities_at_front_leg_centers()
         )
         stackVelocityLeftLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1)
+            self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1,
+                bound_singularity_counts=bound_singularity_counts,
+                wake_singularity_counts=wake_singularity_counts,
+            )
             + self._calculate_current_movement_velocities_at_left_leg_centers()
         )
         stackVelocityBackLineVortexCenters_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1)
+            self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1,
+                bound_singularity_counts=bound_singularity_counts,
+                wake_singularity_counts=wake_singularity_counts,
+            )
             + self._calculate_current_movement_velocities_at_back_leg_centers()
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_loads (bound)",
+            bound_singularity_counts,
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.INFO,
+            "_calculate_loads (wake)",
+            wake_singularity_counts,
         )
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
@@ -1362,6 +1425,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         # Check that this isn't the last time step.
         if self._current_step < self.num_steps - 1:
+            bound_singularity_counts = np.zeros(4, dtype=np.int64)
+            wake_singularity_counts = np.zeros(4, dtype=np.int64)
 
             # Get the next time step's Airplanes.
             next_problem: problems.SteadyProblem = self.steady_problems[
@@ -1469,7 +1534,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 vWrvp_GP1__E = self._currentVInf_GP1__E
                             else:
                                 vWrvp_GP1__E = self.calculate_solution_velocity(
-                                    np.expand_dims(Wrvp_GP1_CgP1, axis=0)
+                                    np.expand_dims(Wrvp_GP1_CgP1, axis=0),
+                                    bound_singularity_counts=bound_singularity_counts,
+                                    wake_singularity_counts=wake_singularity_counts,
                                 )
 
                             # Update the second new row with the interpolated
@@ -1521,7 +1588,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 else:
                                     vWrvp_GP1__E = np.squeeze(
                                         self.calculate_solution_velocity(
-                                            np.expand_dims(Wrvp_GP1_CgP1, axis=0)
+                                            np.expand_dims(Wrvp_GP1_CgP1, axis=0),
+                                            bound_singularity_counts=bound_singularity_counts,
+                                            wake_singularity_counts=wake_singularity_counts,
                                         )
                                     )
 
@@ -1578,6 +1647,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 next_wing.gridWrvp_GP1_CgP1,
                             )
                         )
+
+            _functions.log_singularity_counts(
+                _logger,
+                logging.DEBUG,
+                "_populate_next_airplanes_wake_vortex_points (bound)",
+                bound_singularity_counts,
+            )
+            _functions.log_singularity_counts(
+                _logger,
+                logging.DEBUG,
+                "_populate_next_airplanes_wake_vortex_points (wake)",
+                wake_singularity_counts,
+            )
 
     def _populate_next_airplanes_wake_vortices(self) -> None:
         """Populates the locations and strengths of the next time step's wake

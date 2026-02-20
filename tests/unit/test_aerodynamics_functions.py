@@ -94,6 +94,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -117,6 +118,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -135,6 +137,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             r_c0s=self.multiple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -154,6 +157,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
                 ages=self.ages,
                 nu=self.kinematic_viscosity,
             )
@@ -177,6 +181,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=zero_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -198,6 +203,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -219,6 +225,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -237,6 +244,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -255,6 +263,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             r_c0s=self.multiple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -274,6 +283,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -293,6 +303,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -308,6 +319,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -332,6 +344,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -355,6 +368,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -374,6 +388,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -396,6 +411,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=zero_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -415,6 +431,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -434,6 +451,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -453,6 +471,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -472,6 +491,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -485,6 +505,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -506,6 +527,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
                 strengths=self.simple_ring_strengths,
                 r_c0s=self.simple_ring_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -524,6 +546,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -799,6 +822,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=stackBlrvp_GP1_CgP1,
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=None,
             nu=0.0,
         )[0]
@@ -850,6 +874,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=stackBlhvp_GP1_CgP1,
                 strengths=strengths,
                 r_c0s=r_c0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )[0]
         )
 
@@ -928,6 +953,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
             strengths=self.degenerate_ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Verify all velocities are zero.
@@ -948,6 +974,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
             strengths=self.degenerate_ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Verify all velocities are zero.
@@ -969,6 +996,7 @@ class TestSingularityGuards(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
                 strengths=self.degenerate_horseshoe_strengths,
                 r_c0s=self.zero_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -991,6 +1019,7 @@ class TestSingularityGuards(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
                 strengths=self.degenerate_horseshoe_strengths,
                 r_c0s=self.zero_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -1021,6 +1050,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Compute expected velocity from the two non singular legs using the
@@ -1056,6 +1086,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Compute expected velocity from the two non singular legs using the
@@ -1094,6 +1125,7 @@ class TestSingularityGuards(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
                 strengths=self.horseshoe_strengths,
                 r_c0s=self.zero_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -1132,6 +1164,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Compute expected velocity from the three non singular legs using the
@@ -1170,6 +1203,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Compute expected velocity from the three non singular legs using the
@@ -1209,6 +1243,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
         # Compute expected velocity from the three non singular legs using the
@@ -1249,6 +1284,7 @@ class TestSingularityGuards(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
                 strengths=self.horseshoe_strengths,
                 r_c0s=self.zero_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
             )
         )
 
@@ -1361,6 +1397,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
             ages=ages,
             nu=nu,
         )
@@ -1498,6 +1535,283 @@ class TestCoreRadiusFormula(unittest.TestCase):
 
         # Verify the kernel result matches the reference.
         npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+
+class TestSingularityCounters(unittest.TestCase):
+    """This is a class with functions to test that singularity counters increment
+    correctly for known singular configurations."""
+
+    def setUp(self):
+        """Set up fixtures for singularity counter tests."""
+        # Simple (non degenerate) RingVortex fixture.
+        (
+            self.ring_Brrvp,
+            self.ring_Frrvp,
+            self.ring_Flrvp,
+            self.ring_Blrvp,
+            self.ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
+
+        # Degenerate RingVortex fixture (all corners at the origin).
+        (
+            self.degenerate_ring_Brrvp,
+            self.degenerate_ring_Frrvp,
+            self.degenerate_ring_Flrvp,
+            self.degenerate_ring_Blrvp,
+            self.degenerate_ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_degenerate_ring_vortex_arrays_fixture()
+
+        # Simple (non degenerate) HorseshoeVortex fixture.
+        (
+            self.horseshoe_Brhvp,
+            self.horseshoe_Frhvp,
+            self.horseshoe_Flhvp,
+            self.horseshoe_Blhvp,
+            self.horseshoe_strengths,
+        ) = (
+            aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
+        )
+
+        # Zero initial core radii for coreless tests.
+        self.zero_rc0s = np.zeros(1, dtype=float)
+
+    def test_degenerate_filament_increments_counter_zero(self):
+        """Test that a degenerate RingVortex (all corners at origin) increments
+        singularity_counts[0] (degenerate filament)."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.degenerate_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.degenerate_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.degenerate_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
+            strengths=self.degenerate_ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # All four legs are degenerate filaments.
+        self.assertGreater(singularity_counts[0], 0)
+
+    def test_vertex_proximity_increments_counter_one_and_two(self):
+        """Test that placing the evaluation point at a RingVortex corner
+        increments singularity_counts[1] (vertex start proximity) and
+        singularity_counts[2] (vertex end proximity)."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point at the front right corner.
+        point = self.ring_Frrvp.copy()
+
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # The right leg (Br to Fr) hits the r2/r0 guard (counter 2) because
+        # the evaluation point is at Fr. The front leg (Fr to Fl) hits the
+        # r1/r0 guard (counter 1) because the evaluation point is at Fr.
+        self.assertGreater(singularity_counts[1], 0)
+        self.assertGreater(singularity_counts[2], 0)
+
+    def test_collinearity_increments_counter_three(self):
+        """Test that placing the evaluation point on the extension of a
+        RingVortex leg increments singularity_counts[3] (collinearity)."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point on the extension of the right leg.
+        point = np.array([[5.0, 0.5, 0.0]], dtype=float)
+
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # The right leg (Br to Fr) is collinear with the evaluation point.
+        self.assertGreater(singularity_counts[3], 0)
+
+    def test_non_singular_configuration_has_zero_counts(self):
+        """Test that a non singular configuration produces zero singularity
+        counts."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point well above the RingVortex.
+        point = np.array([[0.5, 0.0, 5.0]], dtype=float)
+
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # No singularity events should have occurred.
+        self.assertEqual(singularity_counts.sum(), 0)
+
+    def test_counts_accumulate_across_calls(self):
+        """Test that singularity counts accumulate when the same array is
+        passed to multiple calls."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        # First call: degenerate RingVortex.
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.degenerate_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.degenerate_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.degenerate_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
+            strengths=self.degenerate_ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        first_total = singularity_counts.sum()
+        self.assertGreater(first_total, 0)
+
+        # Second call: same degenerate RingVortex.
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.degenerate_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.degenerate_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.degenerate_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
+            strengths=self.degenerate_ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # The total should have at least doubled.
+        self.assertGreaterEqual(singularity_counts.sum(), 2 * first_total)
+
+    def test_horseshoe_vortex_counter_increments(self):
+        """Test that singularity counters work correctly for HorseshoeVortex
+        wrapper functions."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point at the front right corner.
+        point = self.horseshoe_Frhvp.copy()
+
+        _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrhvp_GP1_CgP1=self.horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
+            strengths=self.horseshoe_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # At least one singularity event should have been recorded.
+        self.assertGreater(singularity_counts.sum(), 0)
+
+    def test_expanded_ring_vortex_counter_increments(self):
+        """Test that singularity counters work correctly for the expanded
+        RingVortex wrapper."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point at the front right corner.
+        point = self.ring_Frrvp.copy()
+
+        _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # At least one singularity event should have been recorded.
+        self.assertGreater(singularity_counts.sum(), 0)
+
+
+class TestLogSingularityCounts(unittest.TestCase):
+    """This is a class with functions to test the _log_singularity_counts
+    helper function."""
+
+    def test_zero_counts_does_not_log(self):
+        """Test that _log_singularity_counts does not log when all counts are
+        zero."""
+        import logging
+
+        # noinspection PyProtectedMember
+        from pterasoftware._functions import log_singularity_counts
+
+        logger = logging.getLogger("test_zero_counts")
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        with self.assertLogs(logger, level="DEBUG") as cm:
+            logger.debug("sentinel")
+            log_singularity_counts(
+                logger, logging.WARNING, "test_context", singularity_counts
+            )
+
+        # Only the sentinel message should have been logged.
+        self.assertEqual(len(cm.output), 1)
+        self.assertIn("sentinel", cm.output[0])
+
+    def test_nonzero_counts_logs_message(self):
+        """Test that _log_singularity_counts logs a message when counts are
+        nonzero."""
+        import logging
+
+        # noinspection PyProtectedMember
+        from pterasoftware._functions import log_singularity_counts
+
+        logger = logging.getLogger("test_nonzero_counts")
+        singularity_counts = np.array([2, 0, 3, 0], dtype=np.int64)
+
+        with self.assertLogs(logger, level="WARNING") as cm:
+            log_singularity_counts(
+                logger, logging.WARNING, "test_context", singularity_counts
+            )
+
+        # Verify the log message contains the context and the total count.
+        self.assertEqual(len(cm.output), 1)
+        self.assertIn("test_context", cm.output[0])
+        self.assertIn("5 singularity skip(s)", cm.output[0])
+        self.assertIn("degenerate filament=2", cm.output[0])
+        self.assertIn("vertex end proximity=3", cm.output[0])
+
+    def test_log_level_is_respected(self):
+        """Test that _log_singularity_counts uses the specified logging
+        level."""
+        import logging
+
+        # noinspection PyProtectedMember
+        from pterasoftware._functions import log_singularity_counts
+
+        logger = logging.getLogger("test_log_level")
+        singularity_counts = np.array([1, 0, 0, 0], dtype=np.int64)
+
+        with self.assertLogs(logger, level="ERROR") as cm:
+            log_singularity_counts(
+                logger, logging.ERROR, "error_context", singularity_counts
+            )
+
+        self.assertEqual(len(cm.output), 1)
+        self.assertIn("ERROR", cm.output[0])
 
 
 if __name__ == "__main__":

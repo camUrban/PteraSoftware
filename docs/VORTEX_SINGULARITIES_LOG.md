@@ -11,7 +11,7 @@ the GitHub issue).
 | Phase   | Status      | Description                                       |
 |---------|-------------|---------------------------------------------------|
 | Phase 1 | Complete    | Kernel singularity check and vortex core fixes    |
-| Phase 2 | Not started | Context-aware singularity detection and reporting |
+| Phase 2 | In progress | Context-aware singularity detection and reporting |
 
 ---
 
@@ -119,43 +119,43 @@ simulations with aging wake vortices. The unsteady solver is unchanged.
 
 ---
 
-## Phase 2: Context-Aware Singularity Detection and Reporting (Not Started)
+## Phase 2: Context-Aware Singularity Detection and Reporting (In Progress)
 
 Phase 2 adds counter-based singularity detection inside the `@njit` kernels and
 context-aware logging at the solver level.
 
-### Step 12 -- Add `singularity_counts` parameter to both kernel functions
+### Step 12 (Complete) -- Add `singularity_counts` parameter to both kernel functions
 
-Add `singularity_counts: np.ndarray` (shape `(4,)`, dtype `int64`) as a required
+Added `singularity_counts: np.ndarray` (shape `(4,)`, dtype `int64`) as a required
 parameter after `r_c0s` in both kernels. Index mapping:
 - `[0]`: degenerate filament
 - `[1]`: vertex-start proximity
 - `[2]`: vertex-end proximity
 - `[3]`: collinearity
 
-### Step 13 -- Increment counters at each singularity check
+### Step 13 (Complete) -- Increment counters at each singularity check
 
 Split the combined `if/or` into separate checks with individual counter increments in
 both kernels. The `continue` semantics preserve short-circuit behavior.
 
-### Step 14 -- Thread `singularity_counts` through all 5 wrappers
+### Step 14 (Complete) -- Thread `singularity_counts` through all 5 wrappers
 
 Each wrapper receives `singularity_counts: np.ndarray` and passes the same array to every
 internal kernel call. Counts accumulate across legs.
 
-### Step 15 -- Add logging helper function
+### Step 15 (Complete) -- Add logging helper function
 
-Add `_log_singularity_counts` to `pterasoftware/_functions.py`. Checks
+Added `log_singularity_counts` to `pterasoftware/_functions.py`. Checks
 `singularity_counts.sum() > 0`, then logs at a specified level with context string and
-per-check breakdown.
+per-check breakdown. Also added `_SINGULARITY_NAMES` tuple for human-readable labels.
 
-### Step 16 -- Add optional counter parameters to `calculate_solution_velocity`
+### Step 16 (Complete) -- Add optional counter parameters to `calculate_solution_velocity`
 
 All three solvers' `calculate_solution_velocity` methods get optional
-`bound_singularity_counts` and `wake_singularity_counts` parameters. If `None`, counts
-are discarded.
+`bound_singularity_counts` (and `wake_singularity_counts` for the unsteady solver)
+parameters. If `None`, counts are discarded via internal zero allocation.
 
-### Step 17 -- Add logging at each solver call site
+### Step 17 (Complete) -- Add logging at each solver call site
 
 | Solver          | Call site                                     | Level     |
 |-----------------|-----------------------------------------------|-----------|
@@ -166,22 +166,27 @@ are discarded.
 | Unsteady UVLM   | `_populate_next_airplanes_wake_vortex_points` | `DEBUG`   |
 | `_functions.py` | `calculate_streamlines`                       | `WARNING` |
 
-### Step 18 -- Add logger instances to solver modules
+### Step 18 (Complete) -- Add logger instances to solver modules
 
-Verify each solver module has a module-level logger. Add `import logging` where needed
-for level constants.
+Added `import logging` to all three solver modules for level constants. Each module
+already had a module-level logger via `_logging.get_logger`. Added a logger to
+`_functions.py` as well.
 
-### Step 19 -- Update unit tests for Phase 2
+### Step 19 (Complete) -- Update unit tests for Phase 2
 
-- Add `singularity_counts` parameter to all wrapper/kernel calls in unit tests.
-- Add new tests verifying counters increment correctly for known-singular configurations.
-- Add tests for the `_log_singularity_counts` helper.
+- Added `singularity_counts=np.zeros(4, dtype=np.int64)` to all wrapper calls in unit
+  tests.
+- Added `TestSingularityCounters` class (7 tests) verifying counters increment correctly
+  for each singular configuration, accumulate across calls, and work for horseshoe and
+  expanded ring wrappers.
+- Added `TestLogSingularityCounts` class (3 tests) verifying the logging helper skips
+  zero counts, logs nonzero counts, and respects the specified logging level.
 
-### Step 20 (Deferred) -- Pre-exclusion of known singular pairs in `_calculate_loads`
+### Step 20 -- Pre-exclusion of known singular pairs in `_calculate_loads`
 
-Deferred to a follow-up. Requires combinatorial analysis of which LineVortex-point pairs
-are structurally singular for load calculations. The current implementation will log these
-expected singularities, which is acceptable for initial deployment.
+Requires combinatorial analysis of which LineVortex-point pairs are structurally singular
+for load calculations. The current implementation will log these expected singularities,
+which is acceptable for initial deployment.
 
 ---
 
@@ -196,16 +201,16 @@ expected singularities, which is acceptable for initial deployment.
 | `tests/unit/fixtures/aerodynamics_functions_fixtures.py`  | `make_rc0s_fixture` helper                                                                                                          |
 | `tests/unit/test_aerodynamics_functions.py`               | `r_c0s` at all 25 calls; updated reference implementation singularity checks; coreless decomposition tests                          |
 
-## Files to be Modified by Phase 2
+## Files Modified by Phase 2
 
-| File                                                      | Changes                                                                            |
-|-----------------------------------------------------------|------------------------------------------------------------------------------------|
-| `pterasoftware/_aerodynamics_functions.py`                | `singularity_counts` param in 2 kernels + 5 wrappers; per-check counter increments |
-| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | Counter allocation + logging at 2 call sites                                       |
-| `pterasoftware/steady_ring_vortex_lattice_method.py`      | Counter allocation + logging at 4 call sites                                       |
-| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | Counter allocation + logging at 4 call sites                                       |
-| `pterasoftware/_functions.py`                             | `_log_singularity_counts` helper; `calculate_streamlines` counter passing          |
-| `tests/unit/test_aerodynamics_functions.py`               | `singularity_counts` at all calls; new counter tests                               |
+| File                                                      | Changes                                                                                                                                                          |
+|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pterasoftware/_aerodynamics_functions.py`                | `singularity_counts` param in 2 kernels + 5 wrappers; split `if/or` into separate checks with per-category counter increments                                    |
+| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                           |
+| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                           |
+| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | `import logging`; counter allocation + logging at all 5 call sites including `_calculate_wake_wing_influences` and `_populate_next_airplanes_wake_vortex_points` |
+| `pterasoftware/_functions.py`                             | `_SINGULARITY_NAMES`, `log_singularity_counts` helper, logger instance; `calculate_streamlines` counter allocation + logging                                     |
+| `tests/unit/test_aerodynamics_functions.py`               | `singularity_counts` at all ~35 wrapper calls; `TestSingularityCounters` (7 tests); `TestLogSingularityCounts` (3 tests)                                         |
 
 ---
 

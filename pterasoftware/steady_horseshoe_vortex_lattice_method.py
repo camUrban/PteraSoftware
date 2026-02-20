@@ -12,6 +12,7 @@ None
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import cast
 
@@ -306,6 +307,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Find the 2D ndarray of normalized velocities (in the first Airplane's
         # geometry axes, observed from the Earth frame) induced at each Panel's
         # collocation point by each HorseshoeVortex.
+        singularity_counts = np.zeros(4, dtype=np.int64)
         gridNormVIndCpp_GP1__E = (
             _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=self._stackCpp_GP1_CgP1,
@@ -315,9 +317,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=np.ones(self.num_panels, dtype=float),
                 r_c0s=self._stackRc0s,
+                singularity_counts=singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_wing_wing_influences",
+            singularity_counts,
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -349,7 +358,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             horseshoe_vortex.strength = self._vortex_strengths[panel_num]
 
     def calculate_solution_velocity(
-        self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
     ) -> np.ndarray:
         """Finds the fluid velocity (in the first Airplane's geometry axes, observed
         from the Earth frame) at one or more points (in the first Airplane's geometry
@@ -366,6 +377,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             first Airplane's geometry axes, relative to the first Airplane's CG). Can be
             a tuple, list,or ndarray. Values are converted to floats internally. The
             units are in meters.
+        :param bound_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from bound HorseshoeVortices. If None,
+            counts are discarded.
         :return: A (N,3) ndarray of floats representing the velocity (in the first
             Airplane's geometry axes, observed from the Earth frame) at each evaluation
             point due to the summed effects of the freestream velocity and the induced
@@ -377,6 +391,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
         )
 
+        if bound_singularity_counts is None:
+            bound_singularity_counts = np.zeros(4, dtype=np.int64)
+
         stackVInd_GP1__E = (
             _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
@@ -386,6 +403,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
                 r_c0s=self._stackRc0s,
+                singularity_counts=bound_singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -408,8 +426,16 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         # Calculate the velocity (in the first Airplane's geometry axes, observed
         # from the Earth frame) at the center of every Panel's HorseshoeVortex's
         # finite leg.
+        bound_singularity_counts = np.zeros(4, dtype=np.int64)
         stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1
+            stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_loads (bound)",
+            bound_singularity_counts,
         )
 
         # Calculate the force (in the first Airplane's geometry axes) on each Panel's

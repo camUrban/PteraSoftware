@@ -12,6 +12,7 @@ None
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import cast
 
@@ -366,6 +367,7 @@ class SteadyRingVortexLatticeMethodSolver:
         # collocation point by each RingVortex. The answer is normalized because the
         # solver's list of RingVortex strengths was initialized to all be 1.0. This
         # will be updated once the correct strengths are calculated.
+        singularity_counts = np.zeros(4, dtype=np.int64)
         gridRingNormVIndCpp_GP1__E = (
             _aerodynamics_functions.expanded_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
@@ -375,6 +377,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
                 r_c0s=self._stackRc0s,
+                singularity_counts=singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -397,9 +400,16 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._horseshoe_vortex_strengths,
                 r_c0s=self._stackRc0s,
+                singularity_counts=singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_wing_wing_influences",
+            singularity_counts,
         )
 
         gridNormVIndCpp_GP1__E = (
@@ -445,7 +455,9 @@ class SteadyRingVortexLatticeMethodSolver:
                 ]
 
     def calculate_solution_velocity(
-        self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
     ) -> np.ndarray:
         """Finds the fluid velocity (in the first Airplane's geometry axes, observed
         from the Earth frame) at one or more points (in the first Airplane's geometry
@@ -462,6 +474,9 @@ class SteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, relative to the first Airplane's CG). Can be
             a tuple, list, or ndarray. Values are converted to floats internally. The
             units are in meters.
+        :param bound_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from bound RingVortices and
+            HorseshoeVortices. If None, counts are discarded.
         :return: A (N,3) ndarray of floats representing the velocity (in the first
             Airplane's geometry axes, observed from the Earth frame) at each evaluation
             point due to the summed effects of the freestream velocity and the induced
@@ -474,6 +489,9 @@ class SteadyRingVortexLatticeMethodSolver:
             )
         )
 
+        if bound_singularity_counts is None:
+            bound_singularity_counts = np.zeros(4, dtype=np.int64)
+
         stackRingVInd_GP1__E = (
             _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
@@ -483,6 +501,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
                 r_c0s=self._stackRc0s,
+                singularity_counts=bound_singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -496,6 +515,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._horseshoe_vortex_strengths,
                 r_c0s=self._stackRc0s,
+                singularity_counts=bound_singularity_counts,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -654,17 +674,28 @@ class SteadyRingVortexLatticeMethodSolver:
         # Calculate the velocity (in the first Airplane's geometry axes, observed
         # from the Earth frame) at the center of every Panels' RingVortex's right
         # LineVortex, front LineVortex, left LineVortex, and back LineVortex.
+        bound_singularity_counts = np.zeros(4, dtype=np.int64)
         stackVelocityRightLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1
+            stackP_GP1_CgP1=self.stackCblvpr_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
         )
         stackVelocityFrontLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1
+            stackP_GP1_CgP1=self.stackCblvpf_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
         )
         stackVelocityLeftLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1
+            stackP_GP1_CgP1=self.stackCblvpl_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
         )
         stackVelocityBackLineVortexCenters_GP1__E = self.calculate_solution_velocity(
-            stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1
+            stackP_GP1_CgP1=self.stackCblvpb_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
+        )
+        _functions.log_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_loads (bound)",
+            bound_singularity_counts,
         )
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,

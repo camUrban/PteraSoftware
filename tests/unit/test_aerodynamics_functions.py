@@ -1621,9 +1621,31 @@ class TestSingularityCounters(unittest.TestCase):
         self.assertGreater(singularity_counts[1], 0)
         self.assertGreater(singularity_counts[2], 0)
 
-    def test_collinearity_increments_counter_three(self):
-        """Test that placing the evaluation point on the extension of a
-        RingVortex leg increments singularity_counts[3] (collinearity)."""
+    def test_on_filament_collinearity_increments_counter_three(self):
+        """Test that placing the evaluation point on the a RingVortex leg increments
+        singularity_counts[3] (on-filament collinearity)."""
+        singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Place the evaluation point on the right leg.
+        point = np.array([[0.5, 0.5, 0.0]], dtype=float)
+
+        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+            singularity_counts=singularity_counts,
+        )
+
+        # The right leg (Br to Fr) is collinear with the evaluation point.
+        self.assertGreater(singularity_counts[3], 0)
+
+    def test_off_filament_collinearity_increments_counter_three(self):
+        """Test that placing the evaluation point on the extension of a RingVortex leg
+        doesn't increment singularity_counts[3] (off-filament collinearity)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         # Place the evaluation point on the extension of the right leg.
@@ -1641,7 +1663,7 @@ class TestSingularityCounters(unittest.TestCase):
         )
 
         # The right leg (Br to Fr) is collinear with the evaluation point.
-        self.assertGreater(singularity_counts[3], 0)
+        self.assertEqual(singularity_counts[3], 0)
 
     def test_non_singular_configuration_has_zero_counts(self):
         """Test that a non singular configuration produces zero singularity

@@ -42,6 +42,7 @@ def collapsed_velocities_from_ring_vortices(
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -73,6 +74,10 @@ def collapsed_velocities_from_ring_vortices(
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
         value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all four legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -106,6 +111,7 @@ def collapsed_velocities_from_ring_vortices(
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -121,6 +127,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -153,6 +160,10 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
         value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across both legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -183,6 +194,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -198,6 +210,7 @@ def expanded_velocities_from_ring_vortices(
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -229,6 +242,10 @@ def expanded_velocities_from_ring_vortices(
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
         value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all four legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -262,6 +279,7 @@ def expanded_velocities_from_ring_vortices(
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -279,6 +297,7 @@ def collapsed_velocities_from_horseshoe_vortices(
     stackBlhvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -310,6 +329,10 @@ def collapsed_velocities_from_horseshoe_vortices(
         HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
         reasonable value that works across scales is 3.0% the chord length of each
         LineVortices' parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all three legs.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
@@ -342,6 +365,7 @@ def collapsed_velocities_from_horseshoe_vortices(
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -359,6 +383,7 @@ def expanded_velocities_from_horseshoe_vortices(
     stackBlhvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -390,6 +415,10 @@ def expanded_velocities_from_horseshoe_vortices(
         HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
         reasonable value that works across scales is 3.0% the chord length of each
         LineVortices' parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all three legs.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
@@ -422,6 +451,7 @@ def expanded_velocities_from_horseshoe_vortices(
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
             r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -435,6 +465,7 @@ def _collapsed_velocities_from_line_vortices(
     stackElvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -476,6 +507,10 @@ def _collapsed_velocities_from_line_vortices(
         LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
         value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across calls.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
@@ -515,6 +550,7 @@ def _collapsed_velocities_from_line_vortices(
 
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
+            singularity_counts[0] += 1
             continue
 
         # Pre compute r0 * _tol outside the inner loop.
@@ -568,20 +604,22 @@ def _collapsed_velocities_from_line_vortices(
             # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
             # multiplication instead of division refactor) guards catastrophic
             # cancellation in 1-cos(theta).
-            if r1 < r0_times_tol or r2 < r0_times_tol or r3 < (_tol * r1_times_r2):
+            if r1 < r0_times_tol:
+                singularity_counts[1] += 1
                 continue
-            else:
-                c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+            if r2 < r0_times_tol:
+                singularity_counts[2] += 1
+                continue
+            if r3 < (_tol * r1_times_r2):
+                singularity_counts[3] += 1
+                continue
 
-                c_4 = (
-                    c_1
-                    * (r1 + r2)
-                    * (r1_times_r2 - c_3)
-                    / (r1_times_r2 * (r3_sq + c_2))
-                )
-                stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
-                stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
-                stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
+            c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
+            stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
+            stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
     return stackVInd_GP1__E
 
 
@@ -592,6 +630,7 @@ def _expanded_velocities_from_line_vortices(
     stackElvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
     r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -633,6 +672,10 @@ def _expanded_velocities_from_line_vortices(
         LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
         value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across calls.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
@@ -672,6 +715,7 @@ def _expanded_velocities_from_line_vortices(
 
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
+            singularity_counts[0] += 1
             continue
 
         # Pre compute r0 * _tol outside the inner loop.
@@ -725,18 +769,20 @@ def _expanded_velocities_from_line_vortices(
             # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
             # multiplication instead of division refactor) guards catastrophic
             # cancellation in 1-cos(theta).
-            if r1 < r0_times_tol or r2 < r0_times_tol or r3 < (_tol * r1_times_r2):
+            if r1 < r0_times_tol:
+                singularity_counts[1] += 1
                 continue
-            else:
-                c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+            if r2 < r0_times_tol:
+                singularity_counts[2] += 1
+                continue
+            if r3 < (_tol * r1_times_r2):
+                singularity_counts[3] += 1
+                continue
 
-                c_4 = (
-                    c_1
-                    * (r1 + r2)
-                    * (r1_times_r2 - c_3)
-                    / (r1_times_r2 * (r3_sq + c_2))
-                )
-                gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
-                gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
-                gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
+            c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
+            gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
+            gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
     return gridVInd_GP1__E

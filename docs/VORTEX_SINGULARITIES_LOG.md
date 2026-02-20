@@ -18,7 +18,8 @@ the GitHub issue).
 ## Phase 1: Kernel Singularity Check and Vortex Core Fixes (Complete)
 
 Phase 1 replaces absolute singularity cutoffs with scale-invariant criteria and adds
-initial core radius regularization for bound vortices.
+initial core radius regularization for the unsteady solver's wake and bound vortices.
+The steady solvers pass `r_c0s = 0` (coreless) to match conventional VLM practice.
 
 ### Step 1 (Complete) -- Add `_tol` constant
 
@@ -53,19 +54,23 @@ Added `r_c0s: np.ndarray` after `strengths` and before `ages` in all 5 wrappers:
 `collapsed_velocities_from_horseshoe_vortices`,
 `expanded_velocities_from_horseshoe_vortices`.
 
-### Step 6 (Complete) -- Compute and pass `r_c0s` in the steady horseshoe VLM solver
+### Step 6 (Complete) -- Pass `r_c0s` in the steady horseshoe VLM solver
 
 In `steady_horseshoe_vortex_lattice_method.py`:
-- Allocated `self._stackRc0s` in `__init__`.
-- Populated it in `_collapse_geometry` with `0.03 * wing.standard_mean_chord` per panel.
+- Allocated `self._stackRc0s` as zeros in `__init__`.
 - Passed `r_c0s=self._stackRc0s` to both call sites.
 
-### Step 7 (Complete) -- Compute and pass `r_c0s` in the steady ring VLM solver
+Steady solvers use `r_c0 = 0` (coreless) to match conventional VLM practice. See
+Step 11c for rationale.
+
+### Step 7 (Complete) -- Pass `r_c0s` in the steady ring VLM solver
 
 In `steady_ring_vortex_lattice_method.py`:
-- Allocated `self._stackRc0s` in `__init__`.
-- Populated it in `_collapse_geometry`.
+- Allocated `self._stackRc0s` as zeros in `__init__`.
 - Passed `r_c0s=self._stackRc0s` to all 4 call sites.
+
+Steady solvers use `r_c0 = 0` (coreless) to match conventional VLM practice. See
+Step 11c for rationale.
 
 ### Step 8 (Complete) -- Compute and pass `r_c0s` in the unsteady ring UVLM solver
 
@@ -90,6 +95,27 @@ In `unsteady_ring_vortex_lattice_method.py`:
 ### Steps 10-11 (Complete) -- Integration tests and Numba caches
 
 Unit tests pass. Integration tests and Numba cache clearing to be verified before merge.
+
+### Step 11b (Complete) -- Singularity guard and core radius unit tests
+
+Added two new test classes to `test_aerodynamics_functions.py` and two new fixture
+functions to `aerodynamics_functions_fixtures.py`:
+
+- `TestSingularityGuards` (11 tests): Directly exercises the three singularity guards
+  (degenerate filament, vertex proximity, collinearity) for both collapsed and expanded
+  ring and horseshoe wrappers. Verifies singular legs contribute zero while non singular
+  legs match the coreless reference.
+- `TestCoreRadiusFormula` (6 tests): Validates the Ramasamy-Leishman core radius formula.
+  Includes monotonicity tests (r_c0, age, nu), a large r_c0 suppression test, and two
+  exact match tests against a regularized reference implementation.
+
+### Step 11c (Complete) -- Revert steady solvers to coreless (r_c0 = 0)
+
+Removed the `wing_r_c0 = 0.03 * _standard_mean_chord` computation and per-panel
+`self._stackRc0s` population from both steady solvers. The arrays remain allocated as
+zeros in `__init__`, so all steady solver vortices are now coreless. This matches
+conventional VLM practice where viscous core effects are only applied in unsteady
+simulations with aging wake vortices. The unsteady solver is unchanged.
 
 ---
 
@@ -164,8 +190,8 @@ expected singularities, which is acceptable for initial deployment.
 | File                                                      | Changes                                                                                                                             |
 |-----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `pterasoftware/_aerodynamics_functions.py`                | `_tol` constant; scale-invariant singularity checks; `r_c0s` param in 2 kernels + 5 wrappers; Ramasamy-Leishman core radius formula |
-| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `_stackRc0s` allocation + population; `r_c0s` at 2 call sites                                                                       |
-| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `_stackRc0s` allocation + population; `r_c0s` at 4 call sites                                                                       |
+| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `_stackRc0s` zero allocation; `r_c0s` at 2 call sites (coreless)                                                                    |
+| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `_stackRc0s` zero allocation; `r_c0s` at 4 call sites (coreless)                                                                    |
 | `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | Bound + wake `r_c0s` arrays; pre-allocation list; `r_c0s` at 4 call sites                                                           |
 | `tests/unit/fixtures/aerodynamics_functions_fixtures.py`  | `make_rc0s_fixture` helper                                                                                                          |
 | `tests/unit/test_aerodynamics_functions.py`               | `r_c0s` at all 25 calls; updated reference implementation singularity checks; coreless decomposition tests                          |

@@ -12,7 +12,7 @@ from numba import njit
 # the stability of the result. I'm using this value, as cited for use in flapping-wing
 # vehicles in "Role of Filament Strain in the Free-Vortex Modeling of Rotor Wakes"
 # (Ananthan and Leishman, 2004). It is unitless.
-_squire = 10**-4
+_squire = 1.0e-4
 
 # Lamb's constant relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is well agreed upon, and published in "Extended
@@ -27,6 +27,10 @@ _eps = np.finfo(float).eps
 # of magnitude of safety margin before catastrophic cancellation in 1.0 - cos(theta)
 # begins at theta ~ 2.1e-8.
 _tol = 1.0e-10
+
+# Pre compute 4 * pi and 4.0 * _lamb as they used repeatedly.
+_four_pi = 4.0 * math.pi
+_four_lamb = 4.0 * _lamb
 
 
 @njit(cache=True, fastmath=False)
@@ -500,10 +504,6 @@ def _collapsed_velocities_from_line_vortices(
         age = ages[vortex_id]
         r_c0 = r_c0s[vortex_id]
 
-        # Calculate the radius of the LineVortex's core. The initial core radius ensures
-        # nonzero regularization even for bound vortices with zero age.
-        r_c = math.sqrt(r_c0**2 + 4.0 * _lamb * (nu + _squire * abs(strength)) * age)
-
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
@@ -517,8 +517,15 @@ def _collapsed_velocities_from_line_vortices(
         if r0 < _eps:
             continue
 
-        c_1 = strength / (4 * math.pi)
-        c_2 = r0**2 * r_c**2
+        # Pre compute r0 * _tol outside the inner loop.
+        r0_times_tol = r0 * _tol
+
+        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # ensures nonzero regularization even for bound vortices with zero age.
+        r_c_sq = r_c0**2 + _four_lamb * (nu + _squire * abs(strength)) * age
+
+        c_1 = strength / _four_pi
+        c_2 = r0**2 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -541,21 +548,37 @@ def _collapsed_velocities_from_line_vortices(
             r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
-            # Find the lengths of r1_GP1, r2_GP1, and r3_GP1.
+            # Find the lengths of r1_GP1 and r2_GP1.
             r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
             r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
-            r3 = math.sqrt(r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2)
 
-            c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for a singularity check and twice in the c_4
+            # calculation.
+            r1_times_r2 = r1 * r2
 
             # Check for singularities using scale invariant criteria. The vertex
-            # proximity checks (r1/r0, r2/r0) guard 1/r singularities. The collinearity
-            # check (r3/(r1*r2) = |sin(theta)|) guards catastrophic cancellation in 1 -
-            # cos(theta).
-            if r1 / r0 < _tol or r2 / r0 < _tol or r3 / (r1 * r2) < _tol:
+            # proximity checks (r1/r0 and r2/r0 but refactored below to use
+            # multiplication instead of slower division) guard 1/r singularities. The
+            # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r1 < r0_times_tol or r2 < r0_times_tol or r3 < (_tol * r1_times_r2):
                 continue
             else:
-                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
+                c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+                c_4 = (
+                    c_1
+                    * (r1 + r2)
+                    * (r1_times_r2 - c_3)
+                    / (r1_times_r2 * (r3_sq + c_2))
+                )
                 stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
                 stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
                 stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
@@ -638,10 +661,6 @@ def _expanded_velocities_from_line_vortices(
         age = ages[vortex_id]
         r_c0 = r_c0s[vortex_id]
 
-        # Calculate the radius of the LineVortex's core. The initial core radius ensures
-        # nonzero regularization even for bound vortices with zero age.
-        r_c = math.sqrt(r_c0**2 + 4.0 * _lamb * (nu + _squire * abs(strength)) * age)
-
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
@@ -655,8 +674,15 @@ def _expanded_velocities_from_line_vortices(
         if r0 < _eps:
             continue
 
-        c_1 = strength / (4 * math.pi)
-        c_2 = r0**2 * r_c**2
+        # Pre compute r0 * _tol outside the inner loop.
+        r0_times_tol = r0 * _tol
+
+        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # ensures nonzero regularization even for bound vortices with zero age.
+        r_c_sq = r_c0**2 + _four_lamb * (nu + _squire * abs(strength)) * age
+
+        c_1 = strength / _four_pi
+        c_2 = r0**2 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -679,21 +705,37 @@ def _expanded_velocities_from_line_vortices(
             r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
-            # Find the lengths of r1_GP1, r2_GP1, and r3_GP1.
+            # Find the lengths of r1_GP1 and r2_GP1.
             r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
             r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
-            r3 = math.sqrt(r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2)
 
-            c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for a singularity check and twice in the c_4
+            # calculation.
+            r1_times_r2 = r1 * r2
 
             # Check for singularities using scale invariant criteria. The vertex
-            # proximity checks (r1/r0, r2/r0) guard 1/r singularities. The collinearity
-            # check (r3/(r1*r2) = |sin(theta)|) guards catastrophic cancellation in 1 -
-            # cos(theta).
-            if r1 / r0 < _tol or r2 / r0 < _tol or r3 / (r1 * r2) < _tol:
+            # proximity checks (r1/r0 and r2/r0 but refactored below to use
+            # multiplication instead of slower division) guard 1/r singularities. The
+            # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r1 < r0_times_tol or r2 < r0_times_tol or r3 < (_tol * r1_times_r2):
                 continue
             else:
-                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
+                c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+                c_4 = (
+                    c_1
+                    * (r1 + r2)
+                    * (r1_times_r2 - c_3)
+                    / (r1_times_r2 * (r3_sq + c_2))
+                )
                 gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
                 gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
                 gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1

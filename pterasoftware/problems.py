@@ -324,7 +324,6 @@ class CoupledUnsteadyProblem():
 
             # Get the Airplanes and the OperatingPoint associated with this time step.
             these_airplanes = []
-            print(f"Step ID: {step_id}")
             for this_base_airplane in self.movement.airplanes:
                 these_airplanes.append(this_base_airplane[step_id])
             this_operating_point = self.movement.operating_points[step_id]

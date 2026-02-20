@@ -1,3 +1,5 @@
+from email.mime import base
+
 import pterasoftware as ps
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -298,11 +300,9 @@ period_z = 0.0
 amplitude_z = 0.0
 
 # A list of movements for the main wing
-main_movements_list = []
 main_single_step_movements_list = []
 
 # A list of movements for the reflected wing
-reflected_movements_list = []
 reflected_single_step_movements_list = []
 
 for i in range(len(pterasaure.wings[0].wing_cross_sections)):
@@ -310,15 +310,15 @@ for i in range(len(pterasaure.wings[0].wing_cross_sections)):
         movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=pterasaure.wings[0].wing_cross_sections[i],
         )
-        single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement()
+        single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+            base_wing_cross_section=pterasaure.wings[0].wing_cross_sections[i],
+        )
 
-        main_movements_list.append(movement)
         main_single_step_movements_list.append(single_step_movement)
-        reflected_movements_list.append(movement)
         reflected_single_step_movements_list.append(single_step_movement)
 
     else:
-        movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
             base_wing_cross_section=pterasaure.wings[0].wing_cross_sections[i],
             ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -329,37 +329,13 @@ for i in range(len(pterasaure.wings[0].wing_cross_sections)):
             spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
             phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
         )
-        single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
-            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(amplitude_x, amplitude_y, amplitude_z),
-            periodAngles_Wcsp_to_Wcs_ixyz=(period_x, period_y, period_z),
-            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
-        )
-        main_movements_list.append(movement)
+
         main_single_step_movements_list.append(single_step_movement)
-        reflected_movements_list.append(movement)
         reflected_single_step_movements_list.append(single_step_movement)
-
-
-main_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=pterasaure.wings[0],
-    wing_cross_section_movements= main_movements_list,
-    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0), 
-    periodAngles_Gs_to_Wn_ixyz=(1/3, 0.0, 0.0), 
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-)
 
 single_step_main_wing_movement = (
     ps.movements.single_step.single_step_wing_movement.SingleStepWingMovement(
+        base_wing=pterasaure.wings[0],
         single_step_wing_cross_section_movements=main_single_step_movements_list,
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -372,21 +348,9 @@ single_step_main_wing_movement = (
     )
 )
 
-reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=pterasaure.wings[1],
-    wing_cross_section_movements=reflected_movements_list,
-    ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-    phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0),  
-    periodAngles_Gs_to_Wn_ixyz=(1/3, 0.0, 0.0), 
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-)
-
 single_step_reflected_main_wing_movement = (
     ps.movements.single_step.single_step_wing_movement.SingleStepWingMovement(
+        base_wing=pterasaure.wings[1],
         single_step_wing_cross_section_movements=reflected_single_step_movements_list,
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -400,17 +364,9 @@ single_step_reflected_main_wing_movement = (
 )
 
 # Now define the example airplane's AirplaneMovement. For now, no movement of the airplane is possible.
-pterasaure_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=pterasaure,
-    wing_movements=[main_wing_movement, reflected_main_wing_movement],
-    ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
-    periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
-    spacingCg_GP1_CgP1=("sine", "sine", "sine"),
-    phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
-)
-
 pterasaure_single_step_movement = (
     ps.movements.single_step.single_step_airplane_movement.SingleStepAirplaneMovement(
+        base_airplane=pterasaure,
         single_step_wing_movements=[
             single_step_main_wing_movement,
             single_step_reflected_main_wing_movement,
@@ -428,38 +384,25 @@ example_operating_point = ps.operating_point.OperatingPoint(
 )
 
 # Define the operating point's OperatingPointMovement.
-operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-    base_operating_point=example_operating_point)
-
 single_step_operating_point_movement = ps.movements.single_step.single_step_operating_point_movement.SingleStepOperatingPointMovement(
-    ampVCg__E=0.0, periodVCg__E=0.0, spacingVCg__E="sine"
+    base_operating_point=example_operating_point, ampVCg__E=0.0, periodVCg__E=0.0, spacingVCg__E="sine"
 )
 
 # Define the Movement. This contains the AirplaneMovement and the
 # OperatingPointMovement.
-movement = ps.movements.movement.Movement(
-    airplane_movements=[pterasaure_movement],
-    operating_point_movement=operating_point_movement,
-    delta_time=None,
-    num_cycles=1,
-    num_chords=None,
-    num_steps=None,
-)
-
 single_step_movement = ps.movements.single_step.single_step_movement.SingleStepMovement(
     single_step_airplane_movements=[pterasaure_single_step_movement],
     single_step_operating_point_movement=single_step_operating_point_movement,
-    delta_time=movement.delta_time,
-    num_steps=movement.num_steps,
+    delta_time=None,
+    num_cycles=2,
 )
 
 # Define the UnsteadyProblem.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
-    movement=movement,
     single_step_movement=single_step_movement,
     wing_density=1,
     spring_constant=0.1,
-    plot_flap_cycle=True,
+    plot_flap_cycle=False,
     damping_constant=1.0,
 )
 

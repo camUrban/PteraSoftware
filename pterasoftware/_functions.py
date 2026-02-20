@@ -31,13 +31,13 @@ _SINGULARITY_NAMES: tuple[str, ...] = (
 )
 
 
-def log_singularity_counts(
+def log_unexpected_singularity_counts(
     logger: logging.Logger,
     level: int,
     context: str,
     singularity_counts: np.ndarray,
 ) -> None:
-    """Logs a summary of singularity events if any occurred.
+    """Logs a summary of unexpected singularity events if any occurred.
 
     :param logger: The logger instance to use.
     :param level: The logging level (e.g., logging.ERROR, logging.INFO).
@@ -210,11 +210,13 @@ def calculate_streamlines(
             )
         )
 
-    log_singularity_counts(
+    unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
+
+    log_unexpected_singularity_counts(
         _logger,
         logging.WARNING,
         "calculate_streamlines",
-        bound_singularity_counts,
+        unexpected_bound_singularity_counts,
     )
 
 

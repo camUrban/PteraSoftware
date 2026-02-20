@@ -535,9 +535,6 @@ def _collapsed_velocities_from_line_vortices(
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
-        strength = strengths[vortex_id]
-        age = ages[vortex_id]
-        r_c0 = r_c0s[vortex_id]
 
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
@@ -552,6 +549,10 @@ def _collapsed_velocities_from_line_vortices(
         if r0 < _eps:
             singularity_counts[0] += 1
             continue
+
+        strength = strengths[vortex_id]
+        age = ages[vortex_id]
+        r_c0 = r_c0s[vortex_id]
 
         # Pre compute r0 * _tol outside the inner loop.
         r0_times_tol = r0 * _tol
@@ -588,33 +589,45 @@ def _collapsed_velocities_from_line_vortices(
             r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
             r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
-            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
-            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
-
-            # Find the length of r3_GP1.
-            r3 = math.sqrt(r3_sq)
-
-            # Cache r1 * r2 as it is used for a singularity check and twice in the c_4
-            # calculation.
-            r1_times_r2 = r1 * r2
-
             # Check for singularities using scale invariant criteria. The vertex
             # proximity checks (r1/r0 and r2/r0 but refactored below to use
-            # multiplication instead of slower division) guard 1/r singularities. The
-            # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
-            # multiplication instead of division refactor) guards catastrophic
-            # cancellation in 1-cos(theta).
+            # multiplication instead of slower division) guard 1/r singularities.
             if r1 < r0_times_tol:
                 singularity_counts[1] += 1
                 continue
             if r2 < r0_times_tol:
                 singularity_counts[2] += 1
                 continue
-            if r3 < (_tol * r1_times_r2):
-                singularity_counts[3] += 1
-                continue
+
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for the collinearity check and twice in the
+            # c_4 calculation.
+            r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r3 < (_tol * r1_times_r2):
+                # Collinearity can indicate one of two things. If the point is collinear
+                # and between the filament's vertices, it is a true singularity (the
+                # Biot-Savart equation diverges), so we exclude the contribution as it
+                # is the influence of the filament on itself. If the point is collinear
+                # and off to one side of the filament, it isn't a true singularity, as
+                # the Biot-Savart equation (if calculated with infinite precision)
+                # correctly returns zero induced velocity. However, we still run into
+                # the catastrophic cancellation issue, so we again manually return zero
+                # induced velocity contribution. These two situations are distinguished
+                # by the sign of the c_3 (the dot product of r1 and r2).
+                if c_3 < 0.0:
+                    singularity_counts[3] += 1
+                continue
 
             c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
             stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
@@ -700,9 +713,6 @@ def _expanded_velocities_from_line_vortices(
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
-        strength = strengths[vortex_id]
-        age = ages[vortex_id]
-        r_c0 = r_c0s[vortex_id]
 
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
@@ -717,6 +727,10 @@ def _expanded_velocities_from_line_vortices(
         if r0 < _eps:
             singularity_counts[0] += 1
             continue
+
+        strength = strengths[vortex_id]
+        age = ages[vortex_id]
+        r_c0 = r_c0s[vortex_id]
 
         # Pre compute r0 * _tol outside the inner loop.
         r0_times_tol = r0 * _tol
@@ -753,33 +767,45 @@ def _expanded_velocities_from_line_vortices(
             r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
             r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
-            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
-            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
-
-            # Find the length of r3_GP1.
-            r3 = math.sqrt(r3_sq)
-
-            # Cache r1 * r2 as it is used for a singularity check and twice in the c_4
-            # calculation.
-            r1_times_r2 = r1 * r2
-
             # Check for singularities using scale invariant criteria. The vertex
             # proximity checks (r1/r0 and r2/r0 but refactored below to use
-            # multiplication instead of slower division) guard 1/r singularities. The
-            # collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
-            # multiplication instead of division refactor) guards catastrophic
-            # cancellation in 1-cos(theta).
+            # multiplication instead of slower division) guard 1/r singularities.
             if r1 < r0_times_tol:
                 singularity_counts[1] += 1
                 continue
             if r2 < r0_times_tol:
                 singularity_counts[2] += 1
                 continue
-            if r3 < (_tol * r1_times_r2):
-                singularity_counts[3] += 1
-                continue
+
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for the collinearity check and twice in the
+            # c_4 calculation.
+            r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r3 < (_tol * r1_times_r2):
+                # Collinearity can indicate one of two things. If the point is collinear
+                # and between the filament's vertices, it is a true singularity (the
+                # Biot-Savart equation diverges), so we exclude the contribution as it
+                # is the influence of the filament on itself. If the point is collinear
+                # and off to one side of the filament, it isn't a true singularity, as
+                # the Biot-Savart equation (if calculated with infinite precision)
+                # correctly returns zero induced velocity. However, we still run into
+                # the catastrophic cancellation issue, so we again manually return zero
+                # induced velocity contribution. These two situations are distinguished
+                # by the sign of the c_3 (the dot product of r1 and r2).
+                if c_3 < 0.0:
+                    singularity_counts[3] += 1
+                continue
 
             c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
             gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1

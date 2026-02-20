@@ -854,11 +854,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_operating_point.nu,
             )
         )
-        _functions.log_singularity_counts(
+
+        unexpected_singularity_counts = np.copy(singularity_counts)
+
+        _functions.log_unexpected_singularity_counts(
             _logger,
             logging.ERROR,
             "_calculate_wing_wing_influences",
-            singularity_counts,
+            unexpected_singularity_counts,
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -946,11 +949,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     nu=self.current_operating_point.nu,
                 )
             )
-            _functions.log_singularity_counts(
+
+            unexpected_singularity_counts = np.copy(singularity_counts)
+
+            _functions.log_unexpected_singularity_counts(
                 _logger,
                 logging.INFO,
                 "_calculate_wake_wing_influences",
-                singularity_counts,
+                unexpected_singularity_counts,
             )
 
             # Get the current wake Wing influence coefficients (observed from the
@@ -1278,17 +1284,43 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
             + self._calculate_current_movement_velocities_at_back_leg_centers()
         )
-        _functions.log_singularity_counts(
+
+        unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
+        unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
+
+        # Subtract the expected structural collinearity before logging. For each Wing
+        # with C chordwise and S spanwise Panels, the four leg center evaluations
+        # produce (8 * C * S - 2 * C - 2 * S) bound collinearity singularities from
+        # RingVortex self and adjacent shared edge pairs. When there is a wake (time
+        # step > 0), each trailing edge Panel's back leg center is also collinear with
+        # and on-filament for the first wake row's front leg, adding S wake collinearity
+        # singularities per Wing.
+        expected_bound_collinearity = 0
+        expected_wake_collinearity = 0
+        for airplane in self.current_airplanes:
+            for wing in airplane.wings:
+                num_chordwise = wing.num_chordwise_panels
+                num_spanwise = wing.num_spanwise_panels
+                assert num_spanwise is not None
+                n = num_chordwise * num_spanwise
+                expected_bound_collinearity += (
+                    8 * n - 2 * num_chordwise - 2 * num_spanwise
+                )
+                if self._current_step > 0:
+                    expected_wake_collinearity += num_spanwise
+        unexpected_bound_singularity_counts[3] -= expected_bound_collinearity
+        unexpected_wake_singularity_counts[3] -= expected_wake_collinearity
+        _functions.log_unexpected_singularity_counts(
             _logger,
             logging.ERROR,
             "_calculate_loads (bound)",
-            bound_singularity_counts,
+            unexpected_bound_singularity_counts,
         )
-        _functions.log_singularity_counts(
+        _functions.log_unexpected_singularity_counts(
             _logger,
             logging.INFO,
             "_calculate_loads (wake)",
-            wake_singularity_counts,
+            unexpected_wake_singularity_counts,
         )
 
         # Using the effective LineVortex strengths and the Kutta-Joukowski theorem,
@@ -1648,17 +1680,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
-            _functions.log_singularity_counts(
+            unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
+            unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
+
+            _functions.log_unexpected_singularity_counts(
                 _logger,
                 logging.DEBUG,
                 "_populate_next_airplanes_wake_vortex_points (bound)",
-                bound_singularity_counts,
+                unexpected_bound_singularity_counts,
             )
-            _functions.log_singularity_counts(
+            _functions.log_unexpected_singularity_counts(
                 _logger,
                 logging.DEBUG,
                 "_populate_next_airplanes_wake_vortex_points (wake)",
-                wake_singularity_counts,
+                unexpected_wake_singularity_counts,
             )
 
     def _populate_next_airplanes_wake_vortices(self) -> None:

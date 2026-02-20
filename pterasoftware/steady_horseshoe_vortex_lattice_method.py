@@ -322,11 +322,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 nu=self.operating_point.nu,
             )
         )
-        _functions.log_singularity_counts(
+
+        unexpected_singularity_counts = np.copy(singularity_counts)
+
+        _functions.log_unexpected_singularity_counts(
             _logger,
             logging.ERROR,
             "_calculate_wing_wing_influences",
-            singularity_counts,
+            unexpected_singularity_counts,
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -431,11 +434,18 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
-        _functions.log_singularity_counts(
+
+        unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
+
+        # Subtract the expected structural collinearity before logging. Each
+        # bound vortex center is collinear with its own finite leg, producing
+        # exactly one collinearity singularity per Panel.
+        unexpected_bound_singularity_counts[3] -= self.num_panels
+        _functions.log_unexpected_singularity_counts(
             _logger,
             logging.ERROR,
             "_calculate_loads (bound)",
-            bound_singularity_counts,
+            unexpected_bound_singularity_counts,
         )
 
         # Calculate the force (in the first Airplane's geometry axes) on each Panel's

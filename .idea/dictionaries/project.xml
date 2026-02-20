@@ -13,7 +13,6 @@
       <w>aerosandbox</w>
       <w>afsmo</w>
       <w>aiaa</w>
-      <w>albatros</w>
       <w>ames</w>
       <w>ananthan</w>
       <w>anglesi</w>
@@ -24,10 +23,8 @@
       <w>autograd</w>
       <w>autopf</w>
       <w>autoprograms</w>
-      <w>aviansoftwareminimumviableproduct</w>
       <w>aviatik</w>
       <w>avistar</w>
-      <w>bacxxx</w>
       <w>bambino</w>
       <w>bbrv</w>
       <w>bergey</w>
@@ -50,7 +47,6 @@
       <w>brvrp</w>
       <w>brwrvp</w>
       <w>camberline</w>
-      <w>cambre</w>
       <w>carto</w>
       <w>cblvpb</w>
       <w>cblvpf</w>
@@ -74,23 +70,19 @@
       <w>customspaces</w>
       <w>darkgray</w>
       <w>davissm</w>
-      <w>dbln</w>
       <w>deepcopied</w>
       <w>deepcopying</w>
       <w>defs</w>
       <w>desktopicon</w>
       <w>dfvlr</w>
-      <w>dicke</w>
       <w>diskpart</w>
       <w>disps</w>
-      <w>dormoy</w>
       <w>dornier</w>
       <w>downsampled</w>
       <w>downstroke</w>
       <w>downwash</w>
       <w>downwashes</w>
       <w>drela</w>
-      <w>dsma</w>
       <w>dtype</w>
       <w>einsum</w>
       <w>elvp</w>
@@ -121,7 +113,6 @@
       <w>frbvp</w>
       <w>freestream</w>
       <w>frhvp</w>
-      <w>friedrichshafen</w>
       <w>frpp</w>
       <w>frppr</w>
       <w>frrvp</w>
@@ -130,13 +121,9 @@
       <w>frwrvpr</w>
       <w>gammabot</w>
       <w>genese</w>
-      <w>giii</w>
-      <w>hacklinger</w>
-      <w>hansa</w>
       <w>helbling</w>
       <w>hiddenimports</w>
       <w>hobiesmo</w>
-      <w>hollom</w>
       <w>homogs</w>
       <w>hooksconfig</w>
       <w>hookspath</w>
@@ -144,7 +131,6 @@
       <w>hsnlf</w>
       <w>hstab</w>
       <w>hstack</w>
-      <w>icacls</w>
       <w>ignoreversion</w>
       <w>iiic</w>
       <w>ixyz</w>
@@ -173,7 +159,6 @@
       <w>lers</w>
       <w>libspatialindex</w>
       <w>liebeck</w>
-      <w>liii</w>
       <w>linalg</w>
       <w>linspace</w>
       <w>linspaces</w>
@@ -205,7 +190,6 @@
       <w>noninfringement</w>
       <w>numba</w>
       <w>numexpr</w>
-      <w>onera</w>
       <w>ornithopter</w>
       <w>pathex</w>
       <w>pchip</w>
@@ -220,11 +204,9 @@
       <w>progids</w>
       <w>proj</w>
       <w>propfan</w>
-      <w>ptera</w>
       <w>pterasoftware</w>
       <w>pycache</w>
       <w>pyvista</w>
-      <w>quast</w>
       <w>qwindows</w>
       <w>raymer</w>
       <w>rbrv</w>
@@ -232,7 +214,6 @@
       <w>repanel</w>
       <w>repaneled</w>
       <w>repaneling</w>
-      <w>rhode</w>
       <w>rickstaa</w>
       <w>rmsape</w>
       <w>rmspc</w>
@@ -249,14 +230,12 @@
       <w>scipy</w>
       <w>semispan</w>
       <w>seob</w>
-      <w>sexualized</w>
       <w>shyy</w>
       <w>sideslip</w>
       <w>sinspace</w>
       <w>sinspaces</w>
       <w>skipifsilent</w>
       <w>slvp</w>
-      <w>socio</w>
       <w>sokolov</w>
       <w>somers</w>
       <w>spanwise</w>
@@ -267,7 +246,6 @@
       <w>supercritical</w>
       <w>takeown</w>
       <w>tqdm</w>
-      <w>tsagi</w>
       <w>uiuc</w>
       <w>uncambered</w>
       <w>uninsdeletekey</w>
@@ -277,8 +255,6 @@
       <w>uvlm</w>
       <w>vawt</w>
       <w>vectorize</w>
-      <w>vertexs</w>
-      <w>vertol</w>
       <w>viridis</w>
       <w>vortices</w>
       <w>vstab</w>
@@ -287,7 +263,6 @@
       <w>wcsi</w>
       <w>wcso</w>
       <w>wcsp</w>
-      <w>weisstein</w>
       <w>wetted</w>
       <w>whitcomb</w>
       <w>whvp</w>

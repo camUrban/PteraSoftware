@@ -1643,7 +1643,7 @@ class TestSingularityCounters(unittest.TestCase):
         # The right leg (Br to Fr) is collinear with the evaluation point.
         self.assertGreater(singularity_counts[3], 0)
 
-    def test_off_filament_collinearity_increments_counter_three(self):
+    def test_off_filament_collinearity_does_not_increment_counter(self):
         """Test that placing the evaluation point on the extension of a RingVortex leg
         doesn't increment singularity_counts[3] (off-filament collinearity)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
@@ -1662,7 +1662,8 @@ class TestSingularityCounters(unittest.TestCase):
             singularity_counts=singularity_counts,
         )
 
-        # The right leg (Br to Fr) is collinear with the evaluation point.
+        # The point is collinear with the right leg (Br to Fr) but lies off the
+        # filament (c_3 > 0), so the counter is not incremented.
         self.assertEqual(singularity_counts[3], 0)
 
     def test_non_singular_configuration_has_zero_counts(self):

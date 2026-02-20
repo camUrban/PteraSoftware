@@ -127,6 +127,8 @@ class SteadyRingVortexLatticeMethodSolver:
         self._stackBlhvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._horseshoe_vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
+        self._stackRc0s = np.zeros(self.num_panels, dtype=float)
+
         # Initialize variables to hold details about each Panels' location on its Wing.
         self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
         self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
@@ -310,6 +312,10 @@ class SteadyRingVortexLatticeMethodSolver:
         for airplane in self.airplanes:
             wing: geometry.wing.Wing
             for wing in airplane.wings:
+                _standard_mean_chord = wing.standard_mean_chord
+                assert _standard_mean_chord is not None
+                wing_r_c0 = 0.03 * _standard_mean_chord
+
                 _panels = wing.panels
                 assert _panels is not None
 
@@ -326,6 +332,7 @@ class SteadyRingVortexLatticeMethodSolver:
                         global_panel_position=global_panel_position,
                         panel=panel,
                     )
+                    self._stackRc0s[global_panel_position] = wing_r_c0
 
                     if panel.is_trailing_edge:
                         _horseshoe_vortex = panel.horseshoe_vortex
@@ -373,6 +380,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -394,6 +402,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._horseshoe_vortex_strengths,
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -479,6 +488,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._vortex_strengths,
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )
@@ -491,6 +501,7 @@ class SteadyRingVortexLatticeMethodSolver:
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
                 strengths=self._horseshoe_vortex_strengths,
+                r_c0s=self._stackRc0s,
                 ages=None,
                 nu=self.operating_point.nu,
             )

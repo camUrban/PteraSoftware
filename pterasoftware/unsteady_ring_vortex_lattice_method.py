@@ -168,10 +168,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         #  delete them.
         self._list_wake_vortex_strengths: list[np.ndarray] = []
         self._list_wake_vortex_ages: list[np.ndarray] = []
+        self._list_wake_rc0s: list[np.ndarray] = []
         self.listStackBrwrvp_GP1_CgP1: list[np.ndarray] = []
         self.listStackFrwrvp_GP1_CgP1: list[np.ndarray] = []
         self.listStackFlwrvp_GP1_CgP1: list[np.ndarray] = []
         self.listStackBlwrvp_GP1_CgP1: list[np.ndarray] = []
+
+        self._currentStackBoundRc0s: np.ndarray = np.empty(0, dtype=float)
+        self._currentStackWakeRc0s: np.ndarray = np.empty(0, dtype=float)
 
         self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty((0, 3), dtype=float)
@@ -257,6 +261,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             thisStackBlwrvp_GP1_CgP1 = np.zeros(
                 (this_num_wake_ring_vortices, 3), dtype=float
             )
+            this_wake_rc0s = np.zeros(this_num_wake_ring_vortices, dtype=float)
 
             # Append this time step's ndarrays to the lists of ndarrays.
             self.list_num_wake_vortices.append(this_num_wake_ring_vortices)
@@ -266,6 +271,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.listStackFrwrvp_GP1_CgP1.append(thisStackFrwrvp_GP1_CgP1)
             self.listStackFlwrvp_GP1_CgP1.append(thisStackFlwrvp_GP1_CgP1)
             self.listStackBlwrvp_GP1_CgP1.append(thisStackBlwrvp_GP1_CgP1)
+            self._list_wake_rc0s.append(this_wake_rc0s)
 
         # The following loop attempts to predict how much time each time step will
         # take, relative to the other time steps. This data will be used to generate
@@ -431,6 +437,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self._currentStackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
                 self._currentStackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
                 self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
+
+                self._currentStackBoundRc0s = np.zeros(self.num_panels, dtype=float)
+                self._currentStackWakeRc0s = self._list_wake_rc0s[step]
 
                 self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
@@ -695,6 +704,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Iterate through the current time step's Airplanes' Wings.
         for airplane in self.current_airplanes:
             for wing in airplane.wings:
+                _standard_mean_chord = wing.standard_mean_chord
+                assert _standard_mean_chord is not None
+                wing_r_c0 = 0.03 * _standard_mean_chord
+
                 _panels = wing.panels
                 assert _panels is not None
 
@@ -716,6 +729,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         global_panel_position=global_panel_position,
                         panel=panel,
                     )
+                    self._currentStackBoundRc0s[global_panel_position] = wing_r_c0
 
                     # Increment the global Panel position variable.
                     global_panel_position += 1
@@ -743,6 +757,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     self._currentStackBrwrvp_GP1_CgP1[
                         global_wake_ring_vortex_position, :
                     ] = wake_ring_vortex.Brrvp_GP1_CgP1
+                    self._currentStackWakeRc0s[global_wake_ring_vortex_position] = (
+                        wing_r_c0
+                    )
 
                     # Increment the global wake RingVortex position variable.
                     global_wake_ring_vortex_position += 1
@@ -829,6 +846,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._current_bound_vortex_strengths,
+                r_c0s=self._currentStackBoundRc0s,
                 ages=None,
                 nu=self.current_operating_point.nu,
             )
@@ -912,6 +930,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
                     stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
                     strengths=self._current_wake_vortex_strengths,
+                    r_c0s=self._currentStackWakeRc0s,
                     ages=self._current_wake_vortex_ages,
                     nu=self.current_operating_point.nu,
                 )
@@ -996,6 +1015,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
                 stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
                 strengths=self._current_bound_vortex_strengths,
+                r_c0s=self._currentStackBoundRc0s,
                 ages=None,
                 nu=self.current_operating_point.nu,
             )
@@ -1008,6 +1028,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
                 stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
                 strengths=self._current_wake_vortex_strengths,
+                r_c0s=self._currentStackWakeRc0s,
                 ages=self._current_wake_vortex_ages,
                 nu=self.current_operating_point.nu,
             )

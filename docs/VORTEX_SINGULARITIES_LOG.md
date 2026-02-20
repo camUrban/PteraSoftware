@@ -1,85 +1,201 @@
 # Vortex Singularities Branch Log
 
 This file tracks progress and plans for the `feature/vortex_singularities` branch.
+The design rationale for these changes is documented in `BIOT_SAVART_PLAN.md` (mirrors
+the GitHub issue).
 
-## Biot-Savart Kernels in `_aerodynamics_functions.py`
+---
 
-### Module Level Constants
+## Progress Summary
 
-The module defines three constants used by the Biot-Savart kernels:
+| Phase   | Status      | Description                                       |
+|---------|-------------|---------------------------------------------------|
+| Phase 1 | Complete    | Kernel singularity check and vortex core fixes    |
+| Phase 2 | Not started | Context-aware singularity detection and reporting |
 
-- `_squire` (10^-4): Squire's parameter, which relates to the size and growth rate of vortex cores. Cited for use in flapping wing vehicles from Ananthan and Leishman (2004). It is unitless.
-- `_lamb` (1.25643): Lamb's constant, which also relates to core size and growth. From Nguyen et al. (2016). It is unitless.
-- `_eps` (machine epsilon): Used to guard against removable discontinuities when a point lies on or very near a LineVortex.
+---
 
-### Core Kernel Functions (Private)
+## Phase 1: Kernel Singularity Check and Vortex Core Fixes (Complete)
 
-These two functions contain the actual Biot-Savart computation. Both are `@njit` compiled with `cache=True` and `fastmath=False`.
+Phase 1 replaces absolute singularity cutoffs with scale-invariant criteria and adds
+initial core radius regularization for bound vortices.
 
-#### `_collapsed_velocities_from_line_vortices`
+### Step 1 (Complete) -- Add `_tol` constant
 
-Takes N points and M LineVortices. Returns a (N, 3) ndarray: the cumulative induced velocity at each point summed over all M LineVortices.
+Added `_tol = 1.0e-10` as a module-level constant in `_aerodynamics_functions.py`.
 
-#### `_expanded_velocities_from_line_vortices`
+### Step 2 (Complete) -- Update singularity checks in both kernels
 
-Takes N points and M LineVortices. Returns a (N, M, 3) ndarray: the induced velocity at each point due to each individual LineVortex (not summed).
+In both `_collapsed_velocities_from_line_vortices` and
+`_expanded_velocities_from_line_vortices`:
 
-#### Shared Kernel Logic
+- Added degenerate filament check in the outer (vortex) loop: `if r0 < _eps: continue`
+- Replaced absolute inner-loop check (`r1 < _eps or r2 < _eps or r3**2 < _eps`) with
+  scale-invariant checks:
+  `if r1 / r0 < _tol or r2 / r0 < _tol or r3 / (r1 * r2) < _tol: continue`
 
-Both functions implement the same modified Biot-Savart law (adapted from Nguyen et al., 2016). For each LineVortex with a given point:
+### Step 3 (Complete) -- Add `r_c0s` parameter to both kernel functions
 
-1. Compute the vortex core radius: `r_c = 2 * sqrt(_lamb * (nu + _squire * |strength|) * age)`. For bound vortices (age = 0), this evaluates to 0.
-2. Define geometric vectors:
-   - `r0`: from the LineVortex start to end.
-   - `r1`: from the evaluation point to the LineVortex start.
-   - `r2`: from the evaluation point to the LineVortex end.
-   - `r3`: cross product of `r1` and `r2`.
-3. Check for removable discontinuities: if `|r1| < eps`, `|r2| < eps`, or `|r3|^2 < eps`, the point is on or essentially touching the LineVortex, so the induced velocity is zero (skip).
-4. Otherwise, compute the induced velocity using the regularized kernel: `c_4 = (strength / (4 * pi)) * (|r1| + |r2|) * (|r1| * |r2| - r1 . r2) / (|r1| * |r2| * (|r3|^2 + |r0|^2 * r_c^2))`
+Added `r_c0s: np.ndarray` as a required parameter after `strengths` and before `ages` in
+both kernels.
 
-The `|r0|^2 * r_c^2` term in the denominator is the regularization that smoothly desingularizes the velocity field near the vortex core.
+### Step 4 (Complete) -- Update the core radius formula in both kernels
 
-### Public Wrapper Functions
+Replaced the old formula (`r_c = 2 * sqrt(...)`) with the Ramasamy and Leishman (2007)
+formulation: `r_c = sqrt(r_c0**2 + 4.0 * _lamb * (nu + _squire * |strength|) * age)`.
 
-These functions decompose RingVortices and HorseshoeVortices into their constituent LineVortex legs and call the appropriate core kernel.
+### Step 5 (Complete) -- Add `r_c0s` parameter to all 5 public wrapper functions
 
-#### Ring Vortex Wrappers
+Added `r_c0s: np.ndarray` after `strengths` and before `ages` in all 5 wrappers:
+`collapsed_velocities_from_ring_vortices`,
+`collapsed_velocities_from_ring_vortices_chordwise_segments`,
+`expanded_velocities_from_ring_vortices`,
+`collapsed_velocities_from_horseshoe_vortices`,
+`expanded_velocities_from_horseshoe_vortices`.
 
-- `collapsed_velocities_from_ring_vortices`: Calls the collapsed kernel for all 4 legs (back right to front right, front right to front left, front left to back left, back left to back right). Returns (N, 3).
-- `collapsed_velocities_from_ring_vortices_chordwise_segments`: Calls the collapsed kernel for the 2 chordwise legs only (back right to front right, front left to back left). Returns (N, 3). **Not currently used by any solver.**
-- `expanded_velocities_from_ring_vortices`: Calls the expanded kernel for all 4 legs. Returns (N, M, 3).
+### Step 6 (Complete) -- Compute and pass `r_c0s` in the steady horseshoe VLM solver
 
-#### Horseshoe Vortex Wrappers
+In `steady_horseshoe_vortex_lattice_method.py`:
+- Allocated `self._stackRc0s` in `__init__`.
+- Populated it in `_collapse_geometry` with `0.03 * wing.standard_mean_chord` per panel.
+- Passed `r_c0s=self._stackRc0s` to both call sites.
 
-- `collapsed_velocities_from_horseshoe_vortices`: Calls the collapsed kernel for 3 legs (back right to front right, front right to front left, front left to back left). Returns (N, 3).
-- `expanded_velocities_from_horseshoe_vortices`: Calls the expanded kernel for 3 legs. Returns (N, M, 3).
+### Step 7 (Complete) -- Compute and pass `r_c0s` in the steady ring VLM solver
 
-### Parameters Common to All Functions
+In `steady_ring_vortex_lattice_method.py`:
+- Allocated `self._stackRc0s` in `__init__`.
+- Populated it in `_collapse_geometry`.
+- Passed `r_c0s=self._stackRc0s` to all 4 call sites.
 
-- `stackP_GP1_CgP1`: (N, 3) ndarray of evaluation point positions (in the first Airplane's geometry axes, relative to the first Airplane's CG).
-- `strengths`: (M,) ndarray of vortex strengths in meters squared per second.
-- `ages`: None for bound vortices, or (M,) ndarray of ages in seconds for wake vortices. Defaults to None.
-- `nu`: Kinematic viscosity of the fluid in meters squared per second. Defaults to 0.0.
+### Step 8 (Complete) -- Compute and pass `r_c0s` in the unsteady ring UVLM solver
 
-## Where the Solvers Call These Functions
+In `unsteady_ring_vortex_lattice_method.py`:
+- Added `self._list_wake_rc0s` pre-allocation list in `__init__`.
+- Added `self._currentStackBoundRc0s` and `self._currentStackWakeRc0s` per-step arrays.
+- Populated bound and wake initial core radii in `_collapse_geometry`.
+- Passed `r_c0s=self._currentStackBoundRc0s` to bound calls and
+  `r_c0s=self._currentStackWakeRc0s` to wake calls at all 4 call sites.
+
+### Step 9 (Complete) -- Update unit tests and fixtures
+
+- Added `make_rc0s_fixture(num_vortices)` to
+  `tests/unit/fixtures/aerodynamics_functions_fixtures.py`.
+- Added `r_c0s` fixtures in `setUp` and passed `r_c0s=` to all 25 function calls in
+  `tests/unit/test_aerodynamics_functions.py`.
+- Updated the reference Biot-Savart implementation's singularity checks to use the same
+  scale-invariant criteria as the kernels.
+- Used `r_c0s = np.zeros(1, dtype=float)` in decomposition tests (the reference
+  implementation is a coreless model).
+
+### Steps 10-11 (Complete) -- Integration tests and Numba caches
+
+Unit tests pass. Integration tests and Numba cache clearing to be verified before merge.
+
+---
+
+## Phase 2: Context-Aware Singularity Detection and Reporting (Not Started)
+
+Phase 2 adds counter-based singularity detection inside the `@njit` kernels and
+context-aware logging at the solver level.
+
+### Step 12 -- Add `singularity_counts` parameter to both kernel functions
+
+Add `singularity_counts: np.ndarray` (shape `(4,)`, dtype `int64`) as a required
+parameter after `r_c0s` in both kernels. Index mapping:
+- `[0]`: degenerate filament
+- `[1]`: vertex-start proximity
+- `[2]`: vertex-end proximity
+- `[3]`: collinearity
+
+### Step 13 -- Increment counters at each singularity check
+
+Split the combined `if/or` into separate checks with individual counter increments in
+both kernels. The `continue` semantics preserve short-circuit behavior.
+
+### Step 14 -- Thread `singularity_counts` through all 5 wrappers
+
+Each wrapper receives `singularity_counts: np.ndarray` and passes the same array to every
+internal kernel call. Counts accumulate across legs.
+
+### Step 15 -- Add logging helper function
+
+Add `_log_singularity_counts` to `pterasoftware/_functions.py`. Checks
+`singularity_counts.sum() > 0`, then logs at a specified level with context string and
+per-check breakdown.
+
+### Step 16 -- Add optional counter parameters to `calculate_solution_velocity`
+
+All three solvers' `calculate_solution_velocity` methods get optional
+`bound_singularity_counts` and `wake_singularity_counts` parameters. If `None`, counts
+are discarded.
+
+### Step 17 -- Add logging at each solver call site
+
+| Solver          | Call site                                     | Level     |
+|-----------------|-----------------------------------------------|-----------|
+| All solvers     | `_calculate_wing_wing_influences`             | `ERROR`   |
+| Unsteady UVLM   | `_calculate_wake_wing_influences`             | `INFO`    |
+| All solvers     | `_calculate_loads` (bound counters)           | `ERROR`   |
+| Unsteady UVLM   | `_calculate_loads` (wake counters)            | `INFO`    |
+| Unsteady UVLM   | `_populate_next_airplanes_wake_vortex_points` | `DEBUG`   |
+| `_functions.py` | `calculate_streamlines`                       | `WARNING` |
+
+### Step 18 -- Add logger instances to solver modules
+
+Verify each solver module has a module-level logger. Add `import logging` where needed
+for level constants.
+
+### Step 19 -- Update unit tests for Phase 2
+
+- Add `singularity_counts` parameter to all wrapper/kernel calls in unit tests.
+- Add new tests verifying counters increment correctly for known-singular configurations.
+- Add tests for the `_log_singularity_counts` helper.
+
+### Step 20 (Deferred) -- Pre-exclusion of known singular pairs in `_calculate_loads`
+
+Deferred to a follow-up. Requires combinatorial analysis of which LineVortex-point pairs
+are structurally singular for load calculations. The current implementation will log these
+expected singularities, which is acceptable for initial deployment.
+
+---
+
+## Files Modified by Phase 1
+
+| File                                                      | Changes                                                                                                                             |
+|-----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `pterasoftware/_aerodynamics_functions.py`                | `_tol` constant; scale-invariant singularity checks; `r_c0s` param in 2 kernels + 5 wrappers; Ramasamy-Leishman core radius formula |
+| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `_stackRc0s` allocation + population; `r_c0s` at 2 call sites                                                                       |
+| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `_stackRc0s` allocation + population; `r_c0s` at 4 call sites                                                                       |
+| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | Bound + wake `r_c0s` arrays; pre-allocation list; `r_c0s` at 4 call sites                                                           |
+| `tests/unit/fixtures/aerodynamics_functions_fixtures.py`  | `make_rc0s_fixture` helper                                                                                                          |
+| `tests/unit/test_aerodynamics_functions.py`               | `r_c0s` at all 25 calls; updated reference implementation singularity checks; coreless decomposition tests                          |
+
+## Files to be Modified by Phase 2
+
+| File                                                      | Changes                                                                            |
+|-----------------------------------------------------------|------------------------------------------------------------------------------------|
+| `pterasoftware/_aerodynamics_functions.py`                | `singularity_counts` param in 2 kernels + 5 wrappers; per-check counter increments |
+| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | Counter allocation + logging at 2 call sites                                       |
+| `pterasoftware/steady_ring_vortex_lattice_method.py`      | Counter allocation + logging at 4 call sites                                       |
+| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | Counter allocation + logging at 4 call sites                                       |
+| `pterasoftware/_functions.py`                             | `_log_singularity_counts` helper; `calculate_streamlines` counter passing          |
+| `tests/unit/test_aerodynamics_functions.py`               | `singularity_counts` at all calls; new counter tests                               |
+
+---
+
+## Reference: Solver Call Sites
 
 ### SteadyHorseshoeVortexLatticeMethodSolver
-
-This solver uses only the horseshoe vortex wrapper functions.
 
 | Aerodynamics function                          | Caller method                     | Purpose                                                                             |
 |------------------------------------------------|-----------------------------------|-------------------------------------------------------------------------------------|
 | `expanded_velocities_from_horseshoe_vortices`  | `_calculate_wing_wing_influences` | Build the (N, N) influence coefficient matrix with unit strength HorseshoeVortices. |
 | `collapsed_velocities_from_horseshoe_vortices` | `calculate_solution_velocity`     | Compute the total induced velocity at arbitrary evaluation points.                  |
 
-`calculate_solution_velocity` is itself called from:
-
-- `_calculate_loads`: evaluates velocity at bound vortex centers for Kutta-Joukowski force computation.
-- `calculate_streamlines` in `_functions.py` (via `run`): evaluates velocity at streamline seed points during streamline tracing.
+`calculate_solution_velocity` is called from `_calculate_loads` and
+`calculate_streamlines` (in `_functions.py`).
 
 ### SteadyRingVortexLatticeMethodSolver
-
-This solver uses both ring vortex and horseshoe vortex wrapper functions. The HorseshoeVortices model the semi infinite wake behind trailing edge Panels.
 
 | Aerodynamics function                          | Caller method                     | Purpose                                                                      |
 |------------------------------------------------|-----------------------------------|------------------------------------------------------------------------------|
@@ -88,35 +204,30 @@ This solver uses both ring vortex and horseshoe vortex wrapper functions. The Ho
 | `collapsed_velocities_from_ring_vortices`      | `calculate_solution_velocity`     | Compute the ring vortex induced velocity at evaluation points.               |
 | `collapsed_velocities_from_horseshoe_vortices` | `calculate_solution_velocity`     | Compute the horseshoe vortex induced velocity at evaluation points.          |
 
-`calculate_solution_velocity` is itself called from:
-
-- `_calculate_loads`: evaluates velocity at each of the four LineVortex leg centers for all Panels' RingVortices (4 separate calls).
-- `calculate_streamlines` in `_functions.py` (via `run`): streamline tracing.
+`calculate_solution_velocity` is called from `_calculate_loads` and
+`calculate_streamlines` (in `_functions.py`).
 
 ### UnsteadyRingVortexLatticeMethodSolver
 
-This solver uses only ring vortex wrapper functions. There are no HorseshoeVortices because the wake is modeled explicitly with shed wake RingVortices.
+| Aerodynamics function                     | Caller method                     | Purpose                                                                           |
+|-------------------------------------------|-----------------------------------|-----------------------------------------------------------------------------------|
+| `expanded_velocities_from_ring_vortices`  | `_calculate_wing_wing_influences` | Build the influence coefficient matrix from bound RingVortices.                   |
+| `collapsed_velocities_from_ring_vortices` | `_calculate_wake_wing_influences` | Compute cumulative induced velocity at collocation points from wake RingVortices. |
+| `collapsed_velocities_from_ring_vortices` | `calculate_solution_velocity`     | Compute bound RingVortex induced velocity at evaluation points.                   |
+| `collapsed_velocities_from_ring_vortices` | `calculate_solution_velocity`     | Compute wake RingVortex induced velocity at evaluation points.                    |
 
-| Aerodynamics function                     | Caller method                     | Purpose                                                                               |
-|-------------------------------------------|-----------------------------------|---------------------------------------------------------------------------------------|
-| `expanded_velocities_from_ring_vortices`  | `_calculate_wing_wing_influences` | Build the influence coefficient matrix from bound RingVortices.                       |
-| `collapsed_velocities_from_ring_vortices` | `_calculate_wake_wing_influences` | Compute the cumulative induced velocity at collocation points from wake RingVortices. |
-| `collapsed_velocities_from_ring_vortices` | `calculate_solution_velocity`     | Compute bound RingVortex induced velocity at evaluation points.                       |
-| `collapsed_velocities_from_ring_vortices` | `calculate_solution_velocity`     | Compute wake RingVortex induced velocity at evaluation points.                        |
+`calculate_solution_velocity` is called from `_calculate_loads`,
+`_populate_next_airplanes_wake_vortex_points`, and `calculate_streamlines`
+(in `_functions.py`).
 
-`calculate_solution_velocity` is itself called from:
-
-- `_calculate_loads`: evaluates velocity at each of the four LineVortex leg centers for all Panels' RingVortices (4 separate calls).
-- `_populate_next_airplanes_wake_vortex_points`: evaluates velocity at wake RingVortex grid points during free wake convection (only when `prescribed_wake` is False).
-- `calculate_streamlines` in `_functions.py` (via `run`): streamline tracing.
-
-### Summary of Kernel Usage Across Solvers
+### Kernel Usage Across Solvers
 
 | Kernel                                     | Steady Horseshoe VLM | Steady Ring VLM        | Unsteady Ring UVLM |
 |--------------------------------------------|----------------------|------------------------|--------------------|
 | `_expanded_velocities_from_line_vortices`  | Yes (horseshoe)      | Yes (ring + horseshoe) | Yes (ring)         |
 | `_collapsed_velocities_from_line_vortices` | Yes (horseshoe)      | Yes (ring + horseshoe) | Yes (ring)         |
 
-The expanded kernel is only used for building the Wing Wing influence coefficient matrices. The collapsed kernel is used everywhere else: solution velocity, load computation, wake influence, streamlines, and free wake convection.
+The expanded kernel is only used for building the wing-wing influence coefficient
+matrices. The collapsed kernel is used everywhere else.
 
 `collapsed_velocities_from_ring_vortices_chordwise_segments` is not called by any solver.

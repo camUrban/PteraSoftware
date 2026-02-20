@@ -220,3 +220,17 @@ def make_kinematic_viscosity_fixture():
     kinematic_viscosity_fixture = 1.5e-5
 
     return kinematic_viscosity_fixture
+
+
+def make_rc0s_fixture(num_vortices):
+    """This method makes a fixture that is a ndarray of initial core radii for
+    testing velocity calculation functions.
+
+    :param num_vortices: An int representing the number of vortices.
+    :return rc0s_fixture: (num_vortices,) ndarray of floats
+        This is a ndarray of initial core radii in meters. Each entry is 0.03
+        meters, representing 3% of a 1 meter standard mean chord.
+    """
+    rc0s_fixture = np.full(num_vortices, 0.03, dtype=float)
+
+    return rc0s_fixture

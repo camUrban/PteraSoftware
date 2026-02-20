@@ -234,10 +234,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         for airplane in self.airplanes:
             wing: geometry.wing.Wing
             for wing in airplane.wings:
-                _standard_mean_chord = wing.standard_mean_chord
-                assert _standard_mean_chord is not None
-                wing_r_c0 = 0.03 * _standard_mean_chord
-
                 _panels = wing.panels
                 assert _panels is not None
 
@@ -254,7 +250,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     # attributes (in the first Airplane's geometry axes, relative to
                     # the first Airplane's CG).
                     self.panels[global_panel_position] = panel
-                    self._stackRc0s[global_panel_position] = wing_r_c0
                     self.stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
                     )

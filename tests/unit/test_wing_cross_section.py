@@ -386,6 +386,34 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tip_wing_cross_section.validate_mid_constraints()
 
+    def test_validate_mid_constraints_zero_y_offset(self):
+        """Test that validate_mid_constraints rejects zero y component of
+        Lp_Wcsp_Lpp.
+        """
+        zero_y_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=self.test_airfoil,
+            num_spanwise_panels=8,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.25, 0.0, 1.5),
+            spanwise_spacing="uniform",
+        )
+        with self.assertRaises(ValueError):
+            zero_y_wing_cross_section.validate_mid_constraints()
+
+    def test_validate_tip_constraints_zero_y_offset(self):
+        """Test that validate_tip_constraints rejects zero y component of
+        Lp_Wcsp_Lpp.
+        """
+        zero_y_tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=self.test_airfoil,
+            num_spanwise_panels=None,
+            chord=0.75,
+            Lp_Wcsp_Lpp=(0.25, 0.0, 1.5),
+            spanwise_spacing=None,
+        )
+        with self.assertRaises(ValueError):
+            zero_y_tip_wing_cross_section.validate_tip_constraints()
+
     def test_transformation_matrices_not_validated(self):
         """Test that transformation matrices return None when not validated."""
         # Test with unvalidated WingCrossSection

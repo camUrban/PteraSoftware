@@ -1,5 +1,6 @@
 """This module contains a class to test aerodynamics functions."""
 
+import math
 import unittest
 
 import numpy as np
@@ -854,6 +855,649 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         # Verify that computed velocity matches expected velocity.
         npt.assert_array_almost_equal(computed_total, expected_total, decimal=10)
+
+
+class TestSingularityGuards(unittest.TestCase):
+    """This is a class with functions to test the scale invariant singularity
+    guards in the Biot-Savart kernels."""
+
+    def setUp(self):
+        """Set up fixtures for singularity guard tests."""
+        # Degenerate RingVortex fixture (all corners at the origin).
+        (
+            self.degenerate_ring_Brrvp,
+            self.degenerate_ring_Frrvp,
+            self.degenerate_ring_Flrvp,
+            self.degenerate_ring_Blrvp,
+            self.degenerate_ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_degenerate_ring_vortex_arrays_fixture()
+
+        # Degenerate HorseshoeVortex fixture (all points at the origin).
+        (
+            self.degenerate_horseshoe_Brhvp,
+            self.degenerate_horseshoe_Frhvp,
+            self.degenerate_horseshoe_Flhvp,
+            self.degenerate_horseshoe_Blhvp,
+            self.degenerate_horseshoe_strengths,
+        ) = (
+            aerodynamics_functions_fixtures.make_degenerate_horseshoe_vortex_arrays_fixture()
+        )
+
+        # Simple (non degenerate) RingVortex fixture for vertex proximity and
+        # collinearity tests. Corners: Br=(1,0.5,0), Fr=(0,0.5,0),
+        # Fl=(0,-0.5,0), Bl=(1,-0.5,0).
+        (
+            self.ring_Brrvp,
+            self.ring_Frrvp,
+            self.ring_Flrvp,
+            self.ring_Blrvp,
+            self.ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
+
+        # Simple (non degenerate) HorseshoeVortex fixture for vertex proximity
+        # and collinearity tests. Corners: Br=(20,0.5,0), Fr=(0,0.5,0),
+        # Fl=(0,-0.5,0), Bl=(20,-0.5,0).
+        (
+            self.horseshoe_Brhvp,
+            self.horseshoe_Frhvp,
+            self.horseshoe_Flhvp,
+            self.horseshoe_Blhvp,
+            self.horseshoe_strengths,
+        ) = (
+            aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
+        )
+
+        # Zero initial core radii for coreless comparison with the reference
+        # Biot-Savart implementation.
+        self.zero_rc0s = np.zeros(1, dtype=float)
+
+    # ---- Degenerate filament tests (r0 < eps) ----
+
+    def test_collapsed_ring_vortex_degenerate_filament_returns_zero(self):
+        """Test that collapsed_velocities_from_ring_vortices returns zero
+        velocity for a degenerate RingVortex where all corners coincide."""
+        # Evaluate at a point away from the degenerate vortex.
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        # Call the function.
+        velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.degenerate_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.degenerate_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.degenerate_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
+            strengths=self.degenerate_ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Verify all velocities are zero.
+        npt.assert_array_almost_equal(velocities, np.zeros((1, 3), dtype=float))
+
+    def test_expanded_ring_vortex_degenerate_filament_returns_zero(self):
+        """Test that expanded_velocities_from_ring_vortices returns zero
+        velocity for a degenerate RingVortex where all corners coincide."""
+        # Evaluate at a point away from the degenerate vortex.
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        # Call the function.
+        velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.degenerate_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.degenerate_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.degenerate_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
+            strengths=self.degenerate_ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Verify all velocities are zero.
+        npt.assert_array_almost_equal(velocities, np.zeros((1, 1, 3), dtype=float))
+
+    def test_collapsed_horseshoe_vortex_degenerate_filament_returns_zero(self):
+        """Test that collapsed_velocities_from_horseshoe_vortices returns zero
+        velocity for a degenerate HorseshoeVortex where all points coincide."""
+        # Evaluate at a point away from the degenerate vortex.
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        # Call the function.
+        velocities = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=point,
+                stackBrhvp_GP1_CgP1=self.degenerate_horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.degenerate_horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.degenerate_horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
+                strengths=self.degenerate_horseshoe_strengths,
+                r_c0s=self.zero_rc0s,
+            )
+        )
+
+        # Verify all velocities are zero.
+        npt.assert_array_almost_equal(velocities, np.zeros((1, 3), dtype=float))
+
+    def test_expanded_horseshoe_vortex_degenerate_filament_returns_zero(self):
+        """Test that expanded_velocities_from_horseshoe_vortices returns zero
+        velocity for a degenerate HorseshoeVortex where all points coincide."""
+        # Evaluate at a point away from the degenerate vortex.
+        point = np.array([[1.0, 0.0, 0.0]], dtype=float)
+
+        # Call the function.
+        velocities = (
+            _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=point,
+                stackBrhvp_GP1_CgP1=self.degenerate_horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.degenerate_horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.degenerate_horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
+                strengths=self.degenerate_horseshoe_strengths,
+                r_c0s=self.zero_rc0s,
+            )
+        )
+
+        # Verify all velocities are zero.
+        npt.assert_array_almost_equal(velocities, np.zeros((1, 1, 3), dtype=float))
+
+    # ---- Vertex proximity tests (r1/r0 < tol or r2/r0 < tol) ----
+
+    def test_collapsed_ring_vortex_point_at_corner_matches_non_singular_legs(self):
+        """Test that collapsed_velocities_from_ring_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is at a RingVortex corner.
+
+        The evaluation point is placed at the front right corner. The right leg
+        (Br to Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl)
+        hits the r1/r0 < tol guard. The left and back legs are non singular.
+        """
+        # Place the evaluation point at the front right corner.
+        point = self.ring_Frrvp.copy()
+        gamma = float(self.ring_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Compute expected velocity from the two non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
+        v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
+        expected = v_left + v_back
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_expanded_ring_vortex_point_at_corner_matches_non_singular_legs(self):
+        """Test that expanded_velocities_from_ring_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is at a RingVortex corner.
+
+        The evaluation point is placed at the front right corner. The right leg
+        (Br to Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl)
+        hits the r1/r0 < tol guard. The left and back legs are non singular.
+        """
+        # Place the evaluation point at the front right corner.
+        point = self.ring_Frrvp.copy()
+        gamma = float(self.ring_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Compute expected velocity from the two non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
+        v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
+        expected = v_left + v_back
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0, 0], expected, decimal=10)
+
+    def test_collapsed_horseshoe_vortex_point_at_corner_matches_non_singular_legs(
+        self,
+    ):
+        """Test that collapsed_velocities_from_horseshoe_vortices returns the
+        contribution from only the non singular leg when the evaluation point is
+        at a HorseshoeVortex corner.
+
+        The evaluation point is placed at the front right corner. The right leg
+        (Br to Fr) hits the r2/r0 < tol guard, and the finite leg (Fr to Fl)
+        hits the r1/r0 < tol guard. Only the left leg is non singular.
+        """
+        # Place the evaluation point at the front right corner.
+        point = self.horseshoe_Frhvp.copy()
+        gamma = float(self.horseshoe_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=point,
+                stackBrhvp_GP1_CgP1=self.horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
+                strengths=self.horseshoe_strengths,
+                r_c0s=self.zero_rc0s,
+            )
+        )
+
+        # Compute expected velocity from the one non singular leg using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        expected = ref(self.horseshoe_Flhvp[0], self.horseshoe_Blhvp[0], P, gamma)
+
+        # Verify the kernel result matches the non singular leg's contribution.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    # ---- Collinearity tests (r3/(r1*r2) < tol) ----
+
+    def test_collapsed_ring_vortex_point_on_leg_extension_matches_non_singular_legs(
+        self,
+    ):
+        """Test that collapsed_velocities_from_ring_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is on the extension of a RingVortex leg.
+
+        The evaluation point is placed at (5, 0.5, 0), which is collinear with
+        the right leg (Br to Fr, both at y=0.5). The right leg hits the
+        r3/(r1*r2) < tol guard. The other three legs are non singular.
+        """
+        # Place the evaluation point on the extension of the right leg.
+        point = np.array([[5.0, 0.5, 0.0]], dtype=float)
+        gamma = float(self.ring_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Compute expected velocity from the three non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
+        v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
+        v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
+        expected = v_front + v_left + v_back
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_expanded_ring_vortex_point_on_leg_extension_matches_non_singular_legs(
+        self,
+    ):
+        """Test that expanded_velocities_from_ring_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is on the extension of a RingVortex leg.
+
+        The evaluation point is placed at (5, 0.5, 0), which is collinear with
+        the right leg (Br to Fr, both at y=0.5). The right leg hits the
+        r3/(r1*r2) < tol guard. The other three legs are non singular.
+        """
+        # Place the evaluation point on the extension of the right leg.
+        point = np.array([[5.0, 0.5, 0.0]], dtype=float)
+        gamma = float(self.ring_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Compute expected velocity from the three non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
+        v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
+        v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
+        expected = v_front + v_left + v_back
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0, 0], expected, decimal=10)
+
+    def test_collapsed_ring_vortex_point_on_leg_midpoint_matches_non_singular_legs(
+        self,
+    ):
+        """Test that collapsed_velocities_from_ring_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is at the midpoint of a RingVortex leg.
+
+        The evaluation point is placed at (0.5, 0.5, 0), which is the midpoint
+        of the right leg (Br to Fr). This triggers the r3/(r1*r2) < tol guard
+        for the right leg due to collinearity. The other three legs are non
+        singular.
+        """
+        # Place the evaluation point at the midpoint of the right leg.
+        point = np.array([[0.5, 0.5, 0.0]], dtype=float)
+        gamma = float(self.ring_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.zero_rc0s,
+        )
+
+        # Compute expected velocity from the three non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
+        v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
+        v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
+        expected = v_front + v_left + v_back
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_collapsed_horseshoe_vortex_point_on_finite_leg_matches_non_singular_legs(
+        self,
+    ):
+        """Test that collapsed_velocities_from_horseshoe_vortices returns the
+        contribution from only the non singular legs when the evaluation point
+        is on the HorseshoeVortex's finite leg.
+
+        The evaluation point is placed at (0, 0, 0), which is the midpoint of
+        the finite leg (Fr to Fl, both at x=0). This triggers the
+        r3/(r1*r2) < tol guard for the finite leg due to collinearity. The
+        right and left legs are non singular.
+        """
+        # Place the evaluation point at the midpoint of the finite leg.
+        point = np.array([[0.0, 0.0, 0.0]], dtype=float)
+        gamma = float(self.horseshoe_strengths[0])
+
+        # Call the function with zero core radius for coreless comparison.
+        velocities = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=point,
+                stackBrhvp_GP1_CgP1=self.horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
+                strengths=self.horseshoe_strengths,
+                r_c0s=self.zero_rc0s,
+            )
+        )
+
+        # Compute expected velocity from the two non singular legs using the
+        # reference Biot-Savart implementation.
+        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        P = point[0]
+        v_right = ref(self.horseshoe_Brhvp[0], self.horseshoe_Frhvp[0], P, gamma)
+        v_left = ref(self.horseshoe_Flhvp[0], self.horseshoe_Blhvp[0], P, gamma)
+        expected = v_right + v_left
+
+        # Verify the kernel result matches the non singular legs' contribution.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+
+class TestCoreRadiusFormula(unittest.TestCase):
+    """This is a class with functions to test the Ramasamy-Leishman core radius
+    formula and its effect on induced velocities."""
+
+    def setUp(self):
+        """Set up fixtures for core radius formula tests."""
+        # Simple RingVortex fixture.
+        (
+            self.ring_Brrvp,
+            self.ring_Frrvp,
+            self.ring_Flrvp,
+            self.ring_Blrvp,
+            self.ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
+
+        # Evaluation point above the RingVortex center, away from any
+        # singularity.
+        self.center_point = np.array([[0.5, 0.0, 1.0]], dtype=float)
+
+    @staticmethod
+    def ref_calculate_regularized_biot_savart_velocity(S_A_a, E_A_a, P_A_a, gamma, r_c):
+        """Calculate induced velocity using the regularized Biot-Savart formula
+        for a conceptual line vortex with a finite core radius.
+
+        Extends the coreless Biot-Savart formula with Lamb-Oseen core
+        regularization.
+
+        r0_A = E_A_a - S_A_a
+        r1_A = P_A_a - S_A_a
+        r2_A = P_A_a - E_A_a
+        r3_A = r1_A x r2_A
+
+        r1 = |r1_A|
+        r2 = |r2_A|
+        r3 = |r3_A|
+
+        c_1 = (gamma / (4 * pi))
+
+        c_2_num = (r1 + r2) * (r1 * r2 - r1_A . r2_A)
+        c_2_den = r1 * r2 * (r3^2 + |r2_A - r1_A|^2 * r_c^2)
+
+        v_A__I = c_1 * (c_2_num / c_2_den) * r3_A
+
+        :param S_A_a: A (3,) ndarray of floats representing the start point of
+            the line vortex (in A axes, relative to point a) in meters.
+        :param E_A_a: A (3,) ndarray of floats representing the end point of
+            the line vortex (in A axes, relative to point a) in meters.
+        :param P_A_a: A (3,) ndarray of floats representing the evaluation
+            point (in A axes, relative to point a) in meters.
+        :param gamma: A float representing the line vortex strength in meters
+            squared per second.
+        :param r_c: A non negative float representing the core radius in
+            meters.
+        :return v_A__I: A (3,) ndarray of floats representing the induced
+            velocity (in A axes, observed from an inertial frame) in meters per
+            second.
+        """
+        eps = np.finfo(float).eps
+        tol = 1.0e-10
+
+        r1_A = P_A_a - S_A_a
+        r2_A = P_A_a - E_A_a
+        r0_A = E_A_a - S_A_a
+        r3_A = np.cross(r1_A, r2_A)
+
+        r0 = np.linalg.norm(r0_A)
+        r1 = np.linalg.norm(r1_A)
+        r2 = np.linalg.norm(r2_A)
+        r3 = np.linalg.norm(r3_A)
+
+        if r0 < eps:
+            return np.zeros(3, dtype=float)
+
+        if r1 / r0 < tol or r2 / r0 < tol or r3 / (r1 * r2) < tol:
+            return np.zeros(3, dtype=float)
+
+        c_1 = gamma / (4.0 * math.pi)
+
+        c_2_num = (r1 + r2) * (r1 * r2 - np.dot(r1_A, r2_A))
+        c_2_den = r1 * r2 * (r3**2.0 + np.linalg.norm(r2_A - r1_A) ** 2.0 * r_c**2.0)
+
+        v_A__I = c_1 * (c_2_num / c_2_den) * r3_A
+
+        return v_A__I
+
+    def _call_collapsed_ring(self, rc0s, ages=None, nu=0.0):
+        """Helper to call collapsed_velocities_from_ring_vortices with the
+        simple RingVortex fixture and the center evaluation point.
+        """
+        return _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=self.center_point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=rc0s,
+            ages=ages,
+            nu=nu,
+        )
+
+    def _compute_reference_ring_velocity(self, r_c):
+        """Helper to compute the expected RingVortex velocity by summing all
+        four legs' contributions using the regularized reference
+        implementation.
+        """
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.ring_strengths[0])
+        Br = self.ring_Brrvp[0]
+        Fr = self.ring_Frrvp[0]
+        Fl = self.ring_Flrvp[0]
+        Bl = self.ring_Blrvp[0]
+
+        v_right = ref(Br, Fr, P, gamma, r_c)
+        v_front = ref(Fr, Fl, P, gamma, r_c)
+        v_left = ref(Fl, Bl, P, gamma, r_c)
+        v_back = ref(Bl, Br, P, gamma, r_c)
+
+        return v_right + v_front + v_left + v_back
+
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_rc0(self):
+        """Test that increasing the initial core radius decreases the induced
+        velocity magnitude for a RingVortex."""
+        rc0_values = [0.0, 0.01, 0.03, 0.1, 0.5]
+        magnitudes = []
+
+        for rc0 in rc0_values:
+            rc0s = np.array([rc0], dtype=float)
+            velocities = self._call_collapsed_ring(rc0s)
+            magnitudes.append(np.linalg.norm(velocities[0]))
+
+        # Verify that velocity magnitude strictly decreases.
+        for i in range(len(magnitudes) - 1):
+            self.assertGreater(magnitudes[i], magnitudes[i + 1])
+
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_age(self):
+        """Test that increasing the vortex age decreases the induced velocity
+        magnitude for a RingVortex due to core radius growth."""
+        rc0s = np.array([0.03], dtype=float)
+        nu = 1.5e-5
+        age_values = [0.0, 0.1, 0.5, 1.0, 5.0]
+        magnitudes = []
+
+        for age in age_values:
+            ages = np.array([age], dtype=float)
+            velocities = self._call_collapsed_ring(rc0s, ages=ages, nu=nu)
+            magnitudes.append(np.linalg.norm(velocities[0]))
+
+        # Verify that velocity magnitude strictly decreases.
+        for i in range(len(magnitudes) - 1):
+            self.assertGreater(magnitudes[i], magnitudes[i + 1])
+
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_viscosity(self):
+        """Test that increasing the kinematic viscosity decreases the induced
+        velocity magnitude for an aged RingVortex due to faster core radius
+        growth."""
+        rc0s = np.array([0.03], dtype=float)
+        ages = np.array([1.0], dtype=float)
+        nu_values = [0.0, 1.0e-5, 1.0e-4, 1.0e-3]
+        magnitudes = []
+
+        for nu in nu_values:
+            velocities = self._call_collapsed_ring(rc0s, ages=ages, nu=nu)
+            magnitudes.append(np.linalg.norm(velocities[0]))
+
+        # Verify that velocity magnitude strictly decreases.
+        for i in range(len(magnitudes) - 1):
+            self.assertGreater(magnitudes[i], magnitudes[i + 1])
+
+    def test_collapsed_ring_vortex_large_rc0_suppresses_velocity(self):
+        """Test that a very large initial core radius suppresses the induced
+        velocity to near zero."""
+        rc0s = np.array([1000.0], dtype=float)
+
+        # Call the function.
+        velocities = self._call_collapsed_ring(rc0s)
+
+        # Verify that the velocity magnitude is extremely small.
+        magnitude = np.linalg.norm(velocities[0])
+        self.assertLess(magnitude, 1.0e-6)
+
+    def test_collapsed_ring_vortex_regularized_matches_reference(self):
+        """Test that the regularized kernel output matches the regularized
+        reference Biot-Savart implementation for a bound RingVortex with a
+        nonzero initial core radius.
+
+        With ages=None and nu=0.0, the core radius equals r_c0.
+        """
+        r_c0 = 0.03
+        rc0s = np.array([r_c0], dtype=float)
+
+        # For bound vortices (ages=None), r_c = r_c0.
+        r_c = r_c0
+
+        # Call the kernel.
+        velocities = self._call_collapsed_ring(rc0s)
+
+        # Compute expected velocity from all four legs using the regularized
+        # reference implementation.
+        expected = self._compute_reference_ring_velocity(r_c)
+
+        # Verify the kernel result matches the reference.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_collapsed_ring_vortex_aged_core_radius_matches_reference(self):
+        """Test that the regularized kernel output matches the regularized
+        reference Biot-Savart implementation for an aged RingVortex.
+
+        With age=1.0, nu=1.5e-5, and strength=1.0, the core radius grows from
+        r_c0 according to the Ramasamy-Leishman formula.
+        """
+        r_c0 = 0.03
+        age = 1.0
+        nu = 1.5e-5
+        gamma = float(self.ring_strengths[0])
+        rc0s = np.array([r_c0], dtype=float)
+        ages = np.array([age], dtype=float)
+
+        # Manually compute r_c using the Ramasamy-Leishman formula with the
+        # module's physical constants.
+        lamb = _aerodynamics_functions._lamb
+        squire = _aerodynamics_functions._squire
+        r_c = np.sqrt(r_c0**2 + 4.0 * lamb * (nu + squire * abs(gamma)) * age)
+
+        # Call the kernel.
+        velocities = self._call_collapsed_ring(rc0s, ages=ages, nu=nu)
+
+        # Compute expected velocity from all four legs using the regularized
+        # reference implementation.
+        expected = self._compute_reference_ring_velocity(r_c)
+
+        # Verify the kernel result matches the reference.
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
 
 
 if __name__ == "__main__":

@@ -71,7 +71,7 @@ def collapsed_velocities_from_ring_vortices(
         RingVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 2.9% the chord length of each LineVortices'
+        value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
@@ -151,7 +151,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         RingVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 2.9% the chord length of each LineVortices'
+        value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
@@ -227,7 +227,7 @@ def expanded_velocities_from_ring_vortices(
         RingVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 2.9% the chord length of each LineVortices'
+        value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
@@ -308,7 +308,7 @@ def collapsed_velocities_from_horseshoe_vortices(
         HorseshoeVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 2.9% the chord length of each
+        reasonable value that works across scales is 3.0% the chord length of each
         LineVortices' parent Wing. The units are in meters.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
@@ -388,7 +388,7 @@ def expanded_velocities_from_horseshoe_vortices(
         HorseshoeVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 2.9% the chord length of each
+        reasonable value that works across scales is 3.0% the chord length of each
         LineVortices' parent Wing. The units are in meters.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
@@ -474,7 +474,7 @@ def _collapsed_velocities_from_line_vortices(
         LineVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 2.9% the chord length of each LineVortices'
+        value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
@@ -511,7 +511,7 @@ def _collapsed_velocities_from_line_vortices(
         r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
 
         # Find r0_GP1's length.
-        r0 = math.sqrt(r0X_GP1**2 + r0Y_GP1**2 + r0Z_GP1**2)
+        r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
@@ -522,10 +522,10 @@ def _collapsed_velocities_from_line_vortices(
 
         # Calculate the radius of the LineVortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
-        r_c_sq = r_c0**2 + _four_lamb * (nu + _squire * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
         c_1 = strength / _four_pi
-        c_2 = r0**2 * r_c_sq
+        c_2 = r0**2.0 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -549,11 +549,11 @@ def _collapsed_velocities_from_line_vortices(
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
             # Find the lengths of r1_GP1 and r2_GP1.
-            r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
-            r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
+            r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
+            r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
-            r3_sq = r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
 
             # Find the length of r3_GP1.
             r3 = math.sqrt(r3_sq)
@@ -631,7 +631,7 @@ def _expanded_velocities_from_line_vortices(
         LineVortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
         LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 2.9% the chord length of each LineVortices'
+        value that works across scales is 3.0% the chord length of each LineVortices'
         parent Wing. The units are in meters.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
@@ -668,7 +668,7 @@ def _expanded_velocities_from_line_vortices(
         r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
 
         # Find r0_GP1's length.
-        r0 = math.sqrt(r0X_GP1**2 + r0Y_GP1**2 + r0Z_GP1**2)
+        r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
@@ -679,10 +679,10 @@ def _expanded_velocities_from_line_vortices(
 
         # Calculate the radius of the LineVortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
-        r_c_sq = r_c0**2 + _four_lamb * (nu + _squire * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
         c_1 = strength / _four_pi
-        c_2 = r0**2 * r_c_sq
+        c_2 = r0**2.0 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -706,11 +706,11 @@ def _expanded_velocities_from_line_vortices(
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
             # Find the lengths of r1_GP1 and r2_GP1.
-            r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
-            r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
+            r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
+            r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
-            r3_sq = r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
 
             # Find the length of r3_GP1.
             r3 = math.sqrt(r3_sq)

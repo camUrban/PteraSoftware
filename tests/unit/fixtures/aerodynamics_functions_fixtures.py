@@ -234,3 +234,59 @@ def make_rc0s_fixture(num_vortices):
     rc0s_fixture = np.full(num_vortices, 0.03, dtype=float)
 
     return rc0s_fixture
+
+
+def make_degenerate_ring_vortex_arrays_fixture():
+    """Makes a fixture containing arrays describing a degenerate RingVortex with
+    all four corners at the same point for testing the degenerate filament
+    singularity guard.
+
+    :return tuple of ndarrays
+        Returns a tuple containing:
+        - stackBrrvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackFrrvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackFlrvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackBlrvp_GP1_CgP1: (1, 3) ndarray of floats
+        - strengths: (1,) ndarray of floats
+    """
+    stackBrrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackFrrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackFlrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackBlrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    strengths = np.array([1.0], dtype=float)
+
+    return (
+        stackBrrvp_GP1_CgP1,
+        stackFrrvp_GP1_CgP1,
+        stackFlrvp_GP1_CgP1,
+        stackBlrvp_GP1_CgP1,
+        strengths,
+    )
+
+
+def make_degenerate_horseshoe_vortex_arrays_fixture():
+    """Makes a fixture containing arrays describing a degenerate HorseshoeVortex
+    with all four points at the same location for testing the degenerate filament
+    singularity guard.
+
+    :return tuple of ndarrays
+        Returns a tuple containing:
+        - stackBrhvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackFrhvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackFlhvp_GP1_CgP1: (1, 3) ndarray of floats
+        - stackBlhvp_GP1_CgP1: (1, 3) ndarray of floats
+        - strengths: (1,) ndarray of floats
+    """
+    stackBrhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackFrhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackFlhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    stackBlhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
+    strengths = np.array([1.0], dtype=float)
+
+    return (
+        stackBrhvp_GP1_CgP1,
+        stackFrhvp_GP1_CgP1,
+        stackFlhvp_GP1_CgP1,
+        stackBlhvp_GP1_CgP1,
+        strengths,
+    )

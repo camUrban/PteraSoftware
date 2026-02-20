@@ -1755,15 +1755,14 @@ class TestLogSingularityCounts(unittest.TestCase):
         zero."""
         import logging
 
-        # noinspection PyProtectedMember
-        from pterasoftware._functions import log_singularity_counts
+        from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_zero_counts")
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         with self.assertLogs(logger, level="DEBUG") as cm:
             logger.debug("sentinel")
-            log_singularity_counts(
+            log_unexpected_singularity_counts(
                 logger, logging.WARNING, "test_context", singularity_counts
             )
 
@@ -1776,14 +1775,13 @@ class TestLogSingularityCounts(unittest.TestCase):
         nonzero."""
         import logging
 
-        # noinspection PyProtectedMember
-        from pterasoftware._functions import log_singularity_counts
+        from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_nonzero_counts")
         singularity_counts = np.array([2, 0, 3, 0], dtype=np.int64)
 
         with self.assertLogs(logger, level="WARNING") as cm:
-            log_singularity_counts(
+            log_unexpected_singularity_counts(
                 logger, logging.WARNING, "test_context", singularity_counts
             )
 
@@ -1799,14 +1797,13 @@ class TestLogSingularityCounts(unittest.TestCase):
         level."""
         import logging
 
-        # noinspection PyProtectedMember
-        from pterasoftware._functions import log_singularity_counts
+        from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_log_level")
         singularity_counts = np.array([1, 0, 0, 0], dtype=np.int64)
 
         with self.assertLogs(logger, level="ERROR") as cm:
-            log_singularity_counts(
+            log_unexpected_singularity_counts(
                 logger, logging.ERROR, "error_context", singularity_counts
             )
 

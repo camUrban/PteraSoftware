@@ -8,10 +8,10 @@ the GitHub issue).
 
 ## Progress Summary
 
-| Phase   | Status      | Description                                       |
-|---------|-------------|---------------------------------------------------|
-| Phase 1 | Complete    | Kernel singularity check and vortex core fixes    |
-| Phase 2 | In progress | Context-aware singularity detection and reporting |
+| Phase   | Status   | Description                                       |
+|---------|----------|---------------------------------------------------|
+| Phase 1 | Complete | Kernel singularity check and vortex core fixes    |
+| Phase 2 | Complete | Context-aware singularity detection and reporting |
 
 ---
 
@@ -119,7 +119,7 @@ simulations with aging wake vortices. The unsteady solver is unchanged.
 
 ---
 
-## Phase 2: Context-Aware Singularity Detection and Reporting (In Progress)
+## Phase 2: Context-Aware Singularity Detection and Reporting (Complete)
 
 Phase 2 adds counter-based singularity detection inside the `@njit` kernels and
 context-aware logging at the solver level.
@@ -145,7 +145,7 @@ internal kernel call. Counts accumulate across legs.
 
 ### Step 15 (Complete) -- Add logging helper function
 
-Added `log_singularity_counts` to `pterasoftware/_functions.py`. Checks
+Added `log_unexpected_singularity_counts` to `pterasoftware/_functions.py`. Checks
 `singularity_counts.sum() > 0`, then logs at a specified level with context string and
 per-check breakdown. Also added `_SINGULARITY_NAMES` tuple for human-readable labels.
 
@@ -182,11 +182,62 @@ already had a module-level logger via `_logging.get_logger`. Added a logger to
 - Added `TestLogSingularityCounts` class (3 tests) verifying the logging helper skips
   zero counts, logs nonzero counts, and respects the specified logging level.
 
-### Step 20 -- Pre-exclusion of known singular pairs in `_calculate_loads`
+### Step 20 (Complete) -- Pre-exclusion of known singular pairs in `_calculate_loads`
 
-Requires combinatorial analysis of which LineVortex-point pairs are structurally singular
-for load calculations. The current implementation will log these expected singularities,
-which is acceptable for initial deployment.
+Two kernel changes and per solver expected count subtraction eliminate all structural
+singularity noise from `_calculate_loads` logging.
+
+#### Step 20a -- Kernel collinearity counter refinement
+
+In both `_collapsed_velocities_from_line_vortices` and
+`_expanded_velocities_from_line_vortices`:
+
+- Moved vertex proximity checks (`r1 < r0_times_tol`, `r2 < r0_times_tol`) above
+  `r3_sq`, `r3`, and `r1_times_r2` computation to avoid unnecessary work before early
+  exit.
+- Moved `c_3` (dot product `r1 . r2`) computation before the collinearity check so it
+  is available for the new conditional.
+- Made the collinearity counter conditional on `c_3 < 0.0`. When the evaluation point
+  is collinear with the filament but beyond one of its endpoints (`c_3 >= 0`, theta
+  <= 90 degrees), the true induced velocity is zero; this is a numerical stability skip,
+  not a physical singularity. Only points between the endpoints (`c_3 < 0`, theta > 90
+  degrees) are true on segment singularities and increment the counter. The `continue`
+  still executes in both cases.
+
+#### Step 20b -- Structural singularity subtraction in solvers
+
+Each solver's `_calculate_loads` now computes the exact expected structural singularity
+count from mesh topology and subtracts it before logging. The subtraction uses direct
+arithmetic (no clamping to zero) so that a mismatch in either direction is visible.
+
+**Horseshoe solver:** Subtracts `num_panels` collinearity (one self collinearity per
+Panel's bound vortex center on its own finite leg).
+
+**Steady ring solver:** Subtracts collinearity and degenerate filament counts:
+
+- Collinearity per Wing: `8 * C * S - 2 * C - 2 * S` from RingVortex self and adjacent
+  shared edge pairs across the four leg center evaluations, plus `S` from trailing edge
+  back leg centers being collinear with wake HorseshoeVortex finite legs.
+- Degenerate filaments: `4 * 3 * (num_panels - num_trailing_edge_panels)` from phantom
+  all zero HorseshoeVortex vertices at non trailing edge Panels (3 degenerate legs each,
+  times 4 `calculate_solution_velocity` calls).
+- The same degenerate subtraction (`3 * (num_panels - num_trailing_edge_panels)`) is
+  applied in `_calculate_wing_wing_influences` (1 horseshoe wrapper call).
+- Added a TODO in `__init__` to compact HorseshoeVortex arrays to trailing edge Panels
+  only, which would eliminate the phantom degenerate filaments and the ~93% wasted
+  expanded kernel computation.
+
+**Unsteady ring solver:** Subtracts collinearity counts:
+
+- Bound collinearity per Wing: `8 * C * S - 2 * C - 2 * S` (same formula as steady
+  ring, without the horseshoe trailing edge term).
+- Wake collinearity (when time step > 0): `S` per Wing from trailing edge back leg
+  centers being collinear with the first wake row's front legs.
+
+#### Step 20c -- Mypy type narrowing
+
+Added `assert num_spanwise is not None` before arithmetic on `wing.num_spanwise_panels`
+(typed `int | None`) in all three solvers to satisfy mypy.
 
 ---
 
@@ -203,14 +254,14 @@ which is acceptable for initial deployment.
 
 ## Files Modified by Phase 2
 
-| File                                                      | Changes                                                                                                                                                          |
-|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pterasoftware/_aerodynamics_functions.py`                | `singularity_counts` param in 2 kernels + 5 wrappers; split `if/or` into separate checks with per-category counter increments                                    |
-| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                           |
-| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                           |
-| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | `import logging`; counter allocation + logging at all 5 call sites including `_calculate_wake_wing_influences` and `_populate_next_airplanes_wake_vortex_points` |
-| `pterasoftware/_functions.py`                             | `_SINGULARITY_NAMES`, `log_singularity_counts` helper, logger instance; `calculate_streamlines` counter allocation + logging                                     |
-| `tests/unit/test_aerodynamics_functions.py`               | `singularity_counts` at all ~35 wrapper calls; `TestSingularityCounters` (7 tests); `TestLogSingularityCounts` (3 tests)                                         |
+| File                                                      | Changes                                                                                                                                                                                                                 |
+|-----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pterasoftware/_aerodynamics_functions.py`                | `singularity_counts` param in 2 kernels + 5 wrappers; split `if/or` into separate checks with per-category counter increments; Step 20a collinearity counter conditional on `c_3 < 0`; vertex proximity checks moved up |
+| `pterasoftware/steady_horseshoe_vortex_lattice_method.py` | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                                                                                  |
+| `pterasoftware/steady_ring_vortex_lattice_method.py`      | `import logging`; counter allocation + logging at `_calculate_wing_wing_influences`, `calculate_solution_velocity`, `_calculate_loads`                                                                                  |
+| `pterasoftware/unsteady_ring_vortex_lattice_method.py`    | `import logging`; counter allocation + logging at all 5 call sites including `_calculate_wake_wing_influences` and `_populate_next_airplanes_wake_vortex_points`                                                        |
+| `pterasoftware/_functions.py`                             | `_SINGULARITY_NAMES`, `log_unexpected_singularity_counts` helper, logger instance; `calculate_streamlines` counter allocation + logging                                                                                 |
+| `tests/unit/test_aerodynamics_functions.py`               | `singularity_counts` at all ~35 wrapper calls; `TestSingularityCounters` (7 tests); `TestLogSingularityCounts` (3 tests)                                                                                                |
 
 ---
 

@@ -15,6 +15,8 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
+
+from ..airplane_movement import AirplaneMovement
 from ... import geometry
 
 from ..._parameter_validation import (
@@ -49,6 +51,7 @@ class SingleStepAirplaneMovement:
     def __init__(
         self,
         single_step_wing_movements,
+        base_airplane,
         ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         spacingCg_GP1_CgP1: (
@@ -152,6 +155,20 @@ class SingleStepAirplaneMovement:
                     "in phaseCg_GP1_CgP1 must be also be 0.0."
                 )
         self.phaseCg_GP1_CgP1 = phaseCg_GP1_CgP1
+
+        # Create the corresponding AirplaneMovement, which will remove redundancy as Coupled
+        # unsteady problems require both a SingleStepAirplaneMovement and an AirplaneMovement
+        # with the same parameters.
+        corresponding_wing_movements = [wm.corresponding_wing_movement for wm in self.wing_movements]
+        self.corresponding_airplane_movement = AirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=corresponding_wing_movements,
+            ampCg_GP1_CgP1=ampCg_GP1_CgP1,
+            periodCg_GP1_CgP1=periodCg_GP1_CgP1,
+            spacingCg_GP1_CgP1=spacingCg_GP1_CgP1,
+            phaseCg_GP1_CgP1=phaseCg_GP1_CgP1,
+        )
+
         self.listCg_GP1_CgP1 = None
 
     @property

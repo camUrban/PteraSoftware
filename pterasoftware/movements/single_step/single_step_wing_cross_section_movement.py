@@ -10,6 +10,7 @@ This module contains the following functions:
 
 import numpy as np
 
+from ..wing_cross_section_movement import WingCrossSectionMovement
 
 from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
@@ -47,6 +48,7 @@ class SingleStepWingCrossSectionMovement:
 
     def __init__(
         self,
+        base_wing_cross_section,
         ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
@@ -261,6 +263,21 @@ class SingleStepWingCrossSectionMovement:
         self.listLp_Wcsp_Lpp = None
         self.listAngles_Wcsp_to_Wcs_ixyz = None
 
+        # Create the corresponding WingCrossSectionMovement, which will remove redundancy as
+        # Coupled unsteady problems require both a SingleStepWingCrossSectionMovement and a 
+        # WingCrossSectionMovement with the same parameters.
+        self.corresponding_wcs_movement = WingCrossSectionMovement(
+            base_wing_cross_section=base_wing_cross_section,
+            ampLp_Wcsp_Lpp=ampLp_Wcsp_Lpp,
+            periodLp_Wcsp_Lpp=periodLp_Wcsp_Lpp,
+            spacingLp_Wcsp_Lpp=spacingLp_Wcsp_Lpp,
+            phaseLp_Wcsp_Lpp=phaseLp_Wcsp_Lpp,
+            ampAngles_Wcsp_to_Wcs_ixyz=ampAngles_Wcsp_to_Wcs_ixyz,
+            periodAngles_Wcsp_to_Wcs_ixyz=periodAngles_Wcsp_to_Wcs_ixyz,
+            spacingAngles_Wcsp_to_Wcs_ixyz=spacingAngles_Wcsp_to_Wcs_ixyz,
+            phaseAngles_Wcsp_to_Wcs_ixyz=phaseAngles_Wcsp_to_Wcs_ixyz,
+        )
+
     def generate_next_wing_cross_sections(
         self,
         base_wing_cross_section,
@@ -268,7 +285,6 @@ class SingleStepWingCrossSectionMovement:
         num_steps,
         step,
         deformation_matrix,
-        base=False,
     ):
         """Creates the WingCrossSection at each time step, and returns them in a list.
 

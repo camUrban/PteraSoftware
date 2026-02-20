@@ -412,9 +412,12 @@ del airplane_movement
 del operating_point_movement
 
 # Define the UnsteadyProblem.
-example_problem = ps.problems.BetterAeroelasticUnsteadyProblem(
+example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=movement,
     single_step_movement=single_step_movement,
+    wing_density=0.012,
+    spring_constant=1.0,
+    damping_constant=1.0,
 )
 
 # Define a new solver. The available solver classes are

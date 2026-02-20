@@ -116,7 +116,7 @@ def explode_wing(wing):
 
 
 wing_cross_section_1 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=3,
+                    num_spanwise_panels=4,
                     chord=0.25,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
@@ -179,7 +179,7 @@ wing_cross_section_3 = ps.geometry.wing_cross_section.WingCrossSection(
                 )
 
 wing_cross_section_4 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=3,
+                    num_spanwise_panels=1,
                     chord=np.linalg.norm((0.322,0,-0.2256)),
                     Lp_Wcsp_Lpp=get_relative_transform((-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878), (-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256))[0],
                     angles_Wcsp_to_Wcs_ixyz=get_relative_transform((-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878), (-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256))[1],
@@ -454,9 +454,13 @@ single_step_movement = ps.movements.single_step.single_step_movement.SingleStepM
 )
 
 # Define the UnsteadyProblem.
-example_problem = ps.problems.BetterAeroelasticUnsteadyProblem(
+example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=movement,
     single_step_movement=single_step_movement,
+    wing_density=1,
+    spring_constant=0.1,
+    plot_flap_cycle=True,
+    damping_constant=1.0,
 )
 
 # Define a new solver. The available solver classes are

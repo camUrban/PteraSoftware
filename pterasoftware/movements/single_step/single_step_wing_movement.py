@@ -9,6 +9,8 @@ This module contains the following functions:
 
 import numpy as np
 
+from ..wing_movement import WingMovement
+
 from ..._parameter_validation import (
     threeD_number_vectorLike_return_float,
     threeD_spacing_vectorLike_return_tuple,
@@ -51,6 +53,7 @@ class SingleStepWingMovement:
 
     def __init__(
         self,
+        base_wing,
         single_step_wing_cross_section_movements,
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -68,9 +71,9 @@ class SingleStepWingMovement:
             This is the base Wing, from which the Wing at each time step will be
             created.
 
-        :param wing_cross_section_movements: list of WingCrossSectionMovements
+        :param single_step_wing_cross_section_movements: list of SingleStepWingCrossSectionMovements
 
-            This is a list of the WingCrossSectionMovements associated with each of
+            This is a list of the SingleStepWingCrossSectionMovements associated with each of
             the base Wing's WingCrossSections. It must have the same length as the
             base Wing's list of WingCrossSections.
 
@@ -264,6 +267,30 @@ class SingleStepWingMovement:
                 )
         self.phaseAngles_Gs_to_Wn_ixyz = phaseAngles_Gs_to_Wn_ixyz
 
+        # Create the corresponding WingMovement for this SingleStepWingMovement's base Wing, which
+        # will be used to generate the base Wing's WingCrossSections at each time step. This is 
+        # done by using this SingleStepWingMovement's parameters and the corresponding parameters
+        # of its SingleStepWingCrossSectionMovements, which are stored in each 
+        # SingleStepWingCrossSectionMovement's corresponding_wcs_movement attribute. 
+        # This way, the user doesn't have to input redundant parameters for the base Wing's 
+        # motion in both this SingleStepWingMovement and its SingleStepWingCrossSectionMovements.
+        corresponding_wcs_movement = [
+            wcsm.corresponding_wcs_movement
+            for wcsm in single_step_wing_cross_section_movements
+        ]
+        self.corresponding_wing_movement = WingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=corresponding_wcs_movement,
+            ampLer_Gs_Cgs=ampLer_Gs_Cgs,
+            periodLer_Gs_Cgs=periodLer_Gs_Cgs,
+            spacingLer_Gs_Cgs=spacingLer_Gs_Cgs,
+            phaseLer_Gs_Cgs=phaseLer_Gs_Cgs,
+            ampAngles_Gs_to_Wn_ixyz=ampAngles_Gs_to_Wn_ixyz,
+            periodAngles_Gs_to_Wn_ixyz=periodAngles_Gs_to_Wn_ixyz,
+            spacingAngles_Gs_to_Wn_ixyz=spacingAngles_Gs_to_Wn_ixyz,
+            phaseAngles_Gs_to_Wn_ixyz=phaseAngles_Gs_to_Wn_ixyz,
+        )
+
         self.listLer_Gs_Cgs = None
         self.listAngles_Gs_to_Wn_ixyz = None
 
@@ -327,7 +354,6 @@ class SingleStepWingMovement:
                     delta_time=delta_time,
                     num_steps=num_steps,
                     step=step,
-                    base=wing_cross_section_movement_id == 0,
                     deformation_matrix=deformation_matrices[
                         wing_cross_section_movement_id
                     ],

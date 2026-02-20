@@ -7,7 +7,7 @@ This module contains the following classes:
 This module contains the following functions:
     None
 """
-
+from ..operating_point_movement import OperatingPointMovement
 from .._functions import (
     oscillating_sinspaces,
     oscillating_linspaces,
@@ -41,6 +41,7 @@ class SingleStepOperatingPointMovement:
 
     def __init__(
         self,
+        base_operating_point: OperatingPoint,
         ampVCg__E=0.0,
         periodVCg__E=0.0,
         spacingVCg__E="sine",
@@ -122,6 +123,14 @@ class SingleStepOperatingPointMovement:
         self.phaseVCg__E = phaseVCg__E
 
         self.listVCg__E = None
+
+        self.corresponding_operating_point_movement = OperatingPointMovement(
+            base_operating_point=base_operating_point,
+            ampVCg__E=ampVCg__E,
+            periodVCg__E=periodVCg__E,
+            spacingVCg__E=spacingVCg__E,
+            phaseVCg__E=phaseVCg__E,
+        )
 
     def generate_next_operating_point(self, delta_time, base_operating_point: OperatingPoint, num_steps, step):
         """Creates the OperatingPoint at each time step, and returns them in a list.

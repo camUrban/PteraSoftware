@@ -7,7 +7,7 @@ This module contains the following functions:
     None
 """
 
-import math
+from ..movement import Movement
 
 from .single_step_airplane_movement import SingleStepAirplaneMovement 
 from .single_step_operating_point_movement import SingleStepOperatingPointMovement
@@ -39,8 +39,10 @@ class SingleStepMovement:
         self,
         single_step_airplane_movements,
         single_step_operating_point_movement,
-        delta_time=None,
-        num_steps=40,
+        delta_time: float | int | str | None = None,
+        num_cycles: int | None = None,
+        num_chords: int | None = None,
+        num_steps: int | None = None,
     ):
         """This is the initialization method.
 
@@ -121,43 +123,18 @@ class SingleStepMovement:
             )
         self.operating_point_movement = single_step_operating_point_movement
 
-        if delta_time is not None:
-            delta_time = number_in_range_return_float(
-                delta_time, "delta_time", min_val=0.0, min_inclusive=False
-            )
-        else:
+        corresponding_airplane_movements = [airplane_movement.corresponding_airplane_movement for airplane_movement in self.airplane_movements]
+        self.corresponding_movement = Movement(
+            airplane_movements=corresponding_airplane_movements,
+            operating_point_movement=self.operating_point_movement.corresponding_operating_point_movement,
+            delta_time=delta_time,
+            num_chords=num_chords,
+            num_cycles=num_cycles,
+            num_steps=num_steps,
+        )
 
-            # FIXME: Automatic delta_time calculation gives very poor results if the
-            #  motion has a high Strouhal number (i.e. a large ratio of
-            #  flapping-motion to forward velocity). This is because the calculation
-            #  assumes that the forward velocity is dominant. A better approach is
-            #  needed.
-
-            delta_times = []
-            for airplane_movement in self.airplane_movements:
-                # TODO: Consider making this also average across each Airplane's Wings.
-                # For a given Airplane, the ideal time step length is that which
-                # sheds RingVortices off the first Wing that have roughly the same
-                # chord length as the RingVortices on the first Wing. This is based
-                # on the base Airplane's reference chord length, its first Wing's
-                # number of chordwise panels, and its base OperatingPoint's velocity.
-                delta_times.append(
-                    airplane_movement.base_airplane.c_ref
-                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                    / single_step_operating_point_movement.base_operating_point.vCg__E
-                )
-
-            # Set the delta_time to be the average of the Airplanes' ideal delta times.
-            delta_time = sum(delta_times) / len(delta_times)
-        self.delta_time = delta_time
-
-        num_steps = int_in_range_return_int(num_steps, "num_steps", min_val=1, min_inclusive=True)
-
-        self.num_steps = num_steps
-
-        # Generate a list of lists of Airplanes that are the steps through each
-        # AirplaneMovement. The first index identifies the AirplaneMovement, and the
-        # second index identifies the time step.
+        self.delta_time = self.corresponding_movement.delta_time
+        self.num_steps = self.corresponding_movement.num_steps
 
     def generate_next_movement(self, base_airplanes, base_operating_point, step, deformation_matrices=None):
         """Creates the Airplanes and OperatingPoint at the next time step.

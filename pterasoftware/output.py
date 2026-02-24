@@ -255,7 +255,7 @@ def draw(
     ):
         draw_step = solver.num_steps - 1
 
-        airplanes = [solver.current_airplane]
+        airplanes = (solver.current_airplane,)
         qInf__E = solver.current_coupled_operating_point.qInf__E
 
         # If showing wake RingVortices, get their surfaces and plot them.
@@ -804,7 +804,7 @@ def animate_free_flight(
     if scalar_type is not None:
         for step_id, airplane in enumerate(airplanes):
             scalars_to_add = _get_scalars(
-                [airplane],
+                (airplane,),
                 scalar_type,
                 coupled_solver.coupled_steady_problems[
                     step_id
@@ -925,7 +925,7 @@ def animate_free_flight(
     # with a uniform color.
     if scalar_type is not None:
         these_scalars = _get_scalars(
-            [airplanes[0]],
+            (airplanes[0],),
             scalar_type,
             coupled_solver.coupled_steady_problems[0].coupled_operating_point.qInf__E,
         )
@@ -1041,7 +1041,7 @@ def animate_free_flight(
         # Plot the Panels either with a uniform color or with scalar coloring.
         if scalar_type is not None:
             these_scalars = _get_scalars(
-                [airplane],
+                (airplane,),
                 scalar_type,
                 coupled_solver.coupled_steady_problems[
                     current_step
@@ -1805,12 +1805,12 @@ def _get_panel_surfaces_free_flight(
 
 # TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
-    airplanes: list[geometry.airplane.Airplane],
+    airplanes: tuple[geometry.airplane.Airplane, ...],
 ) -> pv.PolyData:
     """Returns a PolyData representation of the Wings' Panels' surfaces associated with
-    all the Airplanes in a list of Airplanes.
+    all the Airplanes in a tuple of Airplanes.
 
-    :param airplanes: The list of Airplanes whose Wings' Panels' surfaces will be
+    :param airplanes: The tuple of Airplanes whose Wings' Panels' surfaces will be
         returned.
     :return: A PolyData representation of the Airplanes' Wings' Panels' surfaces.
     """
@@ -2055,14 +2055,14 @@ def _get_wake_ring_vortex_surfaces(
 
 # TEST: Consider adding unit tests for this function.
 def _get_scalars(
-    airplanes: list[geometry.airplane.Airplane],
+    airplanes: tuple[geometry.airplane.Airplane, ...],
     scalar_type: str,
     qInf__E: float,
 ) -> np.ndarray:
     """Returns the load coefficient values from a SteadyProblem's Airplanes' Wings'
     Panels.
 
-    :param airplanes: The list of Airplanes with the scalars to return.
+    :param airplanes: The tuple of Airplanes with the scalars to return.
     :param scalar_type: Determines which load coefficient to return as scalars. Can be
         "induced drag", "side force", or "lift", which respectively use each Panel's
         induced drag, side force, and lift coefficient.

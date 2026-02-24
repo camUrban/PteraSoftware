@@ -36,6 +36,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `workflows/`: Directory with GitHub Actions workflows
       - `black.yml`
       - `codespell.yml`
+      - `isort.yml`
       - `mypy.yml`
       - `tests.yml`
     - `pull_request_template.md`
@@ -44,8 +45,12 @@ Requires Python 3.11, but active development is done in 3.13
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
   - `examples expected output/`: Example output files for verification
+  - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin (not included in version control)
+  - `lambert_2015_2_3__2_4/`: A recreation of Sections 2.3 and 2.4 from Thomas Lambert's thesis "Modeling of aerodynamic forces in flapping flight with the unsteady vortex lattice method" (not included in version control)
+  - `website/`: Directory with the source files for generating the documentation website
   - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
   - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
+  - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability.
   - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
   - `FREE_FLIGHT_DEVELOPMENT.md`: Progress and plans for implementing free flight (coupled) simulations: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO COUPLED SIMULATIONS**
   - `MUJOCO_CONVENTIONS.md`: Definitive interpretation of MuJoCo state variables and their mapping to Ptera Software conventions: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO COUPLED SIMULATIONS**
@@ -56,6 +61,10 @@ Requires Python 3.11, but active development is done in 3.13
 - `gui/`: Directory with GUI source code
 - `mujoco_examples/`: Directory with MuJoCo tutorials and example scripts
 - `pterasoftware/`: Main package with modular solver architecture
+  - `_vortices/`: Package with vortex classes
+    - `_line_vortex.py`: LineVortex class
+    - `horseshoe_vortex.py`: HorseshoeVortex class
+    - `ring_vortex.py`: RingVortex class
   - `geometry/`: Package with aircraft geometry classes
     - `_airfoils/`: Directory containing data files with airfoil coordinates
     - `_meshing.py`: Wing mesh generation
@@ -70,7 +79,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `operating_point_movement.py`: Operating condition changes
     - `wing_cross_section_movement.py`: Wing cross section motion
     - `wing_movement.py`: Wing flapping motion
-  - `_aerodynamics.py`: Vortex elements and velocity calculations
+  - `_aerodynamics_functions.py`: Induced velocity functions
   - `_functions.py`: Shared utility functions
   - `_logging.py`: Contains function for setting up logging
   - `_mujoco_model.py`: MuJoCoModel class for coupled simulations
@@ -109,11 +118,14 @@ Requires Python 3.11, but active development is done in 3.13
       - `aerodynamics_function_fixtures.py`
       - `airplane_movement_fixtures.py`
       - `geometry_fixtures.py`
-      - `horseshoe_fixtures.py`
+      - `horseshoe_vortex_fixtures.py`
+      - `line_vortex_fixtures.py`
       - `movement_fixtures.py`
-      - `movement_function_fixtures.py`
+      - `movements_functions_fixtures.py`
       - `operating_point_fixtures.py`
       - `operating_point_movement_fixtures.py`
+      - `panel_fixtures.py`
+      - `parameter_validation_fixtures.py`
       - `problem_fixtures.py`
       - `ring_vortex_fixtures.py`
       - `wing_cross_section_movement_fixtures.py`
@@ -123,11 +135,15 @@ Requires Python 3.11, but active development is done in 3.13
     - `test_airplane.py`
     - `test_airplane_movement.py`
     - `test_horseshoe_vortex.py`
+    - `test_line_vortex.py`
+    - `test_logging.py`
     - `test_movement.py`
     - `test_movement_functions.py`
     - `test_operating_point.py`
     - `test_operating_point_movement.py`
+    - `test_package_init.py`
     - `test_panel.py`
+    - `test_parameter_validation.py`
     - `test_problems.py`
     - `test_ring_vortex.py`
     - `test_transformations.py`
@@ -138,6 +154,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `.codespell-ignore`: File listing words to ignore in spell checking
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file
+- `.readthedocs.yaml`: Read the Docs configuration file
 - `BUILD.md`: Instructions for building the GUI
 - `CONTRIBUTING.md`: Contribution guidelines for developers
 - `make_installer.iss`: Inno Setup script for building Windows installer
@@ -147,7 +164,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `pyproject.toml`: Project configuration file
 - `README.md`: Project overview and installation instructions for developers
 - `requirements.txt`: Full list of runtime dependencies with version constraints
-- `requirements_dev.txt`: Full list of development dependencies with version constraints
+- `requirements_dev.txt`: Full list of development dependencies
 - `setup.cfg`: Setup configuration file
 
 ## Running Scripts That Import Ptera Software
@@ -167,3 +184,10 @@ This pattern:
 1. Changes to the script's directory
 2. Sets `PYTHONPATH` to the parent directory (project root)
 3. Runs the script using the virtual environment's Python interpreter
+
+## Common Mistakes
+- Forgetting to read RUNNING_TESTS_AND_TYPE_CHECKS.md before running tests and trying to use pytest (Ptera Software uses unittest)
+- Forgetting to read CODE_STYLE.md before contributing code
+- Forgetting to read TYPE_HINT_AND_DOCSTRING_STYLE.md before writing docstrings
+- Forgetting to read ANGLE_VECTORS_AND_TRANSFORMATIONS.md and AXES_POINTS_AND_FRAMES.md before working with vector-valued variables. If in doubt, before writing code, read both of these documents
+- Forgetting to read WRITING_STYLE.md before writing documentation, docstrings, or comments

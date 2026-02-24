@@ -1,5 +1,6 @@
-"""This module contains a class to test Panels."""
+"""This module contains classes to test Panels."""
 
+import copy
 import unittest
 
 import numpy as np
@@ -7,7 +8,7 @@ import numpy.testing as npt
 
 # noinspection PyProtectedMember
 from pterasoftware import _panel
-from tests.unit.fixtures import geometry_fixtures
+from tests.unit.fixtures import panel_fixtures
 
 
 class TestPanel(unittest.TestCase):
@@ -15,7 +16,7 @@ class TestPanel(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for Panel tests."""
-        self.basic_panel = geometry_fixtures.make_basic_panel_fixture()
+        self.basic_panel = panel_fixtures.make_basic_panel_fixture()
 
     def test_initialization_valid_parameters(self):
         """Test Panel initialization with valid parameters."""
@@ -309,15 +310,8 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for GP1 property tests."""
-        self.basic_panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Set up global positions (simulating what a solver would do)
-        # Use an offset to distinguish from local coordinates
+        self.basic_panel = panel_fixtures.make_panel_with_gp1_positions_fixture()
         self.offset = np.array([10.0, 20.0, 5.0])
-        self.basic_panel.Frpp_GP1_CgP1 = self.basic_panel.Frpp_G_Cg + self.offset
-        self.basic_panel.Flpp_GP1_CgP1 = self.basic_panel.Flpp_G_Cg + self.offset
-        self.basic_panel.Blpp_GP1_CgP1 = self.basic_panel.Blpp_G_Cg + self.offset
-        self.basic_panel.Brpp_GP1_CgP1 = self.basic_panel.Brpp_G_Cg + self.offset
 
     def test_rightLeg_GP1_property(self):
         """Test right leg vector calculation in GP1 coordinates."""
@@ -331,7 +325,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_rightLeg_GP1_returns_none_when_not_set(self):
         """Test that rightLeg_GP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         # GP1 positions are None by default
         self.assertIsNone(panel.rightLeg_GP1)
@@ -348,7 +342,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_frontLeg_GP1_returns_none_when_not_set(self):
         """Test that frontLeg_GP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.frontLeg_GP1)
 
@@ -364,7 +358,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_leftLeg_GP1_returns_none_when_not_set(self):
         """Test that leftLeg_GP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.leftLeg_GP1)
 
@@ -380,7 +374,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_backLeg_GP1_returns_none_when_not_set(self):
         """Test that backLeg_GP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.backLeg_GP1)
 
@@ -396,7 +390,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_Frbvp_GP1_CgP1_returns_none_when_not_set(self):
         """Test that Frbvp_GP1_CgP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.Frbvp_GP1_CgP1)
 
@@ -412,7 +406,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_Flbvp_GP1_CgP1_returns_none_when_not_set(self):
         """Test that Flbvp_GP1_CgP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.Flbvp_GP1_CgP1)
 
@@ -428,7 +422,7 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_Cpp_GP1_CgP1_returns_none_when_not_set(self):
         """Test that Cpp_GP1_CgP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.Cpp_GP1_CgP1)
 
@@ -448,13 +442,13 @@ class TestPanelGP1Properties(unittest.TestCase):
 
     def test_unitNormal_GP1_returns_none_when_not_set(self):
         """Test that unitNormal_GP1 returns None when GP1 positions not set."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         self.assertIsNone(panel.unitNormal_GP1)
 
     def test_GP1_properties_with_rotated_panel(self):
         """Test GP1 properties when global position includes rotation effect."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
+        panel = panel_fixtures.make_basic_panel_fixture()
 
         # Simulate a -90 degree rotation about z-axis in global coordinates
         # Rotation matrix for -90 degrees about z: [[0, 1, 0], [-1, 0, 0], [0, 0, 1]]
@@ -479,256 +473,6 @@ class TestPanelGP1Properties(unittest.TestCase):
         unitNormal_GP1 = panel.unitNormal_GP1
         expected_unitNormal_GP1 = np.array([0.0, 0.0, 1.0])
         npt.assert_array_almost_equal(unitNormal_GP1, expected_unitNormal_GP1)
-
-
-class TestPanelCacheInvalidation(unittest.TestCase):
-    """Tests for Panel cache invalidation behavior."""
-
-    def test_setting_Frpp_G_Cg_invalidates_dependent_caches(self):
-        """Test that setting Frpp_G_Cg invalidates all dependent cached values."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Access properties to populate caches
-        _ = panel.rightLeg_G
-        _ = panel.frontLeg_G
-        _ = panel.Frbvp_G_Cg
-        _ = panel.Cpp_G_Cg
-        _ = panel.unitNormal_G
-        _ = panel.area
-        _ = panel.aspect_ratio
-
-        # Verify caches are populated
-        self.assertIsNotNone(panel._rightLeg_G)
-        self.assertIsNotNone(panel._frontLeg_G)
-        self.assertIsNotNone(panel._Frbvp_G_Cg)
-        self.assertIsNotNone(panel._Cpp_G_Cg)
-        self.assertIsNotNone(panel._unitNormal_G)
-        self.assertIsNotNone(panel._area)
-        self.assertIsNotNone(panel._aspect_ratio)
-
-        # Modify Frpp_G_Cg
-        panel.Frpp_G_Cg = np.array([0.1, 0.6, 0.0])
-
-        # Verify dependent caches are invalidated
-        self.assertIsNone(panel._rightLeg_G)
-        self.assertIsNone(panel._frontLeg_G)
-        self.assertIsNone(panel._Frbvp_G_Cg)
-        self.assertIsNone(panel._Cpp_G_Cg)
-        self.assertIsNone(panel._unitNormal_G)
-        self.assertIsNone(panel._area)
-        self.assertIsNone(panel._aspect_ratio)
-
-        # Independent caches should remain (leftLeg_G, backLeg_G, Flbvp_G_Cg)
-        # Note: These weren't accessed, so they're None anyway. Access them first.
-
-    def test_setting_Frpp_G_Cg_preserves_independent_caches(self):
-        """Test that setting Frpp_G_Cg preserves caches that don't depend on it."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Access properties that don't depend on Frpp_G_Cg
-        _ = panel.leftLeg_G
-        _ = panel.backLeg_G
-        _ = panel.Flbvp_G_Cg
-
-        # Store original cached values
-        original_leftLeg_G = panel._leftLeg_G.copy()
-        original_backLeg_G = panel._backLeg_G.copy()
-        original_Flbvp_G_Cg = panel._Flbvp_G_Cg.copy()
-
-        # Modify Frpp_G_Cg
-        panel.Frpp_G_Cg = np.array([0.1, 0.6, 0.0])
-
-        # Independent caches should remain unchanged
-        npt.assert_array_equal(panel._leftLeg_G, original_leftLeg_G)
-        npt.assert_array_equal(panel._backLeg_G, original_backLeg_G)
-        npt.assert_array_equal(panel._Flbvp_G_Cg, original_Flbvp_G_Cg)
-
-    def test_setting_Flpp_G_Cg_invalidates_dependent_caches(self):
-        """Test that setting Flpp_G_Cg invalidates all dependent cached values."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Access properties to populate caches
-        _ = panel.frontLeg_G
-        _ = panel.leftLeg_G
-        _ = panel.Flbvp_G_Cg
-        _ = panel.Cpp_G_Cg
-        _ = panel.unitNormal_G
-        _ = panel.area
-        _ = panel.aspect_ratio
-
-        # Modify Flpp_G_Cg
-        panel.Flpp_G_Cg = np.array([0.1, 0.1, 0.0])
-
-        # Verify dependent caches are invalidated
-        self.assertIsNone(panel._frontLeg_G)
-        self.assertIsNone(panel._leftLeg_G)
-        self.assertIsNone(panel._Flbvp_G_Cg)
-        self.assertIsNone(panel._Cpp_G_Cg)
-        self.assertIsNone(panel._unitNormal_G)
-        self.assertIsNone(panel._area)
-        self.assertIsNone(panel._aspect_ratio)
-
-    def test_setting_Blpp_G_Cg_invalidates_dependent_caches(self):
-        """Test that setting Blpp_G_Cg invalidates all dependent cached values."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Access properties to populate caches
-        _ = panel.leftLeg_G
-        _ = panel.backLeg_G
-        _ = panel.Flbvp_G_Cg
-        _ = panel.Cpp_G_Cg
-        _ = panel.unitNormal_G
-        _ = panel.area
-        _ = panel.aspect_ratio
-
-        # Modify Blpp_G_Cg
-        panel.Blpp_G_Cg = np.array([1.1, 0.1, 0.0])
-
-        # Verify dependent caches are invalidated
-        self.assertIsNone(panel._leftLeg_G)
-        self.assertIsNone(panel._backLeg_G)
-        self.assertIsNone(panel._Flbvp_G_Cg)
-        self.assertIsNone(panel._Cpp_G_Cg)
-        self.assertIsNone(panel._unitNormal_G)
-        self.assertIsNone(panel._area)
-        self.assertIsNone(panel._aspect_ratio)
-
-    def test_setting_Brpp_G_Cg_invalidates_dependent_caches(self):
-        """Test that setting Brpp_G_Cg invalidates all dependent cached values."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Access properties to populate caches
-        _ = panel.rightLeg_G
-        _ = panel.backLeg_G
-        _ = panel.Frbvp_G_Cg
-        _ = panel.Cpp_G_Cg
-        _ = panel.unitNormal_G
-        _ = panel.area
-        _ = panel.aspect_ratio
-
-        # Modify Brpp_G_Cg
-        panel.Brpp_G_Cg = np.array([1.1, 0.6, 0.0])
-
-        # Verify dependent caches are invalidated
-        self.assertIsNone(panel._rightLeg_G)
-        self.assertIsNone(panel._backLeg_G)
-        self.assertIsNone(panel._Frbvp_G_Cg)
-        self.assertIsNone(panel._Cpp_G_Cg)
-        self.assertIsNone(panel._unitNormal_G)
-        self.assertIsNone(panel._area)
-        self.assertIsNone(panel._aspect_ratio)
-
-    def test_setting_local_position_clears_global_position(self):
-        """Test that setting a local position clears the corresponding global position."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Set global positions
-        panel.Frpp_GP1_CgP1 = np.array([10.0, 20.5, 5.0])
-        panel.Flpp_GP1_CgP1 = np.array([10.0, 20.0, 5.0])
-        panel.Blpp_GP1_CgP1 = np.array([11.0, 20.0, 5.0])
-        panel.Brpp_GP1_CgP1 = np.array([11.0, 20.5, 5.0])
-
-        # Verify global positions are set
-        self.assertIsNotNone(panel.Frpp_GP1_CgP1)
-        self.assertIsNotNone(panel.Flpp_GP1_CgP1)
-        self.assertIsNotNone(panel.Blpp_GP1_CgP1)
-        self.assertIsNotNone(panel.Brpp_GP1_CgP1)
-
-        # Modify local position
-        panel.Frpp_G_Cg = np.array([0.1, 0.6, 0.0])
-
-        # Corresponding global position should be cleared
-        self.assertIsNone(panel.Frpp_GP1_CgP1)
-
-        # Other global positions should remain
-        self.assertIsNotNone(panel.Flpp_GP1_CgP1)
-        self.assertIsNotNone(panel.Blpp_GP1_CgP1)
-        self.assertIsNotNone(panel.Brpp_GP1_CgP1)
-
-    def test_setting_GP1_position_invalidates_GP1_caches(self):
-        """Test that setting GP1 corner positions invalidates GP1 cached values."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Set all GP1 positions
-        offset = np.array([10.0, 20.0, 5.0])
-        panel.Frpp_GP1_CgP1 = panel.Frpp_G_Cg + offset
-        panel.Flpp_GP1_CgP1 = panel.Flpp_G_Cg + offset
-        panel.Blpp_GP1_CgP1 = panel.Blpp_G_Cg + offset
-        panel.Brpp_GP1_CgP1 = panel.Brpp_G_Cg + offset
-
-        # Access GP1 properties to populate caches
-        _ = panel.rightLeg_GP1
-        _ = panel.frontLeg_GP1
-        _ = panel.leftLeg_GP1
-        _ = panel.backLeg_GP1
-        _ = panel.Frbvp_GP1_CgP1
-        _ = panel.Flbvp_GP1_CgP1
-        _ = panel.Cpp_GP1_CgP1
-        _ = panel.unitNormal_GP1
-
-        # Verify caches are populated
-        self.assertIsNotNone(panel._rightLeg_GP1)
-        self.assertIsNotNone(panel._frontLeg_GP1)
-
-        # Modify one GP1 position
-        panel.Frpp_GP1_CgP1 = panel.Frpp_G_Cg + offset + np.array([0.1, 0.0, 0.0])
-
-        # Verify dependent GP1 caches are invalidated
-        self.assertIsNone(panel._rightLeg_GP1)
-        self.assertIsNone(panel._frontLeg_GP1)
-        self.assertIsNone(panel._Frbvp_GP1_CgP1)
-        self.assertIsNone(panel._Cpp_GP1_CgP1)
-        self.assertIsNone(panel._unitNormal_GP1)
-
-        # Independent GP1 caches should remain
-        self.assertIsNotNone(panel._leftLeg_GP1)
-        self.assertIsNotNone(panel._backLeg_GP1)
-        self.assertIsNotNone(panel._Flbvp_GP1_CgP1)
-
-    def test_cache_recomputes_correctly_after_invalidation(self):
-        """Test that cached values recompute correctly after invalidation."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Get initial values
-        initial_area = panel.area
-        initial_unitNormal_G = panel.unitNormal_G.copy()
-
-        # Modify a corner (move front right point up in z)
-        panel.Frpp_G_Cg = np.array([0.0, 0.5, 0.5])
-
-        # Get new values (should be recomputed)
-        new_area = panel.area
-        new_unitNormal_G = panel.unitNormal_G
-
-        # Values should be different
-        self.assertNotAlmostEqual(initial_area, new_area)
-        self.assertFalse(np.allclose(initial_unitNormal_G, new_unitNormal_G))
-
-        # New unit normal should still be normalized
-        self.assertAlmostEqual(np.linalg.norm(new_unitNormal_G), 1.0, places=10)
-
-    def test_setting_local_position_clears_vortices_and_loads(self):
-        """Test that setting local position clears vortices and loads."""
-        panel = geometry_fixtures.make_basic_panel_fixture()
-
-        # Simulate setting vortices and loads (normally done by solver)
-        panel.ring_vortex = "mock_ring_vortex"
-        panel.horseshoe_vortex = "mock_horseshoe_vortex"
-        panel.forces_GP1 = np.array([1.0, 2.0, 3.0])
-        panel.moments_GP1_CgP1 = np.array([0.1, 0.2, 0.3])
-        panel.forces_W = np.array([1.0, 2.0, 3.0])
-        panel.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
-
-        # Modify local position
-        panel.Frpp_G_Cg = np.array([0.1, 0.6, 0.0])
-
-        # Vortices and loads should be cleared
-        self.assertIsNone(panel.ring_vortex)
-        self.assertIsNone(panel.horseshoe_vortex)
-        self.assertIsNone(panel.forces_GP1)
-        self.assertIsNone(panel.moments_GP1_CgP1)
-        self.assertIsNone(panel.forces_W)
-        self.assertIsNone(panel.moments_W_CgP1)
 
 
 class TestPanelDegenerateCases(unittest.TestCase):
@@ -916,57 +660,240 @@ class TestPanelDegenerateCases(unittest.TestCase):
         self.assertAlmostEqual(area, expected_area, places=10)
 
 
+class TestPanelImmutability(unittest.TestCase):
+    """Tests for Panel attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_panel = panel_fixtures.make_basic_panel_fixture()
+
+    def test_Frpp_G_Cg_is_read_only_property(self):
+        """Test that Frpp_G_Cg property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Frpp_G_Cg = np.array([99.0, 99.0, 99.0])
+
+    def test_Frpp_G_Cg_array_is_read_only(self):
+        """Test that Frpp_G_Cg array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_panel.Frpp_G_Cg[0] = 999.0
+
+    def test_Flpp_G_Cg_is_read_only_property(self):
+        """Test that Flpp_G_Cg property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Flpp_G_Cg = np.array([99.0, 99.0, 99.0])
+
+    def test_Flpp_G_Cg_array_is_read_only(self):
+        """Test that Flpp_G_Cg array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_panel.Flpp_G_Cg[0] = 999.0
+
+    def test_Blpp_G_Cg_is_read_only_property(self):
+        """Test that Blpp_G_Cg property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Blpp_G_Cg = np.array([99.0, 99.0, 99.0])
+
+    def test_Blpp_G_Cg_array_is_read_only(self):
+        """Test that Blpp_G_Cg array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_panel.Blpp_G_Cg[0] = 999.0
+
+    def test_Brpp_G_Cg_is_read_only_property(self):
+        """Test that Brpp_G_Cg property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Brpp_G_Cg = np.array([99.0, 99.0, 99.0])
+
+    def test_Brpp_G_Cg_array_is_read_only(self):
+        """Test that Brpp_G_Cg array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_panel.Brpp_G_Cg[0] = 999.0
+
+    def test_is_leading_edge_is_read_only_property(self):
+        """Test that is_leading_edge property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.is_leading_edge = True
+
+    def test_is_trailing_edge_is_read_only_property(self):
+        """Test that is_trailing_edge property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_panel.is_trailing_edge = True
+
+
+class TestPanelSetOnceProperties(unittest.TestCase):
+    """Tests for Panel set once properties."""
+
+    def setUp(self):
+        """Set up test fixtures for set once property tests."""
+        self.basic_panel = panel_fixtures.make_basic_panel_fixture()
+
+    def test_Frpp_GP1_CgP1_can_be_set_once(self):
+        """Test that Frpp_GP1_CgP1 can be set once."""
+        self.assertIsNone(self.basic_panel.Frpp_GP1_CgP1)
+        self.basic_panel.Frpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(
+            self.basic_panel.Frpp_GP1_CgP1, np.array([1.0, 2.0, 3.0])
+        )
+
+    def test_Frpp_GP1_CgP1_cannot_be_set_twice(self):
+        """Test that Frpp_GP1_CgP1 cannot be set twice."""
+        self.basic_panel.Frpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Frpp_GP1_CgP1 = np.array([4.0, 5.0, 6.0])
+
+    def test_Frpp_GP1_CgP1_array_is_read_only_after_set(self):
+        """Test that Frpp_GP1_CgP1 array is read only after being set."""
+        self.basic_panel.Frpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(ValueError):
+            self.basic_panel.Frpp_GP1_CgP1[0] = 999.0
+
+    def test_Flpp_GP1_CgP1_can_be_set_once(self):
+        """Test that Flpp_GP1_CgP1 can be set once."""
+        self.assertIsNone(self.basic_panel.Flpp_GP1_CgP1)
+        self.basic_panel.Flpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(
+            self.basic_panel.Flpp_GP1_CgP1, np.array([1.0, 2.0, 3.0])
+        )
+
+    def test_Flpp_GP1_CgP1_cannot_be_set_twice(self):
+        """Test that Flpp_GP1_CgP1 cannot be set twice."""
+        self.basic_panel.Flpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Flpp_GP1_CgP1 = np.array([4.0, 5.0, 6.0])
+
+    def test_Blpp_GP1_CgP1_can_be_set_once(self):
+        """Test that Blpp_GP1_CgP1 can be set once."""
+        self.assertIsNone(self.basic_panel.Blpp_GP1_CgP1)
+        self.basic_panel.Blpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(
+            self.basic_panel.Blpp_GP1_CgP1, np.array([1.0, 2.0, 3.0])
+        )
+
+    def test_Blpp_GP1_CgP1_cannot_be_set_twice(self):
+        """Test that Blpp_GP1_CgP1 cannot be set twice."""
+        self.basic_panel.Blpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Blpp_GP1_CgP1 = np.array([4.0, 5.0, 6.0])
+
+    def test_Brpp_GP1_CgP1_can_be_set_once(self):
+        """Test that Brpp_GP1_CgP1 can be set once."""
+        self.assertIsNone(self.basic_panel.Brpp_GP1_CgP1)
+        self.basic_panel.Brpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(
+            self.basic_panel.Brpp_GP1_CgP1, np.array([1.0, 2.0, 3.0])
+        )
+
+    def test_Brpp_GP1_CgP1_cannot_be_set_twice(self):
+        """Test that Brpp_GP1_CgP1 cannot be set twice."""
+        self.basic_panel.Brpp_GP1_CgP1 = np.array([1.0, 2.0, 3.0])
+        with self.assertRaises(AttributeError):
+            self.basic_panel.Brpp_GP1_CgP1 = np.array([4.0, 5.0, 6.0])
+
+    def test_is_right_edge_can_be_set_once(self):
+        """Test that is_right_edge can be set once."""
+        self.assertIsNone(self.basic_panel.is_right_edge)
+        self.basic_panel.is_right_edge = True
+        self.assertTrue(self.basic_panel.is_right_edge)
+
+    def test_is_right_edge_cannot_be_set_twice(self):
+        """Test that is_right_edge cannot be set twice."""
+        self.basic_panel.is_right_edge = True
+        with self.assertRaises(AttributeError):
+            self.basic_panel.is_right_edge = False
+
+    def test_is_left_edge_can_be_set_once(self):
+        """Test that is_left_edge can be set once."""
+        self.assertIsNone(self.basic_panel.is_left_edge)
+        self.basic_panel.is_left_edge = False
+        self.assertFalse(self.basic_panel.is_left_edge)
+
+    def test_is_left_edge_cannot_be_set_twice(self):
+        """Test that is_left_edge cannot be set twice."""
+        self.basic_panel.is_left_edge = False
+        with self.assertRaises(AttributeError):
+            self.basic_panel.is_left_edge = True
+
+    def test_local_chordwise_position_can_be_set_once(self):
+        """Test that local_chordwise_position can be set once."""
+        self.assertIsNone(self.basic_panel.local_chordwise_position)
+        self.basic_panel.local_chordwise_position = 5
+        self.assertEqual(self.basic_panel.local_chordwise_position, 5)
+
+    def test_local_chordwise_position_cannot_be_set_twice(self):
+        """Test that local_chordwise_position cannot be set twice."""
+        self.basic_panel.local_chordwise_position = 5
+        with self.assertRaises(AttributeError):
+            self.basic_panel.local_chordwise_position = 10
+
+    def test_local_spanwise_position_can_be_set_once(self):
+        """Test that local_spanwise_position can be set once."""
+        self.assertIsNone(self.basic_panel.local_spanwise_position)
+        self.basic_panel.local_spanwise_position = 3
+        self.assertEqual(self.basic_panel.local_spanwise_position, 3)
+
+    def test_local_spanwise_position_cannot_be_set_twice(self):
+        """Test that local_spanwise_position cannot be set twice."""
+        self.basic_panel.local_spanwise_position = 3
+        with self.assertRaises(AttributeError):
+            self.basic_panel.local_spanwise_position = 7
+
+
 class TestPanelDeepCopy(unittest.TestCase):
     """Tests for Panel.__deepcopy__ method."""
 
-    def setUp(self):
-        """Set up test fixtures for deepcopy tests."""
-        self.basic_panel = geometry_fixtures.make_basic_panel_fixture()
-
     def test_deepcopy_creates_new_instance(self):
         """Test that deepcopy creates a new Panel instance."""
-        import copy
-
-        original = self.basic_panel
+        original = panel_fixtures.make_basic_panel_fixture()
         copied = copy.deepcopy(original)
 
         self.assertIsInstance(copied, _panel.Panel)
         self.assertIsNot(original, copied)
 
-    def test_deepcopy_preserves_local_corner_positions(self):
-        """Test that deepcopy preserves local corner positions."""
-        import copy
-
-        original = self.basic_panel
+    def test_deepcopy_preserves_corner_positions(self):
+        """Test that deepcopy preserves corner position values."""
+        original = panel_fixtures.make_basic_panel_fixture()
         copied = copy.deepcopy(original)
 
-        # Corner positions should be equal but not the same object.
         npt.assert_array_equal(copied.Frpp_G_Cg, original.Frpp_G_Cg)
         npt.assert_array_equal(copied.Flpp_G_Cg, original.Flpp_G_Cg)
         npt.assert_array_equal(copied.Blpp_G_Cg, original.Blpp_G_Cg)
         npt.assert_array_equal(copied.Brpp_G_Cg, original.Brpp_G_Cg)
 
-        # Should be independent copies.
-        self.assertIsNot(copied._Frpp_G_Cg, original._Frpp_G_Cg)
-        self.assertIsNot(copied._Flpp_G_Cg, original._Flpp_G_Cg)
-        self.assertIsNot(copied._Blpp_G_Cg, original._Blpp_G_Cg)
-        self.assertIsNot(copied._Brpp_G_Cg, original._Brpp_G_Cg)
+    def test_deepcopy_creates_independent_corner_arrays(self):
+        """Test that deepcopy creates independent copies of corner position arrays."""
+        original = panel_fixtures.make_basic_panel_fixture()
+        copied = copy.deepcopy(original)
 
-    def test_deepcopy_preserves_mesh_metadata(self):
-        """Test that deepcopy preserves mesh metadata."""
-        import copy
+        self.assertIsNot(copied.Frpp_G_Cg, original.Frpp_G_Cg)
+        self.assertIsNot(copied.Flpp_G_Cg, original.Flpp_G_Cg)
+        self.assertIsNot(copied.Blpp_G_Cg, original.Blpp_G_Cg)
+        self.assertIsNot(copied.Brpp_G_Cg, original.Brpp_G_Cg)
 
-        original = self.basic_panel
-        # Set metadata values.
-        original.is_right_edge = True
-        original.is_left_edge = False
-        original.local_chordwise_position = 3
-        original.local_spanwise_position = 5
+    def test_deepcopy_corner_arrays_are_read_only(self):
+        """Test that deepcopied corner position arrays are read only."""
+        original = panel_fixtures.make_basic_panel_fixture()
+        copied = copy.deepcopy(original)
 
+        with self.assertRaises(ValueError):
+            copied.Frpp_G_Cg[0] = 999.0
+        with self.assertRaises(ValueError):
+            copied.Flpp_G_Cg[0] = 999.0
+        with self.assertRaises(ValueError):
+            copied.Blpp_G_Cg[0] = 999.0
+        with self.assertRaises(ValueError):
+            copied.Brpp_G_Cg[0] = 999.0
+
+    def test_deepcopy_preserves_edge_flags(self):
+        """Test that deepcopy preserves is_leading_edge and is_trailing_edge."""
+        original = panel_fixtures.make_leading_and_trailing_edge_panel_fixture()
         copied = copy.deepcopy(original)
 
         self.assertEqual(copied.is_leading_edge, original.is_leading_edge)
         self.assertEqual(copied.is_trailing_edge, original.is_trailing_edge)
+
+    def test_deepcopy_preserves_mesh_position_attributes(self):
+        """Test that deepcopy preserves mesh position attributes."""
+        original = panel_fixtures.make_panel_with_set_once_attributes_fixture()
+        copied = copy.deepcopy(original)
+
         self.assertEqual(copied.is_right_edge, original.is_right_edge)
         self.assertEqual(copied.is_left_edge, original.is_left_edge)
         self.assertEqual(
@@ -978,244 +905,114 @@ class TestPanelDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_cached_local_properties(self):
         """Test that deepcopy preserves cached local geometric properties."""
-        import copy
+        original = panel_fixtures.make_panel_with_cached_properties_fixture()
+        copied = copy.deepcopy(original)
 
-        original = self.basic_panel
-        # Trigger caching by accessing properties.
-        _ = original.rightLeg_G
-        _ = original.frontLeg_G
-        _ = original.leftLeg_G
-        _ = original.backLeg_G
-        _ = original.Frbvp_G_Cg
-        _ = original.Flbvp_G_Cg
-        _ = original.Cpp_G_Cg
-        _ = original.unitNormal_G
-        _ = original.area
-        _ = original.aspect_ratio
+        npt.assert_array_equal(copied.rightLeg_G, original.rightLeg_G)
+        npt.assert_array_equal(copied.frontLeg_G, original.frontLeg_G)
+        npt.assert_array_equal(copied.leftLeg_G, original.leftLeg_G)
+        npt.assert_array_equal(copied.backLeg_G, original.backLeg_G)
+        npt.assert_array_equal(copied.Frbvp_G_Cg, original.Frbvp_G_Cg)
+        npt.assert_array_equal(copied.Flbvp_G_Cg, original.Flbvp_G_Cg)
+        npt.assert_array_equal(copied.Cpp_G_Cg, original.Cpp_G_Cg)
+        npt.assert_array_equal(copied.unitNormal_G, original.unitNormal_G)
+        self.assertEqual(copied.area, original.area)
+        self.assertEqual(copied.aspect_ratio, original.aspect_ratio)
+
+    def test_deepcopy_resets_gp1_positions_to_none(self):
+        """Test that deepcopy resets GP1 positions to None."""
+        original = panel_fixtures.make_panel_with_gp1_positions_fixture()
+
+        # Verify original has GP1 positions set.
+        self.assertIsNotNone(original.Frpp_GP1_CgP1)
+        self.assertIsNotNone(original.Flpp_GP1_CgP1)
+        self.assertIsNotNone(original.Blpp_GP1_CgP1)
+        self.assertIsNotNone(original.Brpp_GP1_CgP1)
 
         copied = copy.deepcopy(original)
 
-        # Cached values should be equal.
-        npt.assert_array_equal(copied._rightLeg_G, original._rightLeg_G)
-        npt.assert_array_equal(copied._frontLeg_G, original._frontLeg_G)
-        npt.assert_array_equal(copied._leftLeg_G, original._leftLeg_G)
-        npt.assert_array_equal(copied._backLeg_G, original._backLeg_G)
-        npt.assert_array_equal(copied._Frbvp_G_Cg, original._Frbvp_G_Cg)
-        npt.assert_array_equal(copied._Flbvp_G_Cg, original._Flbvp_G_Cg)
-        npt.assert_array_equal(copied._Cpp_G_Cg, original._Cpp_G_Cg)
-        npt.assert_array_equal(copied._unitNormal_G, original._unitNormal_G)
-        self.assertEqual(copied._area, original._area)
-        self.assertEqual(copied._aspect_ratio, original._aspect_ratio)
-
-        # Numpy arrays should be independent copies.
-        self.assertIsNot(copied._rightLeg_G, original._rightLeg_G)
-        self.assertIsNot(copied._frontLeg_G, original._frontLeg_G)
-        self.assertIsNot(copied._leftLeg_G, original._leftLeg_G)
-        self.assertIsNot(copied._backLeg_G, original._backLeg_G)
-        self.assertIsNot(copied._Frbvp_G_Cg, original._Frbvp_G_Cg)
-        self.assertIsNot(copied._Flbvp_G_Cg, original._Flbvp_G_Cg)
-        self.assertIsNot(copied._Cpp_G_Cg, original._Cpp_G_Cg)
-        self.assertIsNot(copied._unitNormal_G, original._unitNormal_G)
-
-    def test_deepcopy_handles_uncached_local_properties(self):
-        """Test that deepcopy handles the case when local properties are not cached."""
-        import copy
-
-        original = self.basic_panel
-        # Do not access properties (they remain None).
-
-        copied = copy.deepcopy(original)
-
-        # Cached values should still be None.
-        self.assertIsNone(copied._rightLeg_G)
-        self.assertIsNone(copied._frontLeg_G)
-        self.assertIsNone(copied._leftLeg_G)
-        self.assertIsNone(copied._backLeg_G)
-        self.assertIsNone(copied._Frbvp_G_Cg)
-        self.assertIsNone(copied._Flbvp_G_Cg)
-        self.assertIsNone(copied._Cpp_G_Cg)
-        self.assertIsNone(copied._unitNormal_G)
-        self.assertIsNone(copied._area)
-        self.assertIsNone(copied._aspect_ratio)
-
-        # But accessing them should still work (lazy evaluation).
-        npt.assert_array_almost_equal(copied.rightLeg_G, np.array([-1.0, 0.0, 0.0]))
-        self.assertAlmostEqual(copied.area, 0.5, places=10)
-
-    def test_deepcopy_resets_global_positions(self):
-        """Test that deepcopy resets global positions to None."""
-        import copy
-
-        original = self.basic_panel
-        # Set global positions.
-        offset = np.array([10.0, 20.0, 5.0])
-        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
-        original.Flpp_GP1_CgP1 = original.Flpp_G_Cg + offset
-        original.Blpp_GP1_CgP1 = original.Blpp_G_Cg + offset
-        original.Brpp_GP1_CgP1 = original.Brpp_G_Cg + offset
-
-        copied = copy.deepcopy(original)
-
-        # Global positions should be reset to None.
+        # Verify copy has GP1 positions reset to None.
         self.assertIsNone(copied.Frpp_GP1_CgP1)
         self.assertIsNone(copied.Flpp_GP1_CgP1)
         self.assertIsNone(copied.Blpp_GP1_CgP1)
         self.assertIsNone(copied.Brpp_GP1_CgP1)
 
-    def test_deepcopy_resets_cached_global_properties(self):
-        """Test that deepcopy resets cached global geometric properties to None."""
-        import copy
+    def test_deepcopy_resets_gp1_derived_properties_to_none(self):
+        """Test that deepcopy resets GP1 derived properties to None."""
+        original = panel_fixtures.make_panel_with_gp1_positions_fixture()
 
-        original = self.basic_panel
-        # Set global positions and trigger caching.
-        offset = np.array([10.0, 20.0, 5.0])
-        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
-        original.Flpp_GP1_CgP1 = original.Flpp_G_Cg + offset
-        original.Blpp_GP1_CgP1 = original.Blpp_G_Cg + offset
-        original.Brpp_GP1_CgP1 = original.Brpp_G_Cg + offset
+        # Access GP1 derived properties to cache them.
         _ = original.rightLeg_GP1
         _ = original.frontLeg_GP1
+        _ = original.leftLeg_GP1
+        _ = original.backLeg_GP1
+        _ = original.Frbvp_GP1_CgP1
+        _ = original.Flbvp_GP1_CgP1
         _ = original.Cpp_GP1_CgP1
         _ = original.unitNormal_GP1
 
         copied = copy.deepcopy(original)
 
-        # Cached global properties should be reset to None.
-        self.assertIsNone(copied._rightLeg_GP1)
-        self.assertIsNone(copied._frontLeg_GP1)
-        self.assertIsNone(copied._leftLeg_GP1)
-        self.assertIsNone(copied._backLeg_GP1)
-        self.assertIsNone(copied._Frbvp_GP1_CgP1)
-        self.assertIsNone(copied._Flbvp_GP1_CgP1)
-        self.assertIsNone(copied._Cpp_GP1_CgP1)
-        self.assertIsNone(copied._unitNormal_GP1)
+        # Verify copy has GP1 derived properties reset to None.
+        self.assertIsNone(copied.rightLeg_GP1)
+        self.assertIsNone(copied.frontLeg_GP1)
+        self.assertIsNone(copied.leftLeg_GP1)
+        self.assertIsNone(copied.backLeg_GP1)
+        self.assertIsNone(copied.Frbvp_GP1_CgP1)
+        self.assertIsNone(copied.Flbvp_GP1_CgP1)
+        self.assertIsNone(copied.Cpp_GP1_CgP1)
+        self.assertIsNone(copied.unitNormal_GP1)
 
-    def test_deepcopy_resets_vortices(self):
-        """Test that deepcopy resets vortices to None."""
-        import copy
+    def test_deepcopy_resets_vortices_to_none(self):
+        """Test that deepcopy resets ring_vortex and horseshoe_vortex to None."""
+        original = panel_fixtures.make_basic_panel_fixture()
 
-        original = self.basic_panel
-        # Simulate setting vortices.
+        # Set a mock value for ring_vortex and horseshoe_vortex.
         original.ring_vortex = "mock_ring_vortex"
         original.horseshoe_vortex = "mock_horseshoe_vortex"
 
         copied = copy.deepcopy(original)
 
-        # Vortices should be reset to None.
         self.assertIsNone(copied.ring_vortex)
         self.assertIsNone(copied.horseshoe_vortex)
 
-    def test_deepcopy_resets_forces_and_moments(self):
-        """Test that deepcopy resets forces and moments to None."""
-        import copy
+    def test_deepcopy_resets_loads_to_none(self):
+        """Test that deepcopy resets force and moment attributes to None."""
+        original = panel_fixtures.make_basic_panel_fixture()
 
-        original = self.basic_panel
-        # Simulate setting forces and moments.
+        # Set mock values for loads.
         original.forces_GP1 = np.array([1.0, 2.0, 3.0])
-        original.moments_GP1_CgP1 = np.array([0.1, 0.2, 0.3])
-        original.forces_W = np.array([1.0, 2.0, 3.0])
-        original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
+        original.moments_GP1_CgP1 = np.array([4.0, 5.0, 6.0])
+        original.forces_W = np.array([7.0, 8.0, 9.0])
+        original.moments_W_CgP1 = np.array([10.0, 11.0, 12.0])
 
         copied = copy.deepcopy(original)
 
-        # Forces and moments should be reset to None.
         self.assertIsNone(copied.forces_GP1)
         self.assertIsNone(copied.moments_GP1_CgP1)
         self.assertIsNone(copied.forces_W)
         self.assertIsNone(copied.moments_W_CgP1)
 
-    def test_deepcopy_independence(self):
-        """Test that modifying the copy does not affect the original."""
-        import copy
-
-        original = self.basic_panel
-        # Trigger caching.
-        _ = original.area
-        _ = original.unitNormal_G
-
+    def test_deepcopy_allows_setting_gp1_positions_on_copy(self):
+        """Test that deepcopy allows setting GP1 positions on the copy."""
+        original = panel_fixtures.make_panel_with_gp1_positions_fixture()
         copied = copy.deepcopy(original)
 
-        # Modify the copy.
-        copied.Frpp_G_Cg = np.array([0.1, 0.6, 0.1])
+        # Should be able to set GP1 positions on copy since they were reset.
+        new_position = np.array([100.0, 200.0, 300.0])
+        copied.Frpp_GP1_CgP1 = new_position.copy()
+        npt.assert_array_equal(copied.Frpp_GP1_CgP1, new_position)
 
-        # Original should be unchanged.
-        npt.assert_array_equal(original.Frpp_G_Cg, np.array([0.0, 0.5, 0.0]))
-        self.assertAlmostEqual(original.area, 0.5, places=10)
-
-    def test_deepcopy_modifying_original_does_not_affect_copy(self):
-        """Test that modifying the original does not affect the copy."""
-        import copy
-
-        original = self.basic_panel
-        # Trigger caching.
-        _ = original.area
-        _ = original.rightLeg_G
-
+    def test_deepcopy_with_uncached_properties(self):
+        """Test deepcopy when no cached properties have been accessed."""
+        original = panel_fixtures.make_basic_panel_fixture()
         copied = copy.deepcopy(original)
 
-        # Store copy's values.
-        copied_area = copied.area
-        copied_rightLeg_G = copied.rightLeg_G.copy()
-
-        # Modify the original.
-        original.Frpp_G_Cg = np.array([0.1, 0.6, 0.1])
-
-        # Copy should be unchanged.
-        self.assertAlmostEqual(copied.area, copied_area, places=10)
-        npt.assert_array_equal(copied.rightLeg_G, copied_rightLeg_G)
-
-    def test_deepcopy_with_copy_module(self):
-        """Test that copy.deepcopy works correctly."""
-        import copy
-
-        original = self.basic_panel
-        # Set various attributes.
-        original.is_right_edge = True
-        original.local_chordwise_position = 2
-        offset = np.array([5.0, 10.0, 2.0])
-        original.Frpp_GP1_CgP1 = original.Frpp_G_Cg + offset
-        original.ring_vortex = "mock_vortex"
-        original.forces_GP1 = np.array([1.0, 2.0, 3.0])
-        # Trigger caching.
-        _ = original.area
-        _ = original.Cpp_G_Cg
-
-        copied = copy.deepcopy(original)
-
-        # Preserved attributes.
-        npt.assert_array_equal(copied.Frpp_G_Cg, original.Frpp_G_Cg)
-        self.assertEqual(copied.is_right_edge, True)
-        self.assertEqual(copied.local_chordwise_position, 2)
-        self.assertAlmostEqual(copied.area, original.area, places=10)
-        npt.assert_array_equal(copied.Cpp_G_Cg, original.Cpp_G_Cg)
-
-        # Reset attributes.
-        self.assertIsNone(copied.Frpp_GP1_CgP1)
-        self.assertIsNone(copied.ring_vortex)
-        self.assertIsNone(copied.forces_GP1)
-
-    def test_deepcopy_copies_are_functional(self):
-        """Test that copied Panels are fully functional."""
-        import copy
-
-        original = self.basic_panel
-        copied = copy.deepcopy(original)
-
-        # Set global positions on the copy.
-        offset = np.array([100.0, 200.0, 50.0])
-        copied.Frpp_GP1_CgP1 = copied.Frpp_G_Cg + offset
-        copied.Flpp_GP1_CgP1 = copied.Flpp_G_Cg + offset
-        copied.Blpp_GP1_CgP1 = copied.Blpp_G_Cg + offset
-        copied.Brpp_GP1_CgP1 = copied.Brpp_G_Cg + offset
-
-        # Access GP1 properties (should work correctly).
-        rightLeg_GP1 = copied.rightLeg_GP1
-        expected_rightLeg_GP1 = np.array([-1.0, 0.0, 0.0])
-        npt.assert_array_almost_equal(rightLeg_GP1, expected_rightLeg_GP1)
-
-        Cpp_GP1_CgP1 = copied.Cpp_GP1_CgP1
-        expected_Cpp_GP1_CgP1 = np.array([0.75, 0.25, 0.0]) + offset
-        npt.assert_array_almost_equal(Cpp_GP1_CgP1, expected_Cpp_GP1_CgP1)
+        # Access properties on copy and verify they are correct.
+        self.assertIsNotNone(copied.rightLeg_G)
+        self.assertIsNotNone(copied.area)
+        npt.assert_array_equal(copied.rightLeg_G, original.rightLeg_G)
+        self.assertEqual(copied.area, original.area)
 
 
 if __name__ == "__main__":

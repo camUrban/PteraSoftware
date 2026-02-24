@@ -4,9 +4,6 @@ import numpy as np
 
 import pterasoftware as ps
 
-# noinspection PyProtectedMember
-from pterasoftware import _panel
-
 
 def make_test_airfoil_fixture():
     """This method makes a fixture that is an Airfoil for testing purposes.
@@ -102,6 +99,33 @@ def make_tip_wing_cross_section_fixture():
     return tip_wing_cross_section_fixture
 
 
+def make_tip_wing_cross_section_with_control_surface_fixture():
+    """This method makes a fixture that is a tip WingCrossSection with control
+    surface parameters for type 4 and type 5 wing testing.
+
+    :return tip_wing_cross_section_fixture: WingCrossSection
+        This is the tip WingCrossSection with control surface parameters.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the tip WingCrossSection with control surface parameters.
+    tip_wing_cross_section_fixture = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=test_airfoil_fixture,
+        num_spanwise_panels=None,
+        chord=1.0,
+        Lp_Wcsp_Lpp=[0.5, 2.0, 0.2],
+        angles_Wcsp_to_Wcs_ixyz=[10.0, -5.0, 8.0],
+        control_surface_symmetry_type="symmetric",
+        control_surface_hinge_point=0.75,
+        control_surface_deflection=2.0,
+        spanwise_spacing=None,
+    )
+
+    # Return the tip WingCrossSection fixture.
+    return tip_wing_cross_section_fixture
+
+
 def make_minimal_wing_cross_section_fixture():
     """This method makes a fixture that is a WingCrossSection with minimal
     valid parameters.
@@ -151,6 +175,35 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
 
     # Return the asymmetric WingCrossSection fixture.
     return asymmetric_wing_cross_section_fixture
+
+
+def make_root_asymmetric_control_surface_wing_cross_section_fixture():
+    """This method makes a fixture that is a root WingCrossSection with asymmetric
+    control surface configuration for type 5 symmetry testing.
+
+    :return root_asymmetric_wing_cross_section_fixture: WingCrossSection
+        This is the root WingCrossSection with asymmetric control surface.
+    """
+    # Initialize the constructing fixture.
+    test_airfoil_fixture = make_test_airfoil_fixture()
+
+    # Create the root WingCrossSection with asymmetric control surface.
+    root_asymmetric_wing_cross_section_fixture = (
+        ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=test_airfoil_fixture,
+            num_spanwise_panels=10,
+            chord=2.0,
+            Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
+            angles_Wcsp_to_Wcs_ixyz=[0.0, 0.0, 0.0],
+            control_surface_symmetry_type="asymmetric",
+            control_surface_hinge_point=0.75,
+            control_surface_deflection=2.5,
+            spanwise_spacing="cosine",
+        )
+    )
+
+    # Return the root asymmetric WingCrossSection fixture.
+    return root_asymmetric_wing_cross_section_fixture
 
 
 def make_middle_wing_cross_section_fixture():
@@ -352,12 +405,8 @@ def make_type_4_wing_fixture():
     root_wcs = make_root_wing_cross_section_fixture()
     root_wcs.control_surface_symmetry_type = "symmetric"
 
-    tip_wcs = make_tip_wing_cross_section_fixture()
-    # Set chord and control surface for tip (since it was None)
-    tip_wcs.chord = 1.0
-    tip_wcs.control_surface_symmetry_type = "symmetric"
-    tip_wcs.control_surface_hinge_point = 0.75
-    tip_wcs.control_surface_deflection = 2.0
+    # Use the tip fixture with control surface parameters already set
+    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 4 wing (symmetric=True, coincident xz-plane symmetry)
     type_4_wing_fixture = ps.geometry.wing.Wing(
@@ -391,12 +440,8 @@ def make_type_5_wing_fixture():
     root_wcs = make_root_wing_cross_section_fixture()
     root_wcs.control_surface_symmetry_type = "symmetric"
 
-    tip_wcs = make_tip_wing_cross_section_fixture()
-    # Set chord and control surface for tip (since it was None)
-    tip_wcs.chord = 1.0
-    tip_wcs.control_surface_symmetry_type = "symmetric"
-    tip_wcs.control_surface_hinge_point = 0.75
-    tip_wcs.control_surface_deflection = 2.0
+    # Use the tip fixture with control surface parameters already set
+    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 5 wing (symmetric=True, non-coincident symmetry plane)
     type_5_wing_fixture = ps.geometry.wing.Wing(
@@ -591,13 +636,42 @@ def make_multi_wing_airplane_fixture():
     :return multi_wing_airplane_fixture: Airplane
         This is the Airplane with multiple Wings.
     """
-    # Create multiple Wings for the Airplane
-    main_wing = make_type_4_wing_fixture()
-    main_wing.name = "Main Wing"
+    # Create WingCrossSections for the main wing with symmetric control surfaces.
+    main_root_wcs = make_root_wing_cross_section_fixture()
+    main_root_wcs.control_surface_symmetry_type = "symmetric"
+    main_tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
 
-    tail_wing = make_type_2_wing_fixture()
-    tail_wing.name = "Tail Wing"
-    tail_wing.Ler_Gs_Cgs = [0.0, 0.0, 5.0]  # Move tail wing back
+    # Create main wing (type 4: symmetric=True, coincident xz-plane symmetry).
+    main_wing = ps.geometry.wing.Wing(
+        wing_cross_sections=[main_root_wcs, main_tip_wcs],
+        name="Main Wing",
+        Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=True,
+        mirror_only=False,
+        symmetryNormal_G=[0.0, 1.0, 0.0],
+        symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
+
+    # Create WingCrossSections for the tail wing.
+    tail_root_wcs = make_root_wing_cross_section_fixture()
+    tail_tip_wcs = make_tip_wing_cross_section_fixture()
+
+    # Create tail wing (type 2: mirror_only=True, coincident symmetry plane).
+    tail_wing = ps.geometry.wing.Wing(
+        wing_cross_sections=[tail_root_wcs, tail_tip_wcs],
+        name="Tail Wing",
+        Ler_Gs_Cgs=[0.0, 0.0, 5.0],
+        angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+        symmetric=False,
+        mirror_only=True,
+        symmetryNormal_G=[0.0, 1.0, 0.0],
+        symmetryPoint_G_Cg=[0.0, 0.0, 5.0],
+        num_chordwise_panels=8,
+        chordwise_spacing="cosine",
+    )
 
     # Create the multi-wing Airplane
     multi_wing_airplane_fixture = ps.geometry.airplane.Airplane(
@@ -772,27 +846,6 @@ def make_named_airfoil_fixture():
     )
 
     return named_airfoil_fixture
-
-
-# TODO: Move this to its own fixture module.
-def make_basic_panel_fixture():
-    """This method makes a fixture that is a Panel for testing purposes.
-
-    :return basic_panel_fixture: Panel
-        This is the Panel configured for testing.
-    """
-    # Define panel corner points (in geometry axes, relative to the CG) for a
-    # simple rectangular panel with 1.0 m chord and 0.5 m span.
-    basic_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 0.5, 0.0]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([1.0, 0.5, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return basic_panel_fixture
 
 
 def make_simple_rectangular_wing_fixture():
@@ -1382,3 +1435,99 @@ def make_3_chordwise_panels_airplane_fixture():
     )
 
     return airplane
+
+
+def make_minimum_n_points_per_side_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with the minimum valid
+    n_points_per_side value (3) for testing purposes.
+
+    :return minimum_n_points_per_side_airfoil_fixture: Airfoil
+        This is the Airfoil with minimum n_points_per_side.
+    """
+    minimum_n_points_per_side_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        resample=True,
+        n_points_per_side=3,
+    )
+
+    return minimum_n_points_per_side_airfoil_fixture
+
+
+def make_thick_naca_airfoil_fixture():
+    """This method makes a fixture that is a thick NACA 0030 Airfoil (30%
+    thickness) for testing purposes.
+
+    :return thick_naca_airfoil_fixture: Airfoil
+        This is the thick NACA 0030 Airfoil configured for testing.
+    """
+    thick_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0030")
+
+    return thick_naca_airfoil_fixture
+
+
+def make_blunt_trailing_edge_airfoil_fixture():
+    """This method makes a fixture that is an Airfoil with a blunt (open)
+    trailing edge for testing purposes.
+
+    :return blunt_trailing_edge_airfoil_fixture: Airfoil
+        This is the Airfoil with blunt trailing edge.
+    """
+    blunt_te_outline = np.array(
+        [
+            [1.00, 0.01],  # Upper TE above centerline
+            [0.75, 0.06],
+            [0.50, 0.08],
+            [0.25, 0.06],
+            [0.00, 0.00],  # Leading point
+            [0.25, -0.06],
+            [0.50, -0.08],
+            [0.75, -0.06],
+            [1.00, -0.01],  # Lower TE below centerline
+        ]
+    )
+
+    blunt_trailing_edge_airfoil_fixture = ps.geometry.airfoil.Airfoil(
+        name="Blunt TE Test Airfoil",
+        outline_A_lp=blunt_te_outline,
+        resample=False,
+        n_points_per_side=400,
+    )
+
+    return blunt_trailing_edge_airfoil_fixture
+
+
+def make_case_insensitive_naca_airfoil_fixture():
+    """This method makes a fixture that is a NACA 0012 Airfoil using mixed case
+    naming for testing case insensitivity.
+
+    :return case_insensitive_naca_airfoil_fixture: Airfoil
+        This is the NACA 0012 Airfoil with mixed case name.
+    """
+    case_insensitive_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="NaCa0012")
+
+    return case_insensitive_naca_airfoil_fixture
+
+
+def make_follower_airplane_fixture():
+    """This method makes a fixture that is an Airplane suitable for use as a
+    follower (non first) Airplane in a simulation with a non zero Cg_GP1_CgP1.
+
+    This fixture is useful for testing the T_pas_G_Cg_to_GP1_CgP1 transformation
+    matrix which is the identity for the first Airplane but non trivial for
+    follower Airplanes.
+
+    :return follower_airplane_fixture: Airplane
+        This is the Airplane configured as a follower in a simulation.
+    """
+    # Create a Wing for the Airplane.
+    wing = make_type_1_wing_fixture()
+
+    # Create the follower Airplane with non zero position.
+    follower_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Follower Test Airplane",
+        Cg_GP1_CgP1=[5.0, 2.0, -1.0],
+        weight=1200.0,
+    )
+
+    return follower_airplane_fixture

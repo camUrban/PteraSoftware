@@ -1,7 +1,12 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>Bhagwat</w>
       <w>Legionair</w>
+      <w>Manikandan</w>
+      <w>Oseen</w>
+      <w>Ptera</w>
+      <w>Ramasamy</w>
       <w>Wurts</w>
       <w>Zach</w>
       <w>aero</w>
@@ -9,7 +14,6 @@
       <w>aerosandbox</w>
       <w>afsmo</w>
       <w>aiaa</w>
-      <w>albatros</w>
       <w>ames</w>
       <w>ananthan</w>
       <w>anglesi</w>
@@ -21,10 +25,8 @@
       <w>autograd</w>
       <w>autopf</w>
       <w>autoprograms</w>
-      <w>aviansoftwareminimumviableproduct</w>
       <w>aviatik</w>
       <w>avistar</w>
-      <w>bacxxx</w>
       <w>bambino</w>
       <w>bbrv</w>
       <w>bergey</w>
@@ -48,7 +50,6 @@
       <w>brvrp</w>
       <w>brwrvp</w>
       <w>camberline</w>
-      <w>cambre</w>
       <w>carto</w>
       <w>cblvpb</w>
       <w>cblvpf</w>
@@ -68,6 +69,7 @@
       <w>coolwarm</w>
       <w>coords</w>
       <w>cosspace</w>
+      <w>cpuinfo</w>
       <w>createallsubdirs</w>
       <w>crvp</w>
       <w>curtiss</w>
@@ -75,8 +77,8 @@
       <w>customspaces</w>
       <w>darkgray</w>
       <w>davissm</w>
-      <w>dbln</w>
       <w>deepcopied</w>
+      <w>deepcopying</w>
       <w>defs</w>
       <w>desktopicon</w>
       <w>dfvlr</w>
@@ -84,14 +86,12 @@
       <w>dicke</w>
       <w>diskpart</w>
       <w>disps</w>
-      <w>dormoy</w>
       <w>dornier</w>
       <w>downsampled</w>
       <w>downstroke</w>
       <w>downwash</w>
       <w>downwashes</w>
       <w>drela</w>
-      <w>dsma</w>
       <w>dtype</w>
       <w>einsum</w>
       <w>elvp</w>
@@ -136,9 +136,6 @@
       <w>fullinertia</w>
       <w>gammabot</w>
       <w>genese</w>
-      <w>giii</w>
-      <w>hacklinger</w>
-      <w>hansa</w>
       <w>helbling</w>
       <w>hiddenimports</w>
       <w>hobiesmo</w>
@@ -151,7 +148,6 @@
       <w>hsnlf</w>
       <w>hstab</w>
       <w>hstack</w>
-      <w>icacls</w>
       <w>ignoreversion</w>
       <w>iiic</w>
       <w>ixyz</w>
@@ -180,7 +176,6 @@
       <w>lers</w>
       <w>libspatialindex</w>
       <w>liebeck</w>
-      <w>liii</w>
       <w>linalg</w>
       <w>linspace</w>
       <w>linspaces</w>
@@ -190,6 +185,7 @@
       <w>marsden</w>
       <w>marske</w>
       <w>massa</w>
+      <w>mathbf</w>
       <w>matplotlib</w>
       <w>maxfev</w>
       <w>maxfun</w>
@@ -234,7 +230,6 @@
       <w>progids</w>
       <w>proj</w>
       <w>propfan</w>
-      <w>ptera</w>
       <w>pterasoftware</w>
       <w>pycache</w>
       <w>pyvista</w>
@@ -249,7 +244,6 @@
       <w>repanel</w>
       <w>repaneled</w>
       <w>repaneling</w>
-      <w>rhode</w>
       <w>rickstaa</w>
       <w>rmsape</w>
       <w>rmspc</w>
@@ -268,14 +262,12 @@
       <w>seasaw</w>
       <w>semispan</w>
       <w>seob</w>
-      <w>sexualized</w>
       <w>shyy</w>
       <w>sideslip</w>
       <w>sinspace</w>
       <w>sinspaces</w>
       <w>skipifsilent</w>
       <w>slvp</w>
-      <w>socio</w>
       <w>sokolov</w>
       <w>solimp</w>
       <w>solref</w>
@@ -303,8 +295,6 @@
       <w>uvlm</w>
       <w>vawt</w>
       <w>vectorize</w>
-      <w>vertexs</w>
-      <w>vertol</w>
       <w>viridis</w>
       <w>vortices</w>
       <w>vstab</w>
@@ -313,7 +303,6 @@
       <w>wcsi</w>
       <w>wcso</w>
       <w>wcsp</w>
-      <w>weisstein</w>
       <w>wetted</w>
       <w>whitcomb</w>
       <w>whvp</w>

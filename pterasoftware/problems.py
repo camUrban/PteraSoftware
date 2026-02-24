@@ -39,7 +39,7 @@ class SteadyProblem:
 
     **Contains the following methods:**
 
-    reynolds_numbers: A list of Reynolds numbers, one for each Airplane in the
+    reynolds_numbers: A tuple of Reynolds numbers, one for each Airplane in the
     SteadyProblem.
     """
 
@@ -54,6 +54,7 @@ class SteadyProblem:
         :param operating_point: The OperatingPoint for this SteadyProblem.
         :return: None
         """
+        # Validate and store immutable attributes.
         if not isinstance(airplanes, list):
             raise TypeError("airplanes must be a list.")
         if len(airplanes) < 1:
@@ -61,20 +62,26 @@ class SteadyProblem:
         for airplane in airplanes:
             if not isinstance(airplane, geometry.airplane.Airplane):
                 raise TypeError("Every element in airplanes must be an Airplane.")
-        self.airplanes = airplanes
+        # Store as tuple to prevent external mutation via .append(), .pop(), etc.
+        self._airplanes: tuple[geometry.airplane.Airplane, ...] = tuple(airplanes)
+
         if not isinstance(operating_point, operating_point_mod.OperatingPoint):
             raise TypeError("operating_point must be an OperatingPoint.")
-        self.operating_point = operating_point
+        self._operating_point = operating_point
+
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._reynolds_numbers: tuple[float, ...] | None = None
 
         # Validate that the first Airplane has Cg_GP1_CgP1 set to zeros.
-        self.airplanes[0].validate_first_airplane_constraints()
+        self._airplanes[0].validate_first_airplane_constraints()
 
-        # Populate GP1_CgP1 coordinates for all Airplanes' Panels This finds the Panels'
-        # positions in the first Airplanes' geometry axes, relative to the first
-        # Airplanes' CG based on their locally defined positions.
-        for airplane_id, airplane in enumerate(self.airplanes):
+        # Populate GP1_CgP1 coordinates for all Airplanes' Panels. This finds the
+        # Panels' positions in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG based on their locally defined positions.
+        for airplane in self._airplanes:
             # Compute the passive transformation matrix from this Airplane's local
-            # geometry axes, relative to its CG, to the first Airplanes' geometry axes,
+            # geometry axes, relative to its CG, to the first Airplane's geometry axes,
             # relative to the first Airplane's CG.
             T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
 
@@ -95,9 +102,19 @@ class SteadyProblem:
                         T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
                     )
 
+    # --- Immutable: read only properties ---
     @property
-    def reynolds_numbers(self) -> list[float]:
-        """A list of Reynolds numbers, one for each Airplane in the SteadyProblem.
+    def airplanes(self) -> tuple[geometry.airplane.Airplane, ...]:
+        return self._airplanes
+
+    @property
+    def operating_point(self) -> operating_point_mod.OperatingPoint:
+        return self._operating_point
+
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def reynolds_numbers(self) -> tuple[float, ...]:
+        """A tuple of Reynolds numbers, one for each Airplane in the SteadyProblem.
 
         **Notes:**
 
@@ -110,19 +127,22 @@ class SteadyProblem:
         velocity due to prescribed motion, so be careful interpreting it for cases where
         this SteadyProblem corresponds to one time step in an UnsteadyProblem.
 
-        :return: A list of Reynolds numbers, one for each Airplane.
+        :return: A tuple of Reynolds numbers, one for each Airplane.
         """
-        v = self.operating_point.vCg__E
-        nu = self.operating_point.nu
+        if self._reynolds_numbers is None:
+            v = self._operating_point.vCg__E
+            nu = self._operating_point.nu
 
-        reynolds_list = []
-        for airplane in self.airplanes:
-            c_ref = airplane.c_ref
-            assert c_ref is not None, "Airplane c_ref must be set to calculate Re"
-            re = (v * c_ref) / nu
-            reynolds_list.append(re)
+            reynolds_list = []
+            for airplane in self._airplanes:
+                c_ref = airplane.c_ref
+                assert c_ref is not None, "Airplane c_ref must be set to calculate Re"
+                re = (v * c_ref) / nu
+                reynolds_list.append(re)
 
-        return reynolds_list
+            # Store as tuple to prevent external mutation.
+            self._reynolds_numbers = tuple(reynolds_list)
+        return self._reynolds_numbers
 
 
 class UnsteadyProblem:
@@ -150,15 +170,16 @@ class UnsteadyProblem:
             will be converted internally to a bool. The default is False.
         :return: None
         """
+        # Validate and store immutable attributes.
         if not isinstance(movement, movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
-        self.movement = movement
-        self.only_final_results = _parameter_validation.boolLike_return_bool(
+        self._movement = movement
+        self._only_final_results = _parameter_validation.boolLike_return_bool(
             only_final_results, "only_final_results"
         )
 
-        self.num_steps: int = self.movement.num_steps
-        self.delta_time: float = self.movement.delta_time
+        self._num_steps: int = self._movement.num_steps
+        self._delta_time: float = self._movement.delta_time
 
         # For UnsteadyProblems with a static Movement, we are typically interested in
         # the final time step's forces and moments, which, assuming convergence, will be
@@ -166,29 +187,29 @@ class UnsteadyProblem:
         # wings) we are typically interested in the forces and moments averaged over the
         # last cycle simulated. Use the LCM of all motion periods to ensure we average
         # over a complete cycle of all motions.
-        _movement_lcm_period = self.movement.lcm_period
-        self.first_averaging_step: int
+        _movement_lcm_period = self._movement.lcm_period
+        self._first_averaging_step: int
         if _movement_lcm_period == 0:
-            self.first_averaging_step = self.num_steps - 1
+            self._first_averaging_step = self._num_steps - 1
         else:
-            self.first_averaging_step = max(
+            self._first_averaging_step = max(
                 0,
-                math.floor(self.num_steps - (_movement_lcm_period / self.delta_time)),
+                math.floor(self._num_steps - (_movement_lcm_period / self._delta_time)),
             )
 
         # If we only wants to calculate forces and moments for the final cycle (for a
         # cyclic Movement) or for the final time step (for a static Movement) set the
         # first step to calculate results to the first averaging step. Otherwise, set it
         # to the zero, which is the first time step.
-        self.first_results_step: int
-        if self.only_final_results:
-            self.first_results_step = self.first_averaging_step
+        self._first_results_step: int
+        if self._only_final_results:
+            self._first_results_step = self._first_averaging_step
         else:
-            self.first_results_step = 0
+            self._first_results_step = 0
 
         # Initialize empty lists to hold the final loads and load coefficients each
         # Airplane experiences. These will only be populated if this UnsteadyProblem's
-        # Movement is static.
+        # Movement is static. These are mutable and populated by the solver.
         self.finalForces_W: list[np.ndarray] = []
         self.finalForceCoefficients_W: list[np.ndarray] = []
         self.finalMoments_W_CgP1: list[np.ndarray] = []
@@ -196,7 +217,8 @@ class UnsteadyProblem:
 
         # Initialize empty lists to hold the final cycle-averaged loads and load
         # coefficients each Airplane experiences. These will only be populated if this
-        # UnsteadyProblem's Movement is cyclic.
+        # UnsteadyProblem's Movement is cyclic. These are mutable and populated by the
+        # solver.
         self.finalMeanForces_W: list[np.ndarray] = []
         self.finalMeanForceCoefficients_W: list[np.ndarray] = []
         self.finalMeanMoments_W_CgP1: list[np.ndarray] = []
@@ -204,17 +226,18 @@ class UnsteadyProblem:
 
         # Initialize empty lists to hold the final cycle-root-mean-squared loads and
         # load coefficients each airplane object experiences. These will only be
-        # populated for variable geometry problems.
+        # populated for variable geometry problems. These are mutable and populated by
+        # the solver.
         self.finalRmsForces_W: list[np.ndarray] = []
         self.finalRmsForceCoefficients_W: list[np.ndarray] = []
         self.finalRmsMoments_W_CgP1: list[np.ndarray] = []
         self.finalRmsMomentCoefficients_W_CgP1: list[np.ndarray] = []
 
-        # Initialize an empty list to hold the SteadyProblems.
-        self.steady_problems: list[SteadyProblem] = []
+        # Initialize an empty list to hold the SteadyProblems as they are generated.
+        steady_problems_temp: list[SteadyProblem] = []
 
         # Iterate through the UnsteadyProblem's time steps.
-        for step_id in range(self.num_steps):
+        for step_id in range(self._num_steps):
 
             # Get the Airplanes and the OperatingPoint associated with this time step.
             these_airplanes = []
@@ -227,8 +250,40 @@ class UnsteadyProblem:
                 airplanes=these_airplanes, operating_point=this_operating_point
             )
 
-            # Append this SteadyProblem to the list of SteadyProblems.
-            self.steady_problems.append(this_steady_problem)
+            # Append this SteadyProblem to the temporary list.
+            steady_problems_temp.append(this_steady_problem)
+
+        # Store as tuple to prevent external mutation via .append(), .pop(), etc.
+        self._steady_problems: tuple[SteadyProblem, ...] = tuple(steady_problems_temp)
+
+    # --- Immutable: read only properties ---
+    @property
+    def movement(self) -> movements.movement.Movement:
+        return self._movement
+
+    @property
+    def only_final_results(self) -> bool:
+        return self._only_final_results
+
+    @property
+    def num_steps(self) -> int:
+        return self._num_steps
+
+    @property
+    def delta_time(self) -> float:
+        return self._delta_time
+
+    @property
+    def first_averaging_step(self) -> int:
+        return self._first_averaging_step
+
+    @property
+    def first_results_step(self) -> int:
+        return self._first_results_step
+
+    @property
+    def steady_problems(self) -> tuple[SteadyProblem, ...]:
+        return self._steady_problems
 
 
 # TEST: Add unit tests for this class's initialization.

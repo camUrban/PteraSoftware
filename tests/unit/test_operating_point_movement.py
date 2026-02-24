@@ -1,4 +1,4 @@
-"""This module contains a class to test OperatingPointMovements."""
+"""This module contains classes to test OperatingPointMovements."""
 
 import unittest
 
@@ -355,7 +355,7 @@ class TestOperatingPointMovement(unittest.TestCase):
         """Test that generate_operating_points returns list of correct length."""
         op_movement = self.basic_op_movement
 
-        test_num_steps = [1, 5, 10, 50, 100]
+        test_num_steps = [1, 5, 10, 25, 50, 100, 200]
         for num_steps in test_num_steps:
             with self.subTest(num_steps=num_steps):
                 operating_points = op_movement.generate_operating_points(
@@ -403,18 +403,6 @@ class TestOperatingPointMovement(unittest.TestCase):
         # All OperatingPoints should have same vCg__E.
         for op in operating_points:
             self.assertEqual(op.vCg__E, base_op.vCg__E)
-
-    def test_generate_operating_points_different_num_steps(self):
-        """Test generate_operating_points with various num_steps values."""
-        op_movement = self.basic_op_movement
-
-        num_steps_list = [1, 10, 25, 100, 200]
-        for num_steps in num_steps_list:
-            with self.subTest(num_steps=num_steps):
-                operating_points = op_movement.generate_operating_points(
-                    num_steps=num_steps, delta_time=0.01
-                )
-                self.assertEqual(len(operating_points), num_steps)
 
     def test_generate_operating_points_different_delta_time(self):
         """Test generate_operating_points with various delta_time values."""
@@ -607,37 +595,6 @@ class TestOperatingPointMovement(unittest.TestCase):
         # Verify the error message is about vCg__E validation.
         self.assertIn("vCg__E", str(context.exception))
 
-    def test_boundary_phase_values(self):
-        """Test phase at boundary values (-179.9, 0.0, and 180.0)."""
-        base_op = operating_point_fixtures.make_basic_operating_point_fixture()
-
-        # Test phase = 0.0 works.
-        op_movement1 = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=base_op,
-            ampVCg__E=0.0,
-            periodVCg__E=0.0,
-            phaseVCg__E=0.0,
-        )
-        self.assertEqual(op_movement1.phaseVCg__E, 0.0)
-
-        # Test phase = 180.0 works (upper boundary, inclusive).
-        op_movement2 = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=base_op,
-            ampVCg__E=1.0,
-            periodVCg__E=1.0,
-            phaseVCg__E=180.0,
-        )
-        self.assertEqual(op_movement2.phaseVCg__E, 180.0)
-
-        # Test phase = -179.9 works (near lower boundary).
-        op_movement3 = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=base_op,
-            ampVCg__E=1.0,
-            periodVCg__E=1.0,
-            phaseVCg__E=-179.9,
-        )
-        self.assertEqual(op_movement3.phaseVCg__E, -179.9)
-
     def test_large_amplitude_movement(self):
         """Test OperatingPointMovement with large amplitude."""
         op_movement = self.large_amplitude_op_movement
@@ -654,6 +611,60 @@ class TestOperatingPointMovement(unittest.TestCase):
 
         # Verify that values vary significantly.
         self.assertGreater(float(np.max(vCg_values)) - float(np.min(vCg_values)), 50.0)
+
+    def test_integer_parameters_converted_to_float(self):
+        """Test that integer parameters are converted to float internally."""
+        base_op = operating_point_fixtures.make_basic_operating_point_fixture()
+
+        op_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=base_op,
+            ampVCg__E=5,
+            periodVCg__E=2,
+            phaseVCg__E=90,
+        )
+
+        self.assertIsInstance(op_movement.ampVCg__E, float)
+        self.assertIsInstance(op_movement.periodVCg__E, float)
+        self.assertIsInstance(op_movement.phaseVCg__E, float)
+        self.assertEqual(op_movement.ampVCg__E, 5.0)
+        self.assertEqual(op_movement.periodVCg__E, 2.0)
+        self.assertEqual(op_movement.phaseVCg__E, 90.0)
+
+
+class TestOperatingPointMovementImmutability(unittest.TestCase):
+    """Tests for OperatingPointMovement attribute immutability."""
+
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_op_movement = (
+            operating_point_movement_fixtures.make_basic_operating_point_movement_fixture()
+        )
+
+    def test_immutable_base_operating_point_property(self):
+        """Test that base_operating_point property is read only."""
+        new_op = operating_point_fixtures.make_high_speed_operating_point_fixture()
+        with self.assertRaises(AttributeError):
+            self.basic_op_movement.base_operating_point = new_op
+
+    def test_immutable_ampVCg__E_property(self):
+        """Test that ampVCg__E property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_op_movement.ampVCg__E = 10.0
+
+    def test_immutable_periodVCg__E_property(self):
+        """Test that periodVCg__E property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_op_movement.periodVCg__E = 5.0
+
+    def test_immutable_spacingVCg__E_property(self):
+        """Test that spacingVCg__E property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_op_movement.spacingVCg__E = "uniform"
+
+    def test_immutable_phaseVCg__E_property(self):
+        """Test that phaseVCg__E property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_op_movement.phaseVCg__E = 45.0
 
 
 if __name__ == "__main__":

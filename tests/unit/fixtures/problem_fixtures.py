@@ -121,3 +121,23 @@ def make_cyclic_unsteady_problem_fixture():
     )
 
     return cyclic_unsteady_problem_fixture
+
+
+def make_multi_airplane_unsteady_problem_fixture():
+    """This method makes a fixture that is an UnsteadyProblem with multiple Airplanes.
+
+    :return multi_airplane_unsteady_problem_fixture: UnsteadyProblem
+        This is the UnsteadyProblem with multiple Airplanes.
+    """
+    # Create a Movement with multiple AirplaneMovements.
+    multi_airplane_movement = (
+        movement_fixtures.make_movement_with_multiple_airplanes_fixture()
+    )
+
+    # Create the UnsteadyProblem with multiple Airplanes.
+    multi_airplane_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
+        movement=multi_airplane_movement,
+        only_final_results=False,
+    )
+
+    return multi_airplane_unsteady_problem_fixture

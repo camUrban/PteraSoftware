@@ -12,16 +12,18 @@ This package contains the following modules:
     test_aerodynamics_functions.py: This module contains a class to test aerodynamics
     functions.
 
-    test_airfoils.py: This module contains a class to test Airfoils.
+    test_airfoil.py: This module contains classes to test Airfoils.
 
-    test_airplane.py: This module contains a class to test Airplanes.
+    test_airplane.py: This module contains classes to test Airplanes.
 
-    test_airplane_movement.py: This module contains a class to test AirplaneMovements.
+    test_airplane_movement.py: This module contains classes to test AirplaneMovements.
 
-    test_horseshoe_vortex.py: This module contains a class to test HorseshoeVortices.
+    test_horseshoe_vortex.py: This module contains classes to test HorseshoeVortices.
 
-    test_movement.py: This module contains classes to test Movements and
-    CoupledMovements.
+    test_line_vortex.py: This module contains classes to test LineVortices.
+
+    test_movement.py: This module contains classes to test Movements,
+    CoupledMovements, and related functions.
 
     test_movements_functions.py: This module contains a class to test movements
     functions.
@@ -29,33 +31,33 @@ This package contains the following modules:
     test_operating_point.py: This module contains classes to test OperatingPoints and
     CoupledOperatingPoints.
 
-    test_operating_point_movement.py: This module contains a class to test
+    test_operating_point_movement.py: This module contains classes to test
     OperatingPointMovements.
 
     test_package_init.py: This module contains tests for the pterasoftware package
     __init__.py.
 
-    test_panel.py: This module contains a class to test Panels.
+    test_panel.py: This module contains classes to test Panels.
 
     test_parameter_validation.py: This module contains a class to test parameter
     validation functions.
 
-    test_problems.py: This module contains a class to test SteadyProblems and
+    test_problems.py: This module contains classes to test SteadyProblems and
     UnsteadyProblems.
 
-    test_ring_vortex.py: This module contains a class to test RingVortices.
+    test_ring_vortex.py: This module contains classes to test RingVortices.
 
     test_transformations.py: This module contains classes to test functions in the
     transformations module.
 
-    test_wing.py: This module contains a class to test Wings.
+    test_wing.py: This module contains classes to test Wings.
 
-    test_wing_cross_section.py: This module contains a class to test WingCrossSections.
+    test_wing_cross_section.py: This module contains classes to test WingCrossSections.
 
-    test_wing_cross_section_movement.py: This module contains a class to test
+    test_wing_cross_section_movement.py: This module contains classes to test
     WingCrossSectionMovements.
 
-    test_wing_movement.py: This module contains a class to test WingMovements.
+    test_wing_movement.py: This module contains classes to test WingMovements.
 """
 
 import tests.unit.test_aerodynamics_functions
@@ -63,6 +65,7 @@ import tests.unit.test_airfoil
 import tests.unit.test_airplane
 import tests.unit.test_airplane_movement
 import tests.unit.test_horseshoe_vortex
+import tests.unit.test_line_vortex
 import tests.unit.test_movement
 import tests.unit.test_movements_functions
 import tests.unit.test_operating_point

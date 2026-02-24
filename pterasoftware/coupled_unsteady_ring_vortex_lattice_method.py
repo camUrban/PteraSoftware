@@ -20,12 +20,13 @@ import numpy as np
 from tqdm import tqdm
 
 from . import (
-    _aerodynamics,
+    _aerodynamics_functions,
     _functions,
     _logging,
     _panel,
     _parameter_validation,
     _transformations,
+    _vortices,
     geometry,
     operating_point,
     problems,
@@ -676,7 +677,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                             )
 
                     # Initialize the Panel's RingVortex.
-                    panel.ring_vortex = _aerodynamics.RingVortex(
+                    panel.ring_vortex = _vortices.ring_vortex.RingVortex(
                         Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
                         Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
                         Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
@@ -725,7 +726,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 global_panel_position += 1
 
             # Iterate through the 1D ndarray of this Wing's wake RingVortices.
-            wake_ring_vortex: _aerodynamics.RingVortex
+            wake_ring_vortex: _vortices.ring_vortex.RingVortex
             for wake_ring_vortex in wake_ring_vortices:
                 # Update the solver's list of attributes with this wake RingVortex's
                 # attributes.
@@ -826,15 +827,17 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # collocation point by each bound RingVortex. The answer is normalized
         # because the solver's list of bound RingVortex strengths was initialized to
         # all be 1.0. This will be updated once the correct strengths are calculated.
-        gridNormVIndCpp_GP1_E = _aerodynamics.expanded_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
-            stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
-            stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
-            stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
-            stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
-            strengths=self._current_bound_vortex_strengths,
-            ages=None,
-            nu=self.current_coupled_operating_point.nu,
+        gridNormVIndCpp_GP1_E = (
+            _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                strengths=self._current_bound_vortex_strengths,
+                ages=None,
+                nu=self.current_coupled_operating_point.nu,
+            )
         )
 
         # Take the batch dot product of the normalized induced velocities (in the
@@ -935,7 +938,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             # from the Earth frame) induced by the wake RingVortices at each Panel's
             # collocation point.
             currentStackWakeV_GP1_E = (
-                _aerodynamics.collapsed_velocities_from_ring_vortices(
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                     stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
                     stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
                     stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
@@ -982,9 +985,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             this_ring_vortex = panel.ring_vortex
             assert this_ring_vortex is not None
 
-            this_ring_vortex.update_strength(
-                self._current_bound_vortex_strengths[panel_num]
-            )
+            this_ring_vortex.strength = self._current_bound_vortex_strengths[panel_num]
 
     def calculate_solution_velocity(
         self, stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]]
@@ -1021,7 +1022,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         )
 
         stackBoundRingVInd_GP1_E = (
-            _aerodynamics.collapsed_velocities_from_ring_vortices(
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
                 stackP_GP1_CgP1=stackP_GP1_CgP1,
                 stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
                 stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
@@ -1032,15 +1033,17 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_coupled_operating_point.nu,
             )
         )
-        stackWakeRingVInd_GP1_E = _aerodynamics.collapsed_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
-            stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
-            stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
-            stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
-            strengths=self._current_wake_vortex_strengths,
-            ages=self._current_wake_vortex_ages,
-            nu=self.current_coupled_operating_point.nu,
+        stackWakeRingVInd_GP1_E = (
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                strengths=self._current_wake_vortex_strengths,
+                ages=self._current_wake_vortex_ages,
+                nu=self.current_coupled_operating_point.nu,
+            )
         )
 
         return cast(
@@ -1569,7 +1572,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         # Create a new Airplane with the updated position and orientation, but with
         # the Wings from the prescribed motion.
         updated_airplane = geometry.airplane.Airplane(
-            wings=prescribed_airplane.wings,
+            wings=list(prescribed_airplane.wings),
             name=prescribed_airplane.name,
             Cg_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
             weight=prescribed_airplane.weight,
@@ -1915,26 +1918,32 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                                 # location for the next time step.
                                 next_wake_ring_vortices = next_wing.wake_ring_vortices
                                 assert next_wake_ring_vortices is not None
-                                next_wake_ring_vortex = cast(
-                                    _aerodynamics.RingVortex,
+                                old_wake_ring_vortex = cast(
+                                    _vortices.ring_vortex.RingVortex,
                                     next_wake_ring_vortices[
                                         chordwise_point_id, spanwise_point_id
                                     ],
                                 )
 
-                                next_wake_ring_vortex.update_position(
-                                    Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
+                                # Compute the updated age.
+                                if self._current_step == 0:
+                                    new_age = self.delta_time
+                                else:
+                                    new_age = old_wake_ring_vortex.age + self.delta_time
+
+                                # Replace with a new RingVortex at the updated
+                                # position (RingVortex positions are immutable).
+                                new_wake_ring_vortex = _vortices.ring_vortex.RingVortex(
                                     Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
+                                    Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
                                     Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,
                                     Brrvp_GP1_CgP1=Brwrvp_GP1_CgP1,
+                                    strength=old_wake_ring_vortex.strength,
                                 )
-
-                                # Also, update the age of the wake RingVortex at
-                                # this position for the next time step.
-                                if self._current_step == 0:
-                                    next_wake_ring_vortex.age = self.delta_time
-                                else:
-                                    next_wake_ring_vortex.age += self.delta_time
+                                new_wake_ring_vortex.age = new_age
+                                next_wake_ring_vortices[
+                                    chordwise_point_id, spanwise_point_id
+                                ] = new_wake_ring_vortex
 
                             if chordwise_point_id == 0:
                                 _panels = this_wing.panels
@@ -1961,7 +1970,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                                 next_wing.wake_ring_vortices[
                                     chordwise_point_id,
                                     spanwise_point_id,
-                                ] = _aerodynamics.RingVortex(
+                                ] = _vortices.ring_vortex.RingVortex(
                                     Flrvp_GP1_CgP1=Flwrvp_GP1_CgP1,
                                     Frrvp_GP1_CgP1=Frwrvp_GP1_CgP1,
                                     Blrvp_GP1_CgP1=Blwrvp_GP1_CgP1,

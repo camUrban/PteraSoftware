@@ -1,4 +1,4 @@
-"""This module contains a class to test LineVortices."""
+"""This module contains classes to test LineVortices."""
 
 import unittest
 
@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _aerodynamics
+from pterasoftware._vortices import _line_vortex
 from tests.unit.fixtures import line_vortex_fixtures
 
 
@@ -42,7 +42,7 @@ class TestLineVortex(unittest.TestCase):
     def test_initialization_valid_parameters(self):
         """Test LineVortex initialization with valid parameters."""
         # Test that basic LineVortex initializes correctly.
-        self.assertIsInstance(self.basic_line_vortex, _aerodynamics._LineVortex)
+        self.assertIsInstance(self.basic_line_vortex, _line_vortex.LineVortex)
         npt.assert_array_equal(
             self.basic_line_vortex.Slvp_GP1_CgP1,
             np.array([0.0, 0.0, 0.0], dtype=float),
@@ -193,117 +193,6 @@ class TestLineVortex(unittest.TestCase):
             decimal=10,
         )
 
-    def test_start_point_setter_updates_value(self):
-        """Test that setting Slvp_GP1_CgP1 updates the stored value."""
-        # Create a fresh fixture to avoid affecting other tests.
-        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
-
-        # Set new start point.
-        new_start = np.array([0.5, 0.5, 0.5], dtype=float)
-        line_vortex.Slvp_GP1_CgP1 = new_start
-
-        npt.assert_array_equal(line_vortex.Slvp_GP1_CgP1, new_start)
-
-    def test_end_point_setter_updates_value(self):
-        """Test that setting Elvp_GP1_CgP1 updates the stored value."""
-        # Create a fresh fixture to avoid affecting other tests.
-        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
-
-        # Set new end point.
-        new_end = np.array([2.0, 1.0, 0.5], dtype=float)
-        line_vortex.Elvp_GP1_CgP1 = new_end
-
-        npt.assert_array_equal(line_vortex.Elvp_GP1_CgP1, new_end)
-
-    def test_cache_invalidation_on_start_point_change(self):
-        """Test that cached properties are invalidated when start point changes."""
-        # Create a fresh fixture.
-        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
-
-        # Access cached properties to populate cache.
-        _ = line_vortex.vector_GP1
-        _ = line_vortex.Clvp_GP1_CgP1
-
-        # Change start point.
-        new_start = np.array([0.5, 0.0, 0.0], dtype=float)
-        line_vortex.Slvp_GP1_CgP1 = new_start
-
-        # Verify that vector_GP1 is recalculated.
-        expected_vector = np.array([0.5, 0.0, 0.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.vector_GP1,
-            expected_vector,
-            decimal=10,
-        )
-
-        # Verify that center point is recalculated.
-        expected_center = np.array([0.75, 0.0, 0.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
-
-    def test_cache_invalidation_on_end_point_change(self):
-        """Test that cached properties are invalidated when end point changes."""
-        # Create a fresh fixture.
-        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
-
-        # Access cached properties to populate cache.
-        _ = line_vortex.vector_GP1
-        _ = line_vortex.Clvp_GP1_CgP1
-
-        # Change end point.
-        new_end = np.array([2.0, 0.0, 0.0], dtype=float)
-        line_vortex.Elvp_GP1_CgP1 = new_end
-
-        # Verify that vector_GP1 is recalculated.
-        expected_vector = np.array([2.0, 0.0, 0.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.vector_GP1,
-            expected_vector,
-            decimal=10,
-        )
-
-        # Verify that center point is recalculated.
-        expected_center = np.array([1.0, 0.0, 0.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
-
-    def test_cache_invalidation_on_both_points_change(self):
-        """Test that cached properties are invalidated when both points change."""
-        # Create a fresh fixture.
-        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
-
-        # Access cached properties to populate cache.
-        _ = line_vortex.vector_GP1
-        _ = line_vortex.Clvp_GP1_CgP1
-
-        # Change both points.
-        new_start = np.array([1.0, 1.0, 1.0], dtype=float)
-        new_end = np.array([3.0, 1.0, 1.0], dtype=float)
-        line_vortex.Slvp_GP1_CgP1 = new_start
-        line_vortex.Elvp_GP1_CgP1 = new_end
-
-        # Verify that vector_GP1 is recalculated.
-        expected_vector = np.array([2.0, 0.0, 0.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.vector_GP1,
-            expected_vector,
-            decimal=10,
-        )
-
-        # Verify that center point is recalculated.
-        expected_center = np.array([2.0, 1.0, 1.0], dtype=float)
-        npt.assert_array_almost_equal(
-            line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
-
     def test_small_line_vortex(self):
         """Test LineVortex with very small dimensions."""
         # Should handle very small LineVortices without issues.
@@ -370,51 +259,111 @@ class TestLineVortex(unittest.TestCase):
         line_vortex.strength = 0.0
         self.assertEqual(line_vortex.strength, 0.0)
 
-    def test_vector_length(self):
-        """Test that vector length matches distance between endpoints."""
-        # For basic LineVortex, length should be 1.0.
-        vector_length = np.linalg.norm(self.basic_line_vortex.vector_GP1)
-        npt.assert_almost_equal(vector_length, 1.0, decimal=10)
 
-        # For diagonal LineVortex, length should be sqrt(3).
-        vector_length = np.linalg.norm(self.diagonal_line_vortex.vector_GP1)
-        npt.assert_almost_equal(vector_length, np.sqrt(3), decimal=10)
+class TestLineVortexImmutability(unittest.TestCase):
+    """Tests for LineVortex attribute immutability."""
 
-        # For z aligned LineVortex, length should be 2.0.
-        vector_length = np.linalg.norm(self.z_aligned_line_vortex.vector_GP1)
-        npt.assert_almost_equal(vector_length, 2.0, decimal=10)
+    def setUp(self):
+        """Set up test fixtures for immutability tests."""
+        self.basic_line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
 
-    def test_center_is_midpoint_of_endpoints(self):
-        """Test that center point is exactly the midpoint of start and end points."""
-        # For all fixtures, center should be (start + end) / 2.
-        expected_center = (
-            self.basic_line_vortex.Slvp_GP1_CgP1 + self.basic_line_vortex.Elvp_GP1_CgP1
-        ) / 2.0
-        npt.assert_array_almost_equal(
-            self.basic_line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
+    def test_Slvp_GP1_CgP1_property_is_read_only(self):
+        """Test that Slvp_GP1_CgP1 property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_line_vortex.Slvp_GP1_CgP1 = np.array(
+                [1.0, 1.0, 1.0], dtype=float
+            )
 
-        expected_center = (
-            self.diagonal_line_vortex.Slvp_GP1_CgP1
-            + self.diagonal_line_vortex.Elvp_GP1_CgP1
-        ) / 2.0
-        npt.assert_array_almost_equal(
-            self.diagonal_line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
+    def test_Elvp_GP1_CgP1_property_is_read_only(self):
+        """Test that Elvp_GP1_CgP1 property cannot be reassigned."""
+        with self.assertRaises(AttributeError):
+            self.basic_line_vortex.Elvp_GP1_CgP1 = np.array(
+                [2.0, 2.0, 2.0], dtype=float
+            )
 
-        expected_center = (
-            self.offset_line_vortex.Slvp_GP1_CgP1
-            + self.offset_line_vortex.Elvp_GP1_CgP1
-        ) / 2.0
-        npt.assert_array_almost_equal(
-            self.offset_line_vortex.Clvp_GP1_CgP1,
-            expected_center,
-            decimal=10,
-        )
+    def test_Slvp_GP1_CgP1_array_is_immutable(self):
+        """Test that Slvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_line_vortex.Slvp_GP1_CgP1[0] = 999.0
+
+    def test_Elvp_GP1_CgP1_array_is_immutable(self):
+        """Test that Elvp_GP1_CgP1 array cannot be modified in place."""
+        with self.assertRaises(ValueError):
+            self.basic_line_vortex.Elvp_GP1_CgP1[0] = 999.0
+
+    def test_vector_GP1_array_is_immutable(self):
+        """Test that vector_GP1 cached array cannot be modified in place."""
+        # Access the property to trigger caching.
+        _ = self.basic_line_vortex.vector_GP1
+
+        # Attempt to modify in place.
+        with self.assertRaises(ValueError):
+            self.basic_line_vortex.vector_GP1[0] = 999.0
+
+    def test_Clvp_GP1_CgP1_array_is_immutable(self):
+        """Test that Clvp_GP1_CgP1 cached array cannot be modified in place."""
+        # Access the property to trigger caching.
+        _ = self.basic_line_vortex.Clvp_GP1_CgP1
+
+        # Attempt to modify in place.
+        with self.assertRaises(ValueError):
+            self.basic_line_vortex.Clvp_GP1_CgP1[0] = 999.0
+
+
+class TestLineVortexCaching(unittest.TestCase):
+    """Tests for LineVortex lazy caching behavior."""
+
+    def test_vector_GP1_is_lazily_evaluated(self):
+        """Test that vector_GP1 is not computed until first access."""
+        # Create a fresh LineVortex.
+        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
+
+        # Check that the private cache is None before access.
+        self.assertIsNone(line_vortex._vector_GP1)
+
+        # Access the property.
+        _ = line_vortex.vector_GP1
+
+        # Check that the cache is now populated.
+        self.assertIsNotNone(line_vortex._vector_GP1)
+
+    def test_Clvp_GP1_CgP1_is_lazily_evaluated(self):
+        """Test that Clvp_GP1_CgP1 is not computed until first access."""
+        # Create a fresh LineVortex.
+        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
+
+        # Check that the private cache is None before access.
+        self.assertIsNone(line_vortex._Clvp_GP1_CgP1)
+
+        # Access the property.
+        _ = line_vortex.Clvp_GP1_CgP1
+
+        # Check that the cache is now populated.
+        self.assertIsNotNone(line_vortex._Clvp_GP1_CgP1)
+
+    def test_vector_GP1_cache_is_reused(self):
+        """Test that vector_GP1 cached value is reused on subsequent access."""
+        # Create a fresh LineVortex.
+        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
+
+        # Access the property twice.
+        first_access = line_vortex.vector_GP1
+        second_access = line_vortex.vector_GP1
+
+        # Check that the same object is returned (same memory address).
+        self.assertIs(first_access, second_access)
+
+    def test_Clvp_GP1_CgP1_cache_is_reused(self):
+        """Test that Clvp_GP1_CgP1 cached value is reused on subsequent access."""
+        # Create a fresh LineVortex.
+        line_vortex = line_vortex_fixtures.make_basic_line_vortex_fixture()
+
+        # Access the property twice.
+        first_access = line_vortex.Clvp_GP1_CgP1
+        second_access = line_vortex.Clvp_GP1_CgP1
+
+        # Check that the same object is returned (same memory address).
+        self.assertIs(first_access, second_access)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Contains the vortex classes and functions for calculating induced velocities."""
+"""Contains functions for calculating induced velocities."""
 
 from __future__ import annotations
 
@@ -7,14 +7,12 @@ import math
 import numpy as np
 from numba import njit
 
-from . import _functions
-
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
 # the stability of the result. I'm using this value, as cited for use in flapping-wing
 # vehicles in "Role of Filament Strain in the Free-Vortex Modeling of Rotor Wakes"
 # (Ananthan and Leishman, 2004). It is unitless.
-_squire = 10**-4
+_squire = 1.0e-4
 
 # Lamb's constant relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is well agreed upon, and published in "Extended
@@ -22,602 +20,17 @@ _squire = 10**-4
 # unitless.
 _lamb = 1.25643
 
-# The local machine error is used to fix removable discontinuities in the induced
-# velocity functions.
+# The local machine error is used to detect degenerate (zero length) LineVortices.
 _eps = np.finfo(float).eps
 
-
-class RingVortex:
-    """A class used to contain ring vortices.
-
-    **Contains the following methods:**
-
-    front_leg: The LineVortex representing this RingVortex's front leg.
-
-    left_leg: The LineVortex representing this RingVortex's left leg.
-
-    back_leg: The LineVortex representing this RingVortex's back leg.
-
-    right_leg: The LineVortex representing this RingVortex's right leg.
-
-    Crvp_GP1_CgP1: The position of the RingVortex's centroid (in the first Airplane's
-    geometry axes, relative to the first Airplane's CG).
-
-    area: An estimate of this RingVortex's area.
-
-    **Notes:**
-
-    Computed geometric properties (LineVortex legs, centroid, and area) are lazily
-    evaluated and cached. Setting any corner point position invalidates dependent cached
-    values, ensuring consistency while avoiding redundant computation.
-    """
-
-    def __init__(
-        self,
-        Frrvp_GP1_CgP1: np.ndarray,
-        Flrvp_GP1_CgP1: np.ndarray,
-        Blrvp_GP1_CgP1: np.ndarray,
-        Brrvp_GP1_CgP1: np.ndarray,
-        strength: float,
-    ) -> None:
-        """The initialization method.
-
-        :param Frrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's front right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front right point is defined as
-            the end point of the RingVortex's right leg and the start point of its front
-            leg. The units are in meters.
-        :param Flrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's front left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front left point is defined as the
-            end point of the RingVortex's front leg and the start point of its left leg.
-            The units are in meters.
-        :param Blrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's back left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The back left point is defined as the
-            end point of the RingVortex's left leg and the start point of its back leg.
-            The units are in meters.
-        :param Brrvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            RingVortex's back right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The back right point is defined as the
-            end point of the RingVortex's back leg and the start point of its right leg.
-            The units are in meters.
-        :param strength: The strength of the RingVortex. Its units are in meters squared
-            per second.
-        :return: None
-        """
-        # Declare type annotations and initialize the private cache variables.
-        self._Flrvp_GP1_CgP1: np.ndarray
-        self._Frrvp_GP1_CgP1: np.ndarray
-        self._Blrvp_GP1_CgP1: np.ndarray
-        self._Brrvp_GP1_CgP1: np.ndarray
-        self._strength: float
-        self._front_leg: _LineVortex | None = None
-        self._left_leg: _LineVortex | None = None
-        self._back_leg: _LineVortex | None = None
-        self._right_leg: _LineVortex | None = None
-        self._Crvp_GP1_CgP1: np.ndarray | None = None
-        self._area: float | None = None
-
-        # Initialize the attributes.
-        self.Flrvp_GP1_CgP1 = Flrvp_GP1_CgP1
-        self.Frrvp_GP1_CgP1 = Frrvp_GP1_CgP1
-        self.Blrvp_GP1_CgP1 = Blrvp_GP1_CgP1
-        self.Brrvp_GP1_CgP1 = Brrvp_GP1_CgP1
-        self.strength = strength
-
-        # Initialize a variable to hold the age of the RingVortex in seconds (in
-        # simulation time).
-        self.age: float = 0.0
-
-    @property
-    def Frrvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Frrvp_GP1_CgP1
-
-    @Frrvp_GP1_CgP1.setter
-    def Frrvp_GP1_CgP1(self, newFrrvp_GP1_CgP1: np.ndarray) -> None:
-        self._area = None
-        self._Crvp_GP1_CgP1 = None
-
-        self._Frrvp_GP1_CgP1 = newFrrvp_GP1_CgP1
-
-        if self._right_leg is not None:
-            self._right_leg.Elvp_GP1_CgP1 = self._Frrvp_GP1_CgP1
-        if self._front_leg is not None:
-            self._front_leg.Slvp_GP1_CgP1 = self._Frrvp_GP1_CgP1
-
-    @property
-    def Flrvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Flrvp_GP1_CgP1
-
-    @Flrvp_GP1_CgP1.setter
-    def Flrvp_GP1_CgP1(self, newFlrvp_GP1_CgP1: np.ndarray) -> None:
-        self._area = None
-        self._Crvp_GP1_CgP1 = None
-
-        self._Flrvp_GP1_CgP1 = newFlrvp_GP1_CgP1
-
-        if self._front_leg is not None:
-            self._front_leg.Elvp_GP1_CgP1 = self._Flrvp_GP1_CgP1
-        if self._left_leg is not None:
-            self._left_leg.Slvp_GP1_CgP1 = self._Flrvp_GP1_CgP1
-
-    @property
-    def Blrvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Blrvp_GP1_CgP1
-
-    @Blrvp_GP1_CgP1.setter
-    def Blrvp_GP1_CgP1(self, newBlrvp_GP1_CgP1: np.ndarray) -> None:
-        self._area = None
-        self._Crvp_GP1_CgP1 = None
-
-        self._Blrvp_GP1_CgP1 = newBlrvp_GP1_CgP1
-
-        if self._left_leg is not None:
-            self._left_leg.Elvp_GP1_CgP1 = self._Blrvp_GP1_CgP1
-        if self._back_leg is not None:
-            self._back_leg.Slvp_GP1_CgP1 = self._Blrvp_GP1_CgP1
-
-    @property
-    def Brrvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Brrvp_GP1_CgP1
-
-    @Brrvp_GP1_CgP1.setter
-    def Brrvp_GP1_CgP1(self, newBrrvp_GP1_CgP1: np.ndarray) -> None:
-        self._area = None
-        self._Crvp_GP1_CgP1 = None
-
-        self._Brrvp_GP1_CgP1 = newBrrvp_GP1_CgP1
-
-        if self._back_leg is not None:
-            self._back_leg.Elvp_GP1_CgP1 = self._Brrvp_GP1_CgP1
-        if self._right_leg is not None:
-            self._right_leg.Slvp_GP1_CgP1 = self._Brrvp_GP1_CgP1
-
-    @property
-    def strength(self) -> float:
-        return self._strength
-
-    @strength.setter
-    def strength(self, new_strength: float) -> None:
-        self._strength = new_strength
-
-        if self._front_leg is not None:
-            self._front_leg.strength = self._strength
-        if self._left_leg is not None:
-            self._left_leg.strength = self._strength
-        if self._back_leg is not None:
-            self._back_leg.strength = self._strength
-        if self._right_leg is not None:
-            self._right_leg.strength = self._strength
-
-    @property
-    def front_leg(self) -> _LineVortex:
-        """The LineVortex representing this RingVortex's front leg.
-
-        :return: A LineVortex representing this RingVortex's front leg. The front leg
-            goes from the front right point to the front left point.
-        """
-        if self._front_leg is None:
-            self._front_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._front_leg
-
-    @property
-    def left_leg(self) -> _LineVortex:
-        """The LineVortex representing this RingVortex's left leg.
-
-        :return: A LineVortex representing this RingVortex's left leg. The left leg goes
-            from the front left point to the back left point.
-        """
-        if self._left_leg is None:
-            self._left_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Flrvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._left_leg
-
-    @property
-    def back_leg(self) -> _LineVortex:
-        """The LineVortex representing this RingVortex's back leg.
-
-        :return: A LineVortex representing this RingVortex's back leg. The back leg goes
-            from the back left point to the back right point.
-        """
-        if self._back_leg is None:
-            self._back_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Blrvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._back_leg
-
-    @property
-    def right_leg(self) -> _LineVortex:
-        """The LineVortex representing this RingVortex's right leg.
-
-        :return: A LineVortex representing this RingVortex's right leg. The right leg
-            goes from the back right point to the front right point.
-        """
-        if self._right_leg is None:
-            self._right_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Brrvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Frrvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._right_leg
-
-    @property
-    def Crvp_GP1_CgP1(self) -> np.ndarray:
-        """The position of the RingVortex's centroid (in the first Airplane's geometry
-        axes, relative to the first Airplane's CG).
-
-        :return: A (3,) ndarray of floats representing the position of the RingVortex's
-            centroid (in the first Airplane's geometry axes, relative to the first
-            Airplane's CG). The units are in meters.
-        """
-        if self._Crvp_GP1_CgP1 is None:
-            self._Crvp_GP1_CgP1 = _functions.numba_centroid_of_quadrilateral(
-                self.Flrvp_GP1_CgP1,
-                self.Frrvp_GP1_CgP1,
-                self.Blrvp_GP1_CgP1,
-                self.Brrvp_GP1_CgP1,
-            )
-        return self._Crvp_GP1_CgP1
-
-    @property
-    def area(self) -> float:
-        """An estimate of this RingVortex's area.
-
-        This is only an estimate because the surface defined by four line segments in
-        3-space is a hyperboloid, and there doesn't seem to be a closed-form equation
-        for the surface area of a hyperboloid between four points. Instead, we estimate
-        the area using the cross product of RingVortex's diagonal vectors, which should
-        be relatively accurate if the RingVortex can be approximated as a planar, convex
-        quadrilateral.
-
-        :return: An estimate of the RingVortex's area. The units are square meters.
-        """
-        if self._area is None:
-            firstDiagonal_GP1 = self.Frrvp_GP1_CgP1 - self.Blrvp_GP1_CgP1
-            secondDiagonal_GP1 = self.Flrvp_GP1_CgP1 - self.Brrvp_GP1_CgP1
-
-            self._area = float(
-                np.linalg.norm(np.cross(firstDiagonal_GP1, secondDiagonal_GP1)) / 2.0
-            )
-        return self._area
-
-
-class HorseshoeVortex:
-    """A class used to contain horseshoe vortices.
-
-    **Contains the following methods:**
-
-    Brhvp_GP1_CgP1: The position of the HorseshoeVortex's back right point (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    Blhvp_GP1_CgP1: The position of the HorseshoeVortex's back left point (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    right_leg: The LineVortex representing this HorseshoeVortex's right leg.
-
-    finite_leg: The LineVortex representing this HorseshoeVortex's finite leg.
-
-    left_leg: The LineVortex representing this HorseshoeVortex's left leg.
-
-    **Notes:**
-
-    Computed geometric properties (back right point, back left point, and LineVortex
-    legs) are lazily evaluated and cached. Setting front point positions, the left leg
-    vector, or the left/right leg lengths invalidates dependent cached values, ensuring
-    consistency while avoiding redundant computation.
-    """
-
-    def __init__(
-        self,
-        Frhvp_GP1_CgP1: np.ndarray,
-        Flhvp_GP1_CgP1: np.ndarray,
-        leftLegVector_GP1: np.ndarray,
-        left_right_leg_lengths: float,
-        strength: float,
-    ) -> None:
-        """The initialization method.
-
-        :param Frhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's front right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front right point is defined as
-            the start point of the HorseshoeVortex's front leg, which is also its one
-            finite leg. The units are in meters.
-        :param Flhvp_GP1_CgP1: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's front left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The front left point is defined as the
-            end point of the HorseshoeVortex's front leg, which is also its one finite
-            leg. The units are in meters.
-        :param leftLegVector_GP1: A (3,) ndarray of floats representing the direction
-            vector of the HorseshoeVortex's left leg (in the first Airplane's geometry
-            axes). The left leg starts from the front left point and ends at the back
-            left point. It is one of the HorseshoeVortex's two quasi infinite legs, the
-            other being the right leg. The right leg's vector (in the first Airplane's
-            geometry axes) is defined as -1.0 times this vector. It will be normalized
-            to a unit vector during initialization. The units are in meters.
-        :param left_right_leg_lengths: The length of the HorseshoeVortex's left and
-            right quasi infinite legs. I recommend setting it to at least 20 times the
-            length of the finite leg. The units are in meters.
-        :param strength: The strength of the HorseshoeVortex. Its units are in meters
-            squared per second.
-        :return: None
-        """
-        # Declare type annotations and initialize the private cache variables.
-        self._Frhvp_GP1_CgP1: np.ndarray
-        self._Flhvp_GP1_CgP1: np.ndarray
-        self._leftLegVector_GP1: np.ndarray
-        self._left_right_leg_lengths: float
-        self._strength: float
-        self._Brhvp_GP1_CgP1: np.ndarray | None = None
-        self._Blhvp_GP1_CgP1: np.ndarray | None = None
-        self._right_leg: _LineVortex | None = None
-        self._finite_leg: _LineVortex | None = None
-        self._left_leg: _LineVortex | None = None
-
-        # Initialize the attributes.
-        self.Frhvp_GP1_CgP1 = Frhvp_GP1_CgP1
-        self.Flhvp_GP1_CgP1 = Flhvp_GP1_CgP1
-        self.leftLegVector_GP1 = leftLegVector_GP1
-        self.left_right_leg_lengths = left_right_leg_lengths
-        self.strength = strength
-
-    @property
-    def Frhvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Frhvp_GP1_CgP1
-
-    @Frhvp_GP1_CgP1.setter
-    def Frhvp_GP1_CgP1(self, newFrhvp_GP1_CgP1: np.ndarray) -> None:
-        self._Brhvp_GP1_CgP1 = None
-
-        self._Frhvp_GP1_CgP1 = newFrhvp_GP1_CgP1
-
-        if self._right_leg is not None:
-            self._right_leg.Elvp_GP1_CgP1 = self._Frhvp_GP1_CgP1
-        if self._finite_leg is not None:
-            self._finite_leg.Slvp_GP1_CgP1 = self._Frhvp_GP1_CgP1
-
-    @property
-    def Flhvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Flhvp_GP1_CgP1
-
-    @Flhvp_GP1_CgP1.setter
-    def Flhvp_GP1_CgP1(self, newFlhvp_GP1_CgP1: np.ndarray) -> None:
-        self._Blhvp_GP1_CgP1 = None
-
-        self._Flhvp_GP1_CgP1 = newFlhvp_GP1_CgP1
-
-        if self._finite_leg is not None:
-            self._finite_leg.Elvp_GP1_CgP1 = self._Flhvp_GP1_CgP1
-        if self._left_leg is not None:
-            self._left_leg.Slvp_GP1_CgP1 = self._Flhvp_GP1_CgP1
-
-    @property
-    def leftLegVector_GP1(self) -> np.ndarray:
-        return self._leftLegVector_GP1
-
-    @leftLegVector_GP1.setter
-    def leftLegVector_GP1(self, newLeftLegVector_GP1: np.ndarray) -> None:
-        self._Brhvp_GP1_CgP1 = None
-        self._Blhvp_GP1_CgP1 = None
-
-        self._leftLegVector_GP1 = newLeftLegVector_GP1 / np.linalg.norm(
-            newLeftLegVector_GP1
-        )
-
-        if self._right_leg is not None:
-            self._right_leg.Slvp_GP1_CgP1 = self.Brhvp_GP1_CgP1
-        if self._left_leg is not None:
-            self._left_leg.Elvp_GP1_CgP1 = self.Blhvp_GP1_CgP1
-
-    @property
-    def left_right_leg_lengths(self) -> float:
-        return self._left_right_leg_lengths
-
-    @left_right_leg_lengths.setter
-    def left_right_leg_lengths(self, new_left_right_leg_lengths: float) -> None:
-        self._Brhvp_GP1_CgP1 = None
-        self._Blhvp_GP1_CgP1 = None
-
-        self._left_right_leg_lengths = new_left_right_leg_lengths
-
-        if self._right_leg is not None:
-            self._right_leg.Slvp_GP1_CgP1 = self.Brhvp_GP1_CgP1
-        if self._left_leg is not None:
-            self._left_leg.Elvp_GP1_CgP1 = self.Blhvp_GP1_CgP1
-
-    @property
-    def strength(self) -> float:
-        return self._strength
-
-    @strength.setter
-    def strength(self, new_strength: float) -> None:
-        self._strength = new_strength
-
-        if self._right_leg is not None:
-            self._right_leg.strength = self._strength
-        if self._finite_leg is not None:
-            self._finite_leg.strength = self._strength
-        if self._left_leg is not None:
-            self._left_leg.strength = self._strength
-
-    @property
-    def Brhvp_GP1_CgP1(self) -> np.ndarray:
-        """The position of the HorseshoeVortex's back right point (in the first
-        Airplane's geometry axes, relative to the first Airplane's CG).
-
-        :return: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's back right point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The units are in meters.
-        """
-        if self._Brhvp_GP1_CgP1 is None:
-            self._Brhvp_GP1_CgP1 = (
-                self.Frhvp_GP1_CgP1
-                + self.leftLegVector_GP1 * self.left_right_leg_lengths
-            )
-        return self._Brhvp_GP1_CgP1
-
-    @property
-    def Blhvp_GP1_CgP1(self) -> np.ndarray:
-        """The position of the HorseshoeVortex's back left point (in the first
-        Airplane's geometry axes, relative to the first Airplane's CG).
-
-        :return: A (3,) ndarray of floats representing the position of the
-            HorseshoeVortex's back left point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The units are in meters.
-        """
-        if self._Blhvp_GP1_CgP1 is None:
-            self._Blhvp_GP1_CgP1 = (
-                self.Flhvp_GP1_CgP1
-                + self.leftLegVector_GP1 * self.left_right_leg_lengths
-            )
-        return self._Blhvp_GP1_CgP1
-
-    @property
-    def right_leg(self) -> _LineVortex:
-        """The LineVortex representing this HorseshoeVortex's right leg.
-
-        :return: A LineVortex representing this HorseshoeVortex's right leg. The right
-            leg goes from the back right point to the front right point.
-        """
-        if self._right_leg is None:
-            self._right_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Brhvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._right_leg
-
-    @property
-    def finite_leg(self) -> _LineVortex:
-        """The LineVortex representing this HorseshoeVortex's finite leg.
-
-        :return: A LineVortex representing this HorseshoeVortex's finite leg. The finite
-            leg goes from the front right point to the front left point.
-        """
-        if self._finite_leg is None:
-            self._finite_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Frhvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._finite_leg
-
-    @property
-    def left_leg(self) -> _LineVortex:
-        """The LineVortex representing this HorseshoeVortex's left leg.
-
-        :return: A LineVortex representing this HorseshoeVortex's left leg. The left leg
-            goes from the front left point to the back left point.
-        """
-        if self._left_leg is None:
-            self._left_leg = _LineVortex(
-                Slvp_GP1_CgP1=self.Flhvp_GP1_CgP1,
-                Elvp_GP1_CgP1=self.Blhvp_GP1_CgP1,
-                strength=self.strength,
-            )
-        return self._left_leg
-
-
-class _LineVortex:
-    """A class used to contain line vortices.
-
-    **Contains the following methods:**
-
-    vector_GP1: The LineVortex's vector from start to end point (in the first Airplane's
-    geometry axes).
-
-    Clvp_GP1_CgP1: The position of the LineVortex's center point (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    **Notes:**
-
-    Computed geometric properties (vector and center point) are lazily evaluated and
-    cached. Setting either endpoint position invalidates all cached values, ensuring
-    consistency while avoiding redundant computation.
-    """
-
-    def __init__(
-        self, Slvp_GP1_CgP1: np.ndarray, Elvp_GP1_CgP1: np.ndarray, strength: float
-    ) -> None:
-        """The initialization method.
-
-        :param Slvp_GP1_CgP1: A (3,) ndarray of 3 floats representing the position of
-            the LineVortex's start point (in the first Airplane's geometry axes,
-            relative to the first Airplane's CG). The units are in meters.
-        :param Elvp_GP1_CgP1: A (3,) ndarray of 3 floats representing the position of
-            the LineVortex's end point (in the first Airplane's geometry axes, relative
-            to the first Airplane's CG). The units are in meters.
-        :param strength: The strength of the LineVortex. Its units are in meters squared
-            per second.
-        :return: None
-        """
-        # Declare type annotations and initialize the private cache variables.
-        self._Slvp_GP1_CgP1: np.ndarray
-        self._Elvp_GP1_CgP1: np.ndarray
-        self._vector_GP1: np.ndarray | None = None
-        self._Clvp_GP1_CgP1: np.ndarray | None = None
-
-        # Initialize the attributes.
-        self.Slvp_GP1_CgP1 = Slvp_GP1_CgP1
-        self.Elvp_GP1_CgP1 = Elvp_GP1_CgP1
-        self.strength = strength
-
-    @property
-    def Slvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Slvp_GP1_CgP1
-
-    @Slvp_GP1_CgP1.setter
-    def Slvp_GP1_CgP1(self, newSlvp_GP1_CgP1: np.ndarray) -> None:
-        self._vector_GP1 = None
-        self._Clvp_GP1_CgP1 = None
-
-        self._Slvp_GP1_CgP1 = newSlvp_GP1_CgP1
-
-    @property
-    def Elvp_GP1_CgP1(self) -> np.ndarray:
-        return self._Elvp_GP1_CgP1
-
-    @Elvp_GP1_CgP1.setter
-    def Elvp_GP1_CgP1(self, newElvp_GP1_CgP1: np.ndarray) -> None:
-        self._vector_GP1 = None
-        self._Clvp_GP1_CgP1 = None
-
-        self._Elvp_GP1_CgP1 = newElvp_GP1_CgP1
-
-    @property
-    def vector_GP1(self) -> np.ndarray:
-        """The LineVortex's vector from start to end point (in the first Airplane's
-        geometry axes).
-
-        :return: A (3,) ndarray of floats representing the vector from the LineVortex's
-            start point to its end point (in the first Airplane's geometry axes). The
-            units are in meters.
-        """
-        if self._vector_GP1 is None:
-            self._vector_GP1 = self.Elvp_GP1_CgP1 - self.Slvp_GP1_CgP1
-        return self._vector_GP1
-
-    @property
-    def Clvp_GP1_CgP1(self) -> np.ndarray:
-        """The position of the LineVortex's center point (in the first Airplane's
-        geometry axes, relative to the first Airplane's CG).
-
-        :return: A (3,) ndarray of floats representing the position of the LineVortex's
-            center point (in the first Airplane's geometry axes, relative to the first
-            Airplane's CG). The units are in meters.
-        """
-        if self._Clvp_GP1_CgP1 is None:
-            self._Clvp_GP1_CgP1 = self.Slvp_GP1_CgP1 + 0.5 * self.vector_GP1
-        return self._Clvp_GP1_CgP1
+# The relative tolerance for scale invariant singularity checks. It provides two orders
+# of magnitude of safety margin before catastrophic cancellation in 1.0 - cos(theta)
+# begins at theta ~ 2.1e-8.
+_tol = 1.0e-10
+
+# Pre compute 4 * pi and 4.0 * _lamb as they used repeatedly.
+_four_pi = 4.0 * math.pi
+_four_lamb = 4.0 * _lamb
 
 
 @njit(cache=True, fastmath=False)
@@ -628,6 +41,8 @@ def collapsed_velocities_from_ring_vortices(
     stackFlrvp_GP1_CgP1: np.ndarray,
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -655,6 +70,14 @@ def collapsed_velocities_from_ring_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         RingVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each LineVortices'
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all four legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -687,6 +110,8 @@ def collapsed_velocities_from_ring_vortices(
             stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -701,6 +126,8 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackFlrvp_GP1_CgP1: np.ndarray,
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -729,6 +156,14 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         RingVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each LineVortices'
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across both legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -758,6 +193,8 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
             stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -772,6 +209,8 @@ def expanded_velocities_from_ring_vortices(
     stackFlrvp_GP1_CgP1: np.ndarray,
     stackBlrvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -799,6 +238,14 @@ def expanded_velocities_from_ring_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         RingVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each LineVortices'
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all four legs.
     :param ages: For bound RingVortices, this must be None. For RingVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M RingVortices in seconds. The default is None.
@@ -831,6 +278,8 @@ def expanded_velocities_from_ring_vortices(
             stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -847,6 +296,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     stackFlhvp_GP1_CgP1: np.ndarray,
     stackBlhvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -874,6 +325,14 @@ def collapsed_velocities_from_horseshoe_vortices(
         axes, relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         HorseshoeVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
+        reasonable value that works across scales is 3.0% the chord length of each
+        LineVortices' parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all three legs.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
@@ -905,6 +364,8 @@ def collapsed_velocities_from_horseshoe_vortices(
             stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -921,6 +382,8 @@ def expanded_velocities_from_horseshoe_vortices(
     stackFlhvp_GP1_CgP1: np.ndarray,
     stackBlhvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
@@ -948,6 +411,14 @@ def expanded_velocities_from_horseshoe_vortices(
         axes, relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of M
         HorseshoeVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
+        reasonable value that works across scales is 3.0% the chord length of each
+        LineVortices' parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across all three legs.
     :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
         that have been shed into the wake, it must be a (M,) ndarray of floats
         representing the ages of the M HorseshoeVortices in seconds. The default is
@@ -979,6 +450,8 @@ def expanded_velocities_from_horseshoe_vortices(
             stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
             stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
             strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
             ages=ages,
             nu=nu,
         )
@@ -991,17 +464,17 @@ def _collapsed_velocities_from_line_vortices(
     stackSlvp_GP1_CgP1: np.ndarray,
     stackElvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
     """Takes in a group of points and the attributes of a group of LineVortices and
     finds the cumulative induced velocity at every point.
 
-    This function uses a modified version of the Bio-Savart law to create a smooth
-    induced velocity decay based on a LineVortex's core radius. The radius is determined
-    based on the LineVortex's age and the kinematic viscosity. If the age of the
-    LineVortex is 0.0 seconds, the radius is set to 0.0 meters. The age of a LineVortex
-    in only relevant for vortices that have been shed into the wake.
+    This function uses a modified version of the Biot-Savart law to create a smooth
+    induced velocity decay based on a LineVortex's core radius. The core radius grows
+    from an initial value based on the LineVortex's age.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -1009,8 +482,13 @@ def _collapsed_velocities_from_line_vortices(
 
     **Citation:**
 
-    Equation adapted from: "Extended Unsteady Vortex-Lattice Method for Insect Flapping
-    Wings"
+    Core radius equation adapted from Eq. 3 of: "A Reynolds Number-Based Blade Tip
+    Vortex Model"
+
+    Authors: Manikandan Ramasamy and J. Gordon Leishman
+
+    Biot-Savart equation adapted from: "Extended Unsteady Vortex-Lattice Method for
+    Insect Flapping Wings"
 
     Authors: Anh Tuan Nguyen, Joong-Kwan Kim, Jong-Seob Han, and Jae-Hung Han
 
@@ -1025,6 +503,14 @@ def _collapsed_velocities_from_line_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         LineVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each LineVortices'
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across calls.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
@@ -1049,12 +535,6 @@ def _collapsed_velocities_from_line_vortices(
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
-        strength = strengths[vortex_id]
-        age = ages[vortex_id]
-
-        # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
-        # this will evaluate to be 0.0 meters.
-        r_c = 2 * math.sqrt(_lamb * (nu + _squire * abs(strength)) * age)
 
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
@@ -1063,10 +543,26 @@ def _collapsed_velocities_from_line_vortices(
         r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
 
         # Find r0_GP1's length.
-        r0 = math.sqrt(r0X_GP1**2 + r0Y_GP1**2 + r0Z_GP1**2)
+        r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
-        c_1 = strength / (4 * math.pi)
-        c_2 = r0**2 * r_c**2
+        # Skip degenerate filaments where the start and end points coincide.
+        if r0 < _eps:
+            singularity_counts[0] += 1
+            continue
+
+        strength = strengths[vortex_id]
+        age = ages[vortex_id]
+        r_c0 = r_c0s[vortex_id]
+
+        # Pre compute r0 * _tol outside the inner loop.
+        r0_times_tol = r0 * _tol
+
+        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # ensures nonzero regularization even for bound vortices with zero age.
+        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+
+        c_1 = strength / _four_pi
+        c_2 = r0**2.0 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -1089,24 +585,54 @@ def _collapsed_velocities_from_line_vortices(
             r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
-            # Find the lengths of r1_GP1, r2_GP1, and r3_GP1.
-            r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
-            r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
-            r3 = math.sqrt(r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2)
+            # Find the lengths of r1_GP1 and r2_GP1.
+            r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
+            r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
+
+            # Check for singularities using scale invariant criteria. The vertex
+            # proximity checks (r1/r0 and r2/r0 but refactored below to use
+            # multiplication instead of slower division) guard 1/r singularities.
+            if r1 < r0_times_tol:
+                singularity_counts[1] += 1
+                continue
+            if r2 < r0_times_tol:
+                singularity_counts[2] += 1
+                continue
+
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for the collinearity check and twice in the
+            # c_4 calculation.
+            r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
 
-            # If part of the LineVortex is so close to P_GP1_CgP1 that they are touching
-            # (within machine epsilon), there is a removable discontinuity. In this
-            # case, continue to the next point because there is no velocity induced by
-            # the current LineVortex at this point.
-            if r1 < _eps or r2 < _eps or r3**2 < _eps:
+            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r3 < (_tol * r1_times_r2):
+                # Collinearity can indicate one of two things. If the point is collinear
+                # and between the filament's vertices, it is a true singularity (the
+                # Biot-Savart equation diverges), so we exclude the contribution as it
+                # is the influence of the filament on itself. If the point is collinear
+                # and off to one side of the filament, it isn't a true singularity, as
+                # the Biot-Savart equation (if calculated with infinite precision)
+                # correctly returns zero induced velocity. However, we still run into
+                # the catastrophic cancellation issue, so we again manually return zero
+                # induced velocity contribution. These two situations are distinguished
+                # by the sign of the c_3 (the dot product of r1 and r2).
+                if c_3 < 0.0:
+                    singularity_counts[3] += 1
                 continue
-            else:
-                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
-                stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
-                stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
-                stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
+
+            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
+            stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
+            stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
     return stackVInd_GP1__E
 
 
@@ -1116,17 +642,17 @@ def _expanded_velocities_from_line_vortices(
     stackSlvp_GP1_CgP1: np.ndarray,
     stackElvp_GP1_CgP1: np.ndarray,
     strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
     """Takes in a group of points and the attributes of a group of LineVortices and
     finds the induced velocity at every point due to each LineVortex.
 
-    This function uses a modified version of the Bio-Savart law to create a smooth
-    induced velocity decay based on a LineVortex's core radius. The radius is determined
-    based on a LineVortex's age and the kinematic viscosity. If the age of the
-    LineVortex is 0.0 seconds, the radius is set to 0.0 meters. The age of a vortex in
-    only relevant for LineVortices that have been shed into the wake.
+    This function uses a modified version of the Biot-Savart law to create a smooth
+    induced velocity decay based on a LineVortex's core radius. The core radius grows
+    from an initial value based on the LineVortex's age.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -1134,8 +660,13 @@ def _expanded_velocities_from_line_vortices(
 
     **Citation:**
 
-    Equation adapted from: "Extended Unsteady Vortex-Lattice Method for Insect Flapping
-    Wings"
+    Core radius equation adapted from Eq. 3 of: "A Reynolds Number-Based Blade Tip
+    Vortex Model"
+
+    Authors: Manikandan Ramasamy and J. Gordon Leishman
+
+    Biot-Savart equation adapted from: "Extended Unsteady Vortex-Lattice Method for
+    Insect Flapping Wings"
 
     Authors: Anh Tuan Nguyen, Joong-Kwan Kim, Jong-Seob Han, and Jae-Hung Han
 
@@ -1150,6 +681,14 @@ def _expanded_velocities_from_line_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         LineVortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each LineVortices'
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across calls.
     :param ages: For bound LineVortices, this must be None. For LineVortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M LineVortices in seconds. The default is None.
@@ -1174,12 +713,6 @@ def _expanded_velocities_from_line_vortices(
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
-        strength = strengths[vortex_id]
-        age = ages[vortex_id]
-
-        # Calculate the radius of the LineVortex's core. If the age is 0.0 seconds,
-        # this will evaluate to be 0.0 meters.
-        r_c = 2 * math.sqrt(_lamb * (nu + _squire * abs(strength)) * age)
 
         # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
         # the first Airplane's geometry axes).
@@ -1188,10 +721,26 @@ def _expanded_velocities_from_line_vortices(
         r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
 
         # Find r0_GP1's length.
-        r0 = math.sqrt(r0X_GP1**2 + r0Y_GP1**2 + r0Z_GP1**2)
+        r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
-        c_1 = strength / (4 * math.pi)
-        c_2 = r0**2 * r_c**2
+        # Skip degenerate filaments where the start and end points coincide.
+        if r0 < _eps:
+            singularity_counts[0] += 1
+            continue
+
+        strength = strengths[vortex_id]
+        age = ages[vortex_id]
+        r_c0 = r_c0s[vortex_id]
+
+        # Pre compute r0 * _tol outside the inner loop.
+        r0_times_tol = r0 * _tol
+
+        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # ensures nonzero regularization even for bound vortices with zero age.
+        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+
+        c_1 = strength / _four_pi
+        c_2 = r0**2.0 * r_c_sq
 
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
@@ -1214,22 +763,52 @@ def _expanded_velocities_from_line_vortices(
             r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
             r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
 
-            # Find the lengths of r1_GP1, r2_GP1, and r3_GP1.
-            r1 = math.sqrt(r1X_GP1**2 + r1Y_GP1**2 + r1Z_GP1**2)
-            r2 = math.sqrt(r2X_GP1**2 + r2Y_GP1**2 + r2Z_GP1**2)
-            r3 = math.sqrt(r3X_GP1**2 + r3Y_GP1**2 + r3Z_GP1**2)
+            # Find the lengths of r1_GP1 and r2_GP1.
+            r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
+            r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
+
+            # Check for singularities using scale invariant criteria. The vertex
+            # proximity checks (r1/r0 and r2/r0 but refactored below to use
+            # multiplication instead of slower division) guard 1/r singularities.
+            if r1 < r0_times_tol:
+                singularity_counts[1] += 1
+                continue
+            if r2 < r0_times_tol:
+                singularity_counts[2] += 1
+                continue
+
+            # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
+            r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
+
+            # Find the length of r3_GP1.
+            r3 = math.sqrt(r3_sq)
+
+            # Cache r1 * r2 as it is used for the collinearity check and twice in the
+            # c_4 calculation.
+            r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
 
-            # If part of the LineVortex is so close to P_GP1_CgP1 that they are touching
-            # (within machine epsilon), there is a removable discontinuity. In this
-            # case, continue to the next point because there is no velocity induced by
-            # the current LineVortex at this point.
-            if r1 < _eps or r2 < _eps or r3**2 < _eps:
+            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
+            # multiplication instead of division refactor) guards catastrophic
+            # cancellation in 1-cos(theta).
+            if r3 < (_tol * r1_times_r2):
+                # Collinearity can indicate one of two things. If the point is collinear
+                # and between the filament's vertices, it is a true singularity (the
+                # Biot-Savart equation diverges), so we exclude the contribution as it
+                # is the influence of the filament on itself. If the point is collinear
+                # and off to one side of the filament, it isn't a true singularity, as
+                # the Biot-Savart equation (if calculated with infinite precision)
+                # correctly returns zero induced velocity. However, we still run into
+                # the catastrophic cancellation issue, so we again manually return zero
+                # induced velocity contribution. These two situations are distinguished
+                # by the sign of the c_3 (the dot product of r1 and r2).
+                if c_3 < 0.0:
+                    singularity_counts[3] += 1
                 continue
-            else:
-                c_4 = c_1 * (r1 + r2) * (r1 * r2 - c_3) / (r1 * r2 * (r3**2 + c_2))
-                gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
-                gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
-                gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
+
+            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
+            gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
+            gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
     return gridVInd_GP1__E

@@ -286,7 +286,6 @@ class UnsteadyProblem:
         return self._steady_problems
 
 
-# TEST: Add unit tests for this class's initialization.
 class CoupledSteadyProblem:
     """A class used to contain steady aerodynamics problems that characterize each time
     step of a coupled unsteady simulation.
@@ -310,17 +309,17 @@ class CoupledSteadyProblem:
         """
         if not isinstance(airplane, geometry.airplane.Airplane):
             raise TypeError("airplane must be an Airplane.")
-        self.airplane = airplane
+        self._airplane = airplane
 
         if not isinstance(
             coupled_operating_point, operating_point_mod.CoupledOperatingPoint
         ):
             raise TypeError("coupled_operating_point must be a CoupledOperatingPoint.")
-        self.coupled_operating_point = coupled_operating_point
+        self._coupled_operating_point = coupled_operating_point
 
         # As CoupledSteadyProblems can only have one Airplane, they must have
         # Cg_GP1_CgP1 set to zeros.
-        self.airplane.validate_first_airplane_constraints()
+        self._airplane.validate_first_airplane_constraints()
 
         # Populate the GP1_CgP1 coordinates for the Airplane's Panels.
         T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
@@ -342,8 +341,16 @@ class CoupledSteadyProblem:
                     T_pas_G_Cg_to_GP1_CgP1, panel.Brpp_G_Cg, has_point=True
                 )
 
+    # --- Immutable: read only properties ---
+    @property
+    def airplane(self) -> geometry.airplane.Airplane:
+        return self._airplane
 
-# TEST: Add unit tests for this class's initialization.
+    @property
+    def coupled_operating_point(self) -> operating_point_mod.CoupledOperatingPoint:
+        return self._coupled_operating_point
+
+
 class CoupledUnsteadyProblem:
     """A class used to contain unsteady aerodynamics problems that will be used for
     coupled unsteady simulations.
@@ -372,17 +379,18 @@ class CoupledUnsteadyProblem:
         """
         if not isinstance(coupled_movement, movements.movement.CoupledMovement):
             raise TypeError("coupled_movement must be a CoupledMovement.")
-        self.coupled_movement = coupled_movement
+        self._coupled_movement = coupled_movement
 
         I_BP1_CgP1 = _parameter_validation.m_by_n_number_arrayLike_return_float(
             I_BP1_CgP1, "I_BP1_CgP1", 3, 3
         )
         if not np.allclose(I_BP1_CgP1, I_BP1_CgP1.T):
             raise ValueError("I_BP1_CgP1 must be symmetric.")
-        self.I_BP1_CgP1 = I_BP1_CgP1
+        self._I_BP1_CgP1 = I_BP1_CgP1
+        self._I_BP1_CgP1.flags.writeable = False
 
-        self.num_steps = self.coupled_movement.num_steps
-        self.delta_time = self.coupled_movement.delta_time
+        self._num_steps: int = self._coupled_movement.num_steps
+        self._delta_time: float = self._coupled_movement.delta_time
 
         # Initialize empty lists to hold the loads and load coefficients experienced by
         # each time step's Airplane.
@@ -391,21 +399,46 @@ class CoupledUnsteadyProblem:
         self.moments_W_Cg: list[np.ndarray] = []
         self.momentCoefficients_W_Cg: list[np.ndarray] = []
 
-        # Get the list representing the Airplane at each time step.
-        self.airplanes = coupled_movement.airplanes
+        # Get the tuple representing the Airplane at each time step.
+        self._airplanes = self._coupled_movement.airplanes
 
         # Initialize a list with the first time step's CoupledSteadyProblem. The
         # CoupledUnsteadyRingVortexLatticeMethodSolver will append each subsequent time
         # step's CoupledSteadyProblem to this list.
         self.coupled_steady_problems = [
             CoupledSteadyProblem(
-                airplane=self.airplanes[0],
-                coupled_operating_point=self.coupled_movement.coupled_operating_points[
+                airplane=self._airplanes[0],
+                coupled_operating_point=self._coupled_movement.coupled_operating_points[
                     0
                 ],
             )
         ]
 
-        self.mujoco_model = _mujoco_model.MuJoCoModel(
-            coupled_movement=self.coupled_movement, I_BP1_CgP1=self.I_BP1_CgP1
+        self._mujoco_model = _mujoco_model.MuJoCoModel(
+            coupled_movement=self._coupled_movement, I_BP1_CgP1=self._I_BP1_CgP1
         )
+
+    # --- Immutable: read only properties ---
+    @property
+    def coupled_movement(self) -> movements.movement.CoupledMovement:
+        return self._coupled_movement
+
+    @property
+    def I_BP1_CgP1(self) -> np.ndarray:
+        return self._I_BP1_CgP1
+
+    @property
+    def num_steps(self) -> int:
+        return self._num_steps
+
+    @property
+    def delta_time(self) -> float:
+        return self._delta_time
+
+    @property
+    def airplanes(self) -> tuple[geometry.airplane.Airplane, ...]:
+        return self._airplanes
+
+    @property
+    def mujoco_model(self) -> _mujoco_model.MuJoCoModel:
+        return self._mujoco_model

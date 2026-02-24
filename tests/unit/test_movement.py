@@ -3114,8 +3114,8 @@ class TestCoupledMovement(unittest.TestCase):
         """Test that airplanes are generated correctly."""
         coupled_movement = self.basic_coupled_movement
 
-        # Check that airplanes attribute is a list of Airplanes.
-        self.assertIsInstance(coupled_movement.airplanes, list)
+        # Check that airplanes attribute is a tuple of Airplanes.
+        self.assertIsInstance(coupled_movement.airplanes, tuple)
         self.assertEqual(len(coupled_movement.airplanes), coupled_movement.num_steps)
 
         # Check that each element is an Airplane.
@@ -3333,6 +3333,64 @@ class TestCoupledMovement(unittest.TestCase):
 
         # Verify the CoupledMovement was created successfully.
         self.assertIsInstance(coupled_movement, ps.movements.movement.CoupledMovement)
+
+
+class TestCoupledMovementImmutability(unittest.TestCase):
+    """Tests for CoupledMovement attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.basic_coupled_movement = (
+            movement_fixtures.make_basic_coupled_movement_fixture()
+        )
+
+    def test_immutable_airplane_movement_property(self):
+        """Test that airplane_movement property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.airplane_movement = None
+
+    def test_immutable_delta_time_property(self):
+        """Test that delta_time property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.delta_time = 0.5
+
+    def test_immutable_prescribed_num_steps_property(self):
+        """Test that prescribed_num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.prescribed_num_steps = 100
+
+    def test_immutable_free_num_steps_property(self):
+        """Test that free_num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.free_num_steps = 100
+
+    def test_immutable_num_steps_property(self):
+        """Test that num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.num_steps = 100
+
+    def test_immutable_airplanes_property(self):
+        """Test that airplanes property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.airplanes = ()
+
+    def test_airplanes_tuple_immutability(self):
+        """Test that airplanes tuple cannot be modified via append or other methods."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_movement.airplanes.append(None)
+
+    def test_max_period_caching(self):
+        """Test that max_period returns the same cached value on repeated access."""
+        first = self.basic_coupled_movement.max_period
+        second = self.basic_coupled_movement.max_period
+        self.assertEqual(first, second)
+
+    def test_static_caching(self):
+        """Test that static returns the same cached value on repeated access."""
+        first = self.basic_coupled_movement.static
+        second = self.basic_coupled_movement.static
+        self.assertEqual(first, second)
 
 
 if __name__ == "__main__":

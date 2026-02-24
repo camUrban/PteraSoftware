@@ -833,7 +833,7 @@ class CoupledMovement:
         """
         if not isinstance(airplane_movement, airplane_movement_mod.AirplaneMovement):
             raise TypeError("airplane_movement must be an AirplaneMovement.")
-        self.airplane_movement = airplane_movement
+        self._airplane_movement = airplane_movement
 
         if not isinstance(
             initial_coupled_operating_point, operating_point_mod.CoupledOperatingPoint
@@ -847,26 +847,35 @@ class CoupledMovement:
         # time step's CoupledOperatingPoint to this list.
         self.coupled_operating_points = [initial_coupled_operating_point]
 
-        self.delta_time = _parameter_validation.number_in_range_return_float(
+        self._delta_time: float = _parameter_validation.number_in_range_return_float(
             delta_time, "delta_time", min_val=0.0, min_inclusive=False
         )
-        self.prescribed_num_steps = _parameter_validation.int_in_range_return_int(
-            prescribed_num_steps, "prescribed_num_steps", min_val=1, min_inclusive=True
+        self._prescribed_num_steps: int = _parameter_validation.int_in_range_return_int(
+            prescribed_num_steps,
+            "prescribed_num_steps",
+            min_val=1,
+            min_inclusive=True,
         )
-        self.free_num_steps = _parameter_validation.int_in_range_return_int(
+        self._free_num_steps: int = _parameter_validation.int_in_range_return_int(
             free_num_steps, "free_num_steps", min_val=1, min_inclusive=True
         )
 
-        self.num_steps = self.prescribed_num_steps + self.free_num_steps
+        self._num_steps: int = self._prescribed_num_steps + self._free_num_steps
 
-        # Generate a lists of Airplanes for each time step.
-        self.airplanes = airplane_movement.generate_airplanes(
-            num_steps=self.num_steps, delta_time=self.delta_time
+        # Generate a tuple of Airplanes for each time step.
+        self._airplanes: tuple[geometry.airplane.Airplane, ...] = tuple(
+            airplane_movement.generate_airplanes(
+                num_steps=self._num_steps, delta_time=self._delta_time
+            )
         )
+
+        # Initialize lazy cache variables for derived properties.
+        self._max_period: float | None = None
+        self._static: bool | None = None
 
         # Validate that all Wings maintain their symmetry type across all time steps.
         # Start by getting the AirplaneMovement's base Airplane.
-        base_airplane = self.airplanes[0]
+        base_airplane = self._airplanes[0]
 
         # Store the symmetry types of the base Wings.
         base_wing_symmetry_types = []
@@ -874,7 +883,7 @@ class CoupledMovement:
             base_wing_symmetry_types.append(wing.symmetry_type)
 
         # Validate all subsequent time steps.
-        for step_id, airplane in enumerate(self.airplanes):
+        for step_id, airplane in enumerate(self._airplanes):
             # Check that Wings maintain their symmetry types.
             for wing_id, wing in enumerate(airplane.wings):
                 base_symmetry_type = base_wing_symmetry_types[wing_id]
@@ -888,7 +897,32 @@ class CoupledMovement:
                         f"longer coincident with the wing axes' yz-plane or vice versa."
                     )
 
-    # TEST: Add unit tests for this method.
+    # --- Immutable: read only properties ---
+    @property
+    def airplane_movement(self) -> airplane_movement_mod.AirplaneMovement:
+        return self._airplane_movement
+
+    @property
+    def delta_time(self) -> float:
+        return self._delta_time
+
+    @property
+    def prescribed_num_steps(self) -> int:
+        return self._prescribed_num_steps
+
+    @property
+    def free_num_steps(self) -> int:
+        return self._free_num_steps
+
+    @property
+    def num_steps(self) -> int:
+        return self._num_steps
+
+    @property
+    def airplanes(self) -> tuple[geometry.airplane.Airplane, ...]:
+        return self._airplanes
+
+    # --- Immutable derived: manual lazy caching ---
     @property
     def max_period(self) -> float:
         """The longest period of motion of CoupledMovement's AirplaneMovement, of its
@@ -897,9 +931,10 @@ class CoupledMovement:
         :return: The longest period in seconds. If the all the motion is static, this
             will be 0.0.
         """
-        return self.airplane_movement.max_period
+        if self._max_period is None:
+            self._max_period = self._airplane_movement.max_period
+        return self._max_period
 
-    # TEST: Add unit tests for this method.
     @property
     def static(self) -> bool:
         """Flags if CoupledMovement's AirplaneMovement, its WingMovement(s), and their
@@ -907,7 +942,9 @@ class CoupledMovement:
 
         :return: True if all the motion is static. False otherwise.
         """
-        return self.max_period == 0
+        if self._static is None:
+            self._static = self.max_period == 0
+        return self._static
 
 
 def _optimize_delta_time_non_static(

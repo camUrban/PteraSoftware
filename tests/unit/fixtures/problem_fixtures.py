@@ -1,5 +1,7 @@
 """This module contains functions to create problem objects for use in tests."""
 
+import numpy as np
+
 import pterasoftware as ps
 
 from . import geometry_fixtures, movement_fixtures, operating_point_fixtures
@@ -141,3 +143,32 @@ def make_multi_airplane_unsteady_problem_fixture():
     )
 
     return multi_airplane_unsteady_problem_fixture
+
+
+def make_basic_coupled_unsteady_problem_fixture():
+    """This method makes a fixture that is a CoupledUnsteadyProblem for general
+    testing.
+
+    :return basic_coupled_unsteady_problem_fixture: CoupledUnsteadyProblem
+        This is the CoupledUnsteadyProblem configured for general testing.
+    """
+    # Create a basic CoupledMovement.
+    basic_coupled_movement = movement_fixtures.make_basic_coupled_movement_fixture()
+
+    # Create a symmetric, positive definite inertia matrix.
+    I_BP1_CgP1 = np.array(
+        [
+            [0.1, 0.0, 0.0],
+            [0.0, 0.05, 0.0],
+            [0.0, 0.0, 0.12],
+        ],
+        dtype=float,
+    )
+
+    # Create the CoupledUnsteadyProblem.
+    basic_coupled_unsteady_problem_fixture = ps.problems.CoupledUnsteadyProblem(
+        coupled_movement=basic_coupled_movement,
+        I_BP1_CgP1=I_BP1_CgP1,
+    )
+
+    return basic_coupled_unsteady_problem_fixture

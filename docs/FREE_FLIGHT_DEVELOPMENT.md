@@ -7,7 +7,7 @@ This document tracks the development progress and goals for the free flight simu
 
 ## Current Status Summary
 
-**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional, Singularity Refactor Incorporated, Validation Pending**
+**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional, Singularity Refactor Incorporated, Immutability Refactor Complete, Validation Pending**
 
 **What Works:**
 - Complete coupled solver infrastructure implemented and functional
@@ -23,7 +23,6 @@ This document tracks the development progress and goals for the free flight simu
 - Vortex singularity refactor fully incorporated (r_c0/r_c0s core radius, scale invariant singularity checks, singularity counters and logging)
 
 **What Needs Updating After Main Merge:**
-- Coupled classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) not yet refactored for immutability
 - Coupled solver may need trapezoid rule averaging when final cycle load computation is added
 
 **What Needs Testing/Validation:**
@@ -31,7 +30,7 @@ This document tracks the development progress and goals for the free flight simu
 - Non-zero sideslip (beta) cases need testing
 
 **Immediate Focus:**
-Refactoring coupled classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) for immutability, then validating the complete 6-DOF free flight simulation against known solutions.
+Validating the complete 6-DOF free flight simulation against known solutions.
 
 ## Overview
 
@@ -353,6 +352,17 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Added singularity count tracking in `_populate_next_airplanes_wake_vortex_points()` for free wake velocity evaluations with DEBUG level logging
    - All patterns match the reference solver in `unsteady_ring_vortex_lattice_method.py`
 
+33. **Immutability Refactor for Coupled Classes** (pterasoftware/movements/movement.py, pterasoftware/problems.py)
+   - Refactored `CoupledMovement`, `CoupledSteadyProblem`, and `CoupledUnsteadyProblem` to match the immutability patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
+   - Applied read only properties for all attributes that are set in `__init__` and never modified after
+   - `CoupledMovement.airplanes` stored as `tuple` instead of `list` (indexing works identically)
+   - `CoupledMovement.max_period` and `CoupledMovement.static` now use manual lazy caching
+   - `CoupledUnsteadyProblem.I_BP1_CgP1` numpy array set to read only (`flags.writeable = False`)
+   - Solver populated mutable attributes (`coupled_operating_points`, `forces_W`, `forceCoefficients_W`, `moments_W_Cg`, `momentCoefficients_W_Cg`, `coupled_steady_problems`) remain as public plain attributes
+   - Added unit tests for `CoupledSteadyProblem` and `CoupledUnsteadyProblem` initialization and immutability
+   - Added immutability tests for `CoupledMovement`
+   - Updated `docs/CLASSES_AND_IMMUTABILITY.md` to reflect refactored state
+
 ### In Progress / Known Issues
 
 **Current Status:**
@@ -363,10 +373,7 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 
 1. ~~**Vortex Singularity Refactor in Coupled Solver**~~ (COMPLETED - see item 32 above)
 
-2. **Immutability Refactor for Coupled Classes** (MEDIUM PRIORITY)
-   - `CoupledMovement`, `CoupledUnsteadyProblem`, and `CoupledSteadyProblem` still use plain public attributes
-   - Should be refactored to match the immutability patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
-   - The coupled solver creates fresh objects per time step, which already aligns with the immutability philosophy, but the classes themselves need the defensive patterns (read only properties, set once enforcement, tuple collections, `__deepcopy__` methods)
+2. ~~**Immutability Refactor for Coupled Classes**~~ (COMPLETED - see item 33 below)
 
 **Needs Validation/Testing:**
 
@@ -411,8 +418,6 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 ### Not Yet Started
 
 1. **Testing Infrastructure**
-   - Unit tests for CoupledSteadyProblem
-   - Unit tests for CoupledUnsteadyProblem
    - Integration tests for coupled solver
    - Validation against known free flight data
 
@@ -453,25 +458,17 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 
 ### Immutability and the Coupled Solver
 
-- The main branch now enforces immutable, set once, and read only attribute patterns across all core classes (see `docs/CLASSES_AND_IMMUTABILITY.md`)
+- All core classes, including the coupled classes, now enforce immutable, set once, and read only attribute patterns (see `docs/CLASSES_AND_IMMUTABILITY.md`)
 - The coupled solver naturally aligns with this pattern: it creates **fresh** Airplane, Panel, and RingVortex objects at each time step rather than mutating shared state
-- Coupled specific classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) have not been refactored yet but should adopt the same patterns
-- Key consideration: `CoupledMovement.coupled_operating_points` is currently a mutable list that the solver appends to during the run loop; this will need a different pattern than the standard Movement's immutable tuple approach
+- Solver populated mutable attributes (`CoupledMovement.coupled_operating_points`, `CoupledUnsteadyProblem.forces_W`, etc.) remain as plain mutable lists that the solver appends to during the run loop
 
 ## Current Goals
 
 ### Immediate (Next Steps)
 
-**Priority 1: Immutability Refactor for Coupled Classes (CURRENT FOCUS)**
+**Priority 1: Validation and Verification (CURRENT FOCUS)**
 
-1. **Refactor coupled classes for immutability**
-   - Refactor `CoupledMovement`, `CoupledUnsteadyProblem`, and `CoupledSteadyProblem` to match the immutability patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
-   - Apply read only properties, set once enforcement, tuple collections, and `__deepcopy__` methods
-   - Key consideration: `CoupledMovement.coupled_operating_points` is currently a mutable list that the solver appends to during the run loop; this will need a different pattern than the standard Movement's immutable tuple approach
-
-**Priority 2: Validation and Verification**
-
-2. **Validate Full 6-DOF Dynamics**
+1. **Validate Full 6-DOF Dynamics**
    - Verify force/moment calculations produce physically sensible results
    - Check energy conservation (kinetic + potential should be approximately constant for gliding)
    - Compare simple glider free flight trajectory with XFLR5 dynamic stability predictions
@@ -480,6 +477,9 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
    - Test with non-zero sideslip (beta) cases
 
 **Previously Completed Priorities:**
+
+1. **Immutability Refactor for Coupled Classes** (COMPLETED)
+   - Refactored `CoupledMovement`, `CoupledSteadyProblem`, and `CoupledUnsteadyProblem` to match the immutability patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
 
 2. **Incorporate Vortex Singularity Refactor into Coupled Solver** (COMPLETED)
    - Added r_c0/r_c0s core radius parameters and singularity counters/logging to all aerodynamics function calls in the coupled solver
@@ -531,9 +531,9 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 
 ### Testing
 - `tests/unit/test_operating_point.py` - CoupledOperatingPoint tests
-- `tests/unit/test_movement.py` - CoupledMovement tests
+- `tests/unit/test_movement.py` - CoupledMovement tests (including immutability)
+- `tests/unit/test_problems.py` - CoupledSteadyProblem and CoupledUnsteadyProblem tests (including immutability)
 - `tests/unit/test_transformations.py` - R_to_quat_wxyz tests
-- Additional coupled class tests to be added
 
 ## Notes and TODOs
 
@@ -603,9 +603,8 @@ The coordinate transformation issues identified during debugging have now been r
 - Rotational velocity cross products now use the correct body-to-geometry transformation
 
 **Current Focus:**
-The vortex singularity refactor has been fully incorporated into the coupled solver. The next steps are:
-1. Refactor coupled classes for immutability
-2. Validate the simulation produces physically sensible results
-3. Test with various initial conditions including non-zero sideslip
-4. Compare against XFLR5 dynamic stability predictions
-5. Extract utility functions into `_transformations.py` for reuse and testing
+The vortex singularity refactor and immutability refactor are both complete. The next steps are:
+1. Validate the simulation produces physically sensible results
+2. Test with various initial conditions including non-zero sideslip
+3. Compare against XFLR5 dynamic stability predictions
+4. Extract utility functions into `_transformations.py` for reuse and testing

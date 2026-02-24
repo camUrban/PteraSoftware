@@ -581,5 +581,244 @@ class TestUnsteadyProblemImmutability(unittest.TestCase):
         self.basic_unsteady_problem.finalForces_W.pop()
 
 
+class TestCoupledSteadyProblem(unittest.TestCase):
+    """This is a class with functions to test CoupledSteadyProblems."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all CoupledSteadyProblem tests."""
+        cls.basic_coupled_unsteady_problem = (
+            problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        )
+        cls.basic_coupled_steady_problem = (
+            cls.basic_coupled_unsteady_problem.coupled_steady_problems[0]
+        )
+
+    def test_initialization_valid_parameters(self):
+        """Test CoupledSteadyProblem initialization with valid parameters."""
+        self.assertIsInstance(
+            self.basic_coupled_steady_problem,
+            ps.problems.CoupledSteadyProblem,
+        )
+        self.assertIsInstance(
+            self.basic_coupled_steady_problem.airplane,
+            ps.geometry.airplane.Airplane,
+        )
+        self.assertIsInstance(
+            self.basic_coupled_steady_problem.coupled_operating_point,
+            ps.operating_point.CoupledOperatingPoint,
+        )
+
+    def test_airplane_parameter_validation(self):
+        """Test that airplane parameter is properly validated."""
+        coupled_operating_point = (
+            operating_point_fixtures.make_basic_coupled_operating_point_fixture()
+        )
+        with self.assertRaises(TypeError):
+            ps.problems.CoupledSteadyProblem(
+                airplane="not_an_airplane",
+                coupled_operating_point=coupled_operating_point,
+            )
+
+    def test_coupled_operating_point_parameter_validation(self):
+        """Test that coupled_operating_point parameter is properly validated."""
+        airplane = geometry_fixtures.make_first_airplane_fixture()
+        with self.assertRaises(TypeError):
+            ps.problems.CoupledSteadyProblem(
+                airplane=airplane,
+                coupled_operating_point="not_an_operating_point",
+            )
+
+
+class TestCoupledSteadyProblemImmutability(unittest.TestCase):
+    """Tests for CoupledSteadyProblem attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.basic_coupled_unsteady_problem = (
+            problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        )
+        cls.basic_coupled_steady_problem = (
+            cls.basic_coupled_unsteady_problem.coupled_steady_problems[0]
+        )
+
+    def test_immutable_airplane_property(self):
+        """Test that airplane property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_steady_problem.airplane = None
+
+    def test_immutable_coupled_operating_point_property(self):
+        """Test that coupled_operating_point property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_steady_problem.coupled_operating_point = None
+
+
+class TestCoupledUnsteadyProblem(unittest.TestCase):
+    """This is a class with functions to test CoupledUnsteadyProblems."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all CoupledUnsteadyProblem tests."""
+        cls.basic_coupled_unsteady_problem = (
+            problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        )
+
+    def test_initialization_valid_parameters(self):
+        """Test CoupledUnsteadyProblem initialization with valid parameters."""
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem,
+            ps.problems.CoupledUnsteadyProblem,
+        )
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem.coupled_movement,
+            ps.movements.movement.CoupledMovement,
+        )
+
+    def test_coupled_movement_parameter_validation(self):
+        """Test that coupled_movement parameter is properly validated."""
+        with self.assertRaises(TypeError):
+            ps.problems.CoupledUnsteadyProblem(
+                coupled_movement="not_a_coupled_movement",
+                I_BP1_CgP1=np.eye(3),
+            )
+
+    def test_I_BP1_CgP1_symmetry_validation(self):
+        """Test that I_BP1_CgP1 must be symmetric."""
+        coupled_movement = movement_fixtures.make_basic_coupled_movement_fixture()
+        asymmetric_inertia = np.array(
+            [[1.0, 0.5, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], dtype=float
+        )
+        with self.assertRaises(ValueError):
+            ps.problems.CoupledUnsteadyProblem(
+                coupled_movement=coupled_movement,
+                I_BP1_CgP1=asymmetric_inertia,
+            )
+
+    def test_num_steps_attribute(self):
+        """Test that num_steps is set correctly from CoupledMovement."""
+        self.assertEqual(
+            self.basic_coupled_unsteady_problem.num_steps,
+            self.basic_coupled_unsteady_problem.coupled_movement.num_steps,
+        )
+
+    def test_delta_time_attribute(self):
+        """Test that delta_time is set correctly from CoupledMovement."""
+        self.assertEqual(
+            self.basic_coupled_unsteady_problem.delta_time,
+            self.basic_coupled_unsteady_problem.coupled_movement.delta_time,
+        )
+
+    def test_airplanes_attribute(self):
+        """Test that airplanes is set correctly from CoupledMovement."""
+        self.assertIs(
+            self.basic_coupled_unsteady_problem.airplanes,
+            self.basic_coupled_unsteady_problem.coupled_movement.airplanes,
+        )
+
+    def test_initialization_of_load_lists(self):
+        """Test that load lists are initialized as empty."""
+        self.assertIsInstance(self.basic_coupled_unsteady_problem.forces_W, list)
+        self.assertEqual(len(self.basic_coupled_unsteady_problem.forces_W), 0)
+
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem.forceCoefficients_W, list
+        )
+        self.assertEqual(
+            len(self.basic_coupled_unsteady_problem.forceCoefficients_W), 0
+        )
+
+        self.assertIsInstance(self.basic_coupled_unsteady_problem.moments_W_Cg, list)
+        self.assertEqual(len(self.basic_coupled_unsteady_problem.moments_W_Cg), 0)
+
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem.momentCoefficients_W_Cg, list
+        )
+        self.assertEqual(
+            len(self.basic_coupled_unsteady_problem.momentCoefficients_W_Cg), 0
+        )
+
+    def test_coupled_steady_problems_initialization(self):
+        """Test that coupled_steady_problems is initialized with one element."""
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem.coupled_steady_problems, list
+        )
+        self.assertEqual(
+            len(self.basic_coupled_unsteady_problem.coupled_steady_problems), 1
+        )
+        self.assertIsInstance(
+            self.basic_coupled_unsteady_problem.coupled_steady_problems[0],
+            ps.problems.CoupledSteadyProblem,
+        )
+
+
+class TestCoupledUnsteadyProblemImmutability(unittest.TestCase):
+    """Tests for CoupledUnsteadyProblem attribute immutability."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all immutability tests."""
+        cls.basic_coupled_unsteady_problem = (
+            problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        )
+
+    def test_immutable_coupled_movement_property(self):
+        """Test that coupled_movement property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.coupled_movement = None
+
+    def test_immutable_I_BP1_CgP1_property(self):
+        """Test that I_BP1_CgP1 property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.I_BP1_CgP1 = np.eye(3)
+
+    def test_I_BP1_CgP1_array_not_writeable(self):
+        """Test that the I_BP1_CgP1 numpy array is not writeable."""
+        with self.assertRaises(ValueError):
+            self.basic_coupled_unsteady_problem.I_BP1_CgP1[0, 0] = 999.0
+
+    def test_immutable_num_steps_property(self):
+        """Test that num_steps property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.num_steps = 100
+
+    def test_immutable_delta_time_property(self):
+        """Test that delta_time property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.delta_time = 0.5
+
+    def test_immutable_airplanes_property(self):
+        """Test that airplanes property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.airplanes = ()
+
+    def test_immutable_mujoco_model_property(self):
+        """Test that mujoco_model property is read only."""
+        with self.assertRaises(AttributeError):
+            self.basic_coupled_unsteady_problem.mujoco_model = None
+
+    def test_mutable_load_lists(self):
+        """Test that load lists remain mutable for solver population."""
+        self.basic_coupled_unsteady_problem.forces_W.append(np.array([1.0, 2.0, 3.0]))
+        self.assertEqual(len(self.basic_coupled_unsteady_problem.forces_W), 1)
+
+        # Clean up.
+        self.basic_coupled_unsteady_problem.forces_W.pop()
+
+    def test_mutable_coupled_steady_problems_list(self):
+        """Test that coupled_steady_problems list remains mutable for solver
+        population.
+        """
+        original_len = len(self.basic_coupled_unsteady_problem.coupled_steady_problems)
+        self.basic_coupled_unsteady_problem.coupled_steady_problems.append(None)
+        self.assertEqual(
+            len(self.basic_coupled_unsteady_problem.coupled_steady_problems),
+            original_len + 1,
+        )
+
+        # Clean up.
+        self.basic_coupled_unsteady_problem.coupled_steady_problems.pop()
+
+
 if __name__ == "__main__":
     unittest.main()

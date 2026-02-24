@@ -110,20 +110,18 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ## CoupledUnsteadyProblem Class (`problems.py`)
 
-**Note**: This class is used for coupled (free flight) simulations. Unlike UnsteadyProblem, its attributes are not yet refactored for immutability. All attributes are plain public attributes set in `__init__`.
-
 ### Attribute Classification
 
-#### Set in `__init__`, not modified after
+#### Immutable (set in `__init__`, never modified)
 
-| Attribute          | Type              | Notes                          |
-|--------------------|-------------------|--------------------------------|
-| `coupled_movement` | `CoupledMovement` | Movement definition            |
-| `I_BP1_CgP1`       | `np.ndarray`      | 3 x 3 symmetric inertia matrix |
-| `num_steps`        | `int`             | Copied from CoupledMovement    |
-| `delta_time`       | `float`           | Copied from CoupledMovement    |
-| `airplanes`        | `list[Airplane]`  | Copied from CoupledMovement    |
-| `mujoco_model`     | `MuJoCoModel`     | Created during init            |
+| Attribute          | Type                   | Notes                          |
+|--------------------|------------------------|--------------------------------|
+| `coupled_movement` | `CoupledMovement`      | Movement definition            |
+| `I_BP1_CgP1`       | `np.ndarray`           | 3 x 3 symmetric inertia matrix |
+| `num_steps`        | `int`                  | Copied from CoupledMovement    |
+| `delta_time`       | `float`                | Copied from CoupledMovement    |
+| `airplanes`        | `tuple[Airplane, ...]` | Copied from CoupledMovement    |
+| `mujoco_model`     | `MuJoCoModel`          | Created during init            |
 
 #### Mutable (populated by solver)
 
@@ -165,20 +163,18 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ## CoupledMovement Class (`movements/movement.py`)
 
-**Note**: This class is used for coupled (free flight) simulations. Unlike Movement, its attributes are not yet refactored for immutability. All attributes are plain public attributes set in `__init__`.
-
 ### Attribute Classification
 
-#### Set in `__init__`, not modified after
+#### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type                     | Notes                        |
-|------------------------|--------------------------|------------------------------|
-| `airplane_movement`    | `AirplaneMovement`       | Internal motion definition   |
-| `delta_time`           | `float`                  | Time step                    |
-| `prescribed_num_steps` | `int`                    | Prescribed flight time steps |
-| `free_num_steps`       | `int`                    | Free flight time steps       |
-| `num_steps`            | `int`                    | Total time steps             |
-| `airplanes`            | `list[Airplane]`         | Generated Airplanes          |
+| Attribute              | Type                       | Notes                        |
+|------------------------|----------------------------|------------------------------|
+| `airplane_movement`    | `AirplaneMovement`         | Internal motion definition   |
+| `delta_time`           | `float`                    | Time step                    |
+| `prescribed_num_steps` | `int`                      | Prescribed flight time steps |
+| `free_num_steps`       | `int`                      | Free flight time steps       |
+| `num_steps`            | `int`                      | Total time steps             |
+| `airplanes`            | `tuple[Airplane, ...]`     | Generated Airplanes          |
 
 #### Mutable (populated by solver)
 
@@ -186,7 +182,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 |------------------------------|--------------------------------|--------------------------------------------------|
 | `coupled_operating_points`   | `list[CoupledOperatingPoint]`  | Solver appends each time step's OperatingPoint   |
 
-#### Derived (not cached)
+#### Derived from Immutable (use manual lazy caching)
 
 | Property     | Depends On           | Notes                       |
 |--------------|----------------------|-----------------------------|
@@ -306,11 +302,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ## CoupledSteadyProblem Class (`problems.py`)
 
-**Note**: This class is used for coupled (free flight) simulations. Unlike SteadyProblem, its attributes are not yet refactored for immutability. All attributes are plain public attributes set in `__init__`.
-
 ### Attribute Classification
 
-#### Set in `__init__`, not modified after
+#### Immutable (set in `__init__`, never modified)
 
 | Attribute                 | Type                    | Notes                                   |
 |---------------------------|-------------------------|-----------------------------------------|

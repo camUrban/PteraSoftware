@@ -7,7 +7,7 @@ This document tracks the development progress and goals for the free flight simu
 
 ## Current Status Summary
 
-**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional, Merge from Main Pending Integration**
+**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional, Singularity Refactor Incorporated, Validation Pending**
 
 **What Works:**
 - Complete coupled solver infrastructure implemented and functional
@@ -20,9 +20,9 @@ This document tracks the development progress and goals for the free flight simu
 - MuJoCo rotation matrix convention understood and properly transformed
 - Euler angle extraction from rotation matrix (with gimbal lock handling)
 - Rotational velocity terms properly implemented with body-to-geometry transformation
+- Vortex singularity refactor fully incorporated (r_c0/r_c0s core radius, scale invariant singularity checks, singularity counters and logging)
 
 **What Needs Updating After Main Merge:**
-- Coupled solver missing vortex singularity refactor (r_c0/r_c0s core radius, scale invariant singularity checks, singularity counters and logging)
 - Coupled classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) not yet refactored for immutability
 - Coupled solver may need trapezoid rule averaging when final cycle load computation is added
 
@@ -31,7 +31,7 @@ This document tracks the development progress and goals for the free flight simu
 - Non-zero sideslip (beta) cases need testing
 
 **Immediate Focus:**
-Updating the coupled solver to incorporate the vortex singularity refactor from main, then validating the complete 6-DOF free flight simulation against known solutions.
+Refactoring coupled classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) for immutability, then validating the complete 6-DOF free flight simulation against known solutions.
 
 ## Overview
 
@@ -341,20 +341,27 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Created docs/RUNNING_TESTS_AND_TYPE_CHECKS.md for test execution instructions
    - Created docs/WRITING_STYLE.md for comment and documentation writing guidelines
 
+32. **Vortex Singularity Refactor in Coupled Solver** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Added `_currentStackBoundRc0s`, `_currentStackWakeRc0s`, and `_list_wake_rc0s` attributes to the solver
+   - Added `_list_wake_rc0s` pre-allocation in the `run()` method alongside existing wake arrays
+   - Added per time step initialization of `_currentStackBoundRc0s` (zeros for bound, coreless) and `_currentStackWakeRc0s` (from pre-allocated list)
+   - Computed `wing_r_c0 = 0.03 * wing.standard_mean_chord` in `_collapse_geometry()` and populated both bound and wake r_c0s arrays
+   - Passed `r_c0s` and `singularity_counts` to `expanded_velocities_from_ring_vortices` in `_calculate_wing_wing_influences()` with ERROR level logging
+   - Passed `r_c0s` and `singularity_counts` to `collapsed_velocities_from_ring_vortices` in `_calculate_wake_wing_influences()` with INFO level logging
+   - Added `bound_singularity_counts` and `wake_singularity_counts` optional parameters to `calculate_solution_velocity()` and passed `r_c0s` and counts to both bound and wake velocity calls
+   - Added singularity count tracking in `_calculate_loads()` across all four leg center velocity evaluations, with expected structural collinearity subtraction and logging at ERROR (bound) and INFO (wake) levels
+   - Added singularity count tracking in `_populate_next_airplanes_wake_vortex_points()` for free wake velocity evaluations with DEBUG level logging
+   - All patterns match the reference solver in `unsteady_ring_vortex_lattice_method.py`
+
 ### In Progress / Known Issues
 
 **Current Status:**
 
-The core 6-DOF dynamics infrastructure is complete. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms) have been resolved. A large merge from main introduced the immutability refactor, vortex singularity refactor, and other improvements. The coupled solver needs updating to incorporate these changes before validation can proceed.
+The core 6-DOF dynamics infrastructure is complete. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms) have been resolved. A large merge from main introduced the immutability refactor, vortex singularity refactor, and other improvements. The vortex singularity refactor has been fully incorporated into the coupled solver. Validation can now proceed.
 
 **Needs Updating from Main Merge:**
 
-1. **Vortex Singularity Refactor in Coupled Solver** (HIGH PRIORITY)
-   - The coupled solver does not pass `r_c0s` arrays to any aerodynamics functions
-   - Need to add `_currentStackBoundRc0s` and `_currentStackWakeRc0s` initialization
-   - Need to compute `r_c0 = 0.03 * wing.standard_mean_chord` for wake vortices in geometry collapse
-   - Need to pass r_c0s to all velocity/influence computation calls
-   - Need to add singularity counters and logging to match the standard unsteady solver
+1. ~~**Vortex Singularity Refactor in Coupled Solver**~~ (COMPLETED - see item 32 above)
 
 2. **Immutability Refactor for Coupled Classes** (MEDIUM PRIORITY)
    - `CoupledMovement`, `CoupledUnsteadyProblem`, and `CoupledSteadyProblem` still use plain public attributes
@@ -455,18 +462,16 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 
 ### Immediate (Next Steps)
 
-**Priority 1: Incorporate Vortex Singularity Refactor into Coupled Solver (CURRENT FOCUS)**
+**Priority 1: Immutability Refactor for Coupled Classes (CURRENT FOCUS)**
 
-The merge from main introduced r_c0/r_c0s core radius parameters and scale invariant singularity checks across all standard solvers and aerodynamics functions. The coupled solver must be updated to match:
-
-1. **Add r_c0s array initialization** - Add `_currentStackBoundRc0s` (zeros) and `_currentStackWakeRc0s` arrays to the coupled solver constructor
-2. **Compute wake r_c0s in geometry collapse** - Set `r_c0 = 0.03 * wing.standard_mean_chord` for each wing's wake vortices
-3. **Pass r_c0s to all aerodynamics function calls** - Update `_calculate_wing_wing_influences()`, `_calculate_wake_wing_influences()`, and any other methods that call velocity functions
-4. **Add singularity counters and logging** - Match the logging infrastructure in the standard unsteady solver
+1. **Refactor coupled classes for immutability**
+   - Refactor `CoupledMovement`, `CoupledUnsteadyProblem`, and `CoupledSteadyProblem` to match the immutability patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
+   - Apply read only properties, set once enforcement, tuple collections, and `__deepcopy__` methods
+   - Key consideration: `CoupledMovement.coupled_operating_points` is currently a mutable list that the solver appends to during the run loop; this will need a different pattern than the standard Movement's immutable tuple approach
 
 **Priority 2: Validation and Verification**
 
-5. **Validate Full 6-DOF Dynamics** (IN PROGRESS)
+2. **Validate Full 6-DOF Dynamics**
    - Verify force/moment calculations produce physically sensible results
    - Check energy conservation (kinetic + potential should be approximately constant for gliding)
    - Compare simple glider free flight trajectory with XFLR5 dynamic stability predictions
@@ -476,12 +481,16 @@ The merge from main introduced r_c0/r_c0s core radius parameters and scale invar
 
 **Previously Completed Priorities:**
 
-6. **Rotational Motion and Coordinate Transformations** (COMPLETED)
+2. **Incorporate Vortex Singularity Refactor into Coupled Solver** (COMPLETED)
+   - Added r_c0/r_c0s core radius parameters and singularity counters/logging to all aerodynamics function calls in the coupled solver
+   - All patterns match the reference solver in `unsteady_ring_vortex_lattice_method.py`
+
+3. **Rotational Motion and Coordinate Transformations** (COMPLETED)
    - MuJoCo rotation matrix convention clarified (`xmat` is `R_pas_B_to_E`)
    - Euler angle extraction implemented for izyx sequence with gimbal lock handling
    - Rotational velocity terms re-enabled with body to geometry transformation
 
-7. **Simple Free Flight Test Case and Visualization** (COMPLETED)
+4. **Simple Free Flight Test Case and Visualization** (COMPLETED)
    - Simple gliding wing test case with converged, trimmed, stable configuration
    - `animate_free_flight()` function with trajectory support
    - Systematic debugging progression (convergence, trim, prescribed, free)
@@ -489,11 +498,10 @@ The merge from main introduced r_c0/r_c0s core radius parameters and scale invar
 
 ### Medium-term
 
-1. Refactor coupled classes (CoupledMovement, CoupledUnsteadyProblem, CoupledSteadyProblem) for immutability following patterns in `docs/CLASSES_AND_IMMUTABILITY.md`
-2. Implement free flight GammaBot simulation
-3. Validate against experimental GammaBot data
-4. Create comprehensive documentation and examples
-5. Add unit and integration tests for coupled classes
+1. Implement free flight GammaBot simulation
+2. Validate against experimental GammaBot data
+3. Create comprehensive documentation and examples
+4. Add unit and integration tests for coupled classes
 
 ### Long-term
 
@@ -595,11 +603,9 @@ The coordinate transformation issues identified during debugging have now been r
 - Rotational velocity cross products now use the correct body-to-geometry transformation
 
 **Current Focus:**
-The merge from main introduced the vortex singularity refactor (r_c0/r_c0s) and immutability patterns across all core classes. The coupled solver must be updated to incorporate the singularity refactor before validation can proceed. The next steps are:
-1. Update the coupled solver to pass r_c0s to all aerodynamics function calls
-2. Add singularity counters and logging to the coupled solver
-3. Validate the simulation produces physically sensible results
-4. Test with various initial conditions including non-zero sideslip
-5. Compare against XFLR5 dynamic stability predictions
-6. Extract utility functions into `_transformations.py` for reuse and testing
-7. Refactor coupled classes for immutability
+The vortex singularity refactor has been fully incorporated into the coupled solver. The next steps are:
+1. Refactor coupled classes for immutability
+2. Validate the simulation produces physically sensible results
+3. Test with various initial conditions including non-zero sideslip
+4. Compare against XFLR5 dynamic stability predictions
+5. Extract utility functions into `_transformations.py` for reuse and testing

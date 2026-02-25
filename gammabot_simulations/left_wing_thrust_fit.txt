@@ -1,0 +1,8 @@
+Left Wing Thrust vs Voltage Linear Fit
+=======================================
+Equation: y = 0.0036892x + -0.27836
+R^2 = 0.99358
+
+Where:
+  y = Thrust (mN)
+  x = Voltage Amplitude (V)

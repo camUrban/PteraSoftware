@@ -1,0 +1,16 @@
+Water Drag Constant Estimation
+===============================
+
+Model: a = -c_1*v^2, where c_1 = 0.5*rho*Cd*A/m
+Solution: x(t) = ln(1 + c_1*v_0*t) / c_1
+
+Fitted Parameters:
+  v_0 = 0.26179 m/s (from data)
+  c_1 = 2.5526 1/m
+  R^2 = 0.99985
+
+Where:
+  c_1 = 0.5*rho*Cd*A/m (drag parameter)
+  v_0 = initial velocity
+  x(t) = displacement (m)
+  t = time (s)

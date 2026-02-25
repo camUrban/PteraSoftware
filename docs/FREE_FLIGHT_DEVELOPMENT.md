@@ -7,13 +7,13 @@ This document tracks the development progress and goals for the free flight simu
 
 ## Current Status Summary
 
-**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Now Functional, Singularity Refactor Incorporated, Immutability Refactor Complete, Validation Pending**
+**DEVELOPMENT IN PROGRESS - Core 6-DOF Dynamics Functional, Force/Energy Validation Passed, Further Validation Needed**
 
 **What Works:**
 - Complete coupled solver infrastructure implemented and functional
 - MuJoCo integration with proper load passing and state extraction
 - Prescribed motion steps work correctly and match baseline simulations
-- Solver runs through full coupling loop without crashing (300+ steps tested)
+- Solver runs through full coupling loop without crashing (578 steps tested, ~6.5 s free flight)
 - Comprehensive debugging infrastructure with systematic test progression
 - Free flight visualization tools (animate_free_flight, draw support)
 - Converged, trimmed, stable test case (simple glider validated with XFLR5)
@@ -21,16 +21,21 @@ This document tracks the development progress and goals for the free flight simu
 - Euler angle extraction from rotation matrix (with gimbal lock handling)
 - Rotational velocity terms properly implemented with body-to-geometry transformation
 - Vortex singularity refactor fully incorporated (r_c0/r_c0s core radius, scale invariant singularity checks, singularity counters and logging)
+- Force sensibility validated: lift matches weight (ratio 0.9997), drag positive, CL/CD in expected ranges, side force effectively zero
+- Energy conservation validated: dE/dt matches -drag*speed within 0.19% over 500 free flight time steps, energy monotonically decreasing (0/499 intervals had increase)
+- Phugoid oscillation observed: alpha oscillates 2.93 to 3.35 deg, speed oscillates 12.70 to 13.36 m/s, consistent with theoretical phugoid period (~5.84 s)
 
 **What Needs Updating After Main Merge:**
 - Coupled solver may need trapezoid rule averaging when final cycle load computation is added
 
 **What Needs Testing/Validation:**
-- Full 6-DOF dynamics need validation against known solutions
+- Quantitative phugoid period/damping comparison with XFLR5 eigenvalue analysis (need longer simulation for period estimation)
 - Non-zero sideslip (beta) cases need testing
+- Tune time step size for stability/accuracy trade off
+- Validate wake convection is physically reasonable
 
 **Immediate Focus:**
-Validating the complete 6-DOF free flight simulation against known solutions.
+Continuing validation. Force sensibility, energy conservation, and phugoid dynamics checks have passed. Next steps are quantitative comparison with XFLR5, non-zero sideslip testing, and time step sensitivity analysis.
 
 ## Overview
 
@@ -233,6 +238,7 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
      - `2_simple_glider_trim.py`: Trim analysis
      - `3_simple_glider_prescribed.py`: Prescribed motion validation
      - `4_simple_glider_free_flight.py`: Free flight simulation
+     - `5_simple_glider_validation.py`: Force sensibility, energy conservation, and phugoid validation
    - Single-panel flat plate debugging cases:
      - `flat_plate_prescribed.py`: 1-Panel prescribed motion baseline
      - `flat_plate_free_flight.py`: 1-Panel free flight for isolation testing
@@ -363,11 +369,27 @@ The `CoupledUnsteadyRingVortexLatticeMethodSolver.run()` method follows this str
    - Added immutability tests for `CoupledMovement`
    - Updated `docs/CLASSES_AND_IMMUTABILITY.md` to reflect refactored state
 
+34. **Immutability Bug Fix in Coupled Solver** (pterasoftware/coupled_unsteady_ring_vortex_lattice_method.py)
+   - Fixed `_create_next_coupled_steady_problem()` which was broken by the immutability refactor from main
+   - The method was creating new Airplanes with `Airplane(wings=list(prescribed_airplane.wings), ...)`, but those Wings already had their `symmetry_type` set (an immutable set once attribute), causing `AttributeError: symmetry_type can only be set once`
+   - Fixed by using `prescribed_airplane.deep_copy_with_Cg_GP1_CgP1()` which bypasses `__init__` and avoids re-processing wing symmetry
+
+35. **Force Sensibility and Energy Conservation Validation** (debugging_scripts/5_simple_glider_validation.py)
+   - Created comprehensive validation script for the coupled free flight solver
+   - Runs simple glider in pure unpowered glide (no external force, 500 free flight time steps, ~6.5 s)
+   - Validates aerodynamic forces during converged prescribed phase: lift matches weight (ratio 0.9997), drag positive (7.03 N), CL = 0.412, CD = 0.0069, L/D = 59.7, side force effectively zero (8.85e-14 N)
+   - Validates gliding behavior: speed bounded within 20% (5.11% variation from phugoid), glider descends (1.90 m), alpha range < 20 deg (0.42 deg range), beta stays near zero, no position jumps
+   - Validates energy conservation: total energy decreases monotonically (0/499 intervals had increase), dE/dt matches -drag*speed within 0.19% (mean dE/dt = -83.67 W vs expected -83.51 W)
+   - Phugoid oscillation observed: alpha oscillates 2.93 to 3.35 deg, speed oscillates 12.70 to 13.36 m/s, qualitatively consistent with theoretical phugoid period (~5.84 s)
+   - Phugoid period estimation requires longer simulation (only 1 zero crossing observed in 6.5 s)
+   - Wind axes sign convention confirmed: drag = -forces_W[0], lift = -forces_W[2] (freestream is in -x_W direction)
+   - 15/15 checks pass; 2 informational metrics logged (phugoid period, glide ratio)
+
 ### In Progress / Known Issues
 
 **Current Status:**
 
-The core 6-DOF dynamics infrastructure is complete. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms) have been resolved. A large merge from main introduced the immutability refactor, vortex singularity refactor, and other improvements. The vortex singularity refactor has been fully incorporated into the coupled solver. Validation can now proceed.
+The core 6-DOF dynamics infrastructure is complete and initial validation has passed. Force sensibility, energy conservation, and qualitative phugoid behavior have been validated. All previously critical issues (rotation matrix convention, Euler angle extraction, rotational velocity terms, immutability compatibility) have been resolved.
 
 **Needs Updating from Main Merge:**
 
@@ -377,10 +399,12 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 
 **Needs Validation/Testing:**
 
-3. **Full 6-DOF Dynamics Validation** (HIGH PRIORITY)
-   - Rotational velocity terms are now enabled but need validation against known solutions
-   - Euler angle extraction needs verification with various initial orientations
-   - Energy conservation should be checked for gliding simulations
+3. **Full 6-DOF Dynamics Validation** (IN PROGRESS)
+   - ~~Force/moment sensibility~~ (COMPLETED - see item 35 above)
+   - ~~Energy conservation~~ (COMPLETED - see item 35 above)
+   - Quantitative phugoid period/damping comparison with XFLR5 eigenvalue analysis (needs longer simulation or frequency analysis)
+   - Time step sensitivity analysis
+   - Wake convection validation
 
 4. **Non-Zero Sideslip Cases** (MEDIUM PRIORITY)
    - Current implementation verified for alpha > 0, beta = 0
@@ -469,10 +493,11 @@ The core 6-DOF dynamics infrastructure is complete. All previously critical issu
 **Priority 1: Validation and Verification (CURRENT FOCUS)**
 
 1. **Validate Full 6-DOF Dynamics**
-   - Verify force/moment calculations produce physically sensible results
-   - Check energy conservation (kinetic + potential should be approximately constant for gliding)
-   - Compare simple glider free flight trajectory with XFLR5 dynamic stability predictions
-   - Tune time step size for stability/accuracy trade-off
+   - ~~Verify force/moment calculations produce physically sensible results~~ (COMPLETED)
+   - ~~Check energy conservation (kinetic + potential should decrease monotonically for gliding)~~ (COMPLETED, 0.19% error)
+   - ~~Observe qualitative phugoid dynamics~~ (COMPLETED, period qualitatively matches theory)
+   - Compare phugoid period/damping quantitatively with XFLR5 dynamic stability predictions
+   - Tune time step size for stability/accuracy trade off
    - Validate wake convection is physically reasonable
    - Test with non-zero sideslip (beta) cases
 

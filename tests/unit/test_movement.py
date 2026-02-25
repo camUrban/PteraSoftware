@@ -2420,6 +2420,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # Mock _compute_wake_area_mismatch to return values that decrease with
         # increasing delta_time (fewer steps), so the best is at min_num_steps
         # (lower bound = largest delta_time).
+        # noinspection PyUnusedLocal
         def mock_mismatch(dt, am, opm):
             # Mismatch decreases as delta_time increases (fewer steps).
             return 1.0 / dt
@@ -2474,6 +2475,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # Mock _compute_wake_area_mismatch to return values that decrease with
         # decreasing delta_time (more steps), so the best is at max_num_steps
         # (upper bound = smallest delta_time).
+        # noinspection PyUnusedLocal
         def mock_mismatch(dt, am, opm):
             # Mismatch decreases as delta_time decreases (more steps).
             return dt * 10.0

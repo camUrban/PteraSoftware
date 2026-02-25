@@ -27,7 +27,6 @@ from . import (
     _parameter_validation,
     _transformations,
     _vortices,
-    geometry,
     operating_point,
     problems,
 )
@@ -1680,16 +1679,12 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         #  wakes should be stored in the solver instead of in the Wings for coupled
         #  simulations, or whether wake positions need to be updated to account for
         #  the Airplane's new position and orientation.
-        # Create a new Airplane with the updated position and orientation, but with
-        # the Wings from the prescribed motion.
-        updated_airplane = geometry.airplane.Airplane(
-            wings=list(prescribed_airplane.wings),
-            name=prescribed_airplane.name,
-            Cg_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
-            weight=prescribed_airplane.weight,
-            s_ref=prescribed_airplane.s_ref,
-            c_ref=prescribed_airplane.c_ref,
-            b_ref=prescribed_airplane.b_ref,
+        # Create a deep copy of the prescribed Airplane with the correct CG position.
+        # This uses deep_copy_with_Cg_GP1_CgP1 to avoid re-processing wing symmetry
+        # (which would fail because the Wings are already meshed with immutable set
+        # once attributes).
+        updated_airplane = prescribed_airplane.deep_copy_with_Cg_GP1_CgP1(
+            np.array([0.0, 0.0, 0.0], dtype=float)
         )
 
         # Get the CoupledOperatingPoint that was created in

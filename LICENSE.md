@@ -1,9 +1,3 @@
-# License
-
-This project is licensed under the MIT License. See below for the full license text.
-
----
-
 MIT License
 
 Copyright (c) 2026 Cameron Urban

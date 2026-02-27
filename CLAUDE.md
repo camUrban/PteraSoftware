@@ -42,8 +42,11 @@ Requires Python 3.11, but active development is done in 3.13
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
   - `examples expected output/`: Example output files for verification
-  - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin (not included in version control)
-  - `lambert_2015_2_3__2_4/`: A recreation of Sections 2.3 and 2.4 from Thomas Lambert's thesis "Modeling of aerodynamic forces in flapping flight with the unsteady vortex lattice method" (not included in version control)
+  - `private/`: Directory with documentation not included in this repository's version control
+    - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+    - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+    - `katz_plotkin_d/`: A recreation of Appendix D, which includes example Fortran programs, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+    - `lambert_2015_2_3__2_4/`: A recreation of Sections 2.3 and 2.4 from Thomas Lambert's thesis "Modeling of aerodynamic forces in flapping flight with the unsteady vortex lattice method"
   - `website/`: Directory with the source files for generating the documentation website
   - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
   - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**

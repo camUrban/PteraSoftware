@@ -150,12 +150,14 @@ Draw.webp
 * Moments.png
 * Moment Coefficients.png
 
-# This folder contains documentation files that shouldn't be uploaded.
-/docs/katz_plotkin_13_12/
-/docs/lambert_2015_2_3__2_4/
+# This symlink folder contains reference documentation that shouldn't be uploaded.
+/docs/private
 
 # This folder contains built documentation files that shouldn't be uploaded.
 /docs/website/_build/
 
 # This folder contains a copy of the Furo theme to use as a reference for customization.
 /docs/website/furo_src/
+
+# These are the Claude's documentation files to ignore.
+/docs/CLAUDE_*.md

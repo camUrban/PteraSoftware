@@ -20,7 +20,7 @@ None
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import numpy as np
 
@@ -364,6 +364,18 @@ class CoupledUnsteadyProblem:
         self,
         coupled_movement: movements.movement.CoupledMovement,
         I_BP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        external_forces_fn: (
+            Callable[
+                [
+                    operating_point_mod.CoupledOperatingPoint,
+                    geometry.airplane.Airplane,
+                ],
+                tuple[np.ndarray, np.ndarray],
+            ]
+            | None
+        ) = None,
+        extra_xml: dict[str, str] | None = None,
+        mujoco_assets: dict[str, bytes] | None = None,
     ) -> None:
         """The initialization method.
 
@@ -375,6 +387,20 @@ class CoupledUnsteadyProblem:
             axes, relative to the first Airplane's CG. It can be a tuple, list, or
             ndarray. Values will be converted internally to floats. Its units are in
             kilogram square meters.
+        :param external_forces_fn: A callable that computes additional forces and
+            moments to apply to the Airplane during the coupled simulation. It takes a
+            CoupledOperatingPoint and an Airplane and returns a tuple of two (3,)
+            ndarrays of floats: the additional force (in wind axes, in Newtons) and the
+            additional moment (in wind axes, relative to the first Airplane's CG, in
+            Newton meters). Setting this to None applies no additional forces. The
+            default is None.
+        :param extra_xml: A dict mapping injection point names to XML fragment strings
+            to inject into the MuJoCo model's XML. Supported keys are "default",
+            "asset", "visual", "worldbody", and "body". Setting this to None injects
+            no extra XML. The default is None.
+        :param mujoco_assets: A dict mapping virtual filenames to their binary contents
+            for the MuJoCo model. Setting this to None provides no extra assets. The
+            default is None.
         :return: None
         """
         if not isinstance(coupled_movement, movements.movement.CoupledMovement):
@@ -388,6 +414,10 @@ class CoupledUnsteadyProblem:
             raise ValueError("I_BP1_CgP1 must be symmetric.")
         self._I_BP1_CgP1 = I_BP1_CgP1
         self._I_BP1_CgP1.flags.writeable = False
+
+        if external_forces_fn is not None and not callable(external_forces_fn):
+            raise TypeError("external_forces_fn must be callable or None.")
+        self._external_forces_fn = external_forces_fn
 
         self._num_steps: int = self._coupled_movement.num_steps
         self._delta_time: float = self._coupled_movement.delta_time
@@ -415,7 +445,10 @@ class CoupledUnsteadyProblem:
         ]
 
         self._mujoco_model = _mujoco_model.MuJoCoModel(
-            coupled_movement=self._coupled_movement, I_BP1_CgP1=self._I_BP1_CgP1
+            coupled_movement=self._coupled_movement,
+            I_BP1_CgP1=self._I_BP1_CgP1,
+            extra_xml=extra_xml,
+            mujoco_assets=mujoco_assets,
         )
 
     # --- Immutable: read only properties ---
@@ -426,6 +459,21 @@ class CoupledUnsteadyProblem:
     @property
     def I_BP1_CgP1(self) -> np.ndarray:
         return self._I_BP1_CgP1
+
+    @property
+    def external_forces_fn(
+        self,
+    ) -> (
+        Callable[
+            [
+                operating_point_mod.CoupledOperatingPoint,
+                geometry.airplane.Airplane,
+            ],
+            tuple[np.ndarray, np.ndarray],
+        ]
+        | None
+    ):
+        return self._external_forces_fn
 
     @property
     def num_steps(self) -> int:

@@ -20,6 +20,7 @@ Results are saved to:
 import argparse
 import logging
 import os
+import pickle
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -365,6 +366,13 @@ def run_coupled_simulation(
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Save the solver to a pickle file so that visualization can be rerun without
+    # re-running the simulation.
+    solver_path = output_dir / "solver.pkl"
+    with open(solver_path, "wb") as f:
+        pickle.dump(solver, f, protocol=pickle.HIGHEST_PROTOCOL)
+    script_logger.info(f"Saved solver to: {solver_path}")
+
     original_dir = Path.cwd()
     os.chdir(output_dir)
     script_logger.info(f"Saving results to: {output_dir}")
@@ -394,6 +402,11 @@ def run_coupled_simulation(
         print(f"Final CG position (E): x={final_pos[0]:.6f}, "
               f"y={final_pos[1]:.6f}, z={final_pos[2]:.6f} m")
 
+        # Resolve the path to the GammaBot STL mesh.
+        gammabot_stl_path = str(
+            Path(__file__).parent.parent / "mujoco_examples" / "assets" / "gammabot.stl"
+        )
+
         # Animate free flight.
         ps.output.animate_free_flight(
             coupled_solver=solver,
@@ -401,6 +414,9 @@ def run_coupled_simulation(
             show_wake_vortices=True,
             save=True,
             testing=not show_results,
+            body_mesh_path=gammabot_stl_path,
+            body_mesh_scale=0.001,
+            ground_plane_z_E=0.0,
         )
 
         # Draw the final state.
@@ -410,6 +426,68 @@ def run_coupled_simulation(
             show_wake_vortices=True,
             save=True,
             testing=not show_results,
+            body_mesh_path=gammabot_stl_path,
+            body_mesh_scale=0.001,
+            ground_plane_z_E=0.0,
+        )
+
+    finally:
+        os.chdir(original_dir)
+
+
+def run_viz_only(solver_path: str, show_results: bool = True) -> None:
+    """Reload a saved solver and rerun only the visualization.
+
+    :param solver_path: Path to a solver.pkl file from a previous run.
+    :param show_results: If True, display results interactively.
+    :return: None
+    """
+    solver_path_obj = Path(solver_path).resolve()
+    if not solver_path_obj.exists():
+        script_logger.error(f"Solver file not found: {solver_path_obj}")
+        return
+
+    script_logger.info(f"Loading solver from: {solver_path_obj}")
+    with open(solver_path_obj, "rb") as f:
+        solver = pickle.load(f)
+
+    output_dir = solver_path_obj.parent
+
+    original_dir = Path.cwd()
+    os.chdir(output_dir)
+    script_logger.info(f"Saving results to: {output_dir}")
+
+    try:
+        # Resolve the path to the GammaBot STL mesh.
+        gammabot_stl_path = str(
+            Path(__file__).parent.parent
+            / "mujoco_examples"
+            / "assets"
+            / "gammabot.stl"
+        )
+
+        # Animate free flight.
+        ps.output.animate_free_flight(
+            coupled_solver=solver,
+            scalar_type="lift",
+            show_wake_vortices=True,
+            save=True,
+            testing=not show_results,
+            body_mesh_path=gammabot_stl_path,
+            body_mesh_scale=0.001,
+            ground_plane_z_E=0.0,
+        )
+
+        # Draw the final state.
+        ps.output.draw(
+            solver=solver,
+            scalar_type="lift",
+            show_wake_vortices=True,
+            save=True,
+            testing=not show_results,
+            body_mesh_path=gammabot_stl_path,
+            body_mesh_scale=0.001,
+            ground_plane_z_E=0.0,
         )
 
     finally:
@@ -461,8 +539,20 @@ def main() -> None:
         default=2,
         help="Number of free flight flaps (default: 2)",
     )
+    parser.add_argument(
+        "--viz-only",
+        type=str,
+        default=None,
+        metavar="SOLVER_PKL",
+        help="Skip simulation. Load solver from the given .pkl file and rerun "
+        "visualization only.",
+    )
 
     args = parser.parse_args()
+
+    if args.viz_only:
+        run_viz_only(args.viz_only, show_results=not args.no_show)
+        return
 
     if args.list:
         print("Available configurations:")

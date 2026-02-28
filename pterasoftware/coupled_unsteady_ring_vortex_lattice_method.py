@@ -1476,6 +1476,16 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
             [self.current_coupled_operating_point.externalFX_W, 0.0, 0.0], dtype=float
         )
 
+        # If an external forces function is provided, call it and add the additional
+        # forces and moments (in wind axes).
+        external_forces_fn = self.coupled_unsteady_problem.external_forces_fn
+        if external_forces_fn is not None:
+            extra_forces_W, extra_moments_W_CgP1 = external_forces_fn(
+                self.current_coupled_operating_point, self.current_airplane
+            )
+            forces_W = forces_W + extra_forces_W
+            moments_W_CgP1 = moments_W_CgP1 + extra_moments_W_CgP1
+
         # Compose the full transformation.
         T_pas_W_CgP1_to_E_CgP1 = (
             self.current_coupled_operating_point.T_pas_W_CgP1_to_E_CgP1

@@ -45,6 +45,12 @@ _wake_vortex_color = "white"
 _panel_color = "chartreuse"
 _streamline_color = "orchid"
 _plotter_background_color = "black"
+_body_mesh_color = "cornflowerblue"
+_ground_plane_checker_light = [200, 200, 200]
+_ground_plane_checker_dark = [120, 120, 120]
+_ground_plane_checker_block_size = 32
+_ground_plane_checker_resolution = 256
+_ground_plane_opacity = 0.5
 _figure_background_color = "None"
 _text_color = "#818181"
 _quality = 75.0
@@ -111,6 +117,9 @@ def draw(
     show_wake_vortices: bool | np.bool_ = False,
     save: bool | np.bool_ = False,
     testing: bool | np.bool_ = False,
+    body_mesh_path: str | None = None,
+    body_mesh_scale: float | int = 1.0,
+    ground_plane_z_E: float | int | None = None,
 ) -> None:
     """Draws a solver's Airplane(s).
 
@@ -140,6 +149,17 @@ def draw(
     :param testing: Set this to True to close the image after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param body_mesh_path: The path to an STL file containing the body mesh to display.
+        The mesh is assumed to be in the first Airplane's body axes, relative to the
+        first Airplane's CG. Only used when the solver is a
+        CoupledUnsteadyRingVortexLatticeMethodSolver. Setting this to None disables
+        body mesh rendering. The default is None.
+    :param body_mesh_scale: The scale factor to apply to the body mesh before rendering.
+        Only used when body_mesh_path is not None. The default is 1.0.
+    :param ground_plane_z_E: The z coordinate of the ground plane (in Earth axes, in
+        meters). Only used when the solver is a
+        CoupledUnsteadyRingVortexLatticeMethodSolver. Setting this to None disables
+        ground plane rendering. The default is None.
     :return: None
     """
     if not isinstance(
@@ -222,6 +242,40 @@ def draw(
 
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
+
+    if body_mesh_path is not None:
+        if not isinstance(
+            solver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        ):
+            raise ValueError(
+                "body_mesh_path can only be used when the solver is a "
+                "CoupledUnsteadyRingVortexLatticeMethodSolver."
+            )
+        body_mesh_path = _parameter_validation.str_return_str(
+            body_mesh_path, "body_mesh_path"
+        )
+    body_mesh_scale = _parameter_validation.number_in_range_return_float(
+        body_mesh_scale, "body_mesh_scale"
+    )
+    if ground_plane_z_E is not None:
+        if not isinstance(
+            solver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        ):
+            raise ValueError(
+                "ground_plane_z_E can only be used when the solver is a "
+                "CoupledUnsteadyRingVortexLatticeMethodSolver."
+            )
+        ground_plane_z_E = _parameter_validation.number_in_range_return_float(
+            ground_plane_z_E, "ground_plane_z_E"
+        )
+
+    # If a body mesh path was provided, load the STL and pre-scale its points.
+    body_mesh_BP1_CgP1: pv.PolyData | None = None
+    if body_mesh_path is not None:
+        body_mesh_BP1_CgP1 = pv.read(body_mesh_path)
+        body_mesh_BP1_CgP1.points = body_mesh_BP1_CgP1.points * body_mesh_scale
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
@@ -332,6 +386,83 @@ def draw(
             smooth_shading=False,
         )
 
+    # Add the body mesh, ground plane, and camera setup for a coupled solver.
+    draw_cpos: tuple | None = None
+    if isinstance(
+        solver,
+        coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        # Compute the airplane's bounding diagonal to use as a scale reference for
+        # the camera and the ground plane texture tiling.
+        airplane_bounds = np.array(panel_surfaces.bounds)
+        airplane_diagonal = float(
+            np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
+        )
+
+        # Add the body mesh at the final time step.
+        if body_mesh_BP1_CgP1 is not None:
+            body_surface = _get_body_mesh_surface_free_flight(
+                body_mesh_BP1_CgP1,
+                solver.stackPosition_E_E[-1, :],
+                solver.stackR_pas_E_to_BP1[-1, :],
+            )
+            plotter.add_mesh(
+                body_surface,
+                color=_body_mesh_color,
+                smooth_shading=True,
+            )
+
+        # Add the ground plane.
+        if ground_plane_z_E is not None:
+            initialPosition_E_E = solver.stackPosition_E_E[0]
+            finalPosition_E_E = solver.stackPosition_E_E[-1]
+            trajectoryMidpoint_E_E = (
+                initialPosition_E_E + finalPosition_E_E
+            ) / 2.0
+            trajectory_extent = float(
+                np.linalg.norm(finalPosition_E_E - initialPosition_E_E)
+            )
+            ground_plane_surface = _get_ground_plane_surface(
+                ground_plane_z_E, trajectory_extent, trajectoryMidpoint_E_E,
+                airplane_diagonal,
+            )
+            ground_plane_texture = _get_ground_plane_texture()
+            plotter.add_mesh(
+                ground_plane_surface,
+                texture=ground_plane_texture,
+                opacity=_ground_plane_opacity,
+                smooth_shading=False,
+            )
+
+            # Set up lighting and shadows.
+            _setup_free_flight_lighting(plotter)
+
+        # Compute a camera position based on the airplane geometry (not the ground
+        # plane) so that the view is zoomed to the airplane's scale.
+        T_pas_E_to_V = _transformations.generate_rot_T(
+            angles=(0.0, 180.0, 0.0),
+            passive=True,
+            intrinsic=True,
+            order="xyz",
+        )
+        airplaneCenter_V = np.array(
+            [
+                (airplane_bounds[0] + airplane_bounds[1]) / 2.0,
+                (airplane_bounds[2] + airplane_bounds[3]) / 2.0,
+                (airplane_bounds[4] + airplane_bounds[5]) / 2.0,
+            ]
+        )
+        padding = airplane_diagonal * 2.0
+        camera_distance = airplane_diagonal + padding
+        cameraDirection_V = np.array([-1.0, -1.0, 1.0])
+        cameraDirection_V = cameraDirection_V / np.linalg.norm(cameraDirection_V)
+        cameraPosition_V = airplaneCenter_V + camera_distance * cameraDirection_V
+        draw_cpos = (
+            tuple(cameraPosition_V),
+            tuple(airplaneCenter_V),
+            (0.0, 0.0, 1.0),
+        )
+
     # If showing streamlines, plot them.
     if show_streamlines and not isinstance(
         solver,
@@ -370,12 +501,17 @@ def draw(
 
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
+
+    # Use the computed camera position for coupled solvers (which accounts for the
+    # airplane's actual size), or use the default direction for other solvers.
+    cpos_arg = draw_cpos if draw_cpos is not None else (-1, -1, 1)
+
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window.
         # When the user closes the window, the Plotter still exists. Therefore,
         # it can later be saved as an image if desired.
         plotter.show(
-            cpos=(-1, -1, 1),
+            cpos=cpos_arg,
             full_screen=False,
             auto_close=False,
         )
@@ -383,7 +519,7 @@ def draw(
         # Show the Plotter for 1 second, then proceed automatically. This is useful
         # for testing.
         plotter.show(
-            cpos=(-1, -1, 1),
+            cpos=cpos_arg,
             full_screen=False,
             interactive=False,
             auto_close=False,
@@ -723,6 +859,9 @@ def animate_free_flight(
     show_wake_vortices: bool = False,
     save: bool = False,
     testing: bool = False,
+    body_mesh_path: str | None = None,
+    body_mesh_scale: float | int = 1.0,
+    ground_plane_z_E: float | int | None = None,
 ) -> None:
     """Animates a CoupledUnsteadyRingVortexLatticeMethodSolver's Airplane.
 
@@ -740,6 +879,15 @@ def animate_free_flight(
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param body_mesh_path: The path to an STL file containing the body mesh to display.
+        The mesh is assumed to be in the first Airplane's body axes, relative to the
+        first Airplane's CG. Setting this to None disables body mesh rendering. The
+        default is None.
+    :param body_mesh_scale: The scale factor to apply to the body mesh before rendering.
+        The default is 1.0.
+    :param ground_plane_z_E: The z coordinate of the ground plane (in Earth axes, in
+        meters). Setting this to None disables ground plane rendering. The default is
+        None.
     :return: None
     """
     if not isinstance(
@@ -763,8 +911,30 @@ def animate_free_flight(
     save = _parameter_validation.boolLike_return_bool(save, "save")
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-    # Get the solver's CoupledSteadyProblems' Airplane at each time step.
-    airplanes = coupled_solver.coupled_unsteady_problem.airplanes
+    if body_mesh_path is not None:
+        body_mesh_path = _parameter_validation.str_return_str(
+            body_mesh_path, "body_mesh_path"
+        )
+    body_mesh_scale = _parameter_validation.number_in_range_return_float(
+        body_mesh_scale, "body_mesh_scale"
+    )
+    if ground_plane_z_E is not None:
+        ground_plane_z_E = _parameter_validation.number_in_range_return_float(
+            ground_plane_z_E, "ground_plane_z_E"
+        )
+
+    # If a body mesh path was provided, load the STL and pre-scale its points.
+    body_mesh_BP1_CgP1: pv.PolyData | None = None
+    if body_mesh_path is not None:
+        body_mesh_BP1_CgP1 = pv.read(body_mesh_path)
+        body_mesh_BP1_CgP1.points = body_mesh_BP1_CgP1.points * body_mesh_scale
+
+    # Get the Airplane at each time step from the solver's CoupledSteadyProblems.
+    # These are the Airplanes with forces computed on their Panels, as opposed to the
+    # geometry only Airplanes from the CoupledMovement.
+    airplanes = tuple(
+        csp.airplane for csp in coupled_solver.coupled_steady_problems
+    )
 
     # Scale down the true-speed frames per second to at most 50 fps. This is the
     # maximum speed at which some programs can render WebPs.
@@ -843,8 +1013,33 @@ def animate_free_flight(
     trajectoryMidpoint_E_E = (initialPosition_E_E + finalPosition_E_E) / 2.0
     trajectory_extent = float(np.linalg.norm(finalPosition_E_E - initialPosition_E_E))
 
+    # Compute the airplane's bounding diagonal at the first time step to use as a
+    # scale reference for the camera. This ensures the padding adapts to the size of
+    # the aircraft rather than using a hardcoded minimum.
+    first_panel_surfaces_for_scale = _get_panel_surfaces_free_flight(
+        airplanes[0],
+        coupled_solver.stackPosition_E_E[0],
+        coupled_solver.stackR_pas_E_to_BP1[0],
+    )
+    airplane_bounds = np.array(first_panel_surfaces_for_scale.bounds)
+    airplane_diagonal = float(
+        np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
+    )
+
+    # If a ground plane z coordinate was provided, compute the ground plane surface
+    # once. It is static and will be re-added to the Plotter each frame.
+    ground_plane_surface: pv.PolyData | None = None
+    ground_plane_texture: pv.Texture | None = None
+    if ground_plane_z_E is not None:
+        ground_plane_surface = _get_ground_plane_surface(
+            ground_plane_z_E, trajectory_extent, trajectoryMidpoint_E_E,
+            airplane_diagonal,
+        )
+        ground_plane_texture = _get_ground_plane_texture()
+
     # Add some padding to ensure we can see the whole airplane and wake at each end.
-    padding = float(max(10.0, trajectory_extent * 0.5))
+    # Use the airplane's bounding diagonal as the minimum scale reference.
+    padding = float(max(airplane_diagonal * 2.0, trajectory_extent * 0.5))
     camera_distance = trajectory_extent + padding
 
     # Position the camera along the direction (-1, -1, 1) (in PyVista axes) from the
@@ -893,6 +1088,21 @@ def animate_free_flight(
     # Add both first and last frame meshes to compute clipping range.
     plotter.add_mesh(first_panel_surfaces, show_edges=True, color=_panel_color)
     plotter.add_mesh(last_panel_surfaces, show_edges=True, color=_panel_color)
+
+    # Add body mesh at first and last positions to extend the geometry bounds.
+    if body_mesh_BP1_CgP1 is not None:
+        first_body_surface = _get_body_mesh_surface_free_flight(
+            body_mesh_BP1_CgP1,
+            coupled_solver.stackPosition_E_E[0],
+            coupled_solver.stackR_pas_E_to_BP1[0],
+        )
+        last_body_surface = _get_body_mesh_surface_free_flight(
+            body_mesh_BP1_CgP1,
+            coupled_solver.stackPosition_E_E[last_step],
+            coupled_solver.stackR_pas_E_to_BP1[last_step],
+        )
+        plotter.add_mesh(first_body_surface, color=_body_mesh_color)
+        plotter.add_mesh(last_body_surface, color=_body_mesh_color)
 
     # Add wake at last frame if showing wake (this extends the geometry bounds).
     if show_wake_vortices:
@@ -948,6 +1158,32 @@ def animate_free_flight(
             color=_panel_color,
             smooth_shading=False,
         )
+
+    # Add the body mesh for the first frame.
+    if body_mesh_BP1_CgP1 is not None:
+        body_surface = _get_body_mesh_surface_free_flight(
+            body_mesh_BP1_CgP1,
+            coupled_solver.stackPosition_E_E[0],
+            coupled_solver.stackR_pas_E_to_BP1[0],
+        )
+        plotter.add_mesh(
+            body_surface,
+            color=_body_mesh_color,
+            smooth_shading=True,
+        )
+
+    # Add the ground plane for the first frame.
+    if ground_plane_surface is not None:
+        plotter.add_mesh(
+            ground_plane_surface,
+            texture=ground_plane_texture,
+            opacity=_ground_plane_opacity,
+            smooth_shading=False,
+        )
+
+    # Set up lighting and shadows when a ground plane is present.
+    if ground_plane_surface is not None:
+        _setup_free_flight_lighting(plotter)
 
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
@@ -1066,6 +1302,32 @@ def animate_free_flight(
                 color=_panel_color,
                 smooth_shading=False,
             )
+
+        # Add the body mesh for this frame.
+        if body_mesh_BP1_CgP1 is not None:
+            body_surface = _get_body_mesh_surface_free_flight(
+                body_mesh_BP1_CgP1,
+                coupled_solver.stackPosition_E_E[current_step],
+                coupled_solver.stackR_pas_E_to_BP1[current_step],
+            )
+            plotter.add_mesh(
+                body_surface,
+                color=_body_mesh_color,
+                smooth_shading=True,
+            )
+
+        # Add the ground plane for this frame.
+        if ground_plane_surface is not None:
+            plotter.add_mesh(
+                ground_plane_surface,
+                texture=ground_plane_texture,
+                opacity=_ground_plane_opacity,
+                smooth_shading=False,
+            )
+
+        # Re-enable lighting and shadows after clearing the Plotter.
+        if ground_plane_surface is not None:
+            _setup_free_flight_lighting(plotter)
 
         # If saving, append a WebP Image of this frame to the list of Images.
         if save:
@@ -1801,6 +2063,212 @@ def _get_panel_surfaces_free_flight(
 
     # Return the Panels' surfaces.
     return pv.PolyData(stackVertices_V_E, faces)
+
+
+# TEST: Consider adding unit tests for this function.
+def _get_body_mesh_surface_free_flight(
+    body_mesh_BP1_CgP1: pv.PolyData,
+    position_E_E: np.ndarray,
+    R_pas_E_to_BP1: np.ndarray,
+) -> pv.PolyData:
+    """Returns a PolyData representation of the body STL mesh, in PyVista axes, relative
+    to the Earth origin, for free flight visualization.
+
+    The body mesh is assumed to already be in the first Airplane's body axes, relative to
+    the first Airplane's CG. The transformation chain is:
+    BP1_CgP1 -> E_CgP1 -> E_E -> V_E.
+
+    :param body_mesh_BP1_CgP1: A PolyData representation of the body mesh (in the first
+        Airplane's body axes, relative to the first Airplane's CG).
+    :param position_E_E: A (3,) ndarray of floats representing the current position of
+        the Airplane's CG (in Earth axes, relative to the Earth origin). The units are
+        in meters.
+    :param R_pas_E_to_BP1: A (3,3) ndarray of floats representing the current
+        orientation of the Airplane, expressed as a passive rotation matrix from Earth
+        axes to the Airplane's body axes.
+    :return: A PolyData representation of the body mesh (in PyVista axes, relative to
+        the Earth origin).
+    """
+    # Get the body mesh's vertices in body axes, relative to the first Airplane's CG.
+    stackVertices_BP1_CgP1 = np.array(body_mesh_BP1_CgP1.points, dtype=float)
+
+    # Create the passive rotation transformation from Earth axes, relative to the
+    # first Airplane's CG, to the first Airplane's body axes, relative to the first
+    # Airplane's CG. R_pas_E_to_BP1 is a (3, 3) matrix, so we need to embed it in a
+    # (4, 4) homogeneous transformation matrix.
+    T_pas_E_CgP1_to_BP1_CgP1 = np.eye(4, dtype=float)
+    T_pas_E_CgP1_to_BP1_CgP1[:3, :3] = R_pas_E_to_BP1
+
+    # Invert to get the transformation from the first Airplane's body axes, relative
+    # to the first Airplane's CG, to Earth axes, relative to the first Airplane's CG.
+    T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
+        T_pas_E_CgP1_to_BP1_CgP1
+    )
+
+    # Create the passive translation transformation from Earth axes, relative to
+    # the first Airplane's CG, to Earth axes, relative to the Earth origin.
+    T_pas_E_CgP1_to_E_E = _transformations.generate_trans_T(
+        translations=-position_E_E,
+        passive=True,
+    )
+
+    # Compose the transformations: BP1_CgP1 -> E_CgP1 -> E_E.
+    T_pas_BP1_CgP1_to_E_E = _transformations.compose_T_pas(
+        T_pas_BP1_CgP1_to_E_CgP1,
+        T_pas_E_CgP1_to_E_E,
+    )
+
+    # Apply transformation to all vertices.
+    stackVertices_E_E = _transformations.apply_T_to_vectors(
+        T_pas_BP1_CgP1_to_E_E,
+        stackVertices_BP1_CgP1,
+        has_point=True,
+    )
+
+    # Transform from Earth axes to PyVista axes. Earth axes have +Z pointing down, but
+    # PyVista expects +Z pointing up. A 180 degree rotation about the Y axis flips both
+    # X and Z, giving a right handed system with Z up.
+    T_pas_E_to_V = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+    stackVertices_V_E = _transformations.apply_T_to_vectors(
+        T_pas_E_to_V,
+        stackVertices_E_E,
+        has_point=True,
+    )
+
+    # Return a new PolyData with the transformed points and the original faces.
+    return pv.PolyData(stackVertices_V_E, body_mesh_BP1_CgP1.faces)
+
+
+# TEST: Consider adding unit tests for this function.
+def _get_ground_plane_surface(
+    ground_plane_z_E: float,
+    trajectory_extent: float,
+    trajectoryMidpoint_E_E: np.ndarray,
+    airplane_diagonal: float,
+) -> pv.PolyData:
+    """Returns a PolyData representation of a ground plane, in PyVista axes, relative to
+    the Earth origin.
+
+    The plane is centered at the trajectory's x/y midpoint in Earth axes, at
+    z = ground_plane_z_E. It is sized to always extend beyond the trajectory. The
+    returned plane has its texture coordinates scaled so that a checkerboard texture
+    tiles proportionally to the airplane's size.
+
+    :param ground_plane_z_E: The z coordinate of the ground plane (in Earth axes). The
+        units are in meters.
+    :param trajectory_extent: The distance between the initial and final positions of
+        the trajectory. The units are in meters.
+    :param trajectoryMidpoint_E_E: A (3,) ndarray of floats representing the midpoint
+        of the trajectory (in Earth axes, relative to the Earth origin). The units are
+        in meters.
+    :param airplane_diagonal: The bounding diagonal of the airplane's panel surfaces
+        (in PyVista axes). Used to scale the checkerboard texture tiles. The units are
+        in meters.
+    :return: A PolyData representation of the ground plane (in PyVista axes, relative
+        to the Earth origin).
+    """
+    # Compute the plane size to extend beyond the trajectory. Use the airplane
+    # diagonal as the minimum scale reference.
+    plane_size = max(airplane_diagonal * 8.0, trajectory_extent * 2.0)
+
+    # Build the plane center in Earth axes, using the trajectory's x/y midpoint and
+    # the specified ground z coordinate.
+    planeCenter_E_E = np.array(
+        [trajectoryMidpoint_E_E[0], trajectoryMidpoint_E_E[1], ground_plane_z_E],
+        dtype=float,
+    )
+
+    # Transform the center from Earth axes to PyVista axes. Earth axes have +Z
+    # pointing down, but PyVista expects +Z pointing up. A 180 degree rotation about
+    # the Y axis flips both X and Z, giving a right handed system with Z up.
+    T_pas_E_to_V = _transformations.generate_rot_T(
+        angles=(0.0, 180.0, 0.0),
+        passive=True,
+        intrinsic=True,
+        order="xyz",
+    )
+    planeCenter_V_E = _transformations.apply_T_to_vectors(
+        T_pas_E_to_V,
+        planeCenter_E_E,
+        has_point=True,
+    )
+
+    # Create the ground plane. The ground plane is perpendicular to Earth's z axis.
+    # Under the 180 degree Y rotation (E to V), Earth's z axis (0,0,1) maps to
+    # PyVista's (0,0,-1). The ground plane normal should point "up" in PyVista, so
+    # the direction is (0, 0, 1).
+    plane = pv.Plane(
+        center=planeCenter_V_E,
+        direction=(0.0, 0.0, 1.0),
+        i_size=plane_size,
+        j_size=plane_size,
+    )
+
+    # Scale the texture coordinates so the checkerboard tiles proportionally to the
+    # physical size. Each tile covers one unit of plane_size, so the number of tiles
+    # equals the plane size divided by the airplane diagonal.
+    num_tiles = max(4, int(plane_size / airplane_diagonal)) if airplane_diagonal > 0 else 4
+    plane.active_texture_coordinates = plane.active_texture_coordinates * num_tiles
+
+    return plane
+
+
+def _setup_free_flight_lighting(plotter: pv.Plotter) -> None:
+    """Adds a directional light and enables shadow mapping on the given Plotter.
+
+    The light direction is chosen to illuminate the scene from above and to the side,
+    producing visible shadows on the ground plane.
+
+    :param plotter: The Plotter to configure.
+    :return: None
+    """
+    light = pv.Light(
+        position=(1.0, -1.0, -1.0),
+        focal_point=(0.0, 0.0, 0.0),
+        color="white",
+        intensity=1.0,
+    )
+    plotter.add_light(light)
+
+    # Add a dim ambient fill light so shadowed regions are not completely black.
+    fill = pv.Light(
+        position=(0.0, 0.0, -1.0),
+        focal_point=(0.0, 0.0, 0.0),
+        color="white",
+        intensity=0.3,
+    )
+    plotter.add_light(fill)
+
+    plotter.enable_shadows()
+
+
+def _get_ground_plane_texture() -> pv.Texture:
+    """Returns a checkerboard Texture for the ground plane.
+
+    The texture is a repeating checkerboard pattern. The number of visible tiles
+    depends on the texture coordinate scaling applied to the ground plane surface by
+    ``_get_ground_plane_surface``.
+
+    :return: A PyVista Texture containing a checkerboard pattern with wrap mode set to
+        repeat.
+    """
+    n = _ground_plane_checker_resolution
+    block = _ground_plane_checker_block_size
+    checker = np.zeros((n, n, 3), dtype=np.uint8)
+    for i in range(n):
+        for j in range(n):
+            if (i // block + j // block) % 2 == 0:
+                checker[i, j] = _ground_plane_checker_light
+            else:
+                checker[i, j] = _ground_plane_checker_dark
+    tex = pv.numpy_to_texture(checker)
+    tex.SetRepeat(True)
+    return tex
 
 
 # TEST: Consider adding unit tests for this function.

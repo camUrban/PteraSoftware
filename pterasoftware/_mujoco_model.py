@@ -36,6 +36,8 @@ class MuJoCoModel:
         self,
         coupled_movement: movements.movement.CoupledMovement,
         I_BP1_CgP1: np.ndarray,
+        extra_xml: dict[str, str] | None = None,
+        mujoco_assets: dict[str, bytes] | None = None,
     ) -> None:
         """The initialization method.
 
@@ -43,6 +45,16 @@ class MuJoCoModel:
         :param I_BP1_CgP1: A (3,3) ndarray of floats representing the inertia matrix of
             the airplane represented by coupled_movement's AirplaneMovement. It is in
             the first Airplane's body axes, relative to the first Airplane's CG.
+        :param extra_xml: A dict mapping injection point names to XML fragment strings
+            to inject into the generated MuJoCo XML. Supported keys are "default",
+            "asset", and "visual" (inserted as top level elements), "worldbody"
+            (inserted inside the worldbody element, before the body), and "body"
+            (inserted inside the body element, after the inertial element). The default
+            is None, which injects no extra XML.
+        :param mujoco_assets: A dict mapping virtual filenames to their binary contents.
+            These are passed to MuJoCo's from_xml_string as the assets parameter,
+            allowing meshes and other binary files to be loaded without writing to disk.
+            The default is None, which provides no extra assets.
         :return: None
         """
         start_key_frame_name: str = "start"
@@ -105,14 +117,29 @@ class MuJoCoModel:
             f"{omegaYRad_BP1__E} {omegaZRad_BP1__E}"
         )
 
+        # Build the extra XML fragments to inject. If extra_xml is None, use an empty
+        # dict so the .get calls below return empty strings.
+        _extra = extra_xml if extra_xml is not None else {}
+        extra_default = _extra.get("default", "")
+        extra_asset = _extra.get("asset", "")
+        extra_visual = _extra.get("visual", "")
+        extra_worldbody = _extra.get("worldbody", "")
+        extra_body = _extra.get("body", "")
+
         self.xml_str = f"""
         <mujoco model="{name}">
           <option timestep="{delta_time}" integrator="RK4" gravity="{gravity_str}"/>
 
+          {extra_default}
+          {extra_asset}
+          {extra_visual}
+
           <worldbody>
+            {extra_worldbody}
             <body name="{name}" pos="0.0 0.0 0.0" >
               <freejoint/>
               <inertial pos="0.0 0.0 0.0" mass="{mass}" fullinertia="{inertia_str}"/>
+              {extra_body}
             </body>
           </worldbody>
 
@@ -122,9 +149,16 @@ class MuJoCoModel:
         </mujoco>
         """
 
-        # Create the internal MuJoCo model object from the XML str.
+        # Create the internal MuJoCo model object from the XML str. If mujoco_assets
+        # is provided, pass it so MuJoCo can resolve virtual filenames (e.g., STL
+        # meshes) without writing them to disk.
         # noinspection PyArgumentList
-        self.model = mujoco.MjModel.from_xml_string(self.xml_str)
+        if mujoco_assets is not None:
+            self.model = mujoco.MjModel.from_xml_string(
+                self.xml_str, assets=mujoco_assets
+            )
+        else:
+            self.model = mujoco.MjModel.from_xml_string(self.xml_str)
 
         # Set the internal model's time step to be the same as CoupledMovement's.
         self.model.opt.timestep = delta_time

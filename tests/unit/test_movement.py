@@ -1252,6 +1252,179 @@ class TestMovement(unittest.TestCase):
             # Verify the Movement used the optimizer's return value.
             self.assertEqual(movement.delta_time, fake_optimized_delta_time)
 
+    def test_max_wake_rows_default_none(self):
+        """Test that max_wake_rows defaults to None."""
+        self.assertIsNone(self.static_movement.max_wake_rows)
+        self.assertIsNone(self.basic_movement.max_wake_rows)
+
+    def test_max_wake_chords_default_none(self):
+        """Test that max_wake_chords defaults to None."""
+        self.assertIsNone(self.static_movement.max_wake_chords)
+
+    def test_max_wake_cycles_default_none(self):
+        """Test that max_wake_cycles defaults to None."""
+        self.assertIsNone(self.basic_movement.max_wake_cycles)
+
+    def test_max_wake_rows_stored_and_accessible(self):
+        """Test that max_wake_rows is stored and accessible via property."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_chords=3,
+            max_wake_rows=5,
+        )
+        self.assertEqual(movement.max_wake_rows, 5)
+
+    def test_max_wake_rows_works_for_non_static(self):
+        """Test that max_wake_rows works for non static Movements."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_periodic_geometry_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_cycles=1,
+            max_wake_rows=10,
+        )
+        self.assertEqual(movement.max_wake_rows, 10)
+
+    def test_max_wake_rows_validation(self):
+        """Test that max_wake_rows must be a positive int."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        invalid_values = [0, -1, 2.5, "three"]
+        for invalid_value in invalid_values:
+            with self.subTest(invalid_value=invalid_value):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.movements.movement.Movement(
+                        airplane_movements=airplane_movements,
+                        operating_point_movement=operating_point_movement,
+                        num_chords=3,
+                        max_wake_rows=invalid_value,
+                    )
+
+    def test_max_wake_chords_converts_to_max_wake_rows(self):
+        """Test that max_wake_chords converts to max_wake_rows for static Movements."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_chords=3,
+            max_wake_chords=2,
+        )
+        self.assertEqual(movement.max_wake_chords, 2)
+        self.assertIsNotNone(movement.max_wake_rows)
+        self.assertIsInstance(movement.max_wake_rows, int)
+        self.assertGreater(movement.max_wake_rows, 0)
+
+    def test_max_wake_chords_on_non_static_raises_error(self):
+        """Test that max_wake_chords on non static Movement raises ValueError."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_cycles=1,
+                max_wake_chords=2,
+            )
+
+    def test_max_wake_cycles_converts_to_max_wake_rows(self):
+        """Test that max_wake_cycles converts to max_wake_rows for non static
+        Movements."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_cycles=3,
+            max_wake_cycles=2,
+        )
+        self.assertEqual(movement.max_wake_cycles, 2)
+        self.assertIsNotNone(movement.max_wake_rows)
+        self.assertIsInstance(movement.max_wake_rows, int)
+        self.assertGreater(movement.max_wake_rows, 0)
+
+    def test_max_wake_cycles_on_static_raises_error(self):
+        """Test that max_wake_cycles on static Movement raises ValueError."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_chords=3,
+                max_wake_cycles=2,
+            )
+
+    def test_max_wake_mutual_exclusivity(self):
+        """Test that at most one of max_wake_rows, max_wake_chords, max_wake_cycles
+        can be non None."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # max_wake_rows and max_wake_chords set together.
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_chords=3,
+                max_wake_rows=5,
+                max_wake_chords=2,
+            )
+
+        # max_wake_rows and max_wake_cycles set together.
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_chords=3,
+                max_wake_rows=5,
+                max_wake_cycles=2,
+            )
+
 
 class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
     """This is a class with functions to test the _analytically_optimize_delta_time
@@ -2447,6 +2620,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # Mock _compute_wake_area_mismatch to return values that decrease with
         # increasing delta_time (fewer steps), so the best is at min_num_steps
         # (lower bound = largest delta_time).
+        # noinspection PyUnusedLocal
         def mock_mismatch(dt, am, opm):
             # Mismatch decreases as delta_time increases (fewer steps).
             return 1.0 / dt
@@ -2501,6 +2675,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # Mock _compute_wake_area_mismatch to return values that decrease with
         # decreasing delta_time (more steps), so the best is at max_num_steps
         # (upper bound = smallest delta_time).
+        # noinspection PyUnusedLocal
         def mock_mismatch(dt, am, opm):
             # Mismatch decreases as delta_time decreases (more steps).
             return dt * 10.0

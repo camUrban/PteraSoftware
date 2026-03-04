@@ -39,6 +39,9 @@ This package contains the following modules:
 
     test_unsteady_ring_vortex_lattice_method_variable_geometry.py: This is a testing
     case for the unsteady ring vortex lattice method solver with variable geometry.
+
+    test_unsteady_ring_vortex_lattice_method_wake_truncation.py: This is a testing case
+    for wake truncation in the unsteady ring vortex lattice method solver.
 """
 
 import tests.integration.fixtures
@@ -52,3 +55,4 @@ import tests.integration.test_unsteady_ring_vortex_lattice_method_multiple_wing_
 import tests.integration.test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry
 import tests.integration.test_unsteady_ring_vortex_lattice_method_static_geometry
 import tests.integration.test_unsteady_ring_vortex_lattice_method_variable_geometry
+import tests.integration.test_unsteady_ring_vortex_lattice_method_wake_truncation

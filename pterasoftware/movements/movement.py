@@ -90,6 +90,9 @@ class Movement:
         num_cycles: int | None = None,
         num_chords: int | None = None,
         num_steps: int | None = None,
+        max_wake_rows: int | None = None,
+        max_wake_chords: int | None = None,
+        max_wake_cycles: int | None = None,
     ) -> None:
         """The initialization method.
 
@@ -134,6 +137,16 @@ class Movement:
             objects. If num_steps is initialized as None, and Movement is static,
             Movement will calculate a value for num_steps such that the simulation will
             result in a wake extending back by some number of reference chord lengths.
+        :param max_wake_rows: The maximum number of chordwise wake RingVortex rows per
+            Wing. Works for both static and non static Movements. Must be a positive int
+            if set. At most one of max_wake_rows, max_wake_chords, and max_wake_cycles
+            can be non None. The default is None (no truncation).
+        :param max_wake_chords: The maximum wake length in chord lengths, converted to
+            max_wake_rows internally. Only valid for static Movements (mirrors
+            num_chords). Must be a positive int if set. The default is None.
+        :param max_wake_cycles: The maximum wake length in motion cycles, converted to
+            max_wake_rows internally. Only valid for non static Movements (mirrors
+            num_cycles). Must be a positive int if set. The default is None.
         :return: None
         """
         # Validate and store immutable attributes.
@@ -308,6 +321,75 @@ class Movement:
                 )
         self._num_steps: int = num_steps
 
+        # Validate max_wake_* parameters. At most one can be non None.
+        _num_max_wake_set = sum(
+            x is not None for x in (max_wake_rows, max_wake_chords, max_wake_cycles)
+        )
+        if _num_max_wake_set > 1:
+            raise ValueError(
+                "At most one of max_wake_rows, max_wake_chords, and max_wake_cycles "
+                "can be non None."
+            )
+
+        if max_wake_chords is not None:
+            if not _static:
+                raise ValueError("max_wake_chords is only valid for static Movements.")
+            max_wake_chords = _parameter_validation.int_in_range_return_int(
+                max_wake_chords,
+                "max_wake_chords",
+                min_val=1,
+                min_inclusive=True,
+            )
+        self._max_wake_chords = max_wake_chords
+
+        if max_wake_cycles is not None:
+            if _static:
+                raise ValueError(
+                    "max_wake_cycles is only valid for non static Movements."
+                )
+            max_wake_cycles = _parameter_validation.int_in_range_return_int(
+                max_wake_cycles,
+                "max_wake_cycles",
+                min_val=1,
+                min_inclusive=True,
+            )
+        self._max_wake_cycles = max_wake_cycles
+
+        if max_wake_rows is not None:
+            max_wake_rows = _parameter_validation.int_in_range_return_int(
+                max_wake_rows,
+                "max_wake_rows",
+                min_val=1,
+                min_inclusive=True,
+            )
+
+        # Convert max_wake_chords to max_wake_rows using the same formula as num_chords
+        # to num_steps.
+        if self._max_wake_chords is not None:
+            c_refs = []
+            for airplane_movement in self._airplane_movements:
+                c_ref = airplane_movement.base_airplane.c_ref
+                assert c_ref is not None
+                c_refs.append(c_ref)
+            max_c_ref = max(c_refs)
+
+            distance_per_time_step = (
+                self._delta_time
+                * self._operating_point_movement.base_operating_point.vCg__E
+            )
+            max_wake_rows = math.ceil(
+                self._max_wake_chords * max_c_ref / distance_per_time_step
+            )
+
+        # Convert max_wake_cycles to max_wake_rows using the same formula as
+        # num_cycles to num_steps.
+        if self._max_wake_cycles is not None:
+            max_wake_rows = math.ceil(
+                self._max_wake_cycles * self.lcm_period / self._delta_time
+            )
+
+        self._max_wake_rows = max_wake_rows
+
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
@@ -387,6 +469,18 @@ class Movement:
     @property
     def num_steps(self) -> int:
         return self._num_steps
+
+    @property
+    def max_wake_rows(self) -> int | None:
+        return self._max_wake_rows
+
+    @property
+    def max_wake_chords(self) -> int | None:
+        return self._max_wake_chords
+
+    @property
+    def max_wake_cycles(self) -> int | None:
+        return self._max_wake_cycles
 
     @property
     def airplanes(self) -> tuple[tuple[geometry.airplane.Airplane, ...], ...]:

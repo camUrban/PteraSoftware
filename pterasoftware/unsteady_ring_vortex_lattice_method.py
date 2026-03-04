@@ -66,6 +66,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             raise TypeError("unsteady_problem must be an UnsteadyProblem.")
         self.unsteady_problem = unsteady_problem
 
+        self._max_wake_rows = self.unsteady_problem.max_wake_rows
         self.num_steps = self.unsteady_problem.num_steps
         self.delta_time = self.unsteady_problem.delta_time
         self.first_results_step = self.unsteady_problem.first_results_step
@@ -240,8 +241,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # The number of wake RingVortices is the time step number multiplied by
             # the number of spanwise Panels. This works because the first time step
-            # number is 0.
-            this_num_wake_ring_vortices = step * this_num_spanwise_panels
+            # number is 0. If wake truncation is enabled, cap the number of
+            # chordwise wake rows at max_wake_rows.
+            this_num_chordwise_wake_rows = step
+            if self._max_wake_rows is not None:
+                this_num_chordwise_wake_rows = min(step, self._max_wake_rows)
+            this_num_wake_ring_vortices = (
+                this_num_chordwise_wake_rows * this_num_spanwise_panels
+            )
 
             # Allocate the ndarrays for this time step.
             this_wake_ring_vortex_strengths = np.zeros(
@@ -1680,6 +1687,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
+                        # If wake truncation is enabled, discard the oldest (most
+                        # downstream) rows of wake points. The point grid has one more
+                        # row than the vortex grid because points form vertices and
+                        # vortices form cells.
+                        if (
+                            self._max_wake_rows is not None
+                            and next_wing.gridWrvp_GP1_CgP1.shape[0]
+                            > self._max_wake_rows + 1
+                        ):
+                            next_wing.gridWrvp_GP1_CgP1 = next_wing.gridWrvp_GP1_CgP1[
+                                : self._max_wake_rows + 1
+                            ]
+
             unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
             unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
 
@@ -1739,6 +1759,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         .wake_ring_vortices
                     )
                     assert this_wing_wake_ring_vortices is not None
+
+                    # If wake truncation is enabled, trim the oldest rows of
+                    # wake RingVortices before adding the new row. This avoids
+                    # creating RingVortex objects that would immediately be
+                    # discarded.
+                    if (
+                        self._max_wake_rows is not None
+                        and this_wing_wake_ring_vortices.shape[0] >= self._max_wake_rows
+                    ):
+                        this_wing_wake_ring_vortices = this_wing_wake_ring_vortices[
+                            : self._max_wake_rows - 1
+                        ]
 
                     # Initialize a new ndarray to hold the new row of wake RingVortices.
                     new_row_of_wake_ring_vortices = np.empty(

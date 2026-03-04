@@ -167,6 +167,7 @@ class UnsteadyProblem:
 
         self._num_steps: int = self._movement.num_steps
         self._delta_time: float = self._movement.delta_time
+        self._max_wake_rows: int | None = self._movement.max_wake_rows
 
         # For UnsteadyProblems with a static Movement, we are typically interested in
         # the final time step's forces and moments, which, assuming convergence, will be
@@ -267,6 +268,10 @@ class UnsteadyProblem:
     @property
     def first_results_step(self) -> int:
         return self._first_results_step
+
+    @property
+    def max_wake_rows(self) -> int | None:
+        return self._max_wake_rows
 
     @property
     def steady_problems(self) -> tuple[SteadyProblem, ...]:

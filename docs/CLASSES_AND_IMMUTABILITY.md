@@ -83,6 +83,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `delta_time`           | `float`                     | Copied from Movement  |
 | `first_averaging_step` | `int`                       | Computed during init  |
 | `first_results_step`   | `int`                       | Computed during init  |
+| `max_wake_rows`        | `int \| None`               | Copied from Movement  |
 | `steady_problems`      | `tuple[SteadyProblem, ...]` | Generated during init |
 
 #### Mutable (populated by solver)
@@ -118,6 +119,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `num_cycles`               | `int \| None`                      | Number of cycles          |
 | `num_chords`               | `int \| None`                      | Number of chord lengths   |
 | `num_steps`                | `int`                              | Total time steps          |
+| `max_wake_rows`            | `int \| None`                      | Max wake rows per Wing    |
+| `max_wake_chords`          | `int \| None`                      | Max wake in chord lengths |
+| `max_wake_cycles`          | `int \| None`                      | Max wake in motion cycles |
 | `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | Generated Airplanes       |
 | `operating_points`         | `tuple[OperatingPoint, ...]`       | Generated OperatingPoints |
 

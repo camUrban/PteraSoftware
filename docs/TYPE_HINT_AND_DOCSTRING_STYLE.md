@@ -415,6 +415,8 @@ def property_name(self) -> ReturnType:
     """
 ```
 
+For simple getter properties that just return a stored attribute, the docstring can be omitted if the attribute is already thoroughly documented in `__init__`'s docstring. This applies broadly to all simple getter properties, not only to cached properties with invalidating setters.
+
 ### Cached Properties with Invalidating Setters
 
 When implementing a caching pattern where computed properties are lazily evaluated and cached, with setters that invalidate dependent caches, follow these conventions:

@@ -81,6 +81,7 @@ class TestWingCrossSection(unittest.TestCase):
                 num_spanwise_panels=8,
             )
 
+    # noinspection PyUnresolvedReferences
     def test_num_spanwise_panels_validation(self):
         """Test num_spanwise_panels parameter validation."""
         # Test with valid positive integer
@@ -133,6 +134,7 @@ class TestWingCrossSection(unittest.TestCase):
                         chord=invalid_chord,
                     )
 
+    # noinspection PyUnresolvedReferences
     def test_Lp_Wcsp_Lpp_validation(self):
         """Test Lp_Wcsp_Lpp parameter validation."""
         # Test with valid array-like inputs

@@ -110,7 +110,7 @@ class TestWakeTruncation(unittest.TestCase):
 
         for wing in final_airplane.wings:
             wake_ring_vortices = wing.wake_ring_vortices
-            assert wake_ring_vortices is not None
+            self.assertIsNotNone(wake_ring_vortices)
 
             num_chordwise_wake_rows = wake_ring_vortices.shape[0]
             self.assertEqual(num_chordwise_wake_rows, self.max_wake_rows)
@@ -126,8 +126,8 @@ class TestWakeTruncation(unittest.TestCase):
                 wing_id
             ].wake_ring_vortices
             truncated_wake = truncated_airplane.wings[wing_id].wake_ring_vortices
-            assert non_truncated_wake is not None
-            assert truncated_wake is not None
+            self.assertIsNotNone(non_truncated_wake)
+            self.assertIsNotNone(truncated_wake)
 
             self.assertGreater(non_truncated_wake.shape[0], truncated_wake.shape[0])
 
@@ -165,7 +165,7 @@ class TestWakeTruncation(unittest.TestCase):
 
         for wing in final_airplane.wings:
             grid = wing.gridWrvp_GP1_CgP1
-            assert grid is not None
+            self.assertIsNotNone(grid)
 
             # The point grid has one more row than the vortex grid.
             self.assertEqual(grid.shape[0], self.max_wake_rows + 1)

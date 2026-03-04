@@ -1425,6 +1425,16 @@ class TestMovement(unittest.TestCase):
                 max_wake_cycles=2,
             )
 
+        # max_wake_chords and max_wake_cycles set together.
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_chords=3,
+                max_wake_chords=2,
+                max_wake_cycles=2,
+            )
+
 
 class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
     """This is a class with functions to test the _analytically_optimize_delta_time

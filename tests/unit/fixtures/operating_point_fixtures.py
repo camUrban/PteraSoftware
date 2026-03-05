@@ -363,3 +363,96 @@ def make_near_boundary_beta_operating_point_fixture():
     )
 
     return near_boundary_beta_operating_point_fixture
+
+
+def make_with_attitude_angles_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with non zero
+    Earth to body attitude angles for testing Earth to geometry coordinate
+    transformations.
+
+    :return with_attitude_angles_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with non zero angles_E_to_BP1_izyx to test
+        Earth to geometry axes transformations.
+    """
+    with_attitude_angles_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=0.0,
+        angles_E_to_BP1_izyx=(15.0, 10.0, 5.0),
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return with_attitude_angles_operating_point_fixture
+
+
+def make_with_cg_position_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with non zero CG
+    position in Earth axes for testing position dependent transformations.
+
+    :return with_cg_position_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with non zero Cg_E_Eo to test position
+        dependent surface point transformations.
+    """
+    with_cg_position_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=0.0,
+        Cg_E_Eo=(100.0, 0.0, -50.0),
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return with_cg_position_operating_point_fixture
+
+
+def make_with_ground_surface_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with a horizontal
+    ground surface defined at z = 0 in Earth axes for testing image surface
+    transformations.
+
+    :return with_ground_surface_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with an image surface at z = 0 in Earth
+        axes (normal pointing up) to test surface effect modeling.
+    """
+    with_ground_surface_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=0.0,
+        Cg_E_Eo=(0.0, 0.0, -10.0),
+        surfaceNormal_E=(0.0, 0.0, -1.0),
+        surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return with_ground_surface_operating_point_fixture
+
+
+def make_with_tilted_surface_operating_point_fixture():
+    """This method makes a fixture that is an OperatingPoint with a tilted
+    image surface, non zero attitude angles, and non zero CG position for
+    testing the full image surface transformation pipeline.
+
+    :return with_tilted_surface_operating_point_fixture: OperatingPoint
+        This is the OperatingPoint with a tilted image surface, non zero
+        orientation, and non zero CG position to test the complete surface
+        transformation from Earth to geometry axes.
+    """
+    with_tilted_surface_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=10.0,
+        alpha=5.0,
+        beta=0.0,
+        angles_E_to_BP1_izyx=(0.0, 10.0, 0.0),
+        Cg_E_Eo=(50.0, 0.0, -20.0),
+        surfaceNormal_E=(0.0, 0.0, -1.0),
+        surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        externalFX_W=0.0,
+        nu=15.06e-6,
+    )
+
+    return with_tilted_surface_operating_point_fixture

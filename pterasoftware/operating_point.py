@@ -12,6 +12,8 @@ None
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import numpy as np
 
 from . import _parameter_validation, _transformations
@@ -54,6 +56,8 @@ class OperatingPoint:
         vCg__E: float | int = 10.0,
         alpha: float | int = 5.0,
         beta: float | int = 0.0,
+        angles_E_to_BP1_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        Cg_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         externalFX_W: float | int = 0.0,
         nu: float | int = 15.06e-6,
     ) -> None:
@@ -81,6 +85,17 @@ class OperatingPoint:
             in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
             range (-180.0, 180.0] and will be converted internally to a float. The units
             are in degrees. The default is 0.0.
+        :param angles_E_to_BP1_izyx: An array-like object of 3 numbers representing the
+            angles from Earth axes to the first Airplane's body axes using an intrinsic
+            zy'x" sequence. Can be a tuple, list, or ndarray. Values are converted to
+            floats internally. Note that body axes differ from geometry axes: body axes
+            point forward/right/down while geometry axes point aft/right/up. The units
+            are in degrees. All angles must lie in the range (-180.0, 180.0] degrees.
+            The default is (0.0, 0.0, 0.0).
+        :param Cg_E_Eo: An array-like object of 3 numbers representing the position of
+            the first Airplane's CG (in Earth axes, relative to the Earth origin). Can
+            be a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters. The default is (0.0, 0.0, 0.0).
         :param externalFX_W: The additional thrust or drag on a problem's Airplane(s)
             (in wind axes) not due to the Airplanes' Wings. It is useful for trim
             analyses. It must be a number (int or float) and will be converted
@@ -109,6 +124,41 @@ class OperatingPoint:
         self._beta = _parameter_validation.number_in_range_return_float(
             beta, "beta", -180.0, False, 180.0, True
         )
+        angles_E_to_BP1_izyx = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                angles_E_to_BP1_izyx, "angles_E_to_BP1_izyx"
+            )
+        )
+        angles_E_to_BP1_izyx[0] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[0],
+            "angles_E_to_BP1_izyx[0]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        angles_E_to_BP1_izyx[1] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[1],
+            "angles_E_to_BP1_izyx[1]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        angles_E_to_BP1_izyx[2] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[2],
+            "angles_E_to_BP1_izyx[2]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        self._angles_E_to_BP1_izyx = angles_E_to_BP1_izyx
+        self._angles_E_to_BP1_izyx.flags.writeable = False
+        self._Cg_E_Eo = _parameter_validation.threeD_number_vectorLike_return_float(
+            Cg_E_Eo, "Cg_E_Eo"
+        )
+        self._Cg_E_Eo.flags.writeable = False
         self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )
@@ -119,8 +169,16 @@ class OperatingPoint:
         # Initialize the caches for the properties derived from the immutable
         # attributes.
         self._qInf__E: float | None = None
+        self._T_pas_GP1_CgP1_to_BP1_CgP1: np.ndarray | None = None
+        self._T_pas_BP1_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_BP1_CgP1_to_W_CgP1: np.ndarray | None = None
+        self._T_pas_W_CgP1_to_BP1_CgP1: np.ndarray | None = None
         self._T_pas_GP1_CgP1_to_W_CgP1: np.ndarray | None = None
         self._T_pas_W_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_E_CgP1_to_BP1_CgP1: np.ndarray | None = None
+        self._T_pas_BP1_CgP1_to_E_CgP1: np.ndarray | None = None
+        self._T_pas_E_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_GP1_CgP1_to_E_CgP1: np.ndarray | None = None
         self._vInfHat_GP1__E: np.ndarray | None = None
         self._vInf_GP1__E: np.ndarray | None = None
 
@@ -140,6 +198,14 @@ class OperatingPoint:
     @property
     def beta(self) -> float:
         return self._beta
+
+    @property
+    def angles_E_to_BP1_izyx(self) -> np.ndarray:
+        return self._angles_E_to_BP1_izyx
+
+    @property
+    def Cg_E_Eo(self) -> np.ndarray:
+        return self._Cg_E_Eo
 
     @property
     def externalFX_W(self) -> float:
@@ -163,6 +229,84 @@ class OperatingPoint:
         return self._qInf__E
 
     @property
+    def T_pas_GP1_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's geometry axes relative to the first Airplane's CG to the
+        first Airplane's body axes relative to the first Airplane's CG.
+
+        Geometry axes to body axes transformation: flip x (aft to forward) and z (up to
+        down). This is equivalent to a 180-degree rotation about y.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's geometry axes relative to the first Airplane's CG
+            to the first Airplane's body axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_GP1_CgP1_to_BP1_CgP1 is None:
+            self._T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+                angles=np.array([0.0, 180.0, 0.0]),
+                passive=True,
+                intrinsic=False,
+                order="xyz",
+            )
+            self._T_pas_GP1_CgP1_to_BP1_CgP1.flags.writeable = False
+        return self._T_pas_GP1_CgP1_to_BP1_CgP1
+
+    @property
+    def T_pas_BP1_CgP1_to_GP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's body axes relative to the first Airplane's CG to the first
+        Airplane's geometry axes relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's body axes relative to the first Airplane's CG to
+            the first Airplane's geometry axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_BP1_CgP1_to_GP1_CgP1 is None:
+            self._T_pas_BP1_CgP1_to_GP1_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_GP1_CgP1_to_BP1_CgP1
+            )
+            self._T_pas_BP1_CgP1_to_GP1_CgP1.flags.writeable = False
+        return self._T_pas_BP1_CgP1_to_GP1_CgP1
+
+    @property
+    def T_pas_BP1_CgP1_to_W_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's body axes relative to the first Airplane's CG to wind axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's body axes relative to the first Airplane's CG to
+            wind axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_BP1_CgP1_to_W_CgP1 is None:
+            angles_BP1_to_W_exyz = np.array([0.0, -self._alpha, self._beta])
+            self._T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
+                angles=angles_BP1_to_W_exyz,
+                passive=True,
+                intrinsic=False,
+                order="xyz",
+            )
+            self._T_pas_BP1_CgP1_to_W_CgP1.flags.writeable = False
+        return self._T_pas_BP1_CgP1_to_W_CgP1
+
+    @property
+    def T_pas_W_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        wind axes relative to the first Airplane's CG to the first Airplane's body axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from wind axes relative to the first Airplane's CG to the first Airplane's
+            body axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_W_CgP1_to_BP1_CgP1 is None:
+            self._T_pas_W_CgP1_to_BP1_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_BP1_CgP1_to_W_CgP1
+            )
+            self._T_pas_W_CgP1_to_BP1_CgP1.flags.writeable = False
+        return self._T_pas_W_CgP1_to_BP1_CgP1
+
+    @property
     def T_pas_GP1_CgP1_to_W_CgP1(self) -> np.ndarray:
         """The passive transformation matrix which maps in homogeneous coordinates from
         the first Airplane's geometry axes relative to the first Airplane's CG to wind
@@ -173,23 +317,8 @@ class OperatingPoint:
             to wind axes relative to the first Airplane's CG.
         """
         if self._T_pas_GP1_CgP1_to_W_CgP1 is None:
-            # Geometry axes to body axes transformation: flip x (aft to forward) and z
-            # (up to down). This is equivalent to a 180-degree rotation about y.
-            T_pas_GP1_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
-                angles=np.array([0.0, 180.0, 0.0]),
-                passive=True,
-                intrinsic=False,
-                order="xyz",
-            )
-
-            angles_B_to_W_exyz = np.array([0.0, -self._alpha, self._beta])
-
-            T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
-                angles=angles_B_to_W_exyz, passive=True, intrinsic=False, order="xyz"
-            )
-
             self._T_pas_GP1_CgP1_to_W_CgP1 = _transformations.compose_T_pas(
-                T_pas_GP1_CgP1_to_BP1_CgP1, T_pas_BP1_CgP1_to_W_CgP1
+                self.T_pas_GP1_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_W_CgP1
             )
             self._T_pas_GP1_CgP1_to_W_CgP1.flags.writeable = False
         return self._T_pas_GP1_CgP1_to_W_CgP1
@@ -210,6 +339,77 @@ class OperatingPoint:
             )
             self._T_pas_W_CgP1_to_GP1_CgP1.flags.writeable = False
         return self._T_pas_W_CgP1_to_GP1_CgP1
+
+    @property
+    def T_pas_E_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        Earth axes relative to the first Airplane's CG to the first Airplane's body axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from Earth axes relative to the first Airplane's CG to the first Airplane's
+            body axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_E_CgP1_to_BP1_CgP1 is None:
+            self._T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+                angles=self._angles_E_to_BP1_izyx,
+                passive=True,
+                intrinsic=True,
+                order="zyx",
+            )
+            self._T_pas_E_CgP1_to_BP1_CgP1.flags.writeable = False
+        return self._T_pas_E_CgP1_to_BP1_CgP1
+
+    @property
+    def T_pas_BP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's body axes relative to the first Airplane's CG to Earth axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's body axes relative to the first Airplane's CG to
+            Earth axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_BP1_CgP1_to_E_CgP1 is None:
+            self._T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_E_CgP1_to_BP1_CgP1
+            )
+            self._T_pas_BP1_CgP1_to_E_CgP1.flags.writeable = False
+        return self._T_pas_BP1_CgP1_to_E_CgP1
+
+    @property
+    def T_pas_E_CgP1_to_GP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        Earth axes relative to the first Airplane's CG to the first Airplane's geometry
+        axes relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from Earth axes relative to the first Airplane's CG to the first Airplane's
+            geometry axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_E_CgP1_to_GP1_CgP1 is None:
+            self._T_pas_E_CgP1_to_GP1_CgP1 = _transformations.compose_T_pas(
+                self.T_pas_E_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_GP1_CgP1
+            )
+            self._T_pas_E_CgP1_to_GP1_CgP1.flags.writeable = False
+        return self._T_pas_E_CgP1_to_GP1_CgP1
+
+    @property
+    def T_pas_GP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's geometry axes relative to the first Airplane's CG to Earth
+        axes relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's geometry axes relative to the first Airplane's CG
+            to Earth axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_GP1_CgP1_to_E_CgP1 is None:
+            self._T_pas_GP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_E_CgP1_to_GP1_CgP1
+            )
+            self._T_pas_GP1_CgP1_to_E_CgP1.flags.writeable = False
+        return self._T_pas_GP1_CgP1_to_E_CgP1
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:

@@ -223,6 +223,8 @@ class OperatingPoint:
         self._T_pas_BP1_CgP1_to_E_CgP1: np.ndarray | None = None
         self._T_pas_E_CgP1_to_GP1_CgP1: np.ndarray | None = None
         self._T_pas_GP1_CgP1_to_E_CgP1: np.ndarray | None = None
+        self._surfaceNormal_GP1: np.ndarray | None = None
+        self._surfacePoint_GP1_CgP1: np.ndarray | None = None
         self._vInfHat_GP1__E: np.ndarray | None = None
         self._vInf_GP1__E: np.ndarray | None = None
 
@@ -462,6 +464,44 @@ class OperatingPoint:
             )
             self._T_pas_GP1_CgP1_to_E_CgP1.flags.writeable = False
         return self._T_pas_GP1_CgP1_to_E_CgP1
+
+    @property
+    def surfaceNormal_GP1(self) -> np.ndarray | None:
+        """The image surface's unit normal vector (in the first Airplane's geometry
+        axes).
+
+        :return: A (3,) ndarray of floats representing the image surface's unit normal
+            vector (in the first Airplane's geometry axes), or None if no image surface
+            is defined.
+        """
+        if self._surfaceNormal_E is None:
+            return None
+        if self._surfaceNormal_GP1 is None:
+            self._surfaceNormal_GP1 = _transformations.apply_T_to_vectors(
+                self.T_pas_E_CgP1_to_GP1_CgP1, self._surfaceNormal_E, has_point=False
+            )
+            self._surfaceNormal_GP1.flags.writeable = False
+        return self._surfaceNormal_GP1
+
+    @property
+    def surfacePoint_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of a point on the image surface (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of a point on the
+            image surface (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if no image surface is
+            defined.
+        """
+        if self._surfacePoint_E_Eo is None:
+            return None
+        if self._surfacePoint_GP1_CgP1 is None:
+            surfacePoint_E_CgP1 = self._surfacePoint_E_Eo - self._Cg_E_Eo
+            self._surfacePoint_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                self.T_pas_E_CgP1_to_GP1_CgP1, surfacePoint_E_CgP1, has_point=True
+            )
+            self._surfacePoint_GP1_CgP1.flags.writeable = False
+        return self._surfacePoint_GP1_CgP1
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:

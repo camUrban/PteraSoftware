@@ -58,6 +58,8 @@ class OperatingPoint:
         beta: float | int = 0.0,
         angles_E_to_BP1_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         Cg_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
+        surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
         externalFX_W: float | int = 0.0,
         nu: float | int = 15.06e-6,
     ) -> None:
@@ -96,6 +98,23 @@ class OperatingPoint:
             the first Airplane's CG (in Earth axes, relative to the Earth origin). Can
             be a tuple, list, or ndarray. Values are converted to floats internally. The
             units are in meters. The default is (0.0, 0.0, 0.0).
+        :param surfaceNormal_E: None, or an array-like of 3 numbers (int or float)
+            representing the unit normal vector (in Earth axes) that, together with
+            surfacePoint_E_Eo, defines the image surface used for surface effect
+            modeling via the method of images. Can be None, or a tuple, list, or
+            ndarray. If not None, values are converted to floats and normalized
+            internally. Note that reversing the normal direction (using the antiparallel
+            vector) defines the same plane and produces the same result. This value must
+            be None if surfacePoint_E_Eo is None, and cannot be None if
+            surfacePoint_E_Eo is not None. The default is None.
+        :param surfacePoint_E_Eo: None, or an array-like of 3 numbers (int or float)
+            representing a point (in Earth axes, relative to the Earth origin) that,
+            along with surfaceNormal_E, defines the location of the image surface used
+            for surface effect modeling via the method of images. Can be None, or a
+            tuple, list, or ndarray. If not None, values are converted to floats
+            internally. This value must be None if surfaceNormal_E is None, and cannot
+            be None if surfaceNormal_E is not None. The units are in meters. The default
+            is None.
         :param externalFX_W: The additional thrust or drag on a problem's Airplane(s)
             (in wind axes) not due to the Airplanes' Wings. It is useful for trim
             analyses. It must be a number (int or float) and will be converted
@@ -159,6 +178,31 @@ class OperatingPoint:
             Cg_E_Eo, "Cg_E_Eo"
         )
         self._Cg_E_Eo.flags.writeable = False
+        if surfaceNormal_E is not None and surfacePoint_E_Eo is not None:
+            surfaceNormal_E = (
+                _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+                    surfaceNormal_E, "surfaceNormal_E"
+                )
+            )
+            surfaceNormal_E.flags.writeable = False
+            surfacePoint_E_Eo = (
+                _parameter_validation.threeD_number_vectorLike_return_float(
+                    surfacePoint_E_Eo, "surfacePoint_E_Eo"
+                )
+            )
+            surfacePoint_E_Eo.flags.writeable = False
+        elif surfaceNormal_E is None and surfacePoint_E_Eo is None:
+            pass
+        elif surfaceNormal_E is None:
+            raise ValueError(
+                "surfaceNormal_E cannot be None when surfacePoint_E_Eo is not None."
+            )
+        else:
+            raise ValueError(
+                "surfacePoint_E_Eo cannot be None when surfaceNormal_E is not None."
+            )
+        self._surfaceNormal_E = surfaceNormal_E
+        self._surfacePoint_E_Eo = surfacePoint_E_Eo
         self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )
@@ -206,6 +250,14 @@ class OperatingPoint:
     @property
     def Cg_E_Eo(self) -> np.ndarray:
         return self._Cg_E_Eo
+
+    @property
+    def surfaceNormal_E(self) -> np.ndarray | None:
+        return self._surfaceNormal_E
+
+    @property
+    def surfacePoint_E_Eo(self) -> np.ndarray | None:
+        return self._surfacePoint_E_Eo
 
     @property
     def externalFX_W(self) -> float:

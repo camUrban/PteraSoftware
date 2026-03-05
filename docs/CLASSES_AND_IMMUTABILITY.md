@@ -259,10 +259,12 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `vCg__E`               | `float`      | CG speed                        |
 | `alpha`                | `float`      | Angle of attack                 |
 | `beta`                 | `float`      | Sideslip angle                  |
-| `angles_E_to_BP1_izyx` | `np.ndarray` | Earth-to-body orientation       |
-| `Cg_E_Eo`              | `np.ndarray` | CG position in Earth axes       |
-| `externalFX_W`         | `float`      | External force                  |
-| `nu`                   | `float`      | Kinematic viscosity             |
+| `angles_E_to_BP1_izyx` | `np.ndarray`         | Earth-to-body orientation       |
+| `Cg_E_Eo`              | `np.ndarray`         | CG position in Earth axes       |
+| `surfaceNormal_E`      | `np.ndarray \| None` | Image surface normal            |
+| `surfacePoint_E_Eo`    | `np.ndarray \| None` | Image surface point             |
+| `externalFX_W`         | `float`              | External force                  |
+| `nu`                   | `float`              | Kinematic viscosity             |
 
 #### Derived from Immutable (use manual lazy caching)
 

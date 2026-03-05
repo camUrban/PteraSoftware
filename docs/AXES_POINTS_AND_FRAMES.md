@@ -62,6 +62,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * A…: airfoil
   * …i: inner
   * …o: outer
+* Eo: Earth origin
 * Cg: center of gravity (CG)
 * Cgs: CG (after accounting for symmetry)
 * Ler: leading edge root point
@@ -265,18 +266,26 @@ The two angles α and β are known as the angle of attack and the angle of sides
 
 ## Reference Points
 
-### 1. CG
+### 1. Earth origin
 
-* Position of the Airplane's CG  
-* Ownership: Airplane  
-* Local reference examples  
-  * Text: …relative to the CG…  
-  * Variables: …\_Cg  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's CG…  
+* A fixed point serving as the global spatial origin
+* Ownership: None
+* References
+  * Text: …relative to the Earth origin…
+  * Variables: …\_Eo
+
+### 2. CG
+
+* Position of the Airplane's CG
+* Ownership: Airplane
+* Local reference examples
+  * Text: …relative to the CG…
+  * Variables: …\_Cg
+* Non-local reference examples
+  * Text: …relative to the first Airplane's CG…
   * Variables: …\_CgP1
 
-### 2. CG (after accounting for symmetry)
+### 3. CG (after accounting for symmetry)
 
 * For a non-symmetric or symmetric-continuous Wing, this identical to its Airplane's CG. For mirror-only Wings, it is their Airplane's CG reflected across that Wing's symmetry plane.  
 * Ownership: Wing  
@@ -290,7 +299,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's CG (after accounting for its second Wing's symmetry)…  
   * Variables: …\_Cgs2P1
 
-### 3. Leading edge root point
+### 4. Leading edge root point
 
 * Root point of the Wing's leading edge  
 * Ownership: Wing  
@@ -304,7 +313,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's leading edge root point…  
   * Variables: …\_Ler2P1
 
-### 4. Leading point
+### 5. Leading point
 
 * The leading point of the WingCrossSection  
 * Ownership: WingCrossSection  
@@ -321,7 +330,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading point…  
   * Variables: …\_Lp1Wn2P1
 
-### 5. Leading point parent
+### 6. Leading point parent
 
 * For a Wing's first WingCrossSection, this is the Wing's leading edge root point. For subsequent WingCrossSections, this is the previous WingCrossSection's leading point.  
 * Ownership: WingCrossSection  
@@ -338,7 +347,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading parent point…  
   * Variables: …\_Lpp1Wn2P1
 
-### 6. Panel points
+### 7. Panel points
 
 * The front right, front left, back left, back right, and collocation points of a Panel  
 * Ownership: Panel  
@@ -355,7 +364,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's front right point…  
   * Variables: …\_Frppr3c2Wn2P1
 
-### 7. Bound horseshoe vortex points
+### 8. Bound horseshoe vortex points
 
 * Only relevant in steady horseshoe vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a bound HorseshoeVortex  
@@ -373,7 +382,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…  
   * Variables: …\_Frbhvpr3c2Wn2P1
 
-### 8. Bound ring vortex points
+### 9. Bound ring vortex points
 
 * The front right, front left, back left, and back right points of a bound RingVortex  
 * Ownership: RingVortex  
@@ -390,7 +399,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound RingVortex's front right point…  
   * Variables: …\_Frbrvpr3c2Wn2P1
 
-### 9. Wake horseshoe vortex points
+### 10. Wake horseshoe vortex points
 
 * Only relevant in steady horseshoe and steady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake HorseshoeVortex  
@@ -408,7 +417,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's third wake HorseshoeVortex's front right point…  
   * Variables: …\_Frwhvp3Wn2P1
 
-### 10. Wake ring vortex points
+### 11. Wake ring vortex points
 
 * Only relevant in unsteady ring vortex lattice method simulations  
 * The front right, front left, back left, and back right points of a wake RingVortex  
@@ -426,7 +435,7 @@ The two angles α and β are known as the angle of attack and the angle of sides
   * Text: …relative to the first Airplane's second Wing's (3, 2\) wake RingVortex's front right point…  
   * Variables: …\_Frwrvpr3c2Wn2P1
 
-### 11. Line vortex points
+### 12. Line vortex points
 
 * The start, end, and center points of a LineVortex  
 * Ownership: LineVortex  

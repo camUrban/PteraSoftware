@@ -208,6 +208,10 @@ class OperatingPointMovement:
         this_beta = self._base_operating_point.beta
         thisExternalFX_W = self._base_operating_point.externalFX_W
         this_nu = self._base_operating_point.nu
+        thisAngles_E_to_BP1_izyx = self._base_operating_point.angles_E_to_BP1_izyx
+        thisCg_E_Eo = self._base_operating_point.Cg_E_Eo
+        thisSurfaceNormal_E = self._base_operating_point.surfaceNormal_E
+        thisSurfacePoint_E_Eo = self._base_operating_point.surfacePoint_E_Eo
 
         # Iterate through the time steps.
         for step in range(num_steps):
@@ -221,6 +225,10 @@ class OperatingPointMovement:
                 beta=this_beta,
                 externalFX_W=thisExternalFX_W,
                 nu=this_nu,
+                angles_E_to_BP1_izyx=thisAngles_E_to_BP1_izyx,
+                Cg_E_Eo=thisCg_E_Eo,
+                surfaceNormal_E=thisSurfaceNormal_E,
+                surfacePoint_E_Eo=thisSurfacePoint_E_Eo,
             )
 
             # Add this new OperatingPoint to the list of OperatingPoints.

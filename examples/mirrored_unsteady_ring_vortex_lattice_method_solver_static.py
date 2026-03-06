@@ -225,7 +225,15 @@ del v_tail_movement
 
 # Define a new OperatingPoint.
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+    rho=1.225,
+    vCg__E=10.0,
+    alpha=1.0,
+    beta=0.0,
+    externalFX_W=0.0,
+    nu=15.06e-6,
+    surfaceNormal_E=(0.0, 0.0, 1.0),
+    surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+    Cg_E_Eo=(0.0, 0.0, -1.0),
 )
 
 # Define the operating point's OperatingPointMovement.
@@ -275,7 +283,7 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    prescribed_wake=True,
+    prescribed_wake=False,
     show_progress=True,
 )
 
@@ -283,23 +291,23 @@ ps.output.print_results(solver=example_solver)
 
 # Call the draw function on the solver. Press "q" to close the plotter after it draws
 # the output.
-ps.output.draw(
-    solver=example_solver,
-    scalar_type="lift",
-    show_streamlines=True,
-    show_wake_vortices=False,
-    save=False,
-)
+# ps.output.draw(
+#     solver=example_solver,
+#     scalar_type="lift",
+#     show_streamlines=False,
+#     show_wake_vortices=True,
+#     save=True,
+# )
 
 # Call the animate function on the solver. This produces a GIF of the wake being
 # shed. The GIF is saved in the same directory as this script. Press "q",
 # after orienting the view, to begin the animation.
-ps.output.animate(
-    unsteady_solver=example_solver,
-    scalar_type="lift",
-    show_wake_vortices=True,
-    save=False,
-)
+# ps.output.animate(
+#     unsteady_solver=example_solver,
+#     scalar_type="lift",
+#     show_wake_vortices=True,
+#     save=True,
+# )
 
 # Call the plotting function on the solver. This produces graphs of the loads with
 # respect to time.

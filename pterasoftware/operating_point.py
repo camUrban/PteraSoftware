@@ -225,6 +225,7 @@ class OperatingPoint:
         self._T_pas_GP1_CgP1_to_E_CgP1: np.ndarray | None = None
         self._surfaceNormal_GP1: np.ndarray | None = None
         self._surfacePoint_GP1_CgP1: np.ndarray | None = None
+        self._surfaceReflect_T_act_GP1_CgP1: np.ndarray | None = None
         self._vInfHat_GP1__E: np.ndarray | None = None
         self._vInf_GP1__E: np.ndarray | None = None
 
@@ -502,6 +503,33 @@ class OperatingPoint:
             )
             self._surfacePoint_GP1_CgP1.flags.writeable = False
         return self._surfacePoint_GP1_CgP1
+
+    @property
+    def surfaceReflect_T_act_GP1_CgP1(self) -> np.ndarray | None:
+        """The active reflection transformation matrix for the image surface (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG).
+
+        When applied with has_point=True, this matrix reflects a point across the image
+        surface. When applied with has_point=False, it reflects a free vector (such as
+        velocity) across the image surface's normal direction, without any translational
+        component.
+
+        :return: A (4,4) ndarray of floats representing the active reflection
+            transformation matrix (in the first Airplane's geometry axes, relative to
+            the first Airplane's CG), or None if no image surface is defined.
+        """
+        if self._surfaceNormal_E is None or self._surfacePoint_E_Eo is None:
+            return None
+        if self._surfaceReflect_T_act_GP1_CgP1 is None:
+            assert self.surfacePoint_GP1_CgP1 is not None
+            assert self.surfaceNormal_GP1 is not None
+            self._surfaceReflect_T_act_GP1_CgP1 = _transformations.generate_reflect_T(
+                plane_point_A_a=self.surfacePoint_GP1_CgP1,
+                plane_normal_A=self.surfaceNormal_GP1,
+                passive=False,
+            )
+            self._surfaceReflect_T_act_GP1_CgP1.flags.writeable = False
+        return self._surfaceReflect_T_act_GP1_CgP1
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:

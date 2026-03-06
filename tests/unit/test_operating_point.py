@@ -1531,6 +1531,124 @@ class TestOperatingPoint(unittest.TestCase):
         # The normal should still be a unit vector.
         npt.assert_allclose(np.linalg.norm(normal), 1.0, atol=1e-14)
 
+    def test_surfaceReflect_T_act_GP1_CgP1_is_none_when_no_surface(self):
+        """Test that surfaceReflect_T_act_GP1_CgP1 returns None when no surface
+        is defined.
+        """
+        self.assertIsNone(self.basic_op.surfaceReflect_T_act_GP1_CgP1)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_shape_and_type(self):
+        """Test surfaceReflect_T_act_GP1_CgP1 shape and type."""
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        self.assertIsNotNone(T)
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.shape, (4, 4))
+        self.assertEqual(T.dtype, float)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_reflects_point(self):
+        """Test that the reflection matrix correctly reflects a point across the
+        image surface.
+
+        The ground surface fixture has a horizontal ground at z = 0 in Earth
+        axes with CG at (0, 0, -10). With zero attitude angles, the GP1 to E
+        transformation is a 180 degree rotation about y (x and z flip). So
+        CgP1 at (0, 0, -10) in Earth becomes (0, 0, 10) in GP1, and the
+        ground at z = 0 in Earth becomes z = 0 in GP1 (since the origin maps
+        to the origin under 180 degree y rotation). A point at (1, 2, 3) in
+        GP1_CgP1 (3 meters above CgP1 in GP1 z, which is 3 meters below CgP1
+        in Earth z) should reflect to (1, 2, -23) in GP1_CgP1 when reflected
+        about the ground plane.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # A test point in GP1_CgP1.
+        point = np.array([1.0, 2.0, 3.0])
+
+        reflected = _transformations.apply_T_to_vectors(T, point, has_point=True)
+
+        # The surface point in GP1_CgP1 is at z = -10 (10 meters below CgP1 in
+        # GP1 z, corresponding to the ground at z = 0 in Earth). The surface
+        # normal in GP1 is (0, 0, 1) (180 degree y rotation flips Earth's
+        # (0, 0, -1) to (0, 0, 1)). Reflecting (1, 2, 3) across a plane at
+        # z = -10 with normal (0, 0, 1) gives (1, 2, -23).
+        expected = np.array([1.0, 2.0, -23.0])
+        npt.assert_allclose(reflected, expected, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_reflects_velocity(self):
+        """Test that the reflection matrix correctly reflects a free vector.
+
+        Free vector reflection should only negate the component along the
+        surface normal, with no translational contribution.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # The surface normal in GP1 is (0, 0, 1) for this fixture. Reflecting
+        # a velocity vector should negate only the z component.
+        velocity = np.array([5.0, -3.0, 7.0])
+        reflected = _transformations.apply_T_to_vectors(T, velocity, has_point=False)
+
+        expected = np.array([5.0, -3.0, -7.0])
+        npt.assert_allclose(reflected, expected, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_is_involution(self):
+        """Test that reflecting twice returns the original point."""
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        point = np.array([1.0, 2.0, 3.0])
+        once = _transformations.apply_T_to_vectors(T, point, has_point=True)
+        twice = _transformations.apply_T_to_vectors(T, once, has_point=True)
+
+        npt.assert_allclose(twice, point, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_read_only(self):
+        """Test that the reflection matrix is read only."""
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        with self.assertRaises(ValueError):
+            T[0, 0] = 999.0
+
+    def test_surfaceReflect_T_act_GP1_CgP1_cached(self):
+        """Test that the reflection matrix returns the same object on repeated
+        access.
+        """
+        op = self.with_ground_surface_op
+        self.assertIs(
+            op.surfaceReflect_T_act_GP1_CgP1, op.surfaceReflect_T_act_GP1_CgP1
+        )
+
+    def test_surfaceReflect_T_act_GP1_CgP1_with_tilted_surface(self):
+        """Test reflection matrix with non zero attitude angles.
+
+        The tilted surface fixture has angles_E_to_BP1_izyx = (0, 10, 0) and
+        CG at (50, 0, -20) in Earth axes. The surface is at z = 0 in Earth
+        with normal (0, 0, -1). Reflecting a point on the surface plane
+        should return the same point.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_tilted_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # The surface point in GP1_CgP1 should lie on the reflection plane.
+        # Reflecting it should return the same point.
+        surface_point = op.surfacePoint_GP1_CgP1
+        reflected = _transformations.apply_T_to_vectors(
+            T, surface_point, has_point=True
+        )
+        npt.assert_allclose(reflected, surface_point, atol=1e-12)
+
 
 if __name__ == "__main__":
     unittest.main()

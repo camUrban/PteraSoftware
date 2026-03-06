@@ -268,23 +268,24 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property                     | Depends On                                                 | Notes                             |
-|------------------------------|------------------------------------------------------------|-----------------------------------|
-| `qInf__E`                    | `rho`, `vCg__E`                                            | Dynamic pressure (cached)         |
-| `T_pas_GP1_CgP1_to_BP1_CgP1` | (constant)                                                 | Geometry-to-body matrix (cached)  |
-| `T_pas_BP1_CgP1_to_GP1_CgP1` | `T_pas_GP1_CgP1_to_BP1_CgP1`                               | Inverse of above (cached)         |
-| `T_pas_BP1_CgP1_to_W_CgP1`   | `alpha`, `beta`                                            | Body-to-wind matrix (cached)      |
-| `T_pas_W_CgP1_to_BP1_CgP1`   | `T_pas_BP1_CgP1_to_W_CgP1`                                 | Inverse of above (cached)         |
-| `T_pas_GP1_CgP1_to_W_CgP1`   | `T_pas_GP1_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_W_CgP1`   | Geometry-to-wind matrix (cached)  |
-| `T_pas_W_CgP1_to_GP1_CgP1`   | `T_pas_GP1_CgP1_to_W_CgP1`                                 | Inverse of above (cached)         |
-| `T_pas_E_CgP1_to_BP1_CgP1`   | `angles_E_to_BP1_izyx`                                     | Earth-to-body matrix (cached)     |
-| `T_pas_BP1_CgP1_to_E_CgP1`   | `T_pas_E_CgP1_to_BP1_CgP1`                                 | Inverse of above (cached)         |
-| `T_pas_E_CgP1_to_GP1_CgP1`   | `T_pas_E_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_GP1_CgP1`   | Earth-to-geometry matrix (cached) |
-| `T_pas_GP1_CgP1_to_E_CgP1`   | `T_pas_E_CgP1_to_GP1_CgP1`                                 | Inverse of above (cached)         |
-| `surfaceNormal_GP1`          | `surfaceNormal_E`, `T_pas_E_CgP1_to_GP1_CgP1`              | Surface normal in GP1 (cached)    |
-| `surfacePoint_GP1_CgP1`      | `surfacePoint_E_Eo`, `Cg_E_Eo`, `T_pas_E_CgP1_to_GP1_CgP1` | Surface point in GP1 (cached)     |
-| `vInfHat_GP1__E`             | `T_pas_W_CgP1_to_GP1_CgP1`                                 | Freestream direction (cached)     |
-| `vInf_GP1__E`                | `vInfHat_GP1__E`, `vCg__E`                                 | Freestream velocity (cached)      |
+| Property                        | Depends On                                                 | Notes                             |
+|---------------------------------|------------------------------------------------------------|-----------------------------------|
+| `qInf__E`                       | `rho`, `vCg__E`                                            | Dynamic pressure (cached)         |
+| `T_pas_GP1_CgP1_to_BP1_CgP1`    | (constant)                                                 | Geometry-to-body matrix (cached)  |
+| `T_pas_BP1_CgP1_to_GP1_CgP1`    | `T_pas_GP1_CgP1_to_BP1_CgP1`                               | Inverse of above (cached)         |
+| `T_pas_BP1_CgP1_to_W_CgP1`      | `alpha`, `beta`                                            | Body-to-wind matrix (cached)      |
+| `T_pas_W_CgP1_to_BP1_CgP1`      | `T_pas_BP1_CgP1_to_W_CgP1`                                 | Inverse of above (cached)         |
+| `T_pas_GP1_CgP1_to_W_CgP1`      | `T_pas_GP1_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_W_CgP1`   | Geometry-to-wind matrix (cached)  |
+| `T_pas_W_CgP1_to_GP1_CgP1`      | `T_pas_GP1_CgP1_to_W_CgP1`                                 | Inverse of above (cached)         |
+| `T_pas_E_CgP1_to_BP1_CgP1`      | `angles_E_to_BP1_izyx`                                     | Earth-to-body matrix (cached)     |
+| `T_pas_BP1_CgP1_to_E_CgP1`      | `T_pas_E_CgP1_to_BP1_CgP1`                                 | Inverse of above (cached)         |
+| `T_pas_E_CgP1_to_GP1_CgP1`      | `T_pas_E_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_GP1_CgP1`   | Earth-to-geometry matrix (cached) |
+| `T_pas_GP1_CgP1_to_E_CgP1`      | `T_pas_E_CgP1_to_GP1_CgP1`                                 | Inverse of above (cached)         |
+| `surfaceNormal_GP1`             | `surfaceNormal_E`, `T_pas_E_CgP1_to_GP1_CgP1`              | Surface normal in GP1 (cached)    |
+| `surfacePoint_GP1_CgP1`         | `surfacePoint_E_Eo`, `Cg_E_Eo`, `T_pas_E_CgP1_to_GP1_CgP1` | Surface point in GP1 (cached)     |
+| `surfaceReflect_T_act_GP1_CgP1` | `surfacePoint_GP1_CgP1`, `surfaceNormal_GP1`               | Active reflection matrix (cached) |
+| `vInfHat_GP1__E`                | `T_pas_W_CgP1_to_GP1_CgP1`                                 | Freestream direction (cached)     |
+| `vInf_GP1__E`                   | `vInfHat_GP1__E`, `vCg__E`                                 | Freestream velocity (cached)      |
 
 **Note on caching**: While `vInfHat_GP1__E` and `vInf_GP1__E` are simple computations once the transformation matrix is cached, they are cached for consistency with the overall pattern and because they are called repeatedly during solver operations. The same is true for `qInf__E`.
 

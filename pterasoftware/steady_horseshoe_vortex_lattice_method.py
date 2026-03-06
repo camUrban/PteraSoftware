@@ -24,6 +24,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _transformations,
     _vortices,
     geometry,
     operating_point,
@@ -323,6 +324,36 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
         )
 
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                self._stackCpp_GP1_CgP1,
+                has_point=True,
+            )
+            gridImageVIndCpp_GP1__E = (
+                _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+                    stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                    stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                    stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                    stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                    stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                    strengths=np.ones(self.num_panels, dtype=float),
+                    r_c0s=self._stackRc0s,
+                    singularity_counts=singularity_counts,
+                    ages=None,
+                    nu=self.operating_point.nu,
+                )
+            )
+            gridNormVIndCpp_GP1__E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                gridImageVIndCpp_GP1__E,
+                has_point=False,
+            )
+
         unexpected_singularity_counts = np.copy(singularity_counts)
 
         _functions.log_unexpected_singularity_counts(
@@ -411,6 +442,36 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 nu=self.operating_point.nu,
             )
         )
+
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedP_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackP_GP1_CgP1,
+                has_point=True,
+            )
+            stackImageVInd_GP1__E = (
+                _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrhvp_GP1_CgP1=self._stackBrhvp_GP1_CgP1,
+                    stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
+                    stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
+                    stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
+                    strengths=self._vortex_strengths,
+                    r_c0s=self._stackRc0s,
+                    singularity_counts=bound_singularity_counts,
+                    ages=None,
+                    nu=self.operating_point.nu,
+                )
+            )
+            stackVInd_GP1__E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageVInd_GP1__E,
+                has_point=False,
+            )
 
         return cast(np.ndarray, stackVInd_GP1__E + self.vInf_GP1__E)
 

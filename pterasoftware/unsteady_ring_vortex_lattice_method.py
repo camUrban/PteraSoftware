@@ -25,6 +25,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _transformations,
     _vortices,
     geometry,
     movements,
@@ -862,6 +863,36 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         )
 
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                self.stackCpp_GP1_CgP1,
+                has_point=True,
+            )
+            gridImageVIndCpp_GP1__E = (
+                _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                    strengths=self._current_bound_vortex_strengths,
+                    r_c0s=self._currentStackBoundRc0s,
+                    singularity_counts=singularity_counts,
+                    ages=None,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            gridNormVIndCpp_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                gridImageVIndCpp_GP1__E,
+                has_point=False,
+            )
+
         unexpected_singularity_counts = np.copy(singularity_counts)
 
         _functions.log_unexpected_singularity_counts(
@@ -956,6 +987,36 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     nu=self.current_operating_point.nu,
                 )
             )
+
+            # Add the image contribution if an image surface is defined.
+            surfaceReflect_T_act_GP1_CgP1 = (
+                self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            )
+            if surfaceReflect_T_act_GP1_CgP1 is not None:
+                stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    surfaceReflect_T_act_GP1_CgP1,
+                    self.stackCpp_GP1_CgP1,
+                    has_point=True,
+                )
+                currentStackImageWakeV_GP1_E = (
+                    _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                        stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                        stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                        stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                        stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                        stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                        strengths=self._current_wake_vortex_strengths,
+                        r_c0s=self._currentStackWakeRc0s,
+                        singularity_counts=singularity_counts,
+                        ages=self._current_wake_vortex_ages,
+                        nu=self.current_operating_point.nu,
+                    )
+                )
+                currentStackWakeV_GP1_E += _transformations.apply_T_to_vectors(
+                    surfaceReflect_T_act_GP1_CgP1,
+                    currentStackImageWakeV_GP1_E,
+                    has_point=False,
+                )
 
             unexpected_singularity_counts = np.copy(singularity_counts)
 
@@ -1079,6 +1140,55 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_operating_point.nu,
             )
         )
+
+        # Add the image contributions if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedP_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackP_GP1_CgP1,
+                has_point=True,
+            )
+            stackImageBoundRingVInd_GP1_E = (
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                    strengths=self._current_bound_vortex_strengths,
+                    r_c0s=self._currentStackBoundRc0s,
+                    singularity_counts=bound_singularity_counts,
+                    ages=None,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            stackBoundRingVInd_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageBoundRingVInd_GP1_E,
+                has_point=False,
+            )
+            stackImageWakeRingVInd_GP1_E = (
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                    strengths=self._current_wake_vortex_strengths,
+                    r_c0s=self._currentStackWakeRc0s,
+                    singularity_counts=wake_singularity_counts,
+                    ages=self._current_wake_vortex_ages,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            stackWakeRingVInd_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageWakeRingVInd_GP1_E,
+                has_point=False,
+            )
 
         return cast(
             np.ndarray,

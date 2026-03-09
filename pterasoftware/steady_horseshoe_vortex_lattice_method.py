@@ -406,8 +406,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         the induced velocity from every HorseshoeVortex.
 
         When an image surface is defined on the OperatingPoint, the returned velocity
-        also includes the induced velocity from image HorseshoeVortices reflected
-        across that surface.
+        also includes the induced velocity from image HorseshoeVortices reflected across
+        that surface.
 
         **Notes:**
 

@@ -840,6 +840,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the current time step's SteadyProblem's 2D ndarray of Wing Wing
         influence coefficients (observed from the Earth frame).
 
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image bound RingVortices
+        reflected across that surface.
+
         :return: None
         """
         # Find the 2D ndarray of normalized velocities (in the first Airplane's
@@ -960,6 +964,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the 1D ndarray of the wake Wing influence coefficients (observed from
         the Earth frame) at the current time step.
 
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image wake RingVortices
+        reflected across that surface.
+
         **Notes:**
 
         If the current time step is the first time step, no wake has been shed, so this
@@ -1074,6 +1082,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         from the Earth frame) at one or more points (in the first Airplane's geometry
         axes, relative to the first Airplane's CG) due to the freestream velocity and
         the induced velocity from every RingVortex.
+
+        When an image surface is defined on the OperatingPoint, the returned velocity
+        also includes the induced velocity from image bound and wake RingVortices
+        reflected across that surface.
 
         **Notes:**
 

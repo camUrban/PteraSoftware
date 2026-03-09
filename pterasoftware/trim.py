@@ -225,6 +225,10 @@ def analyze_steady_trim(
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = problem.operating_point.rho
     base_nu = problem.operating_point.nu
+    base_angles_E_to_BP1_izyx = problem.operating_point.angles_E_to_BP1_izyx
+    base_CgP1_E_Eo = problem.operating_point.CgP1_E_Eo
+    base_surfaceNormal_E = problem.operating_point.surfaceNormal_E
+    base_surfacePoint_E_Eo = problem.operating_point.surfacePoint_E_Eo
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -257,6 +261,10 @@ def analyze_steady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
+            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+            CgP1_E_Eo=base_CgP1_E_Eo,
+            surfaceNormal_E=base_surfaceNormal_E,
+            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
         )
 
         qInf__E = trial_operating_point.qInf__E
@@ -600,6 +608,10 @@ def analyze_unsteady_trim(
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = base_operating_point.rho
     base_nu = base_operating_point.nu
+    base_angles_E_to_BP1_izyx = base_operating_point.angles_E_to_BP1_izyx
+    base_CgP1_E_Eo = base_operating_point.CgP1_E_Eo
+    base_surfaceNormal_E = base_operating_point.surfaceNormal_E
+    base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -632,6 +644,10 @@ def analyze_unsteady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
+            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+            CgP1_E_Eo=base_CgP1_E_Eo,
+            surfaceNormal_E=base_surfaceNormal_E,
+            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
         )
 
         qInf__E = trial_operating_point.qInf__E

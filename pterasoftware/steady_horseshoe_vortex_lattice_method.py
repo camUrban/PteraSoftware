@@ -303,6 +303,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """Finds this SteadyProblem's 2D ndarray of Wing Wing influence coefficients
         (observed from the Earth frame).
 
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image HorseshoeVortices
+        reflected across that surface.
+
         :return: None
         """
         # Find the 2D ndarray of normalized velocities (in the first Airplane's
@@ -400,6 +404,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         from the Earth frame) at one or more points (in the first Airplane's geometry
         axes, relative to the first Airplane's CG) due to the freestream velocity and
         the induced velocity from every HorseshoeVortex.
+
+        When an image surface is defined on the OperatingPoint, the returned velocity
+        also includes the induced velocity from image HorseshoeVortices reflected
+        across that surface.
 
         **Notes:**
 

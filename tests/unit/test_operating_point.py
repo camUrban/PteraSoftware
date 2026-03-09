@@ -980,15 +980,15 @@ class TestOperatingPoint(unittest.TestCase):
         with self.assertRaises(ValueError):
             op.angles_E_to_BP1_izyx[0] = 999.0
 
-    # --- Tests for Cg_E_Eo ---
+    # --- Tests for CgP1_E_Eo ---
 
-    def test_Cg_E_Eo_default(self):
-        """Test that Cg_E_Eo defaults to (0, 0, 0)."""
+    def test_CgP1_E_Eo_default(self):
+        """Test that CgP1_E_Eo defaults to (0, 0, 0)."""
         op = ps.operating_point.OperatingPoint()
-        npt.assert_array_equal(op.Cg_E_Eo, [0.0, 0.0, 0.0])
+        npt.assert_array_equal(op.CgP1_E_Eo, [0.0, 0.0, 0.0])
 
-    def test_Cg_E_Eo_parameter_validation_valid(self):
-        """Test Cg_E_Eo parameter validation with valid values."""
+    def test_CgP1_E_Eo_parameter_validation_valid(self):
+        """Test CgP1_E_Eo parameter validation with valid values."""
         valid_cg_values = [
             (0.0, 0.0, 0.0),
             (100.0, 200.0, -50.0),
@@ -999,11 +999,11 @@ class TestOperatingPoint(unittest.TestCase):
 
         for cg in valid_cg_values:
             with self.subTest(cg=cg):
-                op = ps.operating_point.OperatingPoint(Cg_E_Eo=cg)
-                npt.assert_array_almost_equal(op.Cg_E_Eo, np.array(cg, dtype=float))
+                op = ps.operating_point.OperatingPoint(CgP1_E_Eo=cg)
+                npt.assert_array_almost_equal(op.CgP1_E_Eo, np.array(cg, dtype=float))
 
-    def test_Cg_E_Eo_parameter_validation_invalid(self):
-        """Test Cg_E_Eo parameter validation with invalid values."""
+    def test_CgP1_E_Eo_parameter_validation_invalid(self):
+        """Test CgP1_E_Eo parameter validation with invalid values."""
         invalid_cg_values = [
             (0.0, 0.0),
             (0.0, 0.0, 0.0, 0.0),
@@ -1016,34 +1016,34 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(invalid_cg=invalid_cg):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
-                    ps.operating_point.OperatingPoint(Cg_E_Eo=invalid_cg)
+                    ps.operating_point.OperatingPoint(CgP1_E_Eo=invalid_cg)
 
-    def test_Cg_E_Eo_shape_and_type(self):
-        """Test Cg_E_Eo shape and type."""
-        cg = self.with_cg_position_op.Cg_E_Eo
+    def test_CgP1_E_Eo_shape_and_type(self):
+        """Test CgP1_E_Eo shape and type."""
+        cg = self.with_cg_position_op.CgP1_E_Eo
 
         # Should be a 3-element ndarray of floats.
         self.assertEqual(len(cg), 3)
         self.assertIsInstance(cg, np.ndarray)
         self.assertEqual(cg.dtype, float)
 
-    def test_Cg_E_Eo_conversion_to_float_array(self):
-        """Test that Cg_E_Eo is converted to a float array."""
-        op = ps.operating_point.OperatingPoint(Cg_E_Eo=(10, 20, 30))
-        self.assertEqual(op.Cg_E_Eo.dtype, float)
-        npt.assert_array_equal(op.Cg_E_Eo, [10.0, 20.0, 30.0])
+    def test_CgP1_E_Eo_conversion_to_float_array(self):
+        """Test that CgP1_E_Eo is converted to a float array."""
+        op = ps.operating_point.OperatingPoint(CgP1_E_Eo=(10, 20, 30))
+        self.assertEqual(op.CgP1_E_Eo.dtype, float)
+        npt.assert_array_equal(op.CgP1_E_Eo, [10.0, 20.0, 30.0])
 
-    def test_Cg_E_Eo_immutable(self):
-        """Test that Cg_E_Eo is read only."""
+    def test_CgP1_E_Eo_immutable(self):
+        """Test that CgP1_E_Eo is read only."""
         op = self.with_cg_position_op
 
         # The property should not be settable.
         with self.assertRaises(AttributeError):
-            op.Cg_E_Eo = np.array([0.0, 0.0, 0.0])
+            op.CgP1_E_Eo = np.array([0.0, 0.0, 0.0])
 
         # The underlying array should not be writable.
         with self.assertRaises(ValueError):
-            op.Cg_E_Eo[0] = 999.0
+            op.CgP1_E_Eo[0] = 999.0
 
     # --- Tests for surfaceNormal_E and surfacePoint_E_Eo ---
 
@@ -1423,7 +1423,7 @@ class TestOperatingPoint(unittest.TestCase):
         """Test surfacePoint_GP1_CgP1 when angles_E_to_BP1_izyx is all zeros.
 
         The ground surface fixture has surfacePoint_E_Eo = (0, 0, 0) and
-        Cg_E_Eo = (0, 0, -10). The surface point relative to CG in Earth axes
+        CgP1_E_Eo = (0, 0, -10). The surface point relative to CG in Earth axes
         is (0, 0, 0) - (0, 0, -10) = (0, 0, 10). The E to GP1 rotation (180
         degrees about y) flips x and z, giving (0, 0, -10) in GP1 axes. This
         means the ground is 10 meters below the CG in GP1 axes (z up).
@@ -1432,18 +1432,18 @@ class TestOperatingPoint(unittest.TestCase):
         npt.assert_allclose(point, [0.0, 0.0, -10.0], atol=1e-14)
 
     def test_surfaceNormal_GP1_translation_does_not_affect_normal(self):
-        """Test that changing Cg_E_Eo does not affect surfaceNormal_GP1.
+        """Test that changing CgP1_E_Eo does not affect surfaceNormal_GP1.
 
         The normal is a free vector, so it should be independent of the CG
         position.
         """
         op_no_offset = ps.operating_point.OperatingPoint(
-            Cg_E_Eo=(0.0, 0.0, 0.0),
+            CgP1_E_Eo=(0.0, 0.0, 0.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
         op_with_offset = ps.operating_point.OperatingPoint(
-            Cg_E_Eo=(100.0, 200.0, -50.0),
+            CgP1_E_Eo=(100.0, 200.0, -50.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
@@ -1455,18 +1455,18 @@ class TestOperatingPoint(unittest.TestCase):
         )
 
     def test_surfacePoint_GP1_CgP1_depends_on_cg_position(self):
-        """Test that surfacePoint_GP1_CgP1 changes with Cg_E_Eo.
+        """Test that surfacePoint_GP1_CgP1 changes with CgP1_E_Eo.
 
         With the same surface in Earth axes, changing the CG position should
         change where the surface point is relative to the CG in GP1 axes.
         """
         op_near = ps.operating_point.OperatingPoint(
-            Cg_E_Eo=(0.0, 0.0, -5.0),
+            CgP1_E_Eo=(0.0, 0.0, -5.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
         op_far = ps.operating_point.OperatingPoint(
-            Cg_E_Eo=(0.0, 0.0, -20.0),
+            CgP1_E_Eo=(0.0, 0.0, -20.0),
             surfaceNormal_E=(0.0, 0.0, -1.0),
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )

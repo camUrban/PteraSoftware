@@ -392,7 +392,7 @@ def make_with_cg_position_operating_point_fixture():
     position in Earth axes for testing position dependent transformations.
 
     :return with_cg_position_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with non zero Cg_E_Eo to test position
+        This is the OperatingPoint with non zero CgP1_E_Eo to test position
         dependent surface point transformations.
     """
     with_cg_position_operating_point_fixture = ps.operating_point.OperatingPoint(
@@ -400,7 +400,7 @@ def make_with_cg_position_operating_point_fixture():
         vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
-        Cg_E_Eo=(100.0, 0.0, -50.0),
+        CgP1_E_Eo=(100.0, 0.0, -50.0),
         externalFX_W=0.0,
         nu=15.06e-6,
     )
@@ -422,7 +422,7 @@ def make_with_ground_surface_operating_point_fixture():
         vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
-        Cg_E_Eo=(0.0, 0.0, -10.0),
+        CgP1_E_Eo=(0.0, 0.0, -10.0),
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         externalFX_W=0.0,
@@ -448,7 +448,7 @@ def make_with_tilted_surface_operating_point_fixture():
         alpha=5.0,
         beta=0.0,
         angles_E_to_BP1_izyx=(0.0, 10.0, 0.0),
-        Cg_E_Eo=(50.0, 0.0, -20.0),
+        CgP1_E_Eo=(50.0, 0.0, -20.0),
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         externalFX_W=0.0,

@@ -233,7 +233,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     nu=15.06e-6,
     surfaceNormal_E=(0.0, 0.0, 1.0),
     surfacePoint_E_Eo=(0.0, 0.0, 0.0),
-    Cg_E_Eo=(0.0, 0.0, -1.0),
+    CgP1_E_Eo=(0.0, 0.0, -1.0),
 )
 
 # Define the operating point's OperatingPointMovement.

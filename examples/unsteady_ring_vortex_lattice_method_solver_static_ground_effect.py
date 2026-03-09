@@ -224,14 +224,14 @@ del v_tail_movement
 
 # Define a new OperatingPoint with surface effects enabled. To model ground effect, we
 # define a horizontal ground plane at z = 0 in Earth axes by specifying its unit normal
-# vector and a point on the plane. We also set Cg_E_Eo to place the Airplane's CG 5
+# vector and a point on the plane. We also set CgP1_E_Eo to place the Airplane's CG 5
 # meters above the ground (negative z is up in Earth axes).
 example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225,
     vCg__E=10.0,
     alpha=1.0,
     beta=0.0,
-    Cg_E_Eo=(0.0, 0.0, -5.0),
+    CgP1_E_Eo=(0.0, 0.0, -5.0),
     surfaceNormal_E=(0.0, 0.0, 1.0),
     surfacePoint_E_Eo=(0.0, 0.0, 0.0),
     externalFX_W=0.0,

@@ -57,7 +57,7 @@ class OperatingPoint:
         alpha: float | int = 5.0,
         beta: float | int = 0.0,
         angles_E_to_BP1_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        Cg_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        CgP1_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
         surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
         externalFX_W: float | int = 0.0,
@@ -94,7 +94,7 @@ class OperatingPoint:
             point forward/right/down while geometry axes point aft/right/up. The units
             are in degrees. All angles must lie in the range (-180.0, 180.0] degrees.
             The default is (0.0, 0.0, 0.0).
-        :param Cg_E_Eo: An array-like object of 3 numbers representing the position of
+        :param CgP1_E_Eo: An array-like object of 3 numbers representing the position of
             the first Airplane's CG (in Earth axes, relative to the Earth origin). Can
             be a tuple, list, or ndarray. Values are converted to floats internally. The
             units are in meters. The default is (0.0, 0.0, 0.0).
@@ -174,10 +174,10 @@ class OperatingPoint:
         )
         self._angles_E_to_BP1_izyx = angles_E_to_BP1_izyx
         self._angles_E_to_BP1_izyx.flags.writeable = False
-        self._Cg_E_Eo = _parameter_validation.threeD_number_vectorLike_return_float(
-            Cg_E_Eo, "Cg_E_Eo"
+        self._CgP1_E_Eo = _parameter_validation.threeD_number_vectorLike_return_float(
+            CgP1_E_Eo, "CgP1_E_Eo"
         )
-        self._Cg_E_Eo.flags.writeable = False
+        self._CgP1_E_Eo.flags.writeable = False
         if surfaceNormal_E is not None and surfacePoint_E_Eo is not None:
             surfaceNormal_E = (
                 _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
@@ -251,8 +251,8 @@ class OperatingPoint:
         return self._angles_E_to_BP1_izyx
 
     @property
-    def Cg_E_Eo(self) -> np.ndarray:
-        return self._Cg_E_Eo
+    def CgP1_E_Eo(self) -> np.ndarray:
+        return self._CgP1_E_Eo
 
     @property
     def surfaceNormal_E(self) -> np.ndarray | None:
@@ -497,7 +497,7 @@ class OperatingPoint:
         if self._surfacePoint_E_Eo is None:
             return None
         if self._surfacePoint_GP1_CgP1 is None:
-            surfacePoint_E_CgP1 = self._surfacePoint_E_Eo - self._Cg_E_Eo
+            surfacePoint_E_CgP1 = self._surfacePoint_E_Eo - self._CgP1_E_Eo
             self._surfacePoint_GP1_CgP1 = _transformations.apply_T_to_vectors(
                 self.T_pas_E_CgP1_to_GP1_CgP1, surfacePoint_E_CgP1, has_point=True
             )

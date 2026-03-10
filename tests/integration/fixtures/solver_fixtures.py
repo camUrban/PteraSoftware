@@ -141,3 +141,103 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     )
 
     return unsteady_ring_vortex_lattice_method_validation_solver
+
+
+def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver():
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with an image
+    surface for surface effect testing.
+
+    :return solver: SteadyHorseshoeVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_steady_problem()
+
+    solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+        problem
+    )
+
+    return solver
+
+
+def make_steady_horseshoe_vortex_lattice_method_free_air_solver():
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver without an
+    image surface, for use as a free-air baseline in surface effect validation tests.
+
+    :return solver: SteadyHorseshoeVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
+
+    solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+        problem
+    )
+
+    return solver
+
+
+def make_steady_ring_vortex_lattice_method_surface_effect_solver():
+    """This function creates a SteadyRingVortexLatticeMethodSolver with an image
+    surface for surface effect testing.
+
+    :return solver: SteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_steady_problem()
+
+    solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+        problem
+    )
+
+    return solver
+
+
+def make_steady_ring_vortex_lattice_method_free_air_solver():
+    """This function creates a SteadyRingVortexLatticeMethodSolver without an image
+    surface, for use as a free-air baseline in surface effect validation tests.
+
+    :return solver: SteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
+
+    solver = ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+        problem
+    )
+
+    return solver
+
+
+def make_unsteady_ring_vortex_lattice_method_surface_effect_solver():
+    """This function creates an UnsteadyRingVortexLatticeMethodSolver with an image
+    surface for surface effect testing.
+
+    :return solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_unsteady_problem()
+
+    solver = (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            problem
+        )
+    )
+
+    return solver
+
+
+def make_unsteady_ring_vortex_lattice_method_free_air_solver():
+    """This function creates an UnsteadyRingVortexLatticeMethodSolver without an image
+    surface, for use as a free-air baseline in surface effect validation tests.
+
+    :return solver: UnsteadyRingVortexLatticeMethodSolver
+        This is the solver fixture.
+    """
+    problem = problem_fixtures.make_surface_effect_free_air_unsteady_problem()
+
+    solver = (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            problem
+        )
+    )
+
+    return solver

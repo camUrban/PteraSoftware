@@ -429,3 +429,69 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
         b_ref=None,
     )
     return symmetric_multiple_wing_steady_validation_airplane
+
+
+def make_surface_effect_airplane():
+    """This function creates a simple single-wing Airplane for surface effect testing.
+
+    The Airplane uses a NACA 0010 symmetric airfoil with zero twist and zero dihedral.
+
+    :return surface_effect_airplane: Airplane
+        This is the Airplane fixture.
+    """
+    surface_effect_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
+                            name="naca0010",
+                            outline_A_lp=None,
+                            resample=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=8,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing="uniform",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
+                            name="naca0010",
+                            outline_A_lp=None,
+                            resample=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=None,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="Main Wing",
+                Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+                angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                symmetric=True,
+                mirror_only=False,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=6,
+                chordwise_spacing="uniform",
+            )
+        ],
+        name="Surface Effect Airplane",
+        Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        weight=0.0,
+        s_ref=None,
+        c_ref=None,
+        b_ref=None,
+    )
+    return surface_effect_airplane

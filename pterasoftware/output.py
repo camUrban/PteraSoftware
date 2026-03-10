@@ -21,6 +21,7 @@ from __future__ import annotations
 import math
 import time
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -44,12 +45,12 @@ _diverging_color_map = "delta"
 _wake_vortex_color = "white"
 _panel_color = "chartreuse"
 _streamline_color = "orchid"
-_image_surface_opacity = 0.5
+_image_surface_opacity = 0.75
 _image_surface_scale = 5.0
+_image_reflection_mute_factor = 0.5
 _image_surface_checker_size = 25
 _image_surface_color_a = np.array([40, 40, 40], dtype=np.uint8)
 _image_surface_color_b = np.array([80, 80, 80], dtype=np.uint8)
-_image_reflection_opacity = 0.25
 _plotter_background_color = "black"
 _figure_background_color = "None"
 _text_color = "#818181"
@@ -284,35 +285,34 @@ def draw(
             smooth_shading=False,
         )
 
-    # Save the geometry bounds before adding reflected geometry or the image surface
-    # so the camera can be fitted to the aircraft geometry rather than the much
-    # larger image surface or the reflection below it.
-    geometry_bounds = plotter.bounds
     T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
 
-    # If an image surface is defined, add reflected geometry and the semi transparent
-    # checkerboard plane.
+    # If an image surface is defined, add reflected geometry. The image surface plane
+    # is added later, after the geometry bounds are captured.
     if T_reflect is not None:
-        # Add reflected Panel surfaces with the same coloring as the original.
+        mute = _image_reflection_mute_factor
+        muted_edge_color = _mute_color("black", mute)
+
+        # Add reflected Panel surfaces with muted coloring.
         reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
         if scalar_type in ("induced drag", "side force", "lift"):
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                cmap=color_map,  # type: ignore[arg-type]
+                edge_color=muted_edge_color,
+                cmap=_mute_colormap(color_map, mute),
                 clim=[c_min, c_max],
                 scalars=these_scalars,
                 smooth_shading=False,
-                opacity=_image_reflection_opacity,
                 show_scalar_bar=False,
             )
         else:
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                color=_panel_color,
+                edge_color=muted_edge_color,
+                color=_mute_color(_panel_color, mute),
                 smooth_shading=False,
-                opacity=_image_reflection_opacity,
             )
 
         # Add reflected wake RingVortex surfaces if they are being shown.
@@ -320,23 +320,10 @@ def draw(
             plotter.add_mesh(
                 _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
                 show_edges=True,
+                edge_color=muted_edge_color,
                 smooth_shading=False,
-                color=_wake_vortex_color,
-                opacity=_image_reflection_opacity,
+                color=_mute_color(_wake_vortex_color, mute),
             )
-
-        # Add the image surface plane.
-        image_surface_result = _get_image_surface_mesh_and_texture(
-            draw_operating_point, geometry_bounds
-        )
-        assert image_surface_result is not None
-        image_surface_mesh, image_surface_texture = image_surface_result
-        plotter.add_mesh(
-            image_surface_mesh,
-            texture=image_surface_texture,
-            opacity=_image_surface_opacity,
-            smooth_shading=True,
-        )
     else:
         image_surface_mesh = None
 
@@ -392,18 +379,30 @@ def draw(
                                 reflected_point,
                             ),
                             show_edges=True,
-                            color=_streamline_color,
+                            color=_mute_color(_streamline_color, mute),
                             line_width=2,
                             smooth_shading=False,
-                            opacity=_image_reflection_opacity,
                         )
 
-    # If an image surface was added, set the camera direction and fit the camera to
-    # the aircraft geometry bounds so the view is not dominated by the much larger
-    # image surface plane. When an image surface is present, cpos is not passed to
-    # show() because that would trigger an auto-fit to all actors (including the
-    # image surface).
-    if image_surface_mesh is not None:
+    # If an image surface is defined, save the geometry bounds (which now include
+    # the reflected geometry but not the image surface plane), add the image surface
+    # plane, then fit the camera to the saved bounds so the view is not dominated by
+    # the much larger image surface plane. When an image surface is present, cpos is
+    # not passed to show() because that would trigger an auto-fit to all actors
+    # (including the image surface).
+    if T_reflect is not None:
+        geometry_bounds = plotter.bounds
+        image_surface_result = _get_image_surface_mesh_and_texture(
+            draw_operating_point, geometry_bounds
+        )
+        assert image_surface_result is not None
+        image_surface_mesh, image_surface_texture = image_surface_result
+        plotter.add_mesh(
+            image_surface_mesh,
+            texture=image_surface_texture,
+            opacity=_image_surface_opacity,
+            smooth_shading=True,
+        )
         plotter.camera.position = (-1, -1, 1)
         plotter.camera.focal_point = (0, 0, 0)
         plotter.camera.up = (0, 0, 1)
@@ -591,8 +590,9 @@ def animate(
     # Pre-compute the image surface mesh and reflection matrix from the last time
     # step's geometry so that the plane is large enough to encompass the fully
     # developed wake. The mesh, texture, and reflection matrix are static and reused
-    # for every frame. The last step's geometry bounds are also saved so the camera
-    # can be fitted to the geometry rather than the larger image surface.
+    # for every frame. The last step's geometry bounds (including reflected geometry
+    # but not the image surface plane) are also saved so the camera can be fitted to
+    # the geometry rather than the larger image surface.
     last_step = len(step_airplanes) - 1
     last_step_operating_point = unsteady_solver.steady_problems[
         last_step
@@ -600,14 +600,27 @@ def animate(
     T_reflect = last_step_operating_point.surfaceReflect_T_act_GP1_CgP1
     if T_reflect is not None:
         last_step_panel_surfaces = _get_panel_surfaces(step_airplanes[last_step])
+        reflected_last_step_panel_surfaces = _reflect_mesh(
+            last_step_panel_surfaces, T_reflect
+        )
         if show_wake_vortices:
             last_step_wake_surfaces = _get_wake_ring_vortex_surfaces(
                 unsteady_solver, last_step
             )
-            combined = last_step_panel_surfaces.merge(last_step_wake_surfaces)
+            reflected_last_step_wake_surfaces = _reflect_mesh(
+                last_step_wake_surfaces, T_reflect
+            )
+            combined = (
+                last_step_panel_surfaces.merge(last_step_wake_surfaces)
+                .merge(reflected_last_step_panel_surfaces)
+                .merge(reflected_last_step_wake_surfaces)
+            )
             image_surface_geometry_bounds = combined.bounds
         else:
-            image_surface_geometry_bounds = last_step_panel_surfaces.bounds
+            combined = last_step_panel_surfaces.merge(
+                reflected_last_step_panel_surfaces
+            )
+            image_surface_geometry_bounds = combined.bounds
         image_surface_result = _get_image_surface_mesh_and_texture(
             last_step_operating_point, image_surface_geometry_bounds
         )
@@ -656,27 +669,35 @@ def animate(
     # that would trigger an auto-fit to all actors (including the image surface).
     if T_reflect is not None:
         assert image_surface_mesh is not None
+        mute = _image_reflection_mute_factor
+        muted_edge_color = _mute_color("black", mute)
+        muted_panel_color = _mute_color(_panel_color, mute)
+        muted_wake_color = _mute_color(_wake_vortex_color, mute)
+        if color_map:
+            muted_color_map = _mute_colormap(color_map, mute)
+        else:
+            muted_color_map = None
 
-        # Add reflected Panel surfaces with the same coloring as the original.
+        # Add reflected Panel surfaces with muted coloring.
         reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
         if scalar_type is not None and first_results_step == 0:
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                cmap=color_map,  # type: ignore[arg-type]
+                edge_color=muted_edge_color,
+                cmap=muted_color_map,
                 clim=[c_min, c_max],
                 scalars=these_scalars,
                 smooth_shading=False,
-                opacity=_image_reflection_opacity,
                 show_scalar_bar=False,
             )
         else:
             plotter.add_mesh(
                 reflected_panel_surfaces,
                 show_edges=True,
-                color=_panel_color,
+                edge_color=muted_edge_color,
+                color=muted_panel_color,
                 smooth_shading=False,
-                opacity=_image_reflection_opacity,
             )
 
         # Add the image surface plane.
@@ -799,26 +820,26 @@ def animate(
         if T_reflect is not None:
             assert image_surface_mesh is not None
 
-            # Add reflected Panel surfaces with the same coloring as the original.
+            # Add reflected Panel surfaces with muted coloring.
             reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
             if scalar_type is not None and first_results_step <= current_step:
                 plotter.add_mesh(
                     reflected_panel_surfaces,
                     show_edges=True,
-                    cmap=color_map,  # type: ignore[arg-type]
+                    edge_color=muted_edge_color,
+                    cmap=muted_color_map,
                     clim=[c_min, c_max],
                     scalars=these_scalars,
                     smooth_shading=False,
-                    opacity=_image_reflection_opacity,
                     show_scalar_bar=False,
                 )
             else:
                 plotter.add_mesh(
                     reflected_panel_surfaces,
                     show_edges=True,
-                    color=_panel_color,
+                    edge_color=muted_edge_color,
+                    color=muted_panel_color,
                     smooth_shading=False,
-                    opacity=_image_reflection_opacity,
                 )
 
             # Add reflected wake RingVortex surfaces if they are being shown.
@@ -826,9 +847,9 @@ def animate(
                 plotter.add_mesh(
                     _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
                     show_edges=True,
+                    edge_color=muted_edge_color,
                     smooth_shading=False,
-                    color=_wake_vortex_color,
-                    opacity=_image_reflection_opacity,
+                    color=muted_wake_color,
                 )
 
             # Add the image surface plane.
@@ -1592,6 +1613,44 @@ def _reflect_mesh(
         has_point=True,
     )
     return reflected
+
+
+def _mute_color(
+    color: str | tuple[float, ...],
+    factor: float,
+) -> tuple[float, float, float]:
+    """Returns a muted version of a color by linearly interpolating it toward middle
+    gray.
+
+    :param color: Any color that PyVista can parse (name, hex string, RGB tuple, etc.).
+    :param factor: The muting factor in [0, 1]. 0 means no change, 1 means fully gray.
+    :return: A (R, G, B) tuple of floats in [0, 1].
+    """
+    rgb = np.array(pv.Color(color).float_rgb)
+    gray = np.full(3, 0.5)
+    muted = rgb + factor * (gray - rgb)
+    return float(muted[0]), float(muted[1]), float(muted[2])
+
+
+def _mute_colormap(
+    cmap_name: str,
+    factor: float,
+) -> matplotlib.colors.ListedColormap:
+    """Returns a muted version of a named colormap by linearly interpolating each color
+    toward middle gray.
+
+    :param cmap_name: The name of a Matplotlib or cmocean colormap.
+    :param factor: The muting factor in [0, 1]. 0 means no change, 1 means fully gray.
+    :return: A ListedColormap with muted colors.
+    """
+    try:
+        cmap = plt.get_cmap(cmap_name)
+    except ValueError:
+        cmap = plt.get_cmap("cmo." + cmap_name)
+    colors = cmap(np.linspace(0, 1, 256))
+    gray = 0.5
+    colors[:, :3] = colors[:, :3] + factor * (gray - colors[:, :3])
+    return matplotlib.colors.ListedColormap(colors)
 
 
 # TEST: Consider adding unit tests for this function.
